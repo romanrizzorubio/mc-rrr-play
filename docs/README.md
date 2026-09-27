@@ -103,7 +103,7 @@ Controla un superhéroe con su baraja de cartas personal.
 - **Attack** - Atacar un enemigo
 - **Defense** - Reducir daño
 - **Thwart** - Reducir amenaza
-- **Scheme** - Esquema especial
+- **Scheme** - Plan especial
 
 ### Objetivo
 - **Victoria** - Derrota el villano

@@ -45,9 +45,11 @@ Elegir cuál superhéroe controlará durante la partida.
 **Información Mostrada:**
 - Nombre del héroe
 - Puntos de vida
+- Atributos de forma Héroe (ATK, DEF, INT)
+- Atributos de forma Alter-Ego (REC)
 - Cartas iniciales
 - Imagen ilustrativa
-- Habilidades especiales
+- Capacidades especiales
 
 **Disponibilidad:**
 Los héroes disponibles dependen de:
@@ -63,7 +65,7 @@ Elegir el villano y escenario contra el que jugarán.
 **Información del Escenario:**
 - Nombre del villano
 - Nivel de dificultad
-- Habilidades del villano
+- Capacidades del villano
 - Cartas de encuentro
 - Modificadores especiales
 
@@ -88,11 +90,11 @@ La pantalla se divide en varias áreas:
 **Zona del Jugador (Player Area)**
 - Superhéroe con contador de vida
 - Cartas en juego (aliados, mejoramientos)
-- Contador de recursos (física/mental)
+- Contador de recursos (4 tipos: Energy, Mental, Physical, Wild)
 - Estado y efectos activos
 
 **Mano (Hand)**
-- Cartas disponibles para jugar
+- Cartas disponibles para jugar (sin límite de cartas jugables por turno)
 - Costo de cada carta
 - Requisitos para jugar
 
@@ -126,43 +128,49 @@ La pantalla se divide en varias áreas:
 #### Atacar a un Enemigo
 
 **Requiere:**
-- 1 Recurso de Física
-- Elegir qué enemigo atacar
+- Elegir qué enemigo atacar (si hay múltiples)
+- No cuesta recursos (usa el atributo de ataque del héroe)
+- El personaje que ataca debe agotarse
 
 **Cómo:**
 1. Seleccionar personaje atacante
 2. Presionar "Atacar"
-3. Seleccionar enemigo objetivo
-4. Sistema calcula daño
-5. Daño se aplica automáticamente
+3. El personaje se agota (costo de la acción)
+4. Seleccionar enemigo objetivo
+5. Sistema calcula daño usando el atributo de ataque
+6. Daño se aplica automáticamente
 
 **Efectos Especiales:**
-- **Overkill** - Daño extra se convierte en amenaza
-- **Piercing** - Ignora defensas
+- **Overkill** - Si el objetivo es derrotado, el daño extra se inflige al Héroe o Villano
+- **Piercing** - Descarta Tough status card ANTES de infligir daño
 - **Unstoppable** - No puede reducirse
 
 #### Defender
 
 **Requiere:**
-- 1 Recurso de Mental
 - Un ataque entrante
+- No cuesta recursos (usa el atributo de defensa del héroe)
+- El personaje que defiende debe agotarse
 
 **Cómo:**
 1. Cuando enemigo ataca, se muestra opción "Defender"
-2. Seleccionar cartas para defender
-3. Sistema suma defensa
-4. Daño se reduce por cantidad defendida
+2. Seleccionar personaje para defender
+3. El personaje se agota (costo de la acción)
+4. Sistema suma defensa usando el atributo de defensa
+5. Daño se reduce por cantidad defendida
 
-#### Contraarrestar Amenaza (Thwart)
+#### Intervención (INT)
 
 **Requiere:**
-- 1 Recurso de Mental
-- Disponibilidad en la zona de juego
+- Un plan con amenaza
+- No cuesta recursos (usa el atributo de intervención del héroe)
+- El personaje que interviene debe agotarse
 
 **Cómo:**
 1. Seleccionar personaje
 2. Presionar "Contraarrestar"
-3. Se reduce amenaza generada
+3. El personaje se agota (costo de la acción)
+4. Se reduce amenaza usando el atributo de intervención
 
 **Diferencia con Defensa:**
 - Afecta la amenaza del villano, no el daño
@@ -171,14 +179,28 @@ La pantalla se divide en varias áreas:
 
 ### Gestión de Recursos
 
-**Recursos Disponibles por Turno:**
-- 1 Física (para ataques)
-- 1 Mental (para defensa/thwart)
+**¿Cómo Se Generan?**
+- Descartando cartas de la mano (generando los recursos impresos en las cartas descartadas)
+- Usando capacidades de recurso
+- La esquina inferior izquierda de cada carta muestra qué recursos genera al descartarse
+- Ejemplo: Una carta descartada genera 1 Mental + 1 Wild
 
-**Aumento de Recursos:**
-- Cartas especiales pueden generar más
-- Aliados pueden proporcionar recursos
-- Mejoramientos pueden aumentar límites
+**Los 4 Tipos de Recursos:**
+- **Energy**: Recurso específico para ciertos costos
+- **Mental**: Recurso específico para ciertos costos
+- **Physical**: Recurso específico para ciertos costos
+- **Wild**: Comodín que puede contar como cualquier tipo
+
+**¿Para Qué Se Usan?**
+- **SOLO para jugar cartas** (eventos, aliados, mejoramientos, apoyos)
+- **NO cuestan recursos**: Atacar (ATK), Defender (DEF), Intervenir (INT)
+- Estos últimos usan los atributos del héroe (ataque, defensa, intervención) y requieren agotar al personaje
+
+**Reglas Clave:**
+- Los recursos se usan INMEDIATAMENTE
+- El exceso se PIERDE (no se acumula)
+- El tamaño de mano es tu limitante
+- Puedes generar infinitos recursos mientras tengas cartas en mano
 
 **Visualización:**
 - Iconos claramente diferenciados
@@ -203,7 +225,7 @@ El sistema gestiona automáticamente:
 - Cartas se resetean
 
 **Fase de Planificación**
-- Puedes jugar cartas
+- Puedes jugar cartas (sin límite máximo de cartas por turno)
 - Puedes ejecutar activaciones
 - Continúa hasta presionar "Fin de Turno"
 
@@ -224,7 +246,7 @@ El sistema gestiona automáticamente:
 En cualquier momento puedes:
 - Hacer clic en un enemigo
 - Ver sus puntos de vida
-- Ver sus habilidades
+- Ver sus capacidades
 - Ver sus efectos activos
 
 ### Ver Estado de Aliados

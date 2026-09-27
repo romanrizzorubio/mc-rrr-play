@@ -177,7 +177,7 @@ Tipos de activaciones que los jugadores pueden ejecutar:
 - **Attack** - Ataque a un enemigo
 - **Defense** - Defensa contra daño
 - **Thwart** - Reducción de amenaza
-- **Scheme** - Esquema especial
+- **Scheme** - Plan especial
 
 Cada activación:
 - Requiere recursos específicos

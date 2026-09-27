@@ -16,29 +16,31 @@ Una **partida** es una sesión de juego completa entre uno o más jugadores enfr
 Cada jugador controla:
 - Un **Superhéroe** específico
 - Una **Baraja** de cartas personal
-- Una **Mano** de cartas
-- **Recursos** (física, mental)
-- **Daño y amenaza acumulados**
+- Una **Mano** de cartas (limitada por tamaño de mano)
+- **Sistema de Recursos** (4 tipos: Energy, Mental, Physical, Wild)
+- **Daño** acumulado en su héroe
+- **Obligaciones** (si las consigue)
 
-### Superhéroe
+### Superhéroe (Hero)
 Cada superhéroe tiene:
 - Puntos de vida (HP)
-- Recursos disponibles
 - Cartas de preparación inicial
-- Forma alterada (si aplica)
-- Habilidades únicas
+- Dos Formas: Héroe y Alter-Ego (cada una con atributos diferentes)
+  - **Forma Héroe**: Atributo de Ataque (ATK), Defensa (DEF), Intervención (INT)
+  - **Forma Alter-Ego**: Atributo de Recuperación (REC) y otros atributos según el héroe
+- Capacidades únicas por identidad
 
 ### Cartas
 
 #### Tipos de Cartas
 1. **Personajes (Heroes)**
    - El superhéroe controlado por el jugador
-   - Puede cambiar entre formas (alterada/héroe)
-   - Gana recursos cada turno
+   - Puede cambiar entre formas (Héroe/Alter-Ego)
+   - Genera recursos descartando cartas de su mano
 
 2. **Eventos**
    - Acciones de un solo uso
-   - Se juegan desde la mano
+   - Se juegan desde la mano (descartando cartas para generar los recursos impresos en las cartas descartadas)
    - Efectos inmediatos
 
 3. **Aliados**
@@ -46,36 +48,145 @@ Cada superhéroe tiene:
    - Permanecen hasta ser derrotados
    - Generan recursos o efectos
 
-4. **Mejoramientos**
+4. **Mejoras**
    - Se adjuntan a personajes
    - Proporcionan bonificaciones permanentes
    - Persisten durante la partida
 
+5. **Apoyos (Support)**
+   - Se juegan en la zona de juego
+   - Proporcionan efectos continuos o capacidades
+   - Pueden ser activados por el jugador
+   - Persisten hasta ser removidos o destruidos
+
 ### Zona de Juego (Play Area)
 La zona de juego contiene:
-- **Zona del Jugador**: cartas controladas por cada jugador
-- **Zona del Escenario**: amenazas y cartas del villano
-- **Zona de Encuentro**: enemigos activos (minions, villano)
+- **Zona del Jugador**: cartas controladas por cada jugador, incluyendo Héroe/Alter-Ego, Aliados, Mejoras y Apoyos. Los Esbirros enemigos también se enfrentan aquí cuando están engaged con el jugador.
+- **Zona del Escenario**: cartas centrales de amenaza y contratiempos del villano (Schemes, cartas de Aceleración, Boost Card)
 
 ## Sistema de Recursos
 
-### Recursos Básicos
-Los jugadores generan dos tipos de recursos cada turno:
+En Marvel Champions, los jugadores:
+1. Generan recursos descartando cartas de su mano o usando capacidades de recurso
+2. La esquina inferior izquierda de cada carta muestra los recursos que genera al descartarse
+3. Los recursos se usan INMEDIATAMENTE para pagar costos
+4. El exceso de recursos se PIERDE (no se acumula)
 
-1. **Física** (Physical)
-   - Usada para atacar
-   - Se gasta en activaciones de ataque
-   - Máximo de 1 por superhéroe (por defecto)
+### Los CUATRO Tipos de Recursos
 
-2. **Mental** (Mental)
-   - Usada para defensas y efectos
-   - Se gasta en activaciones de defensa
-   - Máximo de 1 por superhéroe (por defecto)
+Marvel Champions tiene **4 tipos de recursos**:
 
-### Límites de Recursos
-- Los recursos no se acumulan entre turnos
-- Cada turno comienza con nuevos recursos
-- Las cartas pueden aumentar la generación de recursos
+#### 1. **Energy (Energía)** 
+- Recurso específico
+- Se genera descartando cartas
+- Algunos costos requieren específicamente Energía
+
+#### 2. **Mental**
+- Recurso específico
+- Se genera descartando cartas
+- Algunos costos requieren específicamente Mental
+
+#### 3. **Physical (Física)**
+- Recurso específico
+- Se genera descartando cartas
+- Algunos costos requieren específicamente Física
+
+#### 4. **Wild (Comodín)** ⭐
+- **ESPECIAL**: Puede usarse como CUALQUIER tipo de recurso
+- Cuando se genera, el jugador elige qué tipo es
+- Máxima flexibilidad para pagar costos
+- Si una carta genera 3 Wild, cada uno puede ser un tipo diferente
+
+### Cómo Funcionan los Costos
+
+**Hay dos tipos de costos:**
+
+#### Costos Genéricos
+- Ejemplo: "Cost: 3" o "Spend 3 resources"
+- Aceptan CUALQUIER tipo de recurso
+- Puedes mezclar: 1 Energía + 1 Mental + 1 Física
+
+#### Costos Específicos
+- Ejemplo: "Spend 2 [Physical]" o "Spend 1 [Mental] →"
+- Requieren el tipo ESPECÍFICO indicado
+- No puedes sustituir Energía por Física
+- PERO el Wild puede contar como el tipo requerido
+
+### Múltiples Costos en Una Carta
+
+Algunas cartas tienen MÚLTIPLES costos:
+
+**Ejemplo:**
+- Costo para jugar: 2 recursos (genéricos)
+- Costo de capacidad: 1 [Physical] específicamente
+- Total: 2 genéricos + 1 Física
+
+**Pago Simultáneo:**
+- Todos los costos se pagan al mismo tiempo
+- El jugador distribuye sus recursos entre los costos
+- Ejemplo: Si generas 4 recursos totales, puedes usar 2 para jugar + 1 Physical para la capacidad
+
+### Reglas Clave de Recursos
+
+1. **Sin Límite Superior de Generación**
+   - Un jugador puede descartar cuantas cartas necesite
+   - La limitación es el tamaño de mano (hand size)
+
+2. **Exceso Se Pierde**
+   - Si necesitas 3 recursos y generas 5, pierdes 2
+   - Los extras NO se guardan para costos futuros
+   - Los extras NO se acumulan para el siguiente turno
+
+3. **Tamaño de Mano es la Limitación Principal**
+   - No hay un máximo de cartas a jugar por turno
+   - El tamaño de mano determina cuántos recursos están disponibles
+   - Al final del turno, se roba hasta el tamaño de mano
+
+4. **Recursos Son Para Jugar Cartas**
+   - Attack (ATK), Defense (DEF) e Intervención (INT) NO cuestan recursos
+   - Usan los atributos del héroe (ataque, defensa, intervención) y requieren agotar al personaje
+   - Lo que cuesta recursos es JUGAR CARTAS
+   - Ejemplo: Jugar un evento "Deal 2 damage" cuesta 2 recursos
+
+### Ciclo de Recursos en Un Turno
+
+```
+INICIO DEL TURNO
+├─ Jugador tiene tamaño de mano de cartas en mano
+├─ Cada carta muestra qué recursos genera
+└─ Estos son los recursos disponibles
+
+DURANTE EL TURNO
+├─ Decide jugar una carta (ej: costo 3)
+├─ Descarta cartas que generen 3+ recursos
+├─ Juega la carta con los recursos generados
+├─ Luego puede jugar otra carta
+└─ Repite hasta que decide pasar (sin límite de cartas por turno)
+
+FIN DEL TURNO
+├─ Si tiene más cartas que tamaño de mano, descarta
+├─ Roba hasta alcanzar tamaño de mano
+├─ El ciclo reinicia con nuevas cartas
+```
+
+### Comparativa: Costos Genéricos vs Específicos
+
+```
+GENÉRICO (Cualquier tipo acepta):
+├─ "Cost: 2" → acepta [Energy][Energy]
+├─ "Cost: 2" → acepta [Mental][Physical]
+└─ "Cost: 2" → acepta [Wild][Energy]
+
+ESPECÍFICO (Debe ser el tipo indicado):
+├─ "Spend 2 [Physical]" → SOLO [Physical][Physical]
+├─ "Spend 1 [Mental]" → SOLO [Mental]
+└─ "Spend 1 [Physical] →" → SOLO [Physical]
+
+WILD como Comodín:
+├─ "Spend 2 [Physical]" → Acepta [Physical][Wild]
+├─ "Cost: 2" → [Wild][Wild] cuenta como cualquier tipo
+└─ Wild es FLEXIBLE cuando se genera
+```
 
 ## Sistema de Daño y Amenaza
 
@@ -85,7 +196,7 @@ Los jugadores generan dos tipos de recursos cada turno:
 - Cuando un superhéroe es derrotado, el jugador pierde
 
 ### Amenaza
-- Los villanos y minions acumulan **amenaza**
+- Los villanos y Esbirros acumulan **amenaza**
 - La amenaza representa el progreso del villano
 - Si la amenaza alcanza el límite de escape, el villano gana
 
@@ -113,28 +224,34 @@ Cada jugador (en orden de turnos) puede:
 - El jugador continúa hasta que pase su turno
 
 #### 3. Fin de Player Phase
-- Se descartan cartas por encima del límite de mano
+- Se descartan cartas por encima del tamaño de mano
 - Se roban cartas hasta alcanzar el tamaño de mano
 - Todas las cartas exhausted se resetean
 
 ### Villain Phase (Fase del Villano)
 
 #### 1. Paso de Amenaza (Threat Step)
-- Se coloca amenaza igual a los **acceleration icons/tokens** en el esquema principal
-- Los esquemas pueden tener efectos "when revealed"
+- Se coloca amenaza igual a los **acceleration icons/tokens** en el plan principal
+- Los planes pueden tener efectos "when revealed"
 
 #### 2. Paso de Activación (Activation Step)
-- **Villano ataca**: El villano ataca a CADA jugador (una vez por jugador)
-  - Si el jugador está en forma Héroe → Ataque al héroe
-  - Si el jugador está en forma Alter-Ego → Scheme (intenta generar amenaza)
-  - El villano recibe un Boost Card antes de activarse
-- **Minions atacan**: Cada minion engage con un jugador lo ataca
-  - Mismo comportamiento que el villano
-  - Solo minions "villainous" reciben Boost Card
+Durante este paso, el villano y los esbirros se activan contra los jugadores. Una activación de enemigo puede ser un **ataque** o un **plan**. Siempre que un enemigo ataca o ejecuta el plan, se considera que se ha activado.
 
-#### 3. Paso de Esquema (Scheme Step)
-- Esquemas secundarios pueden generar amenaza
-- Se resuelven efectos especiales de esquemas
+- **Activación del Villano**: Durante el paso dos de la fase del villano, el villano se activa una vez por jugador, en orden de jugador.
+  - Si la identidad del jugador que resuelve la activación está en forma de **Héroe**, el villano inicia un **ataque** contra esa identidad.
+  - Si la identidad está en forma de **Alter-ego**, el villano inicia la ejecución del **plan**.
+  - Cada vez que el villano se activa, da al villano una **carta de aumento (boost card)** del mazo de encuentros para esa activación.
+- **Activación de Esbirros**: Durante el paso dos de la fase del villano, cada esbirro enfrentado (engaged) con un jugador se activa contra ese jugador.
+  - Si la identidad del jugador enfrentado está en forma de **Héroe**, el esbirro inicia un **ataque** contra esa identidad.
+  - Si la identidad está en forma de **Alter-ego**, el esbirro inicia la ejecución del **plan**.
+  - Si un esbirro que se está activando deja el juego, su activación termina inmediatamente y no se resuelven más pasos de esa activación.
+
+**Resolución de Múltiples Activaciones Simultáneas**:
+Si múltiples enemigos se activan contra ti simultáneamente, resuelve primero la activación del villano (si la hay) en el orden que elijas, seguida de las activaciones de los esbirros en el orden que elijas.
+
+#### 3. Paso de Plan (Scheme Step)
+- Planes secundarios pueden generar amenaza
+- Se resuelven efectos especiales de planes
 
 ## Sistema de Triggers
 
@@ -156,35 +273,57 @@ Un **trigger** es una condición que activa un efecto especial:
 
 ## Sistema de Activaciones
 
+### ACTIVATION (Activación)
+Existen dos tipos de activaciones de enemigo: una activación de **ataque** y una activación de **plan**. Siempre que un enemigo ataca o ejecuta el plan, se considera que se ha activado.
+
+Algunas habilidades de cartas también pueden hacer que los enemigos ataquen o ejecuten el plan. Estas también se consideran activaciones.
+
+**Orden de Resolución**:
+Si múltiples enemigos se activan contra ti simultáneamente, resuelve primero la activación del villano (si la hay) en el orden que elijas, seguida de las activaciones de los esbirros en el orden que elijas.
+
+### Reglas de Resolución de Activaciones
+- **Finalización**: Un efecto que inicia una activación de enemigo se considera resuelto después de que dicha activación se haya resuelto por completo.
+- **Activaciones Anidadas**: Si un efecto inicia una activación durante la resolución de otra activación, la nueva activación se resuelve después de que la activación actual haya terminado de resolverse.
+  - Si se inician múltiples activaciones de esta manera, el primer jugador decide el orden en que se resuelven.
+  - Todas las habilidades disparadas por la activación inicial se resuelven antes de que se inicien las activaciones subsiguientes.
+- **Interrupción**: Si un esbirro que se está activando deja el juego, su activación termina inmediatamente y no se resuelven más pasos de esa activación.
+
 ### Tipos de Activaciones
+Existen activaciones tanto para jugadores como para enemigos:
 
 #### Attack (Ataque)
-- Requiere recurso **física**
-- Causa daño a un enemigo seleccionado
-- El atacante debe exhaust (cansarse) para atacar
-- Puede tener efectos adicionales
-- **Nota**: Solo el atacante puede cambiar el objetivo durante la resolución
+- **Jugadores**:
+  - Usa el atributo de ataque (ATK) del personaje.
+  - No requiere recursos para atacar.
+  - El personaje debe agotarse (exhaust) al inicio de la acción.
+  - Causa daño a un enemigo seleccionado.
+  - **Nota**: Solo el atacante puede cambiar el objetivo durante la resolución.
+- **Enemigos**:
+  - Se inicia si la identidad del jugador está en forma de **Héroe**.
+  - El villano recibe una carta de aumento (boost) para su ataque.
+
+#### Scheme (Plan)
+- **Enemigos**:
+  - Se inicia si la identidad del jugador está en forma de **Alter-ego**.
+  - El enemigo genera amenaza en el plan principal.
+- **General**:
+  - Acelera amenazas especiales y genera condiciones especiales.
+  - Algunos planes son "forced" (obligatorios).
 
 #### Defense (Defensa)
-- Requiere recurso **mental**
-- Solo UN jugador puede defender contra un ataque a la vez
-- El defensor reduce el daño usando su valor DEF (Defense)
-- El daño restante se aplica al defensor
-- Un héroe o aliado debe exhaust para defender
-- **Importante**: Otros aliados amigos NO pueden defender mientras alguien ya está defendiendo
+- Usa el atributo de defensa (DEF) del personaje.
+- No requiere recursos para defender.
+- El personaje debe agotarse (exhaust) al inicio de la acción.
+- Solo UN jugador puede defender contra un ataque a la vez.
+- El defensor reduce el daño usando su valor DEF (Defense).
+- **Importante**: Otros aliados amigos NO pueden defender mientras alguien ya está defendiendo.
 
-#### Thwart (Contraarrestación)
-- Requiere recurso **mental**
-- REMUEVE amenaza de un esquema (igual al valor THW del personaje)
-- Solo se puede usar si el esquema tiene al menos 1 amenaza
-- El carácter debe exhaust para contraarrestar
-- No es lo mismo que "reducir amenaza generada" - remueve amenaza existente
+#### Intervención (INT)
+- Usa el atributo de intervención (INT) del personaje.
+- No requiere recursos para intervenir.
+- El personaje debe agotarse (exhaust) al inicio de la acción.
+- REMUEVE amenaza de un plan (igual al valor INT del personaje).
 
-#### Scheme (Esquema)
-- Acelera amenazas especiales
-- Genera condiciones especiales
-- Afecta la estrategia del juego
-- Algunos esquemas son "forced" (obligatorios)
 
 ## Sistema de Límites y Máximos
 
@@ -250,7 +389,7 @@ INICIO DE TURNO
 #### Overkill
 - **INCORRECTO**: El daño extra se convierte en amenaza
 - **CORRECTO**: Si un aliado es derrotado, el daño en exceso se inflige al HÉROE de ese jugador
-- **CORRECTO**: Si un minion es derrotado, el daño en exceso se inflige al VILLANO
+- **CORRECTO**: Si un Esbirro es derrotado, el daño en exceso se inflige al VILLANO
 - El daño del overkill cuenta como daño de ataque pero NO constituye un ataque
 - Si el daño en exceso es prevenido, no se inflige a héroe/villano
 
@@ -277,8 +416,8 @@ INICIO DE TURNO
 - Es descartado al final de la fase después de no poder atacar
 
 #### Confused (Confundido)
-- El carácter afectado NO puede contraarrestar (thwart)
-- Es descartado al final de la fase después de no poder contraarrestar
+- El carácter afectado NO puede intervenir (INT)
+- Es descartado al final de la fase después de no poder intervenir
 
 ### Keyword Effects (Efectos de Palabras Clave)
 
@@ -295,22 +434,21 @@ Algunos héroes pueden cambiar entre dos formas:
 
 #### Forma Héroe
 - Forma ofensiva orientada al combate
-- Mejor para atacar y generar daño
-- Genera recursos de Física adicionales
-- Los enemigos ATACAN a esta forma (no pueden scheme)
+- Tiene atributos de Ataque (ATK), Defensa (DEF) e Intervención (INT)
+- Mejor para atacar enemigos y remover amenaza
+- Los enemigos EJECUTAN EL PLAN contra esta forma (no pueden atacar)
 
 #### Forma Alter-Ego
 - Forma defensiva/civil
-- Mejor para recuperación y defensa
-- Genera recursos de Mental adicionales
-- Los enemigos USAN SCHEME contra esta forma (en lugar de atacar)
-- Más vulnerable pero con más opciones defensivas
+- Tiene atributo de Recuperación (REC) en lugar de ataque/defensa/intervención
+- Mejor para recuperar vida (heal)
+- Los enemigos EJECUTAN EL PLAN contra esta forma (en lugar de atacar)
+- No puede atacar, defender ni intervenir mientras está en esta forma
 
 #### Cambio de Forma
-- El héroe puede cambiar usando acción o efecto de carta
-- Generalmente exhaust cuando cambian
-- Puede generar amenaza como efecto
-- Los enemigos no pueden cambiar de forma
+- El héroe puede cambiar de forma una vez por turno durante su fase.
+- Cambiar de forma no agota (exhaust) al personaje por sí mismo, a menos que un efecto lo indique.
+- Los enemigos no pueden cambiar de forma.
 
 ### Exhaust (Agotamiento)
 
@@ -319,7 +457,7 @@ Algunos héroes pueden cambiar entre dos formas:
 **Cuándo ocurre:**
 - Un héroe/aliado ataca → se exhaust
 - Un héroe/aliado defiende → se exhaust
-- Un héroe/aliado contraaresta → se exhaust
+- Un héroe/aliado interviene → se exhaust
 - Activar ciertos efectos requiere exhaust
 
 **Recuperación:**
@@ -343,25 +481,25 @@ Algunos héroes pueden cambiar entre dos formas:
 
 ### Consequential Damage (Daño Consecuencial)
 
-**Concepto**: Daño que recibe un aliado como castigo por atacar o contraarrestar.
+**Concepto**: Daño que recibe un aliado como castigo por atacar o intervenir.
 
 **Cómo funciona:**
-- Después que un aliado ataca/contraaresta, recibe daño igual a los iconos de daño consecuencial bajo su ATK/THW
+- Después que un aliado ataca/interviene, recibe daño igual a los iconos de daño consecuencial bajo su ATK/INT
 - Este daño se aplica automáticamente
 - Si el aliado está stunned/confused, NO recibe este daño (porque no puede actuar)
 - Solo se aplica cuando el aliado EXITOSAMENTE ejecuta la acción
 
-### Esquemas (Schemes)
+### Planes (Schemes)
 
-#### Main Scheme (Esquema Principal)
-- El esquema que define el objetivo del villano
+#### Main Scheme (Plan Principal)
+- El plan que define el objetivo del villano
 - Se coloca en el área del villano
 - Acumula amenaza cada turno
 - Si la amenaza alcanza su límite, los jugadores pierden
 - Tiene efectos especiales "When Revealed" y "When Defeated"
 
-#### Side Schemes (Esquemas Secundarios)
-- Esquemas que crean complicaciones adicionales
+#### Side Schemes (Planes Secundarios)
+- Planes que crean complicaciones adicionales
 - Pueden ser del encuentro (del villano) o del jugador
 - Cada jugador puede controlar máximo 2 side schemes
 - Se derrotan cuando su amenaza llega a 0
@@ -375,4 +513,4 @@ Algunos héroes pueden cambiar entre dos formas:
 - Se "engage" (comprometen) con jugadores específicos
 - Solo pueden atacar al jugador con el que están engaged
 - Cuando se derrotan, se descartan
-- Algunos minions tienen la palabra clave "Villainous"
+- Algunos Esbirros tienen la palabra clave "Villainous"
