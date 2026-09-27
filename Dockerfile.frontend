@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copiar todo el monorepo
+COPY . .
+
+# Instalar dependencias
+RUN npm install
+
+# Crear symlink de node_modules en el directorio del frontend para que es-dev-server lo encuentre
+RUN ln -s /app/node_modules /app/packages/mc-frontend/node_modules
+
+# Exponer puerto
+EXPOSE 8000
+
+# Comando para iniciar el frontend
+CMD ["sh", "-c", "ln -sf /app/node_modules /app/packages/mc-frontend/node_modules && npx es-dev-server --root-dir packages/mc-frontend --node-resolve --watch --app-index index.html --host 0.0.0.0"]

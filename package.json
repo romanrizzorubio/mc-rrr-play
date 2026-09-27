@@ -1,0 +1,20 @@
+{
+  "name": "mc-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo for MC Project (Frontend, Backend, Endpoints)",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "install-all": "npm install",
+    "start:all": "npm run start:frontend & npm run start:backend",
+    "start:frontend": "npm run serve --workspace=packages/mc-frontend",
+    "start:backend": "node packages/mc-back/index.js",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {}
+}

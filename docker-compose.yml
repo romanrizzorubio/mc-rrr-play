@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mc-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/mc-frontend:/app/packages/mc-frontend
+      - ./node_modules:/app/node_modules
+    command: sh -c "ln -sf /app/node_modules /app/packages/mc-frontend/node_modules && npx es-dev-server --root-dir packages/mc-frontend --node-resolve --watch --app-index index.html --host 0.0.0.0"
+    networks:
+      - mc-network
+
+  mc-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/mc-back:/app/packages/mc-back
+      - ./packages/mc-endpoints:/app/packages/mc-endpoints
+      - ./node_modules:/app/node_modules
+    command: node packages/mc-back/index.js
+    networks:
+      - mc-network
+    depends_on:
+      - mc-frontend
+
+networks:
+  mc-network:
+    driver: bridge
