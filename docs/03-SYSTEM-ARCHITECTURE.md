@@ -114,26 +114,26 @@ class Scenario {
 }
 ```
 
-### 3. Abilities (Habilidades)
+### 3. Capacidades (Abilities)
 
 **Ubicación:** `src/abilities/`
 
-Sistema de habilidades y efectos de cartas:
+Sistema de capacidades y efectos de cartas:
 
-**Tipos de Habilidades:**
-- **Core** - Habilidades básicas
+**Tipos de Capacidades:**
+- **Core** - Capacidades básicas
 - **Actions** - Acciones del jugador
 - **Response** - Respuestas a eventos
 - **When** - Triggers condicionales
 - **Interrupt** - Interrupciones de acciones
 - **Resource** - Generación de recursos
-- **Basic** - Habilidades simples
+- **Basic** - Capacidades simples
 
 **Estructura:**
 ```javascript
 class Ability {
   condition() { /* Condición para activarse */ }
-  activate() { /* Ejecutar la habilidad */ }
+  activate() { /* Ejecutar la capacidad */ }
   resolve() { /* Resolver efectos */ }
 }
 ```
@@ -152,7 +152,7 @@ Sistema de triggers que detectan eventos:
 
 **Sistema de Mixins:**
 Los triggers pueden combinarse con mixins para crear lógica compleja:
-- `mixin-your-hero-trigger` - Tu héroe específicamente
+- `mixin-your-hero-trigger` - Tu Superhéroe específicamente
 - `mixin-enemy-trigger` - Enemigos
 - `mixin-condition-trigger` - Condiciones
 - `mixin-attack-trigger` - Ataques
@@ -161,7 +161,7 @@ Los triggers pueden combinarse con mixins para crear lógica compleja:
 **Ejemplo:**
 ```javascript
 class YourHeroGetsAttackTrigger extends AttackTrigger {
-  // Se dispara cuando TU héroe recibe un ataque
+  // Se dispara cuando TU Superhéroe recibe un ataque
   detect(event) {
     return event.target === this.controller.hero;
   }
@@ -392,7 +392,7 @@ El estado de una partida contiene:
   players: [
     {
       name: "Player 1",
-      hero: { /* datos del héroe */ },
+      hero: { /* datos del Superhéroe */ },
       hand: [ /* cartas */ ],
       damage: 5,
       resources: { physical: 1, mental: 1 }

@@ -107,9 +107,9 @@ Una vez iniciada la aplicación:
 
 ### Paso 2: Seleccionar Superhéroe
 
-1. Se muestra lista de superhéroes disponibles
+1. Se muestra lista de Superhéroes disponibles
 2. Haz clic en el que desees
-3. Se muestra información del héroe
+3. Se muestra información del Superhéroe
 
 ### Paso 3: Seleccionar Escenario
 
@@ -137,7 +137,7 @@ Una vez iniciada la aplicación:
 
 ### Objetivo
 - **Victoria** - Derrota el villano (lleva su vida a 0)
-- **Derrota** - Tu héroe alcanza 0 vida o la amenaza del villano llega al máximo
+- **Derrota** - Tu Superhéroe alcanza 0 vida o la amenaza del villano llega al máximo
 
 ## Solución de Problemas
 
@@ -199,7 +199,7 @@ mc-rrr-play/
 │   │   ├── src/
 │   │   │   ├── model/       # Entidades (Match, Player, etc)
 │   │   │   ├── engine/      # Motor de reglas
-│   │   │   ├── abilities/   # Habilidades de cartas
+│   │   │   ├── abilities/   # Capacidades de cartas
 │   │   │   ├── triggers/    # Sistema de triggers
 │   │   │   ├── effects/     # Efectos del juego
 │   │   │   └── server/      # API REST + WebSocket

@@ -22,7 +22,7 @@ La aplicación existe para:
 
 ### Para Jugadores
 - ✅ Crear y unirse a partidas
-- ✅ Elegir superhéroes y escenarios
+- ✅ Elegir Superhéroes y escenarios
 - ✅ Jugar cartas y ejecutar acciones
 - ✅ Ver estado actualizado en tiempo real
 - ✅ Seguir el turno y las activaciones
@@ -75,22 +75,31 @@ La aplicación existe para:
 
 ## Flujo de Juego Básico
 
-```
-1. Crear/Unirse a Partida
-   ↓
-2. Seleccionar Superhéroe
-   ↓
-3. Seleccionar Escenario/Villano
-   ↓
-4. Inicializar Partida
-   ↓
-5. Jugar Turno (múltiples ciclos)
-   ├─ Planificación (jugar cartas)
-   ├─ Activación (activaciones del villano)
-   └─ Resolución (resolver efectos)
-   ↓
-6. Condición de Victoria/Derrota
-```
+### 1. Preparación e Inicio
+1. **Crear/Unirse a Partida**
+2. **Seleccionar Superhéroe**
+3. **Seleccionar Escenario/Villano**
+4. **Inicializar Partida**
+
+### 2. Desarrollo de la Ronda (Round Overview)
+Una ronda de juego sigue este flujo estructurado:
+
+1. **Fase de Jugador**:
+   - Comienza la fase.
+   - Cada jugador toma su turno (jugar cartas, atacar, intervenir, etc.).
+   - Termina la fase y los jugadores roban hasta su tamaño de mano.
+2. **Fase de Villano**:
+   - Comienza la fase.
+   - Se coloca amenaza en el plan principal.
+   - El Villano y los esbirros se activan contra cada jugador.
+   - Se reparten y revelan cartas de encuentro.
+3. **Mantenimiento**:
+   - Se pasa el marcador de jugador inicial.
+   - Finaliza la ronda y comienza la siguiente.
+
+### 3. Fin de la Partida
+- **Victoria**: El villano es derrotado (0 HP en todas sus etapas).
+- **Derrota**: La amenaza alcanza el límite del plan principal o todos los héroes son derrotados.
 
 ## Tecnologías
 

@@ -43,16 +43,16 @@ Un usuario puede unirse a una partida existente que aún no ha comenzado.
 Elegir cuál superhéroe controlará durante la partida.
 
 **Información Mostrada:**
-- Nombre del héroe
+- Nombre del Superhéroe
 - Puntos de vida
-- Atributos de forma Héroe (ATK, DEF, INT)
-- Atributos de forma Alter-Ego (REC)
-- Cartas iniciales
-- Imagen ilustrativa
-- Capacidades especiales
+- Atributos y capacidades exclusivas de la identidad de Héroe (ATK, DEF, INT)
+- Atributos y capacidades exclusivas de la identidad de Alter-Ego (REC)
+- Cartas iniciales y preparación (Setup)
+- Imagen ilustrativa de ambas identidades
+- Capacidades especiales de cada identidad
 
 **Disponibilidad:**
-Los héroes disponibles dependen de:
+Los Superhéroes disponibles dependen de:
 - Cartas instaladas en el sistema
 - Configuración de la partida
 - Selecciones de otros jugadores (sin duplicados)
@@ -70,9 +70,9 @@ Elegir el villano y escenario contra el que jugarán.
 - Modificadores especiales
 
 **Dificultades:**
-- **Fácil** - Menos amenaza, menos minions
+- **Fácil** - Menos amenaza, menos esbirros (minions)
 - **Estándar** - Valores balanceados
-- **Difícil** - Más amenaza, más minions, enemigos más fuertes
+- **Difícil** - Más amenaza, más esbirros (minions), enemigos más fuertes
 - **Experto** - Máxima dificultad, cambios de reglas
 
 ## Jugabilidad
@@ -82,7 +82,7 @@ Elegir el villano y escenario contra el que jugarán.
 La pantalla se divide en varias áreas:
 
 **Tablero Central (Board)**
-- Muestra villano y minions
+- Muestra villano y esbirros (minions)
 - Contador de amenaza del villano
 - Contador de vida del villano
 - Efectos activos en juego
@@ -129,7 +129,7 @@ La pantalla se divide en varias áreas:
 
 **Requiere:**
 - Elegir qué enemigo atacar (si hay múltiples)
-- No cuesta recursos (usa el atributo de ataque del héroe)
+- No cuesta recursos (usa el atributo de ataque del Superhéroe)
 - El personaje que ataca debe agotarse
 
 **Cómo:**
@@ -141,7 +141,7 @@ La pantalla se divide en varias áreas:
 6. Daño se aplica automáticamente
 
 **Efectos Especiales:**
-- **Overkill** - Si el objetivo es derrotado, el daño extra se inflige al Héroe o Villano
+- **Overkill** - Si el objetivo es derrotado, el daño extra se inflige al Superhéroe o Villano
 - **Piercing** - Descarta Tough status card ANTES de infligir daño
 - **Unstoppable** - No puede reducirse
 
@@ -149,7 +149,7 @@ La pantalla se divide en varias áreas:
 
 **Requiere:**
 - Un ataque entrante
-- No cuesta recursos (usa el atributo de defensa del héroe)
+- No cuesta recursos (usa el atributo de defensa del Superhéroe)
 - El personaje que defiende debe agotarse
 
 **Cómo:**
@@ -163,7 +163,7 @@ La pantalla se divide en varias áreas:
 
 **Requiere:**
 - Un plan con amenaza
-- No cuesta recursos (usa el atributo de intervención del héroe)
+- No cuesta recursos (usa el atributo de intervención del Superhéroe)
 - El personaje que interviene debe agotarse
 
 **Cómo:**
@@ -194,7 +194,7 @@ La pantalla se divide en varias áreas:
 **¿Para Qué Se Usan?**
 - **SOLO para jugar cartas** (eventos, aliados, mejoramientos, apoyos)
 - **NO cuestan recursos**: Atacar (ATK), Defender (DEF), Intervenir (INT)
-- Estos últimos usan los atributos del héroe (ataque, defensa, intervención) y requieren agotar al personaje
+- Estos últimos usan los atributos del Superhéroe (ataque, defensa, intervención) y requieren agotar al personaje
 
 **Reglas Clave:**
 - Los recursos se usan INMEDIATAMENTE
@@ -231,8 +231,9 @@ El sistema gestiona automáticamente:
 
 **Fase de Activación (Enemigos)**
 - No es interactiva
-- Enemigos atacan automáticamente
-- Sistema muestra acciones
+- Enemigos atacan o ejecutan el plan automáticamente
+- Sistema muestra acciones, incluyendo la revelación de cartas de aumento, sus iconos y capacidades inmediatas
+- Se muestra el estado de los esbirros enfrentados (enfrentado/engaged) con cada jugador
 
 **Fase de Resolución**
 - Efectos pendientes se resuelven

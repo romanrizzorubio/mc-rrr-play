@@ -11,6 +11,11 @@ Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digi
   - Solución de problemas
   - Comandos útiles
 
+- **[06-GAME-MANAGEMENT-SKILL.md](./06-GAME-MANAGEMENT-SKILL.md)** 🎮 **GESTIÓN DE PARTIDA**
+  - Guía rápida de fases y turnos
+  - Gestión de activaciones y combate
+  - Resumen de estados y palabras clave
+
 ### Entender el Juego
 - **[02-GAME-MECHANICS.md](./02-GAME-MECHANICS.md)**
   - Conceptos fundamentales (Partidas, Jugadores, Cartas)
@@ -46,6 +51,9 @@ Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digi
 **...jugar ahora**
 → Lee [05-GETTING-STARTED.md](./05-GETTING-STARTED.md)
 
+**...gestionar una partida paso a paso**
+→ Lee [06-GAME-MANAGEMENT-SKILL.md](./06-GAME-MANAGEMENT-SKILL.md)
+
 **...entender las reglas del juego**
 → Lee [02-GAME-MECHANICS.md](./02-GAME-MECHANICS.md)
 
@@ -70,7 +78,7 @@ MC RRR Play
 │  └─ Motor de juego en puerto 3000
 │
 └─ Datos
-   └─ Cartas, Escenarios, Héroes
+   └─ Cartas, Escenarios, Superhéroes
 ```
 
 ## 🚀 Inicio Rápido (2 minutos)
@@ -98,6 +106,8 @@ Controla un superhéroe con su baraja de cartas personal.
 ### Recursos
 - **Física** - Usada para atacar
 - **Mental** - Usada para defensa
+- **Energía** - Usada para capacidades especiales
+- **Universal** - Puede usarse como cualquier recurso
 
 ### Activaciones
 - **Attack** - Atacar un enemigo
@@ -107,7 +117,7 @@ Controla un superhéroe con su baraja de cartas personal.
 
 ### Objetivo
 - **Victoria** - Derrota el villano
-- **Derrota** - Tu héroe o la amenaza alcanzan máximo
+- **Derrota** - Tu Superhéroe o la amenaza alcanzan máximo
 
 ## 🔗 Enlaces Útiles
 
