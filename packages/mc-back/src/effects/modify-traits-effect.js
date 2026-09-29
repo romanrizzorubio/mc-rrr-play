@@ -16,6 +16,12 @@ export class ModifyTraitsEffect extends Effect {
     execute(params) {
         const {selectedTarget, traits} = this;
 
-        selectedTarget.modifyTraits = traits.slice();
+        if (selectedTarget && selectedTarget.extraTraits) {
+            traits.forEach(trait => {
+                if (!selectedTarget.extraTraits.includes(trait)) {
+                    selectedTarget.extraTraits.push(trait);
+                }
+            });
+        }
     }
 }

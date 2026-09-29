@@ -53,6 +53,7 @@ export const TARGET_RANDOM = 'random';
 export const TARGET_ROUND = 'round';
 export const TARGET_SCENARIO = 'scenario';
 export const TARGET_SCHEME = 'scheme';
+export const TARGET_ALL_SCHEMES = 'all-schemes';
 export const TARGET_SIDE = 'side';
 export const TARGET_SOURCE = 'source';
 export const TARGET_SUPPORT_YOU_CONTROL = 'support-you-control';

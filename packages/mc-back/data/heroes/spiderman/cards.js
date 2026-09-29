@@ -327,6 +327,7 @@ export const webShooter = {
                     type: EFFECT_CHAINED,
                     params: {
                         target: TARGET_CARD,
+                        matchAll: true,
                         effects: [{
                             type: EFFECT_EXHAUST,
                             params: {

@@ -17,6 +17,9 @@ export class CharacterGameCard extends GameCard {
         this._confused = 0;
         this._tough = 0;
 
+        this.modifyHitPoints = 0;
+        this.extraTraits = [];
+
         this.engaged = null;
 
         if (this.isFriendFront) {
@@ -106,9 +109,9 @@ export class CharacterGameCard extends GameCard {
     }
     get hitPoints() {
         if (this.sides.length) {
-            this.currentSide.hitPoints;
+            return this.currentSide.hitPoints + this.modifyHitPoints;
         }
-        return this.card.hitPoints;
+        return this.card.hitPoints + this.modifyHitPoints;
     }
     get isConfused() {
         switch (this.statusAvailable) {
@@ -168,6 +171,13 @@ export class CharacterGameCard extends GameCard {
                 }
             });
         }
+    }
+    get traits() {
+        let traits = this.card.traits || [];
+        if (this.sides.length) {
+            traits = this.currentSide.traits || [];
+        }
+        return [...traits, ...this.extraTraits];
     }
     get thwart() {
         return this.card.thwart;

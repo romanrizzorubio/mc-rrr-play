@@ -2,6 +2,7 @@ import {Effect} from "./effect.js";
 import {DiscardFromGameEffect} from "./discard-from-game-effect.js";
 
 export const EFFECT_REMOVE_USE = 'remove-use';
+export const EFFECT_REMOVE_COUNTER = 'remove-counter';
 export class RemoveCountersEffect extends Effect {
     constructor({
         count

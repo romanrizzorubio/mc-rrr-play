@@ -25,6 +25,14 @@ import {
     YourHeroAttackDefeatEnemyTrigger
 } from "../triggers/your-hero-attack-defeat-enemy-trigger.js";
 import {TRIGGER_YOUR_HERO_GET_ATTACK, YourHeroGetAttackTrigger} from "../triggers/your-hero-get-attack-trigger.js";
+import {
+    TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+    YourHeroGetHandSizeTrigger
+} from "../triggers/your-hero-get-hand-size-trigger.js";
+import {
+    TRIGGER_YOUR_HERO_GET_HIT_POINTS,
+    YourHeroGetHitPointsTrigger
+} from "../triggers/your-hero-get-hit-points-trigger.js";
 import {TRIGGER_YOUR_HERO_GET_THWART, YourHeroGetThwartTrigger} from "../triggers/your-hero-get-thwart-trigger.js";
 import {EndPlayCardTrigger, TRIGGER_END_PLAY_CARD} from "../triggers/end-play-card-trigger.js";
 import {InstantTrigger, TRIGGER_INSTANT} from "../triggers/instant-trigger.js";
@@ -91,6 +99,10 @@ export class TriggersFactory {
                 return new YourHeroAttackDefeatEnemyTrigger(triggerParams);
             case TRIGGER_YOUR_HERO_GET_ATTACK:
                 return new YourHeroGetAttackTrigger(triggerParams);
+            case TRIGGER_YOUR_HERO_GET_HAND_SIZE:
+                return new YourHeroGetHandSizeTrigger(triggerParams);
+            case TRIGGER_YOUR_HERO_GET_HIT_POINTS:
+                return new YourHeroGetHitPointsTrigger(triggerParams);
             case TRIGGER_YOUR_HERO_GET_THWART:
                 return new YourHeroGetThwartTrigger(triggerParams);
             case TRIGGER_END_PLAY_CARD:

@@ -1,4 +1,5 @@
 export const TRAIT_AERIAL = 'aerial';
+export const TRAIT_DROID = 'droid';
 export const TRAIT_CONDITION = 'condition';
 export const TRAIT_ARMOR = 'armor';
 export const TRAIT_ATTACK = 'attack';
@@ -21,6 +22,7 @@ export const TRAIT_SHIELD = 'S.H.I.E.L.D.';
 export const TRAIT_SKILL = 'skill';
 export const TRAIT_SOLDIER = 'soldier';
 export const TRAIT_SPY = 'spy';
+export const TRAIT_TACTIC = 'tactic';
 export const TRAIT_SUPERPOWER = 'superpower';
 export const TRAIT_TECH = 'tech';
 export const TRAIT_THWART = 'thwart';

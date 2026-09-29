@@ -26,7 +26,8 @@ export class PlayerRest {
             const player = match.createPlayer({
                 name,
                 superhero: heroCreated,
-                initial
+                initial,
+                config: heroConfig
             });
 
             return player.toObj();

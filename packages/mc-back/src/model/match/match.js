@@ -170,12 +170,14 @@ export class Match extends Engine {
     createPlayer({
         name,
         superhero,
-        initial = false
+        initial = false,
+        config = {}
     }) {
         const player = new Player({
             name,
             superhero,
             initial,
+            config,
             match: this
         });
 

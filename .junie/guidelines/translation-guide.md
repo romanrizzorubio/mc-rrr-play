@@ -132,6 +132,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **expert encounter set** | conjunto de encuentro experto |
 | **persona (rasgo)** | individuo |
 | **condition (rasgo)** | alteración |
+| **android (rasgo)** | droide |
 
 ## Representación de Iconos
 

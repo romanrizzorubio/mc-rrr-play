@@ -111,7 +111,20 @@ export class GameCard extends Engine {
         return this.card.giveToOwner;
     }
     get handSize() {
-        return this.card.handSize;
+        let handSize = this.card.handSize;
+
+        if (this._modifyHandSize && !this.sides.length) {
+            handSize += this._modifyHandSize;
+        }
+
+        return handSize;
+    }
+    set modifyHandSize(modifyHandSize) {
+        this._modifyHandSize = modifyHandSize;
+
+        if (this.parent && this.parent.modifyHandSize !== modifyHandSize) {
+            this.parent.modifyHandSize = modifyHandSize;
+        }
     }
     get hasCrisis() {
         if (this.sides.length) {

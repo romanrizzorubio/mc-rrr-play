@@ -7,6 +7,8 @@ import {TARGET_CARD} from "../../constants/targets.js";
 import {PlayCardEffect} from "../../effects/play-card-effect.js";
 import {RevealEncounterEffect} from "../../effects/reveal-encounter-effect.js";
 import {ReadyEffect} from "../../effects/ready-effect.js";
+import {EFFECT_MODIFY_HIT_POINTS} from "../../factory/effects-factory.js";
+import {TRIGGER_YOUR_HERO_GET_HIT_POINTS} from "../../factory/triggers-factory.js";
 import {PlayerZone} from "./player-zone.js";
 import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from "../../constants/dialogs.js";
 import {endpoints} from "../../constants/endpoints.js";
@@ -17,13 +19,15 @@ export class Player extends Engine {
     constructor({
         name,
         superhero,
-        initial = false
+        initial = false,
+        config = {}
     }) {
         super();
 
         this.name = name;
         this.superhero = superhero;
         this.initial = initial;
+        this.config = config;
 
         this.deck = undefined;
         this.hand = new Hand(this);
@@ -85,7 +89,7 @@ export class Player extends Engine {
         return friends;
     }
     get handSize() {
-        return this.superhero.handSize;
+        return this.superhero.currentSide.handSize;
     }
     get hasCrisis() {
         return this.gameZone.hasCrisis;
@@ -101,7 +105,20 @@ export class Player extends Engine {
             this.gameZone.hazardIcons;
     }
     get hitPoints() {
-        return this.superhero.hitPoints;
+        const trigger = this.match.triggersFactory.createTrigger({
+            type: TRIGGER_YOUR_HERO_GET_HIT_POINTS,
+            card: this.superhero,
+        });
+
+        const effect = {
+            type: EFFECT_MODIFY_HIT_POINTS,
+            count: this.superhero.hitPoints,
+            target: this.superhero,
+        };
+
+        this.match.resolveConstantAbility(trigger, effect);
+
+        return effect.count;
     }
     get isAlterEgo() {
         return this.superhero.isAlterEgo;

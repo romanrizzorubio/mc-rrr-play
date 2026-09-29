@@ -22,7 +22,7 @@ import {EFFECT_PLACE_THREAT, PlaceThreatEffect} from "../effects/place-threat-ef
 import {EFFECT_REMOVE_CARD, RemoveCardEffect} from "../effects/remove-card-effect.js";
 import {EFFECT_REMOVE_THREAT, RemoveThreatEffect} from "../effects/remove-threat-effect.js";
 import {EFFECT_RETURN_HAND, ReturnHandEffect} from "../effects/return-hand-effect.js";
-import {EFFECT_REMOVE_USE, RemoveCountersEffect} from "../effects/remove-counters-effect.js";
+import {EFFECT_REMOVE_COUNTER, EFFECT_REMOVE_USE, RemoveCountersEffect} from "../effects/remove-counters-effect.js";
 import {EFFECT_RETURN_FACEDOWN, ReturnFaceDownEffect} from "../effects/return-facedown-effect.js";
 import {EFFECT_SEARCH_CARD_REVEAL, SearchCardAndRevealEffect} from "../effects/search-card-reveal-effect.js";
 import {EFFECT_SPEND, SpendEffect} from "../effects/spend-effect.js";
@@ -53,16 +53,35 @@ import {DoIfHasPaidEffect, EFFECT_DO_IF_HAS_PAID} from "../effects/do-if-has-pai
 import {DiscardRevealEffect, EFFECT_DISCARD_REVEAL} from "../effects/discard-reveal-effect.js";
 import {EFFECT_REVEAL_FIRST_ENCOUNTER, RevealFirstEncounterEffect} from "../effects/reveal-first-encounter-effect.js";
 import {EFFECT_MODIFY_TRAITS, ModifyTraitsEffect} from "../effects/modify-traits-effect.js";
+import {EFFECT_MODIFY_HIT_POINTS, ModifyHitPointsEffect} from "../effects/modify-hit-points-effect.js";
 import {EFFECT_MODIFY_DEFENSE_VALUE, ModifyDefenseValueEffect} from "../effects/modify-defense-value-effect.js";
 import {DoIfHasTraitsEffect, EFFECT_DO_IF_HAS_TRAITS} from "../effects/do-if-has-traits-effect.js";
 import {EFFECT_SELECT_DISCARD_CARD, SelectDiscardCardEffect} from "../effects/select-discard-card-effect.js";
 import {EFFECT_SPEND_X, SpendXEffect} from "../effects/spend-x-effect.js";
-import {EFFECT_PLACE_COUNTER, PlaceCountersEffect} from "../effects/place-counters-effect.js";
+import {EFFECT_PLACE_COUNTERS, PlaceCountersEffect} from "../effects/place-counters-effect.js";
+import {
+    EFFECT_REMOVE_THREAT_ALL_SCHEMES,
+    RemoveThreatAllSchemesEffect
+} from "../effects/remove-threat-all-schemes-effect.js";
 import {DiscardConditionHandEffect, EFFECT_DISCARD_CONDITION_HAND} from "../effects/discard-condition-hand-effect.js";
 import {DiscardFromDeckEffect, EFFECT_DISCARD_FROM_DECK} from "../effects/discard-from-deck-effect.js";
 import {EFFECT_MODIFY_ATTACK_VALUE, ModifyAttackValueEffect} from "../effects/modify-attack-value-effect.js";
+import {EFFECT_MODIFY_MAX_ALLIES, ModifyMaxAlliesEffect} from "../effects/modify-max-allies-effect.js";
 import {EFFECT_ENEMY_SCHEME, EnemySchemeEffect} from "../effects/enemy-scheme-effect.js";
+import {EFFECT_PUT_PLAY, PutPlayEffect} from "../effects/put-play-effect.js";
+import {EFFECT_SEARCH_CARDS, SearchCardsEffect} from "../effects/search-cards-effect.js";
+import {EFFECT_PAY_PRINTED_COST, PayPrintedCostEffect} from "../effects/pay-printed-cost-effect.js";
+import {
+    EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP,
+    GenerateResourcesFromDiscardTopEffect
+} from "../effects/generate-resources-from-discard-top-effect.js";
+import {
+    EFFECT_SEARCH_DISCARD_RETURN_TO_HAND,
+    SearchDiscardAndReturnToHandEffect
+} from "../effects/search-discard-return-to-hand-effect.js";
 import {EFFECT_FILL_HAND, FillHandEffect} from "../effects/fill-hand-effect.js";
+import {EFFECT_MODIFY_HAND_SIZE, ModifyHandSizeEffect} from "../effects/modify-hand-size-effect.js";
+import {EFFECT_SELECT_FROM_TOP_DECK, SelectFromTopDeckEffect} from "../effects/select-from-top-deck-effect.js";
 
 export class EffectsFactory {
     constructor(abilitiesFactory) {
@@ -72,141 +91,162 @@ export class EffectsFactory {
         return this.abilitiesFactory.match;
     }
     createEffect(par = {}) {
-        const {type, params = {}} = par;
-
-        params.match = this.match;
-
         if (par instanceof Array) {
             return par.map(p => this.createEffect(p));
-        } else {
-            params.refreshTarget = true;
+        }
 
-            switch (type) {
-                case EFFECT_ASSIGN_DAMAGE:
-                    return new AssignDamageEffect(params);
-                case EFFECT_PREVENT_DAMAGE:
-                    return new PreventDamageEffect(params);
-                case EFFECT_PREVENT_PLACE_DAMAGE:
-                    return new PreventPlaceDamageEffect(params);
-                case EFFECT_PREVENT_PLACE_THREAT:
-                    return new PreventPlaceThreatEffect(params);
-                case EFFECT_CANCEL_ATTACK:
-                    return new CancelAttackEffect(params);
-                case EFFECT_CANCEL_ENCOUNTER:
-                    return new CancelEncounterEffect(params);
-                case EFFECT_CHAINED:
-                    return new ChainedEffect(params);
-                case EFFECT_CHOOSE:
-                    return new ChooseEffect(params);
-                case EFFECT_CHOOSE_ABILITY:
-                    return new ChooseAbilityEffect(params);
-                case EFFECT_CONFUSE:
-                    return new ConfuseEffect(params);
-                case EFFECT_DEAL_DAMAGE:
-                    return new DealDamageEffect(params);
-                case EFFECT_DISCARD_FROM_DECK:
-                    return new DiscardFromDeckEffect(params);
-                case EFFECT_DISCARD_DRAW:
-                    return new DiscardDrawEffect(params);
-                case EFFECT_DISCARD_GAME:
-                    return new DiscardFromGameEffect(params);
-                case EFFECT_DISCARD_HAND:
-                    return new DiscardFromHandEffect(params);
-                case EFFECT_DISCARD_CONDITION_HAND:
-                    return new DiscardConditionHandEffect(params);
-                case EFFECT_DISCARD_RANDOM:
-                    return new DiscardRandomEffect(params);
-                case EFFECT_DISCARD_REVEAL:
-                    return new DiscardRevealEffect(params);
-                case EFFECT_DO_IF:
-                    return new DoIfEffect(params);
-                case EFFECT_DO_IF_CARD_GAME:
-                    return new DoIfCardGameEffect(params);
-                case EFFECT_DO_IF_HAS_DAMAGE:
-                    return new DoIfHasDamageEffect(params);
-                case EFFECT_DO_IF_HAS_PAID:
-                    return new DoIfHasPaidEffect(params);
-                case EFFECT_DO_IF_HAS_TRAITS:
-                    return new DoIfHasTraitsEffect(params);
-                case EFFECT_DO_IF_TAKE_DAMAGE:
-                    return new DoIfTakeCharacterDamageEffect(params);
-                case EFFECT_DRAW_CARD:
-                    return new DrawEffect(params);
-                case EFFECT_ENEMY_ATTACK:
-                    return new EnemyAttackEffect(params);
-                case EFFECT_EXHAUST:
-                    return new ExhaustEffect(params);
-                case EFFECT_FACEDOWN:
-                    return new FaceDownEffect(params);
-                case EFFECT_FLIP:
-                    return new FlipEffect(params);
-                case EFFECT_HEAL:
-                    return new HealEffect(params);
-                case EFFECT_INCLUDE_ASIDE_CARDS:
-                    return new IncludeAsideCardsEffect(params);
-                case EFFECT_DELAYED:
-                    return new DelayedEffect(params);
-                case EFFECT_LASTING:
-                    return new LastingEffect(params);
-                case EFFECT_MAY:
-                    return new MayEffect(params);
-                case EFFECT_MODIFY_ATTACK:
-                    return new ModifyAttackEffect(params);
-                case EFFECT_MODIFY_ATTACK_VALUE:
-                    return new ModifyAttackValueEffect(params);
-                case EFFECT_MODIFY_COST:
-                    return new ModifyCostEffect(params);
-                case EFFECT_MODIFY_DEFENSE_VALUE:
-                    return new ModifyDefenseValueEffect(params);
-                case EFFECT_MODIFY_THWART_VALUE:
-                    return new ModifyThwartValueEffect(params);
-                case EFFECT_MODIFY_TRAITS:
-                    return new ModifyTraitsEffect(params);
-                case EFFECT_PLACE_COUNTER:
-                    return new PlaceCountersEffect(params);
-                case EFFECT_PLACE_DAMAGE:
-                    return new PlaceDamageEffect(params);
-                case EFFECT_PLACE_THREAT:
-                    return new PlaceThreatEffect(params);
-                case EFFECT_RANDOM_CARD:
-                    return new RandomCardEffect(params);
-                case EFFECT_READY:
-                    return new ReadyEffect(params);
-                case EFFECT_REMOVE_CARD:
-                    return new RemoveCardEffect(params);
-                case EFFECT_RETURN_HAND:
-                    return new ReturnHandEffect(params);
-                case EFFECT_REMOVE_THREAT:
-                    return new RemoveThreatEffect(params);
-                case EFFECT_REMOVE_USE:
-                    return new RemoveCountersEffect(params);
-                case EFFECT_RETURN_FACEDOWN:
-                    return new ReturnFaceDownEffect(params);
-                case EFFECT_REVEAL_FIRST_ENCOUNTER:
-                    return new RevealFirstEncounterEffect(params);
-                case EFFECT_ENEMY_SCHEME:
-                    return new EnemySchemeEffect(params);
-                case EFFECT_FILL_HAND:
-                    return new FillHandEffect(params);
-                case EFFECT_SEARCH_CARD_REVEAL:
-                    return new SearchCardAndRevealEffect(params);
-                case EFFECT_SELECT_DISCARD_CARD:
-                    return new SelectDiscardCardEffect(params);
-                case EFFECT_SEVERAL_ATTACKS:
-                    return new SeveralAttacksEffect(params);
-                case EFFECT_SPEND:
-                    return new SpendEffect(params);
-                case EFFECT_SPEND_X:
-                    return new SpendXEffect(params);
-                case EFFECT_SURGE:
-                    return new SurgeEffect(params);
-                case EFFECT_STUN:
-                    return new StunEffect(params);
-                case EFFECT_TAKE_DAMAGE:
-                    return new TakeDamageEffect(params);
-                case EFFECT_TOUGH:
-                    return new ToughEffect(params);
-            }
+        const {type, params = {}, ...rest} = par;
+        const effectParams = {...params, ...rest};
+
+        effectParams.match = this.match;
+        effectParams.refreshTarget = true;
+
+        switch (type) {
+            case EFFECT_ASSIGN_DAMAGE:
+                return new AssignDamageEffect(effectParams);
+            case EFFECT_PREVENT_DAMAGE:
+                return new PreventDamageEffect(effectParams);
+            case EFFECT_PREVENT_PLACE_DAMAGE:
+                return new PreventPlaceDamageEffect(effectParams);
+            case EFFECT_PREVENT_PLACE_THREAT:
+                return new PreventPlaceThreatEffect(effectParams);
+            case EFFECT_CANCEL_ATTACK:
+                return new CancelAttackEffect(effectParams);
+            case EFFECT_CANCEL_ENCOUNTER:
+                return new CancelEncounterEffect(effectParams);
+            case EFFECT_CHAINED:
+                return new ChainedEffect(effectParams);
+            case EFFECT_CHOOSE:
+                return new ChooseEffect(effectParams);
+            case EFFECT_CHOOSE_ABILITY:
+                return new ChooseAbilityEffect(effectParams);
+            case EFFECT_CONFUSE:
+                return new ConfuseEffect(effectParams);
+            case EFFECT_DEAL_DAMAGE:
+                return new DealDamageEffect(effectParams);
+            case EFFECT_DISCARD_FROM_DECK:
+                return new DiscardFromDeckEffect(effectParams);
+            case EFFECT_DISCARD_DRAW:
+                return new DiscardDrawEffect(effectParams);
+            case EFFECT_DISCARD_GAME:
+                return new DiscardFromGameEffect(effectParams);
+            case EFFECT_DISCARD_HAND:
+                return new DiscardFromHandEffect(effectParams);
+            case EFFECT_DISCARD_CONDITION_HAND:
+                return new DiscardConditionHandEffect(effectParams);
+            case EFFECT_DISCARD_RANDOM:
+                return new DiscardRandomEffect(effectParams);
+            case EFFECT_DISCARD_REVEAL:
+                return new DiscardRevealEffect(effectParams);
+            case EFFECT_DO_IF:
+                return new DoIfEffect(effectParams);
+            case EFFECT_DO_IF_CARD_GAME:
+                return new DoIfCardGameEffect(effectParams);
+            case EFFECT_DO_IF_HAS_DAMAGE:
+                return new DoIfHasDamageEffect(effectParams);
+            case EFFECT_DO_IF_HAS_PAID:
+                return new DoIfHasPaidEffect(effectParams);
+            case EFFECT_DO_IF_HAS_TRAITS:
+                return new DoIfHasTraitsEffect(effectParams);
+            case EFFECT_DO_IF_TAKE_DAMAGE:
+                return new DoIfTakeCharacterDamageEffect(effectParams);
+            case EFFECT_DRAW_CARD:
+                return new DrawEffect(effectParams);
+            case EFFECT_ENEMY_ATTACK:
+                return new EnemyAttackEffect(effectParams);
+            case EFFECT_EXHAUST:
+                return new ExhaustEffect(effectParams);
+            case EFFECT_FACEDOWN:
+                return new FaceDownEffect(effectParams);
+            case EFFECT_FLIP:
+                return new FlipEffect(effectParams);
+            case EFFECT_HEAL:
+                return new HealEffect(effectParams);
+            case EFFECT_INCLUDE_ASIDE_CARDS:
+                return new IncludeAsideCardsEffect(effectParams);
+            case EFFECT_DELAYED:
+                return new DelayedEffect(effectParams);
+            case EFFECT_LASTING:
+                return new LastingEffect(effectParams);
+            case EFFECT_MAY:
+                return new MayEffect(effectParams);
+            case EFFECT_MODIFY_ATTACK:
+                return new ModifyAttackEffect(effectParams);
+            case EFFECT_MODIFY_ATTACK_VALUE:
+                return new ModifyAttackValueEffect(effectParams);
+            case EFFECT_MODIFY_MAX_ALLIES:
+                return new ModifyMaxAlliesEffect(effectParams);
+            case EFFECT_MODIFY_COST:
+                return new ModifyCostEffect(effectParams);
+            case EFFECT_MODIFY_DEFENSE_VALUE:
+                return new ModifyDefenseValueEffect(effectParams);
+            case EFFECT_MODIFY_HAND_SIZE:
+                return new ModifyHandSizeEffect(effectParams);
+            case EFFECT_MODIFY_THWART_VALUE:
+                return new ModifyThwartValueEffect(effectParams);
+            case EFFECT_MODIFY_HIT_POINTS:
+                return new ModifyHitPointsEffect(effectParams);
+            case EFFECT_MODIFY_TRAITS:
+                return new ModifyTraitsEffect(effectParams);
+            case EFFECT_PLACE_COUNTERS:
+                return new PlaceCountersEffect(effectParams);
+            case EFFECT_PLACE_DAMAGE:
+                return new PlaceDamageEffect(effectParams);
+            case EFFECT_PLACE_THREAT:
+                return new PlaceThreatEffect(effectParams);
+            case EFFECT_RANDOM_CARD:
+                return new RandomCardEffect(effectParams);
+            case EFFECT_READY:
+                return new ReadyEffect(effectParams);
+            case EFFECT_REMOVE_CARD:
+                return new RemoveCardEffect(effectParams);
+            case EFFECT_RETURN_HAND:
+                return new ReturnHandEffect(effectParams);
+            case EFFECT_REMOVE_THREAT:
+                return new RemoveThreatEffect(effectParams);
+            case EFFECT_REMOVE_THREAT_ALL_SCHEMES:
+                return new RemoveThreatAllSchemesEffect(effectParams);
+            case EFFECT_REMOVE_COUNTER:
+            case EFFECT_REMOVE_USE:
+                return new RemoveCountersEffect(effectParams);
+            case EFFECT_RETURN_FACEDOWN:
+                return new ReturnFaceDownEffect(effectParams);
+            case EFFECT_REVEAL_FIRST_ENCOUNTER:
+                return new RevealFirstEncounterEffect(effectParams);
+            case EFFECT_ENEMY_SCHEME:
+                return new EnemySchemeEffect(effectParams);
+            case EFFECT_PUT_PLAY:
+                return new PutPlayEffect(effectParams);
+            case EFFECT_SEARCH_CARDS:
+                return new SearchCardsEffect(effectParams);
+            case EFFECT_PAY_PRINTED_COST:
+                return new PayPrintedCostEffect(effectParams);
+            case EFFECT_FILL_HAND:
+                return new FillHandEffect(effectParams);
+            case EFFECT_SEARCH_DISCARD_RETURN_TO_HAND:
+                return new SearchDiscardAndReturnToHandEffect(effectParams);
+            case EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP:
+                return new GenerateResourcesFromDiscardTopEffect(effectParams);
+            case EFFECT_SEARCH_CARD_REVEAL:
+                return new SearchCardAndRevealEffect(effectParams);
+            case EFFECT_SELECT_DISCARD_CARD:
+                return new SelectDiscardCardEffect(effectParams);
+            case EFFECT_SELECT_FROM_TOP_DECK:
+                return new SelectFromTopDeckEffect(effectParams);
+            case EFFECT_SEVERAL_ATTACKS:
+                return new SeveralAttacksEffect(effectParams);
+            case EFFECT_SPEND:
+                return new SpendEffect(effectParams);
+            case EFFECT_SPEND_X:
+                return new SpendXEffect(effectParams);
+            case EFFECT_SURGE:
+                return new SurgeEffect(effectParams);
+            case EFFECT_STUN:
+                return new StunEffect(effectParams);
+            case EFFECT_TAKE_DAMAGE:
+                return new TakeDamageEffect(effectParams);
+            case EFFECT_TOUGH:
+                return new ToughEffect(effectParams);
         }
     }
     _parseChained(params) {
@@ -250,7 +290,8 @@ export class EffectsFactory {
             effectNot: this.parseEffect(effectNot),
         }
     }
-    parseEffect({type, params = {}} = {}) {
+    parseEffect(par = {}) {
+        const {type, ...params} = par;
         if (params) {
             if (params.thenEffect) {
                 params.thenEffect = this.parseEffect(params.thenEffect);

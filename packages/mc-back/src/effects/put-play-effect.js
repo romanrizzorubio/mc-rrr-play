@@ -8,6 +8,8 @@ import {PRIORITY_CONSTANT} from "../constants/priorities.js";
 import {TRIGGER_THIS_ENTER_PLAY} from "../triggers/this-enter-play-trigger.js";
 import {TRIGGER_INSTANT} from "../triggers/instant-trigger.js";
 
+export const EFFECT_PUT_PLAY = 'put-play';
+
 export class PutPlayEffect extends Effect {
     constructor({
         card,
