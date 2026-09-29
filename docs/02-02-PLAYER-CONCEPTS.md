@@ -129,13 +129,13 @@ El primer jugador tiene prioridad de tiempo en las siguientes situaciones:
 
 **Véase también**: en orden de jugador, jugador, eliminación del jugador, fase de jugador.
 
-### superhéroe (superhéroe)
+## superhéroe (Identity)
 Cada superhéroe (la carta que representa al personaje) tiene:
 - Puntos de vida (HP)
 - Cartas de preparación inicial
-- Dos identidades (identidad): Héroe y Alter-ego (cada una con atributos diferentes)
-  - **identidad de Héroe (héroe)**: Atributo de Ataque (ATQ), Defensa (DEF), Intervención (INT). Posee capacidades orientadas al combate y a frustrar los planes del villano.
-  - **identidad de Alter-ego (alter ego)**: Atributo de Recuperación (REC) y otros atributos según el superhéroe. Posee capacidades de apoyo, recuperación y preparación.
+- Dos identidades (Form): Héroe y Alter-ego (cada una con atributos diferentes)
+  - **identidad de héroe (hero form)**: Atributo de Ataque (ATQ), Defensa (DEF), Intervención (INT). Posee capacidades orientadas al combate y a ejecutar el plan del villano.
+  - **identidad de alter ego (alter-ego form)**: Atributo de Recuperación (REC) y otros atributos según el superhéroe. Posee capacidades de apoyo, recuperación y preparación.
 - **Capacidades únicas**: Cada identidad tiene capacidades diferentes y exclusivas. Algunas capacidades solo pueden activarse o tienen efecto mientras el superhéroe se encuentra en una identidad específica.
 
 ### Recuperar (Recover), Recuperación (Recovery)
@@ -149,7 +149,7 @@ La recuperación es un atributo básico (REC) que un jugador puede usar en ident
 Un jugador puede estar en identidad de héroe o de alter ego en un momento dado. Esto se indica mediante la carta de superhéroe del jugador.
 
 - Una vez en cada ronda, durante su turno, cada jugador tiene permitido cambiar de identidad dando la vuelta a su carta de superhéroe.
-- Cuando un jugador cambia de identidad, solo cambia la identidad. El personaje conserva su daño sufrido, cartas de estado, efectos duraderos, cartas vinculadas, cartas metidas debajo (tucked cards), fichas y estado actual (preparado o agotado).
+- Cuando un jugador cambia de identidad, solo cambia la identidad. El personaje conserva su daño sufrido, cartas de estado, efectos postergados, cartas vinculadas, cartas metidas debajo (tucked cards), fichas y estado actual (preparado o agotado).
 - Si la capacidad de una carta hace que un jugador cambie de identidad, no cuenta para el cambio de identidad voluntario que el jugador tiene permitido durante su turno esa ronda.
 - Mientras un jugador está en identidad de héroe, las capacidades de las cartas que interactúan con su alter ego no interactúan con su superhéroe.
 - Mientras un jugador está en identidad de alter ego, las capacidades de las cartas que interactúan con su héroe no interactúan con su superhéroe.

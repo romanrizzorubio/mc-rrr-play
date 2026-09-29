@@ -120,7 +120,7 @@ Cuando un jugador desea jugar una carta o iniciar una capacidad disparada, ese j
 1. Si juega una carta, el jugador coloca esa carta boca arriba en la mesa frente a él. (Esta carta no está en juego).
 2. Comprobar las restricciones de juego: ¿se puede jugar la carta, o iniciar la capacidad, en este momento?
     - Si la carta o capacidad especifica uno o más objetivos, comprueba que tiene al menos un objetivo válido. Si la carta o capacidad no tiene al menos un objetivo válido, no se puede jugar ni iniciar.
-    - Si la carta o capacidad tiene un requisito de identidad (por ejemplo, "Solo identidad de héroe" o "Acción de Héroe"), se comprueba ahora la identidad del jugador que juega esa carta o inicia esa capacidad.
+    - Si la carta o capacidad tiene un requisito de identidad (por ejemplo, "Solo identidad de héroe" o "Acción de Héroe"), se comprueba ahora la identidad (form) del jugador que juega esa carta o inicia esa capacidad.
 3. Determinar el coste (o costes) para jugar la carta o iniciar la capacidad y la aptitud del jugador para pagarlos, teniendo en cuenta los modificadores.
     - Si una carta tiene un coste de recursos de X, el jugador que juega esa carta elige el valor de X durante este paso.
 
@@ -287,7 +287,7 @@ Jugar una carta implica pagar el coste de la carta y colocarla en la zona de jue
 
 Algunas capacidades hacen que las cartas se pongan en juego. Esto evita la necesidad de pagar el coste de la carta, así como cualquier restricción o prohibición respecto a jugar esa carta. Una carta que se pone en juego entra en juego en la zona de juego de su controlador.
 
-- Las cartas con el texto "solo en identidad de [tipo]" solo pueden ser jugadas o puestas en juego por un jugador cuyo superhéroe esté en la identidad especificada.
+- Las cartas con el texto "solo en identidad de [tipo]" solo pueden ser jugadas o puestas en juego por un jugador cuyo superhéroe esté en la identidad (form) especificada.
 - Cuando se juega una carta de evento, colócala en la mesa, resuelve su capacidad y coloca la carta en la pila de descartes de su propietario.
 - Una carta que se pone en juego no se considera que haya sido jugada.
 - Cuando una carta se pone en juego, se ignora su coste de recursos.
@@ -428,7 +428,7 @@ Una capacidad que ignora alguna capacidad, icono o coste trata esa capacidad, ic
 **Véase también**: capacidad, coste, iconos, requisito (recursos).
 
 - **Capacidades obligadas y de muestra**: Las capacidades "**obligado**", "**Cuando se muestre esta carta**", "**Cuando se derrote esta carta**" y "**Cuando se complete esta etapa**" son disparadas por el juego en su momento adecuado.
-- **identidad requerida**: Si el disparador contiene "héroe" o "alter ego", la capacidad solo puede usarse si el jugador está en esa identidad.
+- **identidad requerida**: Si el disparador contiene "héroe" o "alter ego", la capacidad solo puede usarse si el jugador está en esa identidad (form).
 - **Referencia a otras capacidades**: Si se usan comillas alrededor de un disparador (ej: "Cuando sea mostrada"), el texto se refiere a otras capacidades con ese disparador, no es un disparador en sí mismo.
 
 ### Obligatoriedad y Opcionalidad
