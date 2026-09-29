@@ -13,6 +13,7 @@ import {Thwart} from "../activations/thwart.js";
 import {Scheme} from "../activations/scheme.js";
 import {TRIGGER_THIS_ATTACK} from "../triggers/this-attack-trigger.js";
 import {Defense} from "../activations/defense.js";
+import {DealDamageEffect} from "./deal-damage-effect.js";
 export class Effect extends Engine {
     constructor({
 // Effect
@@ -157,8 +158,21 @@ export class Effect extends Engine {
         return this.keywords.ranged;
     }
     async applyRetaliate(params) {
-        //TODO retaliate
-        console.log('applyRetaliate')
+        if (this.isAttack) {
+            const {selectedTarget} = this;
+            const attacker = this.character;
+
+            if (selectedTarget && attacker && !selectedTarget.isDefeated && selectedTarget.retaliate) {
+                const dealDamageEffect = new DealDamageEffect({
+                    damage: selectedTarget.retaliate,
+                    selectedTarget: attacker,
+                    match: this.match,
+                    ability: this.ability,
+                });
+
+                await dealDamageEffect.runEffect(params);
+            }
+        }
     }
     calculate(params) {
         const {paramsCalc} = this;
@@ -353,6 +367,7 @@ export class Effect extends Engine {
     async triggerEnds(params) {
         const type = this.getTriggersEnds(params);
 
+        await this.applyRetaliate(params);
         await this.resolveDelayedEffects(params);
         await this.trigger(PRIORITY_CONSTANT, type, params);
         await this.trigger(PRIORITY_FORCED_RESPONSE, type, params);

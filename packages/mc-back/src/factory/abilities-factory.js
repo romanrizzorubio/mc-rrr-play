@@ -13,6 +13,7 @@ import {ABILITY_OPTION, OptionAbility} from "../abilities/misc/option-ability.js
 import {ABILITY_RESOURCE, ResourceAbility} from "../abilities/resource/resource-ability.js";
 import {ABILITY_RESPONSE, ResponseAbility} from "../abilities/response/response-ability.js";
 import {ABILITY_SETUP, SetupAbility} from "../abilities/misc/setup-ability.js";
+import {ABILITY_SPECIAL, SpecialAbility} from "../abilities/misc/special-ability.js";
 import {ABILITY_WHEN_DEFEATED, WhenDefeatedAbility} from "../abilities/when/when-defeated-ability.js";
 import {ABILITY_WHEN_REVEALED, WhenRevealedAbility} from "../abilities/when/when-revealed-ability.js";
 import {
@@ -65,6 +66,8 @@ export class AbilitiesFactory {
                 return new ResponseAbility(params);
             case ABILITY_SETUP:
                 return new SetupAbility(params);
+            case ABILITY_SPECIAL:
+                return new SpecialAbility(params);
             case ABILITY_WHEN_DEFEATED:
                 return new WhenDefeatedAbility(params);
             case ABILITY_WHEN_REVEALED:

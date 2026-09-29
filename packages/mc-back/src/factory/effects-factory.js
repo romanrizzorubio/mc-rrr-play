@@ -70,6 +70,9 @@ import {EFFECT_MODIFY_MAX_ALLIES, ModifyMaxAlliesEffect} from "../effects/modify
 import {EFFECT_ENEMY_SCHEME, EnemySchemeEffect} from "../effects/enemy-scheme-effect.js";
 import {EFFECT_PUT_PLAY, PutPlayEffect} from "../effects/put-play-effect.js";
 import {EFFECT_SEARCH_CARDS, SearchCardsEffect} from "../effects/search-cards-effect.js";
+import {EFFECT_SHUFFLE_DECK, ShuffleDeckEffect} from "../effects/shuffle-deck-effect.js";
+import {EFFECT_MOVE_TO_HAND, MoveToHandEffect} from "../effects/move-to-hand-effect.js";
+import {EFFECT_MOVE_TO_DECK, MoveToDeckEffect} from "../effects/move-to-deck-effect.js";
 import {EFFECT_PAY_PRINTED_COST, PayPrintedCostEffect} from "../effects/pay-printed-cost-effect.js";
 import {
     EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP,
@@ -82,6 +85,15 @@ import {
 import {EFFECT_FILL_HAND, FillHandEffect} from "../effects/fill-hand-effect.js";
 import {EFFECT_MODIFY_HAND_SIZE, ModifyHandSizeEffect} from "../effects/modify-hand-size-effect.js";
 import {EFFECT_SELECT_FROM_TOP_DECK, SelectFromTopDeckEffect} from "../effects/select-from-top-deck-effect.js";
+import {
+    EFFECT_SELECT_AND_ORDER_CARDS,
+    SelectAndOrderCardsEffect
+} from "../effects/select-and-order-cards-effect.js";
+import {
+    EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
+    ResolveSelectedSpecialAbilitiesEffect
+} from "../effects/resolve-selected-special-abilities-effect.js";
+import {EFFECT_MOVE_DAMAGE, MoveDamageEffect} from "../effects/move-damage-effect.js";
 
 export class EffectsFactory {
     constructor(abilitiesFactory) {
@@ -188,6 +200,8 @@ export class EffectsFactory {
                 return new ModifyHitPointsEffect(effectParams);
             case EFFECT_MODIFY_TRAITS:
                 return new ModifyTraitsEffect(effectParams);
+            case EFFECT_MOVE_DAMAGE:
+                return new MoveDamageEffect(effectParams);
             case EFFECT_PLACE_COUNTERS:
                 return new PlaceCountersEffect(effectParams);
             case EFFECT_PLACE_DAMAGE:
@@ -198,6 +212,10 @@ export class EffectsFactory {
                 return new RandomCardEffect(effectParams);
             case EFFECT_READY:
                 return new ReadyEffect(effectParams);
+            case EFFECT_SELECT_AND_ORDER_CARDS:
+                return new SelectAndOrderCardsEffect(effectParams);
+            case EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES:
+                return new ResolveSelectedSpecialAbilitiesEffect(effectParams);
             case EFFECT_REMOVE_CARD:
                 return new RemoveCardEffect(effectParams);
             case EFFECT_RETURN_HAND:
@@ -219,6 +237,12 @@ export class EffectsFactory {
                 return new PutPlayEffect(effectParams);
             case EFFECT_SEARCH_CARDS:
                 return new SearchCardsEffect(effectParams);
+            case EFFECT_SHUFFLE_DECK:
+                return new ShuffleDeckEffect(effectParams);
+            case EFFECT_MOVE_TO_HAND:
+                return new MoveToHandEffect(effectParams);
+            case EFFECT_MOVE_TO_DECK:
+                return new MoveToDeckEffect(effectParams);
             case EFFECT_PAY_PRINTED_COST:
                 return new PayPrintedCostEffect(effectParams);
             case EFFECT_FILL_HAND:

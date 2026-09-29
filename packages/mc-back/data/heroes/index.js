@@ -10,4 +10,7 @@ export const heroesList = [{
 }, {
     name: 'Ironman',
     folder: 'ironman'
+}, {
+    name: 'Black Panther',
+    folder: 'blackpanther'
 }]

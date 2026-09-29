@@ -160,3 +160,9 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
     - **Coste / Salud / Atributos**: Valores numéricos. El daño derivado se marca con `[d]`. El ataque se traduce como Attack/ATQ y la intervención como Thwart/INT.
     - **Recursos**: Iconos entre corchetes (ej. `[w]` para universal).
     - **Capacidades**: Texto descriptivo precedido por el tipo (Acción, Respuesta, Interrupción, etc.) y opcionalmente el límite de uso.
+
+## Instrucciones de Desarrollo
+
+1. **Composición de Efectos**: Al implementar la lógica de una carta, **NO** crees efectos específicos que resuelvan literalmente el texto de una sola carta (ej. `MoverCartaDePanteraNegraDelMazoALaManoYBarajarEffect`). En su lugar, utiliza y combina efectos genéricos y modulares (ej. `SearchCardsEffect`, `MoveToHandEffect`, `ShuffleDeckEffect`).
+2. **Efectos Genéricos**: Si la funcionalidad requerida no existe, puedes crear un nuevo efecto, pero este debe ser diseñado de forma **genérica** para que pueda ser reutilizado por otras cartas en el futuro.
+3. **Encadenamiento**: Utiliza `EFFECT_CHAINED` para secuenciar múltiples efectos genéricos y lograr comportamientos complejos.
