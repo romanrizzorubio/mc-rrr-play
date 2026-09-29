@@ -130,9 +130,23 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **modular encounter set** | conjunto de encuentros modular |
 | **expert mode** | modo Experto |
 | **expert encounter set** | conjunto de encuentro experto |
+| **persona (rasgo)** | individuo |
+| **condition (rasgo)** | alteración |
+
+## Representación de Iconos
+
+| Icono   | Representación | Significado        |
+|:--------|:---------------|:-------------------|
+| **[p]** | [p]            | recurso físico     |
+| **[e]** | [e]            | recurso de energía |
+| **[m]** | [m]            | recurso mental     |
+| **[w]** | [w]            | recurso universal  |
+| **[d]** | [d]            | daño derivado      |
+| **[u]** | [u]            | carta única        |
 
 ## Instrucciones para el Asistente
 
 1. **Prioridad**: Estas traducciones tienen precedencia sobre cualquier otra traducción automática.
 2. **Autoactualización**: Si el usuario solicita una corrección terminológica, esta tabla DEBE actualizarse inmediatamente en el mismo paso que la corrección del documento.
 3. **Consistencia**: Al añadir nueva documentación, escanea el archivo `docs/02-GAME-MECHANICS.md` para asegurar que los términos circundantes usan esta misma terminología.
+4. **Iconos**: Utiliza y comprende el formato de corchetes `[x]` para representar iconos de recursos y otros elementos del juego según la tabla de "Representación de Iconos".
