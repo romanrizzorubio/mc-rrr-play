@@ -7,7 +7,7 @@ import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-val
 import {EFFECT_MODIFY_THWART_VALUE} from "../../../src/effects/modify-thwart-value-effect.js";
 import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
 import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {EFFECT_REMOVE_COUNTER, EFFECT_REMOVE_USE} from "../../../src/effects/remove-counters-effect.js";
+import {EFFECT_REMOVE_COUNTER} from "../../../src/effects/remove-counters-effect.js";
 import {EFFECT_PLACE_COUNTERS} from "../../../src/effects/place-counters-effect.js";
 import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
 import {TARGET_ALL_PLAYERS, TARGET_CHARACTER, TARGET_THIS} from "../../../src/constants/targets.js";

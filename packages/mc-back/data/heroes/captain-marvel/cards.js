@@ -3,7 +3,7 @@ import {
     TRAIT_AVENGER, TRAIT_ELITE, TRAIT_KREE,
     TRAIT_LOCATION, TRAIT_SHIELD,
     TRAIT_SOLDIER, TRAIT_SPY,
-    TRAIT_SUPERPOWER, TRAIT_TECH, TRAIT_THWART
+    TRAIT_SUPERPOWER, TRAIT_TECH
 } from "../../../src/constants/traits.js";
 import {CLASSIFICATION_HERO} from "../../../src/constants/classifications.js";
 import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../src/constants/resources.js";

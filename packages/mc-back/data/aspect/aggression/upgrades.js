@@ -1,4 +1,4 @@
-import {ASPECT_JUSTICE} from "../aspects.js";
+import {ASPECT_AGGRESSION} from "../aspects.js";
 import {TRAIT_SKILL} from "../../../src/constants/traits.js";
 import {RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
 import {
@@ -9,7 +9,7 @@ import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js"
 import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-value-effect.js";
 import {TRIGGER_YOUR_HERO_GET_ATTACK} from "../../../src/triggers/your-hero-get-attack-trigger.js";
 
-const set = ASPECT_JUSTICE;
+const set = ASPECT_AGGRESSION;
 export const combatTraining = {
     type: CARD_TYPE_UPGRADE,
     params: {

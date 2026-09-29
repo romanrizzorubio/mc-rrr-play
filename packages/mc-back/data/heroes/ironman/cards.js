@@ -21,10 +21,8 @@ import {
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_HAND_SIZE,
     EFFECT_MODIFY_HIT_POINTS,
-    EFFECT_MODIFY_TRAITS,
     EFFECT_READY,
     EFFECT_REMOVE_THREAT,
-    EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_FROM_TOP_DECK,
     EFFECT_SPEND,
     EFFECT_TAKE_DAMAGE,
@@ -42,7 +40,6 @@ import {
 } from "../../../src/constants/resources.js";
 import {
     TARGET_ALL_ENEMIES,
-    TARGET_ANY,
     TARGET_ANY_PLAYER,
     TARGET_ATTACKED,
     TARGET_BY_NAME,
@@ -70,7 +67,6 @@ import {LABEL_ATTACK, LABEL_THWART} from "../../../src/constants/labels.js";
 import {
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
-    TRIGGER_YOUR_HERO_GET_THWART,
 } from "../../../src/factory/triggers-factory.js";
 import {CALC_RESOURCES, CALC_TRAITS_COUNT} from "../../../src/constants/calc.js";
 import {TIME_PHASE, TIME_ROUND} from "../../../src/constants/times.js";

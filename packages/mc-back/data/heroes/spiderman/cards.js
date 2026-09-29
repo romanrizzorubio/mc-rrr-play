@@ -10,17 +10,14 @@ import {
 } from "../../../src/constants/traits.js";
 import {CLASSIFICATION_HERO} from "../../../src/constants/classifications.js";
 import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../src/constants/resources.js";
-import {
-    CHARACTER_ENEMY,
-    CHARACTER_MINION, CHARACTER_PLAYER,
-} from "../../../src/constants/characters.js";
-import {TIME_PHASE, TIME_ROUND} from "../../../src/constants/times.js";
+import {CHARACTER_ENEMY, CHARACTER_MINION, CHARACTER_PLAYER} from "../../../src/constants/characters.js";
+import {TIME_ROUND} from "../../../src/constants/times.js";
 import {
     TARGET_ACTIVATION,
     TARGET_ALL_CARDS,
     TARGET_ALL_PLAYERS,
     TARGET_ALTEREGO, TARGET_ALTEREGO_SIDE, TARGET_ANY,
-    TARGET_ATTACHED, TARGET_ATTACKED, TARGET_CARD, TARGET_EFFECT, TARGET_ENEMY,
+    TARGET_ATTACKED, TARGET_CARD, TARGET_EFFECT, TARGET_ENEMY,
     TARGET_HERO,
     TARGET_MAIN_SCHEME, TARGET_PLAYER,
     TARGET_SCHEME, TARGET_SOURCE, TARGET_YOU, TARGET_YOUR_SUPERHERO

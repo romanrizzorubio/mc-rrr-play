@@ -1,5 +1,5 @@
 import {ASPECT_LEADERSHIP} from "../aspects.js";
-import {RESOURCE_MENTAL, RESOURCE_ENERGY, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
+import {RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
 import {TRAIT_CONDITION} from "../../../src/constants/traits.js";
 import {TARGET_ALLY, TARGET_ATTACHED} from "../../../src/constants/targets.js";
 import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";

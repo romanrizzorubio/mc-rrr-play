@@ -1,5 +1,4 @@
 import {bombScare, explosion, falseAlarm, hydraBomber} from "./cards.js";
-import {kreeManipulator, yonRoggsTreason} from "../../heroes/captain-marvel/cards.js";
 
 export const MOD_BOMB_SCARE = 'bomb-scare';
 

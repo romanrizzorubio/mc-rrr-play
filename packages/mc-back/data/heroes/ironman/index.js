@@ -14,7 +14,6 @@ import {
 } from "./cards.js";
 import {ASPECT_LEADERSHIP} from "../../aspect/aspects.js";
 import {precon} from "./precon.js";
-import {TRAIT_TECH} from "../../../src/constants/traits.js";
 
 export const heroConfig = {
     hero: ironmanCard,
