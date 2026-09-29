@@ -152,8 +152,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 4. **Iconos**: Utiliza y comprende el formato de corchetes `[x]` para representar iconos de recursos y otros elementos del juego según la tabla de "Representación de Iconos".
 5. **Formato de Descripción de Cartas**: El usuario proporciona descripciones de cartas con el siguiente formato, el cual debes saber interpretar para validar o generar código:
     - **[u] Nombre (Subtítulo)**: Indica si es única y su identidad.
+    - **Cantidad (ej. x2)**: (Opcional) Indica el número de copias en el mazo.
+    - **Imagen/img**: Ruta o nombre del archivo de imagen (ej. `heroes/she-hulk/01020.webp` o `img: 01021.png`).
     - **Tipo de carta**: Aliado, Evento, Mejora, Apoyo, Identidad de héroe, Identidad de alter ego, etc.
     - **Rasgos**: Lista de rasgos separados por puntos (ej. Vengador. Espía.).
-    - **Coste / Salud / Atributos**: Valores numéricos. El daño derivado se marca con `[d]`.
+    - **Coste / Salud / Atributos**: Valores numéricos. El daño derivado se marca con `[d]`. El ataque se traduce como Attack/ATQ y la intervención como Thwart/INT.
     - **Recursos**: Iconos entre corchetes (ej. `[w]` para universal).
     - **Capacidades**: Texto descriptivo precedido por el tipo (Acción, Respuesta, Interrupción, etc.) y opcionalmente el límite de uso.

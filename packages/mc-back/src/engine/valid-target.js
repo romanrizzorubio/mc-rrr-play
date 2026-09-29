@@ -1,7 +1,7 @@
 import {Engine} from "./engine.js";
 import {
     TARGET_ACTIVATION,
-    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS,
+    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_ENEMIES,
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
@@ -11,6 +11,7 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_ATTACHED,
     TARGET_ATTACKED,
+    TARGET_BY_NAME,
     TARGET_CARD,
     TARGET_CHARACTER, TARGET_CONDITION_CARD,
     TARGET_EFFECT, TARGET_EFFECT_PLAY_CARD,
@@ -95,6 +96,9 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_CHARACTERS:
                 targets = this.match.enemies.concat(this.match.friends);
                 break;
+            case TARGET_ALL_ENEMIES:
+                targets = this.match.enemies;
+                break;
             case TARGET_ALL_ENGAGED_MINIONS:
                 targets = player.minions;
                 break;
@@ -160,6 +164,21 @@ export class ValidTarget extends Engine {
                 break;
             case TARGET_HERO:
                 targets = player.isHero ? [player.superhero.currentSide] : [];
+                break;
+            case TARGET_BY_NAME:
+                const byName = (card) => card.name === effect.name;
+                const playerByName = this.match.players.find(p => p.superhero.name === effect.name);
+
+                targets = [];
+                if (playerByName) {
+                    targets.push(playerByName.superhero.currentSide);
+                }
+
+                Object.values(this.match.triggerCards).forEach(card => {
+                    if (byName(card) && !targets.includes(card)) {
+                        targets.push(card);
+                    }
+                });
                 break;
             case TARGET_HERO_SIDE:
                 targets = card.sides.filter(side => side.isHero);

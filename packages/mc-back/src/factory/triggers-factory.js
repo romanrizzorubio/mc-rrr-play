@@ -16,6 +16,8 @@ import {ThisThwartsTrigger, TRIGGER_THIS_THWARTS} from "../triggers/this-thwarts
 import {TRIGGER_VILLAIN_ATTACKS, VillainAttacksTrigger} from "../triggers/villain-attacks-trigger.js";
 import {TRIGGER_VILLAIN_ATTACKS_YOU, VillainAttacksYouTrigger} from "../triggers/villain-attacks-you-trigger.js";
 import {TRIGGER_VILLAIN_SCHEMES, VillainSchemesTrigger} from "../triggers/villain-schemes-trigger.js";
+import {TRIGGER_YOU_ATTACK, YouAttackTrigger} from "../triggers/you-attack-trigger.js";
+import {TRIGGER_YOU_ANY_ATTACK, YouAnyAttackTrigger} from "../triggers/you-any-attack-trigger.js";
 import {TRIGGER_YOU_DEFEAT_MINION, YouDefeatMinionTrigger} from "../triggers/you-defeat-minion-trigger.js";
 import {TRIGGER_YOU_WOULD_TAKE_DAMAGE, YouWouldTakeDamageTrigger} from "../triggers/you-would-take-damage-trigger.js";
 import {
@@ -77,6 +79,10 @@ export class TriggersFactory {
                 return new VillainAttacksYouTrigger(triggerParams);
             case TRIGGER_VILLAIN_SCHEMES:
                 return new VillainSchemesTrigger(triggerParams);
+            case TRIGGER_YOU_ATTACK:
+                return new YouAttackTrigger(triggerParams);
+            case TRIGGER_YOU_ANY_ATTACK:
+                return new YouAnyAttackTrigger(triggerParams);
             case TRIGGER_YOU_DEFEAT_MINION:
                 return new YouDefeatMinionTrigger(triggerParams);
             case TRIGGER_YOU_WOULD_TAKE_DAMAGE:

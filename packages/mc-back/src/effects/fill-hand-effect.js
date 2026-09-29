@@ -1,6 +1,7 @@
 import {Effect} from "./effect.js";
 import {DrawEffect} from "./draw-effect.js";
 
+export const EFFECT_FILL_HAND = 'fill-hand';
 export class FillHandEffect extends Effect {
     constructor({
         printed = false,

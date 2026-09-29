@@ -21,6 +21,7 @@ import {EFFECT_PLACE_DAMAGE, PlaceDamageEffect} from "../effects/place-damage-ef
 import {EFFECT_PLACE_THREAT, PlaceThreatEffect} from "../effects/place-threat-effect.js";
 import {EFFECT_REMOVE_CARD, RemoveCardEffect} from "../effects/remove-card-effect.js";
 import {EFFECT_REMOVE_THREAT, RemoveThreatEffect} from "../effects/remove-threat-effect.js";
+import {EFFECT_RETURN_HAND, ReturnHandEffect} from "../effects/return-hand-effect.js";
 import {EFFECT_REMOVE_USE, RemoveCountersEffect} from "../effects/remove-counters-effect.js";
 import {EFFECT_RETURN_FACEDOWN, ReturnFaceDownEffect} from "../effects/return-facedown-effect.js";
 import {EFFECT_SEARCH_CARD_REVEAL, SearchCardAndRevealEffect} from "../effects/search-card-reveal-effect.js";
@@ -61,6 +62,7 @@ import {DiscardConditionHandEffect, EFFECT_DISCARD_CONDITION_HAND} from "../effe
 import {DiscardFromDeckEffect, EFFECT_DISCARD_FROM_DECK} from "../effects/discard-from-deck-effect.js";
 import {EFFECT_MODIFY_ATTACK_VALUE, ModifyAttackValueEffect} from "../effects/modify-attack-value-effect.js";
 import {EFFECT_ENEMY_SCHEME, EnemySchemeEffect} from "../effects/enemy-scheme-effect.js";
+import {EFFECT_FILL_HAND, FillHandEffect} from "../effects/fill-hand-effect.js";
 
 export class EffectsFactory {
     constructor(abilitiesFactory) {
@@ -172,6 +174,8 @@ export class EffectsFactory {
                     return new ReadyEffect(params);
                 case EFFECT_REMOVE_CARD:
                     return new RemoveCardEffect(params);
+                case EFFECT_RETURN_HAND:
+                    return new ReturnHandEffect(params);
                 case EFFECT_REMOVE_THREAT:
                     return new RemoveThreatEffect(params);
                 case EFFECT_REMOVE_USE:
@@ -182,6 +186,8 @@ export class EffectsFactory {
                     return new RevealFirstEncounterEffect(params);
                 case EFFECT_ENEMY_SCHEME:
                     return new EnemySchemeEffect(params);
+                case EFFECT_FILL_HAND:
+                    return new FillHandEffect(params);
                 case EFFECT_SEARCH_CARD_REVEAL:
                     return new SearchCardAndRevealEffect(params);
                 case EFFECT_SELECT_DISCARD_CARD:

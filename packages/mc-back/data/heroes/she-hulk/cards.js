@@ -13,13 +13,13 @@ import {
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
     TARGET_ANY_PLAYER,
-    TARGET_CARD, TARGET_CONDITION_CARD, TARGET_EFFECT, TARGET_ENEMY,
-    TARGET_HERO, TARGET_MAIN_SCHEME,
+    TARGET_CARD, TARGET_CONDITION_CARD, TARGET_EFFECT, TARGET_ENEMY, TARGET_ALL_ENEMIES,
+    TARGET_HERO, TARGET_BY_NAME, TARGET_MAIN_SCHEME,
     TARGET_SCHEME, TARGET_THIS, TARGET_VILLAIN, TARGET_YOU, TARGET_YOUR_SUPERHERO
 } from "../../../src/constants/targets.js";
 import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from "../../../src/constants/labels.js";
 import {
-    CALC_COUNT, CALC_MULTIPLY_2,
+    CALC_COUNT, CALC_DAMAGE, CALC_MULTIPLY_2,
 } from "../../../src/constants/calc.js";
 import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
 import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
@@ -60,8 +60,10 @@ import {EFFECT_MODIFY_DEFENSE_VALUE} from "../../../src/effects/modify-defense-v
 import {EFFECT_STUN} from "../../../src/effects/stun-effect.js";
 import {ABILITY_OPTION} from "../../../src/abilities/misc/option-ability.js";
 import {EFFECT_MODIFY_TRAITS} from "../../../src/effects/modify-traits-effect.js";
+import {ABILITY_ALTEREGO_ACTION} from "../../../src/abilities/actions/alterego-action-ability.js";
 import {ABILITY_HERO_INTERRUPT} from "../../../src/abilities/interrupt/hero-interrupt-ability.js";
 import {EFFECT_REMOVE_CARD} from "../../../src/effects/remove-card-effect.js";
+import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-value-effect.js";
 import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
 import {EFFECT_SPEND_X} from "../../../src/effects/spend-x-effect.js";
 import {EFFECT_FLIP} from "../../../src/effects/flip-effect.js";
@@ -69,55 +71,47 @@ import {EFFECT_MAY} from "../../../src/effects/may-effect.js";
 import {CARD_TYPE_OBLIGATION} from "../../../src/model/printed/obligation-card.js";
 import {TRIGGER_CONDITION_GET_DEFENSE} from "../../../src/triggers/condition-get-defense-trigger.js";
 import {TRIGGER_CONDITION_GET_TRAITS} from "../../../src/triggers/condition-get-traits-trigger.js";
+import {TRIGGER_THIS_FLIP} from "../../../src/triggers/this-flip-trigger.js";
 import {TRIGGER_THIS_ATTACK} from "../../../src/triggers/this-attack-trigger.js";
 import {TRIGGER_THIS_ENTER_PLAY} from "../../../src/triggers/this-enter-play-trigger.js";
 import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from "../../../src/triggers/you-would-take-damage-trigger.js";
 import {TRIGGER_INSTANT} from "../../../src/triggers/instant-trigger.js";
 import {ABILITY_INTERRUPT} from "../../../src/abilities/interrupt/interrupt-ability.js";
 import {EFFECT_PREVENT_PLACE_THREAT} from "../../../src/effects/prevent-place-threat-effect.js";
+import {EFFECT_RETURN_HAND} from "../../../src/effects/return-hand-effect.js";
 import {TRIGGER_PLACE_THREAT} from "../../../src/triggers/place-threat-trigger.js";
+import {TRIGGER_YOUR_HERO_GET_ATTACK} from "../../../src/triggers/your-hero-get-attack-trigger.js";
+import {TRIGGER_YOU_ANY_ATTACK} from "../../../src/triggers/you-any-attack-trigger.js";
+import {ABILITY_HERO_RESPONSE} from "../../../src/abilities/responses/hero-response-ability.js";
+import {TRIGGER_YOU_ATTACK} from "../../../src/triggers/you-attack-trigger.js";
+import {EFFECT_READY} from "../../../src/effects/ready-effect.js";
+import {EFFECT_FILL_HAND} from "../../../src/effects/fill-hand-effect.js";
 
-const set = 'She-Hulk';
-export const captainMarvelCard = {
+const set = 'Hulka';
+export const sheHulkCard = {
     type: CARD_TYPE_HERO,
     params: {
-        name: 'Capitana Marvel',
+        name: 'Hulka',
         set,
-        image: 'heroes/she-hulk/jennifer0a.webp',
-        traits: [TRAIT_AVENGER, TRAIT_SOLDIER],
+        image: 'heroes/she-hulk/01019a.webp',
+        traits: [TRAIT_AVENGER, TRAIT_GAMMA],
         unique: true,
         classification: CLASSIFICATION_HERO,
-        thwart: 2,
-        attack: 2,
-        defense: 1,
-        handSize: 5,
-        hitPoints: 12,
+        thwart: 1,
+        attack: 3,
+        defense: 2,
+        handSize: 4,
+        hitPoints: 15,
         abilities: [{
-            type: ABILITY_ACTION,
+            type: ABILITY_RESPONSE,
             params: {
-                name: 'Redirigir energía',
-                limit: {count: 1, time: TIME_ROUND},
-                arrow: {
-                    type: EFFECT_CHAINED,
-                    params: {
-                        effects: [{
-                            type: EFFECT_SPEND,
-                            params: {
-                                resources: [RESOURCE_ENERGY]
-                            }
-                        }, {
-                            type: EFFECT_HEAL,
-                            params: {
-                                damage: 1,
-                                target: TARGET_YOU,
-                            }
-                        }]
-                    }
-                },
+                name: '\"¡Deberías hacer pesas!\"',
+                trigger: TRIGGER_THIS_FLIP,
                 effect: {
-                    type: EFFECT_DRAW_CARD,
+                    type: EFFECT_DEAL_DAMAGE,
                     params: {
-                        target: TARGET_YOU
+                        damage: 2,
+                        target: TARGET_ENEMY,
                     }
                 }
             }
@@ -129,7 +123,7 @@ export const jenniferWaltersCard = {
     params: {
         name: 'Jennifer Walters',
         set,
-        image: 'heroes/she-hulk/jennifer0a.webp',
+        image: 'heroes/she-hulk/01019b.webp',
         traits: [TRAIT_ATTORNEY, TRAIT_GAMMA],
         unique: true,
         classification: CLASSIFICATION_HERO,
@@ -153,567 +147,303 @@ export const jenniferWaltersCard = {
         }],
     }
 };
-export const spiderWoman = {
+
+export const hellcat = {
     type: CARD_TYPE_ALLY,
     params: {
-        name: 'Spider Woman',
+        name: 'Gata Infernal',
+        subtitle: 'Patsy Walker',
         set,
-        image: 'heroes/captain-marvel/carol1.webp',
-        traits: [TRAIT_AVENGER, TRAIT_SPY],
+        image: 'heroes/she-hulk/01020.webp',
+        traits: [TRAIT_AVENGER],
         unique: true,
         cost: 3,
         resources: [RESOURCE_WILD],
         classification: CLASSIFICATION_HERO,
-        subtitle: 'Jessica Drew',
         thwart: 2,
-        attack: 2,
+        attack: 1,
         thwartConsequencial: 1,
         attackConsequencial: 1,
-        hitPoints: 2,
+        hitPoints: 3,
         abilities: [{
-            type: ABILITY_RESPONSE,
+            type: ABILITY_ACTION,
             params: {
-                trigger: TRIGGER_THIS_ENTER_PLAY,
+                name: 'Devolver a la mano',
                 effect: {
-                    type: EFFECT_CONFUSE,
+                    type: EFFECT_RETURN_HAND,
                     params: {
-                        target: TARGET_VILLAIN,
+                        target: TARGET_THIS,
                     }
                 }
             }
         }],
     }
 };
-export const crisisInterdiction = {
+
+export const gammaSlam = {
     type: CARD_TYPE_EVENT,
     params: {
-        name: 'Evitar una crisis',
+        name: 'Apisonadora gamma',
         set,
-        image: 'heroes/captain-marvel/carol2.webp',
-        traits: [TRAIT_THWART],
-        cost: 2,
-        resources: [RESOURCE_ENERGY],
-        classification: CLASSIFICATION_HERO,
-        abilities: [{
-            type: ABILITY_HERO_ACTION,
-            params: {
-                labels: [LABEL_THWART],
-                effect: {
-                    type: EFFECT_CHAINED,
-                    params: {
-                        target: TARGET_SCHEME,
-                        effects: [{
-                            type: EFFECT_REMOVE_THREAT,
-                            params: {
-                                threat: 2,
-                                target: TARGET_SCHEME,
-                            }
-                        }, {
-                            type: EFFECT_DO_IF_HAS_TRAITS,
-                            params: {
-                                target: TARGET_HERO,
-                                traits: [TRAIT_AERIAL],
-                                effect: {
-                                    type: EFFECT_REMOVE_THREAT,
-                                    params: {
-                                        threat: 2,
-                                        target: TARGET_SCHEME,
-                                        excludeTarget: 'effects.0.selectedTarget',
-                                    }
-                                }
-                            }
-                        }]
-                    }
-                }
-            }
-        }],
-    }
-};
-export const photonicBlast = {
-    type: CARD_TYPE_EVENT,
-    params: {
-        name: 'Rayo fotónico',
-        set,
-        image: 'heroes/captain-marvel/carol5.webp',
+        image: 'heroes/she-hulk/01021.png',
         traits: [TRAIT_ATTACK, TRAIT_SUPERPOWER],
-        cost: 3,
-        resources: [RESOURCE_PHYSICAL],
+        cost: 4,
+        resources: [RESOURCE_MENTAL],
         classification: CLASSIFICATION_HERO,
         abilities: [{
             type: ABILITY_HERO_ACTION,
             params: {
                 labels: [LABEL_ATTACK],
-                effect: {
-                    type: EFFECT_CHAINED,
-                    params: {
-                        target: TARGET_ENEMY,
-                        effects: [{
-                            type: EFFECT_DEAL_DAMAGE,
-                            params: {
-                                damage: 5,
-                                target: TARGET_ENEMY,
-                            }
-                        }, {
-                            type: EFFECT_DO_IF_HAS_PAID,
-                            params: {
-                                resources: [RESOURCE_ENERGY],
-                                effect: {
-                                    type: EFFECT_DRAW_CARD,
-                                    params: {
-                                        target: TARGET_YOU,
-                                    }
-                                }
-                            }
-                        }]
-                    }
-                }
-            }
-        }],
-    }
-};
-export const energyAbsorption = {
-    type: CARD_TYPE_RESOURCE,
-    params: {
-        name: 'Absorción de Energía',
-        set,
-        image: 'heroes/captain-marvel/carol8.webp',
-        resources: [RESOURCE_ENERGY, RESOURCE_ENERGY, RESOURCE_ENERGY],
-        classification: set,
-    }
-};
-export const alphaFlightStation = {
-    type: CARD_TYPE_SUPPORT,
-    params: {
-        name: 'Base orbital de Alpha Flight',
-        set,
-        image: 'heroes/captain-marvel/carol10.webp',
-        traits: [TRAIT_LOCATION, TRAIT_SHIELD],
-        unique: true,
-        cost: 1,
-        resources: [RESOURCE_MENTAL],
-        classification: CLASSIFICATION_HERO,
-        abilities: [{
-            type: ABILITY_ACTION,
-            params: {
-                arrow: {
-                    type: EFFECT_CHAINED,
-                    params: {
-                        effects: [{
-                            type: EFFECT_EXHAUST,
-                            params: {
-                                target: TARGET_CARD,
-                                title: 'Agotar la Base',
-                            }
-                        }, {
-                            type: EFFECT_SELECT_DISCARD_CARD,
-                            params: {
-                                target: TARGET_YOU,
-                                title: 'Descartar una carta',
-                            }
-                        }]
-                    }
-                },
-                effect: {
-                    type: EFFECT_CHAINED,
-                    params: {
-                        effects: [{
-                            type: EFFECT_DRAW_CARD,
-                            params: {
-                                target: TARGET_YOU,
-                            }
-                        }, {
-                            type: EFFECT_DO_IF,
-                            params: {
-                                target: TARGET_CARD,
-                                condition: {
-                                    'player.isAlterEgo': true,
-                                },
-                                effect: {
-                                    type: EFFECT_DRAW_CARD,
-                                    params: {
-                                        target: TARGET_YOU,
-                                    }
-                                }
-                            }
-                        }]
-                    }
-                },
-            }
-        }],
-    }
-};
-export const captainMarvelsHelmet = {
-    type: CARD_TYPE_UPGRADE,
-    params: {
-        name: 'Casco de la Capitana Marvel',
-        set,
-        image: 'heroes/captain-marvel/carol11.webp',
-        traits: [TRAIT_ARMOR, TRAIT_TECH],
-        cost: 2,
-        resources: [RESOURCE_PHYSICAL],
-        classification: CLASSIFICATION_HERO,
-        unique: true,
-        abilities: [{
-            type: ABILITY_CONSTANT,
-            params: {
-                hideDialog: true,
-                trigger: TRIGGER_CONDITION_GET_DEFENSE,
-                triggerParams: {
-                    conditionTrigger: {
-                        name: 'Capitana Marvel',
-                    },
-                    conditionSource: 'effect.selectedTarget',
-                },
-                effect: {
-                    type: EFFECT_MODIFY_DEFENSE_VALUE,
-                    params: {
-                        target: TARGET_EFFECT,
-                        count: 1,
-                    }
-                }
-            }
-        }, {
-            type: ABILITY_CONSTANT,
-            params: {
-                hideDialog: true,
-                trigger: TRIGGER_CONDITION_GET_DEFENSE,
-                triggerParams: {
-                    conditionTrigger: {
-                        name: 'Capitana Marvel',
-                    },
-                    conditionSource: 'effect.selectedTarget',
-                },
-                effect: {
-                    type: EFFECT_DO_IF_HAS_TRAITS,
-                    params: {
-                        target: TARGET_HERO,
-                        traits: [TRAIT_AERIAL],
-                        effect: {
-                            type: EFFECT_MODIFY_DEFENSE_VALUE,
-                            params: {
-                                target: TARGET_EFFECT,
-                                characterTarget: TARGET_HERO,
-                                count: 1,
-                            }
-                        }
-                    }
-                }
-            }
-        }],
-    }
-};
-export const cosmicFlight = {
-    type: CARD_TYPE_UPGRADE,
-    params: {
-        name: 'Vuelo cósmico',
-        set,
-        image: 'heroes/captain-marvel/carol12.webp',
-        traits: [TRAIT_SUPERPOWER],
-        cost: 2,
-        resources: [RESOURCE_ENERGY],
-        classification: CLASSIFICATION_HERO,
-        abilities: [{
-            type: ABILITY_CONSTANT,
-            params: {
-                hideDialog: true,
-                trigger: TRIGGER_CONDITION_GET_TRAITS,
-                triggerParams: {
-                    conditionTrigger: {
-                        name: 'Capitana Marvel',
-                    },
-                    conditionSource: 'effect.selectedTarget',
-                },
-                effect: {
-                    type: EFFECT_MODIFY_TRAITS,
-                    params: {
-                        target: TARGET_EFFECT,
-                        traits: [TRAIT_AERIAL],
-                    }
-                }
-            }
-        }, {
-            type: ABILITY_HERO_INTERRUPT,
-            params: {
-                trigger: TRIGGER_YOU_WOULD_TAKE_DAMAGE,
-                labels: [LABEL_DEFENSE],
-                arrow: {
-                    type: EFFECT_DISCARD_GAME,
-                    params: {
-                        target: TARGET_CARD,
-                    }
-                },
-                effect: {
-                    type: EFFECT_PREVENT_DAMAGE,
-                    target: TARGET_YOU,
-                    params: {
-                        damage: 3,
-                    }
-                }
-            }
-        }],
-    }
-};
-export const energyChannel = {
-    type: CARD_TYPE_UPGRADE,
-    params: {
-        name: 'Canalizar energía',
-        set,
-        image: 'heroes/captain-marvel/carol14.webp',
-        traits: [TRAIT_SUPERPOWER],
-        cost: 0,
-        resources: [RESOURCE_MENTAL],
-        classification: CLASSIFICATION_HERO,
-        maximum: {
-            count: 1,
-        },
-        abilities: [{
-            type: ABILITY_ACTION,
-            params: {
-                name: 'Cargar',
-                arrow: {
-                    type: EFFECT_SPEND_X,
-                    params: {
-                        resourceType: RESOURCE_ENERGY,
-                    }
-                },
-                effect: {
-                    type: EFFECT_PLACE_COUNTER,
-                    params: {
-                        target: TARGET_THIS,
-                        paramsCalc: {
-                            target: 'effect.ability.arrow.cost.paid',
-                            formula: CALC_COUNT,
-                        },
-                    }
-                }
-            }
-        }, {
-            type: ABILITY_HERO_ACTION,
-            params: {
-                name: 'Disparar',
-                labels: [LABEL_ATTACK],
-                arrow: {
-                    type: EFFECT_DISCARD_GAME,
-                    params: {
-                        target: TARGET_THIS,
-                        saveData: ['counters'],
-                    }
-                },
                 effect: {
                     type: EFFECT_DEAL_DAMAGE,
                     params: {
                         target: TARGET_ENEMY,
                         paramsCalc: {
-                            target: 'effect.ability.arrow.cost.savedData.counters',
-                            formula: CALC_MULTIPLY_2,
-                            max: 10,
-                        },
+                            target: 'player.hero',
+                            formula: CALC_DAMAGE,
+                            max: 15,
+                        }
                     }
                 }
             }
         }],
     }
 };
-export const familyEmergency = {
-    type: CARD_TYPE_OBLIGATION,
+
+export const oneTwoPunch = {
+    type: CARD_TYPE_EVENT,
     params: {
-        name: 'Family Emergency',
+        name: 'Sucesión de puñetazos',
         set,
-        image: 'heroes/captain-marvel/caroln0.webp',
-        boost: 2,
-        giveToOwner: true,
-        triggerInstant: true,
+        image: 'heroes/she-hulk/01024.png',
+        traits: [TRAIT_SKILL],
+        cost: 1,
+        resources: [RESOURCE_PHYSICAL],
+        classification: CLASSIFICATION_HERO,
         abilities: [{
-            type: ABILITY_CONSTANT,
+            type: ABILITY_HERO_RESPONSE,
             params: {
-                trigger: TRIGGER_INSTANT,
-                name: 'Convertirte en Carol Danvers',
+                trigger: TRIGGER_YOU_ATTACK,
                 effect: {
-                    type: EFFECT_MAY,
+                    type: EFFECT_READY,
                     params: {
-                        effect: {
-                            type: EFFECT_FLIP,
-                            params: {
-                                target: TARGET_YOUR_SUPERHERO,
-                                formTarget: TARGET_ALTEREGO_SIDE,
-                            }
-                        },
+                        target: TARGET_BY_NAME,
+                        name: 'Hulka',
+                    }
+                }
+            }
+        }],
+    }
+};
+
+export const groundStomp = {
+    type: CARD_TYPE_EVENT,
+    params: {
+        name: 'Pisotón',
+        set,
+        image: 'heroes/she-hulk/01022.png',
+        traits: [TRAIT_SUPERPOWER],
+        cost: 2,
+        resources: [RESOURCE_MENTAL],
+        classification: CLASSIFICATION_HERO,
+        abilities: [{
+            type: ABILITY_HERO_ACTION,
+            params: {
+                effect: {
+                    type: EFFECT_DEAL_DAMAGE,
+                    params: {
+                        damage: 1,
+                        target: TARGET_ALL_ENEMIES,
+                    }
+                }
+            }
+        }],
+    }
+};
+
+export const legalPractice = {
+    type: CARD_TYPE_EVENT,
+    params: {
+        name: 'Proceso judicial',
+        set,
+        image: 'heroes/she-hulk/01023.png',
+        traits: [TRAIT_SKILL],
+        cost: 0,
+        resources: [RESOURCE_PHYSICAL],
+        classification: CLASSIFICATION_HERO,
+        abilities: [{
+            type: ABILITY_ALTEREGO_ACTION,
+            params: {
+                arrow: {
+                    type: EFFECT_SELECT_DISCARD_CARD,
+                    params: {
+                        target: TARGET_PLAYER,
+                        count: 5,
                     }
                 },
-            },
-        }, {
-            type: ABILITY_CONSTANT,
-            params: {
-                trigger: TRIGGER_INSTANT,
-                name: 'Resolver la obligación',
                 effect: {
-                    type: EFFECT_CHOOSE_ABILITY,
+                    type: EFFECT_REMOVE_THREAT,
                     params: {
-                        options: [{
-                            type: ABILITY_OPTION,
+                        target: TARGET_SCHEME,
+                        paramsCalc: {
+                            target: 'effect.ability.arrow.cards',
+                            formula: CALC_COUNT,
+                        }
+                    }
+                }
+            }
+        }],
+    }
+};
+
+export const splitPersonality = {
+    type: CARD_TYPE_EVENT,
+    params: {
+        name: 'Doble personalidad',
+        set,
+        image: 'heroes/she-hulk/01025.png',
+        cost: 3,
+        resources: [RESOURCE_ENERGY],
+        abilities: [{
+            type: ABILITY_ACTION,
+            params: {
+                name: 'Doble personalidad',
+                effect: [{
+                    type: EFFECT_FLIP,
+                    params: {
+                        target: TARGET_YOUR_SUPERHERO,
+                    }
+                }, {
+                    type: EFFECT_FILL_HAND,
+                }]
+            }
+        }],
+    }
+};
+
+export const superhumanLawDivision = {
+    type: CARD_TYPE_SUPPORT,
+    params: {
+        name: 'División de Derecho Superhumano',
+        set,
+        image: 'heroes/she-hulk/01026.png',
+        traits: [TRAIT_LOCATION],
+        cost: 1,
+        resources: [RESOURCE_PHYSICAL],
+        classification: CLASSIFICATION_HERO,
+        abilities: [{
+            type: ABILITY_ALTEREGO_ACTION,
+            params: {
+                arrow: {
+                    type: EFFECT_CHAINED,
+                    params: {
+                        matchAll: true,
+                        effects: [{
+                            type: EFFECT_EXHAUST,
                             params: {
-                                name: 'Agotar a Carol Danvers para retirar la Obligación',
-                                effect: {
-                                    type: EFFECT_REMOVE_CARD,
-                                    params: {
-                                        target: TARGET_CARD,
-                                    }
-                                },
-                                arrow: {
-                                    type: EFFECT_EXHAUST,
-                                    params: {
-                                        target: TARGET_ALTEREGO,
-                                    }
-                                },
+                                target: TARGET_CARD,
                             }
                         }, {
-                            type: ABILITY_OPTION,
+                            type: EFFECT_SPEND,
                             params: {
-                                name: 'Quedar aturdido y Oleada para descartar la Obligación',
-                                effect: {
-                                    type: EFFECT_CHAINED,
-                                    params: {
-                                        effects: [{
-                                            type: EFFECT_STUN,
-                                            params: {
-                                                target: TARGET_YOU,
-                                            }
-                                        }, {
-                                            type: EFFECT_SURGE,
-                                        }, {
-                                            type: EFFECT_DISCARD_GAME,
-                                            params: {
-                                                target: TARGET_CARD,
-                                            },
-                                        }]
-                                    }
-                                },
+                                resources: [RESOURCE_WILD],
                             }
-                        }],
+                        }]
                     }
-                }
-            }
-        }],
-    }
-};
-export const thePsycheMagnitron = {
-    type: CARD_TYPE_SIDE_SCHEME_SCENARIO,
-    params: {
-        name: 'The Psyche-Magnitron',
-        set,
-        image: 'heroes/captain-marvel/caroln1.webp',
-        boost: 3,
-        icons: {hazard: 1},
-        startingThreat: 3,
-        abilities:  [{
-            type: ABILITY_WHEN_REVEALED,
-            params: {
+                },
                 effect: {
-                    type: EFFECT_PLACE_THREAT,
+                    type: EFFECT_REMOVE_THREAT,
                     params: {
-                        threat: [1, true],
-                        target: TARGET_CARD
+                        threat: 2,
+                        target: TARGET_SCHEME,
                     }
                 }
             }
         }],
     }
 };
-export const yonRogg = {
-    type: CARD_TYPE_MINION,
+
+export const focusedRage = {
+    type: CARD_TYPE_UPGRADE,
     params: {
-        name: 'Yon-Rogg',
+        name: 'Furia concentrada',
         set,
-        image: 'heroes/captain-marvel/caroln2.webp',
-        boost: 2,
-        hitPoints: 5,
-        attack: 3,
-        scheme: 2,
-        unique: true,
-        traits: [TRAIT_ELITE, TRAIT_KREE],
-        nemesis: true,
-        abilities:  [{
+        image: 'heroes/she-hulk/01027.png',
+        traits: [TRAIT_SKILL],
+        cost: 3,
+        resources: [RESOURCE_ENERGY],
+        classification: CLASSIFICATION_HERO,
+        abilities: [{
+            type: ABILITY_HERO_ACTION,
+            params: {
+                arrow: {
+                    type: EFFECT_CHAINED,
+                    params: {
+                        matchAll: true,
+                        effects: [{
+                            type: EFFECT_EXHAUST,
+                            params: {
+                                target: TARGET_CARD,
+                            }
+                        }, {
+                            type: EFFECT_TAKE_DAMAGE,
+                            params: {
+                                damage: 1,
+                                target: TARGET_YOUR_SUPERHERO,
+                            }
+                        }]
+                    }
+                },
+                effect: {
+                    type: EFFECT_DRAW_CARD,
+                    params: {
+                        count: 1,
+                        target: TARGET_PLAYER,
+                    }
+                }
+            }
+        }],
+    }
+};
+
+export const superhumanStrength = {
+    type: CARD_TYPE_UPGRADE,
+    params: {
+        name: 'Fuerza sobrehumana',
+        set,
+        image: 'heroes/she-hulk/01028.png',
+        traits: [TRAIT_SUPERPOWER],
+        cost: 2,
+        resources: [RESOURCE_MENTAL],
+        classification: CLASSIFICATION_HERO,
+        abilities: [{
+            type: ABILITY_CONSTANT,
+            params: {
+                hideDialog: true,
+                trigger: TRIGGER_YOUR_HERO_GET_ATTACK,
+                effect: {
+                    type: EFFECT_MODIFY_ATTACK_VALUE,
+                    params: {
+                        target: TARGET_EFFECT,
+                        count: 2,
+                    }
+                },
+            }
+        }, {
             type: ABILITY_FORCED_RESPONSE,
             params: {
-                trigger: TRIGGER_THIS_ATTACK,
-                effect: {
-                    type: EFFECT_PLACE_THREAT,
+                trigger: TRIGGER_YOU_ANY_ATTACK,
+                arrow: {
+                    type: EFFECT_REMOVE_CARD,
                     params: {
-                        threat: 1,
-                        target: TARGET_CONDITION_CARD,
-                        condition: {
-                            name: 'The Psyche-Magnitron'
-                        }
-                    }
-                }
-            }
-        }],
-    }
-};
-export const kreeManipulator = {
-    type: CARD_TYPE_TREACHERY,
-    params: {
-        name: 'Kree Manipulator',
-        set,
-        image: 'heroes/captain-marvel/caroln3.webp',
-        keywords: {surge: true},
-        abilities: [{
-            type: ABILITY_WHEN_REVEALED,
-            params: {
-                effect: {
-                    type: EFFECT_PLACE_THREAT,
-                    params: {
-                        target: TARGET_MAIN_SCHEME,
-                        threat: 1,
+                        target: TARGET_THIS,
                     }
                 },
-            }
-        }],
-        boostAbility: {
-            type: ABILITY_BOOST,
-            params: {
                 effect: {
-                    type: EFFECT_DO_IF,
+                    type: EFFECT_STUN,
                     params: {
-                        target: TARGET_ACTIVATION,
-                        condition: {
-                            'activation.isAttack': true,
-                            'activation.character.isVillain': true,
-                            'activation.isDefended': false,
-                        },
-                        effect: {
-                            type: EFFECT_PLACE_THREAT,
-                            params: {
-                                target: TARGET_MAIN_SCHEME,
-                                threat: 1,
-                            }
-                        }
+                        target: TARGET_ATTACKED,
                     }
-                },
-            }
-        }
-    }
-};
-export const yonRoggsTreason = {
-    type: CARD_TYPE_TREACHERY,
-    params: {
-        name: 'Yon-Rogg\'s Treason',
-        set,
-        image: 'heroes/captain-marvel/caroln5.webp',
-        boost: 1,
-        abilities: [{
-            type: ABILITY_WHEN_REVEALED,
-            params: {
-                effect: {
-                    type: EFFECT_DISCARD_CONDITION_HAND,
-                    params: {
-                        condition: {
-                            resources: [RESOURCE_ENERGY],
-                        },
-                    }
-                },
-                ifNot: {
-                    type: EFFECT_SURGE,
                 }
             }
         }],

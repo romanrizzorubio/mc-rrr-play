@@ -1,6 +1,7 @@
 import {Effect} from "./effect.js";
 import {TARGET_ALTEREGO, TARGET_ALTEREGO_SIDE, TARGET_HERO, TARGET_HERO_SIDE} from "../constants/targets.js";
 import {ValidTarget} from "../engine/valid-target.js";
+import {TRIGGER_THIS_FLIP} from "../triggers/this-flip-trigger.js";
 
 export const EFFECT_FLIP = 'flip';
 export class FlipEffect extends Effect {
@@ -64,5 +65,9 @@ export class FlipEffect extends Effect {
         selectedFormTarget.initTriggers();
 
         selectedTarget.refresh();
+
+        await this.match.checkTriggers(TRIGGER_THIS_FLIP, {
+            card: selectedTarget,
+        });
     }
 }
