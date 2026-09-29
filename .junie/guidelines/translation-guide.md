@@ -150,3 +150,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 2. **Autoactualización**: Si el usuario solicita una corrección terminológica, esta tabla DEBE actualizarse inmediatamente en el mismo paso que la corrección del documento.
 3. **Consistencia**: Al añadir nueva documentación, escanea el archivo `docs/02-GAME-MECHANICS.md` para asegurar que los términos circundantes usan esta misma terminología.
 4. **Iconos**: Utiliza y comprende el formato de corchetes `[x]` para representar iconos de recursos y otros elementos del juego según la tabla de "Representación de Iconos".
+5. **Formato de Descripción de Cartas**: El usuario proporciona descripciones de cartas con el siguiente formato, el cual debes saber interpretar para validar o generar código:
+    - **[u] Nombre (Subtítulo)**: Indica si es única y su identidad.
+    - **Tipo de carta**: Aliado, Evento, Mejora, Apoyo, Identidad de héroe, Identidad de alter ego, etc.
+    - **Rasgos**: Lista de rasgos separados por puntos (ej. Vengador. Espía.).
+    - **Coste / Salud / Atributos**: Valores numéricos. El daño derivado se marca con `[d]`.
+    - **Recursos**: Iconos entre corchetes (ej. `[w]` para universal).
+    - **Capacidades**: Texto descriptivo precedido por el tipo (Acción, Respuesta, Interrupción, etc.) y opcionalmente el límite de uso.
