@@ -8,29 +8,21 @@ Para ver el procedimiento detallado paso a paso, consulta el **[Apéndice II: Pr
 **Véase también**: [Apéndice II: Preparación](02-10-APPENDIX-II-SETUP.md), [Apéndice I: Personalización](02-09-APPENDIX-I-CUSTOMIZATION.md).
 
 ### Fases de la ronda (Round Overview)
-Una ronda de juego se compone de las siguientes fases y pasos:
+Una ronda de juego se compone de dos fases: la fase del jugador y la fase del villano. Una vez que ambas fases se han completado, la ronda termina y comienza una nueva ronda.
 
-1. **Comienza la fase de jugador**.
-2. **Cada jugador toma un turno**.
-3. **Termina la fase de jugador**.
-4. **Comienza la fase del villano**.
-5. **Colocar amenaza en el plan principal**.
-6. **El villano y los esbirros se activan**. (Ver: activación, ataque, ejecución del plan).
-7. **Repartir cartas de encuentro**.
-8. **Mostrar y resolver cartas de encuentro**. (Ver: [repartir y mostrar](#repartir-y-mostrar-cartas-de-encuentro))
-9. **Pasar el marcador de jugador inicial**.
-10. **Terminar la ronda**. Proceder al paso uno de la siguiente ronda de juego.
+1. **Fase del jugador**: Los jugadores actúan en orden, juegan cartas y realizan acciones.
+2. **Fase del villano**: El villano coloca amenaza, ataca o ejecuta su plan, y se resuelven cartas de encuentro.
 
-### fase de jugador (Player Phase)
-Durante la fase del jugador, cada jugador (en orden de jugador) toma un turno.
+### Fase del jugador (Player Phase)
+Durante la fase del jugador, los jugadores toman sus turnos siguiendo el orden de jugador.
 
 Después de que cada jugador haya tomado un turno, los jugadores descartan hasta su tamaño de mano o roban hasta el mismo y preparan cada carta agotada.
 
-- Los efectos que duran "hasta el final de la fase [del jugador]" terminan después de que los jugadores roben hasta su tamaño de mano y todas las cartas se preparen. Luego, se resuelven los efectos que se resuelven "cuando/después de que termine la fase del jugador".
+- Los efectos que duran "hasta el final de la Fase del jugador" terminan después de que los jugadores roben hasta su tamaño de mano y todas las cartas se preparen. Luego, se resuelven los efectos que se resuelven "cuando/después de que termine la Fase del jugador".
 
-**Véase también**: fin de la fase del jugador, en orden de jugador, jugador, turno del jugador.
+**Véase también**: Fin de la fase del jugador, en orden de jugador, jugador, Turno del jugador.
 
-### turno del jugador (Player Turn)
+### Turno del jugador (Player Turn)
 Durante su turno, un jugador puede realizar las siguientes opciones, en cualquier orden. Cada opción, excepto "cambiar de identidad", puede realizarse tantas veces como el jugador pueda, siempre que pueda pagar los costes requeridos.
 
 - Cambiar de identidad de héroe a alter ego, o de alter ego a héroe. Esta opción solo puede realizarse una vez por turno.
@@ -45,36 +37,36 @@ Durante su turno, un jugador puede realizar las siguientes opciones, en cualquie
     - Si la capacidad de acción va precedida de "Héroe" o "Alter ego", el jugador debe estar en la identidad especificada para activar la capacidad.
 - Pedir a otro jugador que active cualquier capacidad de "**Acción**" que ese jugador pudiera activar en su propio turno. El otro jugador decide entonces si activa o no la capacidad. (Otro jugador también puede ofrecerse a usar una acción durante el turno del jugador activo).
 
-**Véase también**: aliado, atributo básico, carta de encuentro, evento, identidad, propiedad y control, jugar, jugador, fase del jugador, apoyo, capacidad disparada, mejora.
+**Véase también**: aliado, atributo básico, carta de encuentro, evento, identidad, propiedad y control, jugar, jugador, Fase del jugador, apoyo, capacidad activada, mejora.
 
-### fin de la fase del jugador (End of Player Phase)
+### Fin de la fase del jugador (End of Player Phase)
 Para terminar la fase del jugador, realiza los siguientes pasos:
 
 1. En orden de jugador, cada jugador puede descartar cualquier número de cartas de su mano, y debe descartar hasta su tamaño de mano si tiene más cartas que su valor de tamaño de mano.
 2. Cada jugador roba simultáneamente hasta su tamaño de mano.
 3. Cada jugador prepara simultáneamente todas sus cartas. Prepara cada carta de encuentro agotada.
-4. Cualquier efecto que dure "hasta el final de la fase [del jugador]" termina.
-5. Resuelve cualquier efecto de "cuando/después de que termine la fase [del jugador]".
+4. Cualquier efecto que dure "hasta el final de la Fase del jugador" termina.
+5. Resuelve cualquier efecto de "cuando/después de que termine la Fase del jugador".
 
-**Véase también**: descarte, robar, tamaño de mano, efectos duraderos, jugador, fase de jugador, turno del jugador, preparar.
+**Véase también**: descarte, robar, tamaño de mano, efectos duraderos, jugador, Fase del jugador, Turno del jugador, preparar.
 
-### fase del villano (Villain Phase)
+### Fase del villano (Villain Phase)
 Los pasos de la fase del villano son:
 
 1. **Colocar amenaza**. Coloca la cantidad de amenaza indicada en el campo de aceleración del plan principal sobre ese plan. Si hay iconos o fichas de aceleración activos, también se coloca amenaza adicional igual al número de dichos iconos y fichas en este momento.
 2. **Los enemigos se activan**. En orden de jugador, cada jugador resuelve lo siguiente:
-    a. El villano se activa contra el jugador.
-    b. Cada esbirro enfrentado con el jugador se activa contra él, en el orden que elija el jugador.
+    a. El villano se activa contra el jugador. Si el jugador está en identidad de héroe, el villano ataca. Si el jugador está en identidad de alter ego, el villano ejecuta su plan.
+    b. Cada esbirro enfrentado con el jugador se activa contra él. Si el jugador está en identidad de héroe, el esbirro ataca. Si el jugador está en identidad de alter ego, el esbirro ejecuta su plan.
 3. **Repartir cartas de encuentro**. Reparte una carta de encuentro a cada jugador. Reparte una carta adicional por cada icono de riesgo en una carta en juego. Estas cartas adicionales se reparten en orden de jugador.
 4. **Mostrar cartas de encuentro**. El primer jugador muestra cada una de sus cartas de encuentro, de una en una en el orden en que fueron repartidas, resolviendo cada carta en función de su tipo de carta. Cada jugador repite este proceso en orden de jugador, hasta que no queden cartas de encuentro repartidas.
 5. **Pasar el marcador de jugador inicial**. Pasa el marcador de jugador inicial al siguiente jugador en el sentido de las agujas del reloj.
 6. **Fin de la fase del villano y de la ronda**.
-    a. Cualquier efecto que dure "hasta el final de la fase [del villano]" o "hasta el final de la ronda" termina.
-    b. Resuelve cualquier efecto de "cuando/después de que termine la fase [del villano]" o "cuando/después de que termine la ronda".
+    a. Cualquier efecto que dure "hasta el final de la Fase del villano" o "hasta el final de la ronda" termina.
+    b. Resuelve cualquier efecto de "cuando/después de que termine la Fase del villano" o "cuando/después de que termine la ronda".
 
 **Véase también**: icono de aceleración, activación, ataque (activación de enemigo), repartir, enfrentar, localizar, buscar, icono de riesgo, en orden de jugador, plan principal, esbirro, jugador, mostrar, ejecución de plan (activación de enemigo), amenaza, villano.
 
-### zona de juego del villano (Villain's Play Area)
+### Zona de juego del villano (Villain's Play Area)
 La zona de juego del villano (también llamada a veces "área de juego del villano") es el área de juego donde se encuentran el mazo de villano, el mazo de plan principal, el mazo de encuentros, la pila de descartes de encuentros y el dial de puntos de vida del villano.
 
 - Las cartas de entorno y las cartas de plan secundario se colocan en la zona de juego del villano cuando entran en juego.
@@ -84,8 +76,8 @@ La zona de juego del villano (también llamada a veces "área de juego del villa
 
 **Véase también**: accesorio, pila de descartes, mazo de encuentros, entorno, en juego y fuera de juego, plan principal, esbirro, obligación, villano.
 
-### mostrar (Reveal)
-Durante el paso cuatro de la fase del villano, cada jugador (en orden de jugador) muestra y resuelve todas las cartas de encuentro boca abajo que se le hayan repartido, de una en una, en el orden en que se le repartieron.
+### Mostrar (Reveal)
+Durante el paso cuatro de la Fase del villano, cada jugador (en orden de jugador) muestra y resuelve todas las cartas de encuentro boca abajo que se le hayan repartido, de una en una, en el orden en que se le repartieron.
 Para mostrar una carta de encuentro, sigue estos pasos:
 
 1. Pon la carta de encuentro boca arriba.
@@ -106,15 +98,15 @@ Si un jugador recibe instrucciones del texto de una carta para mostrar una carta
 
 **Véase también**: accesorio, elegir (elemento del juego), elegir (opción), repartir, carta de encuentro, entrar en juego, entorno, en orden de jugador, esbirro, obligación, jugador, plan secundario, perfidia, fase del villano.
 
-### en orden de jugador (In Player Order)
+### En orden de jugador (In Player Order)
 Si se instruye a los jugadores a realizar una secuencia "en orden de jugador", el primer jugador realiza su parte de la secuencia primero, seguido de los otros jugadores en el sentido de las agujas del reloj.
 
 - Si una secuencia realizada en orden de jugador no concluye después de que cada jugador haya realizado su parte de la secuencia una vez, la secuencia de oportunidades continúa en el sentido de las agujas del reloj hasta que se complete.
 - La frase "siguiente jugador" se refiere siempre al siguiente jugador (en el sentido de las agujas del reloj) en el orden de los jugadores.
 
-**Véase también**: localizar, buscar, jugador, fase de jugador, turno del jugador.
+**Véase también**: localizar, buscar, jugador, Fase del jugador, Turno del jugador.
 
-### repartir y mostrar cartas de encuentro (Deal and Reveal Encounter Cards)
+### Repartir y mostrar cartas de encuentro (Deal and Reveal Encounter Cards)
 Durante el paso tres de la fase del villano, se reparte a cada jugador una carta de encuentro boca abajo.
 
 Si la capacidad de una carta indica a un jugador que se le reparta una carta de encuentro, el jugador toma la carta superior del mazo de encuentros y la coloca boca abajo frente a él. Esta carta no se muestra en este momento. Esta carta se añade a la cola de cartas que ese jugador resuelve durante la fase del villano.
@@ -148,38 +140,44 @@ Antes de comenzar una partida de Marvel Champions, los jugadores pueden personal
 
 **Véase también**: carta específica de la campaña, conjunto experto, conjunto Normal.
 
-### estructura de la ronda (Round Structure)
-**Véase**: [Fases de la ronda (Round Overview)](#fases-de-la-ronda-round-overview), [fin de la fase del jugador](#fin-de-la-fase-del-jugador-end-of-player-phase), [fase de jugador](#fase-de-jugador-player-phase), [turno del jugador](#turno-del-jugador-player-turn), [fase del villano](#fase-del-villano-villain-phase).
+### Estructura de la ronda (Round Structure)
+**Véase**: [Fases de la ronda (Round Overview)](#fases-de-la-ronda-round-overview), [Fin de la fase del jugador](#fin-de-la-fase-del-jugador-end-of-player-phase), [Fase del jugador](#fase-del-jugador-player-phase), [Turno del jugador](#turno-del-jugador-player-turn), [Fase del villano](#fase-del-villano-villain-phase).
 
-### quedarse sin cartas (Running out of Cards)
+### Quedarse sin cartas (Running out of Cards)
 **Véase**: [mazo de encuentros](02-03-CARD-TYPES.md#mazo-de-encuentros-encounter-deck), [mazo de jugador](02-03-CARD-TYPES.md#mazo-de-jugador-player-deck).
 
-## Ejemplo de Turno Completo
+## Ejemplo de una ronda de juego
 
-```
-INICIO DE TURNO
-├─ Fase de Preparación
-│  ├─ Cada jugador gana 1 Física y 1 Mental
-│  └─ Las cartas se resetean
-│
-├─ Fase de Planificación (Jugadores)
-│  ├─ Jugador 1: Juega una carta de evento
-│  ├─ Jugador 1: Activa ataque con Física (daña al villano)
-│  ├─ Jugador 2: Juega un aliado
-│  └─ Jugador 2: Activa defensa con Mental
-│
-├─ Fase de Activación (Enemigos)
-│  ├─ Villano ataca (causa daño)
-│  ├─ esbirro ataca (causa daño)
-│  └─ Se genera amenaza
-│
-└─ Fase de Resolución
-   ├─ Se aplica el daño sufrido
-   ├─ Se actualizan contadores
-   └─ FIN DE TURNO
+```mermaid
+graph TD
+    Start((Inicio de la Ronda)) --> PlayerPhase[Fase del Jugador]
+    
+    subgraph PlayerPhase [Fase del Jugador]
+        Turn[Turnos de los jugadores en orden] --> Actions[Jugar cartas / Realizar acciones]
+        Actions --> EndPlayer[Fin de la fase: Robar cartas y preparar tarjetas]
+    end
+    
+    EndPlayer --> VillainPhase[Fase del Villano]
+    
+    subgraph VillainPhase [Fase del Villano]
+        Threat[Colocar amenaza en el Plan Principal] --> Activation[Activación del Villano y Esbirros]
+        Activation --> Deal[Repartir cartas de encuentro]
+        Deal --> Reveal[Mostrar y resolver cartas de encuentro]
+    end
+    
+    Reveal --> NextRound[Pasar marcador de jugador inicial]
+    NextRound --> Start
 ```
 
-### agotar, agotado (Exhaust, Exhausted)
+### Ejemplo de flujo de turno (Jugador)
+
+1. **Cambiar de identidad**: El jugador puede pasar de Alter Ego a Héroe (o viceversa) una vez por turno.
+2. **Jugar cartas**: Pagar el coste en recursos para jugar aliados, mejoras, apoyos o eventos.
+3. **Usar atributos básicos**: Agotar la identidad para atacar, intervenir o recuperarse.
+4. **Acciones**: Activar capacidades de "Acción" en cartas en juego o eventos de la mano.
+5. **Acciones de aliado**: Agotar aliados para atacar o intervenir (sufriendo daño derivado).
+
+### Agotar, agotado (Exhaust, Exhausted)
 Si una carta se agota, se gira 90 grados.
 
 - Una carta agotada no puede agotarse de nuevo hasta que esté preparada. Las cartas se preparan normalmente mediante un paso del juego o la capacidad de una carta.
@@ -187,7 +185,7 @@ Si una carta se agota, se gira 90 grados.
 
 **Véase también**: preparar.
 
-### preparar (Ready)
+### Preparar (Ready)
 Si una carta está preparada, se coloca en posición vertical.
 
 - Las cartas entran en juego en estado preparado, posicionadas de modo que su controlador pueda leer su texto de izquierda a derecha.
@@ -198,7 +196,7 @@ Si una carta está preparada, se coloca en posición vertical.
 
 **Véase también**: entrar en juego, agotado.
 
-### barajar (Shuffle)
+### Barajar (Shuffle)
 Barajar es la función del juego de aleatorizar el contenido de un mazo.
 
 - Si se instruye a un jugador a barajar un mazo, ese mazo debe aleatorizarse hasta el punto en que ningún jugador dentro de la partida pueda determinar el orden de las cartas dentro de ese mazo.
@@ -206,14 +204,14 @@ Barajar es la función del juego de aleatorizar el contenido de un mazo.
 
 **Véase también**: mazo de encuentros, mazo de jugador, buscar.
 
-### charla en la mesa (Table Talk)
+### Charla en la mesa (Table Talk)
 Los jugadores tienen permitido y se les anima a hablar entre ellos durante la partida, y a trabajar en equipo para planificar y ejecutar el mejor curso de acción. Los jugadores pueden discutir cualquier cosa que deseen, incluidas las cartas en juego y las cartas en su mano. Los jugadores no están obligados a revelar las cartas en su mano si no desean hacerlo.
 
 - Mientras se resuelve una carta de encuentro con la palabra clave **peligro**, los jugadores no tienen permitido consultarse entre sí.
 
 **Véase también**: palabras clave, peligro, jugador.
 
-### dar la vuelta (Flip)
+### Dar la vuelta (Flip)
 Cuando se indique dar la vuelta a una carta, voltéala para que la cara que estaba hacia arriba esté ahora hacia abajo.
 
 - Una carta plegable de "tres caras" se considera que ha dado la vuelta en cualquier momento en que la cara de la carta que está hacia arriba cambie.
