@@ -1,0 +1,15 @@
+import './mc-accelerate-dialog/mc-accelerate-dialog.js';
+import './mc-activate-dialog/mc-activate-dialog.js';
+import './mc-assign-dialog/mc-assign-dialog.js';
+import './mc-cards-group-dialog/mc-cards-group-dialog.js';
+import './mc-defense-dialog/mc-defense-dialog.js';
+import './mc-discard-hand-dialog/mc-discard-hand-dialog.js';
+import './mc-discard-random-hand-dialog/mc-discard-random-hand-dialog.js';
+import './mc-encounters-dealt-dialog/mc-encounters-dealt-dialog.js';
+import './mc-encounters-reveal-dialog/mc-encounters-reveal-dialog.js';
+import './mc-list-dialog/mc-list-dialog.js';
+import './mc-max-cards-dialog/mc-max-cards-dialog.js';
+import './mc-pay-cost-dialog/mc-pay-cost-dialog.js';
+import './mc-select-places-dialog/mc-select-places-dialog.js';
+import './mc-select-target-dialog/mc-select-target-dialog.js';
+import './mc-use-card-dialog/mc-use-card-dialog.js';

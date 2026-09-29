@@ -1,0 +1,15 @@
+export const DIALOG_ACCELERATE = 'accelerate';
+export const DIALOG_ACTIVATE = 'activate';
+export const DIALOG_ASSIGN = 'assign';
+export const DIALOG_DEFENSE = 'defense';
+export const DIALOG_DISCARD_CARD_HAND = 'discard-card-hand';
+export const DIALOG_DISCARD_HAND = 'discard-hand';
+export const DIALOG_DISCARD_RANDOM_HAND = 'discard-random-hand';
+export const DIALOG_ENCOUNTERS_DEALT = 'encounters-dealt';
+export const DIALOG_ENCOUNTERS_REVEAL = 'encounters-reveal';
+export const DIALOG_LIST = 'list';
+export const DIALOG_MAX_ALLIES = 'max-allies';
+export const DIALOG_PAY_COST = 'pay-cost';
+export const DIALOG_SELECT_PLACES = 'select-places';
+export const DIALOG_SELECT_TARGET = 'select-target';
+export const DIALOG_USE_CARD = 'use-card';

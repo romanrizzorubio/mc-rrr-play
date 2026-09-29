@@ -1,0 +1,475 @@
+import {Engine} from "../../engine/engine.js";
+import {Deck} from "./deck.js";
+import {Hand} from "./hand.js";
+import {FillHandEffect} from "../../effects/fill-hand-effect.js";
+import {DiscardFromHandEffect} from "../../effects/discard-from-hand-effect.js";
+import {TARGET_CARD} from "../../constants/targets.js";
+import {PlayCardEffect} from "../../effects/play-card-effect.js";
+import {RevealEncounterEffect} from "../../effects/reveal-encounter-effect.js";
+import {ReadyEffect} from "../../effects/ready-effect.js";
+import {PlayerZone} from "./player-zone.js";
+import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from "../../constants/dialogs.js";
+import {endpoints} from "../../constants/endpoints.js";
+import {RESOURCES_X} from "../../constants/resources.js";
+import {checkCondition} from "../../engine/utils.js";
+
+export class Player extends Engine {
+    constructor({
+        name,
+        superhero,
+        initial = false
+    }) {
+        super();
+
+        this.name = name;
+        this.superhero = superhero;
+        this.initial = initial;
+
+        this.deck = undefined;
+        this.hand = new Hand(this);
+        this.gameZone = undefined;
+
+        this.mulliganDone = false;
+        this.played = false;
+        this.isPlayer = true;
+
+        superhero.owner = this;
+        superhero.controller = this;
+    }
+    get accelerationIcons() {
+        return this.superhero.accelerationIcons +
+            this.gameZone.accelerationIcons;
+    }
+    get accelerationTokens() {
+        return this.superhero.accelerationTokens +
+            this.gameZone.accelerationTokens;
+    }
+    get allies() {
+        return this.gameZone.cards.filter(card => card.isAlly);
+    }
+    get attached() {
+        return [];
+    }
+    get canDefendBasic() {
+        return this.isHero && !this.exhausted;
+    }
+    get canHeal() {
+        return !!this.damage;
+    }
+    get damage() {
+        return this.superhero.damage;
+    }
+    get defenders() {
+        const defenders = this.allies.filter(ally => ally.canDefendBasic);
+
+        if (this.canDefendBasic) {
+            defenders.unshift(this.superhero);
+        }
+
+        return defenders;
+    }
+    get encounters() {
+        return this.gameZone.encounters;
+    }
+    get exhausted() {
+        return this.superhero.exhausted;
+    }
+    get flipped() {
+        return this.superhero.flipped;
+    }
+    get friends() {
+        const friends = this.allies;
+
+        friends.push(this.superhero);
+
+        return friends;
+    }
+    get handSize() {
+        return this.superhero.handSize;
+    }
+    get hasCrisis() {
+        return this.gameZone.hasCrisis;
+    }
+    get hasGuard() {
+        return this.gameZone.hasGuard;
+    }
+    get hasPatrol() {
+        return this.gameZone.hasPatrol;
+    }
+    get hazardIcons() {
+        return this.superhero.hazardIcons +
+            this.gameZone.hazardIcons;
+    }
+    get hitPoints() {
+        return this.superhero.hitPoints;
+    }
+    get isAlterEgo() {
+        return this.superhero.isAlterEgo;
+    }
+    get isConfused() {
+        return this.superhero.isConfused;
+    }
+    get isHero() {
+        return this.superhero.isHero;
+    }
+    get isStunned() {
+        return this.superhero.isStunned
+    }
+    get life() {
+        return this.superhero.life;
+    }
+    get match() {
+        return this.superhero.match;
+    }
+    get minions() {
+        return this.gameZone.minions;
+    }
+    get objectToRefresh() {
+        return 'player';
+    }
+    get owner() {
+        return this;
+    }
+    get supports() {
+        return this.gameZone.supports;
+    }
+    get traits() {
+        return this.superhero.traits;
+    }
+    get upgrades() {
+        return this.gameZone.upgrades;
+    }
+    async addEncounterCard(count = 1) {
+        const cards = await this.match.drawEncounterCards(count);
+
+        await this.gameZone.addEncounterCard(cards);
+    }
+    addToGameZone(card) {
+        card.controller = this;
+        this.gameZone.addToGameZone(card);
+    }
+    canAttack(params) {
+        return true;
+    }
+    canBeAttacked() {
+        return true;
+    }
+    canDefend(params) {
+        return true;
+    }
+    canThwart(params) {
+        return true;
+    }
+    confuse() {
+        return this.superhero.confuse();
+    }
+    defeat() {
+        this.match.mc.send(endpoints.player.defeat, this.toObj());
+    }
+    discardHand(card) {
+        const discardFromHandEffect = new DiscardFromHandEffect({
+            selectedTarget: card,
+            match: this.match,
+        });
+
+        return discardFromHandEffect.runEffect({player: this});
+    }
+    engage(minion) {
+        this.gameZone.engage(minion);
+    }
+    exhaust() {
+        this.superhero.exhaust();
+    }
+    async fillHand() {
+        const fillHandEffect = new FillHandEffect({
+            match: this.match,
+        });
+
+        await fillHandEffect.runEffect({player: this});
+    }
+    async flip(own = false) {
+        if (own && this.flipped) {
+            return;
+        }
+        await this.superhero.flip({
+            player: this,
+            own
+        });
+    }
+    getCard(cardId) {
+        if (this.superhero.id === cardId) {
+            return this.superhero;
+        } else if (this.superhero.currentSide.id === cardId) {
+            return this.superhero.currentSide;
+        }
+
+        return this.gameZone.getCard(cardId);
+    }
+    async getCardsToPay(cardToPlay, resourceType) {
+        return {
+            generators: await this.getResourceGenerators(cardToPlay, resourceType),
+            hand: this.hand.getCardsToPay(cardToPlay, resourceType),
+        }
+    }
+    getPrintedCard(cardId) {
+        return this.gameZone.getPrintedCard(cardId);
+    }
+    async getResourceGenerators(cardToPay, resourceType) {
+        const generators = [];
+
+        if (await this.superhero.currentSide.hasResourceGenerators(cardToPay, resourceType)) {
+            generators.push(this.superhero.currentSide);
+        }
+
+        await this.promisesSequential(this.gameZone.cards, async card => {
+            if (await card.hasResourceGenerators(cardToPay, resourceType)) {
+                generators.push(card);
+            }
+        })
+
+        return generators;
+    }
+    healDamage(damage) {
+        return this.superhero.healDamage(damage);
+    }
+    initDeck() {
+        this.deck = new Deck({
+            owner: this,
+            isPlayerDeck: true,
+        });
+
+        this.deck.initDeck(this.superhero.cards.concat(this.superhero.deck));
+    }
+    initGameZone() {
+        this.gameZone = new PlayerZone({owner: this});
+    }
+    initPlayer() {
+        this.initDeck();
+        this.initGameZone();
+    }
+    initNemesis() {
+        this.match.scenario.addApart(this.superhero.nemesis);
+    }
+    searchCard(condition) {
+        if (checkCondition(this.superhero, condition)) {
+            return this.superhero;
+        }
+
+        let card = this.gameZone.searchCard(condition);
+        if (card) {
+            return card;
+        }
+
+        return this.hand.cards.find(card => checkCondition(card, condition));
+    }
+    async mulligan() {
+        const response = await this.openDialog({
+            dialogType: DIALOG_DISCARD_HAND,
+            data: {
+                hand: this.handSize,
+                cards: this.hand.cards.map(card => card.toObj(arguments[0]))
+            },
+        });
+
+        const {selected} = response;
+
+        return this.finishMulligan(selected.map(sel => this.hand.getCard(sel.id)));
+    }
+    async finishMulligan(selected) {
+        await this.promisesSequential(selected, this.discardHand.bind(this));
+        await this.fillHand();
+        this.mulliganDone = true;
+    }
+    placeDamage(damage) {
+        return this.superhero.placeDamage(damage);
+    }
+    async playCard({
+        cardId,
+        abilityType,
+    }) {
+        const card = this.hand.getCard(cardId);
+
+        const playCardEffect = new PlayCardEffect({
+            card,
+            abilityType,
+            match: this.match,
+        });
+
+        const params = {player: this};
+
+        if (await playCardEffect.canRun(params)) {
+            await playCardEffect.runEffect({
+                ...params,
+                card,
+            });
+        }
+    }
+    async ready() {
+        const readyEffect = new ReadyEffect({
+            target: TARGET_CARD,
+            match: this.match,
+        });
+        await readyEffect.runEffect({
+            card: this.superhero,
+        });
+    }
+    removeConfused(count = 0) {
+        return this.superhero.removeConfused(count);
+    }
+    removeEngaged(card) {
+        this.gameZone.removeEngaged(card);
+    }
+    removeStunned(count = 0) {
+        return this.superhero.removeStunned(count);
+    }
+    async resolveAbility(cardId, abilityIndex) {
+        let card = this.getCard(cardId);
+        if (!card) {
+            card = this.match.scenario.getCard(cardId);
+        }
+
+        await card.resolveAbility({
+            player: this,
+            abilityIndex,
+        });
+    }
+    revealEncounterCard(card) {
+        const revealEncounterEffect = new RevealEncounterEffect({
+            selectedTarget: card,
+            match: this.match,
+        });
+
+        return revealEncounterEffect.runEffect({
+            player: this,
+        });
+    }
+    revealEncounterCards() {
+        return this.promisesSequential(this.encounters.slice(), card => {
+            this.encounters.shift();
+
+            return this.revealEncounterCard(card)
+        });
+    }
+    resolveResourceAbility(cardId, cardPaid) {
+        const card = this.getCard(cardId);
+
+        return card.resolveResourceAbility({card, cardPaid, player: this});
+    }
+    async runEndPlayersPhase(params) {
+        if (this.hand.cards.length) {
+            const {selected} = await this.openDialog({
+                dialogType: DIALOG_DISCARD_HAND,
+                data: {
+                    hand: this.handSize,
+                    cards: this.hand.cards.map(card => card.toObj(arguments[0]))
+                },
+            });
+
+            const discardFromHandEffect = new DiscardFromHandEffect({
+                target: TARGET_CARD,
+                refreshTarget: true,
+                match: this.match,
+            });
+
+            await this.promisesSequential(selected, card => discardFromHandEffect.runEffect({
+                card: this.hand.getCard(card.id),
+                player: this,
+            }));
+        }
+
+        const fillHandEffect = new FillHandEffect({
+            match: this.match,
+        });
+        await fillHandEffect.runEffect({player: this});
+
+        this.superhero.flipped = false;
+
+        await this.ready();
+
+        await this.gameZone.readyCards();
+    }
+    async spendResources(resources, card) {
+        const cardsToPay = await this.getCardsToPay(card);
+        const response = await this.openDialog({
+            dialogType: DIALOG_PAY_COST,
+            showCancel: true,
+            data: {
+                cost: resources.length,
+                requirement: resources,
+                cards: {
+                    generators: cardsToPay.generators.map(card => card.toObj(arguments[0])),
+                    hand: cardsToPay.hand.map(card => card.toObj(arguments[0])),
+                }
+            },
+        });
+
+        if (response) {
+            const {paid, resources} = response;
+
+            return {
+                resources,
+                hand: paid.hand.map(card => this.hand.getCard(card.id)),
+                generators: paid.generators.map(card => this.getCard(card.id)),
+            };
+        }
+    }
+    async spendResourcesX(resources, card, resourceType) {
+        const cardsToPay = await this.getCardsToPay(card, resourceType);
+        const response = await this.openDialog({
+            dialogType: DIALOG_PAY_COST,
+            showCancel: true,
+            data: {
+                resourceType,
+                cost: RESOURCES_X,
+                requirement: resources,
+                cards: {
+                    generators: cardsToPay.generators.map(card => card.toObj(arguments[0])),
+                    hand: cardsToPay.hand.map(card => card.toObj(arguments[0])),
+                }
+            },
+        });
+
+        if (response) {
+            const {paid, resources} = response;
+
+            return {
+                resources: resourceType ? resources.filter(r => r === resourceType) : resources,
+                hand: paid.hand.map(card => this.hand.getCard(card.id)),
+                generators: paid.generators.map(card => this.getCard(card.id)),
+            };
+        }
+    }
+    stun() {
+        return this.superhero.stun();
+    }
+    async triggerEvent(trigger, params) {
+        const {card, ability} = trigger;
+
+        const playCardEffect = new PlayCardEffect({
+            card,
+            ability,
+            match: this.match,
+        });
+
+        await playCardEffect.runEffect(params);
+
+        return !playCardEffect.canceled;
+    }
+    toObj() {
+        const {
+            name,
+            deck,
+            hand,
+            superhero,
+            gameZone,
+        } = this;
+
+        return {
+            name,
+            deck: deck ? deck.toObj(arguments[0]) : undefined,
+            hand: hand ? hand.toObj(arguments[0]) : undefined,
+            superhero: superhero ? superhero.toObj(arguments[0]) : undefined,
+            gameZone: gameZone ? gameZone.toObj(arguments[0]) : undefined,
+        }
+    }
+}

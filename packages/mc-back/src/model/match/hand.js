@@ -1,0 +1,83 @@
+import {Engine} from "../../engine/engine.js";
+import {checkCondition, random} from "../../engine/utils.js";
+import {DIALOG_DISCARD_RANDOM_HAND} from "../../constants/dialogs.js";
+import {RESOURCE_WILD} from "../../constants/resources.js";
+
+export class Hand extends Engine {
+    constructor(owner) {
+        super();
+
+        this.owner = owner;
+
+        this.cards = [];
+    }
+    get match() {
+        return this.owner.match;
+    }
+    get objectToRefresh() {
+        return 'hand';
+    }
+    addCard(card) {
+        if (card.isEvent) {
+            card.initTriggers();
+        }
+
+        this.cards.push(card);
+    }
+    addCards(cards) {
+        cards.forEach(this.addCard.bind(this));
+    }
+    discardHand(card) {
+        if (card.isEvent) {
+            card.endTriggers();
+        }
+        const index = this.cards.indexOf(card);
+        if (index > -1) {
+            this.cards.splice(index, 1);
+        }
+    }
+    async discardRandom(showDialog = false) {
+        const {cards} = this;
+
+        let card;
+
+        if (showDialog) {
+            const {selected} = await this.openDialog({
+                dialogType: DIALOG_DISCARD_RANDOM_HAND,
+                data: {
+                    cards: cards.map(_card => _card.toObj(arguments[0])),
+                }
+            })
+
+            if (selected) {
+                card = cards.find(_card => _card.id === selected.id);
+            }
+        } else {
+            const index = random(0, cards.length - 1);
+            card = this.cards[index];
+        }
+
+        this.discardHand(card);
+
+        return card;
+    }
+    getCard(cardId) {
+        return this.cards.find(card => card.id === cardId)
+    }
+    getCardsToPay(cardToPlay, resourceType) {
+        return this.cards.filter(card =>
+            !card.isPlaying &&
+            (!cardToPlay || card.id !== cardToPlay.id) &&
+            (!resourceType || card.resources.some(r => r === resourceType || r === RESOURCE_WILD)));
+    }
+    searchCards(condition) {
+        return this.cards
+            .filter(card =>
+                checkCondition(card, condition));
+    }
+    toObj() {
+        const {cards} = this;
+
+        return cards.map(card => card.toObj(arguments[0]));
+    }
+}

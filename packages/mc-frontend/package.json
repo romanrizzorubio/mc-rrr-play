@@ -1,0 +1,20 @@
+{
+  "name": "mc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "auxi-index.js",
+  "type": "module",
+  "scripts": {
+    "serve": "es-dev-server --node-resolve --watch --app-index index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@material/web": "^1.0.1",
+    "lit-element": "^4.0.0",
+    "lit-element-router": "^2.0.3"
+  },
+  "devDependencies": {
+    "es-dev-server": "^1.46.1"
+  }
+}

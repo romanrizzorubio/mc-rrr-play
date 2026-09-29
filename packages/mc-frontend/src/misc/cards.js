@@ -1,0 +1,9 @@
+export const CARD_PATH = '/static/images/cards/';
+export const BACK_CARD_EMPTY = `back/empty.jpg`;
+export const BACK_CARD_ENCOUNTER = `back/encounter.jpg`;
+export const BACK_CARD_PLAYER = `back/player.jpg`;
+export const BACK_CARD_VILLAIN = `back/villain.jpg`;
+export const BACK_CARD_EMPTY_FULL = `${CARD_PATH}${BACK_CARD_EMPTY}`;
+export const BACK_CARD_ENCOUNTER_FULL = `${CARD_PATH}${BACK_CARD_ENCOUNTER}`;
+export const BACK_CARD_PLAYER_FULL = `${CARD_PATH}${BACK_CARD_PLAYER}`;
+export const BACK_CARD_VILLAIN_FULL = `${CARD_PATH}${BACK_CARD_VILLAIN}`;

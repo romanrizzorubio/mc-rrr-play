@@ -1,0 +1,222 @@
+import {Effect} from "./effect.js";
+import {PayCostEffect} from "./pay-cost-effect.js";
+import {PutPlayEffect} from "./put-play-effect.js";
+import {GetCostEffect} from "./get-cost-effect.js";
+import {DIALOG_PAY_COST} from "../constants/dialogs.js";
+import {TRIGGER_THIS_END_PLAY_CARD} from "../triggers/this-end-play-card-trigger.js";
+import {TRIGGER_END_PLAY_CARD} from "../triggers/end-play-card-trigger.js";
+import {TRIGGER_PLAY_CARD} from "../triggers/play-card-trigger.js";
+
+export class PlayCardEffect extends Effect {
+    constructor({
+        card,
+        ability,
+        abilityType,
+    }) {
+        super(arguments[0]);
+
+        this.card = card;
+        this.ability = ability;
+        this.abilityType = abilityType;
+
+        this.resourcesPaid = [];
+        this.canceled = false;
+        this.modifyCost = 0;
+
+        if (card.isUpgrade) {
+            this.target = card.card.attach;
+        }
+    }
+    canRun(params) {
+        const {card, ability, abilityType} = this;
+        const {player} = params;
+
+        if (ability) {
+            return true;
+        }
+
+        return card.canPlay({
+            player,
+            abilityType,
+            card,
+        });
+    }
+    filterTarget(target, {player}) {
+        if (super.filterTarget.apply(this, arguments)) {
+            const {card} = this;
+
+            if (card.isUpgrade) {
+                return card.canAttach(target, player);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+    getTriggersInit() {
+        return super.getTriggersInit()
+            .concat([
+                TRIGGER_PLAY_CARD,
+            ]);
+    }
+    getTriggersEnds() {
+        return super.getTriggersEnds()
+            .concat([
+                TRIGGER_END_PLAY_CARD,
+                TRIGGER_THIS_END_PLAY_CARD,
+            ]);
+    }
+    async doPlay(params) {
+        const {card, cardsPaid, ability, selectedTarget} = this;
+        const {player} = params;
+
+        if (cardsPaid) {
+            const payCostEffect = new PayCostEffect({
+                hand: cardsPaid.hand,
+                generators: cardsPaid.generators,
+                selectedTarget: card,
+                match: this.match,
+            });
+
+            await payCostEffect.runEffect({player});
+        }
+
+        if (card.isEvent) {
+            await ability.resolveAbility({
+                ...params,
+                playCardEffect: this,
+            });
+
+            await player.deck.discard(card);
+        } else {
+            const putPlayEffect = new PutPlayEffect({
+                card,
+                selectedTarget,
+                controller: player,
+                match: this.match,
+            });
+
+            await putPlayEffect.runEffect({
+                ...params,
+                effect: this,
+                card,
+            });
+        }
+        card.isPlaying = false;
+        player.hand.discardHand(card);
+        player.hand.refresh();
+    }
+    async getCost(params) {
+        const {card} = params;
+
+        const getCostEffect = new GetCostEffect({
+            selectedTarget: card,
+            match: this.match,
+        });
+
+        await getCostEffect.runEffect(params);
+
+        return getCostEffect.cost;
+    }
+    isResolved() {
+        return !this.canceled;
+    }
+    isFullResolved() {
+        return !this.canceled;
+    }
+    payArrow(params) {
+        const {ability} = this;
+
+        if (ability && ability.arrow) {
+            return ability.arrow.cost.runEffect(params);
+        }
+
+        return true;
+    }
+    async payCost(params) {
+        const {card} = this;
+        const {player} = params;
+
+        const cardsToPay = await player.getCardsToPay(card);
+
+        const cost = await this.getCost({
+            ...params,
+            card,
+        }) + this.modifyCost;
+        const response = await this.openDialog({
+            dialogType: DIALOG_PAY_COST,
+            showCancel: true,
+            data: {
+                cost: cost < 0 ? 0 : cost,
+                requirement: card.requirement,
+                cards: {
+                    generators: cardsToPay.generators
+                        .map(_card => _card.toObj(arguments[0])),
+                    hand: cardsToPay.hand
+                        .map(_card => _card.toObj({card})),
+                }
+            },
+        });
+
+        if (response) {
+            const {paid, resources} = response;
+
+            this.resourcesPaid = resources;
+            this.cardsPaid = {
+                hand: paid.hand
+                    .map(card => player.hand.getCard(card.id)),
+                generators: paid.generators
+                    .map(card => player.getCard(card.id)),
+            }
+        } else {
+            this.canceled = true;
+        }
+    }
+    async prepare(params) {
+        const {card} = this;
+
+        card.isPlaying = true;
+
+        await super.prepare(params);
+    }
+    selectAbility() {
+        return new Promise(resolve => {
+            const {card} = this;
+
+            if (card.isEvent) {
+                if (card.abilities.length > 1) {
+                    // TODO: Implement dialog to select ability when event has multiple abilities
+                    console.error('ELEGIR CAPACIDAD (MULTIPLE ABILITIES NOT YET SUPPORTED)')
+                    return resolve(card.abilities[0]);
+                } else {
+                    return resolve(card.abilities[0]);
+                }
+            } else {
+                return resolve();
+            }
+        });
+    }
+    async execute(params) {
+        const {card} = this;
+
+        if (!this.ability) {
+            this.ability = await this.selectAbility(params);
+        }
+
+        await this.payCost(params);
+
+        if (this.canceled) {
+            card.isPlaying = false;
+        } else {
+            if (await this.payArrow(params)) {
+                await this.doPlay({
+                    ...params,
+                    card,
+                });
+            } else {
+                card.isPlaying = false;
+            }
+        }
+    }
+}
