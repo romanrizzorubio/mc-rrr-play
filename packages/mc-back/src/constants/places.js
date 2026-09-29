@@ -7,3 +7,4 @@ export const PLACE_DECK = 'deck';
 export const PLACE_HAND = 'hand';
 export const PLACE_OUTSIDE_NEMESIS = 'OUTSIDE_NEMESIS';
 export const PLACE_SCENARIO_ZONE = 'SCENARIO_ZONE';
+export const PLACE_IN_PLAY = 'IN_PLAY';

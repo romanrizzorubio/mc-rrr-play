@@ -160,3 +160,29 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
     - **Coste / Salud / Atributos**: Valores numéricos. El daño derivado se marca con `[d]`. El ataque se traduce como Attack/ATQ y la intervención como Thwart/INT.
     - **Recursos**: Iconos entre corchetes (ej. `[w]` para universal).
     - **Capacidades**: Texto descriptivo precedido por el tipo (Acción, Respuesta, Interrupción, etc.) y opcionalmente el límite de uso.
+
+### Formato de Cartas de Encuentro
+Al trabajar con cartas de encuentro (obligaciones, planes secundarios, esbirros de archienemigo, perfidias), adapta tu interpretación al formato que el usuario proporcione en cada paso, utilizando las siguientes categorías como referencia para mapear a la estructura interna:
+- **Tipo de carta**: Obligación, Plan secundario, Esbirro, Perfidia, Accesorio.
+- **[u] Nombre**: Nombre de la carta (con `[u]` si es única).
+- **Rasgos**: Rasgos separados por puntos.
+- **Atributos de esbirro**: PLA (Planificación), ATQ (Ataque), Vida.
+- **Atributos de plan secundario**: Amenaza inicial (usar `startingThreat: [X, true]` para indicar amenaza "por jugador" `[v]`), Iconos en el objeto `icons` (ej: `icons: {hazard: 1}`).
+- **Texto de Aumento (Boost)**: Valor numérico o iconos (estrellas/recursos).
+- **Capacidades**: "Cuando se muestre esta carta" (When Revealed), "Cuando se derrote esta carta" (When Defeated), Respuesta obligada, etc.
+
+Nota: El formato del usuario es la fuente de verdad y puede variar ligeramente; el asistente debe ser flexible al interpretar los campos descriptivos. Si no se indica explícitamente un rasgo para una carta de encuentro, se asume que no tiene ninguno. Si una palabra aparece entre `<>` (ej: `<Vengador>`), debe ser tratada como un rasgo de la carta.
+
+### Reglas de Implementación de Código
+- **Restricciones de Objetivo (Validation)**: Cuando una carta "no puede ser objetivo" de ciertos efectos (como el daño de mejoras específicas), se debe añadir un objeto `validation` dentro de la capacidad constante de la carta. Este objeto define las condiciones que el motor de selección consultará para excluir a la carta de la lista de objetivos válidos.
+- **"No puede" (Cannot)**: Las capacidades que indican que algo "no puede" ocurrir son absolutas. Deben implementarse como capacidades constantes o interrupciones obligadas que cancelan/previenen el efecto original (usando `validation` para objetivos o efectos preventivos para resultados), SIN usar `EFFECT_MAY` o cualquier componente opcional.
+- **Estructura de Cartas de Escenario**: Para cartas de encuentro de archienemigo, utiliza la estructura de `CARD_TYPE_SIDE_SCHEME_SCENARIO`, `CARD_TYPE_MINION`, `CARD_TYPE_TREACHERY`, etc., con los parámetros dentro de un objeto `params`.
+- **Iconos de Plan**: Los iconos de riesgo, aceleración, etc., en planes secundarios deben definirse en el objeto `icons` (ej: `icons: {hazard: 1}`).
+- **Nombres de Variables**: Los nombres de las constantes/variables que contienen los objetos de las cartas deben escribirse en **inglés** (camelCase), independientemente de que el nombre visible de la carta esté en español.
+- **Registro de Archienemigos**: Las cartas pertenecientes al conjunto de archienemigo deben añadirse al array `nemesis` dentro del archivo `index.js` del héroe correspondiente.
+
+## Instrucciones de Desarrollo
+
+1. **Composición de Efectos**: Al implementar la lógica de una carta, **NO** crees efectos específicos que resuelvan literalmente el texto de una sola carta (ej. `MoverCartaDePanteraNegraDelMazoALaManoYBarajarEffect`). En su lugar, utiliza y combina efectos genéricos y modulares (ej. `SearchCardsEffect`, `MoveToHandEffect`, `ShuffleDeckEffect`).
+2. **Efectos Genéricos**: Si la funcionalidad requerida no existe, puedes crear un nuevo efecto, pero este debe ser diseñado de forma **genérica** para que pueda ser reutilizado por otras cartas en el futuro.
+3. **Encadenamiento**: Utiliza `EFFECT_CHAINED` para secuenciar múltiples efectos genéricos y lograr comportamientos complejos.

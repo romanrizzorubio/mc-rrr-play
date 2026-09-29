@@ -61,6 +61,9 @@ export class Card extends Engine {
     get quickStrike() {
         return this.keywords.quickStrike;
     }
+    get retaliate() {
+        return this.keywords.retaliate;
+    }
     get surge() {
         return this.keywords.surge;
     }

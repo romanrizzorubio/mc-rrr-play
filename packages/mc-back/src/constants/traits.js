@@ -27,3 +27,6 @@ export const TRAIT_SUPERPOWER = 'superpower';
 export const TRAIT_TECH = 'tech';
 export const TRAIT_THWART = 'thwart';
 export const TRAIT_WEAPON = 'weapon';
+export const TRAIT_WAKANDA = 'wakanda';
+export const TRAIT_KING = 'king';
+export const TRAIT_BLACK_PANTHER = 'black panther';

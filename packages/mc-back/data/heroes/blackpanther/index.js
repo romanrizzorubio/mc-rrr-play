@@ -1,0 +1,51 @@
+import {
+    blackPantherCard,
+    tChallaCard,
+    shuriCard,
+    sabiduriaAncestralCard,
+    wakandaPorSiemprePhysicalCard,
+    wakandaPorSiempreEnergyCard,
+    wakandaPorSiempreMentalCard,
+    wakandaPorSiempreWildCard,
+    vibraniumCard,
+    goldenCityCard,
+    energyDaggersCard,
+    pantherClawsCard,
+    tacticalGeniusCard,
+    vibraniumSuitCard,
+    affairsOfState,
+    usurpTheThroneCard,
+    killmongerCard,
+    heartShapedHerbCard,
+    ritualCombatCard,
+} from "./cards.js";
+import {precon} from "./precon.js";
+
+export default {
+    sides: [
+        tChallaCard,
+        blackPantherCard,
+    ],
+    cards: [
+        {card: shuriCard, count: 1},
+        {card: sabiduriaAncestralCard, count: 1},
+        {card: wakandaPorSiemprePhysicalCard, count: 1},
+        {card: wakandaPorSiempreEnergyCard, count: 1},
+        {card: wakandaPorSiempreMentalCard, count: 1},
+        {card: wakandaPorSiempreWildCard, count: 2},
+        {card: vibraniumCard, count: 3},
+        {card: goldenCityCard, count: 1},
+        {card: energyDaggersCard, count: 1},
+        {card: pantherClawsCard, count: 1},
+        {card: tacticalGeniusCard, count: 1},
+        {card: vibraniumSuitCard, count: 1},
+    ],
+    precon,
+    obligation: {card: affairsOfState, count: 1},
+    nemesis: [
+        {card: usurpTheThroneCard, count: 1},
+        {card: killmongerCard, count: 1},
+        {card: heartShapedHerbCard, count: 1},
+        {card: ritualCombatCard, count: 2},
+    ],
+};
