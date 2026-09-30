@@ -3,7 +3,8 @@ import {
     ABILITY_ALTEREGO_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_ACTION,
-    ABILITY_RESOURCE
+    ABILITY_RESOURCE,
+    ABILITY_OPTION,
 } from "../../../src/constants/abilities.js";
 import {
     CARD_TYPE_ALLY,
@@ -12,7 +13,11 @@ import {
     CARD_TYPE_HERO,
     CARD_TYPE_SUPPORT,
     CARD_TYPE_UPGRADE,
+    CARD_TYPE_TREACHERY,
 } from "../../../src/constants/back-cards.js";
+import {CARD_TYPE_OBLIGATION} from "../../../src/model/printed/obligation-card.js";
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
+import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
 import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
@@ -31,6 +36,14 @@ import {
     EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP,
     EFFECT_SEARCH_DISCARD_RETURN_TO_HAND,
     EFFECT_REMOVE_THREAT_ALL_SCHEMES,
+    EFFECT_FLIP,
+    EFFECT_MAY,
+    EFFECT_CHOOSE_ABILITY,
+    EFFECT_REMOVE_CARD,
+    EFFECT_DISCARD_GAME,
+    EFFECT_PLACE_THREAT,
+    EFFECT_SELECT_DISCARD_CARD,
+    EFFECT_DO_IF,
 } from "../../../src/factory/effects-factory.js";
 import {
     RESOURCE_ENERGY,
@@ -46,7 +59,13 @@ import {
     TARGET_ENEMY,
     TARGET_HERO,
     TARGET_THIS,
-    TARGET_YOUR_SUPERHERO
+    TARGET_YOUR_SUPERHERO,
+    TARGET_ALTEREGO,
+    TARGET_ALTEREGO_SIDE,
+    TARGET_CARD,
+    TARGET_UPGRADE_YOU_CONTROL,
+    TARGET_ATTACK_UNDEFENDED,
+    TARGET_ALL_PLAYERS,
 } from "../../../src/constants/targets.js";
 import {
     TRAIT_AERIAL,
@@ -61,7 +80,9 @@ import {
     TRAIT_SHIELD,
     TRAIT_SOLDIER,
     TRAIT_SUPERPOWER,
-    TRAIT_TECH
+    TRAIT_TECH,
+    TRAIT_CONDITION,
+    TRAIT_CRIMINAL,
 } from "../../../src/constants/traits.js";
 import {LABEL_ATTACK, LABEL_THWART} from "../../../src/constants/labels.js";
 import {
@@ -71,6 +92,7 @@ import {
 import {CALC_RESOURCES, CALC_TRAITS_COUNT} from "../../../src/constants/calc.js";
 import {TIME_PHASE, TIME_ROUND} from "../../../src/constants/times.js";
 import {EFFECT_DO_IF_HAS_TRAITS} from "../../../src/effects/do-if-has-traits-effect.js";
+import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
 
 const ironmanCard = {
     name: 'Iron Man',
@@ -438,6 +460,260 @@ const rocketBoots = {
     ]
 };
 
+const businessProblemsCard = {
+    type: CARD_TYPE_OBLIGATION,
+    params: {
+        name: 'Problemas de negocios',
+        img: 'heroes/iron-man/01170.png',
+        traits: [TRAIT_CONDITION],
+        boost: 2,
+        giveToOwner: true,
+        triggerInstant: true,
+        abilities: [
+            {
+                type: ABILITY_CONSTANT,
+                params: {
+                    trigger: TRIGGER_INSTANT,
+                    name: 'Convertirte en Tony Stark',
+                    effect: {
+                        type: EFFECT_MAY,
+                        params: {
+                            effect: {
+                                type: EFFECT_FLIP,
+                                params: {
+                                    target: TARGET_YOUR_SUPERHERO,
+                                    formTarget: TARGET_ALTEREGO_SIDE,
+                                }
+                            },
+                        }
+                    },
+                },
+            },
+            {
+                type: ABILITY_CONSTANT,
+                params: {
+                    trigger: TRIGGER_INSTANT,
+                    name: 'Resolver la obligación',
+                    effect: {
+                        type: EFFECT_CHOOSE_ABILITY,
+                        params: {
+                            options: [
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Agotar a Tony Stark para retirar la Obligación',
+                                        effect: {
+                                            type: EFFECT_REMOVE_CARD,
+                                            params: {
+                                                target: TARGET_CARD,
+                                            }
+                                        },
+                                        arrow: {
+                                            type: EFFECT_EXHAUST,
+                                            params: {
+                                                target: TARGET_ALTEREGO,
+                                            }
+                                        },
+                                    }
+                                },
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Agotar todas las Mejoras que controles para descartar la Obligación',
+                                        effect: {
+                                            type: EFFECT_CHAINED,
+                                            params: {
+                                                effects: [
+                                                    {
+                                                        type: EFFECT_EXHAUST,
+                                                        params: {
+                                                            filter: {
+                                                                type: CARD_TYPE_UPGRADE,
+                                                                control: TARGET_YOU,
+                                                            },
+                                                            matchAll: true,
+                                                        }
+                                                    },
+                                                    {
+                                                        type: EFFECT_DISCARD_GAME,
+                                                        params: {
+                                                            target: TARGET_CARD,
+                                                        },
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const imminentOverloadCard = {
+    type: CARD_TYPE_SIDE_SCHEME_SCENARIO,
+    params: {
+        name: 'Sobrecarga inminente',
+        img: 'heroes/iron-man/01171.png',
+        boost: 3,
+        startingThreat: 3,
+        abilities: [{
+            type: ABILITY_WHEN_REVEALED,
+            params: {
+                effect: {
+                    type: EFFECT_PLACE_THREAT,
+                    params: {
+                        threat: [1, true],
+                        target: TARGET_CARD
+                    }
+                }
+            }
+        }],
+    }
+};
+
+const whiplashCard = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Latigazo',
+        unique: true,
+        img: 'heroes/iron-man/01172.png',
+        traits: [TRAIT_CRIMINAL],
+        boost: 2,
+        hitPoints: 4,
+        attack: 3,
+        scheme: 2,
+        keywords: {
+            retaliate: 1,
+        }
+    }
+};
+
+const electricWhipAttackCard = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Azote de electrolátigo',
+        img: 'heroes/iron-man/01173.png',
+        traits: [],
+        boost: 0,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    name: 'Azote de electrolátigo',
+                    effect: {
+                        type: EFFECT_CHOOSE_ABILITY,
+                        params: {
+                            options: [
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Recibir daño por cada Mejora controlada',
+                                        effect: {
+                                            type: EFFECT_DEAL_DAMAGE,
+                                            params: {
+                                                target: TARGET_HERO,
+                                                damage: 0,
+                                                paramsCalc: {
+                                                    formula: CALC_COUNT,
+                                                    target: 'cards',
+                                                    filter: {
+                                                        type: CARD_TYPE_UPGRADE,
+                                                        control: TARGET_YOU,
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Elegir y descartar una Mejora controlada',
+                                        effect: {
+                                            type: EFFECT_SELECT_DISCARD_CARD,
+                                            params: {
+                                                filter: {
+                                                    type: CARD_TYPE_UPGRADE,
+                                                    control: TARGET_YOU,
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ],
+        boostEffect: {
+            type: EFFECT_DO_IF,
+            params: {
+                condition: {
+                    target: TARGET_ATTACK_UNDEFENDED,
+                },
+                effect: {
+                    type: EFFECT_SELECT_DISCARD_CARD,
+                    params: {
+                        filter: {
+                            type: CARD_TYPE_UPGRADE,
+                            control: TARGET_YOU,
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+const electromagneticBacklashCard = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Descarga electromagnética',
+        img: 'heroes/iron-man/01174.png',
+        traits: [],
+        boost: 2,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    name: 'Descarga electromagnética',
+                    effect: {
+                        type: EFFECT_CHAINED,
+                        params: {
+                            target: TARGET_ALL_PLAYERS,
+                            effects: [
+                                {
+                                    type: EFFECT_DISCARD_FROM_DECK,
+                                    params: {
+                                        count: 5,
+                                    }
+                                },
+                                {
+                                    type: EFFECT_TAKE_DAMAGE,
+                                    params: {
+                                        damage: 0,
+                                        paramsCalc: {
+                                            formula: CALC_RESOURCES,
+                                            resourceType: RESOURCE_ENERGY,
+                                            target: 'effects.0.cards',
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
 export {
     ironmanCard,
     tonyStarkCard,
@@ -451,4 +727,9 @@ export {
     markVHelmet,
     poweredGauntlets,
     rocketBoots,
+    businessProblemsCard,
+    imminentOverloadCard,
+    whiplashCard,
+    electricWhipAttackCard,
+    electromagneticBacklashCard,
 };

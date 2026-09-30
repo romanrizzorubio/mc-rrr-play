@@ -10,14 +10,17 @@ import {
     rocketBoots,
     tacticalDisplay,
     starkTower,
-    pepperPotts
+    pepperPotts,
+    businessProblemsCard,
+    imminentOverloadCard,
+    whiplashCard,
+    electricWhipAttackCard,
+    electromagneticBacklashCard,
 } from "./cards.js";
 import {ASPECT_LEADERSHIP} from "../../aspect/aspects.js";
 import {precon} from "./precon.js";
 
 export const heroConfig = {
-    hero: ironmanCard,
-    alterego: tonyStarkCard,
     aspect: ASPECT_LEADERSHIP,
     sides: [
         tonyStarkCard,
@@ -36,6 +39,11 @@ export const heroConfig = {
         {card: pepperPotts, count: 1}
     ],
     precon,
-    obligation: null,
-    nemesis: []
+    obligation: {card: businessProblemsCard, count: 1},
+    nemesis: [
+        {card: imminentOverloadCard, count: 1},
+        {card: whiplashCard, count: 1},
+        {card: electricWhipAttackCard, count: 2},
+        {card: electromagneticBacklashCard, count: 1},
+    ]
 }

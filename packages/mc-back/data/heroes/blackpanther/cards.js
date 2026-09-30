@@ -462,8 +462,9 @@ const affairsOfState = {
         triggerInstant: true,
         abilities: [
             {
-                type: ABILITY_WHEN_REVEALED,
+                type: ABILITY_CONSTANT,
                 params: {
+                    trigger: TRIGGER_INSTANT,
                     name: "Convertirte en T'Challa",
                     effect: {
                         type: EFFECT_MAY,
@@ -480,8 +481,9 @@ const affairsOfState = {
                 },
             },
             {
-                type: ABILITY_WHEN_REVEALED,
+                type: ABILITY_CONSTANT,
                 params: {
+                    trigger: TRIGGER_INSTANT,
                     name: 'Resolver la obligación',
                     effect: {
                         type: EFFECT_CHOOSE_ABILITY,
@@ -516,9 +518,10 @@ const affairsOfState = {
                                                     {
                                                         type: EFFECT_SELECT_DISCARD_CARD,
                                                         params: {
-                                                            target: TARGET_UPGRADE_YOU_CONTROL,
                                                             filter: {
+                                                                type: CARD_TYPE_UPGRADE,
                                                                 traits: [TRAIT_BLACK_PANTHER],
+                                                                control: TARGET_YOU,
                                                             },
                                                         }
                                                     },

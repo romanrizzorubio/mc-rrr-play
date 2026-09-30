@@ -465,8 +465,9 @@ export const legalWorkCard = {
         triggerInstant: true,
         abilities: [
             {
-                type: ABILITY_WHEN_REVEALED,
+                type: ABILITY_CONSTANT,
                 params: {
+                    trigger: TRIGGER_INSTANT,
                     name: "Convertirte en Jennifer Walters",
                     effect: {
                         type: EFFECT_MAY,
@@ -483,8 +484,9 @@ export const legalWorkCard = {
                 },
             },
             {
-                type: ABILITY_WHEN_REVEALED,
+                type: ABILITY_CONSTANT,
                 params: {
+                    trigger: TRIGGER_INSTANT,
                     name: 'Resolver la obligación',
                     effect: {
                         type: EFFECT_CHOOSE_ABILITY,

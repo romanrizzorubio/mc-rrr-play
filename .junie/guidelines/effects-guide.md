@@ -71,8 +71,14 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - **"Busca en tu mazo..."**: `EFFECT_SEARCH_CARDS` + `EFFECT_CHAINED` + `EFFECT_MOVE_TO_HAND` + `EFFECT_SHUFFLE_DECK`.
 - **"Elige una opción:"**: `EFFECT_CHOOSE_ABILITY` con `options` de tipo `ABILITY_OPTION`.
 - **"Puedes..."**: `EFFECT_MAY`.
-- **"Cuando se muestre esta carta..."**: Usa **`ABILITY_WHEN_REVEALED`** (o sus variantes `ABILITY_WHEN_REVEALED_HERO` / `ABILITY_WHEN_REVEALED_ALTEREGO` si el efecto depende de la forma).
+- **Efectos al entrar en juego**:
+    - **Perfidias y cartas con "Cuando se muestre"**: Usa siempre `ABILITY_WHEN_REVEALED` (o sus variantes por identidad).
+    - **Obligaciones SIN "Cuando se muestre"**: Usa `ABILITY_CONSTANT` con `trigger: TRIGGER_INSTANT` dentro del array `abilities` en `params`. Además, el objeto `params` debe incluir `triggerInstant: true`. Este es un patrón específico del motor para gestionar la entrada de obligaciones que no tienen un efecto de revelación estándar.
 - **"No puede ser objetivo"**: Usa `validation` en una `ABILITY_CONSTANT` (ver Guía de Traducción).
+- **Filtrado de Objetos (Filtros)**: Evita usar selectores de objetivo ultra-específicos (como `TARGET_UPGRADE_YOU_CONTROL`) si el motor permite el uso de un campo `filter`. Es preferible definir el objetivo de forma genérica (ej: omitiendo `target` si el efecto asume cartas, o usando `TARGET_CARDS` si existe) y detallar las condiciones en un objeto `filter` (ej: `filter: { type: CARD_TYPE_UPGRADE, control: TARGET_YOU }`). **STRICTLY DO NOT** use string literals like `'you'` for control; use the constant `TARGET_YOU` instead. Esto hace que la lógica de la carta sea más clara y fácil de procesar para el motor.
+- **Cualquier jugador vs Cada jugador**:
+    - Si el texto dice "cualquier jugador" (o si eliges uno): Usa `TARGET_ANY_PLAYER`.
+    - Si el texto dice "cada jugador" (o todos): Usa `TARGET_ALL_PLAYERS`. Esto asegura que el motor ejecute el efecto secuencialmente para todos los participantes.
 
 ## Instrucciones de Mantenimiento
 
