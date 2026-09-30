@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MOVE_TO_HAND = 'move-to-hand';
 
 export class MoveToHandEffect extends Effect {
     async execute(params) {

@@ -1,10 +1,9 @@
-import {Ability} from "../core/ability.js";
+import {Ability} from '../core/ability.js';
 
-export const ABILITY_ACTION = 'action';
 export class ActionAbility extends Ability {
     constructor({
 // Ability
-        effect, limit, maximum, arrow,
+        effect: _effect, limit: _limit, maximum: _maximum, arrow: _arrow,
     }) {
         super(arguments[0]);
 
@@ -14,6 +13,6 @@ export class ActionAbility extends Ability {
     toObj() {
         return {
             ...super.toObj(arguments[0]),
-        }
+        };
     }
 }

@@ -1,6 +1,6 @@
-import {InterruptAbility} from "./interrupt-ability.js";
-import {MixinHeroAbility} from "../mixins/mixin-hero-ability.js";
+import {MixinHeroAbility} from '../mixins/mixin-hero-ability.js';
 
-export const ABILITY_HERO_INTERRUPT = 'hero-interrupt';
+import {InterruptAbility} from './interrupt-ability.js';
+
 export class HeroInterruptAbility extends MixinHeroAbility(InterruptAbility) {
 }

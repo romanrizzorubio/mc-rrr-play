@@ -1,7 +1,6 @@
-import {Effect} from "./effect.js";
-import {PayCostEffect} from "./pay-cost-effect.js";
+import {Effect} from './effect.js';
+import {PayCostEffect} from './pay-cost-effect.js';
 
-export const EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP = 'generate-resources-from-discard-top';
 export class GenerateResourcesFromDiscardTopEffect extends Effect {
     constructor() {
         super(arguments[0]);

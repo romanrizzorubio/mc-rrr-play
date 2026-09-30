@@ -1,5 +1,4 @@
-import {Engine} from "../../engine/engine.js";
-import {CHARACTER_ALTEREGO, CHARACTER_HERO} from "../../constants/characters.js";
+import {Engine} from '../../engine/engine.js';
 
 export class FaceDown extends Engine {
     constructor({

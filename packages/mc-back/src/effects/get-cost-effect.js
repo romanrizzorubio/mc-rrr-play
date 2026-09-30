@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class GetCostEffect extends Effect {
     constructor({}) {
@@ -7,7 +7,7 @@ export class GetCostEffect extends Effect {
         this.cost = 0;
         this.modifyCost = 0;
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, modifyCost} = this;
 
         this.cost = selectedTarget.cost + modifyCost;

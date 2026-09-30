@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-card-image.css.js';
 
 export class McCardImage extends LitElement {

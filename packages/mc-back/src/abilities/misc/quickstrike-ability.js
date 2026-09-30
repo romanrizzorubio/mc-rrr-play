@@ -1,7 +1,8 @@
-import {ConstantAbility} from "./constant-ability.js";
-import {QuickStrikeEffect} from "../../effects/quickstrike-effect.js";
-import {CHARACTER_ENGAGED} from "../../constants/characters.js";
-import {TRIGGER_ENGAGE_HERO} from "../../triggers/engage-hero-trigger.js";
+import {CHARACTER_ENGAGED} from '../../constants/characters.js';
+import {TRIGGER_ENGAGE_HERO} from '../../constants/triggers.js';
+import {QuickStrikeEffect} from '../../effects/quickstrike-effect.js';
+
+import {ConstantAbility} from './constant-ability.js';
 
 export class QuickstrikeAbility extends ConstantAbility {
     constructor({}) {

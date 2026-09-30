@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_MAX_ALLIES = 'modify-max-allies';
 
 export class ModifyMaxAlliesEffect extends Effect {
     constructor({
@@ -10,7 +9,7 @@ export class ModifyMaxAlliesEffect extends Effect {
         this.count = count;
     }
 
-    async execute(params) {
+    async execute(_params) {
         // En este motor, las capacidades constantes que modifican valores
         // suelen ser recogidas por efectos de cálculo como GetMaxAlliesEffect.
         // Registramos el valor para que sea consultado.

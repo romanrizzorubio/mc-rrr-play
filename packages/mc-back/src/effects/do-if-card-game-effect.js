@@ -1,15 +1,11 @@
-import {DoIfEffect} from "./do-if-effect.js";
-import {PLACE_SCENARIO_ZONE} from "../constants/places.js";
-import {TARGET_CARD} from "../constants/targets.js";
-import {checkCondition} from "../engine/utils.js";
+import {DoIfEffect} from './do-if-effect.js';
 
-export const EFFECT_DO_IF_CARD_GAME = 'do-if-card-game';
 export class DoIfCardGameEffect extends DoIfEffect {
     constructor({
 // DoIfEffect
         condition,
-        effect,
-        effectNot
+        effect: _effect,
+        effectNot: _effectNot
     }) {
         super(arguments[0]);
 

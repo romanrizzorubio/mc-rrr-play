@@ -1,5 +1,5 @@
-import {Effect} from "./effect.js";
-import {DiscardFromHandEffect} from "./discard-from-hand-effect.js";
+import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
+import {Effect} from './effect.js';
 
 export class PayCostEffect extends Effect {
     constructor({
@@ -29,8 +29,8 @@ export class PayCostEffect extends Effect {
                 match: this.match,
             });
 
-            return discardFromHandEffect.runEffect(params)
-        })
+            return discardFromHandEffect.runEffect(params);
+        });
     }
 
     async execute(params) {

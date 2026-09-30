@@ -1,23 +1,21 @@
-import {ASPECT_LEADERSHIP} from "../aspects.js";
-import {TRAIT_DROID, TRAIT_AVENGER, TRAIT_SHIELD} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-value-effect.js";
-import {EFFECT_MODIFY_THWART_VALUE} from "../../../src/effects/modify-thwart-value-effect.js";
-import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {EFFECT_REMOVE_COUNTER} from "../../../src/effects/remove-counters-effect.js";
-import {EFFECT_PLACE_COUNTERS} from "../../../src/effects/place-counters-effect.js";
-import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
-import {TARGET_ALL_PLAYERS, TARGET_CHARACTER, TARGET_THIS} from "../../../src/constants/targets.js";
-import {TRIGGER_THIS_ENTER_PLAY} from "../../../src/triggers/this-enter-play-trigger.js";
-import {TRIGGER_ENGAGE_HERO} from "../../../src/triggers/engage-hero-trigger.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {ABILITY_OPTION} from "../../../src/abilities/misc/option-ability.js";
-import {TIME_PHASE, TIME_ROUND} from "../../../src/constants/times.js";
+import {ABILITY_ACTION,ABILITY_CONSTANT,ABILITY_OPTION,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_ALL_PLAYERS, TARGET_CHARACTER, TARGET_THIS} from '../../../src/constants/targets.js';
+import {TIME_PHASE, TIME_ROUND} from '../../../src/constants/times.js';
+import {TRAIT_DROID, TRAIT_AVENGER, TRAIT_SHIELD} from '../../../src/constants/traits.js';
+import {TRIGGER_ENGAGE_HERO, TRIGGER_THIS_ENTER_PLAY} from '../../../src/constants/triggers.js';
+import {
+    EFFECT_CHOOSE_ABILITY,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_DRAW_CARD,
+    EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_PLACE_COUNTERS,
+    EFFECT_REMOVE_COUNTER,
+    EFFECT_SPEND
+} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {ASPECT_LEADERSHIP} from '../aspects.js';
 
 const set = ASPECT_LEADERSHIP;
 

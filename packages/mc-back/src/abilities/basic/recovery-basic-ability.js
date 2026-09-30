@@ -1,5 +1,6 @@
-import {BasicAbility} from "./basic-ability.js";
-import {RecoveryEffect} from "../../effects/recovery-effect.js";
+import {RecoveryEffect} from '../../effects/recovery-effect.js';
+
+import {BasicAbility} from './basic-ability.js';
 
 export class RecoveryBasicAbility extends BasicAbility {
     constructor() {
@@ -23,6 +24,6 @@ export class RecoveryBasicAbility extends BasicAbility {
     toObj() {
         return {
             ...super.toObj(arguments[0]),
-        }
+        };
     }
 }

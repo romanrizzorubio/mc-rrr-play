@@ -59,6 +59,16 @@ npm run docker:down
 npm run docker:logs
 ```
 
+### Calidad de Código
+
+```bash
+# Verificar código y estilo (todo el proyecto)
+npm run lint
+
+# Corregir errores automáticamente
+npm run lint:fix
+```
+
 ## Servicios
 
 ### Frontend (mc-frontend)

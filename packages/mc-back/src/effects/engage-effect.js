@@ -1,5 +1,6 @@
-import {PutPlayEffect} from "./put-play-effect.js";
-import {TRIGGER_ENGAGE_HERO} from "../triggers/engage-hero-trigger.js";
+import {TRIGGER_ENGAGE_HERO} from '../constants/triggers.js';
+
+import {PutPlayEffect} from './put-play-effect.js';
 
 
 export class EngageEffect extends PutPlayEffect {

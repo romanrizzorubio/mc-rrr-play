@@ -1,7 +1,7 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-main-scheme-card.css.js';
 
-import "../mc-scheme-card/mc-scheme-card.js";
+import styles from './mc-main-scheme-card.css.js';
+import '../mc-scheme-card/mc-scheme-card.js';
 
 export class MainSchemeCardComponent extends LitElement {
     static get is() {

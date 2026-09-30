@@ -2,13 +2,12 @@ import {html} from 'lit-element';
 
 import styles from './mc-cards-group-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import '../../cards/mc-card/mc-card.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import "../../cards/mc-card/mc-card.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
 export class McCardsGroupDialog extends McDialog {
     static get is() {
-        return `mc-cards-group-dialog`;
+        return 'mc-cards-group-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];
@@ -44,7 +43,7 @@ export class McCardsGroupDialog extends McDialog {
         const {data: {groups}} = this;
 
         return Object.keys(groups).map(group =>
-            this.renderGroup(group, groups[group]))
+            this.renderGroup(group, groups[group]));
     }
 }
 

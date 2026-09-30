@@ -1,12 +1,12 @@
-import {PlayerCard} from "./player-card.js";
+import {PlayerCard} from './player-card.js';
 
 export const CARD_TYPE_EVENT = 'event';
 export class EventCard extends PlayerCard {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // PlayerCard
-        cost, resources, classification, canPlay
+        cost: _cost, resources: _resources, classification: _classification, canPlay: _canPlay
     }) {
         super(arguments[0]);
 
@@ -45,9 +45,9 @@ export class EventCard extends PlayerCard {
     async play(params) {
         const {player, ability, gameCard} = params;
 
-        const value = await ability.resolveAbility(params)
+        const value = await ability.resolveAbility(params);
 
-        player.discardHand(gameCard.id)
+        player.discardHand(gameCard.id);
 
         return value;
     }

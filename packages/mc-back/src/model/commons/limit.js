@@ -1,5 +1,5 @@
-import {Engine} from "../../engine/engine.js";
-import {path} from "../../engine/utils.js";
+import {Engine} from '../../engine/engine.js';
+import {path} from '../../engine/utils.js';
 
 export class Limit extends Engine {
     constructor({

@@ -1,9 +1,9 @@
-import {Effect} from "./effect.js";
-import {TARGET_SCHEME} from "../constants/targets.js";
-import {DefeatEffect} from "./defeat-effect.js";
-import {TRIGGER_PLACE_THREAT} from "../triggers/place-threat-trigger.js";
+import {TARGET_SCHEME} from '../constants/targets.js';
+import {TRIGGER_PLACE_THREAT} from '../constants/triggers.js';
 
-export const EFFECT_PLACE_THREAT = 'place-threat';
+import {EFFECT_DEFEAT} from '../constants/effects.js';
+import {Effect} from './effect.js';
+
 export class PlaceThreatEffect extends Effect {
     constructor({
         target = TARGET_SCHEME,
@@ -33,14 +33,12 @@ export class PlaceThreatEffect extends Effect {
             ]);
     }
     getThreat(params) {
-        const {paramsCalc} = this;
-
-        return paramsCalc ?
+        return this.paramsCalc ?
             this.calculate(params) :
             this.threat;
     }
     getTitle() {
-        return `Colocas ${this.threat} de Amenaza en el Plan principal.`
+        return `Colocas ${this.threat} de Amenaza en el Plan principal.`;
     }
     checkTrigger(params) {
         const {preventThreat} = this;
@@ -59,9 +57,9 @@ export class PlaceThreatEffect extends Effect {
 
         if (selectedTarget.isMain) {
             if (selectedTarget.threat >= selectedTarget.card.value) {
-                const defeatEffect = new DefeatEffect({
+                const defeatEffect = this.match.effectsFactory.createEffect({
+                    type: EFFECT_DEFEAT,
                     selectedTarget,
-                    match: this.match,
                 });
 
                 await defeatEffect.runEffect(params);

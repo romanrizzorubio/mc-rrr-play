@@ -19,4 +19,4 @@ export const MixinYouTrigger = C => class extends C {
             return super.canTrigger(params);
         }
     }
-}
+};

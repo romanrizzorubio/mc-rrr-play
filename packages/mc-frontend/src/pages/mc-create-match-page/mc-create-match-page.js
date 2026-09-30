@@ -1,10 +1,9 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-create-match-page.css.js';
-
 import '../../components/views/mc-create-match/mc-create-match.js';
-
-import {Api} from "../../components/api/api.js";
-import {ConfigMatch} from "../../components/api/config-match.js";
+import {Api} from '../../components/api/api.js';
+import {ConfigMatch} from '../../components/api/config-match.js';
 
 export class McCreateMatchPage extends LitElement {
     static get is() {
@@ -53,7 +52,7 @@ export class McCreateMatchPage extends LitElement {
                 name: 'Prueba',
                 player: {
                     name: 'RRR',
-                    hero: 'captain-marvel',
+                    hero: 'she-hulk',
                 },
                 scenario: {
                     scenario: 'rhino'
@@ -83,7 +82,7 @@ export class McCreateMatchPage extends LitElement {
                 match,
                 player: createdPlayer,
             }
-        }))
+        }));
     }
     render() {
         const {heroesList, scenariosList} = this;

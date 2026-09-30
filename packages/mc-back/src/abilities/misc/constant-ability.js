@@ -1,8 +1,7 @@
-import {Ability} from "../core/ability.js";
-import {PRIORITY_CONSTANT} from "../../constants/priorities.js";
-import {MixinTriggeableAbility} from "../mixins/mixin-triggeable-ability.js";
+import {PRIORITY_CONSTANT} from '../../constants/priorities.js';
+import {Ability} from '../core/ability.js';
+import {MixinTriggeableAbility} from '../mixins/mixin-triggeable-ability.js';
 
-export const ABILITY_CONSTANT = 'constant';
 export class ConstantAbility extends MixinTriggeableAbility(Ability) {
     constructor({
         once,
@@ -11,7 +10,7 @@ export class ConstantAbility extends MixinTriggeableAbility(Ability) {
 
         this.once = once;
     }
-    initTriggers(card, params) {
+    initTriggers(card, _params) {
         this.initTrigger({
             type: this.trigger,
             priority: PRIORITY_CONSTANT,

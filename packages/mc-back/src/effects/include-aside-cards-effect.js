@@ -1,13 +1,13 @@
-import {Effect} from "./effect.js";
 import {
     PLACE_ASIDE_MATCH,
     PLACE_OUTSIDE_NEMESIS
-} from "../constants/places.js";
-import {ValidTarget} from "../engine/valid-target.js";
-import {checkCondition} from "../engine/utils.js";
-import {TARGET_SCENARIO} from "../constants/targets.js";
+} from '../constants/places.js';
+import {TARGET_SCENARIO} from '../constants/targets.js';
+import {checkCondition} from '../engine/utils.js';
+import {ValidTarget} from '../targets/valid-target.js';
 
-export const EFFECT_INCLUDE_ASIDE_CARDS = 'include-aside-cards';
+import {Effect} from './effect.js';
+
 export class IncludeAsideCardsEffect extends Effect {
     constructor({
         condition,

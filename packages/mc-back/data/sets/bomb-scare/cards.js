@@ -1,22 +1,16 @@
+import {ABILITY_WHEN_REVEALED} from '../../../src/constants/abilities.js';
+import {CALC_THREAT} from '../../../src/constants/calc.js';
 import {
     TARGET_ALL_HEROES_ALLIES,
     TARGET_CARD,
     TARGET_MAIN_SCHEME,
     TARGET_YOU
-} from "../../../src/constants/targets.js";
-import {TRAIT_HYDRA} from "../../../src/constants/traits.js";
-import {CALC_THREAT} from "../../../src/constants/calc.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {EFFECT_SURGE} from "../../../src/effects/surge-effect.js";
-import {EFFECT_CONFUSE} from "../../../src/effects/confuse-effect.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {EFFECT_PLACE_THREAT} from "../../../src/effects/place-threat-effect.js";
-import {CARD_TYPE_TREACHERY} from "../../../src/model/printed/treachery-card.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
-import {EFFECT_ASSIGN_DAMAGE} from "../../../src/effects/assign-damage-effect.js";
-import {EFFECT_DO_IF_CARD_GAME} from "../../../src/effects/do-if-card-game-effect.js";
-import {EFFECT_CHOOSE} from "../../../src/effects/choose-effect.js";
-import {EFFECT_TAKE_DAMAGE} from "../../../src/effects/take-damage-effect.js";
+} from '../../../src/constants/targets.js';
+import {TRAIT_HYDRA} from '../../../src/constants/traits.js';
+import {EFFECT_ASSIGN_DAMAGE, EFFECT_CHOOSE, EFFECT_CONFUSE, EFFECT_DO_IF_CARD_GAME, EFFECT_PLACE_THREAT, EFFECT_SURGE, EFFECT_TAKE_DAMAGE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';
+import {CARD_TYPE_TREACHERY} from '../../../src/model/printed/treachery-card.js';
 
 const set = 'bomb-scare';
 export const bombScare = {

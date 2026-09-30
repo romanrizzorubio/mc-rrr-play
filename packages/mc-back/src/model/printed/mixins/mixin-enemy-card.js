@@ -1,10 +1,10 @@
-import {MixinCharacterCard} from "./mixin-character-card.js";
-import {MixinFrontCard} from "./mixin-front-card.js";
+import {MixinCharacterCard} from './mixin-character-card.js';
+import {MixinFrontCard} from './mixin-front-card.js';
 
 export const MixinEnemyCard = C => class extends MixinFrontCard(MixinCharacterCard(C)) {
     constructor({
 // MixinCharacterCard
-        hitPoints, statusAvailable, toughness, maxTough = 1,
+        hitPoints: _hitPoints, statusAvailable: _statusAvailable, toughness: _toughness, maxTough: _maxTough = 1,
 // MixinEnemyCard
         scheme,
     }) {
@@ -15,6 +15,6 @@ export const MixinEnemyCard = C => class extends MixinFrontCard(MixinCharacterCa
     toObj() {
         return {
             ...super.toObj(arguments[0])
-        }
+        };
     }
-}
+};

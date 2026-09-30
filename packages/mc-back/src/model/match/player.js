@@ -1,19 +1,20 @@
-import {Engine} from "../../engine/engine.js";
-import {Deck} from "./deck.js";
-import {Hand} from "./hand.js";
-import {FillHandEffect} from "../../effects/fill-hand-effect.js";
-import {DiscardFromHandEffect} from "../../effects/discard-from-hand-effect.js";
-import {TARGET_CARD} from "../../constants/targets.js";
-import {PlayCardEffect} from "../../effects/play-card-effect.js";
-import {RevealEncounterEffect} from "../../effects/reveal-encounter-effect.js";
-import {ReadyEffect} from "../../effects/ready-effect.js";
-import {EFFECT_MODIFY_HIT_POINTS} from "../../factory/effects-factory.js";
-import {TRIGGER_YOUR_HERO_GET_HIT_POINTS} from "../../factory/triggers-factory.js";
-import {PlayerZone} from "./player-zone.js";
-import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from "../../constants/dialogs.js";
-import {endpoints} from "../../constants/endpoints.js";
-import {RESOURCES_X} from "../../constants/resources.js";
-import {checkCondition} from "../../engine/utils.js";
+import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from '../../constants/dialogs.js';
+import {endpoints} from '../../constants/endpoints.js';
+import {RESOURCES_X} from '../../constants/resources.js';
+import {TARGET_CARD} from '../../constants/targets.js';
+import {TRIGGER_YOUR_HERO_GET_HIT_POINTS} from '../../constants/triggers.js';
+import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
+import {FillHandEffect} from '../../effects/fill-hand-effect.js';
+import {PlayCardEffect} from '../../effects/play-card-effect.js';
+import {ReadyEffect} from '../../effects/ready-effect.js';
+import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {checkCondition} from '../../engine/utils.js';
+
+import {Deck} from './deck.js';
+import {Hand} from './hand.js';
+import {PlayerZone} from './player-zone.js';
+import {EFFECT_MODIFY_HIT_POINTS} from '../../constants/effects.js';
 
 export class Player extends Engine {
     constructor({
@@ -130,7 +131,7 @@ export class Player extends Engine {
         return this.superhero.isHero;
     }
     get isStunned() {
-        return this.superhero.isStunned
+        return this.superhero.isStunned;
     }
     get life() {
         return this.superhero.life;
@@ -165,16 +166,16 @@ export class Player extends Engine {
         card.controller = this;
         this.gameZone.addToGameZone(card);
     }
-    canAttack(params) {
+    canAttack(_params) {
         return true;
     }
     canBeAttacked() {
         return true;
     }
-    canDefend(params) {
+    canDefend(_params) {
         return true;
     }
-    canThwart(params) {
+    canThwart(_params) {
         return true;
     }
     confuse() {
@@ -226,7 +227,7 @@ export class Player extends Engine {
         return {
             generators: await this.getResourceGenerators(cardToPlay, resourceType),
             hand: this.hand.getCardsToPay(cardToPlay, resourceType),
-        }
+        };
     }
     getPrintedCard(cardId) {
         return this.gameZone.getPrintedCard(cardId);
@@ -242,7 +243,7 @@ export class Player extends Engine {
             if (await card.hasResourceGenerators(cardToPay, resourceType)) {
                 generators.push(card);
             }
-        })
+        });
 
         return generators;
     }
@@ -272,7 +273,7 @@ export class Player extends Engine {
             return this.superhero;
         }
 
-        let card = this.gameZone.searchCard(condition);
+        const card = this.gameZone.searchCard(condition);
         if (card) {
             return card;
         }
@@ -364,7 +365,7 @@ export class Player extends Engine {
         return this.promisesSequential(this.encounters.slice(), card => {
             this.encounters.shift();
 
-            return this.revealEncounterCard(card)
+            return this.revealEncounterCard(card);
         });
     }
     resolveResourceAbility(cardId, cardPaid) {
@@ -372,7 +373,7 @@ export class Player extends Engine {
 
         return card.resolveResourceAbility({card, cardPaid, player: this});
     }
-    async runEndPlayersPhase(params) {
+    async runEndPlayersPhase(_params) {
         if (this.hand.cards.length) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_DISCARD_HAND,
@@ -487,6 +488,6 @@ export class Player extends Engine {
             hand: hand ? hand.toObj(arguments[0]) : undefined,
             superhero: superhero ? superhero.toObj(arguments[0]) : undefined,
             gameZone: gameZone ? gameZone.toObj(arguments[0]) : undefined,
-        }
+        };
     }
 }

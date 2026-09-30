@@ -1,15 +1,14 @@
 import {html} from 'lit-element';
 
-import styles from './mc-accelerate-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import styles from './mc-accelerate-dialog.css.js';
+import '../../cards/mc-card-list/mc-card-list.js';
+import {ICON_ADVANCE} from '../../common/mc-icon/mc-icon.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import "../../cards/mc-card-list/mc-card-list.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
-import {ICON_ADVANCE} from "../../common/mc-icon/mc-icon.js";
 export class McAccelerateDialog extends McDialog {
     static get is() {
-        return `mc-accelerate-dialog`;
+        return 'mc-accelerate-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];

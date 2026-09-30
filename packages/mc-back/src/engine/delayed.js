@@ -1,4 +1,4 @@
-import {Engine} from "./engine.js";
+import {Engine} from './engine.js';
 
 export class Delayed extends Engine {
     constructor({

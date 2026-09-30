@@ -3,4 +3,4 @@ export const EVENTS= {
         CREATED: 'match-created',
         GET_HEROES_LIST: 'get-heroes-list',
     }
-}
+};

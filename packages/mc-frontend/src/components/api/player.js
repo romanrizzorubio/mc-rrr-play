@@ -1,4 +1,4 @@
-import {endpoints} from "../../misc/endpoints.js";
+import {endpoints} from '../../misc/endpoints.js';
 
 export class Player {
     constructor(api) {
@@ -28,7 +28,7 @@ export class Player {
                 player,
                 cardId,
             }
-        })
+        });
     }
     resolveAbility(player, card, ability) {
         const {api} = this;
@@ -40,6 +40,6 @@ export class Player {
                 card,
                 ability,
             }
-        })
+        });
     }
 }

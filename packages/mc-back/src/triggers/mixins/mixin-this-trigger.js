@@ -6,7 +6,7 @@ export const MixinThisTrigger = C => class extends C {
         const {card} = this;
 
         if (card.id === params.card.id) {
-            return super.canTrigger(params)
+            return super.canTrigger(params);
         }
     }
-}
+};

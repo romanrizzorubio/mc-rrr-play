@@ -1,12 +1,11 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_HEAL = 'heal';
 export class HealEffect extends Effect {
     constructor({
 // HealEffect
-        character,
+        character: _character,
         damage,
-        target
+        target: _target
     }) {
         super(arguments[0]);
 
@@ -17,7 +16,7 @@ export class HealEffect extends Effect {
             super.filterTarget.apply(this, arguments);
     }
 
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, damage} = this;
 
         selectedTarget.healDamage(damage);

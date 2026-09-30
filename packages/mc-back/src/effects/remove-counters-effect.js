@@ -1,8 +1,6 @@
-import {Effect} from "./effect.js";
-import {DiscardFromGameEffect} from "./discard-from-game-effect.js";
+import {DiscardFromGameEffect} from './discard-from-game-effect.js';
+import {Effect} from './effect.js';
 
-export const EFFECT_REMOVE_USE = 'remove-use';
-export const EFFECT_REMOVE_COUNTER = 'remove-counter';
 export class RemoveCountersEffect extends Effect {
     constructor({
         count
@@ -29,7 +27,7 @@ export class RemoveCountersEffect extends Effect {
             const discardFromGameEffect = new DiscardFromGameEffect({
                 selectedTarget,
                 match: this.match,
-            })
+            });
 
             await discardFromGameEffect.runEffect(params);
         }

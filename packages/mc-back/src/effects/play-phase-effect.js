@@ -1,6 +1,7 @@
-import {Effect} from "./effect.js";
-import {TIME_PHASE} from "../constants/times.js";
-import {TRIGGER_PHASE_ENDS} from "../triggers/phase-ends-trigger.js";
+import {TIME_PHASE} from '../constants/times.js';
+import {TRIGGER_PHASE_ENDS} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class PlayPhaseEffect extends Effect {
     getTriggersEnds() {
@@ -10,7 +11,7 @@ export class PlayPhaseEffect extends Effect {
             ]);
     }
 
-    async execute(params) {
+    async execute() {
         await this.endLimit(TIME_PHASE);
     }
 }

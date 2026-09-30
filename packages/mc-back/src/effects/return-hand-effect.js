@@ -1,8 +1,7 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_RETURN_HAND = 'return-hand';
 export class ReturnHandEffect extends Effect {
-    async execute(params) {
+    async execute() {
         const {selectedTarget} = this;
         const player = selectedTarget.controller;
 
@@ -10,6 +9,7 @@ export class ReturnHandEffect extends Effect {
 
         player.hand.addCards([selectedTarget]);
 
+        player.gameZone.refresh();
         player.hand.refresh();
         selectedTarget.refresh();
     }

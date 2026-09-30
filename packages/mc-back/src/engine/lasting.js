@@ -1,9 +1,9 @@
-import {Engine} from "./engine.js";
-import {TIME_PHASE} from "../constants/times.js";
-import {ConstantAbility} from "../abilities/misc/constant-ability.js";
-import {EndLastingAbility} from "../abilities/misc/end-lasting-ability.js";
-import {EndLastingEffect} from "../effects/end-lasting-effect.js";
-import {path} from "./utils.js";
+import {EndLastingAbility} from '../abilities/misc/end-lasting-ability.js';
+import {TIME_PHASE} from '../constants/times.js';
+import {EndLastingEffect} from '../effects/end-lasting-effect.js';
+
+import {Engine} from './engine.js';
+import {path} from './utils.js';
 
 export class Lasting extends Engine {
     constructor({
@@ -27,8 +27,8 @@ export class Lasting extends Engine {
 
         if (until instanceof Array) {
             until.forEach(_until => {
-                this.createEndLasting(_until, params)
-            })
+                this.createEndLasting(_until, params);
+            });
         } else {
             const endLastingAbility = new EndLastingAbility({
                 trigger: until,
@@ -37,7 +37,7 @@ export class Lasting extends Engine {
                     match: this.match,
                 }),
                 match: this.match,
-            })
+            });
 
             endLastingAbility.initTriggers(card);
         }

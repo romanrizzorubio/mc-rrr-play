@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class GetMaxAlliesEffect extends Effect {
     constructor({}) {
@@ -7,7 +7,7 @@ export class GetMaxAlliesEffect extends Effect {
         this.maxAllies = 3;
         this.modifyMaxAllies = 0;
     }
-    async execute(params) {
+    async execute(_params) {
         const {modifyMaxAllies} = this;
 
         this.maxAllies = 3 + modifyMaxAllies;

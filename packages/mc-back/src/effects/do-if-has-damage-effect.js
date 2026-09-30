@@ -1,12 +1,11 @@
-import {DoIfEffect} from "./do-if-effect.js";
+import {DoIfEffect} from './do-if-effect.js';
 
-export const EFFECT_DO_IF_HAS_DAMAGE = 'do-if-has-damage';
 export class DoIfHasDamageEffect extends DoIfEffect {
     constructor({
 // DoIfEffect
-        condition,
-        effect,
-        effectNot,
+        condition: _condition,
+        effect: _effect,
+        effectNot: _effectNot,
 // DoIfHasDamageEffect
         damage
     }) {

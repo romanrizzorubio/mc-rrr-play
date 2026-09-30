@@ -1,6 +1,7 @@
-import {EnemyAttackEffect} from "./enemy-attack-effect.js";
-import {Effect} from "./effect.js";
-import {Ability} from "../abilities/core/ability.js";
+import {Ability} from '../abilities/core/ability.js';
+
+import {Effect} from './effect.js';
+import {EnemyAttackEffect} from './enemy-attack-effect.js';
 
 export class QuickStrikeEffect extends Effect {
     constructor({
@@ -28,6 +29,6 @@ export class QuickStrikeEffect extends Effect {
 
         return ability.resolveAbility({
             player,
-        })
+        });
     }
 }

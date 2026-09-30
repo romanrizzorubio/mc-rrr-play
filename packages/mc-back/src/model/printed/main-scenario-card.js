@@ -1,9 +1,9 @@
-import {EncounterCard} from "./encounter-card.js";
+import {EncounterCard} from './encounter-card.js';
 
 export class MainScenarioCard extends EncounterCard {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // MainScenarioCard
         stage
     }) {
@@ -17,6 +17,6 @@ export class MainScenarioCard extends EncounterCard {
         return {
             ...super.toObj(arguments[0]),
             stage: this.stage
-        }
+        };
     }
 }

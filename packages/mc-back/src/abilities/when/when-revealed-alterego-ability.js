@@ -1,5 +1,5 @@
-import {WhenRevealedAbility} from "./when-revealed-ability.js";
-import {MixinAlteregoAbility} from "../mixins/mixin-alterego-ability.js";
+import {MixinAlteregoAbility} from '../mixins/mixin-alterego-ability.js';
 
-export const ABILITY_WHEN_REVEALED_ALTEREGO = 'when-revealed-alterego';
+import {WhenRevealedAbility} from './when-revealed-ability.js';
+
 export class WhenRevealedAlteregoAbility extends MixinAlteregoAbility(WhenRevealedAbility) {}

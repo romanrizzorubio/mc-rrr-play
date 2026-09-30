@@ -1,12 +1,11 @@
-import {Ability} from "../core/ability.js";
-import {TARGET_ANY} from "../../constants/targets.js";
-import {RESOURCE_WILD} from "../../constants/resources.js";
+import {RESOURCE_WILD} from '../../constants/resources.js';
+import {TARGET_ANY} from '../../constants/targets.js';
+import {Ability} from '../core/ability.js';
 
-export const ABILITY_RESOURCE = 'resource';
 export class ResourceAbility extends Ability {
     constructor({
 // Ability
-        effect, limit, maximum, arrow,
+        effect: _effect, limit: _limit, maximum: _maximum, arrow: _arrow,
 // ResourceAbility
         resource,
         target = TARGET_ANY,
@@ -39,6 +38,6 @@ export class ResourceAbility extends Ability {
             target,
             resource,
             type,
-        }
+        };
     }
 }

@@ -1,5 +1,6 @@
-import {Effect} from "./effect.js";
-import {endpoints} from "../constants/endpoints.js";
+import {endpoints} from '../constants/endpoints.js';
+
+import {Effect} from './effect.js';
 
 export class PlayTurnEffect extends Effect {
     execute({player}) {
@@ -11,6 +12,6 @@ export class PlayTurnEffect extends Effect {
             match.refresh();
 
             match.listen(endpoints.turn.end, resolve, true);
-        })
+        });
     }
 }

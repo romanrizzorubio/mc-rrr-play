@@ -1,9 +1,8 @@
-import {Effect} from "./effect.js";
-import {ValidTarget} from "../engine/valid-target.js";
-import {TARGET_CARD} from "../constants/targets.js";
-import {path} from "../engine/utils.js";
+import {TARGET_CARD} from '../constants/targets.js';
+import {ValidTarget} from '../targets/valid-target.js';
 
-export const EFFECT_FACEDOWN = 'facedown';
+import {Effect} from './effect.js';
+
 export class FaceDownEffect extends Effect {
     constructor({
         cards,
@@ -17,7 +16,7 @@ export class FaceDownEffect extends Effect {
     async prepare(params) {
         await super.prepare(params);
 
-        const {cardsTarget} = this
+        const {cardsTarget} = this;
         const validTarget = new ValidTarget({
             multipleTarget: true,
             match: this.match,
@@ -31,7 +30,7 @@ export class FaceDownEffect extends Effect {
             });
         }
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, cards} = this;
 
         selectedTarget.addFaceDown(cards);

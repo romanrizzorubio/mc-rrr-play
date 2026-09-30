@@ -1,6 +1,6 @@
-import {Effect} from "./effect.js";
-import {TRIGGER_THIS_GET_THWART} from "../triggers/this-get-thwart-trigger.js";
-import {TRIGGER_YOUR_HERO_GET_THWART} from "../triggers/your-hero-get-thwart-trigger.js";
+import {TRIGGER_THIS_GET_THWART, TRIGGER_YOUR_HERO_GET_THWART} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class GetThwartEffect extends Effect {
     constructor({}) {
@@ -16,7 +16,7 @@ export class GetThwartEffect extends Effect {
                 TRIGGER_THIS_GET_THWART,
             ]);
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, modifyThwart} = this;
 
         if (selectedTarget.thwart !== null) {

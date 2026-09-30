@@ -1,13 +1,13 @@
-import {blackWidow, lukeCage} from "../../aspect/protection/allies.js";
-import {counterPunch, getBehindMe} from "../../aspect/protection/events.js";
-import {powerOfProtection} from "../../aspect/protection/resources.js";
-import {medicalTeam} from "../../aspect/protection/supports.js";
-import {armoredVest, indomitable} from "../../aspect/protection/upgrades.js";
+import {mockingBird} from '../../aspect/basic/allies.js';
+import {emergency, firstAid, haymaker} from '../../aspect/basic/events.js';
+import {energy, genius, strength} from '../../aspect/basic/resources.js';
+import {avengersMansion, helicarrier} from '../../aspect/basic/supports.js';
+import {blackWidow, lukeCage} from '../../aspect/protection/allies.js';
+import {counterPunch, getBehindMe} from '../../aspect/protection/events.js';
+import {powerOfProtection} from '../../aspect/protection/resources.js';
+import {medicalTeam} from '../../aspect/protection/supports.js';
+import {armoredVest, indomitable} from '../../aspect/protection/upgrades.js';
 
-import {mockingBird} from "../../aspect/basic/allies.js";
-import {emergency, firstAid, haymaker} from "../../aspect/basic/events.js";
-import {energy, genius, strength} from "../../aspect/basic/resources.js";
-import {avengersMansion, helicarrier} from "../../aspect/basic/supports.js";
 
 export const precon = [
     // Protection

@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {DIALOG_LIST} from "../constants/dialogs.js";
+import {DIALOG_LIST} from '../constants/dialogs.js';
 
-export const EFFECT_CHOOSE_ABILITY = 'choose-ability';
+import {Effect} from './effect.js';
+
 export class ChooseAbilityEffect extends Effect {
     constructor({
         options = [],
@@ -12,18 +12,18 @@ export class ChooseAbilityEffect extends Effect {
 
         this.options.forEach(option => {
             option.parent = this;
-        })
+        });
 
         this.isChooseAbility = true;
     }
     get keepTriggering() {
         return this.options.some(option =>
             option.keepTriggering
-        )
+        );
     }
     canRun(params) {
         return this.promisesSequentialSome(this.options, option =>
-            option.canRun(params))
+            option.canRun(params));
     }
     getValidOptions(params, matchAll) {
         const {options} = this;
@@ -31,7 +31,7 @@ export class ChooseAbilityEffect extends Effect {
         return this.promisesSequentialFilter(options, option => option.canRun({
             ...params,
             matchAll,
-        }))
+        }));
     }
     async execute(params) {
         const {player} = params;

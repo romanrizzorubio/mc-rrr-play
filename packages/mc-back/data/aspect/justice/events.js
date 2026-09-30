@@ -1,20 +1,15 @@
-import {ASPECT_JUSTICE} from "../aspects.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL} from "../../../src/constants/resources.js";
+import {ABILITY_HERO_ACTION,ABILITY_HERO_INTERRUPT} from '../../../src/constants/abilities.js';
+import {LABEL_THWART} from '../../../src/constants/labels.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL} from '../../../src/constants/resources.js';
 import {
     TARGET_EFFECT,
     TARGET_SCHEME, TARGET_YOU
-} from "../../../src/constants/targets.js";
-import {LABEL_THWART} from "../../../src/constants/labels.js";
-import {TRAIT_THWART} from "../../../src/constants/traits.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {EFFECT_TAKE_DAMAGE} from "../../../src/effects/take-damage-effect.js";
-import {EFFECT_PREVENT_PLACE_THREAT} from "../../../src/effects/prevent-place-threat-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {EFFECT_DO_IF_HAS_PAID} from "../../../src/effects/do-if-has-paid-effect.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {ABILITY_HERO_INTERRUPT} from "../../../src/abilities/interrupt/hero-interrupt-ability.js";
-import {TRIGGER_PLACE_THREAT} from "../../../src/triggers/place-threat-trigger.js";
+} from '../../../src/constants/targets.js';
+import {TRAIT_THWART} from '../../../src/constants/traits.js';
+import {TRIGGER_PLACE_THREAT} from '../../../src/constants/triggers.js';
+import {EFFECT_CHAINED, EFFECT_DO_IF_HAS_PAID, EFFECT_PREVENT_PLACE_THREAT, EFFECT_REMOVE_THREAT, EFFECT_TAKE_DAMAGE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {ASPECT_JUSTICE} from '../aspects.js';
 
 const set = ASPECT_JUSTICE;
 export const forJustice = {

@@ -1,10 +1,10 @@
-import {Effect} from "./effect.js";
-import {DIALOG_PLAY_CARD} from "../constants/dialogs.js";
-import {checkCondition} from "../engine/utils.js";
-import {TARGET_ALL_PLAYERS, TARGET_YOU} from "../constants/targets.js";
-import {PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND} from "../constants/places.js";
+import {DIALOG_PLAY_CARD} from '../constants/dialogs.js';
+import {PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND} from '../constants/places.js';
+import {TARGET_ALL_PLAYERS, TARGET_YOU} from '../constants/targets.js';
+import {checkCondition} from '../engine/utils.js';
 
-export const EFFECT_SEARCH_CARDS = 'search-cards';
+import {Effect} from './effect.js';
+
 
 export class SearchCardsEffect extends Effect {
     constructor({
@@ -68,7 +68,6 @@ export class SearchCardsEffect extends Effect {
 
         const {selected} = response;
         if (selected && selected[0]) {
-            const selectedCard = options.find(c => c.id === selected[0].id);
             // Guardamos el resultado en params para efectos encadenados
             params.selectedCards = selected.map(s => options.find(c => c.id === s.id));
             params.selectedCard = params.selectedCards[0];

@@ -1,8 +1,8 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-card-list.css.js';
 
-import "../mc-card/mc-card.js";
-import {ABILITY_ID} from "../../../misc/utils.js";
+import styles from './mc-card-list.css.js';
+import '../mc-card/mc-card.js';
+import {ABILITY_ID} from '../../../misc/utils.js';
 
 export class HandComponent extends LitElement {
     static get is() {
@@ -37,8 +37,6 @@ export class HandComponent extends LitElement {
         this.showGeneric = false;
         this.showExhausted = false;
     }
-    getExhausted(card) {
-    }
     getMenuOptions(card) {
         if (this.showMenuAbilities) {
             const options = card.abilities
@@ -71,7 +69,7 @@ export class HandComponent extends LitElement {
                     cardIndex: index,
                 },
             }));
-        }
+        };
     }
     handleClick(index) {
         return () => {
@@ -85,7 +83,7 @@ export class HandComponent extends LitElement {
                     cardIndex: index,
                 },
             }));
-        }
+        };
     }
     handleMenuClick(index) {
         return e => {
@@ -104,7 +102,7 @@ export class HandComponent extends LitElement {
                     cardIndex: index,
                 }
             }));
-        }
+        };
     }
     renderCard(card, index) {
         const {

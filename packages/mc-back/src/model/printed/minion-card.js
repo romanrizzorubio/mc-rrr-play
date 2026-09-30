@@ -1,18 +1,19 @@
-import {MixinEnemyCard} from "./mixins/mixin-enemy-card.js";
-import {EncounterCard} from "./encounter-card.js";
-import {TARGET_YOU} from "../../constants/targets.js";
+import {TARGET_YOU} from '../../constants/targets.js';
+
+import {EncounterCard} from './encounter-card.js';
+import {MixinEnemyCard} from './mixins/mixin-enemy-card.js';
 
 export const CARD_TYPE_MINION = 'minion';
 export class MinionCard extends MixinEnemyCard(EncounterCard) {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // EncounterCard
-        boost, boostAbility, surge,
+        boost: _boost, boostAbility: _boostAbility, surge: _surge,
 // MixinCharacterCard
-        hitPoints, statusAvailable, toughness, maxTough,
+        hitPoints: _hitPoints, statusAvailable: _statusAvailable, toughness: _toughness, maxTough: _maxTough,
 // MixinEnemyCard
-        scheme,
+        scheme: _scheme,
 // Minion
         faceTo = TARGET_YOU,
         nemesis = false,

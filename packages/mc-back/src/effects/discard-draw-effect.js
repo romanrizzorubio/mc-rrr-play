@@ -1,9 +1,9 @@
-import {Effect} from "./effect.js";
-import {checkCondition} from "../engine/utils.js";
-import {DiscardFromDeckEffect} from "./discard-from-deck-effect.js";
-import {AddHandEffect} from "./add-hand-effect.js";
+import {checkCondition} from '../engine/utils.js';
 
-export const EFFECT_DISCARD_DRAW = 'discard-draw';
+import {AddHandEffect} from './add-hand-effect.js';
+import {DiscardFromDeckEffect} from './discard-from-deck-effect.js';
+import {Effect} from './effect.js';
+
 export class DiscardDrawEffect extends Effect {
     constructor({
 // DiscardDrawEffect
@@ -28,7 +28,7 @@ export class DiscardDrawEffect extends Effect {
             match: this.match,
         });
 
-        await discardFromDeckEffect.runEffect({player})
+        await discardFromDeckEffect.runEffect({player});
 
         const matched = discardFromDeckEffect.cards.filter(this.checkCondition.bind(this));
         matched.forEach(card => {

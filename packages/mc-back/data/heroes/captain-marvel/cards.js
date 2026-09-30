@@ -1,13 +1,10 @@
+import {ABILITY_ACTION,ABILITY_HERO_ACTION,ABILITY_HERO_INTERRUPT,ABILITY_BOOST,ABILITY_CONSTANT,ABILITY_OPTION,ABILITY_FORCED_RESPONSE,ABILITY_RESPONSE,ABILITY_WHEN_REVEALED} from '../../../src/constants/abilities.js';
 import {
-    TRAIT_AERIAL, TRAIT_ARMOR, TRAIT_ATTACK,
-    TRAIT_AVENGER, TRAIT_ELITE, TRAIT_KREE,
-    TRAIT_LOCATION, TRAIT_SHIELD,
-    TRAIT_SOLDIER, TRAIT_SPY,
-    TRAIT_SUPERPOWER, TRAIT_TECH
-} from "../../../src/constants/traits.js";
-import {CLASSIFICATION_HERO} from "../../../src/constants/classifications.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../src/constants/resources.js";
-import {TIME_ROUND} from "../../../src/constants/times.js";
+    CALC_COUNT, CALC_MULTIPLY_2,
+} from '../../../src/constants/calc.js';
+import {CLASSIFICATION_HERO} from '../../../src/constants/classifications.js';
+import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from '../../../src/constants/labels.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from '../../../src/constants/resources.js';
 import {
     TARGET_ACTIVATION,
     TARGET_ALTEREGO,
@@ -16,63 +13,62 @@ import {
     TARGET_CARD, TARGET_CONDITION_CARD, TARGET_EFFECT, TARGET_ENEMY,
     TARGET_HERO, TARGET_MAIN_SCHEME,
     TARGET_SCHEME, TARGET_THIS, TARGET_VILLAIN, TARGET_YOU, TARGET_YOUR_SUPERHERO
-} from "../../../src/constants/targets.js";
-import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from "../../../src/constants/labels.js";
+} from '../../../src/constants/targets.js';
+import {TIME_ROUND} from '../../../src/constants/times.js';
 import {
-    CALC_COUNT, CALC_MULTIPLY_2,
-} from "../../../src/constants/calc.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {EFFECT_DO_IF_HAS_TRAITS} from "../../../src/effects/do-if-has-traits-effect.js";
-import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
-import {EFFECT_PLACE_COUNTER} from "../../../src/effects/place-counters-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {EFFECT_PREVENT_DAMAGE} from "../../../src/effects/prevent-damage-effect.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {CARD_TYPE_HERO} from "../../../src/model/printed/hero-card.js";
-import {CARD_TYPE_ALTEREGO} from "../../../src/model/printed/alterego-card.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {EFFECT_SURGE} from "../../../src/effects/surge-effect.js";
-import {EFFECT_DISCARD_CONDITION_HAND} from "../../../src/effects/discard-condition-hand-effect.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {CARD_TYPE_TREACHERY} from "../../../src/model/printed/treachery-card.js";
-import {EFFECT_CONFUSE} from "../../../src/effects/confuse-effect.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {EFFECT_PLACE_THREAT} from "../../../src/effects/place-threat-effect.js";
-import {EFFECT_DO_IF} from "../../../src/effects/do-if-effect.js";
-import {EFFECT_DO_IF_HAS_PAID} from "../../../src/effects/do-if-has-paid-effect.js";
-import {CARD_TYPE_RESOURCE} from "../../../src/model/printed/resource-card.js";
-import {ABILITY_BOOST} from "../../../src/abilities/misc/boost-ability.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {ABILITY_FORCED_RESPONSE} from "../../../src/abilities/response/forced-response-ability.js";
-import {EFFECT_SELECT_DISCARD_CARD} from "../../../src/effects/select-discard-card-effect.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {EFFECT_MODIFY_DEFENSE_VALUE} from "../../../src/effects/modify-defense-value-effect.js";
-import {EFFECT_STUN} from "../../../src/effects/stun-effect.js";
-import {ABILITY_OPTION} from "../../../src/abilities/misc/option-ability.js";
-import {EFFECT_MODIFY_TRAITS} from "../../../src/effects/modify-traits-effect.js";
-import {ABILITY_HERO_INTERRUPT} from "../../../src/abilities/interrupt/hero-interrupt-ability.js";
-import {EFFECT_REMOVE_CARD} from "../../../src/effects/remove-card-effect.js";
-import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
-import {EFFECT_SPEND_X} from "../../../src/effects/spend-x-effect.js";
-import {EFFECT_FLIP} from "../../../src/effects/flip-effect.js";
-import {EFFECT_MAY} from "../../../src/effects/may-effect.js";
-import {CARD_TYPE_OBLIGATION} from "../../../src/model/printed/obligation-card.js";
-import {TRIGGER_CONDITION_GET_DEFENSE} from "../../../src/triggers/condition-get-defense-trigger.js";
-import {TRIGGER_CONDITION_GET_TRAITS} from "../../../src/triggers/condition-get-traits-trigger.js";
-import {TRIGGER_THIS_ATTACK} from "../../../src/triggers/this-attack-trigger.js";
-import {TRIGGER_THIS_ENTER_PLAY} from "../../../src/triggers/this-enter-play-trigger.js";
-import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from "../../../src/triggers/you-would-take-damage-trigger.js";
-import {TRIGGER_INSTANT} from "../../../src/triggers/instant-trigger.js";
+    TRAIT_AERIAL, TRAIT_ARMOR, TRAIT_ATTACK,
+    TRAIT_AVENGER, TRAIT_ELITE, TRAIT_KREE,
+    TRAIT_LOCATION, TRAIT_SHIELD,
+    TRAIT_SOLDIER, TRAIT_SPY,
+    TRAIT_SUPERPOWER, TRAIT_TECH, TRAIT_THWART
+} from '../../../src/constants/traits.js';
+import {
+    TRIGGER_CONDITION_GET_DEFENSE,
+    TRIGGER_CONDITION_GET_TRAITS,
+    TRIGGER_INSTANT,
+    TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_YOU_WOULD_TAKE_DAMAGE
+} from '../../../src/constants/triggers.js';
+import {
+    EFFECT_CHAINED,
+    EFFECT_CHOOSE_ABILITY,
+    EFFECT_CONFUSE,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_CONDITION_HAND,
+    EFFECT_DISCARD_GAME,
+    EFFECT_DO_IF,
+    EFFECT_DO_IF_HAS_PAID,
+    EFFECT_DO_IF_HAS_TRAITS,
+    EFFECT_DRAW_CARD,
+    EFFECT_EXHAUST,
+    EFFECT_FLIP,
+    EFFECT_HEAL,
+    EFFECT_MAY,
+    EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_MODIFY_TRAITS,
+    EFFECT_PLACE_COUNTERS,
+    EFFECT_PLACE_THREAT,
+    EFFECT_PREVENT_DAMAGE,
+    EFFECT_REMOVE_CARD,
+    EFFECT_REMOVE_THREAT,
+    EFFECT_SELECT_DISCARD_CARD,
+    EFFECT_SPEND,
+    EFFECT_SPEND_X,
+    EFFECT_STUN,
+    EFFECT_SURGE
+} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {CARD_TYPE_ALTEREGO} from '../../../src/model/printed/alterego-card.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {CARD_TYPE_HERO} from '../../../src/model/printed/hero-card.js';
+import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
+import {CARD_TYPE_OBLIGATION} from '../../../src/model/printed/obligation-card.js';
+import {CARD_TYPE_RESOURCE} from '../../../src/model/printed/resource-card.js';
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';
+import {CARD_TYPE_SUPPORT} from '../../../src/model/printed/support-card.js';
+import {CARD_TYPE_TREACHERY} from '../../../src/model/printed/treachery-card.js';
+import {CARD_TYPE_UPGRADE} from '../../../src/model/printed/upgrade-card.js';
 
 const set = 'Captain Marvel';
 export const captainMarvelCard = {
@@ -473,7 +469,7 @@ export const energyChannel = {
                     }
                 },
                 effect: {
-                    type: EFFECT_PLACE_COUNTER,
+                    type: EFFECT_PLACE_COUNTERS,
                     params: {
                         target: TARGET_THIS,
                         paramsCalc: {

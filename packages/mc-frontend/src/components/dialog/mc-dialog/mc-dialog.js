@@ -1,7 +1,6 @@
 import {LitElement, html} from 'lit-element';
 
-import "../../cards/mc-card-list/mc-card-list.js";
-
+import '../../cards/mc-card-list/mc-card-list.js';
 import '@material/web/dialog/dialog.js';
 import '@material/web/button/text-button.js';
 
@@ -43,7 +42,7 @@ export class McDialog extends LitElement {
         return {
             data: {},
             _response: {},
-        }
+        };
     }
     get className() {
         return '';
@@ -66,12 +65,12 @@ export class McDialog extends LitElement {
                     return {
                         ...r,
                         [key]: _clone(obj[key])
-                    }
-                }, {})
+                    };
+                }, {});
             } else {
                 return obj;
             }
-        }
+        };
 
         Object.keys(defaultData.data).forEach(key => {
             if (data[key] === undefined &&
@@ -85,7 +84,7 @@ export class McDialog extends LitElement {
         this.data = {
             ...this.data,
             ...data,
-        }
+        };
     }
     initProperties() {
         const {data} = this;
@@ -113,7 +112,7 @@ export class McDialog extends LitElement {
         this.dispatchEvent(new CustomEvent('dialog-close', {
             bubbles: true,
             composed: true,
-        }))
+        }));
     }
     handleCancel() {
         const {_response} = this;

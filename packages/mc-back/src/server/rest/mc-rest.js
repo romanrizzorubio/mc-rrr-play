@@ -1,8 +1,9 @@
-import cors from 'cors'
-import bodyParser from "body-parser";
-import {MatchRest} from "./match-rest.js";
-import {PlayerRest} from "./player-rest.js";
-import {ScenarioRest} from "./scenario-rest.js";
+import bodyParser from 'body-parser';
+import cors from 'cors';
+
+import {MatchRest} from './match-rest.js';
+import {PlayerRest} from './player-rest.js';
+import {ScenarioRest} from './scenario-rest.js';
 
 
 export class McRest {
@@ -15,10 +16,10 @@ export class McRest {
     }
     createEndpoints() {
         this.mc.app.use(cors());
-        this.mc.app.use(bodyParser.json()) // for parsing application/json
+        this.mc.app.use(bodyParser.json()); // for parsing application/json
         this.mc.app.use((req, res, next) => {
-            next()
-        })
+            next();
+        });
 
         this.matchRest.createEndpoints();
         this.playerRest.createEndpoints();

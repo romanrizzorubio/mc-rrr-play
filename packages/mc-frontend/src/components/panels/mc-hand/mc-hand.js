@@ -1,8 +1,7 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-hand.css.js';
-
-import "../../cards/mc-card-list/mc-card-list.js";
-
+import '../../cards/mc-card-list/mc-card-list.js';
 import '@material/web/button/elevated-button.js';
 
 export class McHand extends LitElement {

@@ -1,21 +1,20 @@
-import {PlayerCard} from "./player-card.js";
-import {MixinCharacterCard} from "./mixins/mixin-character-card.js";
-import {MixinFriendFrontCard} from "./mixins/mixin-friend-front-card.js";
-import {checkCondition, path} from "../../engine/utils.js";
+import {checkCondition} from '../../engine/utils.js';
+
+import {PlayerCard} from './player-card.js';
 
 export const CARD_TYPE_RESOURCE = 'resource';
 export class ResourceCard extends PlayerCard {
     constructor({
 // Card
-        name, set, image, traits, abilities, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, abilities: _abilities, unique: _unique, icons: _icons, keywords: _keywords,
 // PlayerCard
-        cost, resources, classification, canPlay,
+        cost: _cost, resources: _resources, classification: _classification, canPlay: _canPlay,
     }) {
         super(arguments[0]);
 
         this.isResource = true;
     }
-    canPlay(params) {
+    canPlay(_params) {
         throw new Error('Los Recursos no se pueden jugar.');
     }
     getResources(card) {
@@ -35,7 +34,7 @@ export class ResourceCard extends PlayerCard {
                     return true;
                 }
             }
-        })
+        });
 
         return resources;
     }

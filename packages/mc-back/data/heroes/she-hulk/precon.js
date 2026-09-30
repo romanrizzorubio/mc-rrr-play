@@ -1,13 +1,13 @@
-import {mockingBird, nickFury} from "../../aspect/basic/allies.js";
-import {emergency, firstAid, haymaker} from "../../aspect/basic/events.js";
-import {energy, genius, strength} from "../../aspect/basic/resources.js";
-import {avengersMansion, helicarrier} from "../../aspect/basic/supports.js";
-import {tenacity} from "../../aspect/basic/upgrades.js";
-import {hulk, tigra} from "../../aspect/aggression/allies.js";
-import {chaseThemDown, relentlessAssault, uppercut} from "../../aspect/aggression/events.js";
-import {powerOfAggression} from "../../aspect/aggression/resources.js";
-import {tacTeam} from "../../aspect/aggression/supports.js";
-import {combatTraining} from "../../aspect/aggression/upgrades.js";
+import {hulk, tigra} from '../../aspect/aggression/allies.js';
+import {chaseThemDown, relentlessAssault, uppercut} from '../../aspect/aggression/events.js';
+import {powerOfAggression} from '../../aspect/aggression/resources.js';
+import {tacTeam} from '../../aspect/aggression/supports.js';
+import {combatTraining} from '../../aspect/aggression/upgrades.js';
+import {mockingBird, nickFury} from '../../aspect/basic/allies.js';
+import {emergency, firstAid, haymaker} from '../../aspect/basic/events.js';
+import {energy, genius, strength} from '../../aspect/basic/resources.js';
+import {avengersMansion, helicarrier} from '../../aspect/basic/supports.js';
+import {tenacity} from '../../aspect/basic/upgrades.js';
 
 export const precon = [
     {count: 1, card: mockingBird},

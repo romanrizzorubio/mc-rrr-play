@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {DIALOG_SELECT_TARGET} from "../constants/dialogs.js";
+import {DIALOG_SELECT_TARGET} from '../constants/dialogs.js';
 
-export const EFFECT_SELECT_FROM_TOP_DECK = 'select-from-top-deck';
+import {Effect} from './effect.js';
+
 export class SelectFromTopDeckEffect extends Effect {
     constructor({
         count = 1,

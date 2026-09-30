@@ -6,13 +6,13 @@ import {
     CHARACTER_MINION, CHARACTER_PLAYER,
     CHARACTER_VILLAIN,
     CHARACTER_YOU, CHARACTER_YOUR_SUPERHERO
-} from "./characters.js";
+} from './characters.js';
 import {
     PLACE_ENCOUNTER_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_OUTSIDE_NEMESIS
-} from "./places.js";
+} from './places.js';
 
 export const TARGET_ALTEREGO = CHARACTER_ALTEREGO;
 export const TARGET_ALTEREGO_SIDE = `${TARGET_ALTEREGO}-side`;
@@ -62,6 +62,7 @@ export const TARGET_THIS = 'this';
 export const TARGET_TREACHERY = 'treachery';
 export const TARGET_UPGRADE_YOU_CONTROL = 'upgrade-you-control';
 export const TARGET_VILLAIN = CHARACTER_VILLAIN;
-export const TARGET_BY_NAME = 'target-by-name';
+export const TARGET_MINION_HIGHEST_HP = 'minion-highest-hp';
+export const TARGET_BY_TITLE = 'target-by-title';
 export const TARGET_YOU = CHARACTER_YOU;
 export const TARGET_YOUR_SUPERHERO = CHARACTER_YOUR_SUPERHERO;

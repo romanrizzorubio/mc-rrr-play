@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_HIT_POINTS = 'modify-hit-points';
 export class ModifyHitPointsEffect extends Effect {
     constructor({
         count,

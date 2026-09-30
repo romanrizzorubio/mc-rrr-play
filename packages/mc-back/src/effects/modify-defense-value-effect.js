@@ -1,12 +1,10 @@
-import {Effect} from "./effect.js";
-import {ValidTarget} from "../engine/valid-target.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_DEFENSE_VALUE = 'modify-defense-value';
 export class ModifyDefenseValueEffect extends Effect {
     constructor({
         count,
         characterTarget,
-        characters,
+        characters: _characters,
     }) {
         super(arguments[0]);
 
@@ -14,9 +12,9 @@ export class ModifyDefenseValueEffect extends Effect {
         this.count = count;
     }
     execute(params) {
-        const {selectedTarget, count, paramsCalc} = this;
+        const {selectedTarget, count} = this;
 
-        if (paramsCalc) {
+        if (this.paramsCalc) {
             selectedTarget.modifyDefense += this.calculate(params);
         } else {
             selectedTarget.modifyDefense += count;

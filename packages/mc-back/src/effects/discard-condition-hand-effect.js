@@ -1,8 +1,6 @@
-import {Effect} from "./effect.js";
-import {RandomCardEffect} from "./random-card-effect.js";
-import {DiscardFromHandEffect} from "./discard-from-hand-effect.js";
+import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
+import {Effect} from './effect.js';
 
-export const EFFECT_DISCARD_CONDITION_HAND = 'discard-condition-hand';
 export class DiscardConditionHandEffect extends Effect {
     constructor({
         condition,
@@ -39,6 +37,6 @@ export class DiscardConditionHandEffect extends Effect {
             discardFromHandEffect.selectedTarget = card;
 
             await discardFromHandEffect.runEffect(params);
-        })
+        });
     }
 }

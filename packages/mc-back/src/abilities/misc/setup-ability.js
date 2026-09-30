@@ -1,10 +1,9 @@
-import {Ability} from "../core/ability.js";
+import {Ability} from '../core/ability.js';
 
-export const ABILITY_SETUP = 'setup';
 export class SetupAbility extends Ability {
     constructor({
 // Ability
-        effect,
+        effect: _effect,
     }) {
         super(arguments[0]);
 

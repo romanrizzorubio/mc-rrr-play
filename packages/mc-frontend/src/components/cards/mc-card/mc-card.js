@@ -1,8 +1,7 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-card.css.js';
-
-import "../mc-card-image/mc-card-image.js";
-
+import '../mc-card-image/mc-card-image.js';
 import '@material/web/menu/menu.js';
 import '@material/web/menu/menu-item.js';
 
@@ -10,13 +9,13 @@ import {
     BACK_CARD_ENCOUNTER_FULL,
     BACK_CARD_PLAYER_FULL,
     BACK_CARD_VILLAIN_FULL, CARD_PATH
-} from "../../../misc/cards.js";
+} from '../../../misc/cards.js';
 
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
     ENCOUNTER_PLAYER: 'ENCOUNTER_PLAYER',
     ENCOUNTER_VILLAIN: 'ENCOUNTER_VILLAIN',
-}
+};
 
 export class CardComponent extends LitElement {
     static get is() {
@@ -96,7 +95,7 @@ export class CardComponent extends LitElement {
 
                 ret[type].push(card);
             }
-        }
+        };
 
         return faceDown ? faceDown.reduce((ret, card) => {
             if (card.isEncounterCard) {
@@ -144,7 +143,7 @@ export class CardComponent extends LitElement {
             detail: {
                 ...e.detail,
             }
-        }))
+        }));
     }
     handleClick() {
         if (this.menuOptions.length) {
@@ -196,8 +195,8 @@ export class CardComponent extends LitElement {
                     type,
                     cards,
                 }
-            }))
-        }
+            }));
+        };
     }
     renderAttached() {
         const {attached} = this;
@@ -299,7 +298,7 @@ export class CardComponent extends LitElement {
                 ${damage}
             </div>
         `;
-        }
+        };
 
         if (showDamage) {
             return _render();
@@ -351,10 +350,10 @@ export class CardComponent extends LitElement {
                 <div class="name">${name}</div>
                 <div class="header-right">${this.headerRight}</div>
             </header>
-        `
+        `;
     }
     renderMenu() {
-        return /*this.menuOptions.length ? html`
+        return; /*this.menuOptions.length ? html`
             <md-menu 
                 id="menu" 
                 .open="${this._menuOpen}"

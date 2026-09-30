@@ -1,15 +1,16 @@
+import {DIALOG_LIST, DIALOG_USE_CARD} from '../constants/dialogs.js';
+import {endpoints} from '../constants/endpoints.js';
 import {
     MANDATORY_PRIORITIES, PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
-} from "../constants/priorities.js";
-import {Trigger} from "../triggers/base/trigger.js";
-import {path} from "./utils.js";
-import {endpoints} from "../constants/endpoints.js";
-import {DIALOG_LIST, DIALOG_USE_CARD} from "../constants/dialogs.js";
-import {TriggersFactory} from "../factory/triggers-factory.js";
+} from '../constants/priorities.js';
+import {TriggersFactory} from '../factory/triggers-factory.js';
+import {Trigger} from '../triggers/base/trigger.js';
+
+import {path} from './utils.js';
 
 export class Engine {
     static isMandatory(priority) {
@@ -51,16 +52,16 @@ export class Engine {
                         if (triggersPriority === priority) {
                             const filtered = await this.promisesSequentialFilter(trigger[triggersPriority], async _trigger =>
                                 exclude.indexOf(_trigger) === -1 &&
-                                await _trigger.canTrigger(params))
+                                await _trigger.canTrigger(params));
 
                             ret = ret.concat(filtered);
                         }
-                    })
+                    });
                 }
-            })
+            });
 
             return ret;
-        }, [])
+        }, []);
     }
     _getDialogTitle(priority, singular) {
         switch (priority) {
@@ -91,7 +92,9 @@ export class Engine {
 
                 if (trigger instanceof Trigger) {
                     if (trigger.ability.isEndLasting ||
-                        trigger.ability.hideDialog) {
+                        trigger.ability.hideDialog ||
+                        trigger.triggered ||
+                        trigger.ability.resolved) {
                         return false;
                     }
                     return true;
@@ -99,7 +102,7 @@ export class Engine {
             }
 
             return false;
-        }
+        };
 
         if (_shouldShow()) {
             const {selected} = await this.openDialog({
@@ -153,8 +156,8 @@ export class Engine {
             }, {
                 options: [],
                 optionsToShow: [],
-            })
-        }
+            });
+        };
 
         const {options, optionsToShow} = _createOptions(card.triggers);
         let selected;
@@ -209,7 +212,7 @@ export class Engine {
 
                 const filtered = await this
                     .promisesSequentialFilter(options,
-                            option => option.canRun(params))
+                            option => option.canRun(params));
 
                 ret[trigger.card.id].triggers.push({
                     name,
@@ -226,12 +229,12 @@ export class Engine {
             }
 
             return ret;
-        }, {})
+        }, {});
 
         return {
             cards,
             cardsTriggers,
-        }
+        };
     }
     _getPlayersTriggers(triggers) {
         return triggers.reduce((players, trigger) => {
@@ -245,8 +248,8 @@ export class Engine {
     async _openTriggersDialog(triggers, priority, params) {
         const {cards, cardsTriggers} = await this._getCardTriggers(triggers, params);
 
-        const title = this._getDialogTitle(priority, cards.length === 1)
-        const mandatory = Engine.isMandatory(priority)
+        const title = this._getDialogTitle(priority, cards.length === 1);
+        const mandatory = Engine.isMandatory(priority);
 
         const players = this._getPlayersTriggers(triggers);
         const player = players[0];
@@ -275,7 +278,7 @@ export class Engine {
             }
         }
 
-        return value
+        return value;
     }
     endLimit(time) {
         if (this.match.limits[time]) {
@@ -311,7 +314,7 @@ export class Engine {
             type,
             ability,
             triggerParams: ability.triggerParams,
-        })
+        });
         if (!card.triggers[type]) {
             card.triggers[type] = {};
         }
@@ -328,7 +331,7 @@ export class Engine {
     }
     openDialog(params) {
         if (!this.match) {
-            console.log('Falta Match')
+            console.log('Falta Match');
         }
         return this.match.openDialog(params);
     }
@@ -339,7 +342,7 @@ export class Engine {
             console.log('Falta Match');
         }
 
-        match.mc.mcSocket.send(endpoints[objectToRefresh].refresh, this.toObj())
+        match.mc.mcSocket.send(endpoints[objectToRefresh].refresh, this.toObj());
     }
     setLimit(limit) {
         if (!this.match.limits[limit.time]) {
@@ -364,17 +367,18 @@ export class Engine {
 
             if (!trigger) {
                 break;
-            } else if (trigger.triggered) {
+            } else {
                 if (trigger.ability.isOptionAbility) {
+                    triggered.push(trigger);
                     triggers.forEach(_trigger => {
                         if (_trigger.ability.effect === trigger.ability.parent) {
-                            triggered.push(trigger);
+                            triggered.push(_trigger);
                         }
                     });
-                } else {
+                } else if (!trigger.keepTriggering) {
                     triggered.push(trigger);
                 }
-
+                
                 triggers = await this._getTriggers(type, priority, params, triggered);
             }
         }
@@ -433,6 +437,6 @@ export class Engine {
         }
     }
     toObj() {
-        return {}
+        return {};
     }
 }

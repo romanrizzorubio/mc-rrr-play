@@ -1,6 +1,5 @@
-import {endpoints} from "../../constants/endpoints.js";
-import {EffectsFactory} from "../../factory/effects-factory.js";
-import {MatchFactory} from "../../factory/match-factory.js";
+import {endpoints} from '../../constants/endpoints.js';
+import {MatchFactory} from '../../factory/match-factory.js';
 
 export class ScenarioRest {
     constructor(rest) {

@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class DealBoostEffect extends Effect {
     constructor({
@@ -8,7 +8,7 @@ export class DealBoostEffect extends Effect {
 
         this.enemyActivation = enemyActivation;
     }
-    async execute(params) {
+    async execute(_params) {
         const {enemyActivation} = this;
         const {enemy} = enemyActivation;
 
@@ -16,7 +16,7 @@ export class DealBoostEffect extends Effect {
             (enemy.isMinion && enemy.villainous)) {
             const cards = await this.match.drawEncounterCards();
 
-            enemyActivation.boostCards = enemyActivation.boostCards.concat(cards)
+            enemyActivation.boostCards = enemyActivation.boostCards.concat(cards);
         }
     }
 }

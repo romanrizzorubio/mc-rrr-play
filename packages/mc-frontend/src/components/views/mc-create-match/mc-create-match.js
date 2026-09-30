@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-create-match.css.js';
 
+import styles from './mc-create-match.css.js';
 import '../../config/mc-form-player/mc-form-player.js';
 import '../../config/mc-form-scenario/mc-form-scenario.js';
 import '../../common/mc-panel/mc-panel.js';

@@ -1,19 +1,11 @@
-import {ASPECT_BASIC} from "../aspects.js";
-import {TRAIT_SHIELD, TRAIT_SPY} from "../../../src/constants/traits.js";
-import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {TARGET_CARD, TARGET_ENEMY, TARGET_ROUND, TARGET_SCHEME, TARGET_YOU} from "../../../src/constants/targets.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {EFFECT_DELAYED} from "../../../src/effects/delayed-effect.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {EFFECT_STUN} from "../../../src/effects/stun-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {ABILITY_FORCED_RESPONSE} from "../../../src/abilities/response/forced-response-ability.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_CHOOSE} from "../../../src/effects/choose-effect.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {TRIGGER_THIS_ENTER_PLAY} from "../../../src/triggers/this-enter-play-trigger.js";
+import {ABILITY_FORCED_RESPONSE,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_CARD, TARGET_ENEMY, TARGET_ROUND, TARGET_SCHEME, TARGET_YOU} from '../../../src/constants/targets.js';
+import {TRAIT_SHIELD, TRAIT_SPY} from '../../../src/constants/traits.js';
+import {TRIGGER_THIS_ENTER_PLAY} from '../../../src/constants/triggers.js';
+import {EFFECT_CHAINED, EFFECT_CHOOSE, EFFECT_DEAL_DAMAGE, EFFECT_DELAYED, EFFECT_DISCARD_GAME, EFFECT_DRAW_CARD, EFFECT_REMOVE_THREAT, EFFECT_STUN} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {ASPECT_BASIC} from '../aspects.js';
 
 const set = ASPECT_BASIC;
 export const mockingBird = {

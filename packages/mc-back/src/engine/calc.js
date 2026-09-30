@@ -8,9 +8,10 @@ import {
     CALC_COUNT,
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_ALL,
-} from "../constants/calc.js";
-import {checkCondition, path} from "./utils.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../constants/resources.js";
+} from '../constants/calc.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from '../constants/resources.js';
+
+import { path} from './utils.js';
 
 export class Calc {
     constructor({
@@ -51,7 +52,7 @@ export class Calc {
         return Object.keys(resources)
             .reduce((sum, resource) =>
                 sum + resources[resource],
-                0)
+                0);
     }
     calculateFormula(params) {
         const {target, formula, trait} = this;

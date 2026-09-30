@@ -1,5 +1,7 @@
-import {Activation} from "./activation.js";
-import {TRIGGER_VILLAIN_SCHEMES} from "../triggers/villain-schemes-trigger.js";
+
+import {TRIGGER_VILLAIN_SCHEMES} from '../constants/triggers.js';
+
+import {Activation} from './activation.js';
 
 export class Scheme extends Activation {
     checkStatus() {

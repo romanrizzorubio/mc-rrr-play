@@ -1,7 +1,7 @@
-import {Match} from "../../model/match/match.js";
-import {heroesList} from "../../../data/heroes/index.js";
-import {scenariosList} from "../../../data/scenarios/index.js";
-import {endpoints} from "../../constants/endpoints.js";
+import {heroesList} from '../../../data/heroes/index.js';
+import {scenariosList} from '../../../data/scenarios/index.js';
+import {endpoints} from '../../constants/endpoints.js';
+import {Match} from '../../model/match/match.js';
 
 export class MatchRest {
     constructor(rest) {

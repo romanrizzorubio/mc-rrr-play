@@ -1,11 +1,13 @@
-import styles from './mc-use-card-dialog.css.js';
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
-import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import {McCardListDialog} from '../mc-card-list-dialog/mc-card-list-dialog.js';
 
-import {McCardListDialog} from "../mc-card-list-dialog/mc-card-list-dialog.js";
+import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import styles from './mc-use-card-dialog.css.js';
+
+
 export class McUseCardDialog extends McCardListDialog {
     static get is() {
-        return `mc-use-card-dialog`;
+        return 'mc-use-card-dialog';
     }
     static get styles() {
         return [stylesDialog, stylesCardList, styles];

@@ -1,10 +1,10 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-character-card.css.js';
-
-import "../../mc-card/mc-card.js";
-
 import '@material/web/button/filled-button.js';
 import '@material/web/textfield/filled-text-field.js';
+
+import '../../mc-card/mc-card.js';
+
+import styles from './mc-character-card.css.js';
 
 export class McCharacterCard extends LitElement {
     static get is() {

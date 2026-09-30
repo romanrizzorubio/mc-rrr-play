@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MAY = 'may';
 export class MayEffect extends Effect {
     constructor({
 // MayEffect
@@ -35,6 +34,6 @@ export class MayEffect extends Effect {
     execute(params) {
         const {effect} = this;
 
-        return effect.runEffect(params)
+        return effect.runEffect(params);
     }
 }

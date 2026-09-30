@@ -1,11 +1,10 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_ATTACK_VALUE = 'modify-attack-value';
 export class ModifyAttackValueEffect extends Effect {
     constructor({
         count,
         characterTarget,
-        characters,
+        characters: _characters,
     }) {
         super(arguments[0]);
 
@@ -13,9 +12,9 @@ export class ModifyAttackValueEffect extends Effect {
         this.count = count;
     }
     execute(params) {
-        const {selectedTarget, count, paramsCalc} = this;
+        const {selectedTarget, count} = this;
 
-        if (paramsCalc) {
+        if (this.paramsCalc) {
             selectedTarget.modifyAttack = this.calculate(params);
         } else {
             selectedTarget.modifyAttack = count;

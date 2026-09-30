@@ -1,4 +1,4 @@
-import {endpoints} from "../../misc/endpoints.js";
+import {endpoints} from '../../misc/endpoints.js';
 
 export class Dialog {
     constructor(api) {
@@ -8,7 +8,7 @@ export class Dialog {
         this.api.send({
             endpoint: endpoints.dialog.response,
             params
-        })
+        });
     }
     listenDialog(callback) {
         this.api.listen({

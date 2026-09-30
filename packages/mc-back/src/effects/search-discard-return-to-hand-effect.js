@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {checkCondition} from "../engine/utils.js";
+import {checkCondition} from '../engine/utils.js';
 
-export const EFFECT_SEARCH_DISCARD_RETURN_TO_HAND = 'search-discard-return-to-hand';
+import {Effect} from './effect.js';
+
 export class SearchDiscardAndReturnToHandEffect extends Effect {
     constructor({
         condition,

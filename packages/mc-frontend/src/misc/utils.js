@@ -7,7 +7,7 @@ export const checkCondition = (obj, condition) => {
 
         return checkValue(param, value);
     }, false);
-}
+};
 export const checkNumber = (value, condition) => {
     if (typeof condition === 'string') {
         const matcher = condition.substring(0, 1);
@@ -21,16 +21,16 @@ export const checkNumber = (value, condition) => {
     } else {
         return value === condition;
     }
-}
+};
 export const checkValue = (value, condition) => {
     if (value instanceof Array) {
-        return value.some(p => p === condition)
+        return value.some(p => p === condition);
     } else if (Number.isInteger(value)) {
         return checkNumber(value, condition);
     }
 
     return value === condition;
-}
+};
 export const path = (obj, par) => {
     if (obj) {
         const parts = par.split('.');
@@ -48,10 +48,10 @@ export const path = (obj, par) => {
             return val;
         }
     }
-}
+};
 export const random = (min, max) => {
     min = Math.ceil(min);
     max = Math.floor(max);
 
     return Math.floor(Math.random() * (max - min + 1) + min);
-}
+};

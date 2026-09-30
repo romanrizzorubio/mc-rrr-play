@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {DIALOG_LIST} from "../constants/dialogs.js";
+import {DIALOG_LIST} from '../constants/dialogs.js';
 
-export const EFFECT_CHOOSE = 'choose';
+import {Effect} from './effect.js';
+
 export class ChooseEffect extends Effect {
     constructor({
         options = [],
@@ -16,7 +16,7 @@ export class ChooseEffect extends Effect {
             }
 
             return effect;
-        })
+        });
 
         this.isChoose = true;
     }
@@ -30,7 +30,7 @@ export class ChooseEffect extends Effect {
         });
     }
     canRun(params) {
-        return this.promisesSequentialSome(this.options, option => option.canRun(params))
+        return this.promisesSequentialSome(this.options, option => option.canRun(params));
     }
     getValidOptions(params, matchAll) {
         const {options} = this;

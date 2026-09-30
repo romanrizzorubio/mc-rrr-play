@@ -1,5 +1,5 @@
-import {advance, assault, caughtOffGuard, gangUp, shadowOfThePast} from "./cards.js";
-import {exhaustion, masterPlan, underFire} from "./expert.js";
+import {advance, assault, caughtOffGuard, gangUp, shadowOfThePast} from './cards.js';
+import {exhaustion, masterPlan, underFire} from './expert.js';
 
 export const MOD_STANDARD = 'standard';
 
@@ -18,4 +18,4 @@ export const config = {
         {count: 1, card: masterPlan},
         {count: 1, card: underFire},
     ],
-}
+};

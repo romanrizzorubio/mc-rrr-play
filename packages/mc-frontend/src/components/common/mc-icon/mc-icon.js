@@ -1,6 +1,9 @@
 import {LitElement, html} from 'lit-element';
+
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from '../../../misc/resources.js';
+
 import styles from './mc-icon.css.js';
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../misc/resources.js";
+
 
 export const ICON_ADVANCE = 'A';
 export const ICON_CRISIS = 'C';

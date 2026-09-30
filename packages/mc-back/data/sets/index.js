@@ -5,5 +5,5 @@ export const getSetsList = () => {
     }, {
         name: 'Scare Bomb',
         folder: 'scare-bomb'
-    }]
-}
+    }];
+};

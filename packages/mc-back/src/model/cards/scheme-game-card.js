@@ -1,10 +1,11 @@
-import {GameCard} from "./game-card.js";
-import {endpoints} from "../../constants/endpoints.js";
+import {endpoints} from '../../constants/endpoints.js';
+
+import {GameCard} from './game-card.js';
 
 export class SchemeGameCard extends GameCard {
     constructor({
 // GameCard
-        card, index
+        card: _card, index: _index
     }) {
         super(arguments[0]);
 
@@ -102,12 +103,12 @@ export class SchemeGameCard extends GameCard {
         if (sides.length) {
             return {
                 ...this.currentSide.toObj(arguments[0]),
-            }
+            };
         }
 
         return {
             ...super.toObj(arguments[0]),
             threat
-        }
+        };
     }
 }

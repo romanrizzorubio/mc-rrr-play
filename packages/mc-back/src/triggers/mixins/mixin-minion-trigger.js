@@ -16,4 +16,4 @@ export const MixinMinionTrigger = C => class extends C {
 
         return false;
     }
-}
+};

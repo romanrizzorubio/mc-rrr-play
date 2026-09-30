@@ -1,4 +1,5 @@
-import { css, unsafeCSS } from 'lit-element';
+import { css } from 'lit-element';
+
 import base from '../../../../static/styles/base.css.js';
 
 export default css`

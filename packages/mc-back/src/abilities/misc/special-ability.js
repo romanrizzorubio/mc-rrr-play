@@ -1,5 +1,3 @@
-import {Ability} from "../core/ability.js";
-
-export const ABILITY_SPECIAL = 'special';
+import {Ability} from '../core/ability.js';
 
 export class SpecialAbility extends Ability {}

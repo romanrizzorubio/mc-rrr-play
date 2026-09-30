@@ -1,8 +1,8 @@
-import {Effect} from "./effect.js";
-import {DealDamageEffect} from "./deal-damage-effect.js";
-import {DIALOG_ASSIGN} from "../constants/dialogs.js";
+import {DIALOG_ASSIGN} from '../constants/dialogs.js';
 
-export const EFFECT_ASSIGN_DAMAGE = 'assign-damage';
+import {DealDamageEffect} from './deal-damage-effect.js';
+import {Effect} from './effect.js';
+
 export class AssignDamageEffect extends Effect {
     constructor({
         damage,
@@ -12,15 +12,15 @@ export class AssignDamageEffect extends Effect {
         this.damage = damage;
     }
     async execute(params) {
-        const {selectedTarget, paramsCalc} = this;
+        const {selectedTarget} = this;
         const {player} = params;
 
         const {assigned} = await this.openDialog({
             dialogType: DIALOG_ASSIGN,
-            title: `Reparte ${damage} de Daño`,
+            title: `Reparte ${this.damage} de Daño`,
             hand: player.hand.cards.map(card => card.toObj(arguments[0])),
             data: {
-                count: damage,
+                count: this.damage,
                 field: 'life',
                 cards: selectedTarget.map(card => card.toObj(arguments[0])),
             },

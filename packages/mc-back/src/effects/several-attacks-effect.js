@@ -1,8 +1,8 @@
-import {SeveralActivationsEffect} from "./several-activations-effect.js";
-import {EnemyAttackEffect} from "./enemy-attack-effect.js";
-import {Ability} from "../abilities/core/ability.js";
+import {Ability} from '../abilities/core/ability.js';
 
-export const EFFECT_SEVERAL_ATTACKS = 'several-attacks';
+import {EnemyAttackEffect} from './enemy-attack-effect.js';
+import {SeveralActivationsEffect} from './several-activations-effect.js';
+
 export class SeveralAttacksEffect extends SeveralActivationsEffect {
     activate(enemy, params) {
         const {player} = params;

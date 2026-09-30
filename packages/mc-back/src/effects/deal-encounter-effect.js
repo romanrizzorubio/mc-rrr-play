@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class DealEncounterEffect extends Effect {
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget} = this;
 
         const cards = await this.match.drawEncounterCards();

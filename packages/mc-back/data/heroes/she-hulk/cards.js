@@ -3,93 +3,106 @@ import {
     CARD_TYPE_HERO,
     CARD_TYPE_OBLIGATION,
     CARD_TYPE_TREACHERY,
-} from "../../../src/constants/back-cards.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
-import {CARD_TYPE_ATTACHMENT} from "../../../src/model/printed/attachment-card.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
+    CARD_TYPE_SIDE_SCHEME_SCENARIO,
+    CARD_TYPE_MINION,
+    CARD_TYPE_ATTACHMENT,
+    CARD_TYPE_UPGRADE,
+    CARD_TYPE_ALLY,
+    CARD_TYPE_EVENT,
+    CARD_TYPE_SUPPORT,
+} from '../../../src/constants/card-types.js';
 import {
-    TRAIT_AERIAL, TRAIT_ARMOR, TRAIT_ATTACK, TRAIT_ATTORNEY,
-    TRAIT_AVENGER, TRAIT_ELITE, TRAIT_GAMMA,
+    TRAIT_ATTACK,
+    TRAIT_ATTORNEY,
+    TRAIT_AVENGER,
+    TRAIT_ELITE,
+    TRAIT_GAMMA,
     TRAIT_LOCATION,
     TRAIT_SKILL,
     TRAIT_SUPERPOWER,
     TRAIT_CONDITION,
     TRAIT_BRUTE,
-} from "../../../src/constants/traits.js";
-import {CLASSIFICATION_HERO} from "../../../src/constants/classifications.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../src/constants/resources.js";
-import {TIME_ROUND} from "../../../src/constants/times.js";
+} from '../../../src/constants/traits.js';
+import {CLASSIFICATION_HERO} from '../../../src/constants/classifications.js';
 import {
-    TARGET_BY_NAME,
-    TARGET_CARD, TARGET_EFFECT, TARGET_ENEMY, TARGET_ALL_ENEMIES,
+    RESOURCE_ENERGY,
+    RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
+} from '../../../src/constants/resources.js';
+import {TIME_ROUND} from '../../../src/constants/times.js';
+import {
+    TARGET_BY_TITLE,
+    TARGET_CARD,
+    TARGET_EFFECT,
+    TARGET_ENEMY,
+    TARGET_ALL_ENEMIES,
     TARGET_PLAYER,
-    TARGET_SCHEME, TARGET_THIS, TARGET_YOUR_SUPERHERO,
+    TARGET_SCHEME,
+    TARGET_THIS,
+    TARGET_YOUR_SUPERHERO,
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
     TARGET_MAIN_SCHEME,
     TARGET_ATTACHED,
-    TARGET_MINION_HIGHEST_HP,
-    TARGET_MINIONS,
     TARGET_VILLAIN,
     TARGET_HERO,
-} from "../../../src/constants/targets.js";
-import {LABEL_ATTACK} from "../../../src/constants/labels.js";
+    TARGET_ATTACKED,
+    TARGET_MINION_HIGHEST_HP,
+} from '../../../src/constants/targets.js';
+import {LABEL_ATTACK, LABEL_THWART} from '../../../src/constants/labels.js';
 import {
-    CALC_COUNT, CALC_DAMAGE, CALC_ALL,
-} from "../../../src/constants/calc.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {EFFECT_PLACE_THREAT} from "../../../src/effects/place-threat-effect.js";
-import {EFFECT_ENEMY_ATTACK} from "../../../src/effects/enemy-attack-effect.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
-import {EFFECT_DEAL_BOOST} from "../../../src/effects/deal-boost-effect.js";
-import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {CARD_TYPE_HERO} from "../../../src/model/printed/hero-card.js";
-import {CARD_TYPE_ALTEREGO} from "../../../src/model/printed/alterego-card.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {ABILITY_FORCED_RESPONSE} from "../../../src/abilities/response/forced-response-ability.js";
-import {EFFECT_SELECT_DISCARD_CARD} from "../../../src/effects/select-discard-card-effect.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {EFFECT_STUN} from "../../../src/effects/stun-effect.js";
-import {ABILITY_ALTEREGO_ACTION} from "../../../src/abilities/actions/alterego-action-ability.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {ABILITY_OPTION} from "../../../src/abilities/misc/option-ability.js";
-import {EFFECT_REMOVE_CARD} from "../../../src/effects/remove-card-effect.js";
-import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-value-effect.js";
-import {EFFECT_MODIFY_HIT_POINTS} from "../../../src/effects/modify-hit-points-effect.js";
-import {EFFECT_FLIP} from "../../../src/effects/flip-effect.js";
-import {EFFECT_MAY} from "../../../src/effects/may-effect.js";
-import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {EFFECT_ADD_ACCELERATION_TOKEN} from "../../../src/effects/add-acceleration-token-effect.js";
-import {ABILITY_INTERRUPT} from "../../../src/abilities/interrupt/interrupt-ability.js";
-import {EFFECT_PREVENT_PLACE_THREAT} from "../../../src/effects/prevent-place-threat-effect.js";
-import {EFFECT_RETURN_HAND} from "../../../src/effects/return-hand-effect.js";
-import {TRIGGER_PLACE_THREAT} from "../../../src/triggers/place-threat-trigger.js";
-import {TRIGGER_YOUR_HERO_GET_ATTACK} from "../../../src/triggers/your-hero-get-attack-trigger.js";
-import {TRIGGER_YOU_ANY_ATTACK} from "../../../src/triggers/you-any-attack-trigger.js";
-import {ABILITY_HERO_RESPONSE} from "../../../src/abilities/responses/hero-response-ability.js";
-import {TRIGGER_YOU_ATTACK} from "../../../src/triggers/you-attack-trigger.js";
-import {EFFECT_READY} from "../../../src/effects/ready-effect.js";
-import {EFFECT_FILL_HAND} from "../../../src/effects/fill-hand-effect.js";
-import {EFFECT_ATTACH} from "../../../src/effects/attach-effect.js";
-import {EFFECT_SURGE} from "../../../src/effects/surge-effect.js";
-import {TRIGGER_THIS_FLIP} from "../../../src/triggers/this-flip-trigger.js";
-import {EFFECT_TAKE_DAMAGE} from "../../../src/effects/take-damage-effect.js";
-import {TARGET_ATTACKED} from "../../../src/constants/targets.js";
+    CALC_COUNT,
+    CALC_DAMAGE,
+    CALC_ALL,
+} from '../../../src/constants/calc.js';
+import {
+    EFFECT_DRAW_CARD,
+    EFFECT_CHAINED,
+    EFFECT_REMOVE_THREAT,
+    EFFECT_PLACE_THREAT,
+    EFFECT_ENEMY_ATTACK,
+    EFFECT_HEAL,
+    EFFECT_DEAL_BOOST,
+    EFFECT_SPEND,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_EXHAUST,
+    EFFECT_SELECT_DISCARD_TO_CARD,
+    EFFECT_STUN,
+    EFFECT_REMOVE_CARD,
+    EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_HIT_POINTS,
+    EFFECT_FLIP,
+    EFFECT_MAY,
+    EFFECT_CHOOSE_ABILITY,
+    EFFECT_DISCARD_GAME,
+    EFFECT_ADD_ACCELERATION_TOKEN,
+    EFFECT_PREVENT_PLACE_THREAT,
+    EFFECT_RETURN_HAND,
+    EFFECT_READY,
+    EFFECT_FILL_HAND,
+    EFFECT_SURGE,
+    EFFECT_TAKE_DAMAGE,
+} from '../../../src/constants/effects.js';
+import {
+    ABILITY_HERO_ACTION,
+    ABILITY_ACTION,
+    ABILITY_FORCED_RESPONSE,
+    ABILITY_CONSTANT,
+    ABILITY_ALTEREGO_ACTION,
+    ABILITY_ALTEREGO_INTERRUPT,
+    ABILITY_WHEN_REVEALED,
+    ABILITY_OPTION,
+    ABILITY_HERO_RESPONSE,
+} from '../../../src/constants/abilities.js';
+import {
+    TRIGGER_PLACE_THREAT,
+    TRIGGER_YOUR_HERO_GET_ATTACK,
+    TRIGGER_YOU_ANY_ATTACK,
+    TRIGGER_THIS_FLIP,
+    TRIGGER_INSTANT,
+    TRIGGER_YOU_BASIC_ATTACK,
+} from '../../../src/constants/triggers.js';
 
 const set = 'Hulka';
 export const sheHulkCard = {
@@ -97,7 +110,7 @@ export const sheHulkCard = {
     params: {
         name: 'Hulka',
         set,
-        image: 'heroes/she-hulk/01019a.webp',
+        image: 'heroes/she-hulk/01019a.png',
         traits: [TRAIT_AVENGER, TRAIT_GAMMA],
         unique: true,
         classification: CLASSIFICATION_HERO,
@@ -107,7 +120,7 @@ export const sheHulkCard = {
         handSize: 4,
         hitPoints: 15,
         abilities: [{
-            type: ABILITY_RESPONSE,
+            type: ABILITY_HERO_RESPONSE,
             params: {
                 name: '\"¡Deberías hacer pesas!\"',
                 trigger: TRIGGER_THIS_FLIP,
@@ -127,7 +140,7 @@ export const jenniferWaltersCard = {
     params: {
         name: 'Jennifer Walters',
         set,
-        image: 'heroes/she-hulk/01019b.webp',
+        image: 'heroes/she-hulk/01019b.png',
         traits: [TRAIT_ATTORNEY, TRAIT_GAMMA],
         unique: true,
         classification: CLASSIFICATION_HERO,
@@ -135,7 +148,7 @@ export const jenniferWaltersCard = {
         handSize: 6,
         hitPoints: 15,
         abilities: [{
-            type: ABILITY_INTERRUPT,
+            type: ABILITY_ALTEREGO_INTERRUPT,
             params: {
                 name: '¡Protesto!',
                 limit: {count: 1, time: TIME_ROUND},
@@ -158,7 +171,7 @@ export const hellcat = {
         name: 'Gata Infernal',
         subtitle: 'Patsy Walker',
         set,
-        image: 'heroes/she-hulk/01020.webp',
+        image: 'heroes/she-hulk/01020.png',
         traits: [TRAIT_AVENGER],
         unique: true,
         cost: 3,
@@ -227,12 +240,12 @@ export const oneTwoPunch = {
         abilities: [{
             type: ABILITY_HERO_RESPONSE,
             params: {
-                trigger: TRIGGER_YOU_ATTACK,
+                trigger: TRIGGER_YOU_BASIC_ATTACK,
                 effect: {
                     type: EFFECT_READY,
                     params: {
-                        target: TARGET_BY_NAME,
-                        name: 'Hulka',
+                        target: TARGET_BY_TITLE,
+                        title: 'Hulka',
                     }
                 }
             }
@@ -278,8 +291,9 @@ export const legalPractice = {
         abilities: [{
             type: ABILITY_ALTEREGO_ACTION,
             params: {
+                labels: [LABEL_THWART],
                 arrow: {
-                    type: EFFECT_SELECT_DISCARD_CARD,
+                    type: EFFECT_SELECT_DISCARD_TO_CARD,
                     params: {
                         target: TARGET_PLAYER,
                         count: 5,
@@ -438,7 +452,7 @@ export const superhumanStrength = {
             params: {
                 trigger: TRIGGER_YOU_ANY_ATTACK,
                 arrow: {
-                    type: EFFECT_REMOVE_CARD,
+                    type: EFFECT_DISCARD_GAME,
                     params: {
                         target: TARGET_THIS,
                     }
@@ -468,7 +482,7 @@ export const legalWorkCard = {
                 type: ABILITY_CONSTANT,
                 params: {
                     trigger: TRIGGER_INSTANT,
-                    name: "Convertirte en Jennifer Walters",
+                    name: 'Convertirte en Jennifer Walters',
                     effect: {
                         type: EFFECT_MAY,
                         params: {
@@ -632,7 +646,7 @@ export const titaniasFuryCard = {
                     effect: {
                         type: EFFECT_ENEMY_ATTACK,
                         params: {
-                            target: TARGET_BY_NAME,
+                            target: TARGET_BY_TITLE,
                             name: 'Titania',
                             targetTo: TARGET_HERO,
                         }
@@ -644,8 +658,8 @@ export const titaniasFuryCard = {
                                 {
                                     type: EFFECT_HEAL,
                                     params: {
-                                        target: TARGET_BY_NAME,
-                                        name: 'Titania',
+                                        target: TARGET_BY_TITLE,
+                                        title: 'Titania',
                                         damage: 0,
                                         paramsCalc: {
                                             formula: CALC_ALL,

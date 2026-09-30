@@ -1,11 +1,11 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-scenarios.css.js';
 
-import "../../panels/mc-deck/mc-deck.js";
-import "../../cards/mc-card-list/mc-card-list.js";
-import "../../cards/characters/mc-villain-card/mc-villain-card.js";
-import "../../cards/schemes/mc-main-scheme-card/mc-main-scheme-card.js";
-import {path} from "../../../misc/utils.js";
+import styles from './mc-scenarios.css.js';
+import '../../panels/mc-deck/mc-deck.js';
+import '../../cards/mc-card-list/mc-card-list.js';
+import '../../cards/characters/mc-villain-card/mc-villain-card.js';
+import '../../cards/schemes/mc-main-scheme-card/mc-main-scheme-card.js';
+import {path} from '../../../misc/utils.js';
 
 export class McScenario extends LitElement {
     static get is() {
@@ -25,7 +25,7 @@ export class McScenario extends LitElement {
         this.scenario = null;
     }
     renderVillain() {
-        const villain = path(this, 'scenario.villain')
+        const villain = path(this, 'scenario.villain');
 
         if (villain) {
             const {

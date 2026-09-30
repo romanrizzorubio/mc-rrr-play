@@ -1,14 +1,12 @@
-import {Effect} from "./effect.js";
-import {TakeDamageEffect} from "./take-damage-effect.js";
-import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE} from "../triggers/attached-would-dealt-damage-trigger.js";
+import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE} from '../constants/triggers.js';
 
-export const EFFECT_DEAL_DAMAGE = 'deal-damage';
+import {Effect} from './effect.js';
+import {EFFECT_TAKE_DAMAGE} from '../constants/effects.js';
+
 export class DealDamageEffect extends Effect {
-    constructor({
-        damage,
-        overkill = false,
-    }) {
-        super(arguments[0]);
+    constructor(params) {
+        super(params);
+        const {damage, overkill: _overkill = false} = params;
 
         this.baseDamage = damage;
 
@@ -30,10 +28,13 @@ export class DealDamageEffect extends Effect {
     getTriggersParams(params) {
         const {selectedTarget} = this;
 
-        return super.getTriggersParams({
-            ...params,
-            card: selectedTarget,
-        });
+        const newParams = super.getTriggersParams(params);
+
+        if (!newParams.card) {
+            newParams.card = selectedTarget;
+        }
+
+        return newParams;
     }
     getTriggersEnds() {
         return super.getTriggersEnds();
@@ -65,18 +66,18 @@ export class DealDamageEffect extends Effect {
             }
         }
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, damage} = this;
 
-        const takeDamageEffect = new TakeDamageEffect({
+        const takeDamageEffect = this.match.effectsFactory.createEffect({
+            type: EFFECT_TAKE_DAMAGE,
             selectedTarget,
             damage,
-            match: this.match,
             ability: this.ability,
             activation: this.activation,
         });
 
-        await takeDamageEffect.runEffect(params);
+        await takeDamageEffect.runEffect(_params);
 
         this.takenDamage = takeDamageEffect.takenDamage;
 

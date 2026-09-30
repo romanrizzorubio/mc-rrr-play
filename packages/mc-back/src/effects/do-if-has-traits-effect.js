@@ -1,16 +1,14 @@
-import {DoIfEffect} from "./do-if-effect.js";
-import {GetThwartEffect} from "./get-thwart-effect.js";
-import {GetTraitsEffect} from "./get-traits-effect.js";
+import {DoIfEffect} from './do-if-effect.js';
+import {GetTraitsEffect} from './get-traits-effect.js';
 
-export const EFFECT_DO_IF_HAS_TRAITS = 'do-if-has-traits';
 export class DoIfHasTraitsEffect extends DoIfEffect {
     constructor({
 // DoIfEffect
         traits,
-        effect,
-        effectNot,
+        effect: _effect,
+        effectNot: _effectNot,
 // DoIfHasDamageEffect
-        resources = [],
+        resources: _resources = [],
     }) {
         super(arguments[0]);
 

@@ -1,7 +1,7 @@
-import {ResponseAbility} from "./response-ability.js";
-import {PRIORITY_FORCED_INTERRUPT, PRIORITY_FORCED_RESPONSE, PRIORITY_INTERRUPT} from "../../constants/priorities.js";
+import { PRIORITY_FORCED_RESPONSE} from '../../constants/priorities.js';
 
-export const ABILITY_FORCED_RESPONSE = 'forced-response';
+import {ResponseAbility} from './response-ability.js';
+
 export class ForcedResponseAbility extends ResponseAbility {
     initTriggers(card) {
         this.initTrigger({

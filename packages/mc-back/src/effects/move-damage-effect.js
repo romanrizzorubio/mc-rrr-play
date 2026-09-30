@@ -1,9 +1,9 @@
-import {Effect} from "./effect.js";
-import {HealEffect} from "./heal-effect.js";
-import {DealDamageEffect} from "./deal-damage-effect.js";
-import {path} from "../engine/utils.js";
+import {path} from '../engine/utils.js';
 
-export const EFFECT_MOVE_DAMAGE = 'move-damage';
+import {DealDamageEffect} from './deal-damage-effect.js';
+import {Effect} from './effect.js';
+import {HealEffect} from './heal-effect.js';
+
 export class MoveDamageEffect extends Effect {
     constructor({
         damage,

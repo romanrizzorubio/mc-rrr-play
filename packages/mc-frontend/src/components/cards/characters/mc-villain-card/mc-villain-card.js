@@ -1,8 +1,7 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-villain-card.css.js';
-
-import "../mc-character-card/mc-character-card.js";
-
+import '../mc-character-card/mc-character-card.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/textfield/filled-text-field.js';
 

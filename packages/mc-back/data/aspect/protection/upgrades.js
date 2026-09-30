@@ -1,14 +1,11 @@
-import {ASPECT_PROTECTION} from "../aspects.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL} from "../../../src/constants/resources.js";
-import {TRAIT_ARMOR, TRAIT_CONDITION} from "../../../src/constants/traits.js";
-import {TARGET_HERO, TARGET_THIS} from "../../../src/constants/targets.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {EFFECT_MODIFY_DEFENSE_VALUE} from "../../../src/effects/modify-defense-value-effect.js";
-import {EFFECT_READY} from "../../../src/effects/ready-effect.js";
-import {EFFECT_DISCARD} from "../../../src/effects/discard-effect.js";
-import {TRIGGER_VILLAIN_ATTACKS_YOU} from "../../../src/triggers/villain-attacks-you-trigger.js";
+import {ABILITY_CONSTANT,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL} from '../../../src/constants/resources.js';
+import {TARGET_HERO, TARGET_THIS} from '../../../src/constants/targets.js';
+import {TRAIT_ARMOR, TRAIT_CONDITION} from '../../../src/constants/traits.js';
+import {TRIGGER_VILLAIN_ATTACKS_YOU} from '../../../src/constants/triggers.js';
+import {EFFECT_DISCARD_GAME, EFFECT_MODIFY_DEFENSE_VALUE, EFFECT_READY} from '../../../src/constants/effects.js';
+import {CARD_TYPE_UPGRADE} from '../../../src/model/printed/upgrade-card.js';
+import {ASPECT_PROTECTION} from '../aspects.js';
 
 const set = ASPECT_PROTECTION;
 
@@ -65,7 +62,7 @@ export const indomitable = {
                         'activation.defender.isHero': true,
                     },
                     arrow: {
-                        type: EFFECT_DISCARD,
+                        type: EFFECT_DISCARD_GAME,
                         params: {
                             target: TARGET_THIS,
                         }

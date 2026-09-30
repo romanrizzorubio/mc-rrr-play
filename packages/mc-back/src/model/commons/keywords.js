@@ -1,4 +1,4 @@
-import {Engine} from "../../engine/engine.js";
+import {Engine} from '../../engine/engine.js';
 
 export class Keywords extends Engine {
     constructor({
@@ -40,7 +40,7 @@ export class Keywords extends Engine {
                 return _uses * this.match.numPlayers;
             }
         }
-        return this._uses
+        return this._uses;
     }
     get hint() {
         if (this._hint instanceof Array) {
@@ -50,7 +50,7 @@ export class Keywords extends Engine {
                 return _hint * this.match.numPlayers;
             }
         }
-        return this._hint
+        return this._hint;
     }
 
 }

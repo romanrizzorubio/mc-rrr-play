@@ -1,8 +1,11 @@
-import {Effect} from "./effect.js";
-import {TRIGGER_ATTACHED_DEFEAT} from "../triggers/attached-defeat-trigger.js";
-import {TRIGGER_THIS_DEFEAT_MINION} from "../triggers/this-defeat-minion-trigger.js";
-import {TRIGGER_YOU_DEFEAT_MINION} from "../triggers/you-defeat-minion-trigger.js";
-import {TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY} from "../triggers/your-hero-attack-defeat-enemy-trigger.js";
+import {
+    TRIGGER_ATTACHED_DEFEAT,
+    TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_YOU_DEFEAT_MINION,
+    TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
+} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class DefeatEffect extends Effect {
     getTriggersInit() {
@@ -23,7 +26,7 @@ export class DefeatEffect extends Effect {
         const {selectedTarget} = this;
 
         if (selectedTarget.abilities) {
-            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenDefeated && _ability.isValidIdentity(params))
+            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenDefeated && _ability.isValidIdentity(params));
 
             if (ability) {
                 return ability.resolveAbility({

@@ -1,8 +1,9 @@
-import {Effect} from "./effect.js";
-import {PlayPlayersPhaseEffect} from "./play-players-phase-effect.js";
-import {PlayVillainPhaseEffect} from "./play-villain-phase-effect.js";
-import {Engine} from "../engine/engine.js";
-import {TIME_ROUND} from "../constants/times.js";
+import {TIME_ROUND} from '../constants/times.js';
+import {Engine} from '../engine/engine.js';
+
+import {Effect} from './effect.js';
+import {PlayPlayersPhaseEffect} from './play-players-phase-effect.js';
+import {PlayVillainPhaseEffect} from './play-villain-phase-effect.js';
 
 export class PlayRoundEffect extends Effect {
     constructor() {

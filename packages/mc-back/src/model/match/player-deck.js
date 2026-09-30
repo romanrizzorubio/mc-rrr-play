@@ -1,4 +1,4 @@
-import {Deck} from "./deck.js";
+import {Deck} from './deck.js';
 
 export class PlayerDeck extends Deck {
     constructor(owner) {
@@ -7,6 +7,6 @@ export class PlayerDeck extends Deck {
     toObj() {
         return {
             ...super.toObj(arguments[0])
-        }
+        };
     }
 }

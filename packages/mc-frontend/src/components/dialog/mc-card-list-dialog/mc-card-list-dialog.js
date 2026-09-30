@@ -1,8 +1,8 @@
 import {html} from 'lit-element';
 
-import "../../cards/mc-card-list/mc-card-list.js";
+import '../../cards/mc-card-list/mc-card-list.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import {McDialog} from "../mc-dialog/mc-dialog.js";
 export class McCardListDialog extends McDialog {
     constructor() {
         super(arguments[0]);

@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class ModifySurgeEffect extends Effect {
     constructor({
@@ -11,7 +11,7 @@ export class ModifySurgeEffect extends Effect {
     get keepTriggering() {
         return true;
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, surge} = this;
 
         selectedTarget.addedSurge = surge;

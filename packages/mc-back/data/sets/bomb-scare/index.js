@@ -1,4 +1,4 @@
-import {bombScare, explosion, falseAlarm, hydraBomber} from "./cards.js";
+import {bombScare, explosion, falseAlarm, hydraBomber} from './cards.js';
 
 export const MOD_BOMB_SCARE = 'bomb-scare';
 
@@ -11,4 +11,4 @@ export const config = {
         {count: 1, card: explosion},
         {count: 2, card: falseAlarm},
     ],
-}
+};

@@ -1,11 +1,19 @@
-import {Activation} from "./activation.js";
-import {TRIGGER_THIS_ATTACK} from "../triggers/this-attack-trigger.js";
+import {
+    TRIGGER_THIS_ATTACK,
+    TRIGGER_YOU_ANY_ATTACK,
+    TRIGGER_YOU_ATTACK,
+    TRIGGER_YOU_BASIC_ATTACK
+} from '../constants/triggers.js';
+
+import {Activation} from './activation.js';
+import {EFFECT_DEAL_DAMAGE} from '../constants/effects.js';
 
 export class Attack extends Activation {
     constructor({}) {
         super(arguments[0]);
 
         this.takenDamage = 0;
+        this.retaliateApplied = false;
     }
     async applyOverkill(params) {
         const {selectedTarget} = this;
@@ -24,6 +32,33 @@ export class Attack extends Activation {
                 if (this.excessDamage > 0) {
                     this.selectedTarget = [selectedTarget, controller];
                     this.effect.setEffectProperty('damage', [damage, this.excessDamage], params);
+                }
+            }
+        }
+    }
+    async afterTriggerEnds(params) {
+        if (!this.retaliateApplied) {
+            this.retaliateApplied = true;
+            await this.applyRetaliate(params);
+        }
+    }
+    async applyRetaliate(params) {
+        const {selectedTarget, effect} = this;
+        const attacker = this.character;
+
+        if (selectedTarget && attacker) {
+            const targets = selectedTarget instanceof Array ? selectedTarget : [selectedTarget];
+
+            for (const target of targets) {
+                if (!target.isDefeated && target.retaliate) {
+                    const dealDamageEffect = this.match.effectsFactory.createEffect({
+                        type: EFFECT_DEAL_DAMAGE,
+                        damage: target.retaliate,
+                        selectedTarget: attacker,
+                        ability: effect.ability,
+                    });
+
+                    await dealDamageEffect.runEffect(params);
                 }
             }
         }
@@ -50,12 +85,21 @@ export class Attack extends Activation {
         }
     }
     getTriggersEnds(params) {
-        const {triggersEndsLaunched} = this;
+        const {triggersEndsLaunched, effect} = this;
+        const isBasic = effect && effect.ability && effect.ability.isBasic;
 
-        return !triggersEndsLaunched && this.activationEnd ? super.getTriggersEnds(params)
-            .concat([
-                TRIGGER_THIS_ATTACK,
-            ]) : [];
+        const triggers = [
+            TRIGGER_THIS_ATTACK,
+            TRIGGER_YOU_ATTACK,
+            TRIGGER_YOU_ANY_ATTACK,
+        ];
+
+        if (isBasic) {
+            triggers.push(TRIGGER_YOU_BASIC_ATTACK);
+        }
+
+        return !triggersEndsLaunched ? super.getTriggersEnds(params)
+            .concat(triggers) : [];
     }
     getTriggersParams(params) {
         const {character} = this;
@@ -63,6 +107,7 @@ export class Attack extends Activation {
         return {
             ...super.getTriggersParams(params),
             card: character,
+            attack: this,
         };
     }
     getOverkill(params) {

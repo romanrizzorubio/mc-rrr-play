@@ -1,13 +1,13 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-deck.css.js';
 
-import "../../cards/mc-card-image/mc-card-image.js";
+import styles from './mc-deck.css.js';
+import '../../cards/mc-card-image/mc-card-image.js';
 import {
     BACK_CARD_EMPTY_FULL,
     BACK_CARD_ENCOUNTER_FULL,
     BACK_CARD_PLAYER_FULL,
     BACK_CARD_VILLAIN_FULL, CARD_PATH,
-} from "../../../misc/cards.js";
+} from '../../../misc/cards.js';
 
 export const DECK_TYPES = {
     ENCOUNTER: 0,
@@ -70,7 +70,7 @@ export class DeckComponent extends LitElement {
     renderDiscard() {
         const card = this.getDiscardTop();
 
-        let src = `${BACK_CARD_EMPTY_FULL}`
+        let src = `${BACK_CARD_EMPTY_FULL}`;
         if (card) {
             src = `${CARD_PATH}${card.image}`;
         }

@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_SHUFFLE_DECK = 'shuffle-deck';
 
 export class ShuffleDeckEffect extends Effect {
     async execute(params) {

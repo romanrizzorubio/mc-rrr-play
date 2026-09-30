@@ -1,10 +1,9 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_TRAITS = 'modify-traits';
 export class ModifyTraitsEffect extends Effect {
     constructor({
         traits,
-        characters,
+        characters: _characters,
     }) {
         super(arguments[0]);
 
@@ -13,7 +12,7 @@ export class ModifyTraitsEffect extends Effect {
     async prepare(params) {
         await super.prepare(params);
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, traits} = this;
 
         if (selectedTarget && selectedTarget.extraTraits) {

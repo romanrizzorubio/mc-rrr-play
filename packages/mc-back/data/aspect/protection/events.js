@@ -1,18 +1,13 @@
-import {ASPECT_PROTECTION} from "../aspects.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {TRAIT_ATTACK} from "../../../src/constants/traits.js";
-import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {ABILITY_HERO_INTERRUPT} from "../../../src/abilities/interrupt/hero-interrupt-ability.js";
-import {TRIGGER_VILLAIN_ATTACKS_YOU} from "../../../src/triggers/villain-attacks-you-trigger.js";
-import {TRIGGER_TREACHERY_REVEAL} from "../../../src/triggers/treachery-reveal-trigger.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {EFFECT_CANCEL_ENCOUNTER} from "../../../src/effects/cancel-encounter-effect.js";
-import {EFFECT_ENEMY_ATTACK} from "../../../src/effects/enemy-attack-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {TARGET_EFFECT, TARGET_ENEMY, TARGET_PLAYER, TARGET_VILLAIN} from "../../../src/constants/targets.js";
-import {CALC_ATTACK} from "../../../src/constants/calc.js";
-import {LABEL_ATTACK} from "../../../src/constants/labels.js";
+import {ABILITY_HERO_INTERRUPT,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {CALC_ATTACK} from '../../../src/constants/calc.js';
+import {LABEL_ATTACK} from '../../../src/constants/labels.js';
+import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_EFFECT, TARGET_ENEMY, TARGET_PLAYER, TARGET_VILLAIN} from '../../../src/constants/targets.js';
+import {TRAIT_ATTACK} from '../../../src/constants/traits.js';
+import {TRIGGER_TREACHERY_REVEAL, TRIGGER_VILLAIN_ATTACKS_YOU} from '../../../src/constants/triggers.js';
+import {EFFECT_CANCEL_ENCOUNTER, EFFECT_CHAINED, EFFECT_DEAL_DAMAGE, EFFECT_ENEMY_ATTACK} from '../../../src/constants/effects.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {ASPECT_PROTECTION} from '../aspects.js';
 
 const set = ASPECT_PROTECTION;
 

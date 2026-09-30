@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_CONFUSE = 'confuse';
 export class ConfuseEffect extends Effect {
     filterTarget(card) {
         return !card.isConfused &&
@@ -17,7 +16,7 @@ export class ConfuseEffect extends Effect {
                 });
 
                 return confuseEffect.runEffect(params);
-            })
+            });
         }
 
         selectedTarget.confuse();

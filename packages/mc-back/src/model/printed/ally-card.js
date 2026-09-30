@@ -1,22 +1,23 @@
-import {PlayerCard} from "./player-card.js";
-import {MixinCharacterCard} from "./mixins/mixin-character-card.js";
-import {MixinFriendFrontCard} from "./mixins/mixin-friend-front-card.js";
-import {GetMaxAlliesEffect} from "../../effects/get-max-allies-effect.js";
-import {DIALOG_MAX_ALLIES} from "../../constants/dialogs.js";
+import {DIALOG_MAX_ALLIES} from '../../constants/dialogs.js';
+import {GetMaxAlliesEffect} from '../../effects/get-max-allies-effect.js';
+
+import {MixinCharacterCard} from './mixins/mixin-character-card.js';
+import {MixinFriendFrontCard} from './mixins/mixin-friend-front-card.js';
+import {PlayerCard} from './player-card.js';
 
 export const CARD_TYPE_ALLY = 'ally';
 export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard)) {
     constructor({
 // Card
-        name, set, image, traits, abilities, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, abilities: _abilities, unique: _unique, icons: _icons, keywords: _keywords,
 // PlayerCard
-        cost, resources, classification, canPlay,
+        cost: _cost, resources: _resources, classification: _classification, canPlay: _canPlay,
 // MixinCharacterCard
-        hitPoints, statusAvailable, toughness,
+        hitPoints: _hitPoints, statusAvailable: _statusAvailable, toughness: _toughness,
 // FrontCard
-        attack,
+        attack: _attack,
 // FriendFrontCard
-        thwart,
+        thwart: _thwart,
 // AllyCard
         subtitle,
         thwartConsequencial,

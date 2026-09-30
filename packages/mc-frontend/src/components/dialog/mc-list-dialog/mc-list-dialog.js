@@ -2,13 +2,12 @@ import {html} from 'lit-element';
 
 import styles from './mc-list-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import '../../cards/mc-card/mc-card.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import "../../cards/mc-card/mc-card.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
 export class McListDialog extends McDialog {
     static get is() {
-        return `mc-list-dialog`;
+        return 'mc-list-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];
@@ -37,10 +36,10 @@ export class McListDialog extends McDialog {
             this._response = {
                 ..._response,
                 selected: option,
-            }
+            };
 
             this.sendResponse();
-        }
+        };
     }
     renderItem(option, submenu = false) {
         if (option.triggers) {

@@ -1,12 +1,12 @@
-import {Effect} from "./effect.js";
-import {TARGET_PLAYER, TARGET_YOU} from "../constants/targets.js";
-import {AddHandEffect} from "./add-hand-effect.js";
+import {TARGET_PLAYER} from '../constants/targets.js';
 
-export const EFFECT_DRAW_CARD = 'draw';
+import {AddHandEffect} from './add-hand-effect.js';
+import {Effect} from './effect.js';
+
 export class DrawEffect extends Effect {
     constructor({
 // DrawEffect
-        target = TARGET_PLAYER,
+        target: _target = TARGET_PLAYER,
         count = 1,
     }) {
         super(arguments[0]);

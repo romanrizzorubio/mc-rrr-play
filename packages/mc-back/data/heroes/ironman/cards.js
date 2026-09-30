@@ -1,3 +1,4 @@
+import {ABILITY_WHEN_REVEALED} from '../../../src/constants/abilities.js';
 import {
     ABILITY_ACTION,
     ABILITY_ALTEREGO_ACTION,
@@ -5,7 +6,7 @@ import {
     ABILITY_HERO_ACTION,
     ABILITY_RESOURCE,
     ABILITY_OPTION,
-} from "../../../src/constants/abilities.js";
+} from '../../../src/constants/activations.js';
 import {
     CARD_TYPE_ALLY,
     CARD_TYPE_ALTEREGO,
@@ -14,16 +15,53 @@ import {
     CARD_TYPE_SUPPORT,
     CARD_TYPE_UPGRADE,
     CARD_TYPE_TREACHERY,
-} from "../../../src/constants/back-cards.js";
-import {CARD_TYPE_OBLIGATION} from "../../../src/model/printed/obligation-card.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
+} from '../../../src/constants/back-cards.js';
+import {CALC_COUNT, CALC_RESOURCES, CALC_TRAITS_COUNT} from '../../../src/constants/calc.js';
+import {LABEL_ATTACK, LABEL_THWART} from '../../../src/constants/labels.js';
+import {
+    RESOURCE_ENERGY,
+    RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
+    RESOURCE_WILD
+} from '../../../src/constants/resources.js';
+import {
+    TARGET_ALL_ENEMIES,
+    TARGET_ANY_PLAYER,
+    TARGET_ATTACKED,
+    TARGET_BY_TITLE,
+    TARGET_HERO,
+    TARGET_THIS,
+    TARGET_YOUR_SUPERHERO,
+    TARGET_ALTEREGO,
+    TARGET_ALTEREGO_SIDE,
+    TARGET_CARD,
+    TARGET_ATTACK_UNDEFENDED,
+    TARGET_ALL_PLAYERS,
+    TARGET_SCHEME,
+    TARGET_YOU,
+} from '../../../src/constants/targets.js';
+import {TIME_PHASE, TIME_ROUND} from '../../../src/constants/times.js';
+import {
+    TRAIT_AERIAL,
+    TRAIT_ARMOR,
+    TRAIT_ATTACK,
+    TRAIT_AVENGER,
+    TRAIT_GENIUS,
+    TRAIT_INDIVIDUAL,
+    TRAIT_ITEM,
+    TRAIT_LOCATION,
+    TRAIT_SHIELD,
+    TRAIT_SOLDIER,
+    TRAIT_SUPERPOWER,
+    TRAIT_TECH,
+    TRAIT_CONDITION,
+    TRAIT_CRIMINAL,
+} from '../../../src/constants/traits.js';
 import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_EXHAUST,
-    EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_HAND_SIZE,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_READY,
@@ -44,55 +82,16 @@ import {
     EFFECT_PLACE_THREAT,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_DO_IF,
-} from "../../../src/factory/effects-factory.js";
-import {
-    RESOURCE_ENERGY,
-    RESOURCE_MENTAL,
-    RESOURCE_PHYSICAL,
-    RESOURCE_WILD
-} from "../../../src/constants/resources.js";
-import {
-    TARGET_ALL_ENEMIES,
-    TARGET_ANY_PLAYER,
-    TARGET_ATTACKED,
-    TARGET_BY_NAME,
-    TARGET_ENEMY,
-    TARGET_HERO,
-    TARGET_THIS,
-    TARGET_YOUR_SUPERHERO,
-    TARGET_ALTEREGO,
-    TARGET_ALTEREGO_SIDE,
-    TARGET_CARD,
-    TARGET_UPGRADE_YOU_CONTROL,
-    TARGET_ATTACK_UNDEFENDED,
-    TARGET_ALL_PLAYERS,
-} from "../../../src/constants/targets.js";
-import {
-    TRAIT_AERIAL,
-    TRAIT_ARMOR,
-    TRAIT_ATTACK,
-    TRAIT_AVENGER,
-    TRAIT_DROID,
-    TRAIT_GENIUS,
-    TRAIT_INDIVIDUAL,
-    TRAIT_ITEM,
-    TRAIT_LOCATION,
-    TRAIT_SHIELD,
-    TRAIT_SOLDIER,
-    TRAIT_SUPERPOWER,
-    TRAIT_TECH,
-    TRAIT_CONDITION,
-    TRAIT_CRIMINAL,
-} from "../../../src/constants/traits.js";
-import {LABEL_ATTACK, LABEL_THWART} from "../../../src/constants/labels.js";
+    EFFECT_DO_IF_HAS_TRAITS
+} from '../../../src/constants/effects.js';
 import {
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
-} from "../../../src/factory/triggers-factory.js";
-import {CALC_RESOURCES, CALC_TRAITS_COUNT} from "../../../src/constants/calc.js";
-import {TIME_PHASE, TIME_ROUND} from "../../../src/constants/times.js";
-import {EFFECT_DO_IF_HAS_TRAITS} from "../../../src/effects/do-if-has-traits-effect.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
+    TRIGGER_INSTANT,
+} from '../../../src/factory/triggers-factory.js';
+import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
+import {CARD_TYPE_OBLIGATION} from '../../../src/model/printed/obligation-card.js';
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';
 
 const ironmanCard = {
     name: 'Iron Man',
@@ -321,7 +320,7 @@ const arcReactor = {
             },
             effect: {
                 type: EFFECT_READY,
-                target: TARGET_BY_NAME,
+                target: TARGET_BY_TITLE,
                 name: 'Iron Man'
             },
         }

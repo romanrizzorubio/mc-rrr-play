@@ -1,7 +1,6 @@
-import {Effect} from "./effect.js";
-import {RevealEncounterEffect} from "./reveal-encounter-effect.js";
+import {Effect} from './effect.js';
+import {RevealEncounterEffect} from './reveal-encounter-effect.js';
 
-export const EFFECT_DISCARD_REVEAL = 'discard-reveal';
 export class DiscardRevealEffect extends Effect {
     constructor({
         condition,
@@ -16,7 +15,7 @@ export class DiscardRevealEffect extends Effect {
         const {condition} = this;
         const {player} = params;
 
-        const card = await this.match.discardUntil(condition, true)
+        const card = await this.match.discardUntil(condition, true);
 
         const revealEncounterEffect = new RevealEncounterEffect({
             selectedTarget: card,

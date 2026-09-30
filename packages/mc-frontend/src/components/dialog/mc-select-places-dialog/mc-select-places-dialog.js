@@ -2,13 +2,12 @@ import {html} from 'lit-element';
 
 import styles from './mc-select-places-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import '../../cards/mc-card-list/mc-card-list.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import "../../cards/mc-card-list/mc-card-list.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
 export class McSelectPlacesDialog extends McDialog {
     static get is() {
-        return `mc-select-places-dialog`;
+        return 'mc-select-places-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];
@@ -38,7 +37,7 @@ export class McSelectPlacesDialog extends McDialog {
             };
 
             this.sendResponse();
-        }
+        };
     }
     _renderPlace(place) {
         const {data: {places}} = this;

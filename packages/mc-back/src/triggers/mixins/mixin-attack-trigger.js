@@ -11,4 +11,4 @@ export const MixinAttackTrigger = C => class extends C {
 
         return false;
     }
-}
+};

@@ -1,8 +1,9 @@
-import {Player} from "./player.js";
-import {Engine} from "../../engine/engine.js";
-import {PlayMatchEffect} from "../../effects/play-match-effect.js";
-import {path} from "../../engine/utils.js";
-import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../constants/resources.js";
+import {PlayMatchEffect} from '../../effects/play-match-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {path} from '../../engine/utils.js';
+
+import {Player} from './player.js';
+import {PutPlayEffect} from '../../effects/put-play-effect.js';
 
 export class Match extends Engine {
     constructor({
@@ -60,7 +61,7 @@ export class Match extends Engine {
 
         this.players.forEach(player => {
             friends = friends.concat(player.friends);
-        })
+        });
 
         return friends;
     }
@@ -162,7 +163,7 @@ export class Match extends Engine {
                 }
 
                 obligations.push(card);
-            })
+            });
         });
 
         return obligations;
@@ -254,7 +255,7 @@ export class Match extends Engine {
         const players = this.players.map(player => {
             hasInitial = hasInitial || player.initial;
 
-            return player.initPlayer()
+            return player.initPlayer();
         });
 
         if (!hasInitial) {
@@ -310,10 +311,10 @@ export class Match extends Engine {
         }
 
         this.players.find(player => {
-            card = player.searchCard(condition)
+            card = player.searchCard(condition);
 
             return card;
-        })
+        });
 
         return card;
     }

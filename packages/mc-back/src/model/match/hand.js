@@ -1,7 +1,7 @@
-import {Engine} from "../../engine/engine.js";
-import {checkCondition, random} from "../../engine/utils.js";
-import {DIALOG_DISCARD_RANDOM_HAND} from "../../constants/dialogs.js";
-import {RESOURCE_WILD} from "../../constants/resources.js";
+import {DIALOG_DISCARD_RANDOM_HAND} from '../../constants/dialogs.js';
+import {RESOURCE_WILD} from '../../constants/resources.js';
+import {Engine} from '../../engine/engine.js';
+import {checkCondition, random} from '../../engine/utils.js';
 
 export class Hand extends Engine {
     constructor(owner) {
@@ -47,7 +47,7 @@ export class Hand extends Engine {
                 data: {
                     cards: cards.map(_card => _card.toObj(arguments[0])),
                 }
-            })
+            });
 
             if (selected) {
                 card = cards.find(_card => _card.id === selected.id);
@@ -62,7 +62,7 @@ export class Hand extends Engine {
         return card;
     }
     getCard(cardId) {
-        return this.cards.find(card => card.id === cardId)
+        return this.cards.find(card => card.id === cardId);
     }
     getCardsToPay(cardToPlay, resourceType) {
         return this.cards.filter(card =>

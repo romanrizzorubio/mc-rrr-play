@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_DISCARD_FROM_DECK = 'discard-from-deck';
 export class DiscardFromDeckEffect extends Effect {
     constructor({
         count = 1,

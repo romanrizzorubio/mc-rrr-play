@@ -1,8 +1,8 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-match.css.js';
 
-import "../../match/mc-scenario/mc-scenario.js";
-import "../../match/mc-player/mc-player.js";
+import styles from './mc-match.css.js';
+import '../../match/mc-scenario/mc-scenario.js';
+import '../../match/mc-player/mc-player.js';
 
 export class MatchComponent extends LitElement {
     static get is() {
@@ -30,7 +30,7 @@ export class MatchComponent extends LitElement {
             detail: {
                 msg
             }
-        }))
+        }));
     }
     handleAbility(e) {
         e.stopPropagation();
@@ -43,7 +43,7 @@ export class MatchComponent extends LitElement {
             detail: {
                 card, ability,
             }
-        }))
+        }));
     }
     renderScenario() {
         const {match} = this;

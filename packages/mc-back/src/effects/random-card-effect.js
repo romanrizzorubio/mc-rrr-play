@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_RANDOM_CARD = 'random-card';
 export class RandomCardEffect extends Effect {
     constructor({
         count = 1,
@@ -13,7 +12,7 @@ export class RandomCardEffect extends Effect {
 
         this.cards = [];
     }
-    async execute(params) {
+    async execute() {
         const {selectedTarget, count, showDialog} = this;
 
         for (let i = 0 ; i < count ; i++) {

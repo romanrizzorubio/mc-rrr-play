@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_PLACE_DAMAGE = 'place-damage';
 export class PlaceDamageEffect extends Effect {
     constructor({
         damage,

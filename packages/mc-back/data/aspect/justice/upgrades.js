@@ -1,13 +1,13 @@
-import {ASPECT_JUSTICE} from "../aspects.js";
-import {TRAIT_SKILL} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY} from "../../../src/constants/resources.js";
+import {ABILITY_CONSTANT} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY} from '../../../src/constants/resources.js';
 import {
     TARGET_EFFECT,
-} from "../../../src/constants/targets.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {EFFECT_MODIFY_THWART_VALUE} from "../../../src/effects/modify-thwart-value-effect.js";
-import {TRIGGER_YOUR_HERO_GET_THWART} from "../../../src/triggers/your-hero-get-thwart-trigger.js";
+} from '../../../src/constants/targets.js';
+import {TRAIT_SKILL} from '../../../src/constants/traits.js';
+import {TRIGGER_YOUR_HERO_GET_THWART} from '../../../src/constants/triggers.js';
+import {EFFECT_MODIFY_THWART_VALUE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_UPGRADE} from '../../../src/model/printed/upgrade-card.js';
+import {ASPECT_JUSTICE} from '../aspects.js';
 
 const set = ASPECT_JUSTICE;
 export const heroicIntuition = {

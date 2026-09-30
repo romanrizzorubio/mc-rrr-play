@@ -1,16 +1,35 @@
+import {ABILITY_ALTEREGO_ACTION,ABILITY_HERO_ACTION,ABILITY_CONSTANT,ABILITY_OPTION,ABILITY_SPECIAL,ABILITY_RESPONSE,ABILITY_WHEN_REVEALED} from '../../../src/constants/abilities.js';
 import {
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_HERO,
     CARD_TYPE_OBLIGATION,
     CARD_TYPE_TREACHERY,
-} from "../../../src/constants/back-cards.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {CARD_TYPE_RESOURCE} from "../../../src/model/printed/resource-card.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
+} from '../../../src/constants/back-cards.js';
+import {
+    LABEL_ATTACK,
+    LABEL_THWART,
+} from '../../../src/constants/labels.js';
+import {PLACE_DECK, PLACE_DISCARD_PILE, PLACE_IN_PLAY} from '../../../src/constants/places.js';
+import {
+    RESOURCE_PHYSICAL,
+    RESOURCE_MENTAL,
+    RESOURCE_ENERGY,
+    RESOURCE_WILD,
+} from '../../../src/constants/resources.js';
+import {
+    TARGET_YOU,
+    TARGET_ANY_PLAYER,
+    TARGET_VILLAIN,
+    TARGET_ALL_ENGAGED_MINIONS,
+    TARGET_SELECT_ENEMY,
+    TARGET_SCHEME,
+    TARGET_YOUR_SUPERHERO,
+    TARGET_ALTEREGO,
+    TARGET_ALTEREGO_SIDE,
+    TARGET_CARD,
+    TARGET_ENCOUNTER_DECK,
+    TARGET_MAIN_SCHEME,
+} from '../../../src/constants/targets.js';
 import {
     TRAIT_AVENGER,
     TRAIT_GENIUS,
@@ -23,69 +42,42 @@ import {
     TRAIT_WEAPON,
     TRAIT_SKILL,
     TRAIT_ARMOR,
-    TRAIT_CONDITION,
     TRAIT_ELITE,
     TRAIT_MERCENARY,
     TRAIT_ASSASSIN,
-} from "../../../src/constants/traits.js";
+} from '../../../src/constants/traits.js';
+import {TRIGGER_INSTANT, TRIGGER_THIS_ENTER_PLAY} from '../../../src/constants/triggers.js';
 import {
-    RESOURCE_PHYSICAL,
-    RESOURCE_MENTAL,
-    RESOURCE_ENERGY,
-    RESOURCE_WILD,
-} from "../../../src/constants/resources.js";
-import {ABILITY_ALTEREGO_ACTION} from "../../../src/abilities/actions/alterego-action-ability.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {ABILITY_SPECIAL} from "../../../src/abilities/misc/special-ability.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {ABILITY_OPTION} from "../../../src/abilities/misc/option-ability.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {TRIGGER_THIS_ENTER_PLAY} from "../../../src/triggers/this-enter-play-trigger.js";
-import {TRIGGER_INSTANT} from "../../../src/triggers/instant-trigger.js";
-import {EFFECT_SEARCH_CARDS} from "../../../src/effects/search-cards-effect.js";
-import {EFFECT_MOVE_TO_HAND} from "../../../src/effects/move-to-hand-effect.js";
-import {EFFECT_MOVE_TO_DECK} from "../../../src/effects/move-to-deck-effect.js";
-import {EFFECT_SHUFFLE_DECK} from "../../../src/effects/shuffle-deck-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_SELECT_AND_ORDER_CARDS} from "../../../src/effects/select-and-order-cards-effect.js";
-import {EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES} from "../../../src/effects/resolve-selected-special-abilities-effect.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {EFFECT_MOVE_DAMAGE} from "../../../src/effects/move-damage-effect.js";
-import {EFFECT_PREVENT_DAMAGE} from "../../../src/effects/prevent-damage-effect.js";
-import {EFFECT_MAY} from "../../../src/effects/may-effect.js";
-import {EFFECT_FLIP} from "../../../src/effects/flip-effect.js";
-import {EFFECT_CHOOSE_ABILITY} from "../../../src/effects/choose-ability-effect.js";
-import {EFFECT_REMOVE_CARD} from "../../../src/effects/remove-card-effect.js";
-import {EFFECT_SELECT_DISCARD_CARD} from "../../../src/effects/select-discard-card-effect.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {PLACE_DECK, PLACE_DISCARD_PILE, PLACE_IN_PLAY} from "../../../src/constants/places.js";
-import {
-    THREAT_INITIAL,
-    THREAT_ICON_HAZARD,
-} from "../../../src/constants/threats.js";
-import {
-    LABEL_ATTACK,
-    LABEL_THWART,
-} from "../../../src/constants/labels.js";
-import {
-    TARGET_YOU,
-    TARGET_ANY_PLAYER,
-    TARGET_VILLAIN,
-    TARGET_ALL_ENGAGED_MINIONS,
-    TARGET_SELECT_ENEMY,
-    TARGET_SCHEME,
-    TARGET_YOUR_SUPERHERO,
-    TARGET_ALTEREGO,
-    TARGET_ALTEREGO_SIDE,
-    TARGET_CARD,
-    TARGET_UPGRADE_YOU_CONTROL,
-    TARGET_ENCOUNTER_DECK,
-    TARGET_MAIN_SCHEME,
-} from "../../../src/constants/targets.js";
+    EFFECT_CHAINED,
+    EFFECT_CHOOSE_ABILITY,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
+    EFFECT_DRAW_CARD,
+    EFFECT_EXHAUST,
+    EFFECT_FLIP,
+    EFFECT_MAY,
+    EFFECT_MOVE_DAMAGE,
+    EFFECT_MOVE_TO_DECK,
+    EFFECT_MOVE_TO_HAND,
+    EFFECT_PREVENT_DAMAGE,
+    EFFECT_REMOVE_CARD,
+    EFFECT_REMOVE_THREAT,
+    EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
+    EFFECT_SEARCH_CARDS,
+    EFFECT_SELECT_AND_ORDER_CARDS,
+    EFFECT_SELECT_DISCARD_CARD,
+    EFFECT_DISCARD_FROM_DECK,
+    EFFECT_PLACE_THREAT,
+    EFFECT_SHUFFLE_DECK,
+    EFFECT_TOUGH
+} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
+import {CARD_TYPE_RESOURCE} from '../../../src/model/printed/resource-card.js';
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';
+import {CARD_TYPE_SUPPORT} from '../../../src/model/printed/support-card.js';
+import {CARD_TYPE_UPGRADE} from '../../../src/model/printed/upgrade-card.js';
 
 const blackPantherCard = {
     name: 'Pantera Negra',

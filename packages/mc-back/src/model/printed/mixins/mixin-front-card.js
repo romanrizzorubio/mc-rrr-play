@@ -12,6 +12,6 @@ export const MixinFrontCard = C => class extends C {
         return {
             ...super.toObj(arguments[0]),
             attack: this.attack,
-        }
+        };
     }
-}
+};

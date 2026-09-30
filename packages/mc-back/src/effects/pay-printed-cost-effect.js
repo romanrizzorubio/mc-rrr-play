@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {RESOURCE_ANY} from "../constants/resources.js";
+import {RESOURCE_ANY} from '../constants/resources.js';
 
-export const EFFECT_PAY_PRINTED_COST = 'pay-printed-cost';
+import {Effect} from './effect.js';
+
 
 export class PayPrintedCostEffect extends Effect {
     constructor() {

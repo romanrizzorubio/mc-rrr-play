@@ -1,7 +1,6 @@
-import {Effect} from "./effect.js";
-import {PayCostEffect} from "./pay-cost-effect.js";
+import {Effect} from './effect.js';
+import {PayCostEffect} from './pay-cost-effect.js';
 
-export const EFFECT_SPEND = 'spend';
 export class SpendEffect extends Effect {
     constructor({
         resources
@@ -24,7 +23,7 @@ export class SpendEffect extends Effect {
 
         this.isPaid = false;
 
-        const paid = await selectedTarget.spendResources(this.resources, card)
+        const paid = await selectedTarget.spendResources(this.resources, card);
 
         if (paid) {
             const payCostEffect = new PayCostEffect({

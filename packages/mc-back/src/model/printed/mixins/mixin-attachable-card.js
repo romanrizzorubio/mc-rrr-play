@@ -1,7 +1,7 @@
 import {
     CHARACTER_YOU
-} from "../../../constants/characters.js";
-import {AttachEffect} from "../../../effects/attach-effect.js";
+} from '../../../constants/characters.js';
+import {AttachEffect} from '../../../effects/attach-effect.js';
 
 export const MixinAttachableCard = C => class extends C {
     constructor({
@@ -53,9 +53,9 @@ export const MixinAttachableCard = C => class extends C {
 
         return attachEffect.runEffect(params);
     }
-    play({gameCard, target}) {
+    play({gameCard: _gameCard, target: _target}) {
         super.play(arguments[0]);
 
         return this.attachCard(arguments[0]);
     }
-}
+};

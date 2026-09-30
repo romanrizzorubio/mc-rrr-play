@@ -1,5 +1,5 @@
-import {path} from "../engine/utils.js";
-import {Engine} from "../engine/engine.js";
+import {Engine} from '../engine/engine.js';
+import {path} from '../engine/utils.js';
 
 export class Activation extends Engine {
     constructor({
@@ -36,14 +36,13 @@ export class Activation extends Engine {
     checkStatus() {
         return true;
     }
-    getTriggersEnds(params) {
-        if (this.activationEnd) {
-            this.triggersEndsLaunched = true;
-        }
+    getTriggersEnds(_params) {
+        this.triggersEndsLaunched = true;
 
         return [];
     }
-    getTriggersInit(params) {
+    getTriggersInit(_params) {
+        this.triggersEndsLaunched = false;
         this.triggersInitLaunched = true;
 
         return [];
@@ -51,7 +50,7 @@ export class Activation extends Engine {
     getTriggersParams(params) {
         return params;
     }
-    getTriggersWould(params) {
+    getTriggersWould(_params) {
         this.triggersWouldLaunched = true;
 
         return [];

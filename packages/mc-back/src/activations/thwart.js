@@ -1,5 +1,11 @@
-import {Activation} from "./activation.js";
-import {TRIGGER_THIS_THWARTS} from "../triggers/this-thwarts-trigger.js";
+
+import {
+    TRIGGER_THIS_THWARTS,
+    TRIGGER_YOU_ANY_THWART,
+    TRIGGER_YOU_BASIC_THWART
+} from '../constants/triggers.js';
+
+import {Activation} from './activation.js';
 
 export class Thwart extends Activation {
     checkStatus() {
@@ -11,18 +17,34 @@ export class Thwart extends Activation {
         const {player} = params;
 
         if (card.isCard) {
-            return card.canThwart(player)
+            return card.canThwart(player);
         }
 
         return player.canThwart(params);
     }
     getTriggersEnds(params) {
-        const {triggersEndsLaunched} = this;
+        const {triggersEndsLaunched, effect} = this;
+        const isBasic = effect && effect.ability && effect.ability.isBasic;
 
-        return !triggersEndsLaunched && this.activationEnd ? super.getTriggersEnds(params)
-            .concat([
-                TRIGGER_THIS_THWARTS,
-            ]) : [];
+        const triggers = [
+            TRIGGER_THIS_THWARTS,
+            TRIGGER_YOU_ANY_THWART,
+        ];
+
+        if (isBasic) {
+            triggers.push(TRIGGER_YOU_BASIC_THWART);
+        }
+
+        return !triggersEndsLaunched ? super.getTriggersEnds(params)
+            .concat(triggers) : [];
+    }
+    getTriggersParams(params) {
+        const {character} = this;
+
+        return {
+            ...super.getTriggersParams(params),
+            card: character,
+        };
     }
     resolveStatus() {
         const {character} = this;

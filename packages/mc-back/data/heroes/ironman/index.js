@@ -1,3 +1,5 @@
+import {ASPECT_LEADERSHIP} from '../../aspect/aspects.js';
+
 import {
     ironmanCard,
     tonyStarkCard,
@@ -16,9 +18,8 @@ import {
     whiplashCard,
     electricWhipAttackCard,
     electromagneticBacklashCard,
-} from "./cards.js";
-import {ASPECT_LEADERSHIP} from "../../aspect/aspects.js";
-import {precon} from "./precon.js";
+} from './cards.js';
+import {precon} from './precon.js';
 
 export const heroConfig = {
     aspect: ASPECT_LEADERSHIP,
@@ -46,4 +47,4 @@ export const heroConfig = {
         {card: electricWhipAttackCard, count: 2},
         {card: electromagneticBacklashCard, count: 1},
     ]
-}
+};

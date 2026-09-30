@@ -1,11 +1,11 @@
-import {Effect} from "./effect.js";
-import {CARD_TYPE_TREACHERY} from "../model/printed/treachery-card.js";
+import {CARD_TYPE_TREACHERY} from '../model/printed/treachery-card.js';
+
+import {Effect} from './effect.js';
 
 export const CANCEL_ENCOUNTER_FULL = 'full';
 export const CANCEL_ENCOUNTER_NOT = 'not';
 export const CANCEL_ENCOUNTER_REVEAL = 'reveal';
 
-export const EFFECT_CANCEL_ENCOUNTER = 'cancel-encounter';
 export class CancelEncounterEffect extends Effect {
     constructor({
         type = CARD_TYPE_TREACHERY,
@@ -32,7 +32,7 @@ export class CancelEncounterEffect extends Effect {
         return this.matchType(effect.selectedTarget) &&
             effect.canceled === CANCEL_ENCOUNTER_NOT;
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget} = this;
 
         selectedTarget.canceled = CANCEL_ENCOUNTER_REVEAL;

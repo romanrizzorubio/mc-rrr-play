@@ -1,8 +1,7 @@
-import {Effect} from "./effect.js";
-import {RandomCardEffect} from "./random-card-effect.js";
-import {DiscardFromHandEffect} from "./discard-from-hand-effect.js";
+import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
+import {Effect} from './effect.js';
+import {RandomCardEffect} from './random-card-effect.js';
 
-export const EFFECT_DISCARD_RANDOM = 'discard-random';
 export class DiscardRandomEffect extends Effect {
     constructor({
         count = 1,
@@ -37,6 +36,6 @@ export class DiscardRandomEffect extends Effect {
             discardFromHandEffect.selectedTarget = card;
 
             await discardFromHandEffect.runEffect(params);
-        })
+        });
     }
 }

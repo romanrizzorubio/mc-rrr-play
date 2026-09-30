@@ -1,8 +1,7 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_DISCARD_GAME = 'discard-game';
 export class DiscardFromGameEffect extends Effect {
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget} = this;
 
         const {attachedTo, controller} = selectedTarget;

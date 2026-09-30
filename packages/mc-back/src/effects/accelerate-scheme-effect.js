@@ -1,7 +1,8 @@
-import {Effect} from "./effect.js";
-import {PlaceThreatEffect} from "./place-threat-effect.js";
-import {TARGET_MAIN_SCHEME} from "../constants/targets.js";
-import {DIALOG_ACCELERATE} from "../constants/dialogs.js";
+import {DIALOG_ACCELERATE} from '../constants/dialogs.js';
+import {TARGET_MAIN_SCHEME} from '../constants/targets.js';
+
+import {Effect} from './effect.js';
+import {PlaceThreatEffect} from './place-threat-effect.js';
 
 export class AccelerateSchemeEffect extends Effect {
     constructor() {

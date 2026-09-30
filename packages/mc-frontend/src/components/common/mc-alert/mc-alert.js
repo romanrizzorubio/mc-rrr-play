@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-alert.css.js';
 
+import styles from './mc-alert.css.js';
 import '@material/web/dialog/dialog.js';
 import '@material/web/button/text-button.js';
 
@@ -24,7 +24,7 @@ export class McAlert extends LitElement {
         this.open = false;
     }
     handleClick() {
-        this.dispatchEvent(new CustomEvent('alert-ok'))
+        this.dispatchEvent(new CustomEvent('alert-ok'));
     }
     render() {
         const {msg, open} = this;

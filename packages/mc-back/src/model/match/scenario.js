@@ -1,10 +1,11 @@
-import {Engine} from "../../engine/engine.js";
-import {ScenarioZone} from "./scenario-zone.js";
-import {Deck} from "./deck.js";
-import {RevealEncounterEffect} from "../../effects/reveal-encounter-effect.js";
-import {PutPlayEffect} from "../../effects/put-play-effect.js";
-import {checkCondition, path} from "../../engine/utils.js";
-import {endpoints} from "../../constants/endpoints.js";
+import {endpoints} from '../../constants/endpoints.js';
+import {PutPlayEffect} from '../../effects/put-play-effect.js';
+import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {checkCondition, path} from '../../engine/utils.js';
+
+import {Deck} from './deck.js';
+import {ScenarioZone} from './scenario-zone.js';
 
 export class Scenario extends Engine {
     constructor({
@@ -114,7 +115,7 @@ export class Scenario extends Engine {
 
         this.villains = expert ?
             this.mainScheme.content.villainsExpert.map(stage => this.villains.find(villain => villain.stage === stage)) :
-            this.mainScheme.content.villains.map(stage => this.villains.find(villain => villain.stage === stage))
+            this.mainScheme.content.villains.map(stage => this.villains.find(villain => villain.stage === stage));
 
         await this.selectVillain();
 
@@ -190,6 +191,6 @@ export class Scenario extends Engine {
             mainScheme: mainScheme && mainScheme.toObj(),
             deck: deck && deck.toObj(),
             gameZone: gameZone && gameZone.toObj(),
-        }
+        };
     }
 }

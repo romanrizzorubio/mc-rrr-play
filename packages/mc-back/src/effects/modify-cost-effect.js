@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_COST = 'modify-cost';
 export class ModifyCostEffect extends Effect {
     constructor({
         count,
@@ -9,7 +8,7 @@ export class ModifyCostEffect extends Effect {
 
         this.count = count;
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, count} = this;
 
         selectedTarget.modifyCost = count;

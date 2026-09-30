@@ -10,6 +10,7 @@ export const DIALOG_ENCOUNTERS_REVEAL = 'encounters-reveal';
 export const DIALOG_LIST = 'list';
 export const DIALOG_MAX_ALLIES = 'max-allies';
 export const DIALOG_PAY_COST = 'pay-cost';
+export const DIALOG_PLAY_CARD = 'play-card';
 export const DIALOG_SELECT_PLACES = 'select-places';
 export const DIALOG_SELECT_TARGET = 'select-target';
 export const DIALOG_USE_CARD = 'use-card';

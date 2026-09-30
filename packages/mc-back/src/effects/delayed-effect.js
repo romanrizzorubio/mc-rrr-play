@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {Delayed} from "../engine/delayed.js";
+import {Delayed} from '../engine/delayed.js';
 
-export const EFFECT_DELAYED = 'delayed';
+import {Effect} from './effect.js';
+
 export class DelayedEffect extends Effect {
     constructor({
         effect,

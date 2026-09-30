@@ -37,3 +37,4 @@ lerna-debug.log*
 
 # Docker
 .docker
+packages/mc-frontend/node_modules

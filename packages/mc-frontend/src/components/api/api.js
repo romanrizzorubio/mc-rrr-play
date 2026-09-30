@@ -1,9 +1,11 @@
-import { Manager } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
-import {endpoints} from "../../misc/endpoints.js";
+import { Manager } from '/node_modules/socket.io-client/dist/socket.io.esm.min.js';
+
+import {endpoints} from '../../misc/endpoints.js';
+
 export const METHODS = {
     GET: 'GET',
     POST: 'POST',
-}
+};
 export class Api {
     constructor() {
         this.wsHost = 'ws://localhost:3000';
@@ -16,8 +18,8 @@ export class Api {
     }
     init() {
         this.manager = new Manager(this.wsHost);
-        this.socket = this.manager.socket("/"); // main namespace
-        this.socket.on("connect", () => {
+        this.socket = this.manager.socket('/'); // main namespace
+        this.socket.on('connect', () => {
             console.log('this.socket.recovered', this.socket.recovered);
         });
     }
@@ -28,7 +30,7 @@ export class Api {
         this.listen({
             event: endpoints.card.refresh,
             callback: params => {
-                callback(params)
+                callback(params);
             }
         });
     }
@@ -54,7 +56,7 @@ export class Api {
         this.listen({
             event: endpoints.player.refresh,
             callback: params => {
-                callback(params)
+                callback(params);
             }
         });
     }
@@ -62,7 +64,7 @@ export class Api {
         this.listen({
             event: endpoints.playerZone.refresh,
             callback: params => {
-                callback(params)
+                callback(params);
             }
         });
     }
@@ -90,23 +92,23 @@ export class Api {
         return this.request({
             ...params,
             method: METHODS.GET,
-        })
+        });
     }
     post(params) {
         return this.request({
             ...params,
             method: METHODS.POST,
             body: JSON.stringify(params.params),
-        })
+        });
     }
     async request(params) {
         const {match} = this;
         const {endpoint} = params;
         const options = {
             ...params,
-            mode: "cors",
+            mode: 'cors',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
                 match,
             },
         };
@@ -116,14 +118,14 @@ export class Api {
         return await response.json();
     }
     send({endpoint, event, params}) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (event) {
                 this.listen({
                     event,
                     callback: resolve,
-                })
+                });
             }
             this.socket.emit(endpoint, params);
-        })
+        });
     }
 }

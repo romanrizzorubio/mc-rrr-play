@@ -1,3 +1,6 @@
+import {ABILITY_WHEN_REVEALED,ABILITY_WHEN_REVEALED_ALTEREGO,ABILITY_WHEN_REVEALED_HERO} from '../../../src/constants/abilities.js';
+import {CHARACTER_VILLAIN} from '../../../src/constants/characters.js';
+import {PLACE_OUTSIDE_NEMESIS} from '../../../src/constants/places.js';
 import {
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_EFFECT,
@@ -7,22 +10,19 @@ import {
     TARGET_UPGRADE_YOU_CONTROL,
     TARGET_VILLAIN,
     TARGET_YOU
-} from "../../../src/constants/targets.js";
-import {CHARACTER_VILLAIN} from "../../../src/constants/characters.js";
-import {PLACE_OUTSIDE_NEMESIS} from "../../../src/constants/places.js";
-import {CARD_TYPE_TREACHERY} from "../../../src/model/printed/treachery-card.js";
-import {EFFECT_SURGE} from "../../../src/effects/surge-effect.js";
-import {EFFECT_SEARCH_CARD_REVEAL} from "../../../src/effects/search-card-reveal-effect.js";
-import {EFFECT_INCLUDE_ASIDE_CARDS} from "../../../src/effects/include-aside-cards-effect.js";
-import {EFFECT_DO_IF} from "../../../src/effects/do-if-effect.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {EFFECT_ENEMY_SCHEME} from "../../../src/effects/enemy-scheme-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {ABILITY_WHEN_REVEALED_ALTEREGO} from "../../../src/abilities/when/when-revealed-alterego-ability.js";
-import {ABILITY_WHEN_REVEALED_HERO} from "../../../src/abilities/when/when-revealed-hero-ability.js";
-import {EFFECT_ENEMY_ATTACK} from "../../../src/effects/enemy-attack-effect.js";
-import {EFFECT_SEVERAL_ATTACKS} from "../../../src/effects/several-attacks-effect.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
+} from '../../../src/constants/targets.js';
+import {
+    EFFECT_CHAINED,
+    EFFECT_DISCARD_GAME,
+    EFFECT_DO_IF,
+    EFFECT_ENEMY_ATTACK,
+    EFFECT_ENEMY_SCHEME,
+    EFFECT_INCLUDE_ASIDE_CARDS,
+    EFFECT_SEARCH_CARD_REVEAL,
+    EFFECT_SEVERAL_ATTACKS,
+    EFFECT_SURGE
+} from '../../../src/constants/effects.js';
+import {CARD_TYPE_TREACHERY} from '../../../src/model/printed/treachery-card.js';
 
 const set = 'standard';
 export const advance = {

@@ -1,8 +1,10 @@
-import {McRest} from "./rest/mc-rest.js";
-import express from "express";
-import {createServer} from "node:http";
-import {Server} from "socket.io";
-import {McSocket} from "./socket/mc-socket.js";
+import {createServer} from 'node:http';
+
+import express from 'express';
+import {Server} from 'socket.io';
+
+import {McRest} from './rest/mc-rest.js';
+import {McSocket} from './socket/mc-socket.js';
 
 export class Mc {
     constructor() {
@@ -29,7 +31,7 @@ export class Mc {
         this.io = new Server(this.server, {
             connectionStateRecovery: {},
             cors: {
-                origin: "*"
+                origin: '*'
             }
         });
 
@@ -37,7 +39,7 @@ export class Mc {
 
         this.io.on('connection', socket => {
             this.socket = socket;
-            console.log('socket.recovered', socket.recovered)
+            console.log('socket.recovered', socket.recovered);
         });
 
         this.server.listen(3000, () => {

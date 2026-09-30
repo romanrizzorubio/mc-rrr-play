@@ -1,18 +1,15 @@
-import {ASPECT_JUSTICE} from "../aspects.js";
-import {TRAIT_DEFENDER} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
+import {ABILITY_CONSTANT,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {CALC_COUNT} from '../../../src/constants/calc.js';
+import {RESOURCE_ENERGY, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
 import {
     TARGET_EFFECT,
     TARGET_ENEMY,
-} from "../../../src/constants/targets.js";
-import {CALC_COUNT} from "../../../src/constants/calc.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {EFFECT_MODIFY_THWART_VALUE} from "../../../src/effects/modify-thwart-value-effect.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {TRIGGER_THIS_GET_THWART} from "../../../src/triggers/this-get-thwart-trigger.js";
-import {TRIGGER_THIS_THWARTS} from "../../../src/triggers/this-thwarts-trigger.js";
+} from '../../../src/constants/targets.js';
+import {TRAIT_DEFENDER} from '../../../src/constants/traits.js';
+import {TRIGGER_THIS_GET_THWART, TRIGGER_THIS_THWARTS} from '../../../src/constants/triggers.js';
+import {EFFECT_DEAL_DAMAGE, EFFECT_MODIFY_THWART_VALUE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {ASPECT_JUSTICE} from '../aspects.js';
 
 const set = ASPECT_JUSTICE;
 export const daredevil = {

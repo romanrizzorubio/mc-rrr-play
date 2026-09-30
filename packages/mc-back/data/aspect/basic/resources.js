@@ -1,6 +1,6 @@
-import {ASPECT_BASIC} from "../aspects.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {CARD_TYPE_RESOURCE} from "../../../src/model/printed/resource-card.js";
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {CARD_TYPE_RESOURCE} from '../../../src/model/printed/resource-card.js';
+import {ASPECT_BASIC} from '../aspects.js';
 
 const set = ASPECT_BASIC;
 export const energy = {

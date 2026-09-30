@@ -1,12 +1,13 @@
-import {Effect} from "./effect.js";
-import {PutPlayEffect} from "./put-play-effect.js";
-import {DelayedEffect} from "./delayed-effect.js";
-import {CANCEL_ENCOUNTER_FULL, CANCEL_ENCOUNTER_NOT, CANCEL_ENCOUNTER_REVEAL} from "./cancel-encounter-effect.js";
-import {EngageEffect} from "./engage-effect.js";
-import {TARGET_PLAYER, TARGET_SCENARIO} from "../constants/targets.js";
-import {GetSurgeEffect} from "./get-surge-effect.js";
-import {DIALOG_ENCOUNTERS_REVEAL} from "../constants/dialogs.js";
-import {TRIGGER_TREACHERY_REVEAL} from "../triggers/treachery-reveal-trigger.js";
+import {DIALOG_ENCOUNTERS_REVEAL} from '../constants/dialogs.js';
+import {TARGET_PLAYER, TARGET_SCENARIO} from '../constants/targets.js';
+import {TRIGGER_TREACHERY_REVEAL} from '../constants/triggers.js';
+
+import {CANCEL_ENCOUNTER_FULL, CANCEL_ENCOUNTER_NOT, CANCEL_ENCOUNTER_REVEAL} from './cancel-encounter-effect.js';
+import {DelayedEffect} from './delayed-effect.js';
+import {Effect} from './effect.js';
+import {EngageEffect} from './engage-effect.js';
+import {GetSurgeEffect} from './get-surge-effect.js';
+import {PutPlayEffect} from './put-play-effect.js';
 
 export class RevealEncounterEffect extends Effect {
     constructor({
@@ -35,7 +36,7 @@ export class RevealEncounterEffect extends Effect {
             selectedTarget: this,
             effect: surge,
             match: this.match,
-        })
+        });
 
         await delayed.runEffect({
             ...params,
@@ -44,7 +45,7 @@ export class RevealEncounterEffect extends Effect {
 
         this.selectedTarget.endTriggers(true);
     }
-    checkTrigger(params) {
+    checkTrigger() {
         const {canceled} = this;
 
         return canceled !== CANCEL_ENCOUNTER_FULL;
@@ -75,7 +76,7 @@ export class RevealEncounterEffect extends Effect {
         const {selectedTarget} = this;
 
         if (selectedTarget.abilities) {
-            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenRevealed && _ability.isValidIdentity(params))
+            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenRevealed && _ability.isValidIdentity(params));
 
             if (ability) {
                 return ability.resolveAbility({

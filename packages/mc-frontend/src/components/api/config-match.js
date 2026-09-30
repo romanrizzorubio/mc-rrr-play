@@ -1,4 +1,4 @@
-import {endpoints} from "../../misc/endpoints.js";
+import {endpoints} from '../../misc/endpoints.js';
 
 export class ConfigMatch {
     constructor(api) {
@@ -17,18 +17,18 @@ export class ConfigMatch {
         return await this.api.post({
             endpoint: endpoints.player.create,
             params: player
-        })
+        });
     }
     createScenario(scenario) {
         return this.api.post({
             endpoint: endpoints.scenario.create,
             params: scenario,
-        })
+        });
     }
     getHeroesList() {
         return this.api.get({
             endpoint: endpoints.match.getHeroesList,
-        })
+        });
     }
     getScenariosList() {
         return this.api.get({
@@ -41,7 +41,7 @@ export class ConfigMatch {
             params: {
                 expert
             }
-        })
+        });
     }
     listenMatch(callback) {
         this.api.listenMatch(callback);

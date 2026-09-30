@@ -1,48 +1,51 @@
-import {Engine} from "../engine/engine.js";
-import {TARGET_YOU} from "../constants/targets.js";
-import {ValidTarget} from "../engine/valid-target.js";
+import {
+    ACTIVATION_ATTACK,
+    ACTIVATION_DEFENSE,
+    ACTIVATION_SCHEME,
+    ACTIVATION_THWART,
+} from '../constants/activations.js';
 import {
     PRIORITY_CONSTANT,
-    PRIORITY_FORCED_INTERRUPT, PRIORITY_FORCED_RESPONSE, PRIORITY_INTERRUPT, PRIORITY_RESPONSE
-} from "../constants/priorities.js";
-import {Calc} from "../engine/calc.js";
-import {path, pathSet} from "../engine/utils.js";
-import {Keywords} from "../model/commons/keywords.js";
-import {Attack} from "../activations/attack.js";
-import {Thwart} from "../activations/thwart.js";
-import {Scheme} from "../activations/scheme.js";
-import {TRIGGER_THIS_ATTACK} from "../triggers/this-attack-trigger.js";
-import {Defense} from "../activations/defense.js";
-import {DealDamageEffect} from "./deal-damage-effect.js";
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_FORCED_RESPONSE,
+    PRIORITY_INTERRUPT, PRIORITY_RESPONSE
+} from '../constants/priorities.js';
+import {TARGET_YOU} from '../constants/targets.js';
+import {Calc} from '../engine/calc.js';
+import {Engine} from '../engine/engine.js';
+import {path, pathSet} from '../engine/utils.js';
+import {ValidTarget} from '../targets/valid-target.js';
+import {Keywords} from '../model/commons/keywords.js';
+
 export class Effect extends Engine {
-    constructor({
-// Effect
-        selectedTarget,
-        source,
-        paramsCalc,
-        thenEffect,
-        match,
-        ability,
-        excludeTarget,
-        condition,
-        activation,
-        keywords = {},
-        isArrow = false,
-        isAttack = false,
-        isDefense = false,
-        isScheme = false,
-        isThwart = false,
-        saveData = [],
-        target = TARGET_YOU,
-        refreshTarget = false,
-        title = '',
-    }) {
-        super(arguments[0]);
+    constructor(params) {
+        super(params);
+        const {
+            selectedTarget,
+            source,
+            paramsCalc,
+            thenEffect,
+            match,
+            ability,
+            excludeTarget,
+            condition,
+            activation,
+            keywords = {},
+            isArrow = false,
+            isAttack = false,
+            isDefense = false,
+            isScheme = false,
+            isThwart = false,
+            saveData = [],
+            target = TARGET_YOU,
+            refreshTarget = false,
+            title = '',
+        } = params;
 
         this.target = target;
         this.refreshTarget = refreshTarget;
         this.source = source;
-        this.title = title;
+        this.title = title || params.title || '';
         this.paramsCalc = paramsCalc;
         this.thenEffect = thenEffect;
         this.match = match;
@@ -93,24 +96,27 @@ export class Effect extends Engine {
     get activation() {
         if (!this._activation) {
             if (this.isAttack) {
-                this._activation = new Attack({
+                this._activation = this.match.activationsFactory.createActivation({
+                    type: ACTIVATION_ATTACK,
                     effect: this,
                 });
             } else if (this.isDefense) {
-                this._activation = new Defense({
+                this._activation = this.match.activationsFactory.createActivation({
+                    type: ACTIVATION_DEFENSE,
                     effect: this,
                 });
             } else if (this.isScheme) {
-                this._activation = new Scheme({
+                this._activation = this.match.activationsFactory.createActivation({
+                    type: ACTIVATION_SCHEME,
                     effect: this,
                 });
             } else if (this.isThwart) {
-                this._activation = new Thwart({
+                this._activation = this.match.activationsFactory.createActivation({
+                    type: ACTIVATION_THWART,
                     effect: this,
                 });
             }
         }
-
         return this._activation;
     }
     set activation(activation) {
@@ -157,23 +163,6 @@ export class Effect extends Engine {
     get ranged() {
         return this.keywords.ranged;
     }
-    async applyRetaliate(params) {
-        if (this.isAttack) {
-            const {selectedTarget} = this;
-            const attacker = this.character;
-
-            if (selectedTarget && attacker && !selectedTarget.isDefeated && selectedTarget.retaliate) {
-                const dealDamageEffect = new DealDamageEffect({
-                    damage: selectedTarget.retaliate,
-                    selectedTarget: attacker,
-                    match: this.match,
-                    ability: this.ability,
-                });
-
-                await dealDamageEffect.runEffect(params);
-            }
-        }
-    }
     calculate(params) {
         const {paramsCalc} = this;
 
@@ -204,9 +193,7 @@ export class Effect extends Engine {
 
         if (isActivation) {
             if (!activation) {
-                console.log('No hay activation')
-                const a = this.activation
-                const b = this.isActivation
+                console.log('No hay activation');
             }
             return activation.checkStatus();
         }
@@ -262,15 +249,19 @@ export class Effect extends Engine {
     getTriggersParams(params) {
         const {activation} = this;
 
-        const newParams = {
+        let newParams = {
             ...params,
             effect: this,
         };
 
-        return activation ? {
-            ...newParams,
-            ...activation.getTriggersParams(params),
-        } : newParams;
+        if (activation) {
+            newParams = {
+                ...newParams,
+                ...activation.getTriggersParams(newParams),
+            };
+        }
+
+        return newParams;
     }
     getTriggersWould(params) {
         const {activation} = this;
@@ -367,11 +358,15 @@ export class Effect extends Engine {
     async triggerEnds(params) {
         const type = this.getTriggersEnds(params);
 
-        await this.applyRetaliate(params);
         await this.resolveDelayedEffects(params);
         await this.trigger(PRIORITY_CONSTANT, type, params);
         await this.trigger(PRIORITY_FORCED_RESPONSE, type, params);
         await this.trigger(PRIORITY_RESPONSE, type, params);
+
+        const {isActivation, activation} = this;
+        if (isActivation && activation && activation.afterTriggerEnds) {
+            await activation.afterTriggerEnds(params);
+        }
     }
     saveDataCard() {
         const card = path(this, 'ability.card');
@@ -381,7 +376,7 @@ export class Effect extends Engine {
                 return {
                     ...ret,
                     [key]: card[key],
-                }
+                };
             }, {});
         }
     }
@@ -406,10 +401,10 @@ export class Effect extends Engine {
                 this.fullResolved = this.isFullResolved();
 
                 if (this.resolved && this.thenEffect) {
-                    await this.thenEffect.runEffect(params)
+                    await this.thenEffect.runEffect(params);
                 }
 
-                await this.triggerEnds(triggersParams)
+                await this.triggerEnds(triggersParams);
             }
         }
     }
@@ -421,6 +416,6 @@ export class Effect extends Engine {
             overkill,
             piercing,
             ranged,
-        }
+        };
     }
 }

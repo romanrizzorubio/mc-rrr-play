@@ -1,9 +1,11 @@
-import {Card} from "./card.js";
-import {path} from "../../engine/utils.js";
+import {path} from '../../engine/utils.js';
+
+import {Card} from './card.js';
+
 export class PlayerCard extends Card {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // PlayerCard
         cost,
         classification,
@@ -39,7 +41,7 @@ export class PlayerCard extends Card {
 
         return true;
     }
-    getResources(card) {
+    getResources() {
         return this.resources;
     }
     toObj(params = {}) {
@@ -52,6 +54,6 @@ export class PlayerCard extends Card {
             ...super.toObj(arguments[0]),
             cost,
             resources,
-        }
+        };
     }
 }

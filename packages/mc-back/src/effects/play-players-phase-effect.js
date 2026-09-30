@@ -1,5 +1,5 @@
-import {PlayPhaseEffect} from "./play-phase-effect.js";
-import {PlayTurnEffect} from "./play-turn-effect.js";
+import {PlayPhaseEffect} from './play-phase-effect.js';
+import {PlayTurnEffect} from './play-turn-effect.js';
 
 export class PlayPlayersPhaseEffect extends PlayPhaseEffect {
     constructor() {
@@ -12,7 +12,7 @@ export class PlayPlayersPhaseEffect extends PlayPhaseEffect {
     async runEndPlayersPhase(params) {
         const players = this.match.orderedPlayers;
 
-        await this.promisesSequential(players, player => player.runEndPlayersPhase(params))
+        await this.promisesSequential(players, player => player.runEndPlayersPhase(params));
     }
 
     async execute(params) {

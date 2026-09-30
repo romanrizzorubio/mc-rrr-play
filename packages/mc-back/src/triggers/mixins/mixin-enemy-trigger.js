@@ -16,4 +16,4 @@ export const MixinEnemyTrigger = C => class extends C {
 
         return false;
     }
-}
+};

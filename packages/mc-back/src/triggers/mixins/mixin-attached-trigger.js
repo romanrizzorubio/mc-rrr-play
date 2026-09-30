@@ -10,4 +10,4 @@ export const MixinAttachedTrigger = C => class extends C {
             return super.canTrigger(params);
         }
     }
-}
+};

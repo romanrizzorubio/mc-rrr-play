@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_HAND_SIZE = 'modify-hand-size';
 export class ModifyHandSizeEffect extends Effect {
     constructor({
         count,

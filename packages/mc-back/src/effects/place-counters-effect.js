@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_PLACE_COUNTERS = 'place-counters';
 export class PlaceCountersEffect extends Effect {
     constructor({
         counters,

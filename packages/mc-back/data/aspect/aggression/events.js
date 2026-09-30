@@ -1,15 +1,12 @@
-import {ASPECT_AGGRESSION} from "../aspects.js";
-import {TRAIT_ATTACK, TRAIT_THWART} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {LABEL_ATTACK, LABEL_THWART} from "../../../src/constants/labels.js";
-import {TARGET_ENEMY, TARGET_MINION, TARGET_SCHEME} from "../../../src/constants/targets.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {EFFECT_REMOVE_THREAT} from "../../../src/effects/remove-threat-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {EFFECT_DO_IF_HAS_PAID} from "../../../src/effects/do-if-has-paid-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY} from "../../../src/triggers/your-hero-attack-defeat-enemy-trigger.js";
+import {ABILITY_HERO_ACTION,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {LABEL_ATTACK, LABEL_THWART} from '../../../src/constants/labels.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_ENEMY, TARGET_MINION, TARGET_SCHEME} from '../../../src/constants/targets.js';
+import {TRAIT_ATTACK, TRAIT_THWART} from '../../../src/constants/traits.js';
+import {TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY} from '../../../src/constants/triggers.js';
+import {EFFECT_DEAL_DAMAGE, EFFECT_DO_IF_HAS_PAID, EFFECT_REMOVE_THREAT} from '../../../src/constants/effects.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {ASPECT_AGGRESSION} from '../aspects.js';
 
 const set = ASPECT_AGGRESSION;
 export const chaseThemDown = {

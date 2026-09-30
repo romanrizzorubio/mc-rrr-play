@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_CHAINED = 'chained';
 export class ChainedEffect extends Effect {
     constructor({
 // ChainedEffect
@@ -14,14 +13,14 @@ export class ChainedEffect extends Effect {
 
         effects.forEach(effect => {
             if (!effect) {
-                console.log('asdf')
+                console.log('asdf');
             }
             if (!effect.target) {
                 effect.target = this.target;
             }
 
             return effect;
-        })
+        });
     }
     get ability() {
         return super.ability;
@@ -53,7 +52,7 @@ export class ChainedEffect extends Effect {
         }
 
         return this.promisesSequentialSome(this.effects, effect =>
-            effect.canRun(newParams))
+            effect.canRun(newParams));
     }
     async prepare(params) {
         await super.prepare(params);
@@ -62,7 +61,7 @@ export class ChainedEffect extends Effect {
             if (effect.target === this.target) {
                 effect.selectedTarget = this.selectedTarget;
             }
-        })
+        });
 
         return this.selectedTarget;
     }
@@ -83,6 +82,6 @@ export class ChainedEffect extends Effect {
             } else {
                 return false;
             }
-        })
+        });
     }
 }

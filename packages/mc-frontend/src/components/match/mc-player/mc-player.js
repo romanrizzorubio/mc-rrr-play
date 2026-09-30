@@ -1,15 +1,12 @@
 import {LitElement, html} from 'lit-element';
+
+import {DECK_TYPES} from '../../panels/mc-deck/mc-deck.js';
+
 import styles from './mc-player.css.js';
-
-import "../../panels/mc-deck/mc-deck.js";
-import "../../panels/mc-hand/mc-hand.js";
-import "../../panels/mc-game-zone/mc-game-zone.js";
-import "../../cards/characters/mc-superhero-card/mc-superhero-card.js";
-
-import {DECK_TYPES} from "../../panels/mc-deck/mc-deck.js";
-import {Player} from "../../api/player.js";
-import {Api} from "../../api/api.js";
-import {path} from "../../../misc/utils.js";
+import '../../panels/mc-hand/mc-hand.js';
+import '../../panels/mc-game-zone/mc-game-zone.js';
+import '../../cards/characters/mc-superhero-card/mc-superhero-card.js';
+import {path} from '../../../misc/utils.js';
 
 export class McPlayer extends LitElement {
     static get is() {
@@ -62,7 +59,7 @@ export class McPlayer extends LitElement {
                 ...e.detail,
                 card: superhero,
             },
-        }))
+        }));
     }
     renderHand() {
         const {

@@ -1,4 +1,4 @@
-import {MixinVillainTrigger} from "./mixin-villain-trigger.js";
+import {MixinVillainTrigger} from './mixin-villain-trigger.js';
 
 export const MixinCharacterVillainTrigger = C => class extends MixinVillainTrigger(C) {
     constructor(params) {
@@ -9,4 +9,4 @@ export const MixinCharacterVillainTrigger = C => class extends MixinVillainTrigg
 
         return effect.character;
     }
-}
+};

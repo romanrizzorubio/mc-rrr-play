@@ -1,5 +1,6 @@
-import {Effect} from "./effect.js";
-import {TRIGGER_YOUR_HERO_GET_ATTACK} from "../triggers/your-hero-get-attack-trigger.js";
+import {TRIGGER_YOUR_HERO_GET_ATTACK} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class GetAttackEffect extends Effect {
     constructor({}) {
@@ -14,7 +15,7 @@ export class GetAttackEffect extends Effect {
                 TRIGGER_YOUR_HERO_GET_ATTACK,
             ]);
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, modifyAttack} = this;
 
         this.attack = selectedTarget.attack + modifyAttack;

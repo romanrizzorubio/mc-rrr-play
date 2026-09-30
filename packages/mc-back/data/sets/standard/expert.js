@@ -1,13 +1,10 @@
+import {ABILITY_WHEN_REVEALED} from '../../../src/constants/abilities.js';
 import {
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_PLAYER,
-} from "../../../src/constants/targets.js";
-import {CARD_TYPE_TREACHERY} from "../../../src/model/printed/treachery-card.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {EFFECT_REVEAL_FIRST_ENCOUNTER} from "../../../src/effects/reveal-first-encounter-effect.js";
-import {EFFECT_PLACE_THREAT} from "../../../src/effects/place-threat-effect.js";
-import {EFFECT_DISCARD_REVEAL} from "../../../src/effects/discard-reveal-effect.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
+} from '../../../src/constants/targets.js';
+import {EFFECT_DISCARD_REVEAL, EFFECT_EXHAUST, EFFECT_PLACE_THREAT, EFFECT_REVEAL_FIRST_ENCOUNTER} from '../../../src/constants/effects.js';
+import {CARD_TYPE_TREACHERY} from '../../../src/model/printed/treachery-card.js';
 
 const set = 'expert';
 export const exhaustion = {

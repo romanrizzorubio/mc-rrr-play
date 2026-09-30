@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_PREVENT_DAMAGE = 'prevent-damage';
 export class PreventDamageEffect extends Effect {
     constructor({
 // PreventDamageEffect

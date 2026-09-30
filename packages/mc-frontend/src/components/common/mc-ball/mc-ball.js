@@ -1,5 +1,7 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-ball.css.js';
+
 export const BALL_STATUS_OK = 'ok';
 export const BALL_STATUS_KO = 'ko';
 export class McBall extends LitElement {

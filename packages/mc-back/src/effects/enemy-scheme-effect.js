@@ -1,8 +1,7 @@
-import {EnemyActivationEffect} from "./enemy-activation-effect.js";
-import {GetSchemeEffect} from "./get-scheme-effect.js";
-import {PlaceThreatEffect} from "./place-threat-effect.js";
-import {TRIGGER_VILLAIN_SCHEMES} from "../triggers/villain-schemes-trigger.js";
-export const EFFECT_ENEMY_SCHEME = 'enemy-scheme';
+import {EnemyActivationEffect} from './enemy-activation-effect.js';
+import {GetSchemeEffect} from './get-scheme-effect.js';
+import {PlaceThreatEffect} from './place-threat-effect.js';
+
 export class EnemySchemeEffect extends EnemyActivationEffect {
     constructor() {
         super({
@@ -23,7 +22,7 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         const getSchemeEffect = new GetSchemeEffect({
             selectedTarget: character,
             match: this.match,
-        })
+        });
 
         await getSchemeEffect.runEffect(params);
 

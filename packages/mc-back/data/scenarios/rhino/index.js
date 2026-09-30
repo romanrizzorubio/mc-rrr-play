@@ -1,3 +1,6 @@
+import {MOD_BOMB_SCARE} from '../../sets/bomb-scare/index.js';
+import {MOD_STANDARD} from '../../sets/standard/index.js';
+
 import {
     armoredRhinoSuit,
     breakinTakin,
@@ -15,9 +18,7 @@ import {
     stampede,
     theBreakInA,
     theBreakInB,
-} from "./cards.js";
-import {MOD_STANDARD} from "../../sets/standard/index.js";
-import {MOD_BOMB_SCARE} from "../../sets/bomb-scare/index.js";
+} from './cards.js';
 
 export const MOD_RHINO = 'rhino';
 
@@ -40,4 +41,4 @@ export const scenarioConfig = {
         {count: 1, card: breakinTakin},
         {count: 1, card: crowdControl}
     ],
-}
+};

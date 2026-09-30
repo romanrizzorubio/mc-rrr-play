@@ -2,16 +2,15 @@ import {html} from 'lit-element';
 
 import styles from './mc-assign-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
-
-import "../../cards/mc-card/mc-card.js";
-
+import '../../cards/mc-card/mc-card.js';
 import '@material/web/slider/slider.js';
 
-import {McDialog} from "../mc-dialog/mc-dialog.js";
-import {BALL_STATUS_KO, BALL_STATUS_OK} from "../../common/mc-ball/mc-ball.js";
+import {BALL_STATUS_KO, BALL_STATUS_OK} from '../../common/mc-ball/mc-ball.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
+
 export class McAssignDialog extends McDialog {
     static get is() {
-        return `mc-assign-dialog`;
+        return 'mc-assign-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];
@@ -81,7 +80,7 @@ export class McAssignDialog extends McDialog {
                     [card.id]: value,
                 }
             };
-        }
+        };
     }
     handleDefenseSelect(e) {
         const {card} = e.detail;
@@ -101,7 +100,7 @@ export class McAssignDialog extends McDialog {
         const valueField = card[field];
 
         const value = assigned[card.id] || 0;
-        const max = count > valueField ? valueField : count
+        const max = count > valueField ? valueField : count;
 
         return html`
             <div slot="bottom" class="assigned-slider">

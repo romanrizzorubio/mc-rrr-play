@@ -1,11 +1,10 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_THWART_VALUE = 'modify-thwart-value';
 export class ModifyThwartValueEffect extends Effect {
     constructor({
         count,
         characterTarget,
-        characters,
+        characters: _characters,
     }) {
         super(arguments[0]);
 
@@ -13,9 +12,9 @@ export class ModifyThwartValueEffect extends Effect {
         this.count = count;
     }
     execute(params) {
-        const {selectedTarget, count, paramsCalc} = this;
+        const {selectedTarget, count} = this;
 
-        if (paramsCalc) {
+        if (this.paramsCalc) {
             selectedTarget.modifyThwart = this.calculate(params);
         } else {
             selectedTarget.modifyThwart = count;

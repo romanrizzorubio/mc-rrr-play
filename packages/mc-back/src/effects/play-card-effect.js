@@ -1,11 +1,10 @@
-import {Effect} from "./effect.js";
-import {PayCostEffect} from "./pay-cost-effect.js";
-import {PutPlayEffect} from "./put-play-effect.js";
-import {GetCostEffect} from "./get-cost-effect.js";
-import {DIALOG_PAY_COST} from "../constants/dialogs.js";
-import {TRIGGER_THIS_END_PLAY_CARD} from "../triggers/this-end-play-card-trigger.js";
-import {TRIGGER_END_PLAY_CARD} from "../triggers/end-play-card-trigger.js";
-import {TRIGGER_PLAY_CARD} from "../triggers/play-card-trigger.js";
+import {DIALOG_PAY_COST} from '../constants/dialogs.js';
+import {TRIGGER_END_PLAY_CARD, TRIGGER_PLAY_CARD, TRIGGER_THIS_END_PLAY_CARD} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
+import {GetCostEffect} from './get-cost-effect.js';
+import {PayCostEffect} from './pay-cost-effect.js';
+import {PutPlayEffect} from './put-play-effect.js';
 
 export class PlayCardEffect extends Effect {
     constructor({
@@ -168,7 +167,7 @@ export class PlayCardEffect extends Effect {
                     .map(card => player.hand.getCard(card.id)),
                 generators: paid.generators
                     .map(card => player.getCard(card.id)),
-            }
+            };
         } else {
             this.canceled = true;
         }
@@ -187,7 +186,7 @@ export class PlayCardEffect extends Effect {
             if (card.isEvent) {
                 if (card.abilities.length > 1) {
                     // TODO: Implement dialog to select ability when event has multiple abilities
-                    console.error('ELEGIR CAPACIDAD (MULTIPLE ABILITIES NOT YET SUPPORTED)')
+                    console.error('ELEGIR CAPACIDAD (MULTIPLE ABILITIES NOT YET SUPPORTED)');
                     return resolve(card.abilities[0]);
                 } else {
                     return resolve(card.abilities[0]);

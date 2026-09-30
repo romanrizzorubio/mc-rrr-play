@@ -1,9 +1,8 @@
-import {Effect} from "./effect.js";
-import {PlaceDamageEffect} from "./place-damage-effect.js";
-import {DefeatEffect} from "./defeat-effect.js";
-import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from "../triggers/you-would-take-damage-trigger.js";
+import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from '../constants/triggers.js';
 
-export const EFFECT_TAKE_DAMAGE = 'take-damage';
+import {EFFECT_DEFEAT,EFFECT_PLACE_DAMAGE} from '../constants/effects.js';
+import {Effect} from './effect.js';
+
 export class TakeDamageEffect extends Effect {
     constructor({
         damage,
@@ -35,7 +34,7 @@ export class TakeDamageEffect extends Effect {
 
         return super.canRun(params);
     }
-    checkTrigger(params) {
+    checkTrigger() {
         const {takenDamage} = this;
 
         if (takenDamage instanceof Array) {
@@ -49,7 +48,7 @@ export class TakeDamageEffect extends Effect {
         return !selectedTarget.isTough;
     }
     getTitle() {
-        return `Sufres ${this.damage} de Daño.`
+        return `Sufres ${this.damage} de Daño.`;
     }
     async prepare(params) {
         if (this.paramsCalc) {
@@ -72,19 +71,17 @@ export class TakeDamageEffect extends Effect {
             ]);
     }
     async takeDamage(selectedTarget, takenDamage, params) {
-        const {card} = params;
-
-        const placeDamageEffect = new PlaceDamageEffect({
+        const placeDamageEffect = this.match.effectsFactory.createEffect({
+            type: EFFECT_PLACE_DAMAGE,
             selectedTarget,
             damage: takenDamage,
-            match: this.match,
         });
         await placeDamageEffect.runEffect(params);
 
         if (selectedTarget.life <= 0) {
-            const defeatEffect = new DefeatEffect({
+            const defeatEffect = this.match.effectsFactory.createEffect({
+                type: EFFECT_DEFEAT,
                 selectedTarget,
-                match: this.match,
                 ability: this.ability,
                 activation: this.activation,
             });
@@ -102,7 +99,7 @@ export class TakeDamageEffect extends Effect {
                 } else {
                     await this.takeDamage(st, takenDamage, params);
                 }
-            }))
+            }));
         } else {
             await this.takeDamage(selectedTarget, takenDamage, params);
         }

@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_DISCARD_HAND = 'discard-hand';
 export class DiscardFromHandEffect extends Effect {
     async execute(params) {
         const {player} = params;

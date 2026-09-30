@@ -1,8 +1,7 @@
-import {Limit} from "../../model/commons/limit.js";
-import {Maximum} from "../../model/commons/maximum.js";
-import {Engine} from "../../engine/engine.js";
-import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from "../../constants/labels.js";
-import {Thwart} from "../../activations/thwart.js";
+import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from '../../constants/labels.js';
+import {Engine} from '../../engine/engine.js';
+import {Limit} from '../../model/commons/limit.js';
+import {Maximum} from '../../model/commons/maximum.js';
 
 export class Ability extends Engine {
     constructor({
@@ -56,6 +55,7 @@ export class Ability extends Engine {
         }
 
         this.resolved = false;
+        this.owner = undefined;
 
         this.isAction = false;
         this.isBasic = false;
@@ -75,7 +75,7 @@ export class Ability extends Engine {
         if (this.effect && this.effect.isChooseAbility) {
             this.effect.options.forEach(option => {
                 option.card = card;
-            })
+            });
         }
     }
     get character() {
@@ -217,6 +217,6 @@ export class Ability extends Engine {
             isResource,
             //arrow: arrow && arrow.toObj(arguments[0]),
             //effect: effect && effect.toObj(arguments[0]),
-        }
+        };
     }
 }

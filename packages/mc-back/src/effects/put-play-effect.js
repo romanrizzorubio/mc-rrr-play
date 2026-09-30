@@ -1,14 +1,13 @@
-import {Effect} from "./effect.js";
-import {TARGET_ALLY, TARGET_YOU} from "../constants/targets.js";
-import {AttachEffect} from "./attach-effect.js";
-import {GetMaxAlliesEffect} from "./get-max-allies-effect.js";
-import {DiscardFromGameEffect} from "./discard-from-game-effect.js";
-import {DelayedEffect} from "./delayed-effect.js";
-import {PRIORITY_CONSTANT} from "../constants/priorities.js";
-import {TRIGGER_THIS_ENTER_PLAY} from "../triggers/this-enter-play-trigger.js";
-import {TRIGGER_INSTANT} from "../triggers/instant-trigger.js";
+import {PRIORITY_CONSTANT} from '../constants/priorities.js';
+import {TARGET_ALLY, TARGET_YOU} from '../constants/targets.js';
+import {TRIGGER_INSTANT, TRIGGER_THIS_ENTER_PLAY} from '../constants/triggers.js';
 
-export const EFFECT_PUT_PLAY = 'put-play';
+import {AttachEffect} from './attach-effect.js';
+import {DelayedEffect} from './delayed-effect.js';
+import {DiscardFromGameEffect} from './discard-from-game-effect.js';
+import {Effect} from './effect.js';
+import {GetMaxAlliesEffect} from './get-max-allies-effect.js';
+
 
 export class PutPlayEffect extends Effect {
     constructor({
@@ -28,7 +27,7 @@ export class PutPlayEffect extends Effect {
     }
     async execute(params) {
         const {card, controller, selectedTarget} = this;
-        const {force, player, effect} = params;
+        const {force, player} = params;
 
         if (!card.isInPlay || force) {
             if (controller) {
@@ -54,7 +53,7 @@ export class PutPlayEffect extends Effect {
                     selectedTarget,
                     player: controller,
                     match: this.match,
-                })
+                });
                 await attachEffect.runEffect(params);
             }
 
@@ -81,9 +80,9 @@ export class PutPlayEffect extends Effect {
                     });
 
                     const delayed = new DelayedEffect({
-                        selectedTarget: effect,
+                        selectedTarget: params.effect,
                         effect: discardFromGameEffect,
-                    })
+                    });
 
                     await delayed.runEffect({
                         ...params,

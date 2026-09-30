@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MOVE_TO_DECK = 'move-to-deck';
 
 export class MoveToDeckEffect extends Effect {
     async execute(params) {

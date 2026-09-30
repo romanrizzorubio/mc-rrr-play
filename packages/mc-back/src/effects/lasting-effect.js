@@ -1,8 +1,8 @@
-import {Effect} from "./effect.js";
-import {Lasting} from "../engine/lasting.js";
-import {LastingAbility} from "../abilities/misc/lasting-ability.js";
+import {LastingAbility} from '../abilities/misc/lasting-ability.js';
+import {Lasting} from '../engine/lasting.js';
 
-export const EFFECT_LASTING = 'lasting';
+import {Effect} from './effect.js';
+
 export class LastingEffect extends Effect {
     constructor({
         effect,

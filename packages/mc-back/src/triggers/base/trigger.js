@@ -10,7 +10,7 @@ export class Trigger {
         this.trigger = trigger;
         this.triggerParams = triggerParams;
 
-        this.triggered = false
+        this.triggered = false;
     }
     canRun(params) {
         const {ability} = this;

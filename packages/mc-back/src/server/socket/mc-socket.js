@@ -1,4 +1,4 @@
-import {DialogSocket} from "./dialog-socket.js";
+import {DialogSocket} from './dialog-socket.js';
 
 export class McSocket {
     constructor(mc) {
@@ -15,7 +15,7 @@ export class McSocket {
                 this.socket.off(endpoint, _callback);
             }
             callback(response);
-        }
+        };
 
         this.socket.on(endpoint, _callback);
     }

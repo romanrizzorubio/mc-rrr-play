@@ -28,7 +28,7 @@ services:
       - ./packages/mc-back:/app/packages/mc-back
       - ./packages/mc-endpoints:/app/packages/mc-endpoints
       - ./node_modules:/app/node_modules
-    command: node packages/mc-back/index.js
+    command: npx nodemon packages/mc-back/index.js
     networks:
       - mc-network
     depends_on:

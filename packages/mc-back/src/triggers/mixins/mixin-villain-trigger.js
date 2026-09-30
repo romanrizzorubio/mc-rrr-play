@@ -16,4 +16,4 @@ export const MixinVillainTrigger = C => class extends C {
 
         return false;
     }
-}
+};

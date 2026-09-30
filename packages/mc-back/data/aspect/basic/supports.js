@@ -1,21 +1,16 @@
-import {ASPECT_BASIC} from "../aspects.js";
-import {TRAIT_AVENGER, TRAIT_LOCATION, TRAIT_SHIELD} from "../../../src/constants/traits.js";
-import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
+import {ABILITY_ACTION} from '../../../src/constants/abilities.js';
+import {RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
 import {
     TARGET_ANY_PLAYER,
     TARGET_CARD, TARGET_EFFECT,
     TARGET_PLAYER,
-} from "../../../src/constants/targets.js";
-import {CARD_TYPE_ANY} from "../../../src/model/printed/card.js";
-import {EFFECT_MODIFY_COST} from "../../../src/effects/modify-cost-effect.js";
-import {EFFECT_LASTING} from "../../../src/effects/lasting-effect.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {EFFECT_DRAW_CARD} from "../../../src/effects/draw-effect.js";
-import {TRIGGER_END_PLAY_CARD} from "../../../src/triggers/end-play-card-trigger.js";
-import {TRIGGER_PHASE_ENDS} from "../../../src/triggers/phase-ends-trigger.js";
-import {TRIGGER_PLAY_CARD} from "../../../src/triggers/play-card-trigger.js";
+} from '../../../src/constants/targets.js';
+import {TRAIT_AVENGER, TRAIT_LOCATION, TRAIT_SHIELD} from '../../../src/constants/traits.js';
+import {TRIGGER_END_PLAY_CARD, TRIGGER_PHASE_ENDS, TRIGGER_PLAY_CARD} from '../../../src/constants/triggers.js';
+import {EFFECT_DRAW_CARD, EFFECT_EXHAUST, EFFECT_LASTING, EFFECT_MODIFY_COST} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ANY} from '../../../src/model/printed/card.js';
+import {CARD_TYPE_SUPPORT} from '../../../src/model/printed/support-card.js';
+import {ASPECT_BASIC} from '../aspects.js';
 
 const set = ASPECT_BASIC;
 export const avengersMansion = {

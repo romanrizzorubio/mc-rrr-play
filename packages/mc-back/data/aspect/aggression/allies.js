@@ -1,18 +1,11 @@
-import {ASPECT_AGGRESSION} from "../aspects.js";
-import {TRAIT_AVENGER, TRAIT_GAMMA} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../src/constants/resources.js";
-import {TARGET_ALL_CHARACTERS, TARGET_ENEMY, TARGET_THIS} from "../../../src/constants/targets.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
-import {ABILITY_RESPONSE} from "../../../src/abilities/response/response-ability.js";
-import {ABILITY_FORCED_RESPONSE} from "../../../src/abilities/response/forced-response-ability.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_DISCARD_FROM_DECK} from "../../../src/effects/discard-from-deck-effect.js";
-import {EFFECT_DO_IF} from "../../../src/effects/do-if-effect.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {TRIGGER_THIS_ATTACK} from "../../../src/triggers/this-attack-trigger.js";
-import {TRIGGER_THIS_DEFEAT_MINION} from "../../../src/triggers/this-defeat-minion-trigger.js";
+import {ABILITY_FORCED_RESPONSE,ABILITY_RESPONSE} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from '../../../src/constants/resources.js';
+import {TARGET_ALL_CHARACTERS, TARGET_ENEMY, TARGET_THIS} from '../../../src/constants/targets.js';
+import {TRAIT_AVENGER, TRAIT_GAMMA} from '../../../src/constants/traits.js';
+import {TRIGGER_THIS_ATTACK, TRIGGER_THIS_DEFEAT_MINION} from '../../../src/constants/triggers.js';
+import {EFFECT_CHAINED, EFFECT_DEAL_DAMAGE, EFFECT_DISCARD_FROM_DECK, EFFECT_DISCARD_GAME, EFFECT_DO_IF, EFFECT_HEAL} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {ASPECT_AGGRESSION} from '../aspects.js';
 
 const set = ASPECT_AGGRESSION;
 export const hulk = {

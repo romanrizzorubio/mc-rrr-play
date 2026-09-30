@@ -1,16 +1,14 @@
-import { LitElement } from 'lit-element';
 import {html, unsafeStatic} from 'lit/development/static-html.js';
+import { LitElement } from 'lit-element';
 import { router, navigator, outlet } from 'lit-element-router';
 
 import '../mc-navigate/mc-navigate.js';
 import '../mc-main/mc-main.js';
 import '../../../pages/mc-create-match-page/mc-create-match-page.js';
 import '../../../pages/mc-match-page/mc-match-page.js';
-
 import '../../dialog/index.js';
-
-import {Api} from "../../api/api.js";
-import {Dialog} from "../../api/dialog.js";
+import {Api} from '../../api/api.js';
+import {Dialog} from '../../api/dialog.js';
 
 class McApp extends router(navigator(outlet(LitElement))) {
     static get properties() {
@@ -76,7 +74,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.query = query;
         console.log(route, params, query, data);
         if (route === 'match' && !match) {
-            this.navigate('create-match')
+            this.navigate('create-match');
         }
     }
     openDialog({
@@ -98,13 +96,13 @@ class McApp extends router(navigator(outlet(LitElement))) {
             showCancel,
             hideOk,
             hand,
-        }
+        };
     }
     showAlert(msg) {
         this.alert = {
             msg,
             open: true
-        }
+        };
     }
     handleAlertOk() {
         this.alert = null;
@@ -128,7 +126,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 card,
                 options: menuOptions,
             }
-        })
+        });
     }
     handleCloseDialog() {
         const dialog = this.shadowRoot.getElementById('dialog');
@@ -154,7 +152,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.match = match;
         this.player = player.name;
 
-        this.navigate('match')
+        this.navigate('match');
     }
     renderDialog() {
         const {dialog} = this;

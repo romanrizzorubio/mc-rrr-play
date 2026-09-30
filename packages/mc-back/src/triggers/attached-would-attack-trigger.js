@@ -1,6 +1,5 @@
-import {Trigger} from "./base/trigger.js";
+import {Trigger} from './base/trigger.js';
 
-export const TRIGGER_ATTACHED_WOULD_ATTACK = 'ATTACHED_WOULD_ATTACK';
 export class AttachedWouldAttackTrigger extends Trigger {
     canTrigger(params) {
         const {card} = this;

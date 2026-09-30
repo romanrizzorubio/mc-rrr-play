@@ -1,12 +1,11 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_TOUGH = 'tough';
 export class ToughEffect extends Effect {
     filterTarget(card) {
         return !card.isTough &&
             super.filterTarget.apply(this, arguments);
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget} = this;
 
         selectedTarget.setTough();

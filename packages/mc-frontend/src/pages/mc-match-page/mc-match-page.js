@@ -1,15 +1,15 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-match-page.css.js';
 
-import '../../components/views/mc-match/mc-match.js';
-
-import {Api} from "../../components/api/api.js";
-import {Player} from "../../components/api/player.js";
-import {ABILITY_ID, path} from "../../misc/utils.js";
+import {Api} from '../../components/api/api.js';
+import {Player} from '../../components/api/player.js';
 import {
     MENU_OPTION_END,
     MENU_OPTION_FLIP
-} from "../../components/cards/characters/mc-superhero-card/mc-superhero-card.js";
+} from '../../components/cards/characters/mc-superhero-card/mc-superhero-card.js';
+import '../../components/views/mc-match/mc-match.js';
+import {ABILITY_ID, path} from '../../misc/utils.js';
+
+import styles from './mc-match-page.css.js';
 
 export class McMatchPage extends LitElement {
     static get is() {
@@ -96,7 +96,7 @@ export class McMatchPage extends LitElement {
                         this.changePlayer({
                             ..._player,
                             deck,
-                        })
+                        });
                     }
                 }
             }
@@ -277,7 +277,7 @@ export class McMatchPage extends LitElement {
             bubbles: true,
             composed: true,
             detail: {match},
-        }))
+        }));
     }
     changePlayer(player) {
         const {match} = this;
@@ -309,7 +309,7 @@ export class McMatchPage extends LitElement {
                 ...e.detail,
                 callback: this.handleMenuOption(card),
             }
-        }))
+        }));
     }
     handleMenuOption(card) {
         return ({selected}) => {
@@ -326,7 +326,7 @@ export class McMatchPage extends LitElement {
                     const index = selected.id.substring(ABILITY_ID.length, selected.id.length);
                     apiPlayer.resolveAbility(player, card.id, index);
             }
-        }
+        };
     }
     handlePlayerEnd() {
         this.apiPlayer.endTurn();
@@ -343,7 +343,7 @@ export class McMatchPage extends LitElement {
         apiPlayer.playCard(player, card.id);
     }
     render() {
-        const {match, player, menuOptions} = this;
+        const {match, player} = this;
         const _player = match ? match.players.find(_p => _p.name === player) : null;
 
         return html`

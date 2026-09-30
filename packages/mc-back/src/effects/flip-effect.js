@@ -1,9 +1,14 @@
-import {Effect} from "./effect.js";
-import {TARGET_ALTEREGO, TARGET_ALTEREGO_SIDE, TARGET_HERO, TARGET_HERO_SIDE} from "../constants/targets.js";
-import {ValidTarget} from "../engine/valid-target.js";
-import {TRIGGER_THIS_FLIP} from "../triggers/this-flip-trigger.js";
+import {
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_RESPONSE,
+    PRIORITY_RESPONSE
+} from '../constants/priorities.js';
+import { TARGET_ALTEREGO_SIDE, TARGET_HERO_SIDE} from '../constants/targets.js';
+import {TRIGGER_THIS_FLIP} from '../constants/triggers.js';
+import {ValidTarget} from '../targets/valid-target.js';
 
-export const EFFECT_FLIP = 'flip';
+import {Effect} from './effect.js';
+
 export class FlipEffect extends Effect {
     constructor({
         formTarget,
@@ -66,8 +71,13 @@ export class FlipEffect extends Effect {
 
         selectedTarget.refresh();
 
-        await this.match.checkTriggers(TRIGGER_THIS_FLIP, {
+        const triggerParams = {
+            ...params,
             card: selectedTarget,
-        });
+        };
+
+        await this.trigger(PRIORITY_CONSTANT, TRIGGER_THIS_FLIP, triggerParams);
+        await this.trigger(PRIORITY_FORCED_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
+        await this.trigger(PRIORITY_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
     }
 }

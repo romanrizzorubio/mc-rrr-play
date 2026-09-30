@@ -1,3 +1,13 @@
+import {ABILITY_HERO_ACTION,ABILITY_FORCED_INTERRUPT,ABILITY_WHEN_REVEALED,ABILITY_WHEN_REVEALED_ALTEREGO,ABILITY_WHEN_REVEALED_HERO} from '../../../src/constants/abilities.js';
+import {CHARACTER_VILLAIN} from '../../../src/constants/characters.js';
+import {PLACE_ENCOUNTER_DISCARD} from '../../../src/constants/places.js';
+import {RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {
+    TARGET_ALL_HEROES, TARGET_ALL_PLAYERS, TARGET_ATTACHED,
+    TARGET_ATTACKED,
+    TARGET_CARD, TARGET_EFFECT, TARGET_ENCOUNTER_DECK_CARDS, TARGET_SOURCE,
+    TARGET_VILLAIN, TARGET_YOU
+} from '../../../src/constants/targets.js';
 import {
     TRAIT_ARMOR,
     TRAIT_BRUTE,
@@ -5,46 +15,33 @@ import {
     TRAIT_ELITE,
     TRAIT_HYDRA,
     TRAIT_WEAPON
-} from "../../../src/constants/traits.js";
-import {PLACE_ENCOUNTER_DISCARD} from "../../../src/constants/places.js";
+} from '../../../src/constants/traits.js';
+import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE, TRIGGER_VILLAIN_ATTACKS} from '../../../src/constants/triggers.js';
 import {
-    TARGET_ALL_HEROES, TARGET_ALL_PLAYERS, TARGET_ATTACHED,
-    TARGET_ATTACKED,
-    TARGET_CARD, TARGET_EFFECT, TARGET_ENCOUNTER_DECK_CARDS, TARGET_SOURCE,
-    TARGET_VILLAIN, TARGET_YOU
-} from "../../../src/constants/targets.js";
-import {RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {CHARACTER_VILLAIN} from "../../../src/constants/characters.js";
-import {CARD_TYPE_VILLAIN} from "../../../src/model/printed/villain-card.js";
-import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from "../../../src/model/printed/side-scheme-scenario-card.js";
-import {ABILITY_WHEN_REVEALED} from "../../../src/abilities/when/when-revealed-ability.js";
-import {EFFECT_SEARCH_CARD_REVEAL} from "../../../src/effects/search-card-reveal-effect.js";
-import {EFFECT_PLACE_THREAT} from "../../../src/effects/place-threat-effect.js";
-import {EFFECT_STUN} from "../../../src/effects/stun-effect.js";
-import {EFFECT_DO_IF_TAKE_DAMAGE} from "../../../src/effects/do-if-take-character-damage-effect.js";
-import {EFFECT_ENEMY_ATTACK} from "../../../src/effects/enemy-attack-effect.js";
-import {CARD_TYPE_MAIN_SCHEME_A_CARD} from "../../../src/model/printed/main-scheme-a-card.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {ABILITY_WHEN_REVEALED_HERO} from "../../../src/abilities/when/when-revealed-hero-ability.js";
-import {CARD_TYPE_MAIN_SCHEME_B_CARD} from "../../../src/model/printed/main-scheme-b-card.js";
-import {EFFECT_SURGE} from "../../../src/effects/surge-effect.js";
-import {ABILITY_WHEN_REVEALED_ALTEREGO} from "../../../src/abilities/when/when-revealed-alterego-ability.js";
-import {CARD_TYPE_ATTACHMENT} from "../../../src/model/printed/attachment-card.js";
-import {ABILITY_FORCED_INTERRUPT} from "../../../src/abilities/interrupt/forced-interrupt-ability.js";
-import {CARD_TYPE_TREACHERY} from "../../../src/model/printed/treachery-card.js";
-import {EFFECT_PREVENT_PLACE_DAMAGE} from "../../../src/effects/prevent-place-damage-effect.js";
-import {EFFECT_DO_IF_CARD_GAME} from "../../../src/effects/do-if-card-game-effect.js";
-import {EFFECT_DISCARD_GAME} from "../../../src/effects/discard-from-game-effect.js";
-import {EFFECT_TOUGH} from "../../../src/effects/tough-effect.js";
-import {EFFECT_MODIFY_ATTACK} from "../../../src/effects/modify-attack-effect.js";
-import {EFFECT_DELAYED} from "../../../src/effects/delayed-effect.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {CARD_TYPE_MINION} from "../../../src/model/printed/minion-card.js";
-import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE} from "../../../src/triggers/attached-would-dealt-damage-trigger.js";
-import {TRIGGER_VILLAIN_ATTACKS} from "../../../src/triggers/villain-attacks-trigger.js";
+    EFFECT_CHAINED,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_DELAYED,
+    EFFECT_DISCARD_GAME,
+    EFFECT_DO_IF_CARD_GAME,
+    EFFECT_DO_IF_TAKE_DAMAGE,
+    EFFECT_ENEMY_ATTACK,
+    EFFECT_HEAL,
+    EFFECT_MODIFY_ATTACK,
+    EFFECT_PLACE_THREAT,
+    EFFECT_PREVENT_PLACE_DAMAGE,
+    EFFECT_SEARCH_CARD_REVEAL,
+    EFFECT_SPEND,
+    EFFECT_STUN,
+    EFFECT_SURGE,
+    EFFECT_TOUGH
+} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ATTACHMENT} from '../../../src/model/printed/attachment-card.js';
+import {CARD_TYPE_MAIN_SCHEME_A_CARD} from '../../../src/model/printed/main-scheme-a-card.js';
+import {CARD_TYPE_MAIN_SCHEME_B_CARD} from '../../../src/model/printed/main-scheme-b-card.js';
+import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
+import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';
+import {CARD_TYPE_TREACHERY} from '../../../src/model/printed/treachery-card.js';
+import {CARD_TYPE_VILLAIN} from '../../../src/model/printed/villain-card.js';
 
 const set = 'rhino';
 export const rhino1Card = {

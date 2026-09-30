@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-panel.css.js';
 
+import styles from './mc-panel.css.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/textfield/filled-text-field.js';
 

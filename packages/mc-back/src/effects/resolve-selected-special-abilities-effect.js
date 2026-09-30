@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {ABILITY_SPECIAL} from "../abilities/misc/special-ability.js";
+import {ABILITY_SPECIAL} from '../constants/abilities.js';
 
-export const EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES = 'resolve-selected-special-abilities';
+import {Effect} from './effect.js';
+
 
 export class ResolveSelectedSpecialAbilitiesEffect extends Effect {
     async execute(params) {

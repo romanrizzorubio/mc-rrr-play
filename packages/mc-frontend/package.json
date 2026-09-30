@@ -12,7 +12,8 @@
   "dependencies": {
     "@material/web": "^1.0.1",
     "lit-element": "^4.0.0",
-    "lit-element-router": "^2.0.3"
+    "lit-element-router": "^2.0.3",
+    "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
     "es-dev-server": "^1.46.1"

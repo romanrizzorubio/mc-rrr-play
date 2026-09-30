@@ -18,8 +18,8 @@ import {
     killmongerCard,
     heartShapedHerbCard,
     ritualCombatCard,
-} from "./cards.js";
-import {precon} from "./precon.js";
+} from './cards.js';
+import {precon} from './precon.js';
 
 export default {
     sides: [

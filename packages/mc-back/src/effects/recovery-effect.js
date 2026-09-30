@@ -1,5 +1,5 @@
-import {Effect} from "./effect.js";
-import {HealEffect} from "./heal-effect.js";
+import {Effect} from './effect.js';
+import {HealEffect} from './heal-effect.js';
 
 export class RecoveryEffect extends Effect {
     filterTarget(card) {

@@ -1,12 +1,10 @@
-import {MixinFrontCard} from "./mixin-front-card.js";
-import {MixinFriendCard} from "./mixin-friend-card.js";
-import {ThwartBasicAbility} from "../../../abilities/basic/thwart-basic-ability.js";
-import {AttackBasicAbility} from "../../../abilities/basic/attack-basic-ability.js";
+import {MixinFriendCard} from './mixin-friend-card.js';
+import {MixinFrontCard} from './mixin-front-card.js';
 
 export const MixinFriendFrontCard = C => class extends MixinFriendCard(MixinFrontCard(C)) {
     constructor({
 // FrontCard
-        attack,
+        attack: _attack,
 // FriendFrontCard
         thwart,
     }) {
@@ -18,4 +16,4 @@ export const MixinFriendFrontCard = C => class extends MixinFriendCard(MixinFron
 
         this.isFriendFront = true;
     }
-}
+};

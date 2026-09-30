@@ -1,9 +1,8 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-game-zone.css.js';
-
-import "../../cards/mc-card-list/mc-card-list.js";
-
-import {BACK_CARD_ENCOUNTER, CARD_PATH} from "../../../misc/cards.js";
+import '../../cards/mc-card-list/mc-card-list.js';
+import {BACK_CARD_ENCOUNTER, CARD_PATH} from '../../../misc/cards.js';
 
 export class McGameZone extends LitElement {
     static get is() {
@@ -41,7 +40,7 @@ export class McGameZone extends LitElement {
                 cardIndex,
                 ability: 0,
             }
-        }))
+        }));
     }
 
     handleMenuClick(e) {
@@ -53,7 +52,7 @@ export class McGameZone extends LitElement {
             detail: {
                 ...e.detail,
             }
-        }))
+        }));
     }
 
     renderCards({

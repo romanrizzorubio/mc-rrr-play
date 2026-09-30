@@ -3,4 +3,4 @@ export const ENDPOINTS= {
         CREATE: 'create-match',
         GET_SCENARIOS_LIST: 'get-scenarios-list',
     }
-}
+};

@@ -1,6 +1,6 @@
-import {endpoints} from "../../constants/endpoints.js";
-import {MatchFactory} from "../../factory/match-factory.js";
-import {ABILITY_ACTION} from "../../abilities/actions/action-ability.js";
+import {ABILITY_ACTION} from '../../constants/abilities.js';
+import {endpoints} from '../../constants/endpoints.js';
+import {MatchFactory} from '../../factory/match-factory.js';
 
 export class PlayerRest {
     constructor(rest) {
@@ -48,7 +48,7 @@ export class PlayerRest {
         await player.playCard({
             cardId,
             abilityType: ABILITY_ACTION,
-        })
+        });
 
         return player.toObj();
     }
@@ -57,10 +57,10 @@ export class PlayerRest {
         const player = match.getPlayer(params.player);
 
         if (!player) {
-            console.log('resolveAbility')
+            console.log('resolveAbility');
         }
 
-        await player.resolveAbility(card, ability)
+        await player.resolveAbility(card, ability);
 
         return player.toObj();
     }

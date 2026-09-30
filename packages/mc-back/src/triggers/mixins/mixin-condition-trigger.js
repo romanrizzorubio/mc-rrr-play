@@ -1,4 +1,4 @@
-import {checkCondition, path} from "../../engine/utils.js";
+import {checkCondition, path} from '../../engine/utils.js';
 
 export const MixinConditionTrigger = C => class extends C {
     constructor({
@@ -16,7 +16,7 @@ export const MixinConditionTrigger = C => class extends C {
         const target = path(params, conditionSource);
 
         if (checkCondition(target, conditionTrigger)) {
-            return super.canTrigger(params)
+            return super.canTrigger(params);
         }
     }
-}
+};

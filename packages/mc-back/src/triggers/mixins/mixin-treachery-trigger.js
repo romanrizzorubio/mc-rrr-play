@@ -11,4 +11,4 @@ export const MixinTreacheryTrigger = C => class extends C {
 
         return false;
     }
-}
+};

@@ -2,13 +2,12 @@ import {html} from 'lit-element';
 
 import styles from './mc-activate-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import '../../cards/mc-card/mc-card.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
 
-import "../../cards/mc-card/mc-card.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
 export class McActivateDialog extends McDialog {
     static get is() {
-        return `mc-activate-dialog`;
+        return 'mc-activate-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];

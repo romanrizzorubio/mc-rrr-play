@@ -19,6 +19,6 @@ export const MixinSideSchemeCard = C => class extends C {
                 return _startingThreat * this.match.numPlayers;
             }
         }
-        return this._startingThreat
+        return this._startingThreat;
     }
-}
+};

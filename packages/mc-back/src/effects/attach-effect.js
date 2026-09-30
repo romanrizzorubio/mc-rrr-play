@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class AttachEffect extends Effect {
     constructor({
@@ -20,7 +20,7 @@ export class AttachEffect extends Effect {
         return false;
     }
 
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, card} = this;
 
         selectedTarget.attached.push(card);

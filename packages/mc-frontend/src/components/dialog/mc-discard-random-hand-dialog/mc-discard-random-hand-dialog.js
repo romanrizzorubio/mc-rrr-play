@@ -1,12 +1,14 @@
-import styles from './mc-discard-random-hand-dialog.css.js';
+import {random} from '../../../misc/utils.js';
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
-import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import {McCardListDialog} from '../mc-card-list-dialog/mc-card-list-dialog.js';
 
-import {McCardListDialog} from "../mc-card-list-dialog/mc-card-list-dialog.js";
-import {random} from "../../../misc/utils.js";
+import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import styles from './mc-discard-random-hand-dialog.css.js';
+
+
 export class McDiscardRandomHandDialog extends McCardListDialog {
     static get is() {
-        return `mc-discard-random-hand-dialog`;
+        return 'mc-discard-random-hand-dialog';
     }
     static get styles() {
         return [stylesDialog, stylesCardList, styles];
@@ -55,7 +57,7 @@ export class McDiscardRandomHandDialog extends McCardListDialog {
             this._response = {
                 ...this._response,
                 selected: this.data.cards[this._search],
-            }
+            };
         }
 
         this.requestUpdate();

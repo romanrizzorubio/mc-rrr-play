@@ -1,8 +1,7 @@
-import {GameZone} from "./game-zone.js";
-import {path} from "../../engine/utils.js";
+import {GameZone} from './game-zone.js';
 
 export class PlayerZone extends GameZone {
-    constructor({owner}) {
+    constructor({owner: _owner}) {
         super(arguments[0]);
 
         this.minions = [];
@@ -16,10 +15,10 @@ export class PlayerZone extends GameZone {
             super.hasCrisis;
     }
     get hasGuard() {
-        return this.minions.some(minion => minion.guard)
+        return this.minions.some(minion => minion.guard);
     }
     get hasPatrol() {
-        return this.minions.some(minion => minion.patrol)
+        return this.minions.some(minion => minion.patrol);
     }
     get hazardIcons() {
         let hazardIcons = 0;
@@ -48,6 +47,6 @@ export class PlayerZone extends GameZone {
             ...super.toObj(arguments[0]),
             minions: minions.map(minion => minion.toObj(arguments[0])),
             encounters: encounters.length,
-        }
+        };
     }
 }

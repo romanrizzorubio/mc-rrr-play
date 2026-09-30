@@ -6,15 +6,25 @@
   "workspaces": [
     "packages/*"
   ],
+  "type": "module",
   "scripts": {
     "install-all": "npm install",
     "start:all": "npm run start:frontend & npm run start:backend",
-    "start:frontend": "npm run serve --workspace=packages/mc-frontend",
-    "start:backend": "node packages/mc-back/index.js",
+    "start:frontend": "export NODE_OPTIONS=--openssl-legacy-provider && npm run serve --workspace=packages/mc-frontend -- --port 8000",
+    "start:backend": "npx nodemon packages/mc-back/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@eslint/js": "^9.11.0",
+    "eslint": "^9.11.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "globals": "^17.12.0",
+    "nodemon": "^3.1.14"
+  }
 }

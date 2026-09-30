@@ -1,5 +1,6 @@
-import {Effect} from "./effect.js";
-import {TRIGGER_CONDITION_GET_TRAITS} from "../triggers/condition-get-traits-trigger.js";
+import {TRIGGER_CONDITION_GET_TRAITS} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class GetTraitsEffect extends Effect {
     constructor({}) {
@@ -14,7 +15,7 @@ export class GetTraitsEffect extends Effect {
                 TRIGGER_CONDITION_GET_TRAITS,
             ]);
     }
-    async execute(params) {
+    async execute(_params) {
         const {modifyTraits, selectedTarget} = this;
 
         this.traits = selectedTarget.traits.slice();
@@ -23,6 +24,6 @@ export class GetTraitsEffect extends Effect {
             if (this.traits.indexOf(trait) === -1) {
                 this.traits.push(trait);
             }
-        })
+        });
     }
 }

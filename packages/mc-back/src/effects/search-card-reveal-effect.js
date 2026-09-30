@@ -1,11 +1,11 @@
-import {Effect} from "./effect.js";
-import {ValidTarget} from "../engine/valid-target.js";
-import {checkCondition} from "../engine/utils.js";
-import {RevealEncounterEffect} from "./reveal-encounter-effect.js";
-import {PLACE_ENCOUNTER_DECK_CARDS, PLACE_OUTSIDE_NEMESIS} from "../constants/places.js";
-import {DIALOG_SELECT_PLACES} from "../constants/dialogs.js";
+import {DIALOG_SELECT_PLACES} from '../constants/dialogs.js';
+import {PLACE_ENCOUNTER_DECK_CARDS, PLACE_OUTSIDE_NEMESIS} from '../constants/places.js';
+import {checkCondition} from '../engine/utils.js';
+import {ValidTarget} from '../targets/valid-target.js';
 
-export const EFFECT_SEARCH_CARD_REVEAL = 'search-cards-reveal';
+import {Effect} from './effect.js';
+import {RevealEncounterEffect} from './reveal-encounter-effect.js';
+
 export class SearchCardAndRevealEffect extends Effect {
     constructor({
         condition,
@@ -20,7 +20,7 @@ export class SearchCardAndRevealEffect extends Effect {
 
         this.cards = [];
     }
-    checkCondition(card, player) {
+    checkCondition(card, _player) {
         const {condition} = this;
 
         return checkCondition(card, condition);
@@ -83,7 +83,7 @@ export class SearchCardAndRevealEffect extends Effect {
 
             await this.promisesSequential(cards, async card => {
                 await this.reveal(card, params);
-            })
+            });
 
         } else {
             const cardPlaces = places.reduce((ret, place) => {

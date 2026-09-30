@@ -11,4 +11,4 @@ export const MixinBasicTrigger = C => class extends C {
 
         return false;
     }
-}
+};

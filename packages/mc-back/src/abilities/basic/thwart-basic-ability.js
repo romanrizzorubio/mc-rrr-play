@@ -1,12 +1,13 @@
-import {BasicAbility} from "./basic-ability.js";
-import {TARGET_SCHEME} from "../../constants/targets.js";
-import {GetThwartEffect} from "../../effects/get-thwart-effect.js";
-import {LABEL_THWART} from "../../constants/labels.js";
-import {RemoveThreatEffect} from "../../effects/remove-threat-effect.js";
+import {LABEL_THWART} from '../../constants/labels.js';
+import {TARGET_SCHEME} from '../../constants/targets.js';
+import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
+import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
+
+import {BasicAbility} from './basic-ability.js';
 
 export class ThwartBasicAbility extends BasicAbility {
     constructor({
-        player,
+        player: _player,
         target = TARGET_SCHEME,
     }) {
         super(arguments[0]);
@@ -46,7 +47,7 @@ export class ThwartBasicAbility extends BasicAbility {
         const getThwartEffect = new GetThwartEffect({
             selectedTarget: card,
             match: this.match,
-        })
+        });
 
         await getThwartEffect.runEffect(params);
 
@@ -63,6 +64,6 @@ export class ThwartBasicAbility extends BasicAbility {
     toObj() {
         return {
             ...super.toObj(arguments[0]),
-        }
+        };
     }
 }

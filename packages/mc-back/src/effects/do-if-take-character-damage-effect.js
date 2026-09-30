@@ -1,12 +1,11 @@
-import {DoIfEffect} from "./do-if-effect.js";
+import {DoIfEffect} from './do-if-effect.js';
 
-export const EFFECT_DO_IF_TAKE_DAMAGE = 'do-if-take-damage';
 export class DoIfTakeCharacterDamageEffect extends DoIfEffect {
     constructor({
 // DoIfEffect
         condition,
-        effect,
-        effectNot
+        effect: _effect,
+        effectNot: _effectNot
     }) {
         super(arguments[0]);
 
@@ -22,6 +21,6 @@ export class DoIfTakeCharacterDamageEffect extends DoIfEffect {
         return super.execute({
             ...params,
             attack: this.selectedTarget,
-        })
+        });
     }
 }

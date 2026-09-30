@@ -1,3 +1,3 @@
-import {DealDamageEffect} from "./deal-damage-effect.js";
+import {DealDamageEffect} from './deal-damage-effect.js';
 
 export class DealConsequencialDamageEffect extends DealDamageEffect {}

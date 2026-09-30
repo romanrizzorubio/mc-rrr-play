@@ -1,5 +1,6 @@
-import {Effect} from "./effect.js";
-import {TRIGGER_CONDITION_GET_DEFENSE} from "../triggers/condition-get-defense-trigger.js";
+import {TRIGGER_CONDITION_GET_DEFENSE} from '../constants/triggers.js';
+
+import {Effect} from './effect.js';
 
 export class GetDefenseEffect extends Effect {
     constructor({}) {
@@ -14,7 +15,7 @@ export class GetDefenseEffect extends Effect {
                 TRIGGER_CONDITION_GET_DEFENSE,
             ]);
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, modifyDefense} = this;
 
         this.defense = selectedTarget.defense + modifyDefense;

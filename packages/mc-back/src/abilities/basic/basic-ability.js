@@ -1,8 +1,8 @@
-import {Ability} from "../core/ability.js";
-import {Arrow} from "../core/arrow.js";
-import {ExhaustEffect} from "../../effects/exhaust-effect.js";
-import {TARGET_CARD} from "../../constants/targets.js";
-import {DealConsequencialDamageEffect} from "../../effects/deal-consequencial-damage-effect.js";
+import {TARGET_CARD} from '../../constants/targets.js';
+import {DealConsequencialDamageEffect} from '../../effects/deal-consequencial-damage-effect.js';
+import {ExhaustEffect} from '../../effects/exhaust-effect.js';
+import {Ability} from '../core/ability.js';
+import {Arrow} from '../core/arrow.js';
 
 export class BasicAbility extends Ability {
     constructor() {

@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_PREVENT_PLACE_THREAT = 'prevent-place-threat';
 export class PreventPlaceThreatEffect extends Effect {
     constructor({
 // PreventDamageEffect

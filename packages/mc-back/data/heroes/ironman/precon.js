@@ -1,12 +1,12 @@
-import {mariaHill, vision, hawkeye} from "../../aspect/leadership/allies.js";
-import {makeTheCall, leadFromTheFront, getReady} from "../../aspect/leadership/events.js";
-import {powerOfLeadership} from "../../aspect/leadership/resources.js";
-import {theTriskelion} from "../../aspect/leadership/supports.js";
-import {inspiration} from "../../aspect/leadership/upgrades.js";
-import {mockingBird} from "../../aspect/basic/allies.js";
-import {emergency, firstAid, haymaker} from "../../aspect/basic/events.js";
-import {energy, genius, strength} from "../../aspect/basic/resources.js";
-import {avengersMansion, helicarrier} from "../../aspect/basic/supports.js";
+import {mockingBird} from '../../aspect/basic/allies.js';
+import {emergency, firstAid, haymaker} from '../../aspect/basic/events.js';
+import {energy, genius, strength} from '../../aspect/basic/resources.js';
+import {avengersMansion, helicarrier} from '../../aspect/basic/supports.js';
+import {mariaHill, vision, hawkeye} from '../../aspect/leadership/allies.js';
+import {makeTheCall, leadFromTheFront, getReady} from '../../aspect/leadership/events.js';
+import {powerOfLeadership} from '../../aspect/leadership/resources.js';
+import {theTriskelion} from '../../aspect/leadership/supports.js';
+import {inspiration} from '../../aspect/leadership/upgrades.js';
 
 export const precon = [
     // Leadership

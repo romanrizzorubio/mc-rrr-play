@@ -1,8 +1,8 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-resource.css.js';
 
+import styles from './mc-resource.css.js';
 import '../mc-icon/mc-icon.js';
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../../../misc/resources.js";
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from '../../../misc/resources.js';
 
 export class McResource extends LitElement {
     static get is() {
@@ -68,7 +68,7 @@ export class McResource extends LitElement {
             }));
 
             this._menuOpen = false;
-        }
+        };
     }
 
     handleCloseMenu() {
@@ -107,7 +107,7 @@ export class McResource extends LitElement {
     }
 
     renderIcon() {
-        const {resource, disabled, wild} = this;
+        const {resource, disabled} = this;
 
         return html`
             <mc-icon

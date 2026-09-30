@@ -1,8 +1,8 @@
-import {Engine} from "../../engine/engine.js";
-import {FaceDown} from "../match/facedown.js";
-import {FlipEffect} from "../../effects/flip-effect.js";
-import {TARGET_SIDE} from "../../constants/targets.js";
-import {ABILITY_ACTION} from "../../abilities/actions/action-ability.js";
+import {ABILITY_ACTION} from '../../constants/abilities.js';
+import {TARGET_SIDE} from '../../constants/targets.js';
+import {FlipEffect} from '../../effects/flip-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {FaceDown} from '../match/facedown.js';
 
 export class GameCard extends Engine {
     constructor({
@@ -18,10 +18,10 @@ export class GameCard extends Engine {
 
         this.card = card;
         this.index = index;
-        this.owner = owner;
         this.sides = sides;
-        this.parent = parent;
         this.abilities = abilities;
+        this.owner = owner;
+        this.parent = parent;
         this.boostAbility = boostAbility;
 
         this.faceDown = [];
@@ -37,8 +37,9 @@ export class GameCard extends Engine {
 
             this.sides.forEach(sideCard => {
                 sideCard.parent = this;
-                sideCard.initAbilities();
+                sideCard.owner = this.owner;
             });
+            this.initAbilities();
         } else {
             this.id = index ?`${card.id}-${index}` : card.id;
 
@@ -46,6 +47,27 @@ export class GameCard extends Engine {
         }
 
         this.isCard = true;
+    }
+    get owner() {
+        return this._owner;
+    }
+    set owner(owner) {
+        this._owner = owner;
+        const sides = this.sides || [];
+
+        if (sides.length) {
+            sides.forEach(side => {
+                side.owner = owner;
+            });
+        }
+
+        const abilities = this.abilities || [];
+
+        if (abilities.length) {
+            abilities.forEach(ability => {
+                ability.owner = owner;
+            });
+        }
     }
     get accelerationIcons() {
         if (this.sides.length) {
@@ -74,10 +96,11 @@ export class GameCard extends Engine {
         return this._controller;
     }
     set controller(controller) {
-        if (this.sides.length) {
-            this.sides.forEach(side => {
+        const sides = this.sides || [];
+        if (sides.length) {
+            sides.forEach(side => {
                 side.controller = controller;
-            })
+            });
         } else {
             this._controller = controller;
         }
@@ -371,9 +394,9 @@ export class GameCard extends Engine {
         if (card instanceof Array) {
             card.forEach(_card => {
                 this.addFaceDown(_card);
-            })
+            });
         } else {
-            const {owner} = this;
+            const {owner: _owner} = this;
 
             this.faceDown.push(new FaceDown({
                 attached: this,
@@ -459,7 +482,7 @@ export class GameCard extends Engine {
         this.exhausted = true;
         this.sides.forEach(side => {
             side.exhaust();
-        })
+        });
     }
     flip(params) {
         const effect = new FlipEffect({
@@ -488,7 +511,7 @@ export class GameCard extends Engine {
             return ability.canRun({
                 player: this.owner,
             });
-        })
+        });
     }
     getCard(cardId) {
         if (this.id === cardId) {
@@ -509,7 +532,7 @@ export class GameCard extends Engine {
             }
 
             return false;
-        })
+        });
     }
     async init() {
         if (this.attachedTo) {
@@ -534,13 +557,13 @@ export class GameCard extends Engine {
         if (abilities) {
             abilities.forEach(ability => {
                 ability.card = this;
-            })
+            });
         }
     }
     initTriggers(params) {
         return this.promisesSequential(this.currentSide.abilities, async ability => {
             await ability.initTriggers(this, params);
-        })
+        });
     }
     placeCounters(counters) {
         if (this.counters === undefined) {
@@ -559,7 +582,7 @@ export class GameCard extends Engine {
         this.exhausted = false;
         this.sides.forEach(side => {
             side.ready();
-        })
+        });
     }
     async remove() {
         this.controller.gameZone.remove(this);
@@ -579,7 +602,7 @@ export class GameCard extends Engine {
             await this.promisesSequential(this.attached, async attached => {
                 attached.attachedTo = undefined;
                 await attached.discard();
-            })
+            });
 
             this.attached = [];
         }
@@ -598,7 +621,7 @@ export class GameCard extends Engine {
         return heal;
     }
     async removeFaceDown() {
-        await this.promisesSequential(this.faceDown, f => f.discard())
+        await this.promisesSequential(this.faceDown, f => f.discard());
 
         this.faceDown = [];
     }
@@ -633,7 +656,7 @@ export class GameCard extends Engine {
             await this.card.boostAbility.resolveAbility({
                 ...params,
                 card: this
-            })
+            });
         }
         return this.card.boost || 0;
     }
@@ -646,7 +669,7 @@ export class GameCard extends Engine {
         if (faceDown === undefined) {
             this.faceDown.forEach(f => {
                 this.returnFaceDown(f);
-            })
+            });
         } else {
             faceDown.owner.hand.addCards([faceDown.card]);
             const index = this.faceDown.indexOf(faceDown);
@@ -659,7 +682,7 @@ export class GameCard extends Engine {
         if (this.sides.length) {
             return this.currentSide.setup();
         }
-        const ability = this.abilities.find(_ability => _ability.isSetup)
+        const ability = this.abilities.find(_ability => _ability.isSetup);
 
         if (ability) {
             return ability.resolveAbility(arguments[0]);
@@ -669,7 +692,7 @@ export class GameCard extends Engine {
         if (this.sides.length) {
             return {
                 ...this.currentSide.toObj(arguments[0]),
-            }
+            };
         }
 
         const {
@@ -713,6 +736,6 @@ export class GameCard extends Engine {
                 ...ability.toObj(arguments[0]),
                 index,
             })),
-        }
+        };
     }
 }

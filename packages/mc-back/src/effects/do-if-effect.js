@@ -1,7 +1,7 @@
-import {Effect} from "./effect.js";
-import {checkCondition, path} from "../engine/utils.js";
+import {checkCondition, path} from '../engine/utils.js';
 
-export const EFFECT_DO_IF = 'do-if';
+import {Effect} from './effect.js';
+
 export class DoIfEffect extends Effect {
     constructor({
 // DoIfEffect

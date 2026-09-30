@@ -1,9 +1,9 @@
-import {Effect} from "./effect.js";
-import {DIALOG_LIST} from "../constants/dialogs.js";
-import {checkCondition} from "../engine/utils.js";
-import {PLACE_IN_PLAY} from "../constants/places.js";
+import {DIALOG_LIST} from '../constants/dialogs.js';
+import {PLACE_IN_PLAY} from '../constants/places.js';
+import {checkCondition} from '../engine/utils.js';
 
-export const EFFECT_SELECT_AND_ORDER_CARDS = 'select-and-order-cards';
+import {Effect} from './effect.js';
+
 
 export class SelectAndOrderCardsEffect extends Effect {
     constructor({
@@ -19,7 +19,7 @@ export class SelectAndOrderCardsEffect extends Effect {
 
     async execute(params) {
         const {player} = params;
-        let pool = [];
+        const pool = [];
 
         this.locations.forEach(location => {
             let cards = [];

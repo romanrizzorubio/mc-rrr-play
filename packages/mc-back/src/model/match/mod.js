@@ -1,4 +1,4 @@
-import {Engine} from "../../engine/engine.js";
+import {Engine} from '../../engine/engine.js';
 
 export class Mod extends Engine {
     constructor({

@@ -1,7 +1,6 @@
-import {Effect} from "./effect.js";
-import {RemoveThreatEffect} from "./remove-threat-effect.js";
+import {Effect} from './effect.js';
+import {RemoveThreatEffect} from './remove-threat-effect.js';
 
-export const EFFECT_REMOVE_THREAT_ALL_SCHEMES = 'remove-threat-all-schemes';
 export class RemoveThreatAllSchemesEffect extends Effect {
     constructor({
         threat,

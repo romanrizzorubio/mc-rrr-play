@@ -1,7 +1,7 @@
-import {Engine} from "../../engine/engine.js";
-import {ReadyEffect} from "../../effects/ready-effect.js";
-import {TARGET_CARD} from "../../constants/targets.js";
-import {checkCondition, path} from "../../engine/utils.js";
+import {TARGET_CARD} from '../../constants/targets.js';
+import {ReadyEffect} from '../../effects/ready-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {checkCondition, path} from '../../engine/utils.js';
 
 export class GameZone extends Engine {
     constructor({owner}) {
@@ -74,7 +74,7 @@ export class GameZone extends Engine {
             await readyEffect.runEffect({
                 card,
             });
-        })
+        });
     }
     remove(card) {
         card.endTriggers();
@@ -100,6 +100,6 @@ export class GameZone extends Engine {
 
         return {
             cards: cards.map(card => card.toObj(arguments[0])),
-        }
+        };
     }
 }

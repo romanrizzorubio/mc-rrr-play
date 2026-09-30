@@ -1,11 +1,10 @@
 import {LitElement, html} from 'lit-element';
+
 import styles from './mc-pay-cost.css.js';
-
-import "../../cards/mc-card-list/mc-card-list.js";
+import '../../cards/mc-card-list/mc-card-list.js';
 import '../../common/mc-resource/mc-resource.js';
-
-import {BALL_STATUS_KO, BALL_STATUS_OK} from "../../common/mc-ball/mc-ball.js";
-import {RESOURCE_WILD} from "../../../misc/resources.js";
+import {RESOURCE_WILD} from '../../../misc/resources.js';
+import {BALL_STATUS_KO, BALL_STATUS_OK} from '../../common/mc-ball/mc-ball.js';
 
 export const PAY_COST_TYPE_GENERATOR = 'generators';
 export const PAY_COST_TYPE_HAND = 'hand';
@@ -44,10 +43,10 @@ export class McPayCost extends LitElement {
         if (_changedProperties.has('cards')) {
             this.cards.generators.forEach(card => {
                 card.selected = !!card.selected;
-            })
+            });
             this.cards.hand.forEach(card => {
                 card.selected = !!card.selected;
-            })
+            });
         }
         super.willUpdate(_changedProperties);
     }
@@ -79,7 +78,7 @@ export class McPayCost extends LitElement {
         });
 
         return resources.map(r => {
-            let resource = r.resource;
+            const resource = r.resource;
             if (resource === RESOURCE_WILD && _wilds.length) {
                 return {
                     ...r,
@@ -112,7 +111,7 @@ export class McPayCost extends LitElement {
             detail: {
                 wilds: this._wilds,
             }
-        }))
+        }));
     }
     handleSelectGenerator(e) {
         const {card} = e.detail;
@@ -121,7 +120,7 @@ export class McPayCost extends LitElement {
             bubbles: true,
             composed: true,
             detail: {card, type: PAY_COST_TYPE_GENERATOR}
-        }))
+        }));
     }
     handleSelectHand(e) {
         const {card} = e.detail;
@@ -130,7 +129,7 @@ export class McPayCost extends LitElement {
             bubbles: true,
             composed: true,
             detail: {card, type: PAY_COST_TYPE_HAND}
-        }))
+        }));
     }
     renderResourceIcon(resource, disabled, wild = false) {
         return html`
@@ -158,16 +157,16 @@ export class McPayCost extends LitElement {
 
                 if (paid) {
                     paid.used = true;
-                    render.push(this.renderResourceIcon(paid.resource, false, paid.wild))
+                    render.push(this.renderResourceIcon(paid.resource, false, paid.wild));
                 } else {
-                    render.push(this.renderResourceIcon(req, true))
+                    render.push(this.renderResourceIcon(req, true));
                 }
-            })
+            });
         }
 
         resources.forEach(resource => {
             if (!resource.used) {
-                render.push(this.renderResourceIcon(resource.resource, false, resource.wild))
+                render.push(this.renderResourceIcon(resource.resource, false, resource.wild));
             }
         });
 

@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_MODIFY_ATTACK = 'modify-attack';
 export class ModifyAttackEffect extends Effect {
     constructor({
         modify
@@ -9,7 +8,7 @@ export class ModifyAttackEffect extends Effect {
 
         this.modify = modify;
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget} = this;
 
         Object.keys(this.modify).forEach(key => {

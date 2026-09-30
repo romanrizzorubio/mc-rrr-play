@@ -1,6 +1,6 @@
-import {Engine} from "../../engine/engine.js";
-import {CycleEffect} from "../../effects/cycle-effect.js";
-import {checkCondition, path} from "../../engine/utils.js";
+import {CycleEffect} from '../../effects/cycle-effect.js';
+import {Engine} from '../../engine/engine.js';
+import {checkCondition, path} from '../../engine/utils.js';
 
 export class Deck extends Engine {
     constructor({
@@ -38,7 +38,7 @@ export class Deck extends Engine {
                 match: this.match,
             });
 
-            return cycleEffect.runEffect({})
+            return cycleEffect.runEffect({});
         }
     }
     cycle() {
@@ -86,7 +86,7 @@ export class Deck extends Engine {
         await this.checkCycle();
 
         if (cards.length < count) {
-            cards = cards.concat(await this.draw(count - cards.length))
+            cards = cards.concat(await this.draw(count - cards.length));
 
             await this.checkCycle();
         }
@@ -133,11 +133,11 @@ export class Deck extends Engine {
         }
     }
     shuffle() {
-        this.cards.sort(() => Math.random() - 0.5)
-        this.cards.sort(() => Math.random() - 0.5)
-        this.cards.sort(() => Math.random() - 0.5)
-        this.cards.sort(() => Math.random() - 0.5)
-        this.cards.sort(() => Math.random() - 0.5)
+        this.cards.sort(() => Math.random() - 0.5);
+        this.cards.sort(() => Math.random() - 0.5);
+        this.cards.sort(() => Math.random() - 0.5);
+        this.cards.sort(() => Math.random() - 0.5);
+        this.cards.sort(() => Math.random() - 0.5);
     }
     toObj() {
         const {cards, discardPile, name, isPlayerDeck, isScenarioDeck} = this;
@@ -148,6 +148,6 @@ export class Deck extends Engine {
             isScenarioDeck,
             cards: cards.map(card => card.toObj(arguments[0])),
             discard: discardPile.map(card => card.toObj(arguments[0])),
-        }
+        };
     }
 }

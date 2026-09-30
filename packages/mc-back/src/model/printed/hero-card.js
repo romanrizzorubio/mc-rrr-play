@@ -1,17 +1,17 @@
-import {SuperheroCard} from "./superhero-card.js";
-import {MixinFriendFrontCard} from "./mixins/mixin-friend-front-card.js";
+import {MixinFriendFrontCard} from './mixins/mixin-friend-front-card.js';
+import {SuperheroCard} from './superhero-card.js';
 
 export const CARD_TYPE_HERO = 'hero';
 export class HeroCard extends MixinFriendFrontCard(SuperheroCard) {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // SuperheroCard
-        classification, handSize,
+        classification: _classification, handSize: _handSize,
 // FrontCard
-        attack,
+        attack: _attack,
 // FriendFrontCard
-        thwart,
+        thwart: _thwart,
 // HeroCard
         defense,
     }) {

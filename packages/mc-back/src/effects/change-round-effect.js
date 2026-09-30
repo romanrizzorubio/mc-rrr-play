@@ -1,10 +1,7 @@
-import {Effect} from "./effect.js";
-import {PlayPlayersPhaseEffect} from "./play-players-phase-effect.js";
-import {PlayVillainPhaseEffect} from "./play-villain-phase-effect.js";
-import {Engine} from "../engine/engine.js";
+import {Effect} from './effect.js';
 
 export class ChangeRoundEffect extends Effect {
-    async execute(params) {
+    async execute(_params) {
         const {match} = this;
 
         let index = match.players.indexOf(this.currentPlayer);

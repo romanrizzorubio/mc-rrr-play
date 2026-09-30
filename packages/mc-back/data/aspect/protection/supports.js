@@ -1,13 +1,10 @@
-import {ASPECT_PROTECTION} from "../aspects.js";
-import {TRAIT_SHIELD} from "../../../src/constants/traits.js";
-import {RESOURCE_ENERGY} from "../../../src/constants/resources.js";
-import {TARGET_FRIENDLY_CHARACTER, TARGET_THIS} from "../../../src/constants/targets.js";
-import {CARD_TYPE_SUPPORT} from "../../../src/model/printed/support-card.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {EFFECT_REMOVE_USE} from "../../../src/effects/remove-counters-effect.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
+import {ABILITY_ACTION} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY} from '../../../src/constants/resources.js';
+import {TARGET_FRIENDLY_CHARACTER, TARGET_THIS} from '../../../src/constants/targets.js';
+import {TRAIT_SHIELD} from '../../../src/constants/traits.js';
+import {EFFECT_CHAINED, EFFECT_EXHAUST, EFFECT_HEAL, EFFECT_REMOVE_USE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_SUPPORT} from '../../../src/model/printed/support-card.js';
+import {ASPECT_PROTECTION} from '../aspects.js';
 
 const set = ASPECT_PROTECTION;
 

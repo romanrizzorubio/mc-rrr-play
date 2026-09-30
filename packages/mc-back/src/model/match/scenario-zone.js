@@ -1,5 +1,6 @@
-import {RevealEncounterEffect} from "../../effects/reveal-encounter-effect.js";
-import {GameZone} from "./game-zone.js";
+import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
+
+import {GameZone} from './game-zone.js';
 
 export class ScenarioZone extends GameZone {
     constructor() {
@@ -37,7 +38,7 @@ export class ScenarioZone extends GameZone {
         });
         await revealEncounterEffect.runEffect({player});
 
-        revealEncounterEffect.selectedTarget = this.currentVillain
+        revealEncounterEffect.selectedTarget = this.currentVillain;
         await revealEncounterEffect.runEffect({player});
     }
 }

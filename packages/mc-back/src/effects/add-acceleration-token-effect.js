@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class AddAccelerationTokenEffect extends Effect {
     constructor({
@@ -8,7 +8,7 @@ export class AddAccelerationTokenEffect extends Effect {
 
         this.count = count;
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, count} = this;
 
         selectedTarget.addAccelerationToken(count);

@@ -1,6 +1,7 @@
-import {PlayPhaseEffect} from "./play-phase-effect.js";
-import {ActivateEffect} from "./activate-effect.js";
-import {ValidTarget} from "../engine/valid-target.js";
+import {ValidTarget} from '../targets/valid-target.js';
+
+import {ActivateEffect} from './activate-effect.js';
+import {PlayPhaseEffect} from './play-phase-effect.js';
 
 export class SeveralActivationsEffect extends PlayPhaseEffect {
     constructor({
@@ -13,7 +14,7 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
         this.enemies = enemies;
     }
     async prepare(params) {
-        await super.prepare(params)
+        await super.prepare(params);
 
         if (!this.enemies) {
             const {enemiesType} = this;

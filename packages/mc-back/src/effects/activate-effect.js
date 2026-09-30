@@ -1,8 +1,10 @@
-import {Effect} from "./effect.js";
-import {TARGET_MAIN_SCHEME, TARGET_YOU} from "../constants/targets.js";
-import {EnemyAttackEffect} from "./enemy-attack-effect.js";
-import {EnemySchemeEffect} from "./enemy-scheme-effect.js";
-import {Ability} from "../abilities/core/ability.js";
+import {Ability} from '../abilities/core/ability.js';
+import {TARGET_MAIN_SCHEME, TARGET_YOU} from '../constants/targets.js';
+
+import {Effect} from './effect.js';
+import {EnemyAttackEffect} from './enemy-attack-effect.js';
+import {EnemySchemeEffect} from './enemy-scheme-effect.js';
+
 export class ActivateEffect extends Effect {
     attack(params) {
         const {selectedTarget} = this;
@@ -19,7 +21,7 @@ export class ActivateEffect extends Effect {
             effect: enemyAttackEffect,
             card: selectedTarget,
             match: this.match,
-        })
+        });
 
         return ability.resolveAbility(params);
     }
@@ -38,7 +40,7 @@ export class ActivateEffect extends Effect {
             effect: enemySchemeEffect,
             card: selectedTarget,
             match: this.match,
-        })
+        });
 
         return ability.resolveAbility(params);
     }

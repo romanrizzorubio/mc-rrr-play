@@ -1,10 +1,9 @@
-import {Ability} from "../core/ability.js";
+import {Ability} from '../core/ability.js';
 
-export const ABILITY_WHEN_REVEALED = 'when-revealed';
 export class WhenRevealedAbility extends Ability {
     constructor({
 // Ability
-        effect, limit, maximum, arrow
+        effect: _effect, limit: _limit, maximum: _maximum, arrow: _arrow
     }) {
         super(arguments[0]);
 

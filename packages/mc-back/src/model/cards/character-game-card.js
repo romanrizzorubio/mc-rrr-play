@@ -1,15 +1,16 @@
-import {GameCard} from "./game-card.js";
-import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from "../../constants/status.js";
-import {AttackBasicAbility} from "../../abilities/basic/attack-basic-ability.js";
-import {ThwartBasicAbility} from "../../abilities/basic/thwart-basic-ability.js";
-import {RecoveryBasicAbility} from "../../abilities/basic/recovery-basic-ability.js";
-import {QuickstrikeAbility} from "../../abilities/misc/quickstrike-ability.js";
-import {Calc} from "../../engine/calc.js";
+import {AttackBasicAbility} from '../../abilities/basic/attack-basic-ability.js';
+import {RecoveryBasicAbility} from '../../abilities/basic/recovery-basic-ability.js';
+import {ThwartBasicAbility} from '../../abilities/basic/thwart-basic-ability.js';
+import {QuickstrikeAbility} from '../../abilities/misc/quickstrike-ability.js';
+import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from '../../constants/status.js';
+import {Calc} from '../../engine/calc.js';
+
+import {GameCard} from './game-card.js';
 
 export class CharacterGameCard extends GameCard {
     constructor({
 // GameCard
-        card, index, owner, sides = [], abilities = [],
+        card: _card, index: _index, owner: _owner, sides: _sides = [], abilities: _abilities = [],
     }) {
         super(arguments[0]);
 
@@ -74,7 +75,7 @@ export class CharacterGameCard extends GameCard {
             if (card.card.attack) {
                 attack += card.card.attack;
             }
-        })
+        });
 
         return attack;
     }
@@ -337,6 +338,6 @@ export class CharacterGameCard extends GameCard {
                 confused,
                 tough,
             }
-        }
+        };
     }
 }

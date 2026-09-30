@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_ADD_TRAIT = 'add-trait';
 export class AddTraitEffect extends Effect {
     constructor({
         trait,
@@ -11,7 +10,7 @@ export class AddTraitEffect extends Effect {
         this.characterTarget = characterTarget;
         this.trait = trait;
     }
-    execute(params) {
+    execute(_params) {
         const {selectedTarget, trait} = this;
 
         if (selectedTarget && selectedTarget.extraTraits) {

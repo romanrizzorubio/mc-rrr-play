@@ -7,4 +7,4 @@ export const MixinYouDefeatTrigger = C => class extends C {
 
         return effect.selectedTarget;
     }
-}
+};

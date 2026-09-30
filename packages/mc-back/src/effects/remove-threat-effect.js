@@ -1,7 +1,6 @@
-import {Effect} from "./effect.js";
-import {DefeatEffect} from "./defeat-effect.js";
+import {EFFECT_DEFEAT} from '../constants/effects.js';
+import {Effect} from './effect.js';
 
-export const EFFECT_REMOVE_THREAT = 'remove-threat';
 export class RemoveThreatEffect extends Effect {
     constructor({
         threat,
@@ -29,18 +28,17 @@ export class RemoveThreatEffect extends Effect {
     }
     execute(params) {
         const {selectedTarget, threat} = this;
-        const {card} = params;
 
         selectedTarget.removeThreat(threat);
 
         selectedTarget.refresh();
 
         if (selectedTarget.isSideScheme && selectedTarget.threat <= 0) {
-            const defeatEffect = new DefeatEffect({
+            const defeatEffect = this.match.effectsFactory.createEffect({
+                type: EFFECT_DEFEAT,
                 selectedTarget,
-                match: this.match,
                 ability: this.ability,
-            })
+            });
             return defeatEffect.runEffect(params);
         }
     }

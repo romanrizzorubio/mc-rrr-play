@@ -18,4 +18,4 @@ export const MixinTriggeableAbility = C => class extends C {
     canTrigger(params) {
         return this.canRun(params);
     }
-}
+};

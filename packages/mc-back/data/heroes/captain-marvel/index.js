@@ -7,8 +7,8 @@ import {
     energyAbsorption, energyChannel, familyEmergency, kreeManipulator,
     photonicBlast,
     spiderWoman, thePsycheMagnitron, yonRogg, yonRoggsTreason,
-} from "./cards.js";
-import {precon} from "./precon.js";
+} from './cards.js';
+import {precon} from './precon.js';
 
 export const heroConfig = {
     sides: [
@@ -33,4 +33,4 @@ export const heroConfig = {
         {count: 2, card: kreeManipulator},
         {count: 1, card: yonRoggsTreason},
     ]
-}
+};

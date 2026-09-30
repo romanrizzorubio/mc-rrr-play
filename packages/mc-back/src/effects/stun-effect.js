@@ -1,6 +1,5 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
-export const EFFECT_STUN = 'stun';
 export class StunEffect extends Effect {
     filterTarget(card) {
         return !card.isStunned &&
@@ -17,7 +16,7 @@ export class StunEffect extends Effect {
                 });
 
                 return stunEffect.runEffect(params);
-            })
+            });
         }
 
         selectedTarget.stun();

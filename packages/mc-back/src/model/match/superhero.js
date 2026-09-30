@@ -1,10 +1,10 @@
-import {CharacterGameCard} from "../cards/character-game-card.js";
+import {CharacterGameCard} from '../cards/character-game-card.js';
 
 export const CARD_TYPE_SUPERHERO = 'superhero';
 export class Superhero extends CharacterGameCard {
     constructor({
 // GameCard
-        sides = [],
+        sides: _sides = [],
 // Superhero
         heroCards,
         obligations,
@@ -95,6 +95,6 @@ export class Superhero extends CharacterGameCard {
             life,
             flipped,
             id
-        }
+        };
     }
 }

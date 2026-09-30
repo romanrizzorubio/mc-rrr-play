@@ -1,7 +1,7 @@
-import {InterruptAbility} from "./interrupt-ability.js";
-import {PRIORITY_FORCED_INTERRUPT} from "../../constants/priorities.js";
+import {PRIORITY_FORCED_INTERRUPT} from '../../constants/priorities.js';
 
-export const ABILITY_FORCED_INTERRUPT = 'forced-interrupt';
+import {InterruptAbility} from './interrupt-ability.js';
+
 export class ForcedInterruptAbility extends InterruptAbility {
     initTriggers(card) {
         this.initTrigger({

@@ -1,8 +1,8 @@
-import {Effect} from "./effect.js";
-import {TARGET_ALL_CARDS, TARGET_ALL_PLAYERS, TARGET_CARD, TARGET_HAND_RANDOM} from "../constants/targets.js";
-import {ValidTarget} from "../engine/valid-target.js";
+import { TARGET_CARD} from '../constants/targets.js';
+import {ValidTarget} from '../targets/valid-target.js';
 
-export const EFFECT_RETURN_FACEDOWN = 'return-facedown';
+import {Effect} from './effect.js';
+
 export class ReturnFaceDownEffect extends Effect {
     constructor({
         faceDownTarget = TARGET_CARD,
@@ -26,14 +26,14 @@ export class ReturnFaceDownEffect extends Effect {
             ...params,
             target: faceDownTarget,
             cards: selectedTarget.faceDown,
-        })
+        });
     }
-    async execute(params) {
+    async execute() {
         const {selectedFaceDown} = this;
 
         await this.promisesSequential(selectedFaceDown, faceDown => {
             faceDown.returnToOwnerHand();
-        })
+        });
 
         selectedFaceDown.refresh();
     }

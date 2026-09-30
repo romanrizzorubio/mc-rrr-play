@@ -1,13 +1,13 @@
-import {mockingBird, nickFury} from "../../aspect/basic/allies.js";
-import {emergency, firstAid, haymaker} from "../../aspect/basic/events.js";
-import {energy, genius, strength} from "../../aspect/basic/resources.js";
-import {avengersMansion, helicarrier} from "../../aspect/basic/supports.js";
-import {tenacity} from "../../aspect/basic/upgrades.js";
-import {daredevil, jessicaJones} from "../../aspect/justice/allies.js";
-import {forJustice, greatResponsability} from "../../aspect/justice/events.js";
-import {powerOfJustice} from "../../aspect/justice/resources.js";
-import {interrogationRoom, surveillanceTeam} from "../../aspect/justice/supports.js";
-import {heroicIntuition} from "../../aspect/justice/upgrades.js";
+import {mockingBird, nickFury} from '../../aspect/basic/allies.js';
+import {emergency, firstAid, haymaker} from '../../aspect/basic/events.js';
+import {energy, genius, strength} from '../../aspect/basic/resources.js';
+import {avengersMansion, helicarrier} from '../../aspect/basic/supports.js';
+import {tenacity} from '../../aspect/basic/upgrades.js';
+import {daredevil, jessicaJones} from '../../aspect/justice/allies.js';
+import {forJustice, greatResponsability} from '../../aspect/justice/events.js';
+import {powerOfJustice} from '../../aspect/justice/resources.js';
+import {interrogationRoom, surveillanceTeam} from '../../aspect/justice/supports.js';
+import {heroicIntuition} from '../../aspect/justice/upgrades.js';
 
 export const precon = [
     {count: 1, card: mockingBird},

@@ -1,16 +1,15 @@
-import {EncounterCard} from "./encounter-card.js";
-import {MixinAttachableCard} from "./mixins/mixin-attachable-card.js";
-import {CHARACTER_VILLAIN} from "../../constants/characters.js";
+import {EncounterCard} from './encounter-card.js';
+import {MixinAttachableCard} from './mixins/mixin-attachable-card.js';
 
 export const CARD_TYPE_ATTACHMENT = 'attachment';
 export class AttachmentCard extends MixinAttachableCard(EncounterCard) {
     constructor({
 // Card
-        name, set, image, traits, abilities, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, abilities: _abilities, unique: _unique, icons: _icons, keywords: _keywords,
 // EncounterCard
-        boost, boostAbility, surge,
+        boost: _boost, boostAbility: _boostAbility, surge: _surge,
 // AttachableCard
-        attach,
+        attach: _attach,
 // AttachmentCard
         attack,
         scheme

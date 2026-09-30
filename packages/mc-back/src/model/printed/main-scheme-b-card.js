@@ -1,12 +1,12 @@
-import {MainScenarioCard} from "./main-scenario-card.js";
+import {MainScenarioCard} from './main-scenario-card.js';
 
 export const CARD_TYPE_MAIN_SCHEME_B_CARD = 'main-scheme-b-card';
 export class MainSchemeBCard extends MainScenarioCard {
     constructor({
 // Card
-        name, set, image, traits, ability, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, icons: _icons, keywords: _keywords,
 // MainScenarioCard
-        stage,
+        stage: _stage,
 // MainSchemeBCard
         value,
         startingThreat,
@@ -38,6 +38,6 @@ export class MainSchemeBCard extends MainScenarioCard {
         return {
             ...super.toObj(arguments[0]),
             value,
-        }
+        };
     }
 }

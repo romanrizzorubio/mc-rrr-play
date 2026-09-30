@@ -1,4 +1,4 @@
-import {Effect} from "./effect.js";
+import {Effect} from './effect.js';
 
 export class GetSurgeEffect extends Effect {
     constructor({}) {
@@ -7,7 +7,7 @@ export class GetSurgeEffect extends Effect {
         this.surge = false;
         this.addedSurge = false;
     }
-    async execute(params) {
+    async execute(_params) {
         const {selectedTarget, addedSurge} = this;
 
         this.surge = selectedTarget.surge || addedSurge;

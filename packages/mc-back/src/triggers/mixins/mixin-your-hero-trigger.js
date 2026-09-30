@@ -1,4 +1,4 @@
-import {MixinYouTrigger} from "./mixin-you-trigger.js";
+import {MixinYouTrigger} from './mixin-you-trigger.js';
 
 export const MixinYourHeroTrigger = C => class extends MixinYouTrigger(C) {
     constructor(params) {
@@ -11,4 +11,4 @@ export const MixinYourHeroTrigger = C => class extends MixinYouTrigger(C) {
             return super.canTrigger(params);
         }
     }
-}
+};

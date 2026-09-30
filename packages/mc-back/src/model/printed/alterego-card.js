@@ -1,15 +1,14 @@
-import {SuperheroCard} from "./superhero-card.js";
-import {RecoveryBasicAbility} from "../../abilities/basic/recovery-basic-ability.js";
+import {SuperheroCard} from './superhero-card.js';
 
 export const CARD_TYPE_ALTEREGO = 'alter-ego';
 export class AlterEgoCard extends SuperheroCard {
     constructor({
 // Card
-        name, set, image, traits, abilities, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, abilities: _abilities, unique: _unique, icons: _icons, keywords: _keywords,
 // MixinCharacterCard
-        hitPoints, maxTough,
+        hitPoints: _hitPoints, maxTough: _maxTough,
 // SuperheroCard
-        classification, handSize,
+        classification: _classification, handSize: _handSize,
 // AlterEgoCard
         recovery,
     }) {
@@ -23,6 +22,6 @@ export class AlterEgoCard extends SuperheroCard {
     toObj() {
         return {
             ...super.toObj(arguments[0])
-        }
+        };
     }
 }

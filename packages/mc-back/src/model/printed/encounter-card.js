@@ -1,10 +1,9 @@
-import {Card} from "./card.js";
-import {WhenRevealedAbility} from "../../abilities/when/when-revealed-ability.js";
+import {Card} from './card.js';
 
 export class EncounterCard extends Card {
     constructor({
 // Card
-        name, set, image, traits, ability, unique, icons, keywords,
+        name: _name, set: _set, image: _image, traits: _traits, ability: _ability, unique: _unique, icons: _icons, keywords: _keywords,
 // EncounterCard
         boost = 0,
         boostAbility,
@@ -23,7 +22,7 @@ export class EncounterCard extends Card {
     }
     async resolveBoost() {
         if (this.boostAbility) {
-            await this.boostAbility.resolveAbility()
+            await this.boostAbility.resolveAbility();
         }
 
         return this.boost;

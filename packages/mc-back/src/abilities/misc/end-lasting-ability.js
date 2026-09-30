@@ -1,11 +1,11 @@
-import {ConstantAbility} from "./constant-ability.js";
+import {ConstantAbility} from './constant-ability.js';
 
 export class EndLastingAbility extends ConstantAbility {
     constructor({
 // Ability
-        effect, limit, maximum, arrow,
+        effect: _effect, limit: _limit, maximum: _maximum, arrow: _arrow,
 // ConstantAbility
-        trigger,
+        trigger: _trigger,
 // EndLastingAbility
         lasting,
     }) {

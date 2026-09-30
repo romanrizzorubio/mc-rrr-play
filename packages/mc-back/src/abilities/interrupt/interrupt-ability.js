@@ -1,12 +1,13 @@
-import {Ability} from "../core/ability.js";
-import {PRIORITY_INTERRUPT} from "../../constants/priorities.js";
-import {MixinTriggeableAbility} from "../mixins/mixin-triggeable-ability.js";
-import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE} from "../../triggers/attached-would-dealt-damage-trigger.js";
-import {TRIGGER_VILLAIN_ATTACKS_YOU} from "../../triggers/villain-attacks-you-trigger.js";
-import {TRIGGER_VILLAIN_SCHEMES} from "../../triggers/villain-schemes-trigger.js";
-import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from "../../triggers/you-would-take-damage-trigger.js";
+import {PRIORITY_INTERRUPT} from '../../constants/priorities.js';
+import {
+    TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
+    TRIGGER_VILLAIN_ATTACKS_YOU,
+    TRIGGER_VILLAIN_SCHEMES,
+    TRIGGER_YOU_WOULD_TAKE_DAMAGE
+} from '../../constants/triggers.js';
+import {Ability} from '../core/ability.js';
+import {MixinTriggeableAbility} from '../mixins/mixin-triggeable-ability.js';
 
-export const ABILITY_INTERRUPT = 'interrupt';
 export class InterruptAbility extends MixinTriggeableAbility(Ability) {
     getTitle(params) {
         const {

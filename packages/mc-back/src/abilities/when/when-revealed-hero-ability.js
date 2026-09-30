@@ -1,5 +1,5 @@
-import {WhenRevealedAbility} from "./when-revealed-ability.js";
-import {MixinHeroAbility} from "../mixins/mixin-hero-ability.js";
+import {MixinHeroAbility} from '../mixins/mixin-hero-ability.js';
 
-export const ABILITY_WHEN_REVEALED_HERO = 'when-revealed-hero';
+import {WhenRevealedAbility} from './when-revealed-ability.js';
+
 export class WhenRevealedHeroAbility extends MixinHeroAbility(WhenRevealedAbility) {}

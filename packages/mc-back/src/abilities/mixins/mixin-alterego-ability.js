@@ -7,12 +7,15 @@ export const MixinAlteregoAbility = C => class extends C {
         return false;
     }
     isValidIdentity({player}) {
-        if (this.card.owner.isPlayer) {
-            return this.card.owner.isAlterEgo;
+        const owner = this.card.owner || this.owner;
+        if (owner && owner.isPlayer) {
+            return owner.isAlterEgo;
         }
 
         if (player) {
             return player.isAlterEgo;
         }
+
+        return false;
     }
-}
+};

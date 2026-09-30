@@ -1,8 +1,8 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-defense.css.js';
 
-import "../../cards/mc-card-list/mc-card-list.js";
-import "../../common/mc-list/mc-list.js";
+import styles from './mc-defense.css.js';
+import '../../cards/mc-card-list/mc-card-list.js';
+import '../../common/mc-list/mc-list.js';
 
 export class McDefense extends LitElement {
     static get is() {
@@ -36,23 +36,23 @@ export class McDefense extends LitElement {
             parameters.push({
                 text: boostCards.length,
                 header: 'Cartas de aumento'
-            })
+            });
         }
 
         if (overkill) {
             parameters.push({
                 text: 'Brutalidad',
-            })
+            });
         }
         if (piercing) {
             parameters.push({
                 text: 'Penetrante',
-            })
+            });
         }
         if (ranged) {
             parameters.push({
                 text: 'A distancia',
-            })
+            });
         }
 
         return parameters;
@@ -64,7 +64,7 @@ export class McDefense extends LitElement {
             bubbles: true,
             composed: true,
             detail: {card, cardIndex}
-        }))
+        }));
     }
     renderDefenders() {
         const {defenders} = this;

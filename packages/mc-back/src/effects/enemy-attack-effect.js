@@ -1,16 +1,18 @@
-import {EnemyActivationEffect} from "./enemy-activation-effect.js";
-import {ExhaustEffect} from "./exhaust-effect.js";
-import {TARGET_CARD} from "../constants/targets.js";
-import {DIALOG_DEFENSE} from "../constants/dialogs.js";
-import {GetDefenseEffect} from "./get-defense-effect.js";
-import {GetAttackEffect} from "./get-attack-effect.js";
-import {DealDamageEffect} from "./deal-damage-effect.js";
-import {TRIGGER_ATTACHED_WOULD_ATTACK} from "../triggers/attached-would-attack-trigger.js";
-import {TRIGGER_VILLAIN_ATTACKS} from "../triggers/villain-attacks-trigger.js";
-import {TRIGGER_VILLAIN_ATTACKS_YOU} from "../triggers/villain-attacks-you-trigger.js";
+import {DIALOG_DEFENSE} from '../constants/dialogs.js';
+import {TARGET_CARD} from '../constants/targets.js';
+import {
+    TRIGGER_ATTACHED_WOULD_ATTACK,
+    TRIGGER_VILLAIN_ATTACKS,
+    TRIGGER_VILLAIN_ATTACKS_YOU
+} from '../constants/triggers.js';
+
+import {DealDamageEffect} from './deal-damage-effect.js';
+import {EnemyActivationEffect} from './enemy-activation-effect.js';
+import {ExhaustEffect} from './exhaust-effect.js';
+import {GetAttackEffect} from './get-attack-effect.js';
+import {GetDefenseEffect} from './get-defense-effect.js';
 
 
-export const EFFECT_ENEMY_ATTACK = 'enemy-attack';
 export class EnemyAttackEffect extends EnemyActivationEffect {
     constructor() {
         super({
@@ -35,7 +37,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         const getAttackEffect = new GetAttackEffect({
             selectedTarget: character,
             match: this.match,
-        })
+        });
 
         await getAttackEffect.runEffect(params);
 
@@ -47,7 +49,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         const getDefenseEffect = new GetDefenseEffect({
             selectedTarget: defender,
             match: this.match,
-        })
+        });
 
         await getDefenseEffect.runEffect(params);
 
@@ -106,7 +108,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             const exhaustEffect = new ExhaustEffect({
                 target: TARGET_CARD,
                 match: this.match,
-            })
+            });
 
             await exhaustEffect.runEffect({
                 card: defender,

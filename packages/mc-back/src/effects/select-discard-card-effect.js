@@ -1,9 +1,8 @@
-import {Effect} from "./effect.js";
-import {RandomCardEffect} from "./random-card-effect.js";
-import {DiscardFromHandEffect} from "./discard-from-hand-effect.js";
-import {DIALOG_DISCARD_CARD_HAND, DIALOG_DISCARD_HAND} from "../constants/dialogs.js";
+import { DIALOG_DISCARD_HAND} from '../constants/dialogs.js';
 
-export const EFFECT_SELECT_DISCARD_CARD = 'select-discard-card';
+import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
+import {Effect} from './effect.js';
+
 export class SelectDiscardCardEffect extends Effect {
     constructor({
         count = 1,
@@ -17,7 +16,7 @@ export class SelectDiscardCardEffect extends Effect {
         this.cards = [];
     }
     async execute(params) {
-        const {selectedTarget, count, showDialog} = this;
+        const {selectedTarget, count} = this;
 
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_HAND,
@@ -40,7 +39,7 @@ export class SelectDiscardCardEffect extends Effect {
                 discardFromHandEffect.selectedTarget = card;
 
                 await discardFromHandEffect.runEffect(params);
-            })
+            });
         }
     }
 }

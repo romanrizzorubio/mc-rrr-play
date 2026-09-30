@@ -1,12 +1,16 @@
-import {Superhero} from "../model/match/superhero.js";
-import {Scenario} from "../model/match/scenario.js";
-import {CardsFactory} from "./cards-factory.js";
+import {Scenario} from '../model/match/scenario.js';
+import {Superhero} from '../model/match/superhero.js';
+
+import {ActivationsFactory} from './activations-factory.js';
+import {CardsFactory} from './cards-factory.js';
 
 export class MatchFactory {
     constructor(match) {
         this.match = match;
 
         this.cardsFactory = new CardsFactory(this);
+        this.match.activationsFactory = new ActivationsFactory(this.match);
+        this.match.effectsFactory = this.cardsFactory.abilitiesFactory.effectsFactory;
     }
     _createCollection(collection) {
         return collection.reduce((ret, {count, card}) => {
@@ -18,9 +22,8 @@ export class MatchFactory {
     _createCopies(cardConfig, count) {
         const copies = [];
 
-        const card = this.cardsFactory.createCard(cardConfig);
-
         for (let i = 0 ; i < count ; i++) {
+            const card = this.cardsFactory.createCard(cardConfig);
             copies.push(this.cardsFactory.createGameCard({
                 card,
                 index: i+1,
@@ -40,7 +43,7 @@ export class MatchFactory {
                 ...config,
                 cards: this._createCollection(config.cards),
                 expertSet,
-            }
+            };
         }));
     }
     async createScenario(params) {

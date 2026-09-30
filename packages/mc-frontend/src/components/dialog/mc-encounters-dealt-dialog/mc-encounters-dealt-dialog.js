@@ -1,15 +1,14 @@
 import {html} from 'lit-element';
 
-import styles from './mc-encounters-dealt-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import styles from './mc-encounters-dealt-dialog.css.js';
+import '../../cards/mc-card/mc-card.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
 
-import "../../cards/mc-card/mc-card.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
-import {BACK_CARD_ENCOUNTER} from "../../../misc/cards.js";
 export class McEncountersDealtDialog extends McDialog {
     static get is() {
-        return `mc-encounters-dealt-dialog`;
+        return 'mc-encounters-dealt-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];

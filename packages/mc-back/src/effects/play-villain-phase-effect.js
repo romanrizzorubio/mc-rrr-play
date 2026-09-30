@@ -1,9 +1,11 @@
-import {PlayPhaseEffect} from "./play-phase-effect.js";
-import {AccelerateSchemeEffect} from "./accelerate-scheme-effect.js";
-import {ActivateEffect} from "./activate-effect.js";
-import {DealEncounterEffect} from "./deal-encounter-effect.js";
-import {SeveralActivationsEffect} from "./several-activations-effect.js";
-import {DIALOG_ENCOUNTERS_DEALT} from "../constants/dialogs.js";
+import {DIALOG_ENCOUNTERS_DEALT} from '../constants/dialogs.js';
+
+import {AccelerateSchemeEffect} from './accelerate-scheme-effect.js';
+import {ActivateEffect} from './activate-effect.js';
+import {DealEncounterEffect} from './deal-encounter-effect.js';
+import {PlayPhaseEffect} from './play-phase-effect.js';
+import {SeveralActivationsEffect} from './several-activations-effect.js';
+
 export class PlayVillainPhaseEffect extends PlayPhaseEffect {
     stepAccelerateScheme(params) {
         const accelerationSchemeEffect = new AccelerateSchemeEffect({
@@ -31,7 +33,7 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             await severalActivationsEffect.runEffect(params);
         });
     }
-    async stepDealEncounters(params) {
+    async stepDealEncounters() {
         const players = this.match.orderedPlayers;
         const encountersCount = players.length + this.match.hazardIcons;
 

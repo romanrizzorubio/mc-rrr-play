@@ -14,8 +14,8 @@ import {
     vulture,
     webbedUp,
     webShooter
-} from "./cards.js";
-import {precon} from "./precon.js";
+} from './cards.js';
+import {precon} from './precon.js';
 
 export const heroConfig = {
     sides: [
@@ -40,4 +40,4 @@ export const heroConfig = {
         {count: 2, card: sweepingSwoop},
         {count: 1, card: theVulturePlans}
     ]
-}
+};

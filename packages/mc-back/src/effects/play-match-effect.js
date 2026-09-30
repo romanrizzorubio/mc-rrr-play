@@ -1,6 +1,6 @@
-import {Effect} from "./effect.js";
-import {PlayRoundEffect} from "./play-round-effect.js";
-import {ChangeRoundEffect} from "./change-round-effect.js";
+import {ChangeRoundEffect} from './change-round-effect.js';
+import {Effect} from './effect.js';
+import {PlayRoundEffect} from './play-round-effect.js';
 
 export class PlayMatchEffect extends Effect {
     async execute(params) {

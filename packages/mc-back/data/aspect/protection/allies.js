@@ -1,15 +1,11 @@
-import {ASPECT_PROTECTION} from "../aspects.js";
-import {CARD_TYPE_ALLY} from "../../../src/model/printed/ally-card.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {TRAIT_DEFENDER, TRAIT_SHIELD, TRAIT_SPY} from "../../../src/constants/traits.js";
-import {ABILITY_INTERRUPT} from "../../../src/abilities/interrupt/interrupt-ability.js";
-import {TRIGGER_TREACHERY_REVEAL} from "../../../src/triggers/treachery-reveal-trigger.js";
-import {EFFECT_EXHAUST} from "../../../src/effects/exhaust-effect.js";
-import {EFFECT_SPEND} from "../../../src/effects/spend-effect.js";
-import {EFFECT_CANCEL_ENCOUNTER} from "../../../src/effects/cancel-encounter-effect.js";
-import {EFFECT_REVEAL_ENCOUNTER} from "../../../src/effects/reveal-encounter-effect.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {TARGET_CARD, TARGET_EFFECT} from "../../../src/constants/targets.js";
+import {ABILITY_INTERRUPT} from '../../../src/constants/abilities.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_CARD, TARGET_EFFECT} from '../../../src/constants/targets.js';
+import {TRAIT_DEFENDER, TRAIT_SHIELD, TRAIT_SPY} from '../../../src/constants/traits.js';
+import {TRIGGER_TREACHERY_REVEAL} from '../../../src/constants/triggers.js';
+import {EFFECT_CANCEL_ENCOUNTER, EFFECT_CHAINED, EFFECT_EXHAUST, EFFECT_REVEAL_ENCOUNTER, EFFECT_SPEND} from '../../../src/constants/effects.js';
+import {CARD_TYPE_ALLY} from '../../../src/model/printed/ally-card.js';
+import {ASPECT_PROTECTION} from '../aspects.js';
 
 const set = ASPECT_PROTECTION;
 

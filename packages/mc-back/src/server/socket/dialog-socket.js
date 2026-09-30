@@ -1,4 +1,4 @@
-import {endpoints} from "../../constants/endpoints.js";
+import {endpoints} from '../../constants/endpoints.js';
 
 export class DialogSocket {
     constructor(socket) {
@@ -15,6 +15,6 @@ export class DialogSocket {
                 endpoints.dialog.response,
                 resolve,
             );
-        })
+        });
     }
 }

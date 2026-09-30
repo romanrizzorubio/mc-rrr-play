@@ -1,4 +1,4 @@
-import {STATUS_NONE} from "../../../constants/status.js";
+import {STATUS_NONE} from '../../../constants/status.js';
 
 export const MixinCharacterCard = C => class extends C {
     constructor({
@@ -27,6 +27,6 @@ export const MixinCharacterCard = C => class extends C {
     toObj() {
         return {
             ...super.toObj(arguments[0])
-        }
+        };
     }
-}
+};

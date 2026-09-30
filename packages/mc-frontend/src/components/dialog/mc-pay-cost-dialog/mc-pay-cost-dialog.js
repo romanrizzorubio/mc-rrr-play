@@ -1,16 +1,15 @@
 import {html} from 'lit-element';
 
-import styles from './mc-pay-cost-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
+import styles from './mc-pay-cost-dialog.css.js';
+import '../../panels/mc-pay-cost/mc-pay-cost.js';
+import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {RESOURCE_WILD} from '../../../misc/resources.js';
 
-import "../../panels/mc-pay-cost/mc-pay-cost.js";
-
-import {McDialog} from "../mc-dialog/mc-dialog.js";
-import {RESOURCE_WILD} from "../../../misc/resources.js";
 const COST_X = 'X';
 export class McPayCostDialog extends McDialog {
     static get is() {
-        return `mc-pay-cost-dialog`;
+        return 'mc-pay-cost-dialog';
     }
     static get styles() {
         return [stylesDialog, styles];
@@ -111,12 +110,12 @@ export class McPayCostDialog extends McDialog {
         this._response = {
             ...this._response,
             resources: this.resourcesConverted,
-        }
+        };
 
         super.sendResponse();
     }
     validate() {
-        const {data: {cost, requirement, resourceType}} = this;
+        const {data: {cost, requirement}} = this;
         const resources = this.resourcesType;
 
         if (cost === COST_X) {
@@ -149,7 +148,7 @@ export class McPayCostDialog extends McDialog {
         this.data = {
             ...this.data,
             wilds
-        }
+        };
     }
     _handlePaySelect(e) {
         const {card, type} = e.detail;
@@ -163,7 +162,7 @@ export class McPayCostDialog extends McDialog {
                 ...cards,
                 [type]: cards[type].slice()
             }
-        }
+        };
 
         this._response = {
             paid: {

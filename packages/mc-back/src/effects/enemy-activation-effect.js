@@ -1,8 +1,10 @@
-import {Effect} from "./effect.js";
-import {DealBoostEffect} from "./deal-boost-effect.js";
-import {ResolveBoostEffect} from "./resolve-boost-effect.js";
-import {DIALOG_ACTIVATE} from "../constants/dialogs.js";
-import {ValidTarget} from "../engine/valid-target.js";
+import {DIALOG_ACTIVATE} from '../constants/dialogs.js';
+import {ValidTarget} from '../targets/valid-target.js';
+
+import {DealBoostEffect} from './deal-boost-effect.js';
+import {Effect} from './effect.js';
+import {ResolveBoostEffect} from './resolve-boost-effect.js';
+
 export class EnemyActivationEffect extends Effect {
     constructor({
         enemy,
@@ -40,7 +42,7 @@ export class EnemyActivationEffect extends Effect {
         return {
             ...super.getTriggersParams(params),
             character,
-        }
+        };
     }
     getTargetDialog() {
         const {selectedTarget} = this;
@@ -54,7 +56,7 @@ export class EnemyActivationEffect extends Effect {
         return `${character.name} se activa con ${target.name}`;
     }
     async prepare(params) {
-        await super.prepare(params)
+        await super.prepare(params);
 
         const {enemy} = this;
 
@@ -120,6 +122,6 @@ export class EnemyActivationEffect extends Effect {
             character: character.toObj(arguments[0]),
             target: selectedTarget.toObj(arguments[0]),
             boostCards: boostCards.map(card => card.toObj(arguments[0])),
-        }
+        };
     }
 }

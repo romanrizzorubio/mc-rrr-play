@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
-import styles from './mc-list.css.js';
 
+import styles from './mc-list.css.js';
 import '@material/web/list/list.js';
 import '@material/web/list/list-item.js';
 

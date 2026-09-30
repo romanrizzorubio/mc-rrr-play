@@ -1,8 +1,9 @@
-import {BasicAbility} from "./basic-ability.js";
-import {TARGET_ENEMY} from "../../constants/targets.js";
-import {GetAttackEffect} from "../../effects/get-attack-effect.js";
-import {LABEL_ATTACK} from "../../constants/labels.js";
-import {DealDamageEffect} from "../../effects/deal-damage-effect.js";
+import {LABEL_ATTACK} from '../../constants/labels.js';
+import {TARGET_ENEMY} from '../../constants/targets.js';
+import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
+import {GetAttackEffect} from '../../effects/get-attack-effect.js';
+
+import {BasicAbility} from './basic-ability.js';
 
 export class AttackBasicAbility extends BasicAbility {
     constructor({
@@ -32,7 +33,7 @@ export class AttackBasicAbility extends BasicAbility {
         const getAttackEffect = new GetAttackEffect({
             selectedTarget: card,
             match: this.match,
-        })
+        });
 
         await getAttackEffect.runEffect(params);
 
@@ -49,6 +50,6 @@ export class AttackBasicAbility extends BasicAbility {
     toObj() {
         return {
             ...super.toObj(arguments[0]),
-        }
+        };
     }
 }

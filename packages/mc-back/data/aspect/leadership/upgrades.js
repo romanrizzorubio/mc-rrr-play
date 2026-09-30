@@ -1,12 +1,10 @@
-import {ASPECT_LEADERSHIP} from "../aspects.js";
-import {RESOURCE_PHYSICAL} from "../../../src/constants/resources.js";
-import {TRAIT_CONDITION} from "../../../src/constants/traits.js";
-import {TARGET_ALLY, TARGET_ATTACHED} from "../../../src/constants/targets.js";
-import {CARD_TYPE_UPGRADE} from "../../../src/model/printed/upgrade-card.js";
-import {ABILITY_CONSTANT} from "../../../src/abilities/misc/constant-ability.js";
-import {EFFECT_CHAINED} from "../../../src/effects/chained-effect.js";
-import {EFFECT_MODIFY_ATTACK_VALUE} from "../../../src/effects/modify-attack-value-effect.js";
-import {EFFECT_MODIFY_THWART_VALUE} from "../../../src/effects/modify-thwart-value-effect.js";
+import {ABILITY_CONSTANT} from '../../../src/constants/abilities.js';
+import {RESOURCE_PHYSICAL} from '../../../src/constants/resources.js';
+import {TARGET_ALLY, TARGET_ATTACHED} from '../../../src/constants/targets.js';
+import {TRAIT_CONDITION} from '../../../src/constants/traits.js';
+import {EFFECT_CHAINED, EFFECT_MODIFY_ATTACK_VALUE, EFFECT_MODIFY_THWART_VALUE} from '../../../src/constants/effects.js';
+import {CARD_TYPE_UPGRADE} from '../../../src/model/printed/upgrade-card.js';
+import {ASPECT_LEADERSHIP} from '../aspects.js';
 
 const set = ASPECT_LEADERSHIP;
 

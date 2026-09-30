@@ -45,4 +45,4 @@ export const endpoints = {
     turn: {
         end: 'end-turn',
     }
-}
+};

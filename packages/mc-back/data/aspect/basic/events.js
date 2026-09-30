@@ -1,16 +1,12 @@
-import {ASPECT_BASIC} from "../aspects.js";
-import {RESOURCE_ENERGY, RESOURCE_MENTAL} from "../../../src/constants/resources.js";
-import {TARGET_CHARACTER, TARGET_EFFECT, TARGET_ENEMY} from "../../../src/constants/targets.js";
-import {LABEL_ATTACK, LABEL_THWART} from "../../../src/constants/labels.js";
-import {TRAIT_ATTACK, TRAIT_THWART} from "../../../src/constants/traits.js";
-import {CARD_TYPE_EVENT} from "../../../src/model/printed/event-card.js";
-import {EFFECT_DEAL_DAMAGE} from "../../../src/effects/deal-damage-effect.js";
-import {ABILITY_HERO_ACTION} from "../../../src/abilities/actions/hero-action-ability.js";
-import {ABILITY_INTERRUPT} from "../../../src/abilities/interrupt/interrupt-ability.js";
-import {EFFECT_PREVENT_PLACE_THREAT} from "../../../src/effects/prevent-place-threat-effect.js";
-import {EFFECT_HEAL} from "../../../src/effects/heal-effect.js";
-import {ABILITY_ACTION} from "../../../src/abilities/actions/action-ability.js";
-import {TRIGGER_VILLAIN_SCHEMES} from "../../../src/triggers/villain-schemes-trigger.js";
+import {ABILITY_ACTION,ABILITY_HERO_ACTION,ABILITY_INTERRUPT} from '../../../src/constants/abilities.js';
+import {LABEL_ATTACK, LABEL_THWART} from '../../../src/constants/labels.js';
+import {RESOURCE_ENERGY, RESOURCE_MENTAL} from '../../../src/constants/resources.js';
+import {TARGET_CHARACTER, TARGET_EFFECT, TARGET_ENEMY} from '../../../src/constants/targets.js';
+import {TRAIT_ATTACK, TRAIT_THWART} from '../../../src/constants/traits.js';
+import {TRIGGER_VILLAIN_SCHEMES} from '../../../src/constants/triggers.js';
+import {EFFECT_DEAL_DAMAGE, EFFECT_HEAL, EFFECT_PREVENT_PLACE_THREAT} from '../../../src/constants/effects.js';
+import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
+import {ASPECT_BASIC} from '../aspects.js';
 
 const set = ASPECT_BASIC;
 export const emergency = {
