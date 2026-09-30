@@ -5,5 +5,6 @@ export const CALC_TRAITS_COUNT = 'traits-count';
 export const CALC_THREAT = 'threat';
 export const CALC_TRAITS_VALUES = 'traits-values';
 export const CALC_DAMAGE = 'damage';
+export const CALC_ALL = 'all';
 export const CALC_RESOURCES = 'resources';
 export const CALC_ATTACK = 'attack';

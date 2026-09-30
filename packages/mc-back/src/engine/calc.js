@@ -3,7 +3,11 @@ import {
     CALC_RESOURCES,
     CALC_MULTIPLY_2,
     CALC_THREAT,
-    CALC_TRAITS_COUNT,
+    CALC_DAMAGE,
+    CALC_ATTACK,
+    CALC_COUNT,
+    CALC_DIFFERENT_RESOURCE_TYPE,
+    CALC_ALL,
 } from "../constants/calc.js";
 import {checkCondition, path} from "./utils.js";
 import {RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from "../constants/resources.js";
@@ -67,6 +71,14 @@ export class Calc {
                 return source.threat;
             case CALC_DAMAGE:
                 return source.damage;
+            case CALC_ALL:
+                if (source.damage !== undefined) {
+                    return source.damage;
+                }
+                if (source.threat !== undefined) {
+                    return source.threat;
+                }
+                return source;
             case CALC_ATTACK:
                 return source.attack;
             case CALC_RESOURCES:

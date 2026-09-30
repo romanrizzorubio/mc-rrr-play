@@ -7,10 +7,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | Término Original | Traducción Oficial |
 | :--- | :--- |
 | **encounter group** | conjunto de encuentros |
-| **identity** | superhéroe |
+| **identity** | personaje (superhéroe) |
 | **form** | identidad |
-| **hero** | héroe |
-| **alter ego** | alter ego |
+| **hero** | héroe (forma) |
+| **alter ego** | alter ego (forma) |
 | **leaves play** | abandona el juego |
 | **prevent** | evitar |
 | **scheme (sustantivo)** | plan |

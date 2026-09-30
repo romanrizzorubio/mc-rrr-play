@@ -10,6 +10,11 @@ import {
     superhumanLawDivision,
     focusedRage,
     superhumanStrength,
+    legalWorkCard,
+    personalChallengeCard,
+    titaniaCard,
+    geneticUpgradeCard,
+    titaniasFuryCard,
 } from "./cards.js";
 import {precon} from "./precon.js";
 
@@ -30,4 +35,11 @@ export const heroConfig = {
         {count: 2, card: superhumanStrength},
     ],
     precon,
+    obligation: {card: legalWorkCard, count: 1},
+    nemesis: [
+        {card: personalChallengeCard, count: 1},
+        {card: titaniaCard, count: 1},
+        {card: geneticUpgradeCard, count: 1},
+        {card: titaniasFuryCard, count: 2},
+    ],
 }

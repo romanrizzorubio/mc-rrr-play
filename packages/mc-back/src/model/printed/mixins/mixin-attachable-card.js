@@ -26,15 +26,30 @@ export const MixinAttachableCard = C => class extends C {
 
         return true;
     }
-    attachCard(params) {
+    async attachCard(params) {
         const {card} = params;
+
+        let target = this.attach;
+        let ifNot = null;
+
+        if (this.attach instanceof Object) {
+            target = this.attach.target;
+            ifNot = this.attach.ifNot;
+        }
 
         const attachEffect = new AttachEffect({
             card,
-            target: this.attach,
+            target,
             canAttach: this.canAttach.bind(this),
             match: this.match,
         });
+
+        const targets = await attachEffect.getValidTarget(params);
+
+        if (targets.length === 0 && ifNot) {
+            const effect = this.match.abilitiesFactory.effectsFactory.createEffect(ifNot);
+            return effect.runEffect(params);
+        }
 
         return attachEffect.runEffect(params);
     }

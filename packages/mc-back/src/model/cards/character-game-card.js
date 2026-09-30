@@ -4,6 +4,7 @@ import {AttackBasicAbility} from "../../abilities/basic/attack-basic-ability.js"
 import {ThwartBasicAbility} from "../../abilities/basic/thwart-basic-ability.js";
 import {RecoveryBasicAbility} from "../../abilities/basic/recovery-basic-ability.js";
 import {QuickstrikeAbility} from "../../abilities/misc/quickstrike-ability.js";
+import {Calc} from "../../engine/calc.js";
 
 export class CharacterGameCard extends GameCard {
     constructor({
@@ -61,6 +62,14 @@ export class CharacterGameCard extends GameCard {
     get attack() {
         let attack = this.card.attack;
 
+        if (attack instanceof Object) {
+            const calc = new Calc(attack);
+            attack = calc.calculate({
+                card: this,
+                match: this.match,
+            });
+        }
+
         this.attached.forEach(card => {
             if (card.card.attack) {
                 attack += card.card.attack;
@@ -93,7 +102,17 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get defense() {
-        return this.card.defense;
+        let defense = this.card.defense;
+
+        if (defense instanceof Object) {
+            const calc = new Calc(defense);
+            defense = calc.calculate({
+                card: this,
+                match: this.match,
+            });
+        }
+
+        return defense;
     }
     get gameZone() {
         if (this.isMinion) {
@@ -143,10 +162,30 @@ export class CharacterGameCard extends GameCard {
         return this.hitPoints - this.damage;
     }
     get recovery() {
-        return this.card.recovery;
+        let recovery = this.card.recovery;
+
+        if (recovery instanceof Object) {
+            const calc = new Calc(recovery);
+            recovery = calc.calculate({
+                card: this,
+                match: this.match,
+            });
+        }
+
+        return recovery;
     }
     get scheme() {
-        return this.card.scheme;
+        let scheme = this.card.scheme;
+
+        if (scheme instanceof Object) {
+            const calc = new Calc(scheme);
+            scheme = calc.calculate({
+                card: this,
+                match: this.match,
+            });
+        }
+
+        return scheme;
     }
     get statusAvailable() {
         if (this.sides.length) {
@@ -180,7 +219,17 @@ export class CharacterGameCard extends GameCard {
         return [...traits, ...this.extraTraits];
     }
     get thwart() {
-        return this.card.thwart;
+        let thwart = this.card.thwart;
+
+        if (thwart instanceof Object) {
+            const calc = new Calc(thwart);
+            thwart = calc.calculate({
+                card: this,
+                match: this.match,
+            });
+        }
+
+        return thwart;
     }
     get thwartConsequencial() {
         return this.card.thwartConsequencial;
