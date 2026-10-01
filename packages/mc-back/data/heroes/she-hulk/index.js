@@ -28,7 +28,7 @@ export const heroConfig = {
         {count: 1, card: gammaSlam},
         {count: 3, card: oneTwoPunch},
         {count: 2, card: groundStomp},
-        {count: 200, card: legalPractice},
+        {count: 2, card: legalPractice},
         {count: 1, card: splitPersonality},
         {count: 1, card: superhumanLawDivision},
         {count: 2, card: focusedRage},

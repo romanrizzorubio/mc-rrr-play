@@ -136,7 +136,7 @@ export class Ability extends Engine {
                 return false;
             }
         }
-        if (this.arrow) {
+        if (this.arrow && !params.arrowPaid) {
            if (! await this.arrow.canPay(params)) {
                return false;
            }
@@ -166,27 +166,65 @@ export class Ability extends Engine {
 
         return true;
     }
-    useLimit() {
-        if (this.limit) {
-            this.limit.use();
-        }
-    }
-    async resolveAbility(params) {
-        const {player} = params;
-
+    prepareEffect({preselectedTarget = false} = {}) {
         if (this.effect) {
-            this.effect.selectedTarget = undefined;
+            if (!preselectedTarget) {
+                this.effect.selectedTarget = undefined;
+            }
 
             this.effect.isAttack = this.effect.isAttack || this.isAttack;
             this.effect.isDefense = this.effect.isDefense || this.isDefense;
             this.effect.isScheme = this.effect.isScheme || this.isScheme;
             this.effect.isThwart = this.effect.isThwart || this.isThwart;
         }
+    }
+    async prepareToResolve(params) {
+        this.prepareEffect();
+
+        if (!await this.canRun(params)) {
+            return {
+                canRun: false,
+                preselectedTarget: false,
+            };
+        }
+
+        if (!this.effect || this.effect.validTarget.isMultipleTarget({target: this.effect.target})) {
+            return {
+                canRun: true,
+                preselectedTarget: false,
+            };
+        }
+
+        const selectedTarget = await this.effect.selectTarget(params);
+
+        if (selectedTarget === null || selectedTarget === undefined) {
+            return {
+                canRun: false,
+                preselectedTarget: false,
+            };
+        }
+
+        this.effect.selectedTarget = selectedTarget;
+
+        return {
+            canRun: true,
+            preselectedTarget: true,
+        };
+    }
+    useLimit() {
+        if (this.limit) {
+            this.limit.use();
+        }
+    }
+    async resolveAbility(params) {
+        const {player, preselectedTarget = false, arrowPaid = false} = params;
+
+        this.prepareEffect({preselectedTarget});
 
         if (await this.canRun(params)) {
-            const arrowPaid = await this.payArrow(params);
+            const costsPaid = arrowPaid || await this.payArrow(params);
 
-            if (arrowPaid) {
+            if (costsPaid) {
                 if (this.effect) {
                     await this.effect.runEffect({
                         ...params,

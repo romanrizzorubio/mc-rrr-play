@@ -119,7 +119,7 @@ Cuando un jugador desea jugar una carta o iniciar una capacidad disparada, ese j
 
 1. Si juega una carta, el jugador coloca esa carta boca arriba en la mesa frente a él. (Esta carta no está en juego).
 2. Comprobar las restricciones de juego: ¿se puede jugar la carta, o iniciar la capacidad, en este momento?
-    - Si la carta o capacidad especifica uno o más objetivos, comprueba que tiene al menos un objetivo válido. Si la carta o capacidad no tiene al menos un objetivo válido, no se puede jugar ni iniciar.
+    - Si hay que elegir uno o más objetivos para la carta o capacidad, el jugador los elige ahora, antes de determinar y pagar los costes. Si no hay al menos un objetivo válido, no se puede jugar ni iniciar.
     - Si la carta o capacidad tiene un requisito de identidad (por ejemplo, "Solo identidad de héroe" o "Acción de Héroe"), se comprueba ahora la identidad (form) del jugador que juega esa carta o inicia esa capacidad.
 3. Determinar el coste (o costes) para jugar la carta o iniciar la capacidad y la aptitud del jugador para pagarlos, teniendo en cuenta los modificadores.
     - Si una carta tiene un coste de recursos de X, el jugador que juega esa carta elige el valor de X durante este paso.

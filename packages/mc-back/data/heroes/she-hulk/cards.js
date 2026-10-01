@@ -304,7 +304,7 @@ export const legalPractice = {
                     params: {
                         target: TARGET_SCHEME,
                         paramsCalc: {
-                            target: 'effect.ability.arrow.cards',
+                            target: 'effect.ability.arrow.cost.cards',
                             formula: CALC_COUNT,
                         }
                     }

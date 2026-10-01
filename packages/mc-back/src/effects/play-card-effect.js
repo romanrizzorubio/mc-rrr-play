@@ -128,7 +128,7 @@ export class PlayCardEffect extends Effect {
         const {ability} = this;
 
         if (ability && ability.arrow) {
-            return ability.arrow.cost.runEffect(params);
+            return ability.payArrow(params);
         }
 
         return true;
@@ -203,6 +203,18 @@ export class PlayCardEffect extends Effect {
             this.ability = await this.selectAbility(params);
         }
 
+        const abilityState = this.ability ?
+            await this.ability.prepareToResolve(params) :
+            {
+                canRun: true,
+                preselectedTarget: false,
+            };
+
+        if (!abilityState.canRun) {
+            card.isPlaying = false;
+            return;
+        }
+
         await this.payCost(params);
 
         if (this.canceled) {
@@ -212,6 +224,8 @@ export class PlayCardEffect extends Effect {
                 await this.doPlay({
                     ...params,
                     card,
+                    preselectedTarget: abilityState.preselectedTarget,
+                    arrowPaid: true,
                 });
             } else {
                 card.isPlaying = false;
