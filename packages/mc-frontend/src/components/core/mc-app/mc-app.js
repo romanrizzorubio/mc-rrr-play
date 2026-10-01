@@ -1,4 +1,4 @@
-import {html, unsafeStatic} from 'lit/development/static-html.js';
+import {html, unsafeStatic} from 'lit/static-html.js';
 import { LitElement } from 'lit-element';
 import { router, navigator, outlet } from 'lit-element-router';
 

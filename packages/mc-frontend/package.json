@@ -5,12 +5,13 @@
   "main": "auxi-index.js",
   "type": "module",
   "scripts": {
-    "serve": "es-dev-server --node-resolve --watch --app-index index.html"
+    "serve": "node ./scripts/ensure-node-modules.js && es-dev-server --node-resolve --watch --app-index index.html"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@material/web": "^1.0.1",
+    "lit": "^3.3.3",
     "lit-element": "^4.0.0",
     "lit-element-router": "^2.0.3",
     "socket.io-client": "^4.8.4"
