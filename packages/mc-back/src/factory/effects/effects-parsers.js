@@ -11,7 +11,7 @@ import {
     EFFECT_DO_IF_TAKE_DAMAGE,
     EFFECT_LASTING,
     EFFECT_MAY,
-} from '../constants/effects.js';
+} from '../../constants/effects.js';
 
 export const EFFECT_PARSERS_MAP = {
     [EFFECT_CHAINED]: '_parseChained',

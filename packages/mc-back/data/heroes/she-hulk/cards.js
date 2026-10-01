@@ -96,7 +96,7 @@ import {
     ABILITY_HERO_RESPONSE,
 } from '../../../src/constants/abilities.js';
 import {
-    TRIGGER_PLACE_THREAT,
+    TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_THIS_FLIP,
@@ -152,7 +152,7 @@ export const jenniferWaltersCard = {
             params: {
                 name: '¡Protesto!',
                 limit: {count: 1, time: TIME_ROUND},
-                trigger: TRIGGER_PLACE_THREAT,
+                trigger: TRIGGER_WOULD_PLACE_THREAT,
                 effect: {
                     type: EFFECT_PREVENT_PLACE_THREAT,
                     params: {

@@ -7,7 +7,7 @@ import {
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
 } from '../constants/priorities.js';
-import {TriggersFactory} from '../factory/triggers-factory.js';
+import {TriggersFactory} from '../factory/triggers/triggers-factory.js';
 import {Trigger} from '../triggers/base/trigger.js';
 
 import {path} from './utils.js';

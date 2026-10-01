@@ -6,7 +6,7 @@ import {
     TARGET_SCHEME, TARGET_YOU
 } from '../../../src/constants/targets.js';
 import {TRAIT_THWART} from '../../../src/constants/traits.js';
-import {TRIGGER_PLACE_THREAT} from '../../../src/constants/triggers.js';
+import {TRIGGER_WOULD_PLACE_THREAT} from '../../../src/constants/triggers.js';
 import {EFFECT_CHAINED, EFFECT_DO_IF_HAS_PAID, EFFECT_PREVENT_PLACE_THREAT, EFFECT_REMOVE_THREAT, EFFECT_TAKE_DAMAGE} from '../../../src/constants/effects.js';
 import {CARD_TYPE_EVENT} from '../../../src/model/printed/event-card.js';
 import {ASPECT_JUSTICE} from '../aspects.js';
@@ -62,7 +62,7 @@ export const greatResponsability = {
         abilities: [{
             type: ABILITY_HERO_INTERRUPT,
             params: {
-                trigger: TRIGGER_PLACE_THREAT,
+                trigger: TRIGGER_WOULD_PLACE_THREAT,
                 effect: {
                     type: EFFECT_CHAINED,
                     params: {
@@ -86,4 +86,3 @@ export const greatResponsability = {
         }],
     }
 };
-

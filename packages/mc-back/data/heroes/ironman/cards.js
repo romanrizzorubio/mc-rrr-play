@@ -88,7 +88,7 @@ import {
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_INSTANT,
-} from '../../../src/factory/triggers-factory.js';
+} from '../../../src/factory/triggers/triggers-factory.js';
 import {CARD_TYPE_MINION} from '../../../src/model/printed/minion-card.js';
 import {CARD_TYPE_OBLIGATION} from '../../../src/model/printed/obligation-card.js';
 import {CARD_TYPE_SIDE_SCHEME_SCENARIO} from '../../../src/model/printed/side-scheme-scenario-card.js';

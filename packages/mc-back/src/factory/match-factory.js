@@ -1,8 +1,8 @@
 import {Scenario} from '../model/match/scenario.js';
 import {Superhero} from '../model/match/superhero.js';
 
-import {ActivationsFactory} from './activations-factory.js';
-import {CardsFactory} from './cards-factory.js';
+import {ActivationsFactory} from './activations/activations-factory.js';
+import {CardsFactory} from './cards/cards-factory.js';
 
 export class MatchFactory {
     constructor(match) {

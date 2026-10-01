@@ -1,5 +1,8 @@
 import {TARGET_SCHEME} from '../constants/targets.js';
-import {TRIGGER_PLACE_THREAT} from '../constants/triggers.js';
+import {
+    TRIGGER_PLACE_THREAT,
+    TRIGGER_WOULD_PLACE_THREAT,
+} from '../constants/triggers.js';
 
 import {EFFECT_DEFEAT} from '../constants/effects.js';
 import {Effect} from './effect.js';
@@ -29,7 +32,7 @@ export class PlaceThreatEffect extends Effect {
     getTriggersWould() {
         return super.getTriggersWould()
             .concat([
-                TRIGGER_PLACE_THREAT,
+                TRIGGER_WOULD_PLACE_THREAT,
             ]);
     }
     getThreat(params) {
