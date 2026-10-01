@@ -1,3 +1,5 @@
+import {DIALOG_ENCOUNTERS_REVEAL} from '../constants/dialogs.js';
+
 import {Effect} from './effect.js';
 
 export class ResolveBoostEffect extends Effect {
@@ -11,6 +13,21 @@ export class ResolveBoostEffect extends Effect {
         this.card = card;
 
         this.value = 0;
+    }
+    async prepare(params) {
+        await super.prepare(params);
+
+        const {card} = this;
+
+        await this.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Mostrando carta de Aumento',
+            data: {
+                card: card.toObj(params),
+                isBoost: true,
+                hasBoostAbility: Boolean(card.boostAbility),
+            },
+        });
     }
     async execute(params) {
         const {card, enemyActivation} = this;

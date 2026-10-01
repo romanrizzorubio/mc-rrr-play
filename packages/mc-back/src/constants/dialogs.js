@@ -1,6 +1,7 @@
 export const DIALOG_ACCELERATE = 'accelerate';
 export const DIALOG_ACTIVATE = 'activate';
 export const DIALOG_ASSIGN = 'assign';
+export const DIALOG_BOOST_DEALT = 'boost-dealt';
 export const DIALOG_DEFENSE = 'defense';
 export const DIALOG_DISCARD_CARD_HAND = 'discard-card-hand';
 export const DIALOG_DISCARD_HAND = 'discard-hand';

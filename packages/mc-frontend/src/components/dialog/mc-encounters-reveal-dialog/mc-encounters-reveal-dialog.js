@@ -24,17 +24,27 @@ export class McEncountersRevealDialog extends McDialog {
         };
     }
     getTitle() {
-        return 'Mostrando carta de Encuentro';
+        return this.title || 'Mostrando carta de Encuentro';
     }
     renderContent() {
-        const {data: {card}} = this;
+        const {data: {card, isBoost, hasBoostAbility}} = this;
 
         return html`
+            ${isBoost ? html`
+                <div class="boost-icons">
+                    <strong>Iconos de aumento:</strong> ${card.boost || 0}
+                </div>
+            ` : ''}
             <mc-card
                 name="${card.name}"
                 image="${card.image}"
                 size="l"
             ></mc-card>
+            ${isBoost && hasBoostAbility ? html`
+                <div class="boost-ability">
+                    <strong>Capacidad de aumento:</strong> Sí
+                </div>
+            ` : ''}
         `;
     }
 }

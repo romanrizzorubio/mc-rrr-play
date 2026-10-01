@@ -1,3 +1,5 @@
+import {DIALOG_BOOST_DEALT} from '../constants/dialogs.js';
+
 import {Effect} from './effect.js';
 
 export class DealBoostEffect extends Effect {
@@ -17,6 +19,14 @@ export class DealBoostEffect extends Effect {
             const cards = await this.match.drawEncounterCards();
 
             enemyActivation.boostCards = enemyActivation.boostCards.concat(cards);
+
+            if (cards.length) {
+                await this.openDialog({
+                    dialogType: DIALOG_BOOST_DEALT,
+                    title: `${enemy.name} recibe una carta de aumento`,
+                    data: {},
+                });
+            }
         }
     }
 }

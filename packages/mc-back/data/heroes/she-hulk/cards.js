@@ -472,7 +472,7 @@ export const legalWorkCard = {
     type: CARD_TYPE_OBLIGATION,
     params: {
         name: 'Trabajo jurídico',
-        img: 'heroes/she-hulk/01160.png',
+        image: 'heroes/she-hulk/01160.png',
         traits: [TRAIT_CONDITION],
         boost: 2,
         giveToOwner: true,

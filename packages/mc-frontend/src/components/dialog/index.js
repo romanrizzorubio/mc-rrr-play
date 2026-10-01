@@ -1,6 +1,7 @@
 import './mc-accelerate-dialog/mc-accelerate-dialog.js';
 import './mc-activate-dialog/mc-activate-dialog.js';
 import './mc-assign-dialog/mc-assign-dialog.js';
+import './mc-boost-dealt-dialog/mc-boost-dealt-dialog.js';
 import './mc-cards-group-dialog/mc-cards-group-dialog.js';
 import './mc-defense-dialog/mc-defense-dialog.js';
 import './mc-discard-hand-dialog/mc-discard-hand-dialog.js';
