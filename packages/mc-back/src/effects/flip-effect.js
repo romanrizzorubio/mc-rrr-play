@@ -60,15 +60,14 @@ export class FlipEffect extends Effect {
         const {sides} = selectedTarget;
         const {own} = params;
 
-        const oldSide = selectedTarget.currentSide;
-        oldSide.endTriggers();
+        selectedTarget.endTriggers();
 
         selectedTarget.selectedSide = sides.indexOf(selectedFormTarget);
         if (own) {
             selectedTarget.flipped = true;
         }
 
-        selectedFormTarget.initTriggers();
+        await selectedTarget.initTriggers(params);
 
         selectedTarget.refresh();
         const {owner} = selectedTarget;

@@ -5,11 +5,18 @@ export class ExhaustEffect extends Effect {
         return !card.exhausted &&
             super.filterTarget.apply(this, arguments);
     }
-    execute(_params) {
+    async execute(_params) {
         const {selectedTarget} = this;
 
         selectedTarget.exhaust();
 
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
+
+        const gameZone = selectedTarget.gameZone ||
+            selectedTarget.controller?.gameZone ||
+            selectedTarget.owner?.gameZone;
+        if (gameZone) {
+            await gameZone.refresh();
+        }
     }
 }

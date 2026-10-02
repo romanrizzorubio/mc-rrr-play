@@ -1,10 +1,10 @@
 export const checkCondition = (obj, condition) => {
-    return Object.keys(condition).reduce((r, key) => {
+    return Object.keys(condition).every(key => {
         const value = condition[key];
         const param = path(obj, key);
 
         return checkValue(param, value);
-    }, false);
+    });
 };
 export const checkNumber = (value, condition) => {
     if (typeof condition === 'string') {

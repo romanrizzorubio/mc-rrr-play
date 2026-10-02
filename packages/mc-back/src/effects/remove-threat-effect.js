@@ -26,8 +26,20 @@ export class RemoveThreatEffect extends Effect {
             }
         }
     }
-    execute(params) {
+    async execute(params) {
         const {selectedTarget, threat} = this;
+
+        if (Array.isArray(selectedTarget)) {
+            return this.promisesSequential(selectedTarget, selectedTarget => {
+                const effect = new RemoveThreatEffect({
+                    selectedTarget,
+                    threat,
+                    match: this.match,
+                    ability: this.ability,
+                });
+                return effect.runEffect(params);
+            });
+        }
 
         selectedTarget.removeThreat(threat);
 

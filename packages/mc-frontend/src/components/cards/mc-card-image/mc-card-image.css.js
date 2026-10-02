@@ -35,6 +35,10 @@ export default css`
     width: var(--card-short);
     height: var(--card-large);
   }
+  :host(.empty-discard) .vertical {
+    aspect-ratio: 744 / 1038;
+    height: auto;
+  }
   .horizontal {
     width: var(--card-large);
     height: var(--card-short);

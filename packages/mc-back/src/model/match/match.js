@@ -200,8 +200,8 @@ export class Match extends Engine {
         return this.scenario.drawEncounterCards(count);
     }
     drawInitial() {
-        return this.promisesSequential(this.players, player => {
-            player.superhero.currentSide.initTriggers();
+        return this.promisesSequential(this.players, async player => {
+            await player.superhero.initTriggers();
 
             return player.fillHand();
         });

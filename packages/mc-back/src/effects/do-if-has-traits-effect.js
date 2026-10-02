@@ -15,9 +15,7 @@ export class DoIfHasTraitsEffect extends DoIfEffect {
         this.traits = traits;
     }
 
-    async checkCondition(params) {
-        const {selectedTarget} = this;
-
+    async checkCondition(params, selectedTarget = this.selectedTarget) {
         const getTraitsEffect = new GetTraitsEffect({
             selectedTarget,
             match: this.match,
@@ -26,5 +24,24 @@ export class DoIfHasTraitsEffect extends DoIfEffect {
         await getTraitsEffect.runEffect(params);
 
         return this.traits.some(trait => getTraitsEffect.traits.some(t => t === trait));
+    }
+
+    async canRun(params) {
+        const validTargets = await this.getValidTarget(params);
+
+        if (!validTargets.length || !await super.canRun(params)) {
+            return false;
+        }
+
+        return Boolean(await this.promisesSequentialSome(validTargets, async selectedTarget => {
+            const checked = await this.checkCondition(params, selectedTarget);
+            const effect = checked ? this.effect : this.effectNot;
+
+            if (!effect) {
+                return true;
+            }
+
+            return effect.canRun(params);
+        }));
     }
 }

@@ -10,7 +10,11 @@ export default css`
   
   .cards-facedown {
     display: flex;
+    align-items: flex-start;
     justify-content: center;
+    gap: 2px;
+    width: max-content;
+    margin: 0 auto;
   }
   .facedown-count {
     text-align: center;
@@ -26,7 +30,100 @@ export default css`
 
   header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: 2px;
+  }
+
+  .character-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2px;
+    padding: 0 2px 4px 0;
+    font-size: 0.8rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .character-bottom-stats {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 2px 0;
+    font-size: 0.85rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .acquired-traits {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 4px;
+  }
+
+  .acquired-trait {
+    display: inline-flex;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background-color: #e0e0e0;
+    color: #212121;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.1;
+    text-transform: capitalize;
+  }
+
+  .character-stat {
+    display: inline-flex;
+    padding: 2px 3px;
+    border-radius: 3px;
+    color: white;
+    font-weight: 600;
+  }
+
+  .stat-attack {
+    background-color: #d32f2f;
+  }
+
+  .stat-thwart,
+  .stat-scheme {
+    background-color: #1565c0;
+  }
+
+  .stat-defense {
+    background-color: #2e7d32;
+  }
+
+  .stat-recovery {
+    background-color: #fdd835;
+    color: #212121;
+  }
+
+  .stat-life {
+    background-color: #ff6d00;
+  }
+
+  .stat-hand-size {
+    background-color: #212121;
+  }
+
+  .stat-stage {
+    background-color: #212121;
+    color: #fff;
+  }
+
+  .stat-threat {
+    background-color: #fdd835;
+    color: #212121;
+  }
+
+  .header-stat {
+    font-size: 0.8rem;
+    line-height: 1;
   }
 
   .header-left {
@@ -34,7 +131,13 @@ export default css`
   }
 
   .name {
+    flex: 1;
+    min-width: 0;
     text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.1;
   }
 
   .header-right {
@@ -51,6 +154,11 @@ export default css`
     display: flex;
     justify-content: space-between;
     text-align: center;
+  }
+
+  .counters {
+    justify-content: center;
+    gap: 4px;
   }
 
   .generic {
@@ -70,8 +178,8 @@ export default css`
     width: 100%;
   }
   .threat {
-    background-color: yellow;
-    width: 100%;
+    width: auto;
+    margin: 0 auto;
   }
 
   .tough {

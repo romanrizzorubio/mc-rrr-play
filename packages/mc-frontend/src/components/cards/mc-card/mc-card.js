@@ -30,8 +30,19 @@ export class CardComponent extends LitElement {
             image: {type: String},
             size: {type: String},
             horizontal: {type: Boolean},
+            handSize: {type: Number},
+            showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
+            extraTraits: {type: Array},
+            showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
+            hitPoints: {type: Number},
+            attack: {type: Number},
+            thwart: {type: Number},
+            defense: {type: Number},
+            recovery: {type: Number},
+            scheme: {type: Number},
             acceleration: {type: Number},
             damage: {type: Number},
+            life: {type: Number},
             generic: {type: Number},
             threat: {type: Number},
             showDamage: {type: Boolean, attribute: 'show-damage'},
@@ -40,8 +51,8 @@ export class CardComponent extends LitElement {
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             statusCards: {type: Object},
             attached: {type: Array},
-            headerLeft: {type: String, attribute: 'header-left'},
-            headerRight: {type: String, attribute: 'header-right'},
+            headerLeft: {type: Number, attribute: 'header-left'},
+            headerRight: {type: Number, attribute: 'header-right'},
             hideName: {type: Boolean, attribute: 'hide-name'},
             exhausted: {type: Boolean},
             menuOptions: {type: Array},
@@ -56,7 +67,18 @@ export class CardComponent extends LitElement {
         this.image = '';
         this.attached = [];
         this.size = 'm';
+        this.handSize = undefined;
+        this.showBasicStats = false;
+        this.extraTraits = [];
+        this.showAcquiredTraits = false;
+        this.hitPoints = undefined;
+        this.attack = undefined;
+        this.thwart = undefined;
+        this.defense = undefined;
+        this.recovery = undefined;
+        this.scheme = undefined;
         this.generic = undefined;
+        this.life = undefined;
         this.showDamage = false;
         this.showDamageIfHas = false;
         this.showThreat = false;
@@ -206,10 +228,22 @@ export class CardComponent extends LitElement {
                 <mc-card-list
                     .cards="${attached}"
                     show-damage-if-has
+                    show-basic-stats
                     size="${this._smallSize}"
                     @card-list-select="${this.handleAttachedCardClick.bind(this)}"
                     @card-list-menu-click="${this.handleAttachedMenuClick.bind(this)}"
                 ></mc-card-list>
+            </div>
+        ` : html``;
+    }
+    renderAcquiredTraits() {
+        const traits = [...new Set(this.extraTraits)];
+
+        return this.showAcquiredTraits && traits.length ? html`
+            <div class="acquired-traits" role="group" aria-label="Rasgos adquiridos">
+                ${traits.map(trait => html`
+                    <span class="acquired-trait">${trait}</span>
+                `)}
             </div>
         ` : html``;
     }
@@ -250,6 +284,7 @@ export class CardComponent extends LitElement {
                 ${this.renderHeader()}
                 <slot name="top"></slot>
                 <div class="cards-facedown">
+                    ${this.renderStats()}
                     <div class="card">
                         <mc-card-image
                             id="card"
@@ -265,10 +300,40 @@ export class CardComponent extends LitElement {
                     </div>
                     ${this.renderFaceDown()}
                 </div>
+                ${this.renderAcquiredTraits()}
+                ${this.renderBottomStats()}
                 <slot name="bottom"></slot>
                 ${this.renderMenu()}
             </div>
         `;
+    }
+    renderStats() {
+        if (!this.showBasicStats) {
+            return html``;
+        }
+
+        const stats = [
+            {label: 'INT', value: this.thwart, className: 'stat-thwart'},
+            {label: 'PLA', value: this.scheme, className: 'stat-scheme'},
+            {label: 'ATQ', value: this.attack, className: 'stat-attack'},
+            {label: 'DEF', value: this.defense, className: 'stat-defense'},
+            {label: 'REC', value: this.recovery, className: 'stat-recovery'},
+        ].filter(({value}) =>
+            value !== undefined && value !== null && Number.isFinite(value)
+        );
+
+        return stats.length ? html`
+            <div class="character-stats">
+                ${stats.map(({label, value, className}) => html`
+                    <span
+                        class="character-stat ${className}"
+                        aria-label="${label}: ${value}"
+                    >
+                        ${value}
+                    </span>
+                `)}
+            </div>
+        ` : html``;
     }
     renderConfused() {
         const {statusCards: {confused}} = this;
@@ -289,6 +354,32 @@ export class CardComponent extends LitElement {
             </div>
         `;
     }
+    renderBottomStats() {
+        const life = Number.isFinite(this.life) ?
+            Number.isFinite(this.hitPoints) ?
+                `${this.life}/${this.hitPoints}` :
+                this.life :
+            undefined;
+        const stats = [
+            {label: 'VIDA', value: life, className: 'stat-life'},
+            {label: 'MANO', value: this.handSize, className: 'stat-hand-size'},
+        ].filter(({value}) =>
+            Number.isFinite(value) || typeof value === 'string'
+        );
+
+        return stats.length ? html`
+            <div class="character-bottom-stats">
+                ${stats.map(({label, value, className}) => html`
+                    <span
+                        class="character-stat ${className}"
+                        aria-label="${label}: ${value}"
+                    >
+                        ${value}
+                    </span>
+                `)}
+            </div>
+        ` : html``;
+    }
     renderDamageCounters() {
         const {damage, showDamage, showDamageIfHas} = this;
 
@@ -300,11 +391,11 @@ export class CardComponent extends LitElement {
         `;
         };
 
-        if (showDamage) {
+        if (showDamage && Number.isFinite(damage)) {
             return _render();
         }
 
-        if (showDamageIfHas && damage) {
+        if (showDamageIfHas && Number.isFinite(damage) && damage) {
             return _render();
         }
 
@@ -342,13 +433,25 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderHeader() {
-        const {name} = this;
+        const {name, headerLeft, headerRight} = this;
 
         return this.hideName ? html`` : html`
             <header>
-                <div class="header-left">${this.headerLeft}</div>
+                <div class="header-left">
+                    ${Number.isFinite(headerLeft) ? html`
+                        <span class="character-stat stat-stage header-stat" aria-label="Umbral: ${headerLeft}">
+                            ${headerLeft}
+                        </span>
+                    ` : ''}
+                </div>
                 <div class="name">${name}</div>
-                <div class="header-right">${this.headerRight}</div>
+                <div class="header-right">
+                    ${Number.isFinite(headerRight) ? html`
+                        <span class="character-stat stat-stage header-stat" aria-label="Etapa: ${headerRight}">
+                            ${headerRight}
+                        </span>
+                    ` : ''}
+                </div>
             </header>
         `;
     }
@@ -412,7 +515,7 @@ export class CardComponent extends LitElement {
         const {threat, showThreat} = this;
 
         return showThreat || threat ? html`
-            <div class="threat" >
+            <div class="character-stat stat-threat threat" aria-label="Amenaza: ${threat}">
                 ${threat}
             </div>
         ` : html``;

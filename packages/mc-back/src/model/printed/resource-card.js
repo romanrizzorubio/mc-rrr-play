@@ -37,5 +37,23 @@ export class ResourceCard extends PlayerCard {
 
         return resources;
     }
+    getPrintedResources() {
+        if (Array.isArray(this.resources)) {
+            // Without a card being paid, conditional resource bonuses do not apply.
+            return this.getResources();
+        }
+
+        if (!this.resources || typeof this.resources !== 'object') {
+            throw new Error('Printed resource data must be an array or resource-count map.');
+        }
+
+        return Object.entries(this.resources).flatMap(([resource, count]) => {
+            if (!Number.isInteger(count) || count < 0) {
+                throw new Error(`Invalid printed resource count for ${resource}.`);
+            }
+
+            return Array(count).fill(resource);
+        });
+    }
 
 }

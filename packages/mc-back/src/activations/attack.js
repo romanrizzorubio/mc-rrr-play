@@ -24,7 +24,7 @@ export class Attack extends Activation {
             const controller = this.getController();
 
             if (controller) {
-                this.excessDamage = damage - selectedTarget.life;
+                this.excessDamage = damage - await selectedTarget.getLife();
                 if (this.excessDamage < 0) {
                     this.excessDamage = 0;
                 }
@@ -73,7 +73,7 @@ export class Attack extends Activation {
         return !character.isStunned;
     }
     filterTarget(card, {player}) {
-        return card.canBeAttacked(player);
+        return !card.isEnemy || card.canBeAttacked(player);
     }
     getController() {
         const {selectedTarget} = this;

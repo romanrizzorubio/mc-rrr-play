@@ -10,6 +10,7 @@ import {
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLACE_THREAT,
     TRIGGER_PLAY_CARD,
+    TRIGGER_ROUND_ENDS,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_THIS_END_PLAY_CARD,
@@ -45,6 +46,7 @@ import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {PhaseEndsTrigger} from '../../triggers/phase-ends-trigger.js';
+import {RoundEndsTrigger} from '../../triggers/round-ends-trigger.js';
 import {PlaceThreatTrigger} from '../../triggers/place-threat-trigger.js';
 import {PlayCardTrigger} from '../../triggers/play-card-trigger.js';
 import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
@@ -107,6 +109,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_END_PLAY_CARD]: EndPlayCardTrigger,
     [TRIGGER_INSTANT]: InstantTrigger,
     [TRIGGER_PHASE_ENDS]: PhaseEndsTrigger,
+    [TRIGGER_ROUND_ENDS]: RoundEndsTrigger,
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,

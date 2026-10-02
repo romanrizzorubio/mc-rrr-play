@@ -1,7 +1,14 @@
-import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST,RESOURCES_X,TARGET_CARD,TRIGGER_YOUR_HERO_GET_HIT_POINTS,EFFECT_MODIFY_HIT_POINTS} from 'mc-shared';
+import {
+    DIALOG_DISCARD_HAND,
+    DIALOG_PAY_COST,
+    RESOURCES_X,
+    TARGET_CARD,
+} from 'mc-shared';
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
+import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
+import {GetHandSizeEffect} from '../../effects/get-hand-size-effect.js';
 import {PlayCardEffect} from '../../effects/play-card-effect.js';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
@@ -88,6 +95,16 @@ export class Player extends Engine {
     get handSize() {
         return this.superhero.currentSide.handSize;
     }
+    async getHandSize() {
+        const getHandSizeEffect = new GetHandSizeEffect({
+            selectedTarget: this.superhero,
+            match: this.match,
+        });
+
+        await getHandSizeEffect.runEffect({player: this});
+
+        return getHandSizeEffect.handSize;
+    }
     get hasCrisis() {
         return this.gameZone.hasCrisis;
     }
@@ -102,20 +119,18 @@ export class Player extends Engine {
             this.gameZone.hazardIcons;
     }
     get hitPoints() {
-        const trigger = this.match.triggersFactory.createTrigger({
-            type: TRIGGER_YOUR_HERO_GET_HIT_POINTS,
-            card: this.superhero,
+        return this.superhero.currentSide.hitPoints +
+            this.superhero.modifyHitPoints;
+    }
+    async getHitPoints() {
+        const getHitPointsEffect = new GetHitPointsEffect({
+            selectedTarget: this.superhero,
+            match: this.match,
         });
 
-        const effect = {
-            type: EFFECT_MODIFY_HIT_POINTS,
-            count: this.superhero.hitPoints,
-            target: this.superhero,
-        };
+        await getHitPointsEffect.runEffect({player: this});
 
-        this.match.resolveConstantAbility(trigger, effect);
-
-        return effect.count;
+        return getHitPointsEffect.hitPoints;
     }
     get isAlterEgo() {
         return this.superhero.isAlterEgo;
@@ -131,6 +146,11 @@ export class Player extends Engine {
     }
     get life() {
         return this.superhero.life;
+    }
+    async getLife() {
+        const hitPoints = await this.getHitPoints();
+
+        return hitPoints - this.superhero.damage;
     }
     get match() {
         return this.superhero.match;
@@ -286,7 +306,7 @@ export class Player extends Engine {
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_HAND,
             data: {
-                hand: this.handSize,
+                hand: await this.getHandSize(),
                 cards: this.hand.cards.map(card => card.toObj(arguments[0]))
             },
         });
@@ -380,7 +400,7 @@ export class Player extends Engine {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_DISCARD_HAND,
                 data: {
-                    hand: this.handSize,
+                    hand: await this.getHandSize(),
                     cards: this.hand.cards.map(card => card.toObj(arguments[0]))
                 },
             });
@@ -482,10 +502,12 @@ export class Player extends Engine {
             hand,
             superhero,
             gameZone,
+            handSize,
         } = this;
 
         return {
             name,
+            handSize,
             deck: deck ? deck.toObj(arguments[0]) : undefined,
             hand: hand ? hand.toObj(arguments[0]) : undefined,
             superhero: superhero ? superhero.toObj(arguments[0]) : undefined,
@@ -494,6 +516,9 @@ export class Player extends Engine {
     }
     async toObjWithPlayableHand() {
         const player = this.toObj();
+        const handSize = await this.getHandSize();
+        const hitPoints = await this.getHitPoints();
+        const life = hitPoints - this.superhero.damage;
         const {superhero} = this;
         const abilities = await Promise.all(
             superhero.currentSide.abilities.map(async (ability, index) => {
@@ -520,12 +545,15 @@ export class Player extends Engine {
 
         return {
             ...player,
+            handSize,
             hand: await this.hand.toObjWithPlayability(),
             gameZone: this.gameZone ?
                 await this.gameZone.toObjWithAbilityAvailability(this) :
                 player.gameZone,
             superhero: {
                 ...player.superhero,
+                hitPoints,
+                life,
                 abilities,
             },
         };

@@ -68,9 +68,12 @@ export class McPayCost extends LitElement {
             if (card.selected) {
                 card.abilities.forEach(ability => {
                     if (ability.isResource) {
-                        resources.push({
-                            resource: ability.resource,
-                            used: false,
+                        const generatedResources = ability.resources || [ability.resource];
+                        generatedResources.forEach(resource => {
+                            resources.push({
+                                resource,
+                                used: false,
+                            });
                         });
                     }
                 });
@@ -157,7 +160,11 @@ export class McPayCost extends LitElement {
 
                 if (paid) {
                     paid.used = true;
-                    render.push(this.renderResourceIcon(paid.resource, false, paid.wild));
+                    render.push(this.renderResourceIcon(
+                        paid.resource,
+                        false,
+                        paid.wild
+                    ));
                 } else {
                     render.push(this.renderResourceIcon(req, true));
                 }
@@ -166,7 +173,11 @@ export class McPayCost extends LitElement {
 
         resources.forEach(resource => {
             if (!resource.used) {
-                render.push(this.renderResourceIcon(resource.resource, false, resource.wild));
+                render.push(this.renderResourceIcon(
+                    resource.resource,
+                    false,
+                    resource.wild
+                ));
             }
         });
 

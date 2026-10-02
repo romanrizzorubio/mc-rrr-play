@@ -68,7 +68,8 @@ export class McPayCostDialog extends McDialog {
                 generators.forEach(card => {
                     card.abilities.forEach(ability => {
                         if (ability.isResource) {
-                            resources.push(ability.resource);
+                            const generatedResources = ability.resources || [ability.resource];
+                            Array.prototype.push.apply(resources, generatedResources);
                         }
                     });
                 });

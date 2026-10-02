@@ -133,13 +133,13 @@ export class Effect extends Engine {
         return (isAttack || isDefense || isScheme || isThwart);
     }
     get isAttack() {
-        return this._isAttack || (this.ability && this.ability.isAttack);
+        return this._isAttack || (!this.isArrow && this.ability && this.ability.isAttack);
     }
     set isAttack(isAttack) {
         this._isAttack = isAttack;
     }
     get isDefense() {
-        return this._isDefense || (this.ability && this.ability.isDefense);
+        return this._isDefense || (!this.isArrow && this.ability && this.ability.isDefense);
     }
     set isDefense(isDefense) {
         this._isDefense = isDefense;
@@ -151,7 +151,7 @@ export class Effect extends Engine {
         this._isScheme = isScheme;
     }
     get isThwart() {
-        return this._isThwart || (this.ability && this.ability.isThwart);
+        return this._isThwart || (!this.isArrow && this.ability && this.ability.isThwart);
     }
     set isThwart(isThwart) {
         this._isThwart = isThwart;

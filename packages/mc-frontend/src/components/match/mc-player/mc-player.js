@@ -77,8 +77,10 @@ export class McPlayer extends LitElement {
     renderSuperhero() {
         const {
             player: {
+                handSize,
                 superhero: {
-                    name, image, life, flipped, exhausted, statusCards, abilities
+                    name, image, life, hitPoints, attack, thwart, defense, recovery,
+                    flipped, exhausted, statusCards, abilities, extraTraits = []
                 }
             }
         } = this;
@@ -88,8 +90,15 @@ export class McPlayer extends LitElement {
                 class="panel"
                 name="${name}"
                 image="${image}"
-                life="${life}"
+                .life="${life}"
+                .hitPoints="${hitPoints}"
+                .handSize="${handSize}"
+                .attack="${attack}"
+                .thwart="${thwart}"
+                .defense="${defense}"
+                .recovery="${recovery}"
                 .abilities="${abilities}"
+                .extraTraits="${extraTraits}"
                 .flipped="${flipped}"
                 .statusCards="${statusCards}"
                 .exhausted="${exhausted}"
@@ -111,6 +120,7 @@ export class McPlayer extends LitElement {
         `;
     }
     renderDeck() {
+        const {name} = this.player;
         const cards = path(this, 'player.deck.cards');
         const discard = path(this, 'player.deck.discard');
 
@@ -119,6 +129,7 @@ export class McPlayer extends LitElement {
                 class="panel"
                 .cards="${cards}"
                 .discard="${discard}"
+                discard-label="Descarte de ${name}"
                 type="${DECK_TYPES.PLAYER}"
             ></mc-deck>
         ` : '';

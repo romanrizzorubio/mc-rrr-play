@@ -9,7 +9,7 @@ Consulta esta guía antes de cambiar cómo se comunican la interfaz y el servido
 - Las rutas REST se centralizan en `packages/mc-endpoints/endpoints.js` y los eventos compartidos en `packages/mc-endpoints/events.js`. Frontend y backend deben importar `ENDPOINTS`, `EVENTS` y `REFRESH_EVENTS` desde la entrada principal `mc-endpoints`, sin mantener copias locales ni usar subrutas del paquete.
 - Las partidas se guardan en memoria en `Mc.matches` (`packages/mc-back/src/server/mc.js`); el cliente envía el nombre de la partida en la cabecera HTTP `match`. El catálogo de héroes, escenarios y sets se obtiene de MongoDB mediante `packages/mc-data`; no confundir esa persistencia de configuración con el estado de las partidas.
 - `packages/mc-shared` contiene los identificadores del dominio usados por las configuraciones almacenadas en MongoDB y por el motor. Mantén estables sus valores al cambiar constantes: el contenido persistido usa esos strings.
-- `mc-data` carga automáticamente los registros iniciales que falten al conectar. `npm run start:backend` ejecuta `npm run seed:data` antes de iniciar el backend (también en `start:all` y `docker:up`); el seed reemplaza los documentos del catálogo empaquetado por sus valores JSON, incluidas las personalizaciones guardadas directamente en MongoDB.
+- `mc-data` carga automáticamente los registros iniciales que falten al conectar. `npm run start:backend` ejecuta `npm run seed:data` antes de iniciar el backend (también en `start:all` y `docker:up`); el seed reemplaza los documentos del catálogo empaquetado por los valores exportados por sus módulos JavaScript.
 
 ## REST: configuración y acciones
 

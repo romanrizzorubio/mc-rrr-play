@@ -62,7 +62,7 @@ export class Calc {
             case CALC_COUNT:
                 return source.length;
             case CALC_TRAITS_COUNT:
-                return source.filter(card => card.hasTrait(trait)).length;
+                return source.filter(card => (card.traits || []).includes(trait)).length;
             case CALC_DIFFERENT_RESOURCE_TYPE:
                 return this.differentResourceType(source);
             case CALC_MULTIPLY_2:

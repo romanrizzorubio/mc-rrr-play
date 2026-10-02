@@ -32,9 +32,16 @@ export class McScenario extends LitElement {
                 name,
                 image,
                 life,
+                hitPoints,
+                attack,
+                thwart,
+                defense,
+                recovery,
+                scheme,
                 stage,
                 attached,
                 statusCards,
+                extraTraits = [],
             } = villain;
 
             return html`
@@ -42,9 +49,16 @@ export class McScenario extends LitElement {
                     name="${name}"
                     image="${image}"
                     life="${life}"
-                    stage="${stage}"
+                    .hitPoints="${hitPoints}"
+                    .stage="${stage}"
+                    .attack="${attack}"
+                    .thwart="${thwart}"
+                    .defense="${defense}"
+                    .recovery="${recovery}"
+                    .scheme="${scheme}"
                     .statusCards="${statusCards}"
                     .attached="${attached}"
+                    .extraTraits="${extraTraits}"
                 ></mc-villain-card>
             `;
         }
@@ -68,10 +82,10 @@ export class McScenario extends LitElement {
                 <mc-main-scheme-card
                     name="${name}"
                     image="${image}"
-                    acceleration="${accelerationTokens}"
-                    threat="${threat}"
-                    value="${value}"
-                    stage="${stage}"
+                    .acceleration="${accelerationTokens}"
+                    .threat="${threat}"
+                    .value="${value}"
+                    .stage="${stage}"
                     show-threat
                 ></mc-main-scheme-card>
             `;
@@ -87,6 +101,7 @@ export class McScenario extends LitElement {
                 ${this.renderMainScheme()}
                 <mc-card-list
                     .cards="${cards.filter(card => card.isSideScheme)}"
+                    show-basic-stats
                     show-threat
                 ></mc-card-list>
             </div>
@@ -99,6 +114,7 @@ export class McScenario extends LitElement {
             <mc-deck
                 .cards="${cards}"
                 .discard="${discard}"
+                discard-label="Descarte del mazo de encuentros"
             ></mc-deck>
         `;
     }

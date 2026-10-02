@@ -18,24 +18,52 @@ export class ResourceAbility extends Ability {
     }
     canRun(params) {
         const {resourceType} = params;
-        const {resource} = this;
+        const resources = this.getGeneratedResources(params);
 
-        if (resourceType) {
-            if (resource !== resourceType &&
-                resource !== RESOURCE_WILD) {
-                return false;
-            }
+        if (!resources.length) {
+            return false;
+        }
+
+        if (resourceType &&
+            !resources.includes(resourceType) &&
+            !resources.includes(RESOURCE_WILD)) {
+            return false;
         }
 
         return super.canRun(params);
     }
+    getGeneratedResources(params = {}) {
+        const {effect} = this;
+
+        if (effect && typeof effect.getGeneratedResources === 'function') {
+            let {player} = params;
+            if (!player && this.card) {
+                player = this.card.controller || this.card.owner;
+            }
+
+            return effect.getGeneratedResources({
+                ...params,
+                player,
+            });
+        }
+
+        return this.resource ? [this.resource] : [];
+    }
     toObj() {
-        const {resource, target, type} = this;
+        const {resource: configuredResource, target, type} = this;
+        const hasDynamicResources = this.effect &&
+            typeof this.effect.getGeneratedResources === 'function';
+        const resources = this.getGeneratedResources(arguments[0]);
+        let resource = configuredResource;
+        if (hasDynamicResources) {
+            resource = resources[0];
+        }
 
         return {
             ...super.toObj(arguments[0]),
             target,
             resource,
+            resources: hasDynamicResources ? resources : undefined,
             type,
         };
     }

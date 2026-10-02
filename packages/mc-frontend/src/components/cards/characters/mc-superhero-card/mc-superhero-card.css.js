@@ -10,6 +10,8 @@ export default css`
   }
   
   .panel {
+    display: inline-block;
     position: relative;
   }
+
 `;

@@ -16,8 +16,12 @@ export class Thwart extends Activation {
     filterTarget(card, params) {
         const {player} = params;
 
-        if (card.isCard) {
+        if (card.isScheme) {
             return card.canThwart(player);
+        }
+
+        if (card.isCard) {
+            return true;
         }
 
         return player.canThwart(params);

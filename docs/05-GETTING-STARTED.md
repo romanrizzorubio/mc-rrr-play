@@ -40,7 +40,7 @@ Elige cómo ejecutar MongoDB:
 - `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`. Requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
 - `npm run docker:up` ejecuta frontend, backend y MongoDB en contenedores.
 
-Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por sus valores JSON actuales; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
+Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
 
 ```bash
 npm run seed:data
@@ -231,7 +231,7 @@ mc-rrr-play/
 │   │
 │   ├── mc-endpoints/       # 🔌 Contratos REST y Socket.IO
 │   ├── mc-shared/          # Constantes compartidas del dominio
-│   └── mc-data/            # MongoDB; catálogo JSON por entidad y carta de aspecto
+│   └── mc-data/            # MongoDB; catálogo JavaScript por entidad y carta de aspecto
 │
 ├── docker-compose.yml       # Configuración Docker
 ├── package.json             # Monorepo config

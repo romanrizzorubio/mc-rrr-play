@@ -10,9 +10,10 @@ export class FillHandEffect extends Effect {
         this.printed = printed;
     }
 
-    execute(params) {
+    async execute(params) {
         const {player} = params;
-        const count = player.handSize - player.hand.cards.length;
+        const handSize = await player.getHandSize();
+        const count = handSize - player.hand.cards.length;
 
         if (count > 0) {
             const drawCardEffect = new DrawEffect({
@@ -20,7 +21,7 @@ export class FillHandEffect extends Effect {
                 match: this.match,
             });
 
-            return drawCardEffect.runEffect({player});
+            await drawCardEffect.runEffect({player});
         }
     }
 }

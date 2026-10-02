@@ -1,4 +1,4 @@
 import {Trigger} from './base/trigger.js';
-import {MixinYourHeroTrigger} from './mixins/mixin-your-hero-trigger.js';
 
-export class YourHeroGetHandSizeTrigger extends MixinYourHeroTrigger(Trigger) {}
+// The modifier effect's target selector determines which identity applies.
+export class YourHeroGetHandSizeTrigger extends Trigger {}

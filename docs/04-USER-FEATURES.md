@@ -104,6 +104,10 @@ La pantalla se divide en varias áreas:
 - Información de todos los jugadores
 - Contador de aceleración
 
+**Pilas de descartes**
+- Haz clic en una pila para consultar sus cartas, desde la carta superior hacia abajo.
+- Al descartar varias cartas desde la parte superior de un mazo, se muestran antes de continuar con la resolución del efecto.
+
 ### Ejecutar Acciones
 
 Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un objetivo válido o hayan superado su límite aparecen deshabilitadas.

@@ -133,6 +133,15 @@ export class CharacterGameCard extends GameCard {
         }
         return this.card.hitPoints + this.modifyHitPoints;
     }
+    async getHitPoints() {
+        const {owner} = this;
+
+        if (owner && owner.isPlayer && this.isSuperhero) {
+            return owner.getHitPoints();
+        }
+
+        return this.hitPoints;
+    }
     get isConfused() {
         switch (this.statusAvailable) {
             case STATUS_STEADY:
@@ -162,6 +171,11 @@ export class CharacterGameCard extends GameCard {
     get life() {
         return this.hitPoints - this.damage;
     }
+    async getLife() {
+        const hitPoints = await this.getHitPoints();
+
+        return hitPoints - this.damage;
+    }
     get recovery() {
         let recovery = this.card.recovery;
 
@@ -176,7 +190,8 @@ export class CharacterGameCard extends GameCard {
         return recovery;
     }
     get scheme() {
-        let scheme = this.card.scheme;
+        const card = this.sides.length ? this.currentSide : this.card;
+        let scheme = card.scheme;
 
         if (scheme instanceof Object) {
             const calc = new Calc(scheme);
@@ -327,12 +342,33 @@ export class CharacterGameCard extends GameCard {
         return 0;
     }
     toObj() {
-        const {life, attack, stunned, confused, tough} = this;
+        const {
+            hitPoints,
+            life,
+            attack,
+            thwart,
+            defense,
+            recovery,
+            scheme,
+            extraTraits: ownExtraTraits,
+            stunned,
+            confused,
+            tough,
+        } = this;
+        const extraTraits = this.sides.length ?
+            [...this.currentSide.extraTraits, ...ownExtraTraits] :
+            ownExtraTraits;
 
         return {
             ...super.toObj(arguments[0]),
+            hitPoints,
             life,
             attack,
+            thwart,
+            defense,
+            recovery,
+            scheme,
+            extraTraits: [...new Set(extraTraits)],
             statusCards: {
                 stunned,
                 confused,

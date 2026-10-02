@@ -18,7 +18,7 @@ export class MainSchemeCardComponent extends LitElement {
             acceleration: { type: Number},
             threat: { type: Number},
             value: { type: Number},
-            stage: { type: String},
+            stage: { type: Number},
         };
     }
 
@@ -30,7 +30,7 @@ export class MainSchemeCardComponent extends LitElement {
         this.acceleration = 0;
         this.threat = 0;
         this.value = 0;
-        this.stage = '';
+        this.stage = undefined;
     }
 
     render() {
@@ -42,8 +42,8 @@ export class MainSchemeCardComponent extends LitElement {
                 image="${image}"
                 acceleration="${acceleration}"
                 threat="${threat}"
-                header-left="${value}"
-                header-right="${stage}"
+                .headerLeft="${value}"
+                .headerRight="${stage}"
             >
             </mc-scheme-card>
         `;

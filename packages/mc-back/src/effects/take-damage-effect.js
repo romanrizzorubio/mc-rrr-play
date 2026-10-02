@@ -77,7 +77,9 @@ export class TakeDamageEffect extends Effect {
         });
         await placeDamageEffect.runEffect(params);
 
-        if (selectedTarget.life <= 0) {
+        const life = await selectedTarget.getLife();
+
+        if (life <= 0) {
             const defeatEffect = this.match.effectsFactory.createEffect({
                 type: EFFECT_DEFEAT,
                 selectedTarget,

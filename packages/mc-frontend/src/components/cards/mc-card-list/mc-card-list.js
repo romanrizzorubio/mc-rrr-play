@@ -16,6 +16,8 @@ export class HandComponent extends LitElement {
             size: {type: String},
             cards: {type: Array},
             marked: {type: Array},
+            showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
+            showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             showMenuAbilities: {type: Boolean, attribute: 'show-menu-abilities'},
             showDamage: {type: Boolean, attribute: 'show-damage'},
             showDamageIfHas: {type: Boolean, attribute: 'show-damage-if-has'},
@@ -31,6 +33,8 @@ export class HandComponent extends LitElement {
         this.size = 'm';
         this.cards = [];
         this.marked = [];
+        this.showBasicStats = false;
+        this.showAcquiredTraits = false;
         this.showMenuAbilities = false;
         this.showDamage = false;
         this.showDamageIfHas = false;
@@ -114,6 +118,8 @@ export class HandComponent extends LitElement {
         const {
             size,
             marked,
+            showBasicStats,
+            showAcquiredTraits,
             showDamage,
             showDamageIfHas,
             showThreat,
@@ -125,16 +131,23 @@ export class HandComponent extends LitElement {
             faceDown,
             image,
             name,
+            hitPoints,
+            attack,
+            thwart,
+            defense,
+            recovery,
+            scheme,
+            extraTraits = [],
             statusCards,
         } = card;
         const {abilityNames = []} = card;
 
-        const damage = showDamage || showDamageIfHas ?
-            card.life !== undefined ?
-                card.life :
-                card.damage !== 0 ?
-                    card.damage :
-                    undefined :
+        const showHealth = showDamage || showDamageIfHas;
+        const life = showHealth && Number.isFinite(card.life) ?
+            card.life :
+            undefined;
+        const damage = showHealth && life === undefined && card.damage !== 0 ?
+            card.damage :
             undefined;
         const threat = showThreat ? card.threat : undefined;
         const generic = showGeneric ? card.counters : undefined;
@@ -153,7 +166,17 @@ export class HandComponent extends LitElement {
                 class="${classes.join(' ')}"
                 name="${name}"
                 image="${image}"
+                .attack="${attack}"
+                .thwart="${thwart}"
+                .defense="${defense}"
+                .recovery="${recovery}"
+                .scheme="${scheme}"
+                .showBasicStats="${showBasicStats}"
+                .extraTraits="${extraTraits}"
+                .showAcquiredTraits="${showAcquiredTraits}"
                 damage="${damage}"
+                .life="${life}"
+                .hitPoints="${hitPoints}"
                 threat="${threat}"
                 generic="${generic}"
                 size="${size}"

@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {addCharacterTraits} from '../utils/trait-utils.js';
 
 export class ModifyTraitsEffect extends Effect {
     constructor({
@@ -12,15 +13,7 @@ export class ModifyTraitsEffect extends Effect {
     async prepare(params) {
         await super.prepare(params);
     }
-    execute(_params) {
-        const {selectedTarget, traits} = this;
-
-        if (selectedTarget && selectedTarget.extraTraits) {
-            traits.forEach(trait => {
-                if (!selectedTarget.extraTraits.includes(trait)) {
-                    selectedTarget.extraTraits.push(trait);
-                }
-            });
-        }
+    async execute(params) {
+        await addCharacterTraits(this, params, this.traits);
     }
 }

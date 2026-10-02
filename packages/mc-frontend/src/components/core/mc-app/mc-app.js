@@ -10,6 +10,7 @@ import '../../dialog/index.js';
 import {Api} from '../../api/api.js';
 import {Dialog} from '../../api/dialog.js';
 import {EVENTS} from 'mc-endpoints';
+import {DIALOG_REVEAL_CARDS} from 'mc-shared';
 
 class McApp extends router(navigator(outlet(LitElement))) {
     static get properties() {
@@ -99,6 +100,17 @@ class McApp extends router(navigator(outlet(LitElement))) {
             hideOk,
             hand,
         };
+    }
+    handleViewDiscard(e) {
+        const {cards, title} = e.detail;
+
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title,
+            subtitle: 'Ordenadas desde la carta superior hacia abajo.',
+            data: {cards},
+            callback: () => {},
+        });
     }
     showAlert(msg) {
         this.alert = {
@@ -220,6 +232,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                       player="${player}"
                       @change-menu="${this.handleChangeMenu.bind(this)}"
                       @change-match="${this.handleMatchChanged.bind(this)}"
+                      @view-discard="${this.handleViewDiscard.bind(this)}"
                   ></mc-match-page>
               </div>
               <h1 route='not-found'>Not Found </h1>

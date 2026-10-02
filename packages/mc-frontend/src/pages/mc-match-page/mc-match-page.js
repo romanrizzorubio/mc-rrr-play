@@ -77,7 +77,7 @@ export class McMatchPage extends LitElement {
         }
     }
     updateDeck(deck) {
-        const {match, player} = this;
+        const {match} = this;
 
         if (match) {
             if (deck.isScenarioDeck) {
@@ -89,15 +89,13 @@ export class McMatchPage extends LitElement {
                     },
                 });
             } else if (deck.isPlayerDeck) {
-                if (player) {
-                    const _player = match.players.find(_p => _p.name === player);
+                const _player = match.players.find(_p => _p.name === deck.name);
 
-                    if (_player) {
-                        this.changePlayer({
-                            ..._player,
-                            deck,
-                        });
-                    }
+                if (_player) {
+                    this.changePlayer({
+                        ..._player,
+                        deck,
+                    });
                 }
             }
         }

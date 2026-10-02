@@ -18,9 +18,16 @@ export class VillainCardComponent extends LitElement {
             name: {type: String},
             image: {type: String},
             life: {type: Number},
-            stage: {type: String},
+            hitPoints: {type: Number},
+            attack: {type: Number},
+            thwart: {type: Number},
+            defense: {type: Number},
+            recovery: {type: Number},
+            scheme: {type: Number},
+            stage: {type: Number},
             attached: {type: Array},
             statusCards: {type: Object},
+            extraTraits: {type: Array},
         };
     }
 
@@ -30,23 +37,50 @@ export class VillainCardComponent extends LitElement {
         this.name = '';
         this.image = '';
         this.life = 0;
-        this.stage = '';
+        this.hitPoints = undefined;
+        this.attack = undefined;
+        this.thwart = undefined;
+        this.defense = undefined;
+        this.recovery = undefined;
+        this.scheme = undefined;
+        this.stage = undefined;
         this.attached = [];
         this.statusCards = {};
+        this.extraTraits = [];
     }
 
     render() {
-        const {name, image, life, stage, attached, statusCards} = this;
+        const {
+            name,
+            image,
+            life,
+            hitPoints,
+            attack,
+            thwart,
+            defense,
+            recovery,
+            scheme,
+            stage,
+            attached,
+            statusCards,
+            extraTraits,
+        } = this;
 
         return html`
             <mc-character-card
                 name="${name}"
                 image="${image}"
                 life="${life}"
-                header-right="${stage}"
-                show-damage
+                .hitPoints="${hitPoints}"
+                .headerRight="${stage}"
+                .attack="${attack}"
+                .thwart="${thwart}"
+                .defense="${defense}"
+                .recovery="${recovery}"
+                .scheme="${scheme}"
                 .statusCards="${statusCards}"
                 .attached="${attached}"
+                .extraTraits="${extraTraits}"
             >
             </mc-character-card>
         `;

@@ -26,6 +26,8 @@ export class DeckComponent extends LitElement {
         return {
             cards: {type: Array},
             discard: {type: Array},
+            discardLabel: {type: String, attribute: 'discard-label'},
+            showDeck: {type: Boolean, attribute: 'show-deck'},
             type: {type: Number}
         };
     }
@@ -34,6 +36,8 @@ export class DeckComponent extends LitElement {
 
         this.cards = [];
         this.discard = [];
+        this.discardLabel = '';
+        this.showDeck = true;
         this.type = DECK_TYPES.ENCOUNTER;
     }
     getDiscardTop() {
@@ -49,16 +53,50 @@ export class DeckComponent extends LitElement {
                 return BACK_CARD_VILLAIN_FULL;
         }
     }
-    renderCards(src, count) {
+    getDiscardTitle() {
+        if (this.discardLabel) {
+            return this.discardLabel;
+        }
+
+        switch (this.type) {
+            case DECK_TYPES.PLAYER:
+                return 'Descarte del mazo de jugador';
+            case DECK_TYPES.VILLAIN:
+                return 'Descarte del mazo de villano';
+            default:
+                return 'Descarte del mazo de encuentros';
+        }
+    }
+    handleViewDiscard() {
+        if (!this.discard.length) {
+            return;
+        }
+
+        this.dispatchEvent(new CustomEvent('view-discard', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                cards: this.discard.slice().reverse(),
+                title: this.getDiscardTitle(),
+            },
+        }));
+    }
+    renderCardStack(src, count, isEmptyDiscard = false) {
+        return html`
+            <mc-card-image
+                class="${isEmptyDiscard ? 'empty-discard' : ''}"
+                src="${src}"
+            >
+            </mc-card-image>
+            <span class="count">
+                ${count}
+            </span>
+        `;
+    }
+    renderCards(src, count, isEmptyDiscard = false) {
         return html`
             <div class="panel">
-                <mc-card-image
-                    src="${src}"
-                >
-                </mc-card-image>
-                <div class="count">
-                    ${count}
-                </div>
+                ${this.renderCardStack(src, count, isEmptyDiscard)}
             </div>
         `;
     }
@@ -69,18 +107,31 @@ export class DeckComponent extends LitElement {
     }
     renderDiscard() {
         const card = this.getDiscardTop();
+        const title = this.getDiscardTitle();
 
         let src = `${BACK_CARD_EMPTY_FULL}`;
         if (card) {
             src = `${CARD_PATH}${card.image}`;
         }
 
-        return this.renderCards(src, this.discard.length);
+        return html`
+            <button
+                class="panel discard-button"
+                type="button"
+                aria-label="Ver ${title} (${this.discard.length} cartas)"
+                ?disabled="${!card}"
+                @click="${this.handleViewDiscard.bind(this)}"
+            >
+                ${this.renderCardStack(src, this.discard.length, !card)}
+            </button>
+        `;
     }
     render() {
+        const {showDeck} = this;
+
         return html`
             ${this.renderDiscard()}
-            ${this.renderDeck()}
+            ${showDeck ? this.renderDeck() : ''}
         `;
     }
 }

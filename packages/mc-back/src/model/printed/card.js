@@ -11,6 +11,7 @@ export class Card extends Engine {
         image,
         maximum,
         match,
+        type,
         traits = [],
         abilities = [],
         unique = false,
@@ -28,6 +29,7 @@ export class Card extends Engine {
         this.name = name;
         this.set = set;
         this.image = image;
+        this.type = type;
         this.traits = traits;
         this.unique = unique;
         this.abilities = abilities;

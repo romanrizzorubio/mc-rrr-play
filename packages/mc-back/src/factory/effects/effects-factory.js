@@ -102,11 +102,12 @@ export class EffectsFactory {
         });
     }
     _parseLasting(params) {
-        const {effect} = params;
+        const {effect, endEffect} = params;
 
         return {
             ...params,
             effect: effect ? this.parseEffect(effect) : undefined,
+            endEffect: endEffect ? this.parseEffect(endEffect) : undefined,
         };
     }
     _parseMay(params) {

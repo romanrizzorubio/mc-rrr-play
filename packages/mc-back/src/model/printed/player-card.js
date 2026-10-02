@@ -44,6 +44,9 @@ export class PlayerCard extends Card {
     getResources() {
         return this.resources;
     }
+    getPrintedResources() {
+        return this.getResources();
+    }
     toObj(params = {}) {
         const {cost} = this;
         const {card} = params;

@@ -21,9 +21,16 @@ export class SuperheroCardComponent extends LitElement {
             name: {type: String},
             image: {type: String},
             life: {type: Number},
+            hitPoints: {type: Number},
+            handSize: {type: Number},
+            attack: {type: Number},
+            thwart: {type: Number},
+            defense: {type: Number},
+            recovery: {type: Number},
             flipped: {type: Boolean},
             exhausted: {type: Boolean},
             abilities: {type: Array},
+            extraTraits: {type: Array},
         };
     }
 
@@ -33,9 +40,16 @@ export class SuperheroCardComponent extends LitElement {
         this.name = '';
         this.image = '';
         this.life = 0;
+        this.hitPoints = undefined;
+        this.handSize = 0;
+        this.attack = undefined;
+        this.thwart = undefined;
+        this.defense = undefined;
+        this.recovery = undefined;
         this.flipped = false;
         this.exhausted = false;
         this.abilities = [];
+        this.extraTraits = [];
     }
 
     get menuOptions() {
@@ -87,23 +101,40 @@ export class SuperheroCardComponent extends LitElement {
     }
 
     render() {
-        const {image, life, exhausted, statusCards} = this;
+        const {
+            image,
+            life,
+            hitPoints,
+            handSize,
+            attack,
+            thwart,
+            defense,
+            recovery,
+            exhausted,
+            statusCards,
+            extraTraits,
+        } = this;
 
         return html`
-            <span class="panel">
-                <div>
-                    <mc-card
-                        image="${image}"
-                        show-counters
-                        damage="${life}"
-                        show-damage
-                        .statusCards="${statusCards}"
-                        .exhausted="${exhausted}"
-                        .menuOptions="${this.menuOptions}"
-                        @card-menu-click="${this.handleClickMenu}"
-                    ></mc-card>
-                </div>
-            </span>
+            <div class="panel">
+                <mc-card
+                    image="${image}"
+                    .life="${life}"
+                    .hitPoints="${hitPoints}"
+                    .statusCards="${statusCards}"
+                    .exhausted="${exhausted}"
+                    .menuOptions="${this.menuOptions}"
+                    .extraTraits="${extraTraits}"
+                    show-acquired-traits
+                    show-basic-stats
+                    .handSize="${handSize}"
+                    .attack="${attack}"
+                    .thwart="${thwart}"
+                    .defense="${defense}"
+                    .recovery="${recovery}"
+                    @card-menu-click="${this.handleClickMenu}"
+                ></mc-card>
+            </div>
         `;
     }
 }

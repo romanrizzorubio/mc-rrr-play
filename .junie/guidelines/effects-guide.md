@@ -6,12 +6,14 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 
 | Tipo de Efecto | Uso y Criterio de Selección |
 | :--- | :--- |
+| `EFFECT_ADD_TRAIT` | Para otorgar rasgos; dentro de un `EFFECT_LASTING`, el motor los quita al expirar. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
 | `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
 | `EFFECT_MOVE_DAMAGE` | Para "mover daño" de un personaje a otro. |
 | `EFFECT_PREVENT_DAMAGE` | Para "prevenir" o "evitar" daño que se va a recibir. |
-| `EFFECT_REMOVE_THREAT` | Para "quitar amenaza" de planes. |
+| `EFFECT_REMOVE_THREAT` | Para "quitar amenaza" de planes; usa `TARGET_SCHEME` para un plan o `TARGET_ALL_SCHEMES` para todos los planes con amenaza. |
+| `EFFECT_REMOVE_TRAIT` | Para quitar de un personaje uno o varios rasgos adquiridos. |
 | `EFFECT_PLACE_THREAT` | Para "colocar amenaza" en planes. |
 | `EFFECT_DRAW_CARD` | Para "robar cartas" del mazo. |
 | `EFFECT_DISCARD_HAND` | Para "descartar cartas" de la mano. |
@@ -24,9 +26,11 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_TOUGH` | Para aplicar el estado "duro". |
 | `EFFECT_FLIP` | Para "dar la vuelta" a la carta de identidad (cambiar de Héroe a Alter ego o viceversa). |
 | `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en el mazo o pila de descartes. |
+| `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
 | `EFFECT_MOVE_TO_HAND` | Frecuentemente encadenado con búsquedas para "añadir a la mano". |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
 | `EFFECT_CHAINED` | Para ejecutar múltiples efectos en secuencia. |
+| `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
 | `EFFECT_CHOOSE_ABILITY` | Para elegir entre varias opciones de una misma carta. |
 | `EFFECT_MODIFY_ATTACK_VALUE` | Para modificar el valor de ATQ de forma temporal o permanente. |
@@ -34,6 +38,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
 | `EFFECT_REVEAL_ENCOUNTER` | Para "mostrar" una carta del mazo de encuentros. |
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
+
+`EFFECT_LASTING` ejecuta inmediatamente `effect` cuando no se indica `triggerType`. Las mutaciones reversibles registran su limpieza en la duración y se revierten automáticamente al expirar; `endEffect` queda para limpiezas personalizadas. Los valores `TIME_*` se resuelven mediante `TIME_TRIGGER_MAP`; los triggers explícitos en `until` se conservan.
 
 ## Diccionario de Capacidades Comunes
 
@@ -53,6 +59,25 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `ABILITY_SPECIAL` | Para capacidades genéricas que no encajan en las anteriores o efectos de "Especial" (estrella). |
 | `ABILITY_OPTION` | Se usa dentro de una lista `options` (ej. en `EFFECT_CHOOSE_ABILITY`) para definir elecciones. |
 | `ABILITY_BOOST` | Para efectos que ocurren cuando la carta se muestra como carta de Aumento (Boost). |
+
+### Modificadores de valores numéricos
+
+- Calcula cada valor bajo demanda con un efecto colector `Get*Effect` (por ejemplo, `GetAttackEffect`, `GetThwartEffect`, `GetDefenseEffect`, `GetHitPointsEffect` y `GetHandSizeEffect`). El colector declara los triggers del cálculo, inicializa un acumulador `modifyX` y obtiene el resultado sumando ese acumulador al valor base.
+- El modificador debe resolverse durante el trigger del cálculo correspondiente. Obtén el colector desde `params.effect` y suma allí el cambio (`params.effect.modifyX += delta`); no recorras cartas desde `Match` o `Player`, ni modifiques el valor impreso para aplicar un bonus temporal. En capacidades nuevas, configura `target` para indicar el objetivo y la identidad aplicable; usa `TARGET_EFFECT` solo cuando el propio efecto colector sea el objetivo, no para elegir entre héroe y alter ego.
+- Los modificadores aditivos deben acumularse con `+=`; asignar con `=` puede reemplazar otros modificadores. Calcula los valores dinámicos con `this.calculate(params)` cuando se configure `paramsCalc` y valida que el resultado sea finito.
+- Declara el alcance mediante `target`: usa `TARGET_YOUR_SUPERHERO` para ambas identidades, `TARGET_HERO` solo para héroe o `TARGET_ALTEREGO` solo para alter ego. No uses listas de identidades ni lógica específica de cada carta para decidir dónde aplica.
+- Distingue los valores calculados del estado mutable: los puntos de vida máximos usan `GetHitPointsEffect` y la vida actual es el máximo menos el daño acumulado. El daño y la curación siguen modificando el estado mediante sus efectos; si un valor numérico aún no tiene colector, impleméntalo y añade su trigger antes de incorporar modificadores.
+
+### Modificadores del tamaño de mano
+
+- `Player.getHandSize()` usa `GetHandSizeEffect`; `ModifyHandSizeEffect` acumula el modificador en el efecto colector. Los flujos de robo, mulligan, descarte y serialización deben esperar este cálculo.
+- `ModifyHandSizeEffect` usa `TARGET_YOUR_SUPERHERO` por defecto. Configura `TARGET_HERO` o `TARGET_ALTEREGO` explícitamente cuando el bonus solo aplique a una forma.
+
+### Modificadores de vida máxima
+
+- `Player.getHitPoints()` usa `GetHitPointsEffect`; `ModifyHitPointsEffect` acumula en el colector durante el trigger correspondiente. El cálculo se usa también para determinar la vida actual y comprobar derrotas.
+- `ModifyHitPointsEffect` usa `TARGET_YOUR_SUPERHERO` por defecto; configura `TARGET_HERO` o `TARGET_ALTEREGO` explícitamente si el modificador solo aplica a una identidad.
+- El daño acumulado sigue siendo estado separado: `vida actual = vida máxima calculada - daño`.
 
 ## Reglas de Atributos Dinámicos (Valores X)
 
@@ -91,16 +116,46 @@ effect: {
 
 - Usa `matchAll: true` cuando todos los efectos de la cadena sean necesarios y deban poder ejecutarse para habilitar la capacidad.
 
+- Para seleccionar objetivos, utiliza los selectores documentados en la [Guía de Objetivos](./targets-guide.md).
+- Para `TARGET_BY_TITLE`, configura `title` en los parámetros del efecto, no `name`: el selector compara `ability.effect.title` con el nombre de las cartas activas.
 - **"Inflige X de daño"**: `EFFECT_DEAL_DAMAGE`.
 - **"Quita X de amenaza"**: `EFFECT_REMOVE_THREAT`.
-- **"Busca en tu mazo..."**: `EFFECT_SEARCH_CARDS` + `EFFECT_CHAINED` + `EFFECT_MOVE_TO_HAND` + `EFFECT_SHUFFLE_DECK`.
+- **"Genera los recursos impresos en una carta"**: usa `EFFECT_GENERATE_RESOURCES_FROM_CARD` con un `target` que resuelva una carta o zona de cartas. Si el objetivo es una zona, especifica `position`; por ejemplo, combina `TARGET_PLAYER_DISCARD` con `TARGET_TOP_CARD` para seleccionar la carta superior del descarte del jugador. Se genera un recurso por cada icono impreso, incluyendo iconos repetidos. Obténlos con `card.card.getPrintedResources()` sin pasar la carta que se está pagando a `getResources(card)`, para no aplicar recursos adicionales condicionales del cuadro de texto de una carta de recurso (véase la regla de recursos impresos en `docs/02-01-FUNDAMENTALS.md`).
+- **"Busca una carta y añádela a tu mano"**: encadena `EFFECT_SEARCH_CARDS` y `EFFECT_MOVE_TO_HAND` dentro de `EFFECT_CHAINED`. `EFFECT_SEARCH_CARDS` recibe `locations` (por ejemplo, `PLACE_DISCARD_PILE` o `PLACE_DECK`) y `filter`; guarda la carta elegida para que `EFFECT_MOVE_TO_HAND` la retire de su zona y la añada a la mano. Si la búsqueda es en el mazo y el texto lo indica, encadena también `EFFECT_SHUFFLE_DECK`. Para tomar la primera carta que cumpla el filtro recorriendo una pila desde arriba, usa `firstMatch: true`: en el descarte, comienza por la última carta añadida y sigue hacia las anteriores; en el mazo, comienza por la primera carta del array. La primera coincidencia se selecciona sin abrir un diálogo.
+
+```javascript
+{
+    type: EFFECT_CHAINED,
+    params: {
+        matchAll: true,
+        effects: [
+            {
+                type: EFFECT_SEARCH_CARDS,
+                params: {
+                    locations: [PLACE_DISCARD_PILE],
+                    firstMatch: true,
+                    filter: {
+                        type: CARD_TYPE_UPGRADE,
+                        traits: TRAIT_TECH
+                    }
+                }
+            },
+            {
+                type: EFFECT_MOVE_TO_HAND
+            }
+        ]
+    }
+}
+```
+
+- Todas las claves de `params.filter` y `params.condition` deben coincidir (AND); si la propiedad comprobada es una lista, el valor indicado puede coincidir con cualquiera de sus elementos.
 - **"Elige una opción:"**: `EFFECT_CHOOSE_ABILITY` con `options` de tipo `ABILITY_OPTION`.
 - **"Puedes..."**: `EFFECT_MAY`.
 - **Efectos al entrar en juego**:
     - **Perfidias y cartas con "Cuando se muestre"**: Usa siempre `ABILITY_WHEN_REVEALED` (o sus variantes por identidad).
     - **Obligaciones SIN "Cuando se muestre"**: Usa `ABILITY_CONSTANT` con `trigger: TRIGGER_INSTANT` dentro del array `abilities` en `params`. Además, el objeto `params` debe incluir `triggerInstant: true`. Este es un patrón específico del motor para gestionar la entrada de obligaciones que no tienen un efecto de revelación estándar.
 - **"No puede ser objetivo"**: Usa `validation` en una `ABILITY_CONSTANT` (ver Guía de Traducción).
-- **Filtrado de Objetos (Filtros)**: Evita usar selectores de objetivo ultra-específicos (como `TARGET_UPGRADE_YOU_CONTROL`) si el motor permite el uso de un campo `filter`. Es preferible definir el objetivo de forma genérica (ej: omitiendo `target` si el efecto asume cartas, o usando `TARGET_CARDS` si existe) y detallar las condiciones en un objeto `filter` (ej: `filter: { type: CARD_TYPE_UPGRADE, control: TARGET_YOU }`). **STRICTLY DO NOT** use string literals like `'you'` for control; use the constant `TARGET_YOU` instead. Esto hace que la lógica de la carta sea más clara y fácil de procesar para el motor.
+- **Filtrado de Objetos (Filtros)**: Evita usar selectores de objetivo ultra-específicos si el efecto admite `filter` o `condition`. Filtra por tipo con la propiedad `type` y su constante (`type: CARD_TYPE_UPGRADE`), y por rasgos con `traits` (`traits: TRAIT_TECH`). Cuando un efecto tenga un campo de control documentado, usa `TARGET_YOU` en vez del literal `'you'`.
 - **Cualquier jugador vs Cada jugador**:
     - Si el texto dice "cualquier jugador" (o si eliges uno): Usa `TARGET_ANY_PLAYER`.
     - Si el texto dice "cada jugador" (o todos): Usa `TARGET_ALL_PLAYERS`. Esto asegura que el motor ejecute el efecto secuencialmente para todos los participantes.

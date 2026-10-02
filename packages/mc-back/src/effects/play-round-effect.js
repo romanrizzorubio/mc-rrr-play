@@ -1,4 +1,4 @@
-import {TIME_ROUND} from 'mc-shared';
+import {TIME_ROUND, TRIGGER_ROUND_ENDS} from 'mc-shared';
 import {Engine} from '../engine/engine.js';
 
 import {Effect} from './effect.js';
@@ -17,6 +17,12 @@ export class PlayRoundEffect extends Effect {
         this.villainPhase = new PlayVillainPhaseEffect({
             match: this.match,
         });
+    }
+    getTriggersEnds() {
+        return super.getTriggersEnds()
+            .concat([
+                TRIGGER_ROUND_ENDS,
+            ]);
     }
     async execute(params) {
         this.playing = true;

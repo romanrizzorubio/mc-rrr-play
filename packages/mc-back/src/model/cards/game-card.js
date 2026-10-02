@@ -368,6 +368,13 @@ export class GameCard extends Engine {
 
         return this.card.traits;
     }
+    get type() {
+        if (this.sides.length) {
+            return this.currentSide.type;
+        }
+
+        return this.card.type;
+    }
     get triggerInstant() {
         if (this.sides.length) {
             return this.currentSide.triggerInstant;
@@ -456,7 +463,8 @@ export class GameCard extends Engine {
                 const _priority = Object.keys(priority).reduce((priorityRet, priorityKey) => {
                     const triggers = priority[priorityKey];
 
-                    const triggersRet = triggers.filter(trigger => trigger.keepTriggering);
+                    const triggersRet = triggers.filter(trigger =>
+                        trigger.keepTriggering || trigger.ability?.lasting);
 
                     if (triggersRet.length) {
                         priorityRet[priorityKey] = triggersRet;
@@ -472,6 +480,30 @@ export class GameCard extends Engine {
                 return typeRet;
             }, {});
         }
+
+        if (!Object.keys(this.triggers).length) {
+            delete this.match.triggerCards[this.id];
+        }
+    }
+    removeLastingTriggers(lasting) {
+        Object.keys(this.triggers).forEach(type => {
+            const priorities = this.triggers[type];
+
+            Object.keys(priorities).forEach(priority => {
+                const remaining = priorities[priority]
+                    .filter(trigger => trigger.ability?.lasting !== lasting);
+
+                if (remaining.length) {
+                    priorities[priority] = remaining;
+                } else {
+                    delete priorities[priority];
+                }
+            });
+
+            if (!Object.keys(priorities).length) {
+                delete this.triggers[type];
+            }
+        });
 
         if (!Object.keys(this.triggers).length) {
             delete this.match.triggerCards[this.id];

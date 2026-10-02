@@ -11,6 +11,7 @@ export class SearchCardsEffect extends Effect {
         filter = {},
         title = 'Elige una carta',
         count = 1,
+        firstMatch = false,
     }) {
         super(arguments[0]);
         this.locations = locations;
@@ -18,11 +19,18 @@ export class SearchCardsEffect extends Effect {
         this.filter = filter;
         this.title = title;
         this.count = count;
+        this.firstMatch = firstMatch;
     }
 
     async execute(params) {
         const game = this.match;
         const {player} = params;
+
+        if (this.firstMatch) {
+            params.selectedCards = [];
+            params.selectedCard = undefined;
+            params.card = undefined;
+        }
         
         let targetPlayers = [];
         if (this.playersTarget === TARGET_ALL_PLAYERS) {
@@ -32,26 +40,46 @@ export class SearchCardsEffect extends Effect {
         }
 
         const options = [];
-        targetPlayers.forEach(p => {
-            this.locations.forEach(location => {
+        for (const p of targetPlayers) {
+            for (const location of this.locations) {
                 let cards = [];
                 if (location === PLACE_DISCARD_PILE) {
-                    cards = p.deck.discardPile;
+                    cards = this.firstMatch ?
+                        p.deck.discardPile.slice().reverse() :
+                        p.deck.discardPile;
                 } else if (location === PLACE_DECK) {
                     cards = p.deck.cards;
                 } else if (location === PLACE_HAND) {
                     cards = p.hand.cards;
                 }
 
-                cards.forEach(card => {
-                    if (checkCondition(card, this.filter)) {
+                if (this.firstMatch) {
+                    const card = cards.find(candidate => checkCondition(candidate, this.filter));
+                    if (card) {
                         options.push(card);
+                        break;
                     }
-                });
-            });
-        });
+                } else {
+                    cards.forEach(card => {
+                        if (checkCondition(card, this.filter)) {
+                            options.push(card);
+                        }
+                    });
+                }
+            }
+            if (this.firstMatch && options.length) {
+                break;
+            }
+        }
 
         if (options.length === 0) {
+            return;
+        }
+
+        if (this.firstMatch) {
+            params.selectedCards = options;
+            params.selectedCard = options[0];
+            params.card = options[0];
             return;
         }
 

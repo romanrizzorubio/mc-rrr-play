@@ -91,7 +91,8 @@ export class McResource extends LitElement {
     }
 
     renderMenuOptions() {
-        return [RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL].map(this.renderMenuOption.bind(this));
+        return [RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL]
+            .map(this.renderMenuOption.bind(this));
     }
 
     renderMenu() {

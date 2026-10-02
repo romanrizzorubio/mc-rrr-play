@@ -21,8 +21,8 @@ export class SchemeCardComponent extends LitElement {
             acceleration: { type: Number},
             threat: { type: Number},
             showThreat: { type: Boolean, attribute: 'show-threat'},
-            headerLeft: {type: String, attribute: 'header-left'},
-            headerRight: {type: String, attribute: 'header-right'},
+            headerLeft: {type: Number, attribute: 'header-left'},
+            headerRight: {type: Number, attribute: 'header-right'},
         };
     }
 
@@ -33,8 +33,8 @@ export class SchemeCardComponent extends LitElement {
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
-        this.headerLeft = '';
-        this.headerRight = '';
+        this.headerLeft = undefined;
+        this.headerRight = undefined;
     }
 
     render() {
@@ -48,8 +48,8 @@ export class SchemeCardComponent extends LitElement {
                 threat="${threat}"
                 acceleration="${acceleration}"
                 show-threat
-                header-left="${headerLeft}"
-                header-right="${headerRight}"
+                .headerLeft="${headerLeft}"
+                .headerRight="${headerRight}"
             >
             </mc-card>
         `;

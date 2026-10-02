@@ -17,7 +17,10 @@ export class CardsFactory {
         params.match = this.match;
 
         if (Object.hasOwn(CARD_MAP, type)) {
-            return new CARD_MAP[type](params);
+            return new CARD_MAP[type]({
+                ...params,
+                type,
+            });
         }
     }
     createCardSides(sides) {

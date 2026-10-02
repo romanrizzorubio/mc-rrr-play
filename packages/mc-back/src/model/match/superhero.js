@@ -1,6 +1,35 @@
+import {
+    TARGET_ALTEREGO,
+    TARGET_HERO,
+    TARGET_YOUR_SUPERHERO,
+} from 'mc-shared';
+
 import {CharacterGameCard} from '../cards/character-game-card.js';
 
 export class Superhero extends CharacterGameCard {
+    static hasAbilityTrigger(card, ability) {
+        return Object.values(card.triggers).some(triggersByPriority =>
+            Object.values(triggersByPriority).some(triggers =>
+                triggers.some(trigger => trigger.ability === ability)
+            )
+        );
+    }
+    static targetsIdentity(target, isHero, isAlterEgo) {
+        const targets = Array.isArray(target) ? target : [target];
+
+        return targets.some(targetType => {
+            switch (targetType) {
+                case TARGET_YOUR_SUPERHERO:
+                    return true;
+                case TARGET_HERO:
+                    return isHero;
+                case TARGET_ALTEREGO:
+                    return isAlterEgo;
+                default:
+                    return false;
+            }
+        });
+    }
     constructor({
 // GameCard
         sides: _sides = [],
@@ -43,13 +72,21 @@ export class Superhero extends CharacterGameCard {
         return this.currentSide.defense;
     }
     get handSize() {
+        if (this.owner && this.owner.isPlayer) {
+            return this.owner.handSize;
+        }
+
         return this.currentSide.handSize;
     }
     get hazardIcons() {
         return this.currentSide.hazardIcons;
     }
     get hitPoints() {
-        return this.currentSide.hitPoints;
+        if (this.owner && this.owner.isPlayer) {
+            return this.owner.hitPoints;
+        }
+
+        return super.hitPoints;
     }
     get isAlterEgo() {
         return this.currentSide.card.isAlterEgo;
@@ -84,6 +121,32 @@ export class Superhero extends CharacterGameCard {
         await super.init();
 
         this.controller = controller;
+    }
+    async initTriggers(params) {
+        const {currentSide, isAlterEgo, isHero} = this;
+
+        await this.promisesSequential(this.sides, async side => {
+            await this.promisesSequential(side.abilities, async ability => {
+                if (Superhero.hasAbilityTrigger(side, ability)) {
+                    return;
+                }
+
+                if (side !== currentSide &&
+                    (!ability.effect ||
+                        !Superhero.targetsIdentity(
+                            ability.effect.target,
+                            isHero,
+                            isAlterEgo
+                        ))) {
+                    return;
+                }
+
+                await ability.initTriggers(side, params);
+            });
+        });
+    }
+    endTriggers(force) {
+        this.sides.forEach(side => side.endTriggers(force));
     }
     toObj() {
         const {flipped, id, life, mainName} = this;

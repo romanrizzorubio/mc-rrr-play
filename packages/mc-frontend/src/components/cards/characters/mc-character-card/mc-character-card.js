@@ -19,11 +19,17 @@ export class McCharacterCard extends LitElement {
             name: {type: String},
             image: {type: String},
             life: {type: Number},
+            hitPoints: {type: Number},
+            attack: {type: Number},
+            thwart: {type: Number},
+            defense: {type: Number},
+            recovery: {type: Number},
+            scheme: {type: Number},
             statusCards: {type: Object},
             attached: {type: Array},
-            showDamage: {type: Boolean, attribute: 'show-damage'},
-            headerLeft: {type: String, attribute: 'header-left'},
-            headerRight: {type: String, attribute: 'header-right'},
+            extraTraits: {type: Array},
+            headerLeft: {type: Number, attribute: 'header-left'},
+            headerRight: {type: Number, attribute: 'header-right'},
         };
     }
 
@@ -33,25 +39,55 @@ export class McCharacterCard extends LitElement {
         this.name = '';
         this.image = '';
         this.life = 0;
+        this.hitPoints = undefined;
+        this.attack = undefined;
+        this.thwart = undefined;
+        this.defense = undefined;
+        this.recovery = undefined;
+        this.scheme = undefined;
         this.statusCards = {};
         this.attached = [];
-        this.headerLeft = '';
-        this.headerRight = '';
+        this.extraTraits = [];
+        this.headerLeft = undefined;
+        this.headerRight = undefined;
     }
 
     render() {
-        const {name, image, life, statusCards, attached, headerLeft, headerRight, showDamage} = this;
+        const {
+            name,
+            image,
+            life,
+            hitPoints,
+            attack,
+            thwart,
+            defense,
+            recovery,
+            scheme,
+            statusCards,
+            attached,
+            extraTraits,
+            headerLeft,
+            headerRight,
+        } = this;
 
         return html`
             <mc-card
                 name="${name}"
                 image="${image}"
-                damage="${life}"
-                .showDamage="${showDamage}"
+                .life="${life}"
+                .hitPoints="${hitPoints}"
                 .statusCards="${statusCards}"
                 .attached="${attached}"
-                header-left="${headerLeft}"
-                header-right="${headerRight}"
+                .extraTraits="${extraTraits}"
+                show-acquired-traits
+                show-basic-stats
+                .headerLeft="${headerLeft}"
+                .headerRight="${headerRight}"
+                .attack="${attack}"
+                .thwart="${thwart}"
+                .defense="${defense}"
+                .recovery="${recovery}"
+                .scheme="${scheme}"
             >
             </mc-card>
         `;

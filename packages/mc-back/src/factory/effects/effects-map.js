@@ -32,7 +32,7 @@ import {
     EFFECT_FACEDOWN,
     EFFECT_FILL_HAND,
     EFFECT_FLIP,
-    EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP,
+    EFFECT_GENERATE_RESOURCES_FROM_CARD,
     EFFECT_HEAL,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_LASTING,
@@ -61,8 +61,8 @@ import {
     EFFECT_READY,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_COUNTER,
+    EFFECT_REMOVE_TRAIT,
     EFFECT_REMOVE_USE,
-    EFFECT_REMOVE_THREAT_ALL_SCHEMES,
     EFFECT_REMOVE_THREAT,
     EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
     EFFECT_RETURN_FACEDOWN,
@@ -71,7 +71,6 @@ import {
     EFFECT_REVEAL_FIRST_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SEARCH_DISCARD_RETURN_TO_HAND,
     EFFECT_SELECT_AND_ORDER_CARDS,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_DISCARD_TO_CARD,
@@ -119,7 +118,7 @@ import {ExhaustEffect} from '../../effects/exhaust-effect.js';
 import {FaceDownEffect} from '../../effects/facedown-effect.js';
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {FlipEffect} from '../../effects/flip-effect.js';
-import {GenerateResourcesFromDiscardTopEffect} from '../../effects/generate-resources-from-discard-top-effect.js';
+import {GenerateResourcesFromCardEffect} from '../../effects/generate-resources-from-card-effect.js';
 import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
@@ -148,7 +147,7 @@ import {RandomCardEffect} from '../../effects/random-card-effect.js';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {RemoveCardEffect} from '../../effects/remove-card-effect.js';
 import {RemoveCountersEffect} from '../../effects/remove-counters-effect.js';
-import {RemoveThreatAllSchemesEffect} from '../../effects/remove-threat-all-schemes-effect.js';
+import {RemoveTraitEffect} from '../../effects/remove-trait-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
 import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selected-special-abilities-effect.js';
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
@@ -157,7 +156,6 @@ import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {RevealFirstEncounterEffect} from '../../effects/reveal-first-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
-import {SearchDiscardAndReturnToHandEffect} from '../../effects/search-discard-return-to-hand-effect.js';
 import {SelectAndOrderCardsEffect} from '../../effects/select-and-order-cards-effect.js';
 import {SelectDiscardCardEffect} from '../../effects/select-discard-card-effect.js';
 import {SelectFromTopDeckEffect} from '../../effects/select-from-top-deck-effect.js';
@@ -231,8 +229,8 @@ export const EFFECT_MAP = {
     [EFFECT_RETURN_HAND]: ReturnHandEffect,
     [EFFECT_REVEAL_ENCOUNTER]: RevealEncounterEffect,
     [EFFECT_REMOVE_THREAT]: RemoveThreatEffect,
-    [EFFECT_REMOVE_THREAT_ALL_SCHEMES]: RemoveThreatAllSchemesEffect,
     [EFFECT_REMOVE_COUNTER]: RemoveCountersEffect,
+    [EFFECT_REMOVE_TRAIT]: RemoveTraitEffect,
     [EFFECT_REMOVE_USE]: RemoveCountersEffect,
     [EFFECT_RETURN_FACEDOWN]: ReturnFaceDownEffect,
     [EFFECT_REVEAL_FIRST_ENCOUNTER]: RevealFirstEncounterEffect,
@@ -244,8 +242,7 @@ export const EFFECT_MAP = {
     [EFFECT_MOVE_TO_DECK]: MoveToDeckEffect,
     [EFFECT_PAY_PRINTED_COST]: PayPrintedCostEffect,
     [EFFECT_FILL_HAND]: FillHandEffect,
-    [EFFECT_SEARCH_DISCARD_RETURN_TO_HAND]: SearchDiscardAndReturnToHandEffect,
-    [EFFECT_GENERATE_RESOURCES_FROM_DISCARD_TOP]: GenerateResourcesFromDiscardTopEffect,
+    [EFFECT_GENERATE_RESOURCES_FROM_CARD]: GenerateResourcesFromCardEffect,
     [EFFECT_SEARCH_CARD_REVEAL]: SearchCardAndRevealEffect,
     [EFFECT_SELECT_DISCARD_CARD]: SelectDiscardCardEffect,
     [EFFECT_SELECT_DISCARD_TO_CARD]: SelectDiscardToCardEffect,
