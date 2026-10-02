@@ -66,6 +66,31 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 
 ## Mapeo de Acciones a Efectos
 
+### Estructura de efectos en capacidades
+
+- `params.effect` debe describir un solo efecto; no asignes un array directamente (`effect: [...]`). `EffectsFactory.parseEffect` convierte ese array en otro array, pero una capacidad necesita una instancia de efecto con `canRun`.
+- Para ejecutar varios efectos en secuencia, envuélvelos en `EFFECT_CHAINED`:
+
+```javascript
+effect: {
+    type: EFFECT_CHAINED,
+    params: {
+        matchAll: true,
+        effects: [
+            {
+                type: EFFECT_FLIP,
+                params: {target: TARGET_YOUR_SUPERHERO}
+            },
+            {
+                type: EFFECT_FILL_HAND
+            }
+        ]
+    }
+}
+```
+
+- Usa `matchAll: true` cuando todos los efectos de la cadena sean necesarios y deban poder ejecutarse para habilitar la capacidad.
+
 - **"Inflige X de daño"**: `EFFECT_DEAL_DAMAGE`.
 - **"Quita X de amenaza"**: `EFFECT_REMOVE_THREAT`.
 - **"Busca en tu mazo..."**: `EFFECT_SEARCH_CARDS` + `EFFECT_CHAINED` + `EFFECT_MOVE_TO_HAND` + `EFFECT_SHUFFLE_DECK`.

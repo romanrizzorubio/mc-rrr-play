@@ -39,6 +39,7 @@ import {
     TARGET_ALL_ENEMIES,
     TARGET_PLAYER,
     TARGET_SCHEME,
+    TARGET_SIDE,
     TARGET_THIS,
     TARGET_YOUR_SUPERHERO,
     TARGET_ALTEREGO,
@@ -326,14 +327,21 @@ export const splitPersonality = {
             type: ABILITY_ACTION,
             params: {
                 name: 'Doble personalidad',
-                effect: [{
-                    type: EFFECT_FLIP,
+                effect: {
+                    type: EFFECT_CHAINED,
                     params: {
-                        target: TARGET_YOUR_SUPERHERO,
+                        matchAll: true,
+                        effects: [{
+                            type: EFFECT_FLIP,
+                            params: {
+                                target: TARGET_YOUR_SUPERHERO,
+                                formTarget: TARGET_SIDE,
+                            }
+                        }, {
+                            type: EFFECT_FILL_HAND,
+                        }]
                     }
-                }, {
-                    type: EFFECT_FILL_HAND,
-                }]
+                }
             }
         }],
     }

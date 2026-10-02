@@ -21,6 +21,8 @@ export class PlayCardEffect extends Effect {
         this.resourcesPaid = [];
         this.canceled = false;
         this.modifyCost = 0;
+        this.removedFromHand = false;
+        this.played = false;
 
         if (card.isUpgrade) {
             this.target = card.card.attach;
@@ -70,6 +72,8 @@ export class PlayCardEffect extends Effect {
         const {card, cardsPaid, ability, selectedTarget} = this;
         const {player} = params;
 
+        this.played = true;
+
         if (cardsPaid) {
             const payCostEffect = new PayCostEffect({
                 hand: cardsPaid.hand,
@@ -103,7 +107,10 @@ export class PlayCardEffect extends Effect {
             });
         }
         card.isPlaying = false;
-        player.hand.discardHand(card);
+        if (!this.removedFromHand || player.hand.cards.includes(card)) {
+            player.hand.discardHand(card);
+        }
+        this.removedFromHand = false;
         await player.hand.refresh();
     }
     async getCost(params) {
@@ -174,10 +181,38 @@ export class PlayCardEffect extends Effect {
     }
     async prepare(params) {
         const {card} = this;
+        const {player} = params;
 
         card.isPlaying = true;
+        this.removedFromHand = player.hand.cards.includes(card);
+        if (this.removedFromHand) {
+            player.hand.discardHand(card);
+            await player.hand.refresh();
+        }
 
         await super.prepare(params);
+    }
+    async returnToHand(player) {
+        const {card} = this;
+
+        card.isPlaying = false;
+        if (this.removedFromHand) {
+            if (!player.hand.cards.includes(card)) {
+                player.hand.addCard(card);
+            }
+            this.removedFromHand = false;
+            await player.hand.refresh();
+        }
+    }
+    async runEffect(params) {
+        try {
+            await super.runEffect(params);
+        } finally {
+            if (!this.played) {
+                this.canceled = true;
+                await this.returnToHand(params.player);
+            }
+        }
     }
     selectAbility() {
         return new Promise(resolve => {
@@ -197,10 +232,16 @@ export class PlayCardEffect extends Effect {
         });
     }
     async execute(params) {
-        const {card} = this;
+        const {card, selectedTarget, target} = this;
 
         if (!this.ability) {
             this.ability = await this.selectAbility(params);
+        }
+
+        if (target && (selectedTarget === null || selectedTarget === undefined)) {
+            this.canceled = true;
+            card.isPlaying = false;
+            return;
         }
 
         const abilityState = this.ability ?
@@ -211,6 +252,7 @@ export class PlayCardEffect extends Effect {
             };
 
         if (!abilityState.canRun) {
+            this.canceled = true;
             card.isPlaying = false;
             return;
         }
@@ -228,6 +270,7 @@ export class PlayCardEffect extends Effect {
                     arrowPaid: true,
                 });
             } else {
+                this.canceled = true;
                 card.isPlaying = false;
             }
         }

@@ -106,6 +106,8 @@ La pantalla se divide en varias áreas:
 
 ### Ejecutar Acciones
 
+Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un objetivo válido o hayan superado su límite aparecen deshabilitadas.
+
 #### Jugar una Carta
 
 **Requiere:**
@@ -124,6 +126,7 @@ La pantalla se divide en varias áreas:
 - Se gastan recursos
 - Se desencadenan triggers
 - Efectos se aplican
+- Si la jugada se cancela por falta de un objetivo válido o por no poder pagar un coste, la carta vuelve a la mano
 
 #### Atacar a un Enemigo
 

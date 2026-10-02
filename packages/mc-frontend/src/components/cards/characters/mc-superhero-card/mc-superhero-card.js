@@ -44,6 +44,7 @@ export class SuperheroCardComponent extends LitElement {
             .map(ability => ({
                 id: `${ABILITY_ID}${ability.index}`,
                 text: ability.name,
+                disable: ability.disable,
             }));
 
         options.unshift({

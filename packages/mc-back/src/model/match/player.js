@@ -497,9 +497,38 @@ export class Player extends Engine {
         };
     }
     async toObjWithPlayableHand() {
+        const player = this.toObj();
+        const {superhero} = this;
+        const abilities = await Promise.all(
+            superhero.currentSide.abilities.map(async (ability, index) => {
+                const serializedAbility = {
+                    ...ability.toObj(),
+                    index,
+                };
+
+                if (!ability.isAction && !ability.isBasic) {
+                    return serializedAbility;
+                }
+
+                ability.prepareEffect();
+
+                return {
+                    ...serializedAbility,
+                    disable: !(await ability.canRun({
+                        player: this,
+                        card: superhero,
+                    })),
+                };
+            })
+        );
+
         return {
-            ...this.toObj(),
+            ...player,
             hand: await this.hand.toObjWithPlayability(),
+            superhero: {
+                ...player.superhero,
+                abilities,
+            },
         };
     }
 }

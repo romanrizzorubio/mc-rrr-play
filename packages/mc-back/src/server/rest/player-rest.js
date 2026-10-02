@@ -38,8 +38,9 @@ export class PlayerRest {
         const player = match.getPlayer(params.player);
 
         await player.flip(true);
+        await match.refresh();
 
-        return player.toObj();
+        return player.toObjWithPlayableHand();
     }
     async playCard(params) {
         const {match, cardId} = params;
@@ -50,7 +51,9 @@ export class PlayerRest {
             abilityType: ABILITY_ACTION,
         });
 
-        return player.toObj();
+        await match.refresh();
+
+        return player.toObjWithPlayableHand();
     }
     async resolveAbility(params) {
         const {match, card, ability} = params;
@@ -61,7 +64,8 @@ export class PlayerRest {
         }
 
         await player.resolveAbility(card, ability);
+        await match.refresh();
 
-        return player.toObj();
+        return player.toObjWithPlayableHand();
     }
 }

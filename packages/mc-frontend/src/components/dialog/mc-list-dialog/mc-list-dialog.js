@@ -31,6 +31,10 @@ export class McListDialog extends McDialog {
         return e => {
             e.stopPropagation();
 
+            if (option.disable) {
+                return;
+            }
+
             const {_response} = this;
 
             this._response = {
@@ -59,6 +63,7 @@ export class McListDialog extends McDialog {
                 <md-list-item
                     interactive
                     type="button"
+                    .disabled="${Boolean(option.disable)}"
                     @click="${this.handleClick(option)}"
                 >
                     <div 
