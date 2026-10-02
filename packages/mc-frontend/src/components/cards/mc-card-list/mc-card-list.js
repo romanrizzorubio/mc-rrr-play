@@ -120,6 +120,7 @@ export class HandComponent extends LitElement {
             name,
             statusCards,
         } = card;
+        const {abilityNames = []} = card;
 
         const damage = showDamage || showDamageIfHas ?
             card.life !== undefined ?
@@ -154,7 +155,9 @@ export class HandComponent extends LitElement {
                 @change-menu="${this.handleChangeMenu(index)}"
                 @card-click="${this.handleClick(index)}"
                 @card-menu-click="${this.handleMenuClick(index)}"
-            ></mc-card>
+            >${abilityNames.map(abilityName => html`
+                <div slot="top" class="ability-name">${abilityName}</div>
+            `)}</mc-card>
         `;
     }
     render() {

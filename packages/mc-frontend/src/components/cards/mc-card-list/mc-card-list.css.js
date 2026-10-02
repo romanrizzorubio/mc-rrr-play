@@ -10,6 +10,10 @@ export default css`
   .marked {
     border: solid 3px yellow;
   }
+
+  .ability-name {
+    text-align: center;
+  }
   
   :not(.marked) {
     border: solid 3px transparent;

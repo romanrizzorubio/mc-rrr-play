@@ -111,7 +111,15 @@ export class Engine {
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 hideOk: mandatory,
                 data: {
-                    cards: cards.map(card => card.toObj(arguments[0])),
+                    cards: cards.map(card => ({
+                        ...card.toObj(arguments[0]),
+                        abilityNames: cardsTriggers[card.id].triggers
+                            .map(trigger => trigger instanceof Trigger ?
+                                trigger.ability && trigger.ability.name :
+                                trigger.name)
+                            .filter((name, index, names) =>
+                                name && names.indexOf(name) === index),
+                    })),
                     mandatory,
                 },
             });
