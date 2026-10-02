@@ -738,4 +738,34 @@ export class GameCard extends Engine {
             })),
         };
     }
+    async toObjWithAbilityAvailability(player) {
+        const serializedCard = this.toObj();
+        const abilities = await Promise.all(this.currentSide.abilities.map(async (ability, index) => {
+            const serializedAbility = {
+                ...ability.toObj(),
+                index,
+            };
+
+            if (!ability.isAction && !ability.isBasic) {
+                return serializedAbility;
+            }
+
+            ability.prepareEffect();
+
+            return {
+                ...serializedAbility,
+                disable: !(await ability.canRun({
+                    player,
+                    card: this,
+                })),
+            };
+        }));
+
+        return {
+            ...serializedCard,
+            abilities,
+            playable: abilities.some(ability =>
+                (ability.isAction || ability.isBasic) && !ability.disable),
+        };
+    }
 }

@@ -53,10 +53,13 @@ export class GameZone extends Engine {
     }
     async refresh() {
         const {match, objectToRefresh} = this;
+        const gameZone = this.owner.isPlayer ?
+            await this.toObjWithAbilityAvailability(this.owner) :
+            this.toObj();
 
         match.mc.mcSocket.send(
             REFRESH_EVENTS[objectToRefresh],
-            this.toObj()
+            gameZone
         );
         await Promise.all(match.players.map(player => player.hand.refresh()));
     }
@@ -110,6 +113,13 @@ export class GameZone extends Engine {
 
         return {
             cards: cards.map(card => card.toObj(arguments[0])),
+        };
+    }
+    async toObjWithAbilityAvailability(player) {
+        return {
+            ...this.toObj(),
+            cards: await Promise.all(this.cards.map(card =>
+                card.toObjWithAbilityAvailability(player))),
         };
     }
 }

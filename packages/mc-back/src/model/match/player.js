@@ -525,6 +525,9 @@ export class Player extends Engine {
         return {
             ...player,
             hand: await this.hand.toObjWithPlayability(),
+            gameZone: this.gameZone ?
+                await this.gameZone.toObjWithAbilityAvailability(this) :
+                player.gameZone,
             superhero: {
                 ...player.superhero,
                 abilities,

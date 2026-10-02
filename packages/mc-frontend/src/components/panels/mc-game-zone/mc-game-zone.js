@@ -31,6 +31,8 @@ export class McGameZone extends LitElement {
         e.stopPropagation();
 
         const {card, cardIndex} = e.detail;
+        const ability = card.abilities.findIndex(_ability =>
+            _ability.isAction || _ability.isBasic);
 
         this.dispatchEvent(new CustomEvent('game-zone-card-click', {
             bubbles: true,
@@ -38,7 +40,7 @@ export class McGameZone extends LitElement {
             detail: {
                 card,
                 cardIndex,
-                ability: 0,
+                ability,
             }
         }));
     }
@@ -70,6 +72,7 @@ export class McGameZone extends LitElement {
                 show-generic
                 .showDamage="${showDamage}"
                 .showThreat="${showThreat}"
+                .dimUnplayable="${true}"
                 show-exhausted
                 @card-list-select="${this.handleSelect}"
                 @card-list-menu-click="${this.handleMenuClick}"

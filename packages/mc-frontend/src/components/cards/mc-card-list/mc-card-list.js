@@ -41,13 +41,17 @@ export class HandComponent extends LitElement {
     }
     getMenuOptions(card) {
         if (this.showMenuAbilities) {
-            const options = card.abilities
-                .filter(ability => ability.isAction ||
-                    ability.isBasic)
-                .map((ability, index) => ({
-                    id: `${ABILITY_ID}${index}`,
-                    text: ability.name
-                }));
+            const options = card.abilities.reduce((ret, ability, index) => {
+                if (ability.isAction || ability.isBasic) {
+                    ret.push({
+                        id: `${ABILITY_ID}${index}`,
+                        text: ability.name,
+                        disable: ability.disable,
+                    });
+                }
+
+                return ret;
+            }, []);
 
             if (options.length > 1) {
                 return options;
