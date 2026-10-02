@@ -207,28 +207,35 @@ class Effect {
 
 ### 7. Server (Servidor)
 
-**Ubicación:** `src/server/`
+**Ubicación:** `packages/mc-back/src/server/`
+
+Express y Socket.IO comparten el servidor HTTP del backend, que escucha en el puerto `3000`.
 
 #### McRest
-- Define endpoints REST
-- Gestiona peticiones HTTP
-- Retorna respuestas JSON
+- Define rutas GET y POST, analiza cuerpos JSON y obtiene la partida a partir de la cabecera HTTP `match`.
+- Las partidas se guardan en memoria en `Mc.matches`.
 
-**Endpoints Principales:**
-- `POST /match/create` - Crear partida
-- `POST /match/:name/join` - Unirse a partida
-- `GET /match/:name` - Obtener estado
-- `POST /match/:name/action` - Ejecutar acción
+**Rutas REST registradas actualmente:**
+
+| Método | Ruta | Uso |
+| :--- | :--- | :--- |
+| `GET` | `/get-heroes-list` | Obtener la lista de héroes |
+| `GET` | `/get-scenarios-list` | Obtener la lista de escenarios |
+| `POST` | `/create-match` | Crear una partida |
+| `POST` | `/create-player` | Añadir un jugador |
+| `POST` | `/create-scenario` | Añadir un escenario |
+| `POST` | `/init-match` | Inicializar la partida |
+| `POST` | `/player-flip` | Cambiar la identidad del jugador |
+| `POST` | `/play-card` | Jugar una carta |
+| `POST` | `/resolve-ability` | Resolver una capacidad |
 
 #### McSocket
-- Gestiona conexiones WebSocket
-- Emite eventos en tiempo real
-- Sincroniza estado entre clientes
+- Gestiona los eventos Socket.IO definidos en `packages/mc-back/src/constants/endpoints.js`.
+- Recibe `end-turn` y gestiona el intercambio `open-dialog` / `dialog-response`.
+- Emite eventos `*-refresh` para que el frontend actualice el estado de partida.
+- Actualmente `Mc` guarda una única conexión en `this.socket`; los envíos no son un broadcast a todas las conexiones.
 
-**Eventos Principales:**
-- `match:updated` - Partida actualizada
-- `player:action` - Acción de jugador
-- `game:ended` - Juego terminado
+**Eventos principales:** `end-turn`, `open-dialog`, `dialog-response` y los eventos `*-refresh` descritos en [Comunicación](#comunicación).
 
 ## Componentes del Frontend
 
@@ -317,61 +324,53 @@ Mano del jugador que:
 ### Creación de Partida
 
 ```
-Frontend                Backend
-├─ Usuario rellena       
-│  formulario            
-├─ Envía POST           
-│  /match/create ────────► Backend
-│                        ├─ Valida datos
-│                        ├─ Crea Match
-│                        ├─ Inicializa Motor
-│                        └─ Retorna estado
-├─ Recibe datos         
-│  actualizado
-└─ Renderiza UI
+Frontend                                  Backend
+├─ GET /get-heroes-list ─────────────────► Devuelve la lista de héroes
+├─ GET /get-scenarios-list ───────────────► Devuelve la lista de escenarios
+├─ POST /create-match ────────────────────► Crea y guarda Match
+├─ POST /create-player ───────────────────► Añade Player a Match
+├─ POST /create-scenario ─────────────────► Añade Scenario a Match
+├─ POST /init-match ──────────────────────► Inicializa el motor y la partida
+└─ Recibe JSON y renderiza la partida
 ```
 
 ### Ejecutar Acción
 
 ```
-Frontend                Backend
-├─ Usuario ejecuta      
-│  acción               
-├─ Emite evento vía     
-│  Socket.IO ───────────► Backend
-│                        ├─ Valida acción
-│                        ├─ Ejecuta en Engine
-│                        ├─ Detecta triggers
-│                        ├─ Aplica efectos
-│                        ├─ Actualiza estado
-│                        └─ Emite update
-├─ Recibe update vía
-│  Socket.IO
-└─ Re-renderiza UI
+Frontend                                  Backend
+├─ UI envía flip/jugar/resolver ─────────► REST POST correspondiente
+│                                         ├─ Ejecuta acción en Player/Engine
+│                                         ├─ Resuelve triggers y efectos
+│                                         └─ Emite el evento *-refresh adecuado
+├─ Recibe la actualización por Socket.IO
+├─ Integra el payload en el estado local
+└─ Lit vuelve a renderizar
+
+Fin de turno: el frontend emite `end-turn` por Socket.IO.
+Diálogos: el backend emite `open-dialog`; el frontend responde con `dialog-response`.
 ```
 
 ## Comunicación
 
 ### REST API
 
-Usado para operaciones iniciales:
+Se usa para obtener las listas, crear e inicializar la partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes están en `packages/mc-back/src/constants/endpoints.js`. El frontend mantiene los nombres en `packages/mc-frontend/src/misc/endpoints.js`.
 
-```
-POST /match/create
-GET /match/:name
-POST /match/:name/join
-POST /match/:name/action
-```
+Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` añade `/` antes del valor de `endpoint`, y las constantes REST del frontend también empiezan por `/`; por ejemplo, `/create-match` genera `http://localhost:3000//create-match`, mientras Express registra `/create-match`. Comprueba la URL efectiva al modificar el helper o las rutas.
 
 ### WebSocket (Socket.IO)
 
-Usado para comunicación en tiempo real:
+Se usa para el fin de turno, los diálogos interactivos y las actualizaciones de estado en tiempo real.
 
 ```javascript
-socket.on('match:updated', (state) => { /* actualizar */ })
-socket.emit('player:action', { type, data })
-socket.on('game:ended', (result) => { /* mostrar resultado */ })
+socket.emit('end-turn')
+socket.on('match-refresh', (match) => { /* actualizar estado */ })
+socket.on('player-refresh', (player) => { /* actualizar jugador */ })
+socket.on('open-dialog', (params) => { /* mostrar diálogo */ })
+socket.emit('dialog-response', response)
 ```
+
+Los nombres de eventos son los valores de `endpoints.js` en ambos paquetes. El backend conserva actualmente una sola conexión Socket.IO y sus emisiones no se difunden a todos los clientes.
 
 ## Gestión de Estado
 
@@ -410,7 +409,7 @@ El estado de una partida contiene:
 
 **Durante la Partida:**
 - Estado se mantiene en memoria en el Backend
-- Socket.IO sincroniza con Frontends
+- Socket.IO envía actualizaciones al socket actualmente guardado por el backend; no hay difusión a todas las conexiones.
 
 **Futuro:**
 - Podría agregarse base de datos
