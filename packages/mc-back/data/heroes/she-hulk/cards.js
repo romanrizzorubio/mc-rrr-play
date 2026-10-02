@@ -217,7 +217,7 @@ export const gammaSlam = {
                     params: {
                         target: TARGET_ENEMY,
                         paramsCalc: {
-                            target: 'player.hero',
+                            target: 'player.superhero',
                             formula: CALC_DAMAGE,
                             max: 15,
                         }
