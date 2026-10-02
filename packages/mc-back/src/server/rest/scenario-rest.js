@@ -1,4 +1,4 @@
-import {endpoints} from '../../constants/endpoints.js';
+import {ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
 
 export class ScenarioRest {
@@ -9,7 +9,7 @@ export class ScenarioRest {
         return this.rest.mc;
     }
     createEndpoints() {
-        this.rest.post(endpoints.scenario.create, this.createScenario.bind(this));
+        this.rest.post(ENDPOINTS.SCENARIO.CREATE, this.createScenario.bind(this));
     }
     async createScenario(params) {
         const {match, scenario} = params;

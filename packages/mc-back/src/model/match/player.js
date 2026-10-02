@@ -1,5 +1,5 @@
 import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from '../../constants/dialogs.js';
-import {endpoints} from '../../constants/endpoints.js';
+import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {RESOURCES_X} from '../../constants/resources.js';
 import {TARGET_CARD} from '../../constants/targets.js';
 import {TRIGGER_YOUR_HERO_GET_HIT_POINTS} from '../../constants/triggers.js';
@@ -147,7 +147,7 @@ export class Player extends Engine {
     }
     async refresh() {
         this.match.mc.mcSocket.send(
-            endpoints[this.objectToRefresh].refresh,
+            REFRESH_EVENTS[this.objectToRefresh],
             await this.toObjWithPlayableHand()
         );
     }
@@ -188,7 +188,7 @@ export class Player extends Engine {
         return this.superhero.confuse();
     }
     defeat() {
-        this.match.mc.send(endpoints.player.defeat, this.toObj());
+        this.match.mc.send(EVENTS.PLAYER.DEFEAT, this.toObj());
     }
     discardHand(card) {
         const discardFromHandEffect = new DiscardFromHandEffect({

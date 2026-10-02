@@ -1,5 +1,5 @@
 import {DIALOG_LIST, DIALOG_USE_CARD} from '../constants/dialogs.js';
-import {endpoints} from '../constants/endpoints.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {
     MANDATORY_PRIORITIES, PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
@@ -350,7 +350,7 @@ export class Engine {
             console.log('Falta Match');
         }
 
-        match.mc.mcSocket.send(endpoints[objectToRefresh].refresh, this.toObj());
+        match.mc.mcSocket.send(REFRESH_EVENTS[objectToRefresh], this.toObj());
     }
     setLimit(limit) {
         if (!this.match.limits[limit.time]) {

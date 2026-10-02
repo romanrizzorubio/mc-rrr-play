@@ -9,6 +9,7 @@ import '../../../pages/mc-match-page/mc-match-page.js';
 import '../../dialog/index.js';
 import {Api} from '../../api/api.js';
 import {Dialog} from '../../api/dialog.js';
+import {EVENTS} from 'mc-endpoints';
 
 class McApp extends router(navigator(outlet(LitElement))) {
     static get properties() {
@@ -55,6 +56,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.player = '';
 
         this.apiDialog = null;
+        this.addEventListener(EVENTS.MATCH.CREATED, this.handleMatchCreated.bind(this));
     }
     connectedCallback() {
         super.connectedCallback();
@@ -209,7 +211,6 @@ class McApp extends router(navigator(outlet(LitElement))) {
               <div route='create-match'>
                   <mc-create-match-page
                       .api="${api}"
-                      @match-created="${this.handleMatchCreated.bind(this)}"
                   ></mc-create-match-page>
               </div>
               <div route='match'>

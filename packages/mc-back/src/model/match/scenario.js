@@ -1,4 +1,4 @@
-import {endpoints} from '../../constants/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 import {PutPlayEffect} from '../../effects/put-play-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {Engine} from '../../engine/engine.js';
@@ -138,7 +138,7 @@ export class Scenario extends Engine {
     }
     async selectVillain(player) {
         if (!this.villains.length) {
-            this.match.mc.send(endpoints.scenario.defeat, this.toObj());
+            this.match.mc.send(EVENTS.SCENARIO.DEFEAT, this.toObj());
         }
 
         const nextVillain = this.villains.shift();

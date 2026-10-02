@@ -1,4 +1,4 @@
-import {endpoints} from '../../misc/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 
 export class Dialog {
     constructor(api) {
@@ -6,13 +6,13 @@ export class Dialog {
     }
     dialogResponse(params) {
         this.api.send({
-            endpoint: endpoints.dialog.response,
+            endpoint: EVENTS.DIALOG.RESPONSE,
             params
         });
     }
     listenDialog(callback) {
         this.api.listen({
-            event: endpoints.dialog.open,
+            event: EVENTS.DIALOG.OPEN,
             callback: params => {
                 callback({
                     ...params,

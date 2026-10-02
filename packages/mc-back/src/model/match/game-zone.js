@@ -1,5 +1,5 @@
 import {TARGET_CARD} from '../../constants/targets.js';
-import {endpoints} from '../../constants/endpoints.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, path} from '../../engine/utils.js';
@@ -55,7 +55,7 @@ export class GameZone extends Engine {
         const {match, objectToRefresh} = this;
 
         match.mc.mcSocket.send(
-            endpoints[objectToRefresh].refresh,
+            REFRESH_EVENTS[objectToRefresh],
             this.toObj()
         );
         await Promise.all(match.players.map(player => player.hand.refresh()));

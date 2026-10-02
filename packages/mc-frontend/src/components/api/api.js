@@ -1,6 +1,6 @@
 import { Manager } from '/node_modules/socket.io-client/dist/socket.io.esm.min.js';
 
-import {endpoints} from '../../misc/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 
 export const METHODS = {
     GET: 'GET',
@@ -28,7 +28,7 @@ export class Api {
     }
     listenCard(callback) {
         this.listen({
-            event: endpoints.card.refresh,
+            event: EVENTS.CARD.REFRESH,
             callback: params => {
                 callback(params);
             }
@@ -36,25 +36,25 @@ export class Api {
     }
     listenDeck(callback) {
         this.listen({
-            event: endpoints.deck.refresh,
+            event: EVENTS.DECK.REFRESH,
             callback,
         });
     }
     listenHand(callback) {
         this.listen({
-            event: endpoints.hand.refresh,
+            event: EVENTS.HAND.REFRESH,
             callback,
         });
     }
     listenMatch(callback) {
         this.listen({
-            event: endpoints.match.refresh,
+            event: EVENTS.MATCH.REFRESH,
             callback,
         });
     }
     listenPlayer(callback) {
         this.listen({
-            event: endpoints.player.refresh,
+            event: EVENTS.PLAYER.REFRESH,
             callback: params => {
                 callback(params);
             }
@@ -62,7 +62,7 @@ export class Api {
     }
     listenPlayerZone(callback) {
         this.listen({
-            event: endpoints.playerZone.refresh,
+            event: EVENTS.PLAYER_ZONE.REFRESH,
             callback: params => {
                 callback(params);
             }
@@ -70,22 +70,16 @@ export class Api {
     }
     listenScenario(callback) {
         this.listen({
-            event: endpoints.scenario.refresh,
+            event: EVENTS.SCENARIO.REFRESH,
             callback
         });
     }
     listenScenarioZone(callback) {
         this.listen({
-            event: endpoints.scenarioZone.refresh,
+            event: EVENTS.SCENARIO_ZONE.REFRESH,
             callback: params => {
                 callback(params);
             }
-        });
-    }
-    listenTurn(callback) {
-        this.listen({
-            event: endpoints.turn.init,
-            callback
         });
     }
     get(params) {
@@ -113,7 +107,7 @@ export class Api {
             },
         };
 
-        const response = await fetch(`${this.httpHost}/${endpoint}`, options);
+        const response = await fetch(new URL(endpoint, this.httpHost), options);
 
         return await response.json();
     }

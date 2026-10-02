@@ -1,6 +1,6 @@
 import {ABILITY_ACTION} from '../../constants/abilities.js';
 import {DIALOG_DISCARD_RANDOM_HAND} from '../../constants/dialogs.js';
-import {endpoints} from '../../constants/endpoints.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {RESOURCE_WILD} from '../../constants/resources.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
@@ -81,7 +81,7 @@ export class Hand extends Engine {
         const {match, objectToRefresh} = this;
 
         match.mc.mcSocket.send(
-            endpoints[objectToRefresh].refresh,
+            REFRESH_EVENTS[objectToRefresh],
             await this.toObjWithPlayability()
         );
     }

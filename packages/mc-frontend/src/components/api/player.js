@@ -1,4 +1,4 @@
-import {endpoints} from '../../misc/endpoints.js';
+import {ENDPOINTS, EVENTS} from 'mc-endpoints';
 
 export class Player {
     constructor(api) {
@@ -6,14 +6,14 @@ export class Player {
     }
     endTurn() {
         return this.api.send({
-            endpoint: endpoints.turn.end,
+            endpoint: EVENTS.TURN.END,
         });
     }
     flip(player) {
         const {api} = this;
 
         return api.post({
-            endpoint: endpoints.player.flip,
+            endpoint: ENDPOINTS.PLAYER.FLIP,
             params: {
                 player,
             }
@@ -23,7 +23,7 @@ export class Player {
         const {api} = this;
 
         api.post({
-            endpoint: endpoints.player.playCard,
+            endpoint: ENDPOINTS.PLAYER.PLAY_CARD,
             params: {
                 player,
                 cardId,
@@ -34,7 +34,7 @@ export class Player {
         const {api} = this;
 
         api.post({
-            endpoint: endpoints.player.resolveAbility,
+            endpoint: ENDPOINTS.PLAYER.RESOLVE_ABILITY,
             params: {
                 player,
                 card,

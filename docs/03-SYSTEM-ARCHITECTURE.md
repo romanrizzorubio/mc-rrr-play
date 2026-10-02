@@ -230,7 +230,7 @@ Express y Socket.IO comparten el servidor HTTP del backend, que escucha en el pu
 | `POST` | `/resolve-ability` | Resolver una capacidad |
 
 #### McSocket
-- Gestiona los eventos Socket.IO definidos en `packages/mc-back/src/constants/endpoints.js`.
+- Gestiona los eventos Socket.IO definidos en `packages/mc-endpoints/events.js`.
 - Recibe `end-turn` y gestiona el intercambio `open-dialog` / `dialog-response`.
 - Emite eventos `*-refresh` para que el frontend actualice el estado de partida.
 - Actualmente `Mc` guarda una única conexión en `this.socket`; los envíos no son un broadcast a todas las conexiones.
@@ -265,7 +265,6 @@ src/
 │
 ├── misc/
 │   ├── cards.js              # Datos de cartas
-│   ├── endpoints.js          # URLs de API
 │   ├── resources.js          # Manejo de recursos
 │   └── utils.js              # Utilidades
 │
@@ -354,9 +353,9 @@ Diálogos: el backend emite `open-dialog`; el frontend responde con `dialog-resp
 
 ### REST API
 
-Se usa para obtener las listas, crear e inicializar la partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes están en `packages/mc-back/src/constants/endpoints.js`. El frontend mantiene los nombres en `packages/mc-frontend/src/misc/endpoints.js`.
+Se usa para obtener las listas, crear e inicializar la partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend.
 
-Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` añade `/` antes del valor de `endpoint`, y las constantes REST del frontend también empiezan por `/`; por ejemplo, `/create-match` genera `http://localhost:3000//create-match`, mientras Express registra `/create-match`. Comprueba la URL efectiva al modificar el helper o las rutas.
+Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` resuelve las rutas (con `/` inicial) contra `httpHost` usando `new URL()`, por lo que `/create-match` se solicita como `http://localhost:3000/create-match`.
 
 ### WebSocket (Socket.IO)
 
@@ -370,7 +369,7 @@ socket.on('open-dialog', (params) => { /* mostrar diálogo */ })
 socket.emit('dialog-response', response)
 ```
 
-Los nombres de eventos son los valores de `endpoints.js` en ambos paquetes. El backend conserva actualmente una sola conexión Socket.IO y sus emisiones no se difunden a todos los clientes.
+Los nombres de eventos son los valores centralizados en `packages/mc-endpoints/events.js`. El backend conserva actualmente una sola conexión Socket.IO y sus emisiones no se difunden a todos los clientes.
 
 ## Gestión de Estado
 

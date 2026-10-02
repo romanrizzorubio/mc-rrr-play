@@ -4,6 +4,7 @@ import styles from './mc-create-match-page.css.js';
 import '../../components/views/mc-create-match/mc-create-match.js';
 import {Api} from '../../components/api/api.js';
 import {ConfigMatch} from '../../components/api/config-match.js';
+import {EVENTS} from 'mc-endpoints';
 
 export class McCreateMatchPage extends LitElement {
     static get is() {
@@ -75,7 +76,7 @@ export class McCreateMatchPage extends LitElement {
         await apiConfigMatch.createScenario(scenario);
         const match = await apiConfigMatch.initMatch(false);
 
-        this.dispatchEvent(new CustomEvent('match-created', {
+        this.dispatchEvent(new CustomEvent(EVENTS.MATCH.CREATED, {
             bubbles: true,
             composed: true,
             detail: {

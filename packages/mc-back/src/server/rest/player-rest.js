@@ -1,5 +1,5 @@
 import {ABILITY_ACTION} from '../../constants/abilities.js';
-import {endpoints} from '../../constants/endpoints.js';
+import {ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
 
 export class PlayerRest {
@@ -10,10 +10,10 @@ export class PlayerRest {
         return this.rest.mc;
     }
     createEndpoints() {
-        this.rest.post(endpoints.player.create, this.createPlayer.bind(this));
-        this.rest.post(endpoints.player.flip, this.flip.bind(this));
-        this.rest.post(endpoints.player.playCard, this.playCard.bind(this));
-        this.rest.post(endpoints.player.resolveAbility, this.resolveAbility.bind(this));
+        this.rest.post(ENDPOINTS.PLAYER.CREATE, this.createPlayer.bind(this));
+        this.rest.post(ENDPOINTS.PLAYER.FLIP, this.flip.bind(this));
+        this.rest.post(ENDPOINTS.PLAYER.PLAY_CARD, this.playCard.bind(this));
+        this.rest.post(ENDPOINTS.PLAYER.RESOLVE_ABILITY, this.resolveAbility.bind(this));
     }
     async createPlayer(params) {
         const {match, name, hero, initial} = params;

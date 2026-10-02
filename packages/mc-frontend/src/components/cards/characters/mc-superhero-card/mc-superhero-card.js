@@ -3,8 +3,9 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-superhero-card.css.js';
 import '../../mc-card/mc-card.js';
 import {ABILITY_ID} from '../../../../misc/utils.js';
+import {EVENTS} from 'mc-endpoints';
 
-export const MENU_OPTION_END = 'end-turn';
+export const MENU_OPTION_END = EVENTS.TURN.END;
 export const MENU_OPTION_FLIP = 'flip';
 
 export class SuperheroCardComponent extends LitElement {

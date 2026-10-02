@@ -1,4 +1,4 @@
-import {endpoints} from '../../constants/endpoints.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {path} from '../../engine/utils.js';
@@ -120,7 +120,7 @@ export class Match extends Engine {
     }
     async refresh() {
         this.mc.mcSocket.send(
-            endpoints[this.objectToRefresh].refresh,
+            REFRESH_EVENTS[this.objectToRefresh],
             await this.toObjWithPlayableHands()
         );
     }

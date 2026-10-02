@@ -1,4 +1,4 @@
-import {endpoints} from '../../constants/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 
 export class DialogSocket {
     constructor(socket) {
@@ -10,9 +10,9 @@ export class DialogSocket {
     openDialog(params) {
         return new Promise(resolve => {
             this.socket.request(
-                endpoints.dialog.open,
+                EVENTS.DIALOG.OPEN,
                 params,
-                endpoints.dialog.response,
+                EVENTS.DIALOG.RESPONSE,
                 resolve,
             );
         });

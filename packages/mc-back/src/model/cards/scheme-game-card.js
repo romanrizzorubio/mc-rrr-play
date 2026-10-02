@@ -1,4 +1,4 @@
-import {endpoints} from '../../constants/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 
 import {GameCard} from './game-card.js';
 
@@ -67,7 +67,7 @@ export class SchemeGameCard extends GameCard {
     }
     defeat() {
         if (this.isMain) {
-            this.match.mc.send(endpoints.card.defeat, this.toObj());
+            this.match.mc.send(EVENTS.CARD.DEFEAT, this.toObj());
         }
 
         return super.defeat();

@@ -1,4 +1,4 @@
-import {endpoints} from '../constants/endpoints.js';
+import {EVENTS} from 'mc-endpoints';
 
 import {Effect} from './effect.js';
 
@@ -9,7 +9,7 @@ export class PlayTurnEffect extends Effect {
         match.currentPlayer = player;
 
         const turnEnded = new Promise(resolve => {
-            match.listen(endpoints.turn.end, resolve, true);
+            match.listen(EVENTS.TURN.END, resolve, true);
         });
 
         await match.refresh();

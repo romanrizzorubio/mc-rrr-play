@@ -6,7 +6,7 @@ Consulta esta guía antes de cambiar cómo se comunican la interfaz y el servido
 
 - El frontend Lit inicializa `Api` en `packages/mc-frontend/src/components/core/mc-app/mc-app.js`. Su implementación está en `packages/mc-frontend/src/components/api/api.js`.
 - El backend configura Express y Socket.IO sobre el mismo servidor HTTP en `packages/mc-back/src/server/mc.js`; escucha en el puerto `3000`. El frontend de desarrollo se sirve en el puerto `8000`.
-- Las constantes de rutas/eventos están duplicadas en `packages/mc-frontend/src/misc/endpoints.js` y `packages/mc-back/src/constants/endpoints.js`. Mantén ambos contratos sincronizados.
+- Las rutas REST se centralizan en `packages/mc-endpoints/endpoints.js` y los eventos compartidos en `packages/mc-endpoints/events.js`. Frontend y backend deben importar `ENDPOINTS`, `EVENTS` y `REFRESH_EVENTS` desde la entrada principal `mc-endpoints`, sin mantener copias locales ni usar subrutas del paquete.
 - Las partidas se guardan en memoria en `Mc.matches` (`packages/mc-back/src/server/mc.js`); el cliente envía el nombre de la partida en la cabecera HTTP `match`.
 
 ## REST: configuración y acciones
@@ -29,7 +29,7 @@ Rutas REST registradas actualmente:
 
 La configuración inicial llama a estas rutas en secuencia desde `components/api/config-match.js` y `pages/mc-create-match-page/mc-create-match-page.js`. Las acciones de cambiar identidad, jugar carta y resolver capacidad también usan REST. El fin de turno, en cambio, usa Socket.IO.
 
-**Atención al formato de las rutas:** `Api.request()` construye la URL como `httpHost + '/' + endpoint`, mientras que las constantes REST del frontend empiezan por `/`. Por ejemplo, `/create-match` produce `http://localhost:3000//create-match`, aunque Express registra `/create-match`. Comprueba la URL HTTP efectiva al cambiar el helper o las rutas; no asumas que la constante por sí sola garantiza que la petición coincida con la ruta.
+`Api.request()` resuelve las rutas REST (que empiezan por `/`) contra `httpHost` con `new URL()`. Por ejemplo, `/create-match` produce `http://localhost:3000/create-match`, la misma ruta que registra Express.
 
 ## Socket.IO: eventos, respuestas y actualizaciones
 
@@ -39,7 +39,7 @@ El cliente abre la conexión Socket.IO con `ws://localhost:3000` al inicializar 
 - **Diálogos interactivos:** el backend emite `open-dialog`; el frontend presenta el diálogo y devuelve la selección mediante `dialog-response`.
 - **Actualizaciones de estado:** el backend emite eventos como `match-refresh`, `player-refresh`, `player-zone-refresh`, `scenario-refresh`, `scenario-zone-refresh`, `hand-refresh`, `deck-refresh` y `card-refresh`. El frontend los escucha desde `mc-match-page` y actualiza el estado que Lit vuelve a renderizar.
 
-Los nombres de estos eventos y sus payloads también forman parte del contrato duplicado en los dos archivos `endpoints.js`. Al añadir o cambiar un evento, actualiza ambos lados y el listener/emisor correspondiente.
+Los nombres de estos eventos y sus payloads forman parte del contrato de `packages/mc-endpoints/events.js`. Al añadir o cambiar un evento, actualiza ese paquete y el listener/emisor correspondiente.
 
 ## Flujo y responsabilidades
 

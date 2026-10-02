@@ -1,4 +1,4 @@
-import {endpoints} from '../../misc/endpoints.js';
+import {ENDPOINTS} from 'mc-endpoints';
 
 export class ConfigMatch {
     constructor(api) {
@@ -7,7 +7,7 @@ export class ConfigMatch {
     createMatch({name}) {
         this.api.match = name;
         return this.api.post({
-            endpoint: endpoints.match.create,
+            endpoint: ENDPOINTS.MATCH.CREATE,
             params: {
                 name,
             }
@@ -15,29 +15,29 @@ export class ConfigMatch {
     }
     async createPlayer(player) {
         return await this.api.post({
-            endpoint: endpoints.player.create,
+            endpoint: ENDPOINTS.PLAYER.CREATE,
             params: player
         });
     }
     createScenario(scenario) {
         return this.api.post({
-            endpoint: endpoints.scenario.create,
+            endpoint: ENDPOINTS.SCENARIO.CREATE,
             params: scenario,
         });
     }
     getHeroesList() {
         return this.api.get({
-            endpoint: endpoints.match.getHeroesList,
+            endpoint: ENDPOINTS.MATCH.GET_HEROES_LIST,
         });
     }
     getScenariosList() {
         return this.api.get({
-            endpoint: endpoints.match.getScenariosList,
+            endpoint: ENDPOINTS.MATCH.GET_SCENARIOS_LIST,
         });
     }
     initMatch(expert) {
         return this.api.post({
-            endpoint: endpoints.match.init,
+            endpoint: ENDPOINTS.MATCH.INIT,
             params: {
                 expert
             }
