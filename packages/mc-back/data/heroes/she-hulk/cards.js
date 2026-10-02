@@ -571,7 +571,7 @@ export const personalChallengeCard = {
     type: CARD_TYPE_SIDE_SCHEME_SCENARIO,
     params: {
         name: 'Reto personal',
-        img: 'heroes/she-hulk/01161.png',
+        image: 'heroes/she-hulk/01161.png',
         boost: 3,
         icons: {crisis: true},
         startingThreat: 3,
@@ -595,7 +595,7 @@ export const titaniaCard = {
     params: {
         name: 'Titania',
         unique: true,
-        img: 'heroes/she-hulk/01162.png',
+        image: 'heroes/she-hulk/01162.png',
         traits: [TRAIT_BRUTE, TRAIT_ELITE],
         boost: 2,
         hitPoints: 6,
@@ -612,7 +612,7 @@ export const geneticUpgradeCard = {
     type: CARD_TYPE_ATTACHMENT,
     params: {
         name: 'Mejora genética',
-        img: 'heroes/she-hulk/01163.png',
+        image: 'heroes/she-hulk/01163.png',
         traits: [TRAIT_CONDITION],
         boost: 1,
         attach: {
@@ -643,7 +643,7 @@ export const titaniasFuryCard = {
     type: CARD_TYPE_TREACHERY,
     params: {
         name: 'La furia de Titania',
-        img: 'heroes/she-hulk/01164.png',
+        image: 'heroes/she-hulk/01164.png',
         traits: [],
         boost: 1,
         abilities: [

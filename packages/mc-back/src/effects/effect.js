@@ -40,8 +40,10 @@ export class Effect extends Engine {
             target = TARGET_YOU,
             refreshTarget = false,
             title = '',
+            effectType,
         } = params;
 
+        this.effectType = effectType;
         this.target = target;
         this.refreshTarget = refreshTarget;
         this.source = source;

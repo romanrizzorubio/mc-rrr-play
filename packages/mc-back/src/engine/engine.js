@@ -371,7 +371,17 @@ export class Engine {
         let triggers = await this._getTriggers(type, priority, params);
 
         while (triggers.length) {
-            const trigger = await this._openTriggersDialog(triggers, priority, params);
+            const automaticTrigger = triggers.find(_trigger => _trigger.ability.hideDialog);
+            let trigger;
+            if (automaticTrigger) {
+                if (!params.player) {
+                    params.player = this._getPlayersTriggers(triggers)[0];
+                }
+                trigger = automaticTrigger;
+                await trigger.runTrigger(params);
+            } else {
+                trigger = await this._openTriggersDialog(triggers, priority, params);
+            }
 
             if (!trigger) {
                 break;

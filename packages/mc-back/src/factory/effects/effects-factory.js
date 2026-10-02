@@ -21,7 +21,10 @@ export class EffectsFactory {
 
         const EffectClass = EFFECT_MAP[type];
         if (EffectClass) {
-            return new EffectClass(effectParams);
+            return new EffectClass({
+                ...effectParams,
+                effectType: type,
+            });
         }
     }
     _parseChained(params) {
