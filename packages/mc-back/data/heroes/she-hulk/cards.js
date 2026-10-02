@@ -122,7 +122,7 @@ export const sheHulkCard = {
         abilities: [{
             type: ABILITY_HERO_RESPONSE,
             params: {
-                name: '\"¡Deberías hacer pesas!\"',
+                name: '¡Deberías hacer pesas!',
                 trigger: TRIGGER_THIS_FLIP,
                 effect: {
                     type: EFFECT_DEAL_DAMAGE,
@@ -364,7 +364,7 @@ export const superhumanLawDivision = {
                         }, {
                             type: EFFECT_SPEND,
                             params: {
-                                resources: [RESOURCE_WILD],
+                                resources: [RESOURCE_MENTAL],
                             }
                         }]
                     }
