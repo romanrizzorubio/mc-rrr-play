@@ -1,6 +1,6 @@
 import {DIALOG_SELECT_TARGET} from '../constants/dialogs.js';
 import {
-    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_HEROES,
+    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_ENEMIES, TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
 } from '../constants/targets.js';
 
@@ -83,6 +83,7 @@ export class ValidTarget extends Engine {
         switch (target) {
             case TARGET_ALL_CARDS:
             case TARGET_ALL_CHARACTERS:
+            case TARGET_ALL_ENEMIES:
             case TARGET_ALL_HEROES:
             case TARGET_ALL_HEROES_ALLIES:
             case TARGET_ALL_ENGAGED_MINIONS:

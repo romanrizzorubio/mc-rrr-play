@@ -32,7 +32,7 @@ export const scenarioConfig = {
         {count: 1, card: armoredRhinoSuit},
         {count: 2, card: charge},
         {count: 1, card: enhancedIvoryHorn},
-        {count: 200, card: hydraMercenary},
+        {count: 2, card: hydraMercenary},
         {count: 1, card: sandMan},
         {count: 1, card: shocker},
         {count: 2, card: hardToKeepDown},
