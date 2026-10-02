@@ -65,6 +65,7 @@ export class McHand extends LitElement {
                 >${this.getButton()}</md-elevated-button>
                 <mc-card-list
                     .cards="${cards}"
+                    .dimUnplayable="${true}"
                     @card-list-select="${this.handleSelect}"
                 ></mc-card-list>
             </div>

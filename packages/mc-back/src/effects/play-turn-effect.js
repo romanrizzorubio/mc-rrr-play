@@ -3,15 +3,17 @@ import {endpoints} from '../constants/endpoints.js';
 import {Effect} from './effect.js';
 
 export class PlayTurnEffect extends Effect {
-    execute({player}) {
-        return new Promise(resolve => {
-            const {match} = this;
+    async execute({player}) {
+        const {match} = this;
 
-            match.currentPlayer = player;
+        match.currentPlayer = player;
 
-            match.refresh();
-
+        const turnEnded = new Promise(resolve => {
             match.listen(endpoints.turn.end, resolve, true);
         });
+
+        await match.refresh();
+
+        return turnEnded;
     }
 }

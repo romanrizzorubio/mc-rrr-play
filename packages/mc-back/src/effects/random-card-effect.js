@@ -19,6 +19,6 @@ export class RandomCardEffect extends Effect {
             this.cards.push(await selectedTarget.hand.discardRandom(showDialog));
         }
 
-        selectedTarget.hand.refresh();
+        await selectedTarget.hand.refresh();
     }
 }

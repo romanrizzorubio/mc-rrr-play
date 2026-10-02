@@ -14,6 +14,10 @@ export default css`
   .ability-name {
     text-align: center;
   }
+
+  .unplayable {
+    filter: brightness(0.5);
+  }
   
   :not(.marked) {
     border: solid 3px transparent;

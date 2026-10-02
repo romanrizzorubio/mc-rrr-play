@@ -62,7 +62,7 @@ export class PutPlayEffect extends Effect {
             }
 
             if (!card.isMinion && !card.attachedTo && controller && controller.gameZone) {
-                controller.gameZone.refresh();
+                await controller.gameZone.refresh();
             }
 
             if (card.isAlly) {

@@ -7,6 +7,6 @@ export class DealEncounterEffect extends Effect {
         const cards = await this.match.drawEncounterCards();
 
         selectedTarget.gameZone.dealEncounterCard(cards);
-        selectedTarget.gameZone.refresh();
+        await selectedTarget.gameZone.refresh();
     }
 }

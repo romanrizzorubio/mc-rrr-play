@@ -70,6 +70,10 @@ export class FlipEffect extends Effect {
         selectedFormTarget.initTriggers();
 
         selectedTarget.refresh();
+        const {owner} = selectedTarget;
+        if (owner && owner.isPlayer) {
+            await owner.hand.refresh();
+        }
 
         const triggerParams = {
             ...params,

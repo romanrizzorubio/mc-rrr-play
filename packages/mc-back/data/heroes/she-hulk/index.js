@@ -27,7 +27,7 @@ export const heroConfig = {
         {count: 1, card: hellcat},
         {count: 1, card: gammaSlam},
         {count: 3, card: oneTwoPunch},
-        {count: 2, card: groundStomp},
+        {count: 20, card: groundStomp},
         {count: 2, card: legalPractice},
         {count: 1, card: splitPersonality},
         {count: 1, card: superhumanLawDivision},

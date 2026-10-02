@@ -1,3 +1,4 @@
+import {endpoints} from '../../constants/endpoints.js';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {path} from '../../engine/utils.js';
@@ -116,6 +117,12 @@ export class Match extends Engine {
     }
     get objectToRefresh() {
         return 'match';
+    }
+    async refresh() {
+        this.mc.mcSocket.send(
+            endpoints[this.objectToRefresh].refresh,
+            await this.toObjWithPlayableHands()
+        );
     }
     get orderedPlayers() {
         const players = [];
@@ -387,6 +394,14 @@ export class Match extends Engine {
             playing,
             players: players.map(player => player.toObj()),
             scenario: scenario && scenario.toObj(),
+        };
+    }
+    async toObjWithPlayableHands() {
+        return {
+            ...this.toObj(),
+            players: await Promise.all(
+                this.players.map(player => player.toObjWithPlayableHand())
+            ),
         };
     }
 }

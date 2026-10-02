@@ -18,7 +18,7 @@ export class MoveToHandEffect extends Effect {
 
             // La añadimos a la mano
             targetPlayer.hand.addCard(card);
-            targetPlayer.hand.refresh();
+            await targetPlayer.hand.refresh();
 
             this.match.logger.info(`${targetPlayer.name} añade ${card.name} a su mano.`);
         }

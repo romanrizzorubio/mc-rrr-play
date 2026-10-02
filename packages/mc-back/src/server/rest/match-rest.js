@@ -37,6 +37,6 @@ export class MatchRest {
 
         await match.initMatch(expert);
 
-        return match.toObj();
+        return match.toObjWithPlayableHands();
     }
 }

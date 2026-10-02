@@ -104,7 +104,7 @@ export class PlayCardEffect extends Effect {
         }
         card.isPlaying = false;
         player.hand.discardHand(card);
-        player.hand.refresh();
+        await player.hand.refresh();
     }
     async getCost(params) {
         const {card} = params;

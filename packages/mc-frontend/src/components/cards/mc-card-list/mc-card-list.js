@@ -22,6 +22,7 @@ export class HandComponent extends LitElement {
             showThreat: {type: Boolean, attribute: 'show-threat'},
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
+            dimUnplayable: {type: Boolean, attribute: 'dim-unplayable'},
         };
     }
     constructor() {
@@ -36,6 +37,7 @@ export class HandComponent extends LitElement {
         this.showThreat = false;
         this.showGeneric = false;
         this.showExhausted = false;
+        this.dimUnplayable = false;
     }
     getMenuOptions(card) {
         if (this.showMenuAbilities) {
@@ -112,6 +114,7 @@ export class HandComponent extends LitElement {
             showDamageIfHas,
             showThreat,
             showGeneric,
+            dimUnplayable,
         } = this;
         const {
             attached,
@@ -132,10 +135,18 @@ export class HandComponent extends LitElement {
         const threat = showThreat ? card.threat : undefined;
         const generic = showGeneric ? card.counters : undefined;
         const exhausted = this.showExhausted && card.exhausted;
+        const classes = [];
+
+        if (marked.some(i => i === index)) {
+            classes.push('marked');
+        }
+        if (dimUnplayable && card.playable === false) {
+            classes.push('unplayable');
+        }
 
         return html`
             <mc-card
-                class="${marked.some(i => i === index) ? 'marked' : ''}"
+                class="${classes.join(' ')}"
                 name="${name}"
                 image="${image}"
                 damage="${damage}"

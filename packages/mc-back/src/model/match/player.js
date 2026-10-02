@@ -145,6 +145,12 @@ export class Player extends Engine {
     get objectToRefresh() {
         return 'player';
     }
+    async refresh() {
+        this.match.mc.mcSocket.send(
+            endpoints[this.objectToRefresh].refresh,
+            await this.toObjWithPlayableHand()
+        );
+    }
     get owner() {
         return this;
     }
@@ -488,6 +494,12 @@ export class Player extends Engine {
             hand: hand ? hand.toObj(arguments[0]) : undefined,
             superhero: superhero ? superhero.toObj(arguments[0]) : undefined,
             gameZone: gameZone ? gameZone.toObj(arguments[0]) : undefined,
+        };
+    }
+    async toObjWithPlayableHand() {
+        return {
+            ...this.toObj(),
+            hand: await this.hand.toObjWithPlayability(),
         };
     }
 }

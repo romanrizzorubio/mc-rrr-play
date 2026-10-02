@@ -32,7 +32,7 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
         this.isAlly = true;
     }
     async canPlay(params) {
-        const {player} = params;
+        const {player, checkOnly} = params;
 
         const getMaxAlliesEffect = new GetMaxAlliesEffect({
             match: this.match,
@@ -42,6 +42,10 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
         const allies = player.allies;
 
         if (allies.length >= getMaxAlliesEffect.maxAllies) {
+            if (checkOnly) {
+                return super.canPlay(params);
+            }
+
             const {accepted} = await this.openDialog({
                 dialogType: DIALOG_MAX_ALLIES,
                 title: 'Aliados',

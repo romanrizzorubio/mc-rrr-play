@@ -1,4 +1,6 @@
+import {ABILITY_ACTION} from '../../constants/abilities.js';
 import {DIALOG_DISCARD_RANDOM_HAND} from '../../constants/dialogs.js';
+import {endpoints} from '../../constants/endpoints.js';
 import {RESOURCE_WILD} from '../../constants/resources.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
@@ -75,9 +77,29 @@ export class Hand extends Engine {
             .filter(card =>
                 checkCondition(card, condition));
     }
+    async refresh() {
+        const {match, objectToRefresh} = this;
+
+        match.mc.mcSocket.send(
+            endpoints[objectToRefresh].refresh,
+            await this.toObjWithPlayability()
+        );
+    }
     toObj() {
         const {cards} = this;
 
         return cards.map(card => card.toObj(arguments[0]));
+    }
+    async toObjWithPlayability() {
+        const {cards, owner} = this;
+
+        return Promise.all(cards.map(async card => ({
+            ...card.toObj(),
+            playable: !card.card.isResource && await card.canPlay({
+                player: owner,
+                abilityType: ABILITY_ACTION,
+                checkOnly: true,
+            }),
+        })));
     }
 }

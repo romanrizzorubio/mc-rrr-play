@@ -11,7 +11,7 @@ export class DiscardFromHandEffect extends Effect {
         }
 
         await player.hand.discardHand(selectedTarget);
-        player.hand.refresh();
+        await player.hand.refresh();
 
         await player.deck.discard(selectedTarget);
         player.deck.refresh();

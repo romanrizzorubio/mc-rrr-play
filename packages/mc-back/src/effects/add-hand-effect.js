@@ -1,11 +1,11 @@
 import {Effect} from './effect.js';
 
 export class AddHandEffect extends Effect {
-    execute(params) {
+    async execute(params) {
         const {cards, player} = params;
 
         player.hand.addCards(cards);
 
-        player.hand.refresh();
+        await player.hand.refresh();
     }
 }

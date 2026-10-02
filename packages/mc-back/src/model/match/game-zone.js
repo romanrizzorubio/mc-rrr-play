@@ -1,4 +1,5 @@
 import {TARGET_CARD} from '../../constants/targets.js';
+import {endpoints} from '../../constants/endpoints.js';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, path} from '../../engine/utils.js';
@@ -49,6 +50,15 @@ export class GameZone extends Engine {
     }
     get upgrades() {
         return this.cards.filter(card => card.isUpgrade);
+    }
+    async refresh() {
+        const {match, objectToRefresh} = this;
+
+        match.mc.mcSocket.send(
+            endpoints[objectToRefresh].refresh,
+            this.toObj()
+        );
+        await Promise.all(match.players.map(player => player.hand.refresh()));
     }
     addToGameZone(card) {
         this.cards.push(card);

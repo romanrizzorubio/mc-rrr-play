@@ -49,7 +49,7 @@ export class DefeatEffect extends Effect {
             this.match.villain.refresh();
         } else {
             if (gameZone) {
-                gameZone.refresh();
+                await gameZone.refresh();
             }
         }
     }

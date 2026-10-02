@@ -46,7 +46,7 @@ export class SelectFromTopDeckEffect extends Effect {
             }
 
             player.deck.refresh();
-            player.hand.refresh();
+            await player.hand.refresh();
         }
     }
 }

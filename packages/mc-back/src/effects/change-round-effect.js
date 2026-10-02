@@ -11,11 +11,11 @@ export class ChangeRoundEffect extends Effect {
         }
 
         match.currentPlayer.initial = false;
-        match.currentPlayer.refresh();
+        await match.currentPlayer.refresh();
 
         match.currentPlayer = match.players[index];
         match.currentPlayer.initial = true;
 
-        match.currentPlayer.refresh();
+        await match.currentPlayer.refresh();
     }
 }

@@ -9,8 +9,8 @@ export class ReturnHandEffect extends Effect {
 
         player.hand.addCards([selectedTarget]);
 
-        player.gameZone.refresh();
-        player.hand.refresh();
+        await player.gameZone.refresh();
+        await player.hand.refresh();
         selectedTarget.refresh();
     }
 }

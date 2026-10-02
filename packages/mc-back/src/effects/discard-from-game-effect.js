@@ -11,7 +11,9 @@ export class DiscardFromGameEffect extends Effect {
         if (attachedTo) {
             attachedTo.refresh();
         } else {
-            controller && controller.gameZone.refresh();
+            if (controller) {
+                await controller.gameZone.refresh();
+            }
         }
 
         controller && controller.deck.refresh();
