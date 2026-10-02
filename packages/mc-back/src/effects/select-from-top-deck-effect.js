@@ -38,7 +38,7 @@ export class SelectFromTopDeckEffect extends Effect {
             const toDiscard = cards.filter(card => !this.selectedCards.includes(card));
 
             if (this.selectedCards.length > 0) {
-                await player.hand.add(this.selectedCards);
+                player.hand.addCards(this.selectedCards);
             }
 
             if (toDiscard.length > 0) {

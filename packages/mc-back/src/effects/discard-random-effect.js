@@ -32,7 +32,9 @@ export class DiscardRandomEffect extends Effect {
             match: this.match,
         });
 
-        await this.promisesSequential(this.cards, async card => {
+        const cards = await this.selectDiscardOrder(this.cards);
+
+        await this.promisesSequential(cards, async card => {
             discardFromHandEffect.selectedTarget = card;
 
             await discardFromHandEffect.runEffect(params);

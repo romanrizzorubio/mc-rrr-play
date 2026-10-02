@@ -48,7 +48,8 @@ export class Deck extends Engine {
     }
     async discard(card) {
         if (card instanceof Array) {
-            this.discardPile = this.discardPile.concat(card);
+            const orderedCards = await this.selectDiscardOrder(card);
+            this.discardPile = this.discardPile.concat(orderedCards);
         } else {
             this.discardPile.push(card);
         }

@@ -1,4 +1,4 @@
-import {DIALOG_LIST, DIALOG_USE_CARD,
+import {DIALOG_DISCARD_ORDER, DIALOG_LIST, DIALOG_USE_CARD,
     MANDATORY_PRIORITIES, PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
@@ -341,6 +341,79 @@ export class Engine {
             console.log('Falta Match');
         }
         return this.match.openDialog(params);
+    }
+    async selectCardOrder(cards, title = 'Elige el orden de las cartas') {
+        const remainingCards = cards.slice();
+        const orderedCards = [];
+
+        while (remainingCards.length > 0) {
+            let selected;
+            if (remainingCards.length === 1) {
+                selected = remainingCards[0];
+            } else {
+                const response = await this.openDialog({
+                    dialogType: DIALOG_LIST,
+                    hideOk: true,
+                    title,
+                    data: {
+                        options: remainingCards.map((card, index) => ({
+                            id: index,
+                            text: card.card.name,
+                        })),
+                    },
+                });
+                const selectedIndex = response?.selected?.id;
+                if (!Number.isInteger(selectedIndex) ||
+                    selectedIndex < 0 ||
+                    selectedIndex >= remainingCards.length) {
+                    throw new Error('La selección del orden de las cartas no es válida.');
+                }
+                selected = remainingCards[selectedIndex];
+            }
+
+            orderedCards.push(selected);
+            remainingCards.splice(remainingCards.indexOf(selected), 1);
+        }
+
+        return orderedCards;
+    }
+    async selectDiscardOrder(cards, title = 'Elige qué carta descartar primero') {
+        const remainingCards = cards.slice();
+        const orderedCards = [];
+
+        while (remainingCards.length > 0) {
+            if (remainingCards.length === 1) {
+                orderedCards.push(remainingCards[0]);
+                break;
+            }
+
+            const response = await this.openDialog({
+                dialogType: DIALOG_DISCARD_ORDER,
+                hideOk: true,
+                title,
+                data: {
+                    cards: remainingCards.map(card => ({
+                        ...card.toObj(),
+                        id: card.id,
+                    })),
+                },
+            });
+
+            if (response?.discardAll === true) {
+                orderedCards.push(...remainingCards);
+                break;
+            }
+
+            const selectedIndex = remainingCards.findIndex(card =>
+                card.id === response?.selected?.id);
+            if (selectedIndex < 0) {
+                throw new Error('La selección del orden de descarte no es válida.');
+            }
+
+            orderedCards.push(remainingCards.splice(selectedIndex, 1)[0]);
+        }
+
+        return orderedCards;
     }
     refresh() {
         const {match, objectToRefresh} = this;

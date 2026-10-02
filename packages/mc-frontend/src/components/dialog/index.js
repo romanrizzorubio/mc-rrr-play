@@ -5,6 +5,7 @@ import './mc-boost-dealt-dialog/mc-boost-dealt-dialog.js';
 import './mc-cards-group-dialog/mc-cards-group-dialog.js';
 import './mc-defense-dialog/mc-defense-dialog.js';
 import './mc-discard-hand-dialog/mc-discard-hand-dialog.js';
+import './mc-discard-order-dialog/mc-discard-order-dialog.js';
 import './mc-discard-random-hand-dialog/mc-discard-random-hand-dialog.js';
 import './mc-encounters-dealt-dialog/mc-encounters-dealt-dialog.js';
 import './mc-encounters-reveal-dialog/mc-encounters-reveal-dialog.js';

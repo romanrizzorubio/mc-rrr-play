@@ -1,4 +1,4 @@
-import {DIALOG_LIST,PLACE_IN_PLAY} from 'mc-shared';
+import {PLACE_IN_PLAY} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
@@ -39,33 +39,6 @@ export class SelectAndOrderCardsEffect extends Effect {
             return;
         }
 
-        const orderedCards = [];
-        const remainingCards = [...pool];
-
-        while (remainingCards.length > 0) {
-            let selected;
-            if (remainingCards.length === 1) {
-                selected = remainingCards[0];
-            } else {
-                const response = await this.openDialog({
-                    dialogType: DIALOG_LIST,
-                    hideOk: true,
-                    title: this.title,
-                    data: {
-                        options: remainingCards.map((gameCard, index) => ({
-                            id: index,
-                            text: gameCard.card.name,
-                        }))
-                    },
-                });
-                selected = remainingCards[response.selected.id];
-            }
-
-            orderedCards.push(selected);
-            const index = remainingCards.indexOf(selected);
-            remainingCards.splice(index, 1);
-        }
-
-        params.orderedCards = orderedCards;
+        params.orderedCards = await this.selectCardOrder(pool, this.title);
     }
 }

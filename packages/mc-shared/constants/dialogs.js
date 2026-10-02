@@ -5,6 +5,7 @@ export const DIALOG_BOOST_DEALT = 'boost-dealt';
 export const DIALOG_DEFENSE = 'defense';
 export const DIALOG_DISCARD_CARD_HAND = 'discard-card-hand';
 export const DIALOG_DISCARD_HAND = 'discard-hand';
+export const DIALOG_DISCARD_ORDER = 'discard-order';
 export const DIALOG_DISCARD_RANDOM_HAND = 'discard-random-hand';
 export const DIALOG_ENCOUNTERS_DEALT = 'encounters-dealt';
 export const DIALOG_ENCOUNTERS_REVEAL = 'encounters-reveal';

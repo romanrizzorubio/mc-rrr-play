@@ -53,7 +53,7 @@ export class McCreateMatchPage extends LitElement {
                 name: 'Prueba',
                 player: {
                     name: 'RRR',
-                    hero: 'she-hulk',
+                    hero: 'ironman',
                 },
                 scenario: {
                     scenario: 'rhino'
