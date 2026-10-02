@@ -7,7 +7,7 @@ import {
     TARGET_OUTSIDE_NEMESIS,
     TARGET_SIDE,
     TARGET_YOUR_SUPERHERO,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const cardStateTargets = {
     [TARGET_ALTEREGO]: ({player}) => player.isAlterEgo ? [player] : [],

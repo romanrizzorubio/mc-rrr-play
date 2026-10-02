@@ -1,6 +1,5 @@
 import {CharacterGameCard} from '../cards/character-game-card.js';
 
-export const CARD_TYPE_SUPERHERO = 'superhero';
 export class Superhero extends CharacterGameCard {
     constructor({
 // GameCard

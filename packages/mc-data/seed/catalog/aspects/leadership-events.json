@@ -1,0 +1,135 @@
+[
+  {
+    "_id": "leadership-hacer-la-llamada",
+    "aspect": "leadership",
+    "order": 3,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Hacer la llamada",
+        "set": "leadership",
+        "image": "aspect/leadership/events/01071.png",
+        "cost": 0,
+        "resources": [
+          "m"
+        ],
+        "classification": "leadership",
+        "abilities": [
+          {
+            "type": "action",
+            "params": {
+              "effect": {
+                "type": "put-play",
+                "params": {}
+              },
+              "arrow": {
+                "type": "chained",
+                "params": {
+                  "effects": [
+                    {
+                      "type": "search-cards",
+                      "params": {
+                        "locations": [
+                          "discardPile"
+                        ],
+                        "players": "all-players",
+                        "filter": {
+                          "type": "ally"
+                        },
+                        "title": "Elige un Aliado de una pila de descartes"
+                      }
+                    },
+                    {
+                      "type": "pay-printed-cost"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "leadership-liderar-en-vanguardia",
+    "aspect": "leadership",
+    "order": 4,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Liderar en vanguardia",
+        "set": "leadership",
+        "image": "aspect/leadership/events/01070.png",
+        "traits": [
+          "tactic"
+        ],
+        "cost": 2,
+        "resources": [
+          "e"
+        ],
+        "classification": "leadership",
+        "abilities": [
+          {
+            "type": "hero-action",
+            "params": {
+              "effect": {
+                "type": "chained",
+                "params": {
+                  "target": "any-player",
+                  "effects": [
+                    {
+                      "type": "modify-thwart-value",
+                      "params": {
+                        "count": 1,
+                        "until": "phase"
+                      }
+                    },
+                    {
+                      "type": "modify-attack-value",
+                      "params": {
+                        "count": 1,
+                        "until": "phase"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "leadership-preparate",
+    "aspect": "leadership",
+    "order": 8,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Prepárate",
+        "set": "leadership",
+        "image": "aspect/leadership/events/01069.png",
+        "cost": 0,
+        "resources": [
+          "p"
+        ],
+        "classification": "leadership",
+        "abilities": [
+          {
+            "type": "hero-action",
+            "params": {
+              "effect": {
+                "type": "ready",
+                "params": {
+                  "target": "ally"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

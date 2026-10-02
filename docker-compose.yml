@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mc-mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mc-network
+
   mc-frontend:
     build:
       context: .
@@ -24,16 +38,26 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=mc
     volumes:
       - ./packages/mc-back:/app/packages/mc-back
       - ./packages/mc-endpoints:/app/packages/mc-endpoints
+      - ./packages/mc-data:/app/packages/mc-data
+      - ./packages/mc-shared:/app/packages/mc-shared
       - ./node_modules:/app/node_modules
-    command: npx nodemon packages/mc-back/index.js
+    command: npm run start:backend
     networks:
       - mc-network
     depends_on:
-      - mc-frontend
+      mc-frontend:
+        condition: service_started
+      mongodb:
+        condition: service_healthy
 
 networks:
   mc-network:
     driver: bridge
+
+volumes:
+  mc-mongodb-data:

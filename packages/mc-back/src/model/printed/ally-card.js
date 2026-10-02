@@ -1,11 +1,11 @@
-import {DIALOG_MAX_ALLIES} from '../../constants/dialogs.js';
+import {DIALOG_MAX_ALLIES} from 'mc-shared';
 import {GetMaxAlliesEffect} from '../../effects/get-max-allies-effect.js';
 
 import {MixinCharacterCard} from './mixins/mixin-character-card.js';
 import {MixinFriendFrontCard} from './mixins/mixin-friend-front-card.js';
 import {PlayerCard} from './player-card.js';
 
-export const CARD_TYPE_ALLY = 'ally';
+
 export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard)) {
     constructor({
 // Card

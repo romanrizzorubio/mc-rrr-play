@@ -1,6 +1,5 @@
 import {PlayerCard} from './player-card.js';
 
-export const CARD_TYPE_EVENT = 'event';
 export class EventCard extends PlayerCard {
     constructor({
 // Card

@@ -3,14 +3,14 @@ import {
     ACTIVATION_DEFENSE,
     ACTIVATION_SCHEME,
     ACTIVATION_THWART,
-} from '../constants/activations.js';
-import {
+
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
-    PRIORITY_INTERRUPT, PRIORITY_RESPONSE
-} from '../constants/priorities.js';
-import {TARGET_YOU} from '../constants/targets.js';
+    PRIORITY_INTERRUPT,
+    PRIORITY_RESPONSE,
+    TARGET_YOU,
+} from 'mc-shared';
 import {Calc} from '../engine/calc.js';
 import {Engine} from '../engine/engine.js';
 import {path, pathSet} from '../engine/utils.js';

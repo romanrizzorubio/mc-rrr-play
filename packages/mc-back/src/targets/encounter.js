@@ -4,7 +4,7 @@ import {
     TARGET_MAIN_SCHEME,
     TARGET_MINION_HIGHEST_HP,
     TARGET_SCHEME,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const encounterTargets = {
     [TARGET_ATTACKED]: ({attack}) => [attack.effect.selectedTarget],

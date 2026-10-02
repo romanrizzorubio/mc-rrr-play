@@ -2,7 +2,6 @@ import {checkCondition} from '../../engine/utils.js';
 
 import {PlayerCard} from './player-card.js';
 
-export const CARD_TYPE_RESOURCE = 'resource';
 export class ResourceCard extends PlayerCard {
     constructor({
 // Card

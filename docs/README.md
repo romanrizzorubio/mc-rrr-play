@@ -77,8 +77,12 @@ MC RRR Play
 ├─ Backend (Express + Socket.IO)
 │  └─ Motor de juego en puerto 3000
 │
-└─ Datos
-   └─ Cartas, Escenarios, Superhéroes
+├─ Datos (MongoDB)
+│  └─ Configuraciones de cartas, escenarios y superhéroes
+│
+└─ Packages compartidos
+   ├─ mc-data: acceso y catálogo inicial de MongoDB
+   └─ mc-shared: constantes del dominio
 ```
 
 ## 🚀 Inicio Rápido (2 minutos)

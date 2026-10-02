@@ -1,6 +1,4 @@
-import {DIALOG_ENCOUNTERS_REVEAL} from '../constants/dialogs.js';
-import {TARGET_PLAYER, TARGET_SCENARIO} from '../constants/targets.js';
-import {TRIGGER_TREACHERY_REVEAL} from '../constants/triggers.js';
+import {DIALOG_ENCOUNTERS_REVEAL,TARGET_PLAYER, TARGET_SCENARIO,TRIGGER_TREACHERY_REVEAL} from 'mc-shared';
 
 import {CANCEL_ENCOUNTER_FULL, CANCEL_ENCOUNTER_NOT, CANCEL_ENCOUNTER_REVEAL} from './cancel-encounter-effect.js';
 import {DelayedEffect} from './delayed-effect.js';

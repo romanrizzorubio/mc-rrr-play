@@ -1,5 +1,5 @@
 
-import {TRIGGER_VILLAIN_SCHEMES} from '../constants/triggers.js';
+import {TRIGGER_VILLAIN_SCHEMES} from 'mc-shared';
 
 import {Activation} from './activation.js';
 

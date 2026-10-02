@@ -1,7 +1,5 @@
-import {ABILITY_ACTION} from '../../constants/abilities.js';
-import {DIALOG_DISCARD_RANDOM_HAND} from '../../constants/dialogs.js';
+import {ABILITY_ACTION,DIALOG_DISCARD_RANDOM_HAND,RESOURCE_WILD} from 'mc-shared';
 import {REFRESH_EVENTS} from 'mc-endpoints';
-import {RESOURCE_WILD} from '../../constants/resources.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
 

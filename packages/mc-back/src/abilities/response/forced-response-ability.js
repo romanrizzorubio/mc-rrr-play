@@ -1,4 +1,4 @@
-import { PRIORITY_FORCED_RESPONSE} from '../../constants/priorities.js';
+import { PRIORITY_FORCED_RESPONSE} from 'mc-shared';
 
 import {ResponseAbility} from './response-ability.js';
 

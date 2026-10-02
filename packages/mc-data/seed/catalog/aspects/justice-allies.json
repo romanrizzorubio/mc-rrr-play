@@ -1,0 +1,91 @@
+[
+  {
+    "_id": "justice-daredevil",
+    "aspect": "justice",
+    "order": 0,
+    "card": {
+      "type": "ally",
+      "params": {
+        "name": "Daredevil",
+        "set": "justice",
+        "image": "aspect/justice/allies/j58.webp",
+        "traits": [
+          "defender"
+        ],
+        "unique": true,
+        "cost": 4,
+        "resources": [
+          "p"
+        ],
+        "classification": "justice",
+        "subtitle": "Matt Murdock",
+        "thwart": 2,
+        "attack": 2,
+        "thwartConsequencial": 1,
+        "attackConsequencial": 1,
+        "hitPoints": 3,
+        "abilities": [
+          {
+            "type": "response",
+            "params": {
+              "trigger": "THIS_THWARTS",
+              "effect": {
+                "type": "deal-damage",
+                "params": {
+                  "target": "enemy",
+                  "damage": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "justice-jessica-jones",
+    "aspect": "justice",
+    "order": 1,
+    "card": {
+      "type": "ally",
+      "params": {
+        "name": "Jessica Jones",
+        "set": "justice",
+        "image": "aspect/justice/allies/j59.webp",
+        "traits": [
+          "defender"
+        ],
+        "unique": true,
+        "cost": 3,
+        "resources": [
+          "e"
+        ],
+        "classification": "justice",
+        "thwart": 1,
+        "attack": 2,
+        "thwartConsequencial": 1,
+        "attackConsequencial": 1,
+        "hitPoints": 3,
+        "abilities": [
+          {
+            "type": "constant",
+            "params": {
+              "hideDialog": true,
+              "trigger": "THIS_GET_THWART",
+              "effect": {
+                "type": "modify-thwart-value",
+                "params": {
+                  "target": "effect",
+                  "paramsCalc": {
+                    "target": "player.match.sideSchemes",
+                    "formula": "count"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

@@ -4,7 +4,7 @@
 
 El monorepo ha sido configurado correctamente con:
 
-- ✅ Estructura de carpetas: `packages/mc-frontend`, `packages/mc-back`, `packages/mc-endpoints`
+- ✅ Paquetes: `mc-frontend`, `mc-back`, `mc-endpoints`, `mc-shared` y `mc-data`
 - ✅ Root `package.json` con workspaces de npm
 - ✅ Dockerfiles para frontend y backend
 - ✅ `docker-compose.yml` configurado
@@ -16,7 +16,7 @@ El monorepo ha sido configurado correctamente con:
 ### Opción 1: Usar Docker (Recomendado)
 
 ```bash
-# Iniciar todos los servicios
+# Iniciar frontend, backend y MongoDB
 docker-compose up
 
 # O usar el script de utilidad
@@ -26,22 +26,30 @@ docker-compose up
 Luego accede a:
 - **Frontend**: http://localhost:8000
 - **Backend**: http://localhost:3000
+- **MongoDB**: mongodb://localhost:27017
+
+El backend carga automáticamente en MongoDB los registros del catálogo inicial que falten.
 
 ### Opción 2: Desarrollo Local
 
 ```bash
-# Terminal 1 - Frontend
-npm run start:frontend
+# MongoDB en Docker; frontend y backend locales
+npm run start:all
 
-# Terminal 2 - Backend  
-npm run start:backend
+# MongoDB instalado localmente; frontend y backend locales
+npm run start:all:local
 ```
+
+`npm run start:all` es el modo predeterminado: inicia MongoDB con Docker Compose y ejecuta frontend/backend en el host. Para usar MongoDB local, instala MongoDB Community Server y ejecuta `npm run start:all:local`; guarda sus datos en `.local/mongodb`. Para ejecutar los tres servicios en Docker, usa `npm run docker:up`. El contenedor de MongoDB se puede detener por separado con `npm run mongo:down`.
 
 ## 📦 Comandos Disponibles
 
 ```bash
 # Instalar dependencias
 npm install
+
+# Volver a cargar el catálogo inicial en MongoDB
+npm run seed:data
 
 # Iniciar servicios con Docker
 npm run docker:up
@@ -77,7 +85,9 @@ mc-rrr-play/
 ├── packages/
 │   ├── mc-frontend/      # Frontend (Lit-Element)
 │   ├── mc-back/          # Backend (Express + Socket.IO)
-│   └── mc-endpoints/     # Endpoints de la API
+│   ├── mc-endpoints/     # Contratos REST y Socket.IO
+│   ├── mc-shared/        # Constantes compartidas del dominio
+│   └── mc-data/          # Acceso a MongoDB y catálogo inicial
 ├── docker-compose.yml    # Orquestación de servicios
 ├── Dockerfile.frontend   # Imagen del frontend
 ├── Dockerfile.backend    # Imagen del backend
@@ -91,6 +101,7 @@ mc-rrr-play/
 Los servicios se comunican a través de la red `mc-network`:
 - Frontend → Puerto 8000
 - Backend → Puerto 3000
+- MongoDB → Puerto 27017; catálogo inicial en `mc-data/seed/catalog/` (cartas de aspecto agrupadas por aspecto y tipo)
 - Volúmenes compartidos para desarrollo en tiempo real
 
 ## 📝 Notas Importantes

@@ -1,5 +1,4 @@
-import {ABILITY_ACTION} from '../../constants/abilities.js';
-import {TARGET_SIDE} from '../../constants/targets.js';
+import {ABILITY_ACTION,TARGET_SIDE} from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {FaceDown} from '../match/facedown.js';

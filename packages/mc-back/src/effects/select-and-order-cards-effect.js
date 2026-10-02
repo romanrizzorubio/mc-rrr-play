@@ -1,5 +1,4 @@
-import {DIALOG_LIST} from '../constants/dialogs.js';
-import {PLACE_IN_PLAY} from '../constants/places.js';
+import {DIALOG_LIST,PLACE_IN_PLAY} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
 import {Effect} from './effect.js';

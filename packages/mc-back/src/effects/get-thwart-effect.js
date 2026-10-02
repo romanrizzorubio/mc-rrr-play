@@ -1,4 +1,4 @@
-import {TRIGGER_THIS_GET_THWART, TRIGGER_YOUR_HERO_GET_THWART} from '../constants/triggers.js';
+import {TRIGGER_THIS_GET_THWART, TRIGGER_YOUR_HERO_GET_THWART} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

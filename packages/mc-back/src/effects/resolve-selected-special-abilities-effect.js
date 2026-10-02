@@ -1,4 +1,4 @@
-import {ABILITY_SPECIAL} from '../constants/abilities.js';
+import {ABILITY_SPECIAL} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

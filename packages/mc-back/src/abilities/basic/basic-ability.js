@@ -1,4 +1,4 @@
-import {TARGET_CARD} from '../../constants/targets.js';
+import {TARGET_CARD} from 'mc-shared';
 import {DealConsequencialDamageEffect} from '../../effects/deal-consequencial-damage-effect.js';
 import {ExhaustEffect} from '../../effects/exhaust-effect.js';
 import {Ability} from '../core/ability.js';

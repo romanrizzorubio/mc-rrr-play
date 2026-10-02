@@ -1,4 +1,4 @@
-import {ABILITY_ACTION} from '../../constants/abilities.js';
+import {ABILITY_ACTION} from 'mc-shared';
 import {ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
 
@@ -21,7 +21,7 @@ export class PlayerRest {
         const matchFactory = new MatchFactory(match);
 
         if (name && hero) {
-            const {heroConfig} = await import(`../../../data/heroes/${hero}/index.js`);
+            const heroConfig = await this.mc.data.getHeroConfig(hero);
             const heroCreated = matchFactory.createSuperhero(heroConfig);
             const player = match.createPlayer({
                 name,

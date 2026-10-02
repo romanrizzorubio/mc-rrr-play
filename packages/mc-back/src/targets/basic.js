@@ -10,7 +10,7 @@ import {
     TARGET_SOURCE,
     TARGET_THIS,
     TARGET_YOU,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const basicTargets = {
     [TARGET_ACTIVATION]: ({activation}) => [activation],

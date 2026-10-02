@@ -1,5 +1,4 @@
-import {DIALOG_PAY_COST} from '../constants/dialogs.js';
-import {TRIGGER_END_PLAY_CARD, TRIGGER_PLAY_CARD, TRIGGER_THIS_END_PLAY_CARD} from '../constants/triggers.js';
+import {DIALOG_PAY_COST,TRIGGER_END_PLAY_CARD, TRIGGER_PLAY_CARD, TRIGGER_THIS_END_PLAY_CARD} from 'mc-shared';
 
 import {Effect} from './effect.js';
 import {GetCostEffect} from './get-cost-effect.js';

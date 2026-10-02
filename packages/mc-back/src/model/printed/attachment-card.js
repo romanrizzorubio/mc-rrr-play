@@ -1,7 +1,6 @@
 import {EncounterCard} from './encounter-card.js';
 import {MixinAttachableCard} from './mixins/mixin-attachable-card.js';
 
-export const CARD_TYPE_ATTACHMENT = 'attachment';
 export class AttachmentCard extends MixinAttachableCard(EncounterCard) {
     constructor({
 // Card

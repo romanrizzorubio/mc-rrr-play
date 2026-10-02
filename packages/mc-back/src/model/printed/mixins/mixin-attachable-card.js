@@ -1,6 +1,6 @@
 import {
     CHARACTER_YOU
-} from '../../../constants/characters.js';
+} from 'mc-shared';
 import {AttachEffect} from '../../../effects/attach-effect.js';
 
 export const MixinAttachableCard = C => class extends C {

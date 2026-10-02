@@ -1,5 +1,4 @@
-import {RESOURCE_WILD} from '../../constants/resources.js';
-import {TARGET_ANY} from '../../constants/targets.js';
+import {RESOURCE_WILD,TARGET_ANY} from 'mc-shared';
 import {Ability} from '../core/ability.js';
 
 export class ResourceAbility extends Ability {

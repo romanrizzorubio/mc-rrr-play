@@ -1,5 +1,5 @@
 import {EndLastingAbility} from '../abilities/misc/end-lasting-ability.js';
-import {TIME_PHASE} from '../constants/times.js';
+import {TIME_PHASE} from 'mc-shared';
 import {EndLastingEffect} from '../effects/end-lasting-effect.js';
 
 import {Engine} from './engine.js';

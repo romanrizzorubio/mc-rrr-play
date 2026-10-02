@@ -33,7 +33,7 @@ import {
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART
-} from '../../constants/triggers.js';
+} from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
 import {AttachedWouldAttackTrigger} from '../../triggers/attached-would-attack-trigger.js';
 import {

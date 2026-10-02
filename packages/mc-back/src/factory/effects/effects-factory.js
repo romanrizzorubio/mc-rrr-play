@@ -77,9 +77,11 @@ export class EffectsFactory {
             return par.map(p => this.parseEffect(p));
         }
 
-        const {type, params} = par;
+        const {type, params: rawParams} = par;
 
-        if (params) {
+        if (rawParams) {
+            const params = {...rawParams};
+
             if (params.thenEffect) {
                 params.thenEffect = this.parseEffect(params.thenEffect);
             }

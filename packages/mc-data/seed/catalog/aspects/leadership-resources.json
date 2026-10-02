@@ -1,0 +1,35 @@
+[
+  {
+    "_id": "leadership-el-poder-del-liderazgo",
+    "aspect": "leadership",
+    "order": 5,
+    "card": {
+      "type": "resource",
+      "params": {
+        "name": "El poder del liderazgo",
+        "set": "leadership",
+        "image": "aspect/leadership/resources/01072.png",
+        "resources": [
+          {
+            "condition": {
+              "card.set": "leadership"
+            },
+            "resources": [
+              "w",
+              "w"
+            ]
+          },
+          {
+            "resources": [
+              "w"
+            ]
+          }
+        ],
+        "maximum": {
+          "count": 2
+        },
+        "classification": "leadership"
+      }
+    }
+  }
+]

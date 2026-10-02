@@ -1,4 +1,4 @@
-import {TARGET_BY_TITLE} from '../constants/targets.js';
+import {TARGET_BY_TITLE} from 'mc-shared';
 
 export const specialTargets = {
     [TARGET_BY_TITLE]: ({ability, match}) => {

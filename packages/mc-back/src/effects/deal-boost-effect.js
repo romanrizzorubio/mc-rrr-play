@@ -1,4 +1,4 @@
-import {DIALOG_BOOST_DEALT} from '../constants/dialogs.js';
+import {DIALOG_BOOST_DEALT} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

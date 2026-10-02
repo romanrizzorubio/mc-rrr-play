@@ -29,22 +29,24 @@ export class McRest {
         return this.mc.getMatch(name);
     }
     get(endpoint, callback) {
-        this.mc.app.get(endpoint, async (req, res) => {
-            const response = await callback({
-                match: this.getMatch(req.headers.match),
-            });
-
-            res.send(response);
+        this.mc.app.get(endpoint, (req, res, next) => {
+            Promise.resolve()
+                .then(() => callback({
+                    match: this.getMatch(req.headers.match),
+                }))
+                .then(response => res.send(response))
+                .catch(next);
         });
     }
     post(endpoint, callback) {
-        this.mc.app.post(endpoint, async (req, res) => {
-            const response = await callback({
-                ...req.body,
-                match: this.getMatch(req.headers.match),
-            });
-
-            res.send(response);
+        this.mc.app.post(endpoint, (req, res, next) => {
+            Promise.resolve()
+                .then(() => callback({
+                    ...req.body,
+                    match: this.getMatch(req.headers.match),
+                }))
+                .then(response => res.send(response))
+                .catch(next);
         });
     }
 }

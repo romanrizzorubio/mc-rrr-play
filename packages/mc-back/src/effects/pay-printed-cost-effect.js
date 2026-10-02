@@ -1,4 +1,4 @@
-import {RESOURCE_ANY} from '../constants/resources.js';
+import {RESOURCE_ANY} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

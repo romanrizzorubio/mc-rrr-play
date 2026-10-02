@@ -1,4 +1,4 @@
-import {EFFECT_DEFEAT} from '../constants/effects.js';
+import {EFFECT_DEFEAT} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class RemoveThreatEffect extends Effect {

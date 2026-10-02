@@ -1,5 +1,4 @@
-import {LABEL_ATTACK} from '../../constants/labels.js';
-import {TARGET_ENEMY} from '../../constants/targets.js';
+import {LABEL_ATTACK,TARGET_ENEMY} from 'mc-shared';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
 

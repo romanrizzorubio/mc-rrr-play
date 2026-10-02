@@ -1,10 +1,11 @@
 import {
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_RESPONSE,
-    PRIORITY_RESPONSE
-} from '../constants/priorities.js';
-import { TARGET_ALTEREGO_SIDE, TARGET_HERO_SIDE} from '../constants/targets.js';
-import {TRIGGER_THIS_FLIP} from '../constants/triggers.js';
+   PRIORITY_RESPONSE,
+   TARGET_ALTEREGO_SIDE,
+   TARGET_HERO_SIDE,
+   TRIGGER_THIS_FLIP,
+} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {Effect} from './effect.js';

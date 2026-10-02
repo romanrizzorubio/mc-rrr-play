@@ -1,4 +1,4 @@
-import {DIALOG_ACTIVATE} from '../constants/dialogs.js';
+import {DIALOG_ACTIVATE} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {DealBoostEffect} from './deal-boost-effect.js';

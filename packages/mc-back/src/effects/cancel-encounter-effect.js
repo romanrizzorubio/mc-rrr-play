@@ -1,4 +1,4 @@
-import {CARD_TYPE_TREACHERY} from '../model/printed/treachery-card.js';
+import {CARD_TYPE_TREACHERY} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

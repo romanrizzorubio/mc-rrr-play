@@ -2,11 +2,11 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ATTACK,
-    TRIGGER_YOU_BASIC_ATTACK
-} from '../constants/triggers.js';
+   TRIGGER_YOU_BASIC_ATTACK,
+   EFFECT_DEAL_DAMAGE,
+} from 'mc-shared';
 
 import {Activation} from './activation.js';
-import {EFFECT_DEAL_DAMAGE} from '../constants/effects.js';
 
 export class Attack extends Activation {
     constructor({}) {

@@ -1,4 +1,4 @@
-import {TIME_ROUND} from '../constants/times.js';
+import {TIME_ROUND} from 'mc-shared';
 import {Engine} from '../engine/engine.js';
 
 import {Effect} from './effect.js';

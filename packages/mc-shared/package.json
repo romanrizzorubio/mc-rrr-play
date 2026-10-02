@@ -1,0 +1,9 @@
+{
+  "name": "mc-shared",
+  "version": "1.0.0",
+  "description": "Shared identifiers and constants for the MC game packages",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  }
+}

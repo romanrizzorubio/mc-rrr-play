@@ -3,7 +3,7 @@ import {
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
-} from '../constants/triggers.js';
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

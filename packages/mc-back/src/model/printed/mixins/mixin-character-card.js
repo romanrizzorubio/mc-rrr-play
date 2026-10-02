@@ -1,4 +1,4 @@
-import {STATUS_NONE} from '../../../constants/status.js';
+import {STATUS_NONE} from 'mc-shared';
 
 export const MixinCharacterCard = C => class extends C {
     constructor({

@@ -34,7 +34,7 @@ export class MatchFactory {
     }
     _getSets(sets) {
         return Promise.all(sets.map(async set => {
-            const {config} = await import(`../../data/sets/${set}/index.js`);
+            const config = await this.match.mc.data.getSetConfig(set);
 
             const expertSet = config.expertSet &&
                 this._createCollection(config.expertSet);

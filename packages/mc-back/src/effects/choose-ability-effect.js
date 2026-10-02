@@ -1,4 +1,4 @@
-import {DIALOG_LIST} from '../constants/dialogs.js';
+import {DIALOG_LIST} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

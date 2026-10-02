@@ -1,5 +1,4 @@
-import {TIME_PHASE} from '../constants/times.js';
-import {TRIGGER_PHASE_ENDS} from '../constants/triggers.js';
+import {TIME_PHASE,TRIGGER_PHASE_ENDS} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

@@ -1,4 +1,4 @@
-import {TRIGGER_YOUR_HERO_GET_ATTACK} from '../constants/triggers.js';
+import {TRIGGER_YOUR_HERO_GET_ATTACK} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

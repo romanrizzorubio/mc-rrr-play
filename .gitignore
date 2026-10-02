@@ -27,6 +27,7 @@ ehthumbs.db
 dist/
 build/
 coverage/
+.local/
 
 # Logs
 *.log

@@ -22,7 +22,7 @@ import {
     ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
-} from '../../constants/abilities.js';
+} from 'mc-shared';
 import {ActionAbility} from '../../abilities/actions/action-ability.js';
 import {AlteregoActionAbility} from '../../abilities/actions/alterego-action-ability.js';
 import {HeroActionAbility} from '../../abilities/actions/hero-action-ability.js';

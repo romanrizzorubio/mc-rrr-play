@@ -1,4 +1,4 @@
-import {PRIORITY_FORCED_INTERRUPT} from '../../constants/priorities.js';
+import {PRIORITY_FORCED_INTERRUPT} from 'mc-shared';
 
 import {InterruptAbility} from './interrupt-ability.js';
 

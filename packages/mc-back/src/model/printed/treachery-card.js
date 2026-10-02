@@ -1,6 +1,5 @@
 import {EncounterCard} from './encounter-card.js';
 
-export const CARD_TYPE_TREACHERY = 'treachery';
 export class TreacheryCard extends EncounterCard {
     constructor({
 // Card

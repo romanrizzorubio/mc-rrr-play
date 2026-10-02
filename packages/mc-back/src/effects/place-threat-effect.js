@@ -1,10 +1,10 @@
-import {TARGET_SCHEME} from '../constants/targets.js';
 import {
-    TRIGGER_PLACE_THREAT,
-    TRIGGER_WOULD_PLACE_THREAT,
-} from '../constants/triggers.js';
+   TARGET_SCHEME,
+   TRIGGER_PLACE_THREAT,
+   TRIGGER_WOULD_PLACE_THREAT,
+   EFFECT_DEFEAT,
+} from 'mc-shared';
 
-import {EFFECT_DEFEAT} from '../constants/effects.js';
 import {Effect} from './effect.js';
 
 export class PlaceThreatEffect extends Effect {

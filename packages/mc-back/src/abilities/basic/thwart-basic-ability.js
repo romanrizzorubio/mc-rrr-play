@@ -1,5 +1,4 @@
-import {LABEL_THWART} from '../../constants/labels.js';
-import {TARGET_SCHEME} from '../../constants/targets.js';
+import {LABEL_THWART,TARGET_SCHEME} from 'mc-shared';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
 

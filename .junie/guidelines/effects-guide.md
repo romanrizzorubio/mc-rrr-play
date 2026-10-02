@@ -108,5 +108,5 @@ effect: {
 ## Instrucciones de Mantenimiento
 
 1. **Auto-actualización**: Si al implementar una carta se identifica una necesidad que no cubren los efectos actuales, se debe investigar en `packages/mc-back/src/effects` si existe un archivo `.js` que corresponda. Si existe pero no está en esta guía, **DEBE** añadirse inmediatamente.
-2. **Creación de Nuevos Efectos**: Si la funcionalidad es genuinamente nueva, se debe crear el archivo del efecto en `src/effects`, registrar la constante en `src/constants/back-cards.js` (o donde corresponda) y en `EffectsFactory.js`.
+2. **Creación de Nuevos Efectos**: Si la funcionalidad es genuinamente nueva, se debe crear el archivo del efecto en `packages/mc-back/src/effects`, registrar el identificador en `packages/mc-shared/constants` (o donde corresponda) y en `EffectsFactory.js`.
 3. **Consistencia**: Siempre prefiere combinar efectos existentes mediante `EFFECT_CHAINED` antes que crear un efecto ultra-específico.

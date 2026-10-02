@@ -1,10 +1,8 @@
-import {DIALOG_DEFENSE} from '../constants/dialogs.js';
-import {TARGET_CARD} from '../constants/targets.js';
-import {
+import {DIALOG_DEFENSE,TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
-} from '../constants/triggers.js';
+} from 'mc-shared';
 
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';

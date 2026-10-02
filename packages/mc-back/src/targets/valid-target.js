@@ -1,8 +1,7 @@
-import {DIALOG_SELECT_TARGET} from '../constants/dialogs.js';
-import {
+import {DIALOG_SELECT_TARGET,
     TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_ENEMIES, TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 import {Engine} from '../engine/engine.js';
 import {targetMap} from './index.js';

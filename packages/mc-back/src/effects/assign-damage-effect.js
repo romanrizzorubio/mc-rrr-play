@@ -1,4 +1,4 @@
-import {DIALOG_ASSIGN} from '../constants/dialogs.js';
+import {DIALOG_ASSIGN} from 'mc-shared';
 
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {Effect} from './effect.js';

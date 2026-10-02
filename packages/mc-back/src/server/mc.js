@@ -2,6 +2,7 @@ import {createServer} from 'node:http';
 
 import express from 'express';
 import {Server} from 'socket.io';
+import {MongoDataStore} from 'mc-data';
 
 import {McRest} from './rest/mc-rest.js';
 import {McSocket} from './socket/mc-socket.js';
@@ -12,6 +13,7 @@ export class Mc {
         this.socket = null;
 
         this.matches = {};
+        this.data = new MongoDataStore();
 
         this.mcRest = new McRest(this);
         this.mcSocket = new McSocket(this);
@@ -25,7 +27,8 @@ export class Mc {
     setMatch(match) {
         this.matches[match.name] = match;
     }
-    init() {
+    async init() {
+        await this.data.connect();
         this.app = express();
         this.server = createServer(this.app);
         this.io = new Server(this.server, {
@@ -45,5 +48,8 @@ export class Mc {
         this.server.listen(3000, () => {
             console.log('server running at http://localhost:3000');
         });
+    }
+    async close() {
+        await this.data.close();
     }
 }

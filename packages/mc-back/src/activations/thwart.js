@@ -3,7 +3,7 @@ import {
     TRIGGER_THIS_THWARTS,
     TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOU_BASIC_THWART
-} from '../constants/triggers.js';
+} from 'mc-shared';
 
 import {Activation} from './activation.js';
 

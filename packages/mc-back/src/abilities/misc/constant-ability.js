@@ -3,8 +3,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_SURGE,
     EFFECT_TOUGH,
-} from '../../constants/effects.js';
-import {PRIORITY_CONSTANT} from '../../constants/priorities.js';
+PRIORITY_CONSTANT} from 'mc-shared';
 import {Ability} from '../core/ability.js';
 import {MixinTriggeableAbility} from '../mixins/mixin-triggeable-ability.js';
 

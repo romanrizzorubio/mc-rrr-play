@@ -1,5 +1,5 @@
 import {Ability} from '../abilities/core/ability.js';
-import {TARGET_MAIN_SCHEME, TARGET_YOU} from '../constants/targets.js';
+import {TARGET_MAIN_SCHEME, TARGET_YOU} from 'mc-shared';
 
 import {Effect} from './effect.js';
 import {EnemyAttackEffect} from './enemy-attack-effect.js';

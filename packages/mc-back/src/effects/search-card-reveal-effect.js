@@ -1,5 +1,4 @@
-import {DIALOG_SELECT_PLACES} from '../constants/dialogs.js';
-import {PLACE_ENCOUNTER_DECK_CARDS, PLACE_OUTSIDE_NEMESIS} from '../constants/places.js';
+import {DIALOG_SELECT_PLACES,PLACE_ENCOUNTER_DECK_CARDS, PLACE_OUTSIDE_NEMESIS} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 

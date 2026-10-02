@@ -1,4 +1,4 @@
-import {TARGET_CARD} from '../../constants/targets.js';
+import {TARGET_CARD} from 'mc-shared';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {Engine} from '../../engine/engine.js';

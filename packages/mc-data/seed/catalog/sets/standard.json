@@ -1,0 +1,307 @@
+{
+  "_id": "standard",
+  "config": {
+    "name": "standard",
+    "standard": true,
+    "cards": [
+      {
+        "count": 2,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Advance",
+            "set": "standard",
+            "image": "sets/standard/standard1.webp",
+            "boost": 0,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "enemy-scheme",
+                    "params": {
+                      "enemyType": "villain",
+                      "target": "main-scheme"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 2,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Assault",
+            "set": "standard",
+            "image": "sets/standard/standard3.webp",
+            "boost": 0,
+            "abilities": [
+              {
+                "type": "when-revealed-alterego",
+                "params": {
+                  "effect": {
+                    "type": "surge",
+                    "params": {}
+                  }
+                }
+              },
+              {
+                "type": "when-revealed-hero",
+                "params": {
+                  "effect": {
+                    "type": "enemy-attack",
+                    "params": {
+                      "enemyType": "villain",
+                      "target": "you"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Caught Off Guard",
+            "set": "standard",
+            "image": "sets/standard/standard5.webp",
+            "boost": 1,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "discard-game",
+                    "params": {
+                      "target": [
+                        "support-you-control",
+                        "upgrade-you-control"
+                      ]
+                    }
+                  },
+                  "ifNot": {
+                    "type": "surge",
+                    "params": {}
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Gang-Up",
+            "set": "standard",
+            "image": "sets/standard/standard6.webp",
+            "boost": 1,
+            "abilities": [
+              {
+                "type": "when-revealed-alterego",
+                "params": {
+                  "effect": {
+                    "type": "surge",
+                    "params": {}
+                  }
+                }
+              },
+              {
+                "type": "when-revealed-hero",
+                "params": {
+                  "effect": {
+                    "type": "several-attacks",
+                    "params": {
+                      "enemiesType": [
+                        "villain",
+                        "all-engaged-minions"
+                      ],
+                      "target": "you"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Shadow of the Past",
+            "set": "standard",
+            "image": "sets/standard/standard7.webp",
+            "boost": 2,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "chained",
+                    "params": {
+                      "target": "you",
+                      "effects": [
+                        {
+                          "type": "search-cards-reveal",
+                          "params": {
+                            "condition": {
+                              "isMinion": true,
+                              "isNemesis": true
+                            },
+                            "places": [
+                              "OUTSIDE_NEMESIS"
+                            ],
+                            "revealAll": true,
+                            "target": "you"
+                          }
+                        },
+                        {
+                          "type": "search-cards-reveal",
+                          "params": {
+                            "condition": {
+                              "isSideScheme": true
+                            },
+                            "places": [
+                              "OUTSIDE_NEMESIS"
+                            ],
+                            "revealAll": true,
+                            "target": "you"
+                          }
+                        },
+                        {
+                          "type": "include-aside-cards",
+                          "params": {
+                            "from": "OUTSIDE_NEMESIS",
+                            "target": "ENCOUNTER_DECK",
+                            "ownerTarget": "scenario"
+                          }
+                        },
+                        {
+                          "type": "do-if",
+                          "params": {
+                            "condition": {
+                              "effects.0.hasEnterGame": false
+                            },
+                            "target": "effect",
+                            "effect": {
+                              "type": "surge"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "expertSet": [
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Exhaustion",
+            "set": "expert",
+            "image": "sets/expert/expert1.webp",
+            "boost": 2,
+            "keywords": {
+              "surge": true
+            },
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "exhaust",
+                    "params": {
+                      "target": "player"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Masterplan",
+            "set": "expert",
+            "image": "sets/expert/expert2.webp",
+            "boost": 2,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "place-threat",
+                    "params": {
+                      "target": "all-side-schemes",
+                      "threat": 4
+                    }
+                  },
+                  "ifNot": {
+                    "type": "discard-reveal",
+                    "params": {
+                      "condition": {
+                        "isSideScheme": true
+                      },
+                      "target": "player"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Under Fire",
+            "set": "expert",
+            "image": "sets/expert/expert3.webp",
+            "boost": 3,
+            "keywords": {
+              "surge": true
+            },
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "reveal-first-encounter",
+                    "params": {
+                      "target": "player"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

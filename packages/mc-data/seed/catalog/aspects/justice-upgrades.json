@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "justice-intuicion-heroica",
+    "aspect": "justice",
+    "order": 7,
+    "card": {
+      "type": "upgrade",
+      "params": {
+        "name": "Intuición heróica",
+        "set": "justice",
+        "image": "aspect/justice/upgrades/j65-copy.webp",
+        "traits": [
+          "skill"
+        ],
+        "cost": 2,
+        "resources": [
+          "e"
+        ],
+        "classification": "justice",
+        "maximum": {
+          "count": 1
+        },
+        "abilities": [
+          {
+            "type": "constant",
+            "params": {
+              "hideDialog": true,
+              "trigger": "YOUR_HERO_GET_THWART",
+              "effect": {
+                "type": "modify-thwart-value",
+                "params": {
+                  "target": "effect",
+                  "count": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

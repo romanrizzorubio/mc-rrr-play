@@ -1,9 +1,9 @@
-import {CHARACTER_YOU} from '../../constants/characters.js';
+import {CHARACTER_YOU} from 'mc-shared';
 
 import {MixinAttachableCard} from './mixins/mixin-attachable-card.js';
 import {PlayerCard} from './player-card.js';
 
-export const CARD_TYPE_UPGRADE = 'upgrade';
+
 export class UpgradeCard extends MixinAttachableCard(PlayerCard) {
     constructor({
 // Card

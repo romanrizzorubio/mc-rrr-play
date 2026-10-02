@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "justice-the-power-of-justice",
+    "aspect": "justice",
+    "order": 4,
+    "card": {
+      "type": "resource",
+      "params": {
+        "name": "The Power of Justice",
+        "set": "justice",
+        "image": "aspect/justice/resources/j62-copy.webp",
+        "resources": [
+          {
+            "condition": {
+              "card.set": "justice"
+            },
+            "resources": [
+              "w",
+              "w"
+            ]
+          },
+          {
+            "resources": [
+              "w"
+            ]
+          }
+        ],
+        "classification": "justice"
+      }
+    }
+  }
+]

@@ -1,5 +1,3 @@
-import {heroesList} from '../../../data/heroes/index.js';
-import {scenariosList} from '../../../data/scenarios/index.js';
 import {ENDPOINTS} from 'mc-endpoints';
 import {Match} from '../../model/match/match.js';
 
@@ -27,10 +25,10 @@ export class MatchRest {
         return match.toObj();
     }
     getHeroesList() {
-        return heroesList;
+        return this.mc.data.getHeroesList();
     }
     getScenariosList() {
-        return scenariosList;
+        return this.mc.data.getScenariosList();
     }
     async initMatch(params) {
         const {match, expert} = params;

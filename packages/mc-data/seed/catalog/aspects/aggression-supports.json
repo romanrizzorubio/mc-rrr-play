@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "aggression-tac-team",
+    "aspect": "aggression",
+    "order": 6,
+    "card": {
+      "type": "support",
+      "params": {
+        "name": "Tac Team",
+        "set": "aggression",
+        "image": "aspect/aggression/supports/a56-copy-2.webp",
+        "traits": [
+          "S.H.I.E.L.D."
+        ],
+        "cost": 3,
+        "resources": [
+          "e"
+        ],
+        "classification": "aggression",
+        "keywords": {
+          "uses": 3
+        },
+        "abilities": [
+          {
+            "type": "action",
+            "params": {
+              "arrow": {
+                "type": "chained",
+                "params": {
+                  "target": "this",
+                  "matchAll": true,
+                  "effects": [
+                    {
+                      "type": "exhaust",
+                      "params": {
+                        "target": "this"
+                      }
+                    },
+                    {
+                      "type": "remove-use",
+                      "params": {
+                        "target": "this",
+                        "count": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              "effect": {
+                "type": "deal-damage",
+                "params": {
+                  "target": "enemy",
+                  "threat": 2
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

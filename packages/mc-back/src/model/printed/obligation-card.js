@@ -1,6 +1,5 @@
 import {EncounterCard} from './encounter-card.js';
 
-export const CARD_TYPE_OBLIGATION = 'obligation';
 export class ObligationCard extends EncounterCard {
     constructor({
 // Card

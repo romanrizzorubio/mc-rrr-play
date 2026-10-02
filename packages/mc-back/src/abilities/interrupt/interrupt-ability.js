@@ -1,10 +1,9 @@
-import {PRIORITY_INTERRUPT} from '../../constants/priorities.js';
-import {
+import {PRIORITY_INTERRUPT,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_VILLAIN_ATTACKS_YOU,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_YOU_WOULD_TAKE_DAMAGE
-} from '../../constants/triggers.js';
+} from 'mc-shared';
 import {Ability} from '../core/ability.js';
 import {MixinTriggeableAbility} from '../mixins/mixin-triggeable-ability.js';
 

@@ -1,4 +1,4 @@
-import {TARGET_PLAYER} from '../constants/targets.js';
+import {TARGET_PLAYER} from 'mc-shared';
 
 import {AddHandEffect} from './add-hand-effect.js';
 import {Effect} from './effect.js';

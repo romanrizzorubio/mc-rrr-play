@@ -1,4 +1,4 @@
-import {TRIGGER_ENGAGE_HERO} from '../constants/triggers.js';
+import {TRIGGER_ENGAGE_HERO} from 'mc-shared';
 
 import {PutPlayEffect} from './put-play-effect.js';
 

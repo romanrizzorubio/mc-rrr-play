@@ -30,6 +30,35 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Packages compartidos y catálogo de juego
+
+- `packages/mc-endpoints` publica las rutas REST y los eventos Socket.IO usados por frontend y backend.
+- `packages/mc-shared` publica los identificadores de capacidades, efectos, objetivos, rasgos, tipos de carta y otros valores del dominio. Las configuraciones de MongoDB almacenan estos valores como strings.
+- `packages/mc-data` conecta con MongoDB y proporciona al backend los catálogos y configuraciones de héroes, escenarios, sets y cartas de aspecto. La conexión se configura con `MONGODB_URI` y `MONGODB_DATABASE`.
+- En desarrollo, `npm run start:all` (o `npm run start:all:docker`) inicia MongoDB en Docker y ejecuta frontend/backend en el host; `npm run start:all:local` usa `mongod` local. `npm run docker:up` ejecuta los tres servicios en contenedores.
+- El catálogo inicial está separado en `packages/mc-data/seed/catalog/{heroes,scenarios,sets,aspects}/`: hay un JSON por héroe, escenario y set; los archivos de `aspects/` están directamente en esa carpeta y agrupan las cartas por aspecto y tipo (por ejemplo, `aggression-allies.json`). Al conectar, `mc-data` inserta solo los documentos ausentes en las colecciones `heroes`, `scenarios`, `sets` y `aspects`. Antes de arrancar el backend mediante `npm run start:backend` (incluyendo `start:all` y `docker:up`), se ejecuta `npm run seed:data`, que reemplaza los documentos del catálogo empaquetado por los valores actuales de los JSON.
+- Los documentos usan `_id` como identificador estable. Héroes, escenarios y sets guardan su configuración en `config`; cada documento de `aspects` contiene una carta. Los precon de héroe guardan referencias ordenadas a esas cartas, que `getHeroConfig()` expande al cargar la configuración.
+- El seed normaliza las cartas al formato `{type, params}` que consume `CardsFactory`, conservando dentro de `params` sus capacidades y efectos.
+- El estado activo de las partidas continúa en memoria en el backend; MongoDB se usa para el catálogo de contenido, no para guardar partidas.
+
+Ejemplo de documento de héroe:
+
+```json
+{
+  "_id": "spiderman",
+  "order": 2,
+  "name": "Spiderman",
+  "folder": "spiderman",
+  "config": {
+    "sides": [],
+    "cards": [],
+    "precon": []
+  }
+}
+```
+
+Las listas REST proyectan `name` y `folder`; al crear un jugador o escenario, el backend busca el documento por `_id` y pasa `config` a las fábricas del motor.
+
 ## Componentes del Backend
 
 ### 1. Engine (Motor de Juego)
@@ -353,7 +382,7 @@ Diálogos: el backend emite `open-dialog`; el frontend responde con `dialog-resp
 
 ### REST API
 
-Se usa para obtener las listas, crear e inicializar la partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend.
+Se usa para obtener las listas, crear e inicializar la partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend. El backend obtiene las listas y configuraciones de contenido mediante `mc-data` desde MongoDB.
 
 Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` resuelve las rutas (con `/` inicial) contra `httpHost` usando `new URL()`, por lo que `/create-match` se solicita como `http://localhost:3000/create-match`.
 
@@ -406,11 +435,13 @@ El estado de una partida contiene:
 
 ### Almacenamiento
 
-**Durante la Partida:**
-- Estado se mantiene en memoria en el Backend
-- Socket.IO envía actualizaciones al socket actualmente guardado por el backend; no hay difusión a todas las conexiones.
+**Catálogo de juego (MongoDB):**
+- `heroes`: lista visible e información de configuración completa de cada héroe.
+- `scenarios`: lista visible e información de configuración completa de cada escenario.
+- `sets`: configuración de los sets de encuentro.
+- `aspects`: cartas de aspecto almacenadas individualmente y referenciadas desde los precon de héroe.
+- `mc-data` carga automáticamente los registros ausentes del catálogo inicial de `packages/mc-data/seed/catalog/`; `npm run seed:data` vuelve a reemplazar los documentos empaquetados. Al desplegar, configura `MONGODB_URI` y `MONGODB_DATABASE` para apuntar a la base correspondiente.
 
-**Futuro:**
-- Podría agregarse base de datos
-- Guardado de historial
-- Análisis de partidas
+**Durante la partida:**
+- El estado de las partidas se mantiene en memoria en el backend; aún no se persiste en MongoDB.
+- Socket.IO envía actualizaciones al socket actualmente guardado por el backend; no hay difusión a todas las conexiones.

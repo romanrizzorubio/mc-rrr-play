@@ -1,6 +1,5 @@
-import {TRIGGER_YOU_WOULD_TAKE_DAMAGE} from '../constants/triggers.js';
+import {TRIGGER_YOU_WOULD_TAKE_DAMAGE,EFFECT_DEFEAT,EFFECT_PLACE_DAMAGE} from 'mc-shared';
 
-import {EFFECT_DEFEAT,EFFECT_PLACE_DAMAGE} from '../constants/effects.js';
 import {Effect} from './effect.js';
 
 export class TakeDamageEffect extends Effect {

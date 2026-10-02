@@ -1,8 +1,5 @@
-import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST} from '../../constants/dialogs.js';
+import {DIALOG_DISCARD_HAND, DIALOG_PAY_COST,RESOURCES_X,TARGET_CARD,TRIGGER_YOUR_HERO_GET_HIT_POINTS,EFFECT_MODIFY_HIT_POINTS} from 'mc-shared';
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
-import {RESOURCES_X} from '../../constants/resources.js';
-import {TARGET_CARD} from '../../constants/targets.js';
-import {TRIGGER_YOUR_HERO_GET_HIT_POINTS} from '../../constants/triggers.js';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {PlayCardEffect} from '../../effects/play-card-effect.js';
@@ -14,7 +11,6 @@ import {checkCondition} from '../../engine/utils.js';
 import {Deck} from './deck.js';
 import {Hand} from './hand.js';
 import {PlayerZone} from './player-zone.js';
-import {EFFECT_MODIFY_HIT_POINTS} from '../../constants/effects.js';
 
 export class Player extends Engine {
     constructor({

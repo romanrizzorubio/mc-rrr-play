@@ -11,7 +11,7 @@ import {
     TARGET_HERO,
     TARGET_MINION,
     TARGET_VILLAIN,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const groupTargets = {
     [TARGET_ALL_CARDS]: ({cards}) => cards,

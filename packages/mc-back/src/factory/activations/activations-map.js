@@ -3,7 +3,7 @@ import {
     ACTIVATION_DEFENSE,
     ACTIVATION_SCHEME,
     ACTIVATION_THWART,
-} from '../../constants/activations.js';
+} from 'mc-shared';
 import {Attack} from '../../activations/attack.js';
 import {Defense} from '../../activations/defense.js';
 import {Scheme} from '../../activations/scheme.js';

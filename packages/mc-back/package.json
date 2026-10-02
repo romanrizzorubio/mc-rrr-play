@@ -16,7 +16,9 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "mc-data": "1.0.0",
     "mc-endpoints": "1.0.0",
+    "mc-shared": "1.0.0",
     "socket.io": "^4.7.2"
   }
 }

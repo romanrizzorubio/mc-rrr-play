@@ -1,4 +1,4 @@
-import { DIALOG_DISCARD_HAND} from '../constants/dialogs.js';
+import { DIALOG_DISCARD_HAND} from 'mc-shared';
 
 import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
 import {Effect} from './effect.js';

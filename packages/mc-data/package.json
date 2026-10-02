@@ -1,0 +1,16 @@
+{
+  "name": "mc-data",
+  "version": "1.0.0",
+  "description": "MongoDB-backed game catalog",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "seed": "node ./seed/seed.js"
+  },
+  "dependencies": {
+    "mc-shared": "1.0.0",
+    "mongodb": "^6.13.0"
+  }
+}

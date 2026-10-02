@@ -1,6 +1,5 @@
 import {MainScenarioCard} from './main-scenario-card.js';
 
-export const CARD_TYPE_MAIN_SCHEME_A_CARD = 'main-scheme-a-card';
 export class MainSchemeACard extends MainScenarioCard {
     constructor({
 // Card

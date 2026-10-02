@@ -1,4 +1,4 @@
-import {DIALOG_ENCOUNTERS_REVEAL} from '../constants/dialogs.js';
+import {DIALOG_ENCOUNTERS_REVEAL} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

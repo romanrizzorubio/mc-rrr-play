@@ -2,7 +2,6 @@ import {Engine} from '../../engine/engine.js';
 import {Icons} from '../commons/icons.js';
 import {Keywords} from '../commons/keywords.js';
 
-export const CARD_TYPE_ANY = 'any';
 export class Card extends Engine {
     constructor({
 // Card

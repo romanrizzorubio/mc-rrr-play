@@ -1,6 +1,4 @@
-import {DIALOG_PLAY_CARD} from '../constants/dialogs.js';
-import {PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND} from '../constants/places.js';
-import {TARGET_ALL_PLAYERS, TARGET_YOU} from '../constants/targets.js';
+import {DIALOG_PLAY_CARD,PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND,TARGET_ALL_PLAYERS, TARGET_YOU} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
 import {Effect} from './effect.js';

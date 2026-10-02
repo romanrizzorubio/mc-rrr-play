@@ -5,4 +5,4 @@ String.prototype.replaceAll = function (search, replace) {
 };
 
 const mc = new Mc();
-mc.init();
+await mc.init();

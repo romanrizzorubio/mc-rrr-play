@@ -2,7 +2,7 @@ import {AttackBasicAbility} from '../../abilities/basic/attack-basic-ability.js'
 import {RecoveryBasicAbility} from '../../abilities/basic/recovery-basic-ability.js';
 import {ThwartBasicAbility} from '../../abilities/basic/thwart-basic-ability.js';
 import {QuickstrikeAbility} from '../../abilities/misc/quickstrike-ability.js';
-import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from '../../constants/status.js';
+import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from 'mc-shared';
 import {Calc} from '../../engine/calc.js';
 
 import {GameCard} from './game-card.js';

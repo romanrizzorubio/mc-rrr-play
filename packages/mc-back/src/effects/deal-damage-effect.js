@@ -1,7 +1,6 @@
-import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE} from '../constants/triggers.js';
+import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,EFFECT_TAKE_DAMAGE} from 'mc-shared';
 
 import {Effect} from './effect.js';
-import {EFFECT_TAKE_DAMAGE} from '../constants/effects.js';
 
 export class DealDamageEffect extends Effect {
     constructor(params) {

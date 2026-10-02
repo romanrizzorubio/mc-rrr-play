@@ -3,7 +3,7 @@ import {
     TARGET_ENCOUNTER_DECK_CARDS,
     TARGET_ENCOUNTER_DISCARD,
     TARGET_ANY_PLAYER,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const deckAndDeckTargets = {
     [TARGET_ENCOUNTER_DECK]: ({match}) => [match.scenario.deck],

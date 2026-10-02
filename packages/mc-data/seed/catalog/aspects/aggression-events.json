@@ -1,0 +1,136 @@
+[
+  {
+    "_id": "aggression-a-por-ellos",
+    "aspect": "aggression",
+    "order": 2,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "A por ellos",
+        "set": "aggression",
+        "image": "aspect/aggression/events/a52-copy-2.webp",
+        "traits": [
+          "thwart"
+        ],
+        "cost": 0,
+        "resources": [
+          "m"
+        ],
+        "classification": "aggression",
+        "abilities": [
+          {
+            "type": "response",
+            "params": {
+              "labels": [
+                "thwart"
+              ],
+              "trigger": "YOUR_HERO_ATTACK_DEFEAT_ENEMY",
+              "effect": {
+                "type": "remove-threat",
+                "params": {
+                  "threat": 2,
+                  "target": "scheme"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "aggression-asalto-implacable",
+    "aspect": "aggression",
+    "order": 3,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Asalto implacable",
+        "set": "aggression",
+        "image": "aspect/aggression/events/a53-copy-2.webp",
+        "traits": [
+          "attack"
+        ],
+        "cost": 2,
+        "resources": [
+          "e"
+        ],
+        "classification": "aggression",
+        "abilities": [
+          {
+            "type": "hero-action",
+            "params": {
+              "labels": [
+                "attack"
+              ],
+              "effect": {
+                "type": "do-if-has-paid",
+                "params": {
+                  "resources": [
+                    "p"
+                  ],
+                  "target": "minion",
+                  "effect": {
+                    "type": "deal-damage",
+                    "params": {
+                      "target": "minion",
+                      "damage": 5,
+                      "keywords": {
+                        "overkill": true
+                      }
+                    }
+                  },
+                  "effectNot": {
+                    "type": "deal-damage",
+                    "params": {
+                      "target": "minion",
+                      "damage": 5
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "aggression-gancho",
+    "aspect": "aggression",
+    "order": 4,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Gancho",
+        "set": "aggression",
+        "image": "aspect/aggression/events/a54-copy-2.webp",
+        "traits": [
+          "attack"
+        ],
+        "cost": 3,
+        "resources": [
+          "p"
+        ],
+        "classification": "aggression",
+        "abilities": [
+          {
+            "type": "hero-action",
+            "params": {
+              "labels": [
+                "attack"
+              ],
+              "effect": {
+                "type": "deal-damage",
+                "params": {
+                  "target": "enemy",
+                  "damage": 5
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,8 +1,8 @@
 import {
     PLACE_ASIDE_MATCH,
-    PLACE_OUTSIDE_NEMESIS
-} from '../constants/places.js';
-import {TARGET_SCENARIO} from '../constants/targets.js';
+   PLACE_OUTSIDE_NEMESIS,
+   TARGET_SCENARIO,
+} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 

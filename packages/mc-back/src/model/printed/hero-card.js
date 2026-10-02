@@ -1,7 +1,6 @@
 import {MixinFriendFrontCard} from './mixins/mixin-friend-front-card.js';
 import {SuperheroCard} from './superhero-card.js';
 
-export const CARD_TYPE_HERO = 'hero';
 export class HeroCard extends MixinFriendFrontCard(SuperheroCard) {
     constructor({
 // Card

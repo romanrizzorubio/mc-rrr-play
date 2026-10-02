@@ -6,7 +6,8 @@
 
 - **Node.js 20+** - [Descargar](https://nodejs.org/)
 - **npm** - Incluido con Node.js
-- **Docker y Docker Compose** (opcional, para desarrollo con contenedores)
+- **Docker y Docker Compose** (para MongoDB local en contenedor o el stack completo)
+- **MongoDB 7+ con `mongod` en el `PATH`** (solo para `start:all:local`)
 - **Git** (para clonar el repositorio)
 
 ### Instalación Local
@@ -28,30 +29,44 @@ Esto instala dependencias para todos los packages del monorepo:
 - `packages/mc-frontend`
 - `packages/mc-back`
 - `packages/mc-endpoints`
+- `packages/mc-shared`
+- `packages/mc-data`
 
-#### 3. Iniciar la Aplicación
+#### 3. Preparar MongoDB
 
-##### Opción A: Ambos servicios en paralelo
+Elige cómo ejecutar MongoDB:
+
+- `npm run start:all` (igual que `npm run start:all:docker`) usa el contenedor Docker y ejecuta frontend/backend en el host. Los datos persisten en `mc-mongodb-data`; `npm run mongo:down` lo detiene.
+- `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`. Requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
+- `npm run docker:up` ejecuta frontend, backend y MongoDB en contenedores.
+
+Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por sus valores JSON actuales; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
+
+```bash
+npm run seed:data
+```
+
+#### 4. Iniciar la Aplicación
+
+##### Opción A: MongoDB en Docker y aplicación local
 
 ```bash
 npm run start:all
 ```
 
-Esto inicia:
+Esto inicia MongoDB en Docker y frontend/backend en el host. Pulsa `Ctrl+C` para detener los procesos locales; el contenedor de MongoDB queda activo. La aplicación queda disponible en:
 - Frontend en `http://localhost:8000`
 - Backend en `http://localhost:3000`
 
-##### Opción B: Servicios independientes
+##### Opción B: MongoDB local
 
-Terminal 1 - Frontend:
+Si tienes MongoDB Community Server instalado y `mongod` en el `PATH`, inicia MongoDB local junto con frontend/backend:
+
 ```bash
-npm run start:frontend
+npm run start:all:local
 ```
 
-Terminal 2 - Backend:
-```bash
-npm run start:backend
-```
+Los datos locales se guardan en `.local/mongodb`. Para depurar frontend y backend por separado desde el IDE, usa `npm run mongo:up` y luego inicia cada aplicación individualmente.
 
 ### Instalación con Docker
 
@@ -67,9 +82,10 @@ npm run docker:build
 npm run docker:up
 ```
 
-Esto inicia:
+Esto inicia frontend, backend y MongoDB, todos en Docker. El backend carga el catálogo cuando MongoDB está saludable. La aplicación queda disponible en:
 - Frontend en `http://localhost:8000`
 - Backend en `http://localhost:3000`
+- MongoDB en `mongodb://localhost:27017` (los datos persisten en el volumen `mc-mongodb-data`)
 - Sincronización automática de cambios (hot-reload)
 
 #### 3. Ver Logs
@@ -159,6 +175,14 @@ Una vez iniciada la aplicación:
 2. Revisa que puerto 3000 está disponible
 3. Mira logs: `npm run docker:logs` (si uses Docker)
 
+### No aparecen héroes o escenarios
+
+**Síntomas:** Las listas de selección están vacías o la creación de contenido falla.
+
+**Soluciones:**
+1. Verifica que MongoDB está activo y que `MONGODB_URI`/`MONGODB_DATABASE` apuntan a la base correcta.
+2. Ejecuta `npm run seed:data` para cargar el catálogo inicial.
+
 ### Puerto ocupado
 
 **Síntomas:** "EADDRINUSE" error
@@ -205,7 +229,9 @@ mc-rrr-play/
 │   │   │   └── server/      # API REST + WebSocket
 │   │   └── index.js
 │   │
-│   └── mc-endpoints/       # 🔌 Módulo de endpoints
+│   ├── mc-endpoints/       # 🔌 Contratos REST y Socket.IO
+│   ├── mc-shared/          # Constantes compartidas del dominio
+│   └── mc-data/            # MongoDB; catálogo JSON por entidad y carta de aspecto
 │
 ├── docker-compose.yml       # Configuración Docker
 ├── package.json             # Monorepo config

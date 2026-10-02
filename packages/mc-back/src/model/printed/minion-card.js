@@ -1,9 +1,9 @@
-import {TARGET_YOU} from '../../constants/targets.js';
+import {TARGET_YOU} from 'mc-shared';
 
 import {EncounterCard} from './encounter-card.js';
 import {MixinEnemyCard} from './mixins/mixin-enemy-card.js';
 
-export const CARD_TYPE_MINION = 'minion';
+
 export class MinionCard extends MixinEnemyCard(EncounterCard) {
     constructor({
 // Card

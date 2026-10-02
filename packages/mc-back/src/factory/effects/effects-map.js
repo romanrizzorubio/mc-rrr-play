@@ -84,7 +84,7 @@ import {
     EFFECT_SURGE,
     EFFECT_TAKE_DAMAGE,
     EFFECT_TOUGH,
-} from '../../constants/effects.js';
+} from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
@@ -169,7 +169,7 @@ import {StunEffect} from '../../effects/stun-effect.js';
 import {SurgeEffect} from '../../effects/surge-effect.js';
 import {TakeDamageEffect} from '../../effects/take-damage-effect.js';
 import {ToughEffect} from '../../effects/tough-effect.js';
-import {SelectDiscardToCardEffect} from "../../effects/select-discard-to-card-effect.js";
+import {SelectDiscardToCardEffect} from '../../effects/select-discard-to-card-effect.js';
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,

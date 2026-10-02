@@ -1,6 +1,4 @@
-import {PRIORITY_CONSTANT} from '../constants/priorities.js';
-import {TARGET_ALLY, TARGET_YOU} from '../constants/targets.js';
-import {TRIGGER_INSTANT, TRIGGER_THIS_ENTER_PLAY} from '../constants/triggers.js';
+import {PRIORITY_CONSTANT,TARGET_ALLY, TARGET_YOU,TRIGGER_INSTANT, TRIGGER_THIS_ENTER_PLAY} from 'mc-shared';
 
 import {AttachEffect} from './attach-effect.js';
 import {DelayedEffect} from './delayed-effect.js';

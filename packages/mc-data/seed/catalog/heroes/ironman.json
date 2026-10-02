@@ -1,0 +1,1090 @@
+{
+  "_id": "ironman",
+  "order": 3,
+  "name": "Ironman",
+  "folder": "ironman",
+  "config": {
+    "aspect": "leadership",
+    "sides": [
+      {
+        "type": "alter-ego",
+        "params": {
+          "name": "Tony Stark",
+          "traits": [
+            "genius"
+          ],
+          "abilities": [
+            {
+              "type": "alterego-action",
+              "params": {
+                "name": "Visión de futuro",
+                "limit": {
+                  "count": 1,
+                  "time": "round"
+                },
+                "effect": {
+                  "type": "select-from-top-deck",
+                  "params": {
+                    "count": 3,
+                    "selectCount": 1,
+                    "title": "Elige 1 carta para añadir a tu mano"
+                  }
+                }
+              }
+            }
+          ],
+          "handSize": 6,
+          "hitPoints": 9,
+          "recovery": 3,
+          "image": "heroes/iron-man/01029b.png"
+        }
+      },
+      {
+        "type": "hero",
+        "params": {
+          "name": "Iron Man",
+          "traits": [
+            "avenger"
+          ],
+          "abilities": [
+            {
+              "type": "constant",
+              "params": {
+                "trigger": "YOUR_HERO_GET_HAND_SIZE",
+                "effect": {
+                  "type": "modify-hand-size",
+                  "params": {
+                    "target": "hero",
+                    "paramsCalc": {
+                      "formula": "traits-count",
+                      "target": "player.gameZone.cards",
+                      "trait": "tech",
+                      "max": 6
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "handSize": 1,
+          "hitPoints": 9,
+          "thwart": 2,
+          "attack": 1,
+          "defense": 1,
+          "image": "heroes/iron-man/01029a.png"
+        }
+      }
+    ],
+    "cards": [
+      {
+        "count": 2,
+        "card": {
+          "type": "event",
+          "params": {
+            "name": "Rayo repulsor",
+            "traits": [
+              "attack",
+              "superpower"
+            ],
+            "cost": 1,
+            "resources": [
+              "p"
+            ],
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "label": "attack",
+                  "effect": {
+                    "type": "chained",
+                    "params": {
+                      "matchAll": true,
+                      "effects": [
+                        {
+                          "type": "discard-from-deck",
+                          "count": 5,
+                          "target": "your-superhero"
+                        },
+                        {
+                          "type": "deal-damage",
+                          "damage": 1,
+                          "target": "attacked",
+                          "paramsCalc": {
+                            "formula": "resources",
+                            "resourceType": "e",
+                            "strict": true,
+                            "target": "effects.0.cards",
+                            "multiply": 2,
+                            "plus": 1
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01031.png"
+          }
+        }
+      },
+      {
+        "count": 2,
+        "card": {
+          "type": "event",
+          "params": {
+            "name": "Puñetazo supersónico",
+            "traits": [
+              "attack"
+            ],
+            "cost": 2,
+            "resources": [
+              "e"
+            ],
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "label": "attack",
+                  "effect": {
+                    "type": "deal-damage",
+                    "params": {
+                      "damage": 4,
+                      "target": "attacked",
+                      "paramsCalc": {
+                        "formula": "traits-count",
+                        "trait": "aerial",
+                        "target": "hero",
+                        "multiply": 4,
+                        "plus": 4
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01032.png"
+          }
+        }
+      },
+      {
+        "count": 2,
+        "card": {
+          "type": "upgrade",
+          "params": {
+            "name": "Guanteletes potenciados",
+            "traits": [
+              "armor",
+              "tech"
+            ],
+            "cost": 2,
+            "resources": [
+              "e"
+            ],
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "label": "attack",
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {}
+                  },
+                  "effect": {
+                    "type": "do-if-has-traits",
+                    "params": {
+                      "traits": [
+                        "aerial"
+                      ],
+                      "target": "hero",
+                      "effect": {
+                        "type": "deal-damage",
+                        "damage": 2,
+                        "target": "attacked"
+                      },
+                      "elseEffect": {
+                        "type": "deal-damage",
+                        "damage": 1,
+                        "target": "attacked"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01038.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "upgrade",
+          "params": {
+            "name": "Reactor ARK",
+            "unique": true,
+            "traits": [
+              "item",
+              "tech"
+            ],
+            "cost": 2,
+            "resources": [
+              "e"
+            ],
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {}
+                  },
+                  "effect": {
+                    "type": "ready",
+                    "params": {
+                      "target": "target-by-title",
+                      "name": "Iron Man"
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01035.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "upgrade",
+          "params": {
+            "name": "Armadura Mark V",
+            "unique": true,
+            "traits": [
+              "armor",
+              "tech"
+            ],
+            "cost": 3,
+            "resources": [
+              "m"
+            ],
+            "abilities": [
+              {
+                "type": "constant",
+                "params": {
+                  "trigger": "YOUR_HERO_GET_HIT_POINTS",
+                  "effect": {
+                    "type": "modify-hit-points",
+                    "params": {
+                      "count": 6,
+                      "target": "your-superhero"
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01036.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "upgrade",
+          "params": {
+            "name": "Casco Mark V",
+            "unique": true,
+            "traits": [
+              "armor",
+              "tech"
+            ],
+            "cost": 1,
+            "resources": [
+              "p"
+            ],
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "label": "thwart",
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {}
+                  },
+                  "effect": {
+                    "type": "do-if-has-traits",
+                    "params": {
+                      "traits": [
+                        "aerial"
+                      ],
+                      "target": "hero",
+                      "effect": {
+                        "type": "remove-threat-all-schemes",
+                        "threat": 1
+                      },
+                      "elseEffect": {
+                        "type": "remove-threat",
+                        "threat": 1,
+                        "selectedTarget": "scheme"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01037.png"
+          }
+        }
+      },
+      {
+        "count": 2,
+        "card": {
+          "type": "upgrade",
+          "params": {
+            "name": "Botas propulsoras",
+            "traits": [
+              "armor",
+              "tech"
+            ],
+            "cost": 1,
+            "resources": [
+              "m"
+            ],
+            "abilities": [
+              {
+                "type": "constant",
+                "params": {
+                  "trigger": "YOUR_HERO_GET_HIT_POINTS",
+                  "effect": {
+                    "type": "modify-hit-points",
+                    "params": {
+                      "count": 1,
+                      "target": "your-superhero"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "hero-action",
+                "params": {
+                  "arrow": {
+                    "type": "chained",
+                    "params": {
+                      "matchAll": true,
+                      "effects": [
+                        {
+                          "type": "exhaust"
+                        },
+                        {
+                          "type": "spend",
+                          "resources": [
+                            "m"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "effect": {
+                    "type": "lasting",
+                    "params": {
+                      "until": "phase",
+                      "effect": {
+                        "type": "add-trait",
+                        "trait": "aerial",
+                        "target": "hero"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01039.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "support",
+          "params": {
+            "name": "Torre Stark",
+            "unique": true,
+            "traits": [
+              "location"
+            ],
+            "cost": 2,
+            "resources": [
+              "m"
+            ],
+            "abilities": [
+              {
+                "type": "alterego-action",
+                "params": {
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {}
+                  },
+                  "effect": {
+                    "type": "search-discard-return-to-hand",
+                    "params": {
+                      "selectedTarget": "any-player",
+                      "condition": {
+                        "type": "upgrade",
+                        "trait": "tech"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01034.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "support",
+          "params": {
+            "name": "Pepper Potts",
+            "unique": true,
+            "traits": [
+              "individual"
+            ],
+            "cost": 3,
+            "resources": [
+              "p"
+            ],
+            "abilities": [
+              {
+                "type": "resource",
+                "params": {
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {}
+                  },
+                  "effect": {
+                    "type": "generate-resources-from-discard-top",
+                    "params": {
+                      "selectedTarget": "this"
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01033.png"
+          }
+        }
+      }
+    ],
+    "precon": [
+      {
+        "aspect": "leadership",
+        "cardRefs": [
+          {
+            "id": "leadership-maria-hill",
+            "count": 1
+          },
+          {
+            "id": "leadership-vision",
+            "count": 1
+          },
+          {
+            "id": "leadership-ojo-de-halcon",
+            "count": 1
+          },
+          {
+            "id": "leadership-hacer-la-llamada",
+            "count": 2
+          },
+          {
+            "id": "leadership-liderar-en-vanguardia",
+            "count": 2
+          },
+          {
+            "id": "leadership-el-poder-del-liderazgo",
+            "count": 2
+          },
+          {
+            "id": "leadership-el-triskelion",
+            "count": 1
+          },
+          {
+            "id": "leadership-inspiracion",
+            "count": 2
+          },
+          {
+            "id": "leadership-preparate",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "support",
+          "params": {
+            "name": "Avengers Mansion",
+            "set": "basic",
+            "image": "aspect/basic/supports/b91-copy-2.webp",
+            "traits": [
+              "avenger",
+              "location"
+            ],
+            "cost": 4,
+            "resources": [
+              "m"
+            ],
+            "classification": "basic",
+            "maximum": {
+              "count": 1
+            },
+            "abilities": [
+              {
+                "type": "action",
+                "params": {
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {
+                      "target": "card"
+                    }
+                  },
+                  "effect": {
+                    "type": "draw",
+                    "params": {
+                      "target": "any-player"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "support",
+          "params": {
+            "name": "Helicarrier",
+            "set": "basic",
+            "image": "aspect/basic/supports/b92-copy-2.webp",
+            "traits": [
+              "S.H.I.E.L.D.",
+              "location"
+            ],
+            "cost": 3,
+            "resources": [
+              "p"
+            ],
+            "classification": "basic",
+            "maximum": {
+              "count": 1
+            },
+            "abilities": [
+              {
+                "type": "action",
+                "params": {
+                  "arrow": {
+                    "type": "exhaust",
+                    "params": {
+                      "target": "card"
+                    }
+                  },
+                  "effect": {
+                    "type": "lasting",
+                    "params": {
+                      "target": "player",
+                      "until": [
+                        "END_PLAY_CARD",
+                        "PHASE_ENDS"
+                      ],
+                      "triggerType": "PLAY_CARD",
+                      "hideDialog": true,
+                      "effect": {
+                        "type": "modify-cost",
+                        "params": {
+                          "target": "effect",
+                          "cardType": "any",
+                          "count": -1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "event",
+          "params": {
+            "name": "Haymaker",
+            "set": "basic",
+            "image": "aspect/basic/events/b87-1.webp",
+            "traits": [
+              "attack"
+            ],
+            "cost": 2,
+            "resources": [
+              "e"
+            ],
+            "classification": "basic",
+            "abilities": [
+              {
+                "type": "hero-action",
+                "params": {
+                  "labels": [
+                    "attack"
+                  ],
+                  "effect": {
+                    "type": "deal-damage",
+                    "params": {
+                      "damage": 3,
+                      "target": "enemy"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "event",
+          "params": {
+            "name": "Emergency",
+            "set": "basic",
+            "image": "aspect/basic/events/b85-copy-2.webp",
+            "traits": [
+              "thwart"
+            ],
+            "cost": 0,
+            "resources": [
+              "e"
+            ],
+            "classification": "basic",
+            "abilities": [
+              {
+                "type": "interrupt",
+                "params": {
+                  "labels": [
+                    "thwart"
+                  ],
+                  "trigger": "VILLAIN_SCHEMES",
+                  "effect": {
+                    "type": "prevent-place-threat",
+                    "params": {
+                      "threat": 1,
+                      "target": "effect"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "event",
+          "params": {
+            "name": "First Aid",
+            "set": "basic",
+            "image": "aspect/basic/events/b86-copy-2.webp",
+            "traits": [],
+            "cost": 1,
+            "resources": [
+              "m"
+            ],
+            "classification": "basic",
+            "abilities": [
+              {
+                "type": "action",
+                "params": {
+                  "effect": {
+                    "type": "heal",
+                    "params": {
+                      "damage": 2,
+                      "target": "character"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "resource",
+          "params": {
+            "name": "Energy",
+            "set": "basic",
+            "image": "aspect/basic/resources/b88-copy-2.webp",
+            "resources": [
+              "e",
+              "e"
+            ],
+            "classification": "basic"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "resource",
+          "params": {
+            "name": "Genius",
+            "set": "basic",
+            "image": "aspect/basic/resources/b89-copy-2.webp",
+            "resources": [
+              "m",
+              "m"
+            ],
+            "classification": "basic"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "resource",
+          "params": {
+            "name": "Strength",
+            "set": "basic",
+            "image": "aspect/basic/resources/b90-copy-2.webp",
+            "resources": [
+              "p",
+              "p"
+            ],
+            "classification": "basic"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "ally",
+          "params": {
+            "name": "Mockingbird",
+            "set": "basic",
+            "image": "aspect/basic/allies/b83-copy-2.webp",
+            "traits": [
+              "S.H.I.E.L.D.",
+              "spy"
+            ],
+            "unique": true,
+            "cost": 3,
+            "resources": [
+              "p"
+            ],
+            "classification": "basic",
+            "subtitle": "Bobbi Morse",
+            "thwart": 1,
+            "attack": 1,
+            "thwartConsequencial": 1,
+            "attackConsequencial": 1,
+            "hitPoints": 3,
+            "abilities": [
+              {
+                "type": "response",
+                "params": {
+                  "trigger": "THIS_ENTER_PLAY",
+                  "effect": {
+                    "type": "stun",
+                    "params": {
+                      "target": "enemy"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "obligation": {
+      "card": {
+        "type": "obligation",
+        "params": {
+          "name": "Problemas de negocios",
+          "traits": [
+            "condition"
+          ],
+          "boost": 2,
+          "giveToOwner": true,
+          "triggerInstant": true,
+          "abilities": [
+            {
+              "type": "constant",
+              "params": {
+                "trigger": "INSTANT",
+                "name": "Convertirte en Tony Stark",
+                "effect": {
+                  "type": "may",
+                  "params": {
+                    "effect": {
+                      "type": "flip",
+                      "params": {
+                        "target": "your-superhero",
+                        "formTarget": "alter-ego-side"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "constant",
+              "params": {
+                "trigger": "INSTANT",
+                "name": "Resolver la obligación",
+                "effect": {
+                  "type": "choose-ability",
+                  "params": {
+                    "options": [
+                      {
+                        "type": "option",
+                        "params": {
+                          "name": "Agotar a Tony Stark para retirar la Obligación",
+                          "effect": {
+                            "type": "remove-card",
+                            "params": {
+                              "target": "card"
+                            }
+                          },
+                          "arrow": {
+                            "type": "exhaust",
+                            "params": {
+                              "target": "alter-ego"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "option",
+                        "params": {
+                          "name": "Agotar todas las Mejoras que controles para descartar la Obligación",
+                          "effect": {
+                            "type": "chained",
+                            "params": {
+                              "effects": [
+                                {
+                                  "type": "exhaust",
+                                  "params": {
+                                    "filter": {
+                                      "type": "upgrade",
+                                      "control": "you"
+                                    },
+                                    "matchAll": true
+                                  }
+                                },
+                                {
+                                  "type": "discard-game",
+                                  "params": {
+                                    "target": "card"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "image": "heroes/iron-man/01170.png"
+        }
+      },
+      "count": 1
+    },
+    "nemesis": [
+      {
+        "count": 1,
+        "card": {
+          "type": "side-scheme-scenario",
+          "params": {
+            "name": "Sobrecarga inminente",
+            "boost": 3,
+            "startingThreat": 3,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "effect": {
+                    "type": "place-threat",
+                    "params": {
+                      "threat": [
+                        1,
+                        true
+                      ],
+                      "target": "card"
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01171.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "minion",
+          "params": {
+            "name": "Latigazo",
+            "unique": true,
+            "traits": [
+              "criminal"
+            ],
+            "boost": 2,
+            "hitPoints": 4,
+            "attack": 3,
+            "scheme": 2,
+            "keywords": {
+              "retaliate": 1
+            },
+            "image": "heroes/iron-man/01172.png"
+          }
+        }
+      },
+      {
+        "count": 2,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Azote de electrolátigo",
+            "traits": [],
+            "boost": 0,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "name": "Azote de electrolátigo",
+                  "effect": {
+                    "type": "choose-ability",
+                    "params": {
+                      "options": [
+                        {
+                          "type": "option",
+                          "params": {
+                            "name": "Recibir daño por cada Mejora controlada",
+                            "effect": {
+                              "type": "deal-damage",
+                              "params": {
+                                "target": "hero",
+                                "damage": 0,
+                                "paramsCalc": {
+                                  "formula": "count",
+                                  "target": "cards",
+                                  "filter": {
+                                    "type": "upgrade",
+                                    "control": "you"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "option",
+                          "params": {
+                            "name": "Elegir y descartar una Mejora controlada",
+                            "effect": {
+                              "type": "select-discard-card",
+                              "params": {
+                                "filter": {
+                                  "type": "upgrade",
+                                  "control": "you"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "boostEffect": {
+              "type": "do-if",
+              "params": {
+                "condition": {
+                  "target": "attack-undefended"
+                },
+                "effect": {
+                  "type": "select-discard-card",
+                  "params": {
+                    "filter": {
+                      "type": "upgrade",
+                      "control": "you"
+                    }
+                  }
+                }
+              }
+            },
+            "image": "heroes/iron-man/01173.png"
+          }
+        }
+      },
+      {
+        "count": 1,
+        "card": {
+          "type": "treachery",
+          "params": {
+            "name": "Descarga electromagnética",
+            "traits": [],
+            "boost": 2,
+            "abilities": [
+              {
+                "type": "when-revealed",
+                "params": {
+                  "name": "Descarga electromagnética",
+                  "effect": {
+                    "type": "chained",
+                    "params": {
+                      "target": "all-players",
+                      "effects": [
+                        {
+                          "type": "discard-from-deck",
+                          "params": {
+                            "count": 5
+                          }
+                        },
+                        {
+                          "type": "take-damage",
+                          "params": {
+                            "damage": 0,
+                            "paramsCalc": {
+                              "formula": "resources",
+                              "resourceType": "e",
+                              "target": "effects.0.cards"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "image": "heroes/iron-man/01174.png"
+          }
+        }
+      }
+    ]
+  }
+}

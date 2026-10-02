@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "aggression-the-power-of-aggression",
+    "aspect": "aggression",
+    "order": 5,
+    "card": {
+      "type": "resource",
+      "params": {
+        "name": "The Power of Aggression",
+        "set": "aggression",
+        "image": "aspect/aggression/resources/a55-copy.webp",
+        "resources": [
+          {
+            "condition": {
+              "card.set": "aggression"
+            },
+            "resources": [
+              "w",
+              "w"
+            ]
+          },
+          {
+            "resources": [
+              "w"
+            ]
+          }
+        ],
+        "classification": "aggression"
+      }
+    }
+  }
+]

@@ -1,0 +1,103 @@
+[
+  {
+    "_id": "justice-for-justice",
+    "aspect": "justice",
+    "order": 2,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "For Justice",
+        "set": "justice",
+        "image": "aspect/justice/events/j60-copy-2.webp",
+        "traits": [
+          "thwart"
+        ],
+        "cost": 2,
+        "resources": [
+          "e"
+        ],
+        "classification": "justice",
+        "abilities": [
+          {
+            "type": "hero-action",
+            "params": {
+              "labels": [
+                "thwart"
+              ],
+              "effect": {
+                "type": "do-if-has-paid",
+                "params": {
+                  "resources": [
+                    "m"
+                  ],
+                  "effect": {
+                    "type": "remove-threat",
+                    "params": {
+                      "target": "scheme",
+                      "threat": 4
+                    }
+                  },
+                  "effectNot": {
+                    "type": "remove-threat",
+                    "params": {
+                      "target": "scheme",
+                      "threat": 3
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "_id": "justice-great-responsability",
+    "aspect": "justice",
+    "order": 3,
+    "card": {
+      "type": "event",
+      "params": {
+        "name": "Great Responsability",
+        "set": "justice",
+        "image": "aspect/justice/events/j61-copy-2.webp",
+        "cost": 0,
+        "resources": [
+          "m"
+        ],
+        "classification": "justice",
+        "abilities": [
+          {
+            "type": "hero-interrupt",
+            "params": {
+              "trigger": "WOULD_PLACE_THREAT",
+              "effect": {
+                "type": "chained",
+                "params": {
+                  "effects": [
+                    {
+                      "type": "prevent-place-threat",
+                      "params": {
+                        "target": "effect"
+                      }
+                    },
+                    {
+                      "type": "take-damage",
+                      "params": {
+                        "target": "you",
+                        "paramsCalc": {
+                          "target": "effects.0.preventThreat"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

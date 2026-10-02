@@ -17,7 +17,7 @@ export class ScenarioRest {
         const matchFactory = new MatchFactory(match);
 
         if (scenario) {
-            const {scenarioConfig} = await import(`../../../data/scenarios/${scenario}/index.js`);
+            const scenarioConfig = await this.mc.data.getScenarioConfig(scenario);
             const scenarioCreated = await matchFactory.createScenario(scenarioConfig);
             match.addScenario(scenarioCreated);
 

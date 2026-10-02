@@ -1,7 +1,7 @@
 {
   "name": "mc-monorepo",
   "version": "1.0.0",
-  "description": "Monorepo for MC Project (Frontend, Backend, Endpoints)",
+  "description": "Monorepo for MC Project (Frontend, Backend, shared data and contracts)",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -9,9 +9,15 @@
   "type": "module",
   "scripts": {
     "install-all": "npm install",
-    "start:all": "npm run start:frontend & npm run start:backend",
+    "start:all": "node scripts/start-all.js docker",
+    "start:all:local": "node scripts/start-all.js local",
+    "start:all:docker": "node scripts/start-all.js docker",
     "start:frontend": "export NODE_OPTIONS=--openssl-legacy-provider && npm run serve --workspace=packages/mc-frontend -- --port 8000",
+    "prestart:backend": "npm run seed:data",
     "start:backend": "npx nodemon packages/mc-back/index.js",
+    "mongo:up": "docker-compose up -d mongodb",
+    "mongo:down": "docker-compose stop mongodb",
+    "seed:data": "npm run seed --workspace=packages/mc-data",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "docker:build": "docker-compose build",

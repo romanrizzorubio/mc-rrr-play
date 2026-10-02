@@ -1,6 +1,5 @@
 import {SuperheroCard} from './superhero-card.js';
 
-export const CARD_TYPE_ALTEREGO = 'alter-ego';
 export class AlterEgoCard extends SuperheroCard {
     constructor({
 // Card

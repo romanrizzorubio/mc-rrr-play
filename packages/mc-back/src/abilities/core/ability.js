@@ -1,4 +1,4 @@
-import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from '../../constants/labels.js';
+import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from 'mc-shared';
 import {Engine} from '../../engine/engine.js';
 import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';

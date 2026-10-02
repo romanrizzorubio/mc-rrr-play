@@ -1,4 +1,4 @@
-import {DIALOG_ENCOUNTERS_DEALT} from '../constants/dialogs.js';
+import {DIALOG_ENCOUNTERS_DEALT} from 'mc-shared';
 
 import {AccelerateSchemeEffect} from './accelerate-scheme-effect.js';
 import {ActivateEffect} from './activate-effect.js';

@@ -1,12 +1,11 @@
-import {DIALOG_LIST, DIALOG_USE_CARD} from '../constants/dialogs.js';
-import {REFRESH_EVENTS} from 'mc-endpoints';
-import {
+import {DIALOG_LIST, DIALOG_USE_CARD,
     MANDATORY_PRIORITIES, PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
-} from '../constants/priorities.js';
+} from 'mc-shared';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {TriggersFactory} from '../factory/triggers/triggers-factory.js';
 import {Trigger} from '../triggers/base/trigger.js';
 

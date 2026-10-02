@@ -3,7 +3,7 @@ import {
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SUPPORT_YOU_CONTROL,
     TARGET_UPGRADE_YOU_CONTROL,
-} from '../constants/targets.js';
+} from 'mc-shared';
 
 export const playerControlledTargets = {
     [TARGET_ALLY]: ({player}) => player.allies,

@@ -1,4 +1,4 @@
-import {TRIGGER_CONDITION_GET_TRAITS} from '../constants/triggers.js';
+import {TRIGGER_CONDITION_GET_TRAITS} from 'mc-shared';
 
 import {Effect} from './effect.js';
 

@@ -1,4 +1,4 @@
-import { TARGET_CARD} from '../constants/targets.js';
+import { TARGET_CARD} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {Effect} from './effect.js';
