@@ -4,6 +4,7 @@ import {
     ABILITY_HERO_ACTION,
     ABILITY_OPTION,
     ABILITY_RESPONSE,
+    ABILITY_SETUP,
     ABILITY_SPECIAL,
     ABILITY_WHEN_REVEALED,
     CARD_TYPE_ALLY,
@@ -33,9 +34,8 @@ import {
     EFFECT_PREVENT_DAMAGE,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_THREAT,
-    EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SELECT_AND_ORDER_CARDS,
+    EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
@@ -78,6 +78,53 @@ import {
     TRIGGER_THIS_ENTER_PLAY
 } from 'mc-shared';
 
+const wakandaForeverCard = {
+    'type': CARD_TYPE_EVENT,
+    'params': {
+        'name': '¡Wakanda por siempre!',
+        'traits': [
+            TRAIT_TACTIC
+        ],
+        'abilities': [
+            {
+                'type': ABILITY_HERO_ACTION,
+                'params': {
+                    'name': '¡Wakanda por siempre!',
+                    'effect': {
+                        'type': EFFECT_RESOLVE_SPECIAL_ABILITY,
+                        'params': {
+                            'locations': [
+                                PLACE_IN_PLAY
+                            ],
+                            'filter': {
+                                'traits': [
+                                    TRAIT_BLACK_PANTHER
+                                ],
+                                'type': CARD_TYPE_UPGRADE
+                            },
+                            'resolveAll': true,
+                        }
+                    }
+                }
+            }
+        ],
+        'cost': 1,
+        'image': 'heroes/black-panther/01043a.png'
+    }
+};
+const wakandaForeverWithResource = (resource, count = 1) => ({
+    'count': count,
+    'card': {
+        ...wakandaForeverCard,
+        'params': {
+            ...wakandaForeverCard.params,
+            'resources': [
+                resource
+            ]
+        }
+    }
+});
+
 export default {
     '_id': 'blackpanther',
     'order': 4,
@@ -90,17 +137,14 @@ export default {
                 'params': {
                     'name': "T'Challa",
                     'traits': [
-                        TRAIT_GENIUS,
-                        TRAIT_INDIVIDUAL,
                         TRAIT_WAKANDA,
                         TRAIT_KING
                     ],
                     'abilities': [
                         {
-                            'type': ABILITY_ALTEREGO_ACTION,
+                            'type': ABILITY_SETUP,
                             'params': {
                                 'name': 'Previsión',
-                                'description': 'Acción de Alter ego (preparación): busca en tu mazo una Mejora PANTERA NEGRA y añádela a tu mano. Baraja tu mazo.',
                                 'effect': {
                                     'type': EFFECT_CHAINED,
                                     'params': {
@@ -240,6 +284,8 @@ export default {
                                                             PLACE_DISCARD_PILE
                                                         ],
                                                         'count': 3,
+                                                        'upTo': true,
+                                                        'distinctNames': true,
                                                         'title': 'Elige hasta 3 cartas de tu pila de descartes'
                                                     }
                                                 },
@@ -260,215 +306,20 @@ export default {
                     }
                 }
             },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': '¡Wakanda por siempre!',
-                        'traits': [
-                            TRAIT_TACTIC
-                        ],
-                        'resources': [
-                            RESOURCE_PHYSICAL
-                        ],
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'name': '¡Wakanda por siempre!',
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SELECT_AND_ORDER_CARDS,
-                                                    'params': {
-                                                        'locations': [
-                                                            PLACE_IN_PLAY
-                                                        ],
-                                                        'filter': {
-                                                            'traits': [
-                                                                TRAIT_BLACK_PANTHER
-                                                            ],
-                                                            'type': CARD_TYPE_UPGRADE
-                                                        },
-                                                        'title': 'Elige el orden de las capacidades Especiales'
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ],
-                        'cost': 1,
-                        'image': 'heroes/black-panther/01043a.png'
-                    }
-                }
-            },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': '¡Wakanda por siempre!',
-                        'traits': [
-                            TRAIT_TACTIC
-                        ],
-                        'resources': [
-                            RESOURCE_ENERGY
-                        ],
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'name': '¡Wakanda por siempre!',
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SELECT_AND_ORDER_CARDS,
-                                                    'params': {
-                                                        'locations': [
-                                                            PLACE_IN_PLAY
-                                                        ],
-                                                        'filter': {
-                                                            'traits': [
-                                                                TRAIT_BLACK_PANTHER
-                                                            ],
-                                                            'type': CARD_TYPE_UPGRADE
-                                                        },
-                                                        'title': 'Elige el orden de las capacidades Especiales'
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ],
-                        'cost': 1,
-                        'image': 'heroes/black-panther/01043a.png'
-                    }
-                }
-            },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': '¡Wakanda por siempre!',
-                        'traits': [
-                            TRAIT_TACTIC
-                        ],
-                        'resources': [
-                            RESOURCE_MENTAL
-                        ],
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'name': '¡Wakanda por siempre!',
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SELECT_AND_ORDER_CARDS,
-                                                    'params': {
-                                                        'locations': [
-                                                            PLACE_IN_PLAY
-                                                        ],
-                                                        'filter': {
-                                                            'traits': [
-                                                                TRAIT_BLACK_PANTHER
-                                                            ],
-                                                            'type': CARD_TYPE_UPGRADE
-                                                        },
-                                                        'title': 'Elige el orden de las capacidades Especiales'
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ],
-                        'cost': 1,
-                        'image': 'heroes/black-panther/01043a.png'
-                    }
-                }
-            },
-            {
-                'count': 2,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': '¡Wakanda por siempre!',
-                        'traits': [
-                            TRAIT_TACTIC
-                        ],
-                        'resources': [
-                            RESOURCE_WILD
-                        ],
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'name': '¡Wakanda por siempre!',
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SELECT_AND_ORDER_CARDS,
-                                                    'params': {
-                                                        'locations': [
-                                                            PLACE_IN_PLAY
-                                                        ],
-                                                        'filter': {
-                                                            'traits': [
-                                                                TRAIT_BLACK_PANTHER
-                                                            ],
-                                                            'type': CARD_TYPE_UPGRADE
-                                                        },
-                                                        'title': 'Elige el orden de las capacidades Especiales'
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ],
-                        'cost': 1,
-                        'image': 'heroes/black-panther/01043a.png'
-                    }
-                }
-            },
+            wakandaForeverWithResource(RESOURCE_PHYSICAL, 1),
+            wakandaForeverWithResource(RESOURCE_ENERGY, 1),
+            wakandaForeverWithResource(RESOURCE_MENTAL, 1),
+            wakandaForeverWithResource(RESOURCE_WILD, 2),
             {
                 'count': 3,
                 'card': {
                     'type': CARD_TYPE_RESOURCE,
                     'params': {
                         'name': 'Vibránium',
-                        'resources': {
-                            [RESOURCE_WILD]: 2
-                        },
+                        'resources': [
+                            RESOURCE_WILD,
+                            RESOURCE_WILD
+                        ],
                         'abilities': [],
                         'image': 'heroes/black-panther/01044.png'
                     }
@@ -682,7 +533,7 @@ export default {
                 'cardRefs': [
                     {
                         'id': 'protection-viuda-negra',
-                        'count': 1
+                        'count': 10
                     },
                     {
                         'id': 'protection-luke-cage',

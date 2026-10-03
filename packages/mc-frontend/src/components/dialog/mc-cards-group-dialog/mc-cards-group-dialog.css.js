@@ -6,10 +6,11 @@ export default css`
   }
 
   .activate .content {
+    box-sizing: border-box;
     display: flex;
     font-size: 2em;
     width: 100%;
     justify-content: space-around;
-    margin: 0 16px;
+    padding: 0 16px;
   }
 `;

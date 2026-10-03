@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {logGameTrace} from '../utils/game-trace.js';
 
 
 export class MoveToDeckEffect extends Effect {
@@ -14,7 +15,11 @@ export class MoveToDeckEffect extends Effect {
                 // La añadimos al mazo
                 targetPlayer.deck.addToDeck([card]);
             });
-            this.match.logger.info(`${targetPlayer.name} mueve ${cardsToMove.length} carta(s) a su mazo.`);
+            logGameTrace('deck.cards-moved', {
+                match: this.match.name,
+                player: targetPlayer.name,
+                count: cardsToMove.length,
+            });
         }
     }
 }

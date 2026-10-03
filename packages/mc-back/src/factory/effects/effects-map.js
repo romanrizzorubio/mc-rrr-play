@@ -71,7 +71,7 @@ import {
     EFFECT_REVEAL_FIRST_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SELECT_AND_ORDER_CARDS,
+    EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_DISCARD_TO_CARD,
     EFFECT_SELECT_FROM_TOP_DECK,
@@ -156,7 +156,7 @@ import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {RevealFirstEncounterEffect} from '../../effects/reveal-first-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
-import {SelectAndOrderCardsEffect} from '../../effects/select-and-order-cards-effect.js';
+import {ResolveSpecialAbilityEffect} from '../../effects/resolve-special-ability-effect.js';
 import {SelectDiscardCardEffect} from '../../effects/select-discard-card-effect.js';
 import {SelectFromTopDeckEffect} from '../../effects/select-from-top-deck-effect.js';
 import {SeveralAttacksEffect} from '../../effects/several-attacks-effect.js';
@@ -223,7 +223,7 @@ export const EFFECT_MAP = {
     [EFFECT_PLACE_THREAT]: PlaceThreatEffect,
     [EFFECT_RANDOM_CARD]: RandomCardEffect,
     [EFFECT_READY]: ReadyEffect,
-    [EFFECT_SELECT_AND_ORDER_CARDS]: SelectAndOrderCardsEffect,
+    [EFFECT_RESOLVE_SPECIAL_ABILITY]: ResolveSpecialAbilityEffect,
     [EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES]: ResolveSelectedSpecialAbilitiesEffect,
     [EFFECT_REMOVE_CARD]: RemoveCardEffect,
     [EFFECT_RETURN_HAND]: ReturnHandEffect,

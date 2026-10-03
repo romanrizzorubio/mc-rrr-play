@@ -1,7 +1,6 @@
 import {LitElement, html} from 'lit-element';
 
 import '../../cards/mc-card-list/mc-card-list.js';
-import '@material/web/dialog/dialog.js';
 import '@material/web/button/text-button.js';
 
 export class McDialog extends LitElement {
@@ -100,19 +99,8 @@ export class McDialog extends LitElement {
             detail: _response
         }));
     }
-    show() {
-        const dialog = this.shadowRoot.getElementById('dialog');
-
-        dialog.show();
-    }
     validate() {
         return true;
-    }
-    handleClose() {
-        this.dispatchEvent(new CustomEvent('dialog-close', {
-            bubbles: true,
-            composed: true,
-        }));
     }
     handleCancel() {
         const {_response} = this;
@@ -137,7 +125,7 @@ export class McDialog extends LitElement {
     renderDialog() {
         return html`
             ${this.renderTitle()}
-            <div class="content" slot="content">
+            <div class="content">
                 ${this.renderSubtitle()}
                 ${this._showHand ? this.renderHand() : this.renderContent()}
                 ${this.renderFooter()}
@@ -173,7 +161,7 @@ export class McDialog extends LitElement {
         const title = this.getTitle();
 
         return html`
-            <h2 class="title" slot="headline">
+            <h2 class="title">
                 <span>${title}</span>
                 ${hand && hand.length ? this.renderButtonHand() : ''}
             </h2>
@@ -214,17 +202,12 @@ export class McDialog extends LitElement {
     }
     render() {
         return html`
-            <md-dialog 
-                id="dialog" 
-                class="dialog ${this.className}" 
-                open 
-                @closed="${this.handleClose.bind(this)}"
-            >
+            <div class="dialog ${this.className}">
                 ${this.renderDialog()}
-                <div slot="actions">
+                <div class="actions">
                     ${this.renderButtons()}
                 </div>
-            </md-dialog>
+            </div>
         `;
     }
 }

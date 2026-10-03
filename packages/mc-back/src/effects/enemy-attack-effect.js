@@ -98,6 +98,10 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 TRIGGER_VILLAIN_ATTACKS_YOU,
             ]);
     }
+    getTriggersEnds() {
+        // The nested damage effect owns the resolved attack window.
+        return [];
+    }
     async setDefender(defender) {
         if (defender) {
             this.defender = defender.isSuperhero ? defender.currentSide : defender;

@@ -11,8 +11,10 @@ export class SearchCardsEffect extends Effect {
         filter = {},
         title = 'Elige una carta',
         count = 1,
+        upTo = false,
         firstMatch = false,
         requireMatch = false,
+        distinctNames = false,
     }) {
         super(arguments[0]);
         this.locations = locations;
@@ -20,8 +22,10 @@ export class SearchCardsEffect extends Effect {
         this.filter = filter;
         this.title = title;
         this.count = count;
+        this.upTo = upTo;
         this.firstMatch = firstMatch;
         this.requireMatch = requireMatch;
+        this.distinctNames = distinctNames;
     }
 
     async canRun(params) {
@@ -111,10 +115,13 @@ export class SearchCardsEffect extends Effect {
 
         const response = await this.openDialog({
             dialogType: DIALOG_SELECT_CARD,
+            hand: player.hand.cards.map(card => card.toObj(params)),
             data: {
                 title: this.title,
                 cards: options.map(card => card.toObj(params)),
                 count: this.count,
+                distinctNames: this.distinctNames,
+                upTo: this.upTo,
             },
         });
 
@@ -122,6 +129,17 @@ export class SearchCardsEffect extends Effect {
         if (selected && selected[0]) {
             // Guardamos el resultado en params para efectos encadenados
             params.selectedCards = selected.map(s => options.find(c => c.id === s.id));
+            if (this.distinctNames) {
+                const selectedNames = new Set();
+                params.selectedCards = params.selectedCards.filter(card => {
+                    if (!card || selectedNames.has(card.name)) {
+                        return false;
+                    }
+
+                    selectedNames.add(card.name);
+                    return true;
+                });
+            }
             params.selectedCard = params.selectedCards[0];
             params.card = params.selectedCard;
         }

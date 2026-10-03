@@ -16,6 +16,7 @@ export class HandComponent extends LitElement {
             size: {type: String},
             cards: {type: Array},
             marked: {type: Array},
+            disabledCards: {type: Array},
             showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             showMenuAbilities: {type: Boolean, attribute: 'show-menu-abilities'},
@@ -33,6 +34,7 @@ export class HandComponent extends LitElement {
         this.size = 'm';
         this.cards = [];
         this.marked = [];
+        this.disabledCards = [];
         this.showBasicStats = false;
         this.showAcquiredTraits = false;
         this.showMenuAbilities = false;
@@ -83,6 +85,10 @@ export class HandComponent extends LitElement {
     }
     handleClick(index) {
         return () => {
+            if (this.disabledCards.includes(index)) {
+                return;
+            }
+
             const {cards} = this;
 
             this.dispatchEvent(new CustomEvent('card-list-select', {
@@ -118,6 +124,7 @@ export class HandComponent extends LitElement {
         const {
             size,
             marked,
+            disabledCards,
             showBasicStats,
             showAcquiredTraits,
             showLife,
@@ -153,6 +160,9 @@ export class HandComponent extends LitElement {
 
         if (marked.some(i => i === index)) {
             classes.push('marked');
+        }
+        if (disabledCards.includes(index)) {
+            classes.push('disabled');
         }
         if (dimUnplayable && card.playable === false) {
             classes.push('unplayable');

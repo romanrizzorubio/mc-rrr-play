@@ -711,7 +711,7 @@ export class GameCard extends Engine {
     }
     setup() {
         if (this.sides.length) {
-            return this.currentSide.setup();
+            return this.currentSide.setup(arguments[0]);
         }
         const ability = this.abilities.find(_ability => _ability.isSetup);
 

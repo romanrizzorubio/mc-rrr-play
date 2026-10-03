@@ -24,6 +24,7 @@ export class Effect extends Engine {
             selectedTarget,
             source,
             paramsCalc,
+            paramsLastStep,
             thenEffect,
             match,
             ability,
@@ -49,6 +50,7 @@ export class Effect extends Engine {
         this.source = source;
         this.title = title || params.title || '';
         this.paramsCalc = paramsCalc;
+        this.paramsLastStep = paramsLastStep;
         this.thenEffect = thenEffect;
         this.match = match;
         this.saveData = saveData;
@@ -175,6 +177,13 @@ export class Effect extends Engine {
             effect: this,
         });
     }
+    getLastStepParam(name, params) {
+        if (params.isLastStep &&
+            this.paramsLastStep &&
+            Object.hasOwn(this.paramsLastStep, name)) {
+            return this.paramsLastStep[name];
+        }
+    }
     async canRun(params) {
         const validTarget = await this.getValidTarget(params);
 
@@ -208,7 +217,8 @@ export class Effect extends Engine {
     createDelayedEffect(effect) {
         this.delayedEffects.push(effect);
     }
-    execute(params) {
+    /** @returns {void | Promise<unknown>} */
+    execute(_params) {
         throw new Error('This effect is not created.');
     }
     filterTarget(card, params) {
@@ -235,9 +245,9 @@ export class Effect extends Engine {
         return this.title;
     }
     getTriggersEnds(params) {
-        const {activation} = this;
+        const {activation, isActivation} = this;
 
-        return activation ?
+        return isActivation && activation ?
             activation.getTriggersEnds(params) :
             [];
     }
@@ -362,10 +372,22 @@ export class Effect extends Engine {
 
         await this.resolveDelayedEffects(params);
         await this.trigger(PRIORITY_CONSTANT, type, params);
-        await this.trigger(PRIORITY_FORCED_RESPONSE, type, params);
-        await this.trigger(PRIORITY_RESPONSE, type, params);
 
         const {isActivation, activation} = this;
+        const additionalForcedResponses = isActivation && activation &&
+            typeof activation.getForcedResponseTriggers === 'function' ?
+            activation.getForcedResponseTriggers(type, params) :
+            [];
+
+        await this.trigger(
+            PRIORITY_FORCED_RESPONSE,
+            type,
+            params,
+            additionalForcedResponses
+        );
+
+        await this.trigger(PRIORITY_RESPONSE, type, params);
+
         if (isActivation && activation && activation.afterTriggerEnds) {
             await activation.afterTriggerEnds(params);
         }

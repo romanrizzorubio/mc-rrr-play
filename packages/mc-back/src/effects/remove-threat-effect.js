@@ -8,6 +8,7 @@ export class RemoveThreatEffect extends Effect {
     }) {
         super(arguments[0]);
 
+        this.baseThreat = threat;
         this.threat = threat;
         this.thwart = thwart;
     }
@@ -18,12 +19,13 @@ export class RemoveThreatEffect extends Effect {
     async prepare(params) {
         await super.prepare(params);
 
-        if (this.threat === undefined) {
-            if (this.paramsCalc) {
-                this.threat = this.calculate(params);
-            } else {
-                this.threat = params.threat;
-            }
+        const lastStepThreat = this.getLastStepParam('threat', params);
+        if (lastStepThreat !== undefined) {
+            this.threat = lastStepThreat;
+        } else if (this.paramsCalc) {
+            this.threat = this.calculate(params);
+        } else {
+            this.threat = this.baseThreat ?? params.threat;
         }
     }
     async execute(params) {

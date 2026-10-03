@@ -1,5 +1,4 @@
-import {ABILITY_SPECIAL} from 'mc-shared';
-
+import {SpecialAbility} from '../abilities/misc/special-ability.js';
 import {Effect} from './effect.js';
 
 
@@ -14,19 +13,10 @@ export class ResolveSelectedSpecialAbilitiesEffect extends Effect {
         for (let i = 0; i < orderedCards.length; i++) {
             const gameCard = orderedCards[i];
             const isLastStep = i === orderedCards.length - 1;
-            const special = gameCard.abilities.find(a => a.type === ABILITY_SPECIAL);
+            const special = gameCard.abilities.find(ability =>
+                ability instanceof SpecialAbility);
             if (special) {
-                const specialParams = {...params, isLastStep};
-                if (special.params && special.params.effect) {
-                    const effectConfig = special.params.effect;
-                    if (isLastStep && effectConfig.paramsLastStep) {
-                        special.params.effect = {
-                            ...effectConfig,
-                            ...effectConfig.paramsLastStep
-                        };
-                    }
-                }
-                await special.resolveAbility(specialParams);
+                await special.resolveAbility({...params, isLastStep});
             }
         }
     }

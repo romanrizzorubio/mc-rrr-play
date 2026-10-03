@@ -342,41 +342,6 @@ export class Engine {
         }
         return this.match.openDialog(params);
     }
-    async selectCardOrder(cards, title = 'Elige el orden de las cartas') {
-        const remainingCards = cards.slice();
-        const orderedCards = [];
-
-        while (remainingCards.length > 0) {
-            let selected;
-            if (remainingCards.length === 1) {
-                selected = remainingCards[0];
-            } else {
-                const response = await this.openDialog({
-                    dialogType: DIALOG_LIST,
-                    hideOk: true,
-                    title,
-                    data: {
-                        options: remainingCards.map((card, index) => ({
-                            id: index,
-                            text: card.card.name,
-                        })),
-                    },
-                });
-                const selectedIndex = response?.selected?.id;
-                if (!Number.isInteger(selectedIndex) ||
-                    selectedIndex < 0 ||
-                    selectedIndex >= remainingCards.length) {
-                    throw new Error('La selección del orden de las cartas no es válida.');
-                }
-                selected = remainingCards[selectedIndex];
-            }
-
-            orderedCards.push(selected);
-            remainingCards.splice(remainingCards.indexOf(selected), 1);
-        }
-
-        return orderedCards;
-    }
     async selectDiscardOrder(cards, title = 'Elige qué carta descartar primero') {
         const remainingCards = cards.slice();
         const orderedCards = [];
@@ -437,10 +402,21 @@ export class Engine {
     createLasting(lasting) {
         this.match.lasting.push(lasting);
     }
-    async trigger(priority, type, params) {
+    async trigger(priority, type, params, additionalTriggers = []) {
         const triggered = [];
 
-        let triggers = await this._getTriggers(type, priority, params);
+        const getTriggers = async exclude => {
+            const registeredTriggers = await this._getTriggers(type, priority, params, exclude);
+            const availableAdditionalTriggers = await this.promisesSequentialFilter(
+                additionalTriggers,
+                async trigger => exclude.indexOf(trigger) === -1 &&
+                    await trigger.canTrigger(params)
+            );
+
+            return registeredTriggers.concat(availableAdditionalTriggers);
+        };
+
+        let triggers = await getTriggers([]);
 
         while (triggers.length) {
             const automaticTrigger = triggers.find(_trigger => _trigger.ability.hideDialog);
@@ -469,7 +445,7 @@ export class Engine {
                     triggered.push(trigger);
                 }
                 
-                triggers = await this._getTriggers(type, priority, params, triggered);
+                triggers = await getTriggers(triggered);
             }
         }
 

@@ -15,6 +15,7 @@ export default css`
   }
 
   .card-names button {
+    box-sizing: border-box;
     cursor: pointer;
     font: inherit;
     padding: 8px 12px;

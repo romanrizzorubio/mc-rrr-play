@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {logGameTrace} from '../utils/game-trace.js';
 
 
 export class ShuffleDeckEffect extends Effect {
@@ -8,7 +9,10 @@ export class ShuffleDeckEffect extends Effect {
 
         if (targetPlayer && targetPlayer.deck) {
             targetPlayer.deck.shuffle();
-            this.match.logger.info(`${targetPlayer.name} baraja su mazo.`);
+            logGameTrace('deck.shuffled', {
+                match: this.match.name,
+                player: targetPlayer.name,
+            });
         }
     }
 }

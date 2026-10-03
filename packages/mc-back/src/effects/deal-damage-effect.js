@@ -15,9 +15,9 @@ export class DealDamageEffect extends Effect {
         this.takenDamage = 0;
         this.excessDamage = 0;
     }
-    checkTrigger(params) {
-        if (this.damage instanceof Array) {
-            if (this.preventDamage instanceof Array) {
+    checkTrigger() {
+        if (Array.isArray(this.damage)) {
+            if (Array.isArray(this.preventDamage)) {
                 return this.damage.some((d, index) => d > this.preventDamage[index]);
             }
             return this.damage.some(d => d > this.preventDamage);
@@ -50,10 +50,13 @@ export class DealDamageEffect extends Effect {
         await super.prepare(params);
 
         if (this.damage === undefined) {
-            if (this.paramsCalc) {
+            const lastStepDamage = this.getLastStepParam('damage', params);
+            if (lastStepDamage !== undefined) {
+                this.damage = lastStepDamage;
+            } else if (this.paramsCalc) {
                 this.damage = this.calculate(params);
             } else {
-                this.damage = this.baseDamage || params.damage;
+                this.damage = this.baseDamage ?? params.damage;
             }
         }
 
@@ -65,6 +68,7 @@ export class DealDamageEffect extends Effect {
             }
         }
     }
+    /** @returns {Promise<void>} */
     async execute(params) {
         const {selectedTarget, damage} = this;
 

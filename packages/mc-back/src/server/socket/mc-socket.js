@@ -130,7 +130,12 @@ export class McSocket {
                     'No hay ningún diálogo esperando esa respuesta.');
             }
 
-            this.acknowledge(acknowledge, {ok: true});
+            if (endpoint === EVENTS.DIALOG.RESPONSE) {
+                // Keep the current modal alive until the resumed effect can emit its next prompt.
+                setImmediate(() => this.acknowledge(acknowledge, {ok: true}));
+            } else {
+                this.acknowledge(acknowledge, {ok: true});
+            }
         } catch (error) {
             this.acknowledge(acknowledge, {
                 ok: false,

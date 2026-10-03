@@ -7,8 +7,10 @@ export default css`
     flex-wrap: wrap;
   }
   
-  .marked {
-    border: solid 3px yellow;
+  mc-card.marked {
+    border: solid 3px #111;
+    border-radius: 12px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
   }
 
   .ability-name {
@@ -17,6 +19,11 @@ export default css`
 
   .unplayable {
     filter: brightness(0.5);
+  }
+
+  mc-card.disabled {
+    filter: brightness(0.35);
+    pointer-events: none;
   }
   
   :not(.marked) {

@@ -1,3 +1,4 @@
+import {TARGET_YOU} from 'mc-shared';
 import {path} from '../engine/utils.js';
 
 import {DealDamageEffect} from './deal-damage-effect.js';
@@ -15,22 +16,38 @@ export class MoveDamageEffect extends Effect {
         this.fromTarget = fromTarget;
     }
 
+    getDamageSource(params) {
+        if (this.fromTarget === TARGET_YOU) {
+            return params.player;
+        }
+
+        return path(params, this.fromTarget);
+    }
+
     async prepare(params) {
         await super.prepare(params);
 
-        if (this.paramsCalc) {
+        const lastStepDamage = this.getLastStepParam('damage', params);
+        if (lastStepDamage !== undefined) {
+            this.damage = lastStepDamage;
+        } else if (this.paramsCalc) {
             this.damage = this.calculate(params);
         } else {
-            this.damage = this.baseDamage || params.damage;
+            this.damage = this.baseDamage ?? params.damage;
         }
     }
 
     filterTarget(card, params) {
-        const {damage, fromTarget} = this;
+        const source = this.getDamageSource(params);
+        const damage = this.getLastStepParam('damage', params) ??
+            (this.paramsCalc ?
+                this.calculate(params) :
+                this.baseDamage ?? params.damage);
 
-        const source = path(params, fromTarget);
-
-        if (source && source.damage < damage) {
+        if (!source ||
+            !Number.isFinite(source.damage) ||
+            !Number.isFinite(damage) ||
+            source.damage < damage) {
             return false;
         }
 
@@ -38,9 +55,9 @@ export class MoveDamageEffect extends Effect {
     }
 
     async execute(params) {
-        const {selectedTarget, damage, fromTarget} = this;
+        const {selectedTarget, damage} = this;
 
-        const source = path(params, fromTarget);
+        const source = this.getDamageSource(params);
 
         if (!source || source.damage < damage) {
             return;

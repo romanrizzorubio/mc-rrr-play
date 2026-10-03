@@ -39,14 +39,13 @@ export default css`
 
   .panel .subpanels {
     display: flex;
+    gap: 8px;
   }
 
   .subpanel {
-    width: 50%;
+    flex: 1 1 0;
+    min-width: 0;
     padding-bottom: var(--margin);
-  }
-  .subpanel:first-child {
-    margin-right: 16px;
   }
   
   mc-card-list {

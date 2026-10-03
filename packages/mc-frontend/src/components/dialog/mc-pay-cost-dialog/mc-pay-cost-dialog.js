@@ -21,7 +21,7 @@ export class McPayCostDialog extends McDialog {
         super(arguments[0]);
     }
     get className() {
-        return 'large';
+        return 'large pay-cost';
     }
     get cost() {
         const {data: {cost}} = this;

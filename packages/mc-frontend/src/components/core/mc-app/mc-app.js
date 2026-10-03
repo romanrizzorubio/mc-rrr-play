@@ -1,4 +1,5 @@
 import {html, unsafeStatic} from 'lit/static-html.js';
+import {keyed} from 'lit/directives/keyed.js';
 import { LitElement } from 'lit-element';
 import { router, navigator, outlet } from 'lit-element-router';
 
@@ -7,12 +8,17 @@ import '../mc-main/mc-main.js';
 import '../../../pages/mc-create-match-page/mc-create-match-page.js';
 import '../../../pages/mc-match-page/mc-match-page.js';
 import '../../dialog/index.js';
+import '@material/web/dialog/dialog.js';
 import {Api} from '../../api/api.js';
 import {Dialog} from '../../api/dialog.js';
+import stylesDialog from '../../dialog/mc-dialog/mc-dialog.css.js';
 import {EVENTS} from 'mc-endpoints';
 import {DIALOG_REVEAL_CARDS} from 'mc-shared';
 
 class McApp extends router(navigator(outlet(LitElement))) {
+    static get styles() {
+        return [stylesDialog];
+    }
     static get properties() {
         return {
             route: { type: String },
@@ -142,14 +148,20 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.alert = null;
     }
     async handleCancelDialog() {
-        const {dialog: {callback}} = this;
-
-        this.dialog = null;
+        const currentDialog = this.dialog;
 
         try {
-            await callback();
+            await currentDialog.callback();
         } catch (error) {
+            if (this.dialog === currentDialog) {
+                this.dialog = null;
+            }
             this.showAlert(error.message);
+            return;
+        }
+
+        if (this.dialog === currentDialog) {
+            this.dialog = null;
         }
     }
     handleChangeMenu(e) {
@@ -167,20 +179,26 @@ class McApp extends router(navigator(outlet(LitElement))) {
         });
     }
     handleCloseDialog() {
-        const dialog = this.shadowRoot.getElementById('dialog');
-
-        dialog.show();
+        if (this.dialog) {
+            this.shadowRoot.getElementById('dialog').show();
+        }
     }
     async handleDialogOk(e) {
         const {detail} = e;
-        const {dialog: {callback}} = this;
-
-        this.dialog = null;
+        const currentDialog = this.dialog;
 
         try {
-            await callback(detail);
+            await currentDialog.callback(detail);
         } catch (error) {
+            if (this.dialog === currentDialog) {
+                this.dialog = null;
+            }
             this.showAlert(error.message);
+            return;
+        }
+
+        if (this.dialog === currentDialog) {
+            this.dialog = null;
         }
     }
     handleCommunicationError(e) {
@@ -240,6 +258,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
     }
     renderDialog() {
         const {dialog} = this;
+        let dialogElement = html``;
+        let dialogClass = '';
 
         if (dialog) {
             const {
@@ -253,22 +273,30 @@ class McApp extends router(navigator(outlet(LitElement))) {
             } = dialog;
 
             const tag = unsafeStatic(`mc-${dialogType}-dialog`);
-
-            return html`<${tag}
-                id="dialog"
-                title="${title}"
-                subtitle="${subtitle}"
-                .data="${data}"
-                .showCancel="${showCancel}"
-                .hideOk="${hideOk}"
-                .hand="${hand}"
-                @dialog-ok="${this.handleDialogOk.bind(this)}"
-                @dialog-close="${this.handleCloseDialog.bind(this)}"
-                @dialog-cancel="${this.handleCancelDialog.bind(this)}"
-            ></${tag}>`;
+            dialogClass = dialogType === 'pay-cost' ?
+                'large pay-cost' :
+                dialogType === 'defense' ? 'large' : '';
+            dialogElement = keyed(dialog, html`<${tag}
+                    slot="content"
+                    title="${title}"
+                    subtitle="${subtitle}"
+                    .data="${data}"
+                    .showCancel="${showCancel}"
+                    .hideOk="${hideOk}"
+                    .hand="${hand}"
+                    @dialog-ok="${this.handleDialogOk.bind(this)}"
+                    @dialog-cancel="${this.handleCancelDialog.bind(this)}"
+                ></${tag}>`);
         }
 
-        return html``;
+        return html`
+            <md-dialog
+                id="dialog"
+                class="dialog ${dialogClass}"
+                ?open="${Boolean(dialog)}"
+                @closed="${this.handleCloseDialog.bind(this)}"
+            >${dialogElement}</md-dialog>
+        `;
     }
     renderAlert() {
         const {alert} = this;

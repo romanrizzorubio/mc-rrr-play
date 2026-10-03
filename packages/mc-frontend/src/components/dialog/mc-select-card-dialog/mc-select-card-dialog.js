@@ -20,7 +20,9 @@ export class McSelectCardDialog extends McDialog {
             data: {
                 cards: [],
                 count: 1,
+                distinctNames: false,
                 title: '',
+                upTo: false,
             },
             _response: {
                 selected: [],
@@ -33,11 +35,26 @@ export class McSelectCardDialog extends McDialog {
 
         return Math.min(requiredCount, cards.length);
     }
+    get isMandatorySingleSelection() {
+        return !this.data.upTo && this.selectionCount === 1;
+    }
     getTitle() {
         return this.data.title || this.title || 'Elige una carta';
     }
+    isCardDisabled(card) {
+        return this.data.distinctNames && this._response.selected.some(selectedCard =>
+            selectedCard.id !== card.id && selectedCard.name === card.name);
+    }
     handleCardListSelect(e) {
+        if (this.isMandatorySingleSelection && this._response.selected.length) {
+            return;
+        }
+
         const {card} = e.detail;
+        if (this.isCardDisabled(card)) {
+            return;
+        }
+
         const selected = this._response.selected.slice();
         const selectedIndex = selected.findIndex(selectedCard =>
             selectedCard.id === card.id);
@@ -52,9 +69,22 @@ export class McSelectCardDialog extends McDialog {
             ...this._response,
             selected,
         };
+
+        if (this.isMandatorySingleSelection && selected.length === 1) {
+            this.sendResponse();
+        }
     }
     validate() {
-        return this._response.selected.length === this.selectionCount;
+        return this.data.upTo ?
+            this._response.selected.length <= this.selectionCount :
+            this._response.selected.length === this.selectionCount;
+    }
+    renderButtonOk() {
+        if (this.isMandatorySingleSelection) {
+            return html``;
+        }
+
+        return super.renderButtonOk();
     }
     renderContent() {
         const {cards} = this.data;
@@ -66,11 +96,19 @@ export class McSelectCardDialog extends McDialog {
 
             return indexes;
         }, []);
+        const disabledCards = cards.reduce((indexes, card, index) => {
+            if (this.isCardDisabled(card)) {
+                indexes.push(index);
+            }
+
+            return indexes;
+        }, []);
 
         return html`
             <mc-card-list
                 .cards="${cards}"
                 .marked="${marked}"
+                .disabledCards="${disabledCards}"
                 @card-list-select="${this.handleCardListSelect.bind(this)}"
             ></mc-card-list>
         `;

@@ -25,11 +25,12 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_CONFUSE` | Para aplicar el estado "confundido". |
 | `EFFECT_TOUGH` | Para aplicar el estado "duro". |
 | `EFFECT_FLIP` | Para "dar la vuelta" a la carta de identidad (cambiar de Héroe a Alter ego o viceversa). |
-| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en el mazo o pila de descartes. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter` en las `locations` de los jugadores indicados por `players`. |
+| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en el mazo o pila de descartes. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter` en las `locations` de los jugadores indicados por `players`; `distinctNames: true` muestra todas las cartas válidas y deshabilita las del mismo nombre mientras una esté seleccionada. |
 | `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
 | `EFFECT_MOVE_TO_HAND` | Frecuentemente encadenado con búsquedas para "añadir a la mano". |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
 | `EFFECT_CHAINED` | Para ejecutar múltiples efectos en secuencia. |
+| `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
 | `EFFECT_CHOOSE_ABILITY` | Para elegir entre varias opciones de una misma carta. |

@@ -7,21 +7,26 @@ import {
 } from 'mc-shared';
 
 import {Activation} from './activation.js';
+import {RetaliateTrigger} from '../triggers/retaliate-trigger.js';
 
 export class Attack extends Activation {
     constructor({}) {
         super(arguments[0]);
 
         this.takenDamage = 0;
-        this.retaliateApplied = false;
+        this.attackedTargets = undefined;
     }
     async applyOverkill(params) {
-        const {selectedTarget} = this;
+        const selectedTarget = this.effect.attacked || this.selectedTarget;
+
+        this.attackedTargets = Array.isArray(selectedTarget) ?
+            selectedTarget.slice() :
+            [selectedTarget];
 
         const damage = this.effect.getEffectProperty('damage', params);
 
         if (damage && selectedTarget) {
-            const controller = this.getController();
+            const controller = this.getController(selectedTarget);
 
             if (controller) {
                 this.excessDamage = damage - await selectedTarget.getLife();
@@ -36,32 +41,48 @@ export class Attack extends Activation {
             }
         }
     }
-    async afterTriggerEnds(params) {
-        if (!this.retaliateApplied) {
-            this.retaliateApplied = true;
-            await this.applyRetaliate(params);
-        }
-    }
-    async applyRetaliate(params) {
-        const {selectedTarget, effect} = this;
+    async applyRetaliate(target, params) {
         const attacker = this.character;
 
-        if (selectedTarget && attacker) {
-            const targets = selectedTarget instanceof Array ? selectedTarget : [selectedTarget];
+        if (attacker && await this.canRetaliate(target)) {
+            const dealDamageEffect = this.match.effectsFactory.createEffect({
+                type: EFFECT_DEAL_DAMAGE,
+                damage: target.card.retaliate,
+                selectedTarget: attacker,
+                ability: this.effect.ability,
+            });
 
-            for (const target of targets) {
-                if (!target.isDefeated && target.retaliate) {
-                    const dealDamageEffect = this.match.effectsFactory.createEffect({
-                        type: EFFECT_DEAL_DAMAGE,
-                        damage: target.retaliate,
-                        selectedTarget: attacker,
-                        ability: effect.ability,
-                    });
-
-                    await dealDamageEffect.runEffect(params);
-                }
-            }
+            await dealDamageEffect.runEffect(params);
         }
+    }
+    async canRetaliate(target) {
+        if (!target || !target.card || !target.card.retaliate ||
+            !target.isInPlay || this.effect.ranged || !this.character) {
+            return false;
+        }
+
+        const targetIsInPlay = this.match.enemies.some(enemy =>
+            enemy === target || enemy.currentSide === target);
+        if (!targetIsInPlay) {
+            return false;
+        }
+
+        return (await target.getLife()) > 0;
+    }
+    getForcedResponseTriggers(type) {
+        if (!type.includes(TRIGGER_THIS_ATTACK) || this.effect.ranged) {
+            return [];
+        }
+
+        const attackedTargets = this.attackedTargets ||
+            this.effect.attacked ||
+            this.selectedTarget;
+        const targets = Array.isArray(attackedTargets) ? attackedTargets : [attackedTargets];
+
+        return targets
+            .filter(Boolean)
+            .map(target => target.isPlayer ? target.superhero.currentSide : target)
+            .map(target => new RetaliateTrigger(this, target));
     }
     checkStatus() {
         const {character} = this;
@@ -71,9 +92,7 @@ export class Attack extends Activation {
     filterTarget(card, {player}) {
         return !card.isEnemy || card.canBeAttacked(player);
     }
-    getController() {
-        const {selectedTarget} = this;
-
+    getController(selectedTarget = this.selectedTarget) {
         if (selectedTarget.isMinion) {
             return this.match.villain;
         } else if (selectedTarget.isAlly) {
@@ -82,7 +101,7 @@ export class Attack extends Activation {
     }
     getTriggersEnds(params) {
         const {triggersEndsLaunched, effect} = this;
-        const isBasic = effect && effect.ability && effect.ability.isBasic;
+        const isBasic = effect?.ability?.isBasic;
 
         const triggers = [
             TRIGGER_THIS_ATTACK,
