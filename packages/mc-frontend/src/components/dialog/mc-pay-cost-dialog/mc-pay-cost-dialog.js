@@ -1,9 +1,12 @@
 import {html} from 'lit-element';
+import {RESOURCE_ANY} from 'mc-shared';
 
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import styles from './mc-pay-cost-dialog.css.js';
 import '../../panels/mc-pay-cost/mc-pay-cost.js';
+import '../../cards/mc-card-image/mc-card-image.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {CARD_PATH} from '../../../misc/cards.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
 
 const COST_X = 'X';
@@ -36,6 +39,7 @@ export class McPayCostDialog extends McDialog {
                 cost: 0,
                 resourceType: undefined,
                 requirement: [],
+                card: undefined,
                 cards: {
                     generators: [],
                     hand: []
@@ -105,7 +109,30 @@ export class McPayCostDialog extends McDialog {
         return resources;
     }
     getTitle() {
-        return 'Pagar el coste';
+        const {card} = this.data;
+
+        return card && card.name ?
+            `Pagar el coste de ${card.name}` :
+            'Pagar el coste';
+    }
+    renderTitle() {
+        const {data: {card}, hand} = this;
+
+        return html`
+            <h2 class="title" slot="headline">
+                <span class="paying-card-title">
+                    ${card && card.image ? html`
+                        <mc-card-image
+                            src="${CARD_PATH}${card.image}"
+                            size="xs"
+                            aria-hidden="true"
+                        ></mc-card-image>
+                    ` : ''}
+                    <span>${this.getTitle()}</span>
+                </span>
+                ${hand && hand.length ? this.renderButtonHand() : ''}
+            </h2>
+        `;
     }
     sendResponse() {
         this._response = {
@@ -131,8 +158,11 @@ export class McPayCostDialog extends McDialog {
 
                 resources.forEach(_resource => {
                     const index = _requirement.indexOf(_resource);
-                    if (index > -1) {
-                        _requirement.splice(index, 1);
+                    const anyIndex = _requirement.indexOf(RESOURCE_ANY);
+                    const requirementIndex = index > -1 ? index : anyIndex;
+
+                    if (requirementIndex > -1) {
+                        _requirement.splice(requirementIndex, 1);
                     }
                 });
 

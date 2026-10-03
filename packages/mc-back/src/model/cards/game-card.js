@@ -771,6 +771,8 @@ export class GameCard extends Engine {
     }
     async toObjWithAbilityAvailability(player) {
         const serializedCard = this.toObj();
+        const attached = await Promise.all(this.attached.map(card =>
+            card.toObjWithAbilityAvailability(player)));
         const abilities = await Promise.all(this.currentSide.abilities.map(async (ability, index) => {
             const serializedAbility = {
                 ...ability.toObj(),
@@ -794,6 +796,7 @@ export class GameCard extends Engine {
 
         return {
             ...serializedCard,
+            attached,
             abilities,
             playable: abilities.some(ability =>
                 (ability.isAction || ability.isBasic) && !ability.disable),

@@ -5,11 +5,13 @@ export class ChainedEffect extends Effect {
 // ChainedEffect
         effects = [],
         matchAll = false,
+        outputParams = [],
     }) {
         super(arguments[0]);
 
         this.effects = effects;
         this.matchAll = matchAll;
+        this.outputParams = outputParams;
 
         effects.forEach(effect => {
             if (!effect) {
@@ -40,11 +42,20 @@ export class ChainedEffect extends Effect {
     isFullResolved() {
         return this.effects.every(effect => effect.isFullResolved());
     }
-    canRun(params) {
-        const newParams = {
+    getEffectParams(params) {
+        const {selectedTarget} = this;
+        const targetPlayer = selectedTarget && selectedTarget.isPlayer ?
+            selectedTarget :
+            params.targetPlayer;
+
+        return {
             ...params,
             effects: this.effects,
+            ...(targetPlayer ? {targetPlayer} : {}),
         };
+    }
+    canRun(params) {
+        const newParams = this.getEffectParams(params);
 
         if (this.matchAll || params.matchAll) {
             return this.promisesSequentialEvery(this.effects, effect =>
@@ -65,14 +76,11 @@ export class ChainedEffect extends Effect {
 
         return this.selectedTarget;
     }
-    execute(params) {
+    async execute(params) {
         const matchAll = this.matchAll || params.matchAll;
-        const newParams = {
-            ...params,
-            effects: this.effects,
-        };
+        const newParams = this.getEffectParams(params);
 
-        return this.promisesSequential(this.effects, async effect => {
+        await this.promisesSequential(this.effects, async effect => {
             if (await effect.canRun(newParams)) {
                 await effect.runEffect(newParams);
 
@@ -82,6 +90,10 @@ export class ChainedEffect extends Effect {
             } else {
                 return false;
             }
+        });
+
+        this.outputParams.forEach(param => {
+            params[param] = newParams[param];
         });
     }
 }

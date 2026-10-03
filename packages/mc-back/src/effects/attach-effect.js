@@ -20,12 +20,12 @@ export class AttachEffect extends Effect {
         return false;
     }
 
-    execute(_params) {
+    async execute(_params) {
         const {selectedTarget, card} = this;
 
         selectedTarget.attached.push(card);
         card.attachedTo = selectedTarget;
 
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
     }
 }

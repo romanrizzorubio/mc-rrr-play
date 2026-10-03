@@ -1,5 +1,7 @@
 import {
     TRIGGER_ATTACHED_DEFEAT,
+    TRIGGER_ATTACHED_GET_ATTACK,
+    TRIGGER_ATTACHED_GET_THWART,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_CONDITION_GET_DEFENSE,
@@ -7,6 +9,7 @@ import {
     TRIGGER_END_PLAY_CARD,
     TRIGGER_ENGAGE_HERO,
     TRIGGER_INSTANT,
+    TRIGGER_MINION_ENTER_PLAY,
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLACE_THREAT,
     TRIGGER_PLAY_CARD,
@@ -33,9 +36,11 @@ import {
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
-    TRIGGER_YOUR_HERO_GET_THWART
+    TRIGGER_YOUR_HERO_GET_THWART,
+    TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
+import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
 import {AttachedWouldAttackTrigger} from '../../triggers/attached-would-attack-trigger.js';
 import {
     AttachedWouldDealtDamageTrigger
@@ -45,6 +50,7 @@ import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-tri
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
+import {MinionEnterPlayTrigger} from '../../triggers/minion-enter-play-trigger.js';
 import {PhaseEndsTrigger} from '../../triggers/phase-ends-trigger.js';
 import {RoundEndsTrigger} from '../../triggers/round-ends-trigger.js';
 import {PlaceThreatTrigger} from '../../triggers/place-threat-trigger.js';
@@ -78,9 +84,14 @@ import {
     YourHeroGetHitPointsTrigger
 } from '../../triggers/your-hero-get-hit-points-trigger.js';
 import {YourHeroGetThwartTrigger} from '../../triggers/your-hero-get-thwart-trigger.js';
+import {
+    YourPlayerGetMaxAlliesTrigger
+} from '../../triggers/your-player-get-max-allies-trigger.js';
 
 export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_DEFEAT]: AttachedDefeatTrigger,
+    [TRIGGER_ATTACHED_GET_ATTACK]: AttachedGetStatTrigger,
+    [TRIGGER_ATTACHED_GET_THWART]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
@@ -106,8 +117,10 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOUR_HERO_GET_HAND_SIZE]: YourHeroGetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,
     [TRIGGER_YOUR_HERO_GET_THWART]: YourHeroGetThwartTrigger,
+    [TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES]: YourPlayerGetMaxAlliesTrigger,
     [TRIGGER_END_PLAY_CARD]: EndPlayCardTrigger,
     [TRIGGER_INSTANT]: InstantTrigger,
+    [TRIGGER_MINION_ENTER_PLAY]: MinionEnterPlayTrigger,
     [TRIGGER_PHASE_ENDS]: PhaseEndsTrigger,
     [TRIGGER_ROUND_ENDS]: RoundEndsTrigger,
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,

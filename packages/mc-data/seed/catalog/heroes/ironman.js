@@ -679,15 +679,15 @@ export default {
                 'cardRefs': [
                     {
                         'id': 'leadership-maria-hill',
-                        'count': 100
+                        'count': 10
                     },
                     {
                         'id': 'leadership-vision',
-                        'count': 1
+                        'count': 10
                     },
                     {
                         'id': 'leadership-ojo-de-halcon',
-                        'count': 1
+                        'count': 10
                     },
                     {
                         'id': 'leadership-hacer-la-llamada',
@@ -698,19 +698,19 @@ export default {
                         'count': 2
                     },
                     {
+                        'id': 'leadership-preparacion',
+                        'count': 2
+                    },
+                    {
                         'id': 'leadership-el-poder-del-liderazgo',
                         'count': 2
                     },
                     {
                         'id': 'leadership-el-triskelion',
-                        'count': 1
+                        'count': 10
                     },
                     {
                         'id': 'leadership-inspiracion',
-                        'count': 2
-                    },
-                    {
-                        'id': 'leadership-preparate',
                         'count': 2
                     }
                 ]
@@ -726,7 +726,8 @@ export default {
                     {'id': 'basic-energy', 'count': 1},
                     {'id': 'basic-genius', 'count': 1},
                     {'id': 'basic-strength', 'count': 1},
-                    {'id': 'basic-mockingbird', 'count': 1},
+                    {'id': 'basic-mockingbird', 'count': 10},
+                    {'id': 'basic-nick-fury', 'count': 10},
                 ],
             },
         ],

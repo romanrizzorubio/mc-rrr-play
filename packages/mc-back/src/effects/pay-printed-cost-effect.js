@@ -1,6 +1,7 @@
 import {RESOURCE_ANY} from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {PayCostEffect} from './pay-cost-effect.js';
 
 
 export class PayPrintedCostEffect extends Effect {
@@ -26,10 +27,14 @@ export class PayPrintedCostEffect extends Effect {
         const paid = await player.spendResources(requiredResources, card);
 
         if (paid) {
-            // El motor de pago ya debería haber procesado los descartes/agotados en spendResources o similar
-            // Si el motor requiere ejecución explícita de PayCostEffect, se haría aquí.
-            // Pero según SpendEffect, spendResources devuelve los recursos pagados.
-            this.match.logger.info(`${player.name} ha pagado el coste de ${cost} para ${card.name}.`);
+            const payCostEffect = new PayCostEffect({
+                hand: paid.hand,
+                generators: paid.generators,
+                selectedTarget: card,
+                match: this.match,
+            });
+
+            await payCostEffect.runEffect(params);
         } else {
             // Si no se puede pagar, deberíamos interrumpir la cadena.
             throw new Error('Cancelado: no se pudo pagar el coste impreso.');

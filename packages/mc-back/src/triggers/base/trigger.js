@@ -41,6 +41,7 @@ export class Trigger {
 
         await ability.resolveAbility({
             ...params,
+            triggeredCard: params.card,
             card,
         });
 
@@ -52,9 +53,10 @@ export class Trigger {
         this.triggered = await card.owner.triggerEvent(this, params);
     }
     runTrigger(params) {
-        const {card} = this;
+        const {ability, card} = this;
+        const isLastingAbility = Boolean(ability && ability.lasting);
 
-        if (card.isEvent) {
+        if (card.isEvent && !isLastingAbility) {
             return this.runEvent(params);
         } else {
             return this.runCard(params);

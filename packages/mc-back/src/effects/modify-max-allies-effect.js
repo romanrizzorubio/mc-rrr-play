@@ -1,5 +1,5 @@
 import {Effect} from './effect.js';
-
+import {GetMaxAlliesEffect} from './get-max-allies-effect.js';
 
 export class ModifyMaxAlliesEffect extends Effect {
     constructor({
@@ -8,10 +8,20 @@ export class ModifyMaxAlliesEffect extends Effect {
         super(arguments[0]);
         this.count = count;
     }
+    execute(params) {
+        const {effect} = params;
+        const {count, paramsCalc} = this;
+        const modifyMaxAllies = paramsCalc ?
+            this.calculate(params) :
+            count;
 
-    async execute(_params) {
-        // En este motor, las capacidades constantes que modifican valores
-        // suelen ser recogidas por efectos de cálculo como GetMaxAlliesEffect.
-        // Registramos el valor para que sea consultado.
+        if (!(effect instanceof GetMaxAlliesEffect)) {
+            throw new Error('ModifyMaxAlliesEffect requires a GetMaxAlliesEffect context.');
+        }
+        if (!Number.isFinite(modifyMaxAllies)) {
+            throw new Error('A maximum-allies modifier must resolve to a finite number.');
+        }
+
+        effect.modifyMaxAllies += modifyMaxAllies;
     }
 }

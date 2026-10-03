@@ -1,4 +1,7 @@
-import {TRIGGER_YOUR_HERO_GET_ATTACK} from 'mc-shared';
+import {
+    TRIGGER_ATTACHED_GET_ATTACK,
+    TRIGGER_YOUR_HERO_GET_ATTACK
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -13,6 +16,7 @@ export class GetAttackEffect extends Effect {
         return super.getTriggersInit()
             .concat([
                 TRIGGER_YOUR_HERO_GET_ATTACK,
+                TRIGGER_ATTACHED_GET_ATTACK,
             ]);
     }
     async execute(_params) {

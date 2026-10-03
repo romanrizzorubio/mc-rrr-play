@@ -31,6 +31,10 @@ export class PlayCardEffect extends Effect {
         const {card, ability, abilityType} = this;
         const {player} = params;
 
+        if (card.isPlayerCard && this.match.isUniqueCard(card)) {
+            return false;
+        }
+
         if (ability) {
             return true;
         }
@@ -155,6 +159,7 @@ export class PlayCardEffect extends Effect {
             data: {
                 cost: cost < 0 ? 0 : cost,
                 requirement: card.requirement,
+                card: card.toObj(),
                 cards: {
                     generators: cardsToPay.generators
                         .map(_card => _card.toObj(arguments[0])),

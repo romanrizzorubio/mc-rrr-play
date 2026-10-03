@@ -9,6 +9,7 @@ import {
     TARGET_SCENARIO,
     TARGET_SOURCE,
     TARGET_THIS,
+    TARGET_TRIGGERED_CARD,
     TARGET_YOU,
 } from 'mc-shared';
 
@@ -22,5 +23,6 @@ export const basicTargets = {
     [TARGET_SCENARIO]: ({match}) => [match.scenario],
     [TARGET_SOURCE]: ({params, source}) => path(params, source),
     [TARGET_THIS]: ({ability}) => [path(ability, 'card')],
+    [TARGET_TRIGGERED_CARD]: ({triggeredCard}) => [triggeredCard],
     [TARGET_YOU]: ({player}) => [player],
 };

@@ -1,4 +1,4 @@
-import {DIALOG_PLAY_CARD,PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND,TARGET_ALL_PLAYERS, TARGET_YOU} from 'mc-shared';
+import {DIALOG_SELECT_CARD,PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND,TARGET_ALL_PLAYERS, TARGET_YOU} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
@@ -84,7 +84,7 @@ export class SearchCardsEffect extends Effect {
         }
 
         const response = await this.openDialog({
-            dialogType: DIALOG_PLAY_CARD,
+            dialogType: DIALOG_SELECT_CARD,
             data: {
                 title: this.title,
                 cards: options.map(card => card.toObj(params)),

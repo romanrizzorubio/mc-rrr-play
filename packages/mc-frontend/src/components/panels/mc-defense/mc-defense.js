@@ -73,7 +73,7 @@ export class McDefense extends LitElement {
             <h3>Selecciona defensor o pulsa Ok para continuar sin defender</h3>
             <mc-card-list
                 .cards="${defenders}"
-                show-damage
+                show-life
                 show-generic
                 @card-list-select="${this.handleSelectDefender.bind(this)}"
             ></mc-card-list>

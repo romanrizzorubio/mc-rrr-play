@@ -60,7 +60,7 @@ export class McGameZone extends LitElement {
     renderCards({
         cards,
         type,
-        showDamage,
+        showLife,
         showThreat,
         showAcquiredTraits,
     }) {
@@ -73,7 +73,7 @@ export class McGameZone extends LitElement {
                 show-basic-stats
                 .showAcquiredTraits="${showAcquiredTraits}"
                 show-generic
-                .showDamage="${showDamage}"
+                .showLife="${showLife}"
                 .showThreat="${showThreat}"
                 .dimUnplayable="${true}"
                 show-exhausted
@@ -105,7 +105,7 @@ export class McGameZone extends LitElement {
         return this.renderCards({
             cards: cards.filter(card => card.isAlly),
             type: 'allies',
-            showDamage: true,
+            showLife: true,
             showAcquiredTraits: true,
         });
     }
@@ -115,7 +115,7 @@ export class McGameZone extends LitElement {
         return this.renderCards({
             cards: minions,
             type: 'minions',
-            showDamage: true,
+            showLife: true,
             showAcquiredTraits: true,
         });
     }

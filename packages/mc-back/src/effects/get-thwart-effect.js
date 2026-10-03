@@ -1,4 +1,8 @@
-import {TRIGGER_THIS_GET_THWART, TRIGGER_YOUR_HERO_GET_THWART} from 'mc-shared';
+import {
+    TRIGGER_ATTACHED_GET_THWART,
+    TRIGGER_THIS_GET_THWART,
+    TRIGGER_YOUR_HERO_GET_THWART
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -14,6 +18,7 @@ export class GetThwartEffect extends Effect {
             .concat([
                 TRIGGER_YOUR_HERO_GET_THWART,
                 TRIGGER_THIS_GET_THWART,
+                TRIGGER_ATTACHED_GET_THWART,
             ]);
     }
     async execute(_params) {

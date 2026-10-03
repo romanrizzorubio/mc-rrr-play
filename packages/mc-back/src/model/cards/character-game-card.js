@@ -2,10 +2,13 @@ import {AttackBasicAbility} from '../../abilities/basic/attack-basic-ability.js'
 import {RecoveryBasicAbility} from '../../abilities/basic/recovery-basic-ability.js';
 import {ThwartBasicAbility} from '../../abilities/basic/thwart-basic-ability.js';
 import {QuickstrikeAbility} from '../../abilities/misc/quickstrike-ability.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from 'mc-shared';
 import {Calc} from '../../engine/calc.js';
 
 import {GameCard} from './game-card.js';
+import {GetAttackEffect} from '../../effects/get-attack-effect.js';
+import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
 export class CharacterGameCard extends GameCard {
     constructor({
@@ -20,6 +23,8 @@ export class CharacterGameCard extends GameCard {
         this._tough = 0;
 
         this.modifyHitPoints = 0;
+        this.modifyAttack = 0;
+        this.modifyThwart = 0;
         this.extraTraits = [];
 
         this.engaged = null;
@@ -76,6 +81,10 @@ export class CharacterGameCard extends GameCard {
                 attack += card.card.attack;
             }
         });
+
+        if (Number.isFinite(attack)) {
+            attack += this.modifyAttack;
+        }
 
         return attack;
     }
@@ -245,6 +254,10 @@ export class CharacterGameCard extends GameCard {
             });
         }
 
+        if (Number.isFinite(thwart)) {
+            thwart += this.modifyThwart;
+        }
+
         return thwart;
     }
     get thwartConsequencial() {
@@ -340,6 +353,57 @@ export class CharacterGameCard extends GameCard {
         }
 
         return 0;
+    }
+    async getEffectiveStats() {
+        const {controller, match} = this;
+
+        if (!controller) {
+            throw new Error(`Ally ${this.id} has no controller for stat calculation.`);
+        }
+
+        const params = {
+            player: controller,
+            card: this,
+        };
+        const getAttackEffect = new GetAttackEffect({
+            selectedTarget: this,
+            match,
+        });
+        const getThwartEffect = new GetThwartEffect({
+            selectedTarget: this,
+            match,
+        });
+
+        await getAttackEffect.runEffect(params);
+        await getThwartEffect.runEffect(params);
+
+        return {
+            attack: getAttackEffect.attack,
+            thwart: this.thwart === null ? null : getThwartEffect.thwart,
+        };
+    }
+    async refresh() {
+        const {controller, match} = this;
+
+        if (!this.isAlly || !controller) {
+            return super.refresh();
+        }
+
+        const card = await this.toObjWithAbilityAvailability(controller);
+
+        match.mc.mcSocket.send(REFRESH_EVENTS[this.objectToRefresh], card);
+    }
+    async toObjWithAbilityAvailability(player) {
+        const serializedCard = await super.toObjWithAbilityAvailability(player);
+
+        if (this.isAlly) {
+            return {
+                ...serializedCard,
+                ...await this.getEffectiveStats(),
+            };
+        }
+
+        return serializedCard;
     }
     toObj() {
         const {

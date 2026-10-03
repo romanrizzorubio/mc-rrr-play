@@ -4,6 +4,7 @@ import {
     TARGET_ALL_ENEMIES,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
+    TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ALL_PLAYERS,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_CHARACTER,
@@ -19,6 +20,15 @@ export const groupTargets = {
     [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,
     [TARGET_ALL_HEROES_ALLIES]: ({match}) => match.heroesAndAllies,
+    [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {
+        const {targetPlayer} = params;
+
+        if (!targetPlayer) {
+            return [];
+        }
+
+        return targetPlayer.friends.map(character => character.currentSide);
+    },
     [TARGET_ALL_PLAYERS]: ({match}) => match.players,
     [TARGET_ALL_SIDE_SCHEMES]: ({match}) => match.sideSchemes,
     [TARGET_CHARACTER]: ({match}) => match.characters,

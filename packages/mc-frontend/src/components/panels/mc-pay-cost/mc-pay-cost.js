@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+import {RESOURCE_ANY} from 'mc-shared';
 
 import styles from './mc-pay-cost.css.js';
 import '../../cards/mc-card-list/mc-card-list.js';
@@ -148,7 +149,7 @@ export class McPayCost extends LitElement {
         const {requirement} = this;
 
         const render = [];
-        if (requirement && requirement.length) {
+        if (requirement && requirement.some(req => req !== RESOURCE_ANY)) {
             render.push(html`Requisito: `);
         }
 
@@ -156,6 +157,10 @@ export class McPayCost extends LitElement {
 
         if (requirement) {
             requirement.forEach(req => {
+                if (req === RESOURCE_ANY) {
+                    return;
+                }
+
                 const paid = resources.find(r => r.resource === req && !r.used);
 
                 if (paid) {

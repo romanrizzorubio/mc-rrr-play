@@ -16,6 +16,12 @@ export default css`
     width: max-content;
     margin: 0 auto;
   }
+
+  .card {
+    display: flex;
+    align-items: flex-start;
+  }
+
   .facedown-count {
     text-align: center;
   }
@@ -95,7 +101,11 @@ export default css`
   }
 
   .stat-defense {
-    background-color: #2e7d32;
+    background-color: #1b5e20;
+  }
+
+  .stat-counters {
+    background-color: #388e3c;
   }
 
   .stat-recovery {
@@ -161,17 +171,6 @@ export default css`
     gap: 4px;
   }
 
-  .generic {
-    background-color: green;
-    color: white;
-    width: 100%;
-  }
-
-  .damage {
-    background-color: red;
-    width: 100%;
-  }
-
   .acceleration {
     background-color: black;
     color: white;
@@ -206,5 +205,6 @@ export default css`
   .attached {
     display: flex;
     justify-content: flex-start;
+    padding-left: 2px;
   }
 `;

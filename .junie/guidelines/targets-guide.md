@@ -7,7 +7,7 @@ Esta guía describe los selectores de objetivo disponibles para las capacidades 
 - Usa constantes `TARGET_*` importadas desde `mc-shared`; no escribas sus strings directamente en los módulos de catálogo JavaScript.
 - Las constantes declaradas en `packages/mc-shared/constants/targets.js` no son necesariamente selectores resolubles. El motor solo reconoce como `params.target` los valores registrados en `targetMap`, compuesto en `packages/mc-back/src/targets/index.js`.
 - Cada resolver devuelve una lista de candidatos. Un resultado vacío significa que no hay objetivo disponible.
-- `TARGET_CARD` es la carta recibida en el contexto de resolución; `TARGET_THIS` es `ability.card`. No son intercambiables.
+- `TARGET_CARD` es la carta recibida en el contexto de resolución; `TARGET_TRIGGERED_CARD` es la carta del evento que activó la capacidad; `TARGET_THIS` es `ability.card`. No son intercambiables.
 - Si `params.target` se omite, `Effect` usa `TARGET_YOU`.
 - Un array en `target` combina los resultados de sus selectores; no encadena selectores ni significa “elige la carta superior”.
 
@@ -37,6 +37,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_SCENARIO` | El escenario de la partida. |
 | `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta debe producir una colección de candidatos. |
 | `TARGET_THIS` | La carta de la capacidad: `ability.card`. |
+| `TARGET_TRIGGERED_CARD` | La carta del evento que activó la capacidad, aunque `params.card` se reemplace por la carta que la posee. |
 | `TARGET_YOU` | El jugador actual. |
 
 ### Grupos (`targets/groups.js`)
@@ -50,6 +51,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes y aliados. |
 | `TARGET_ALL_PLAYERS` | Todos los jugadores. |
 | `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios. |
+| `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
 | `TARGET_CHARACTER` | Todos los personajes. |
 | `TARGET_ENEMY` | Todos los enemigos. |
 | `TARGET_HERO` | El lado héroe del jugador actual, solo si está en forma de héroe. |

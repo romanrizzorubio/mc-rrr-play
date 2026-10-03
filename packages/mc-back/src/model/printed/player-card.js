@@ -32,7 +32,12 @@ export class PlayerCard extends Card {
         this.isUpgrade = false;
     }
     canPlay(params) {
-        // TODO: Implement stricter validation for unique cards and ally limits
+        const {gameCard} = params;
+
+        if (this.match && this.match.isUniqueCard(gameCard || this)) {
+            return false;
+        }
+
         if (this.paramsToPlay) {
             return Object.keys(this.paramsToPlay)
                 .every(key =>

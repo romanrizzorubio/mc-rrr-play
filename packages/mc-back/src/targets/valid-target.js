@@ -1,6 +1,7 @@
 import {DIALOG_SELECT_TARGET,
     TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_ENEMIES, TARGET_ALL_HEROES, TARGET_ALL_SCHEMES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
+    TARGET_SELECTED_PLAYER_CHARACTERS,
 } from 'mc-shared';
 
 import {Engine} from '../engine/engine.js';
@@ -41,6 +42,7 @@ export class ValidTarget extends Engine {
             player,
             source,
             target,
+            triggeredCard,
         } = params;
 
         if (target instanceof Array) {
@@ -67,6 +69,7 @@ export class ValidTarget extends Engine {
             playCardEffect,
             player,
             source,
+            triggeredCard,
         }) : [];
 
         return targets.filter(target => this.filter(target, params));
@@ -85,6 +88,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_ENEMIES:
             case TARGET_ALL_HEROES:
             case TARGET_ALL_HEROES_ALLIES:
+            case TARGET_SELECTED_PLAYER_CHARACTERS:
             case TARGET_ALL_ENGAGED_MINIONS:
             case TARGET_ALL_SCHEMES:
                 return true;

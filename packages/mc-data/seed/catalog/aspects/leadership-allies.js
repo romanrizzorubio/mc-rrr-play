@@ -7,6 +7,7 @@ import {
     EFFECT_CHOOSE_ABILITY,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PLACE_COUNTERS,
@@ -16,14 +17,14 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALL_PLAYERS,
-    TARGET_CHARACTER,
+    TARGET_TRIGGERED_CARD,
     TARGET_THIS,
     TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
     TRAIT_DROID,
     TRAIT_SHIELD,
-    TRIGGER_ENGAGE_HERO,
+    TRIGGER_MINION_ENTER_PLAY,
     TRIGGER_THIS_ENTER_PLAY
 } from 'mc-shared';
 
@@ -99,6 +100,7 @@ export default [
                     {
                         'type': ABILITY_ACTION,
                         'params': {
+                            'name': 'Aumentar atributo',
                             'limit': {
                                 'count': 1,
                                 'time': TIME_ROUND
@@ -120,11 +122,17 @@ export default [
                                             'params': {
                                                 'name': 'Recibe +2 de INT',
                                                 'effect': {
-                                                    'type': EFFECT_MODIFY_THWART_VALUE,
+                                                    'type': EFFECT_LASTING,
                                                     'params': {
                                                         'target': TARGET_THIS,
-                                                        'count': 2,
-                                                        'until': TIME_PHASE
+                                                        'until': TIME_PHASE,
+                                                        'effect': {
+                                                            'type': EFFECT_MODIFY_THWART_VALUE,
+                                                            'params': {
+                                                                'target': TARGET_THIS,
+                                                                'count': 2
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -134,11 +142,17 @@ export default [
                                             'params': {
                                                 'name': 'Recibe +2 de ATQ',
                                                 'effect': {
-                                                    'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                    'type': EFFECT_LASTING,
                                                     'params': {
                                                         'target': TARGET_THIS,
-                                                        'count': 2,
-                                                        'until': TIME_PHASE
+                                                        'until': TIME_PHASE,
+                                                        'effect': {
+                                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                            'params': {
+                                                                'target': TARGET_THIS,
+                                                                'count': 2
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -194,18 +208,19 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_ENGAGE_HERO,
+                            'trigger': TRIGGER_MINION_ENTER_PLAY,
+                            'arrow': {
+                                'type': EFFECT_REMOVE_COUNTER,
+                                'params': {
+                                    'count': 1,
+                                    'target': TARGET_THIS
+                                }
+                            },
                             'effect': {
                                 'type': EFFECT_DEAL_DAMAGE,
                                 'params': {
                                     'damage': 2,
-                                    'target': TARGET_CHARACTER,
-                                    'cost': {
-                                        'type': EFFECT_REMOVE_COUNTER,
-                                        'params': {
-                                            'count': 1
-                                        }
-                                    }
+                                    'target': TARGET_TRIGGERED_CARD
                                 }
                             }
                         }

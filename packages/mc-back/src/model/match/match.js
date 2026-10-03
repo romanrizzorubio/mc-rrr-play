@@ -2,6 +2,7 @@ import {REFRESH_EVENTS} from 'mc-endpoints';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {path} from '../../engine/utils.js';
+import {cardsShareUniqueIdentity} from '../../utils/unique-card-utils.js';
 
 import {Player} from './player.js';
 import {PutPlayEffect} from '../../effects/put-play-effect.js';
@@ -275,18 +276,21 @@ export class Match extends Engine {
         await this.scenario.initScenario(obligations, expert);
     }
     isUniqueCard(card) {
-        const searched = this.searchCard({
-            name: card.name,
-        });
+        const cardsInPlay = [
+            this.scenario.villain,
+            this.scenario.gameZone.currentScheme,
+            ...this.scenario.gameZone.cards,
+            ...this.players.flatMap(player => [
+                player.superhero,
+                ...player.gameZone.cards,
+                ...player.gameZone.minions,
+            ]),
+        ].filter(Boolean);
 
-        if (searched) {
-            if (searched.isVillain && card.isVillain) {
-                return false;
-            }
-            return searched.unique && card.unique;
-        }
-
-        return false;
+        return cardsInPlay.some(other =>
+            other !== card &&
+            !(other.isVillain && card.isVillain) &&
+            cardsShareUniqueIdentity(other, card));
     }
     listen(endpoint, callback, once) {
         this.mc.mcSocket.listen(endpoint, callback, once);

@@ -1,13 +1,14 @@
 import {
     ABILITY_CONSTANT,
     CARD_TYPE_UPGRADE,
-    EFFECT_CHAINED,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
-    TARGET_ATTACHED,
-    TRAIT_CONDITION
+    TARGET_EFFECT,
+    TRAIT_CONDITION,
+    TRIGGER_ATTACHED_GET_ATTACK,
+    TRIGGER_ATTACHED_GET_THWART
 } from 'mc-shared';
 
 export default [
@@ -39,24 +40,26 @@ export default [
                         'type': ABILITY_CONSTANT,
                         'params': {
                             'name': 'Inspiración',
+                            'trigger': TRIGGER_ATTACHED_GET_THWART,
                             'effect': {
-                                'type': EFFECT_CHAINED,
+                                'type': EFFECT_MODIFY_THWART_VALUE,
                                 'params': {
-                                    'target': TARGET_ATTACHED,
-                                    'effects': [
-                                        {
-                                            'type': EFFECT_MODIFY_THWART_VALUE,
-                                            'params': {
-                                                'count': 1
-                                            }
-                                        },
-                                        {
-                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
-                                            'params': {
-                                                'count': 1
-                                            }
-                                        }
-                                    ]
+                                    'target': TARGET_EFFECT,
+                                    'count': 1
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'name': 'Inspiración',
+                            'trigger': TRIGGER_ATTACHED_GET_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1
                                 }
                             }
                         }

@@ -428,17 +428,20 @@ export class Player extends Engine {
 
         await this.gameZone.readyCards();
     }
-    async spendResources(resources, card) {
-        const cardsToPay = await this.getCardsToPay(card);
+    async spendResources(resources, cardToPay) {
+        const cardsToPay = await this.getCardsToPay(cardToPay);
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
             data: {
                 cost: resources.length,
                 requirement: resources,
+                card: cardToPay ? cardToPay.toObj() : undefined,
                 cards: {
-                    generators: cardsToPay.generators.map(card => card.toObj(arguments[0])),
-                    hand: cardsToPay.hand.map(card => card.toObj(arguments[0])),
+                    generators: cardsToPay.generators.map(generator =>
+                        generator.toObj({card: cardToPay})),
+                    hand: cardsToPay.hand.map(resourceCard =>
+                        resourceCard.toObj({card: cardToPay})),
                 }
             },
         });
@@ -453,8 +456,8 @@ export class Player extends Engine {
             };
         }
     }
-    async spendResourcesX(resources, card, resourceType) {
-        const cardsToPay = await this.getCardsToPay(card, resourceType);
+    async spendResourcesX(resources, cardToPay, resourceType) {
+        const cardsToPay = await this.getCardsToPay(cardToPay, resourceType);
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
@@ -462,9 +465,12 @@ export class Player extends Engine {
                 resourceType,
                 cost: RESOURCES_X,
                 requirement: resources,
+                card: cardToPay ? cardToPay.toObj() : undefined,
                 cards: {
-                    generators: cardsToPay.generators.map(card => card.toObj(arguments[0])),
-                    hand: cardsToPay.hand.map(card => card.toObj(arguments[0])),
+                    generators: cardsToPay.generators.map(generator =>
+                        generator.toObj({card: cardToPay})),
+                    hand: cardsToPay.hand.map(resourceCard =>
+                        resourceCard.toObj({card: cardToPay})),
                 }
             },
         });

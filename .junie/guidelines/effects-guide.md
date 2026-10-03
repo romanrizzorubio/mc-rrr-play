@@ -33,6 +33,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
 | `EFFECT_CHOOSE_ABILITY` | Para elegir entre varias opciones de una misma carta. |
+| `EFFECT_PAY_PRINTED_COST` | Para pagar el coste impreso de la carta seleccionada con los recursos del jugador actual. |
 | `EFFECT_MODIFY_ATTACK_VALUE` | Para modificar el valor de ATQ de forma temporal o permanente. |
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
@@ -66,6 +67,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - El modificador debe resolverse durante el trigger del cálculo correspondiente. Obtén el colector desde `params.effect` y suma allí el cambio (`params.effect.modifyX += delta`); no recorras cartas desde `Match` o `Player`, ni modifiques el valor impreso para aplicar un bonus temporal. En capacidades nuevas, configura `target` para indicar el objetivo y la identidad aplicable; usa `TARGET_EFFECT` solo cuando el propio efecto colector sea el objetivo, no para elegir entre héroe y alter ego.
 - Los modificadores aditivos deben acumularse con `+=`; asignar con `=` puede reemplazar otros modificadores. Calcula los valores dinámicos con `this.calculate(params)` cuando se configure `paramsCalc` y valida que el resultado sea finito.
 - Declara el alcance mediante `target`: usa `TARGET_YOUR_SUPERHERO` para ambas identidades, `TARGET_HERO` solo para héroe o `TARGET_ALTEREGO` solo para alter ego. No uses listas de identidades ni lógica específica de cada carta para decidir dónde aplica.
+- Para bonificaciones de ATQ o INT de un personaje vinculado, usa `TRIGGER_ATTACHED_GET_ATTACK` o `TRIGGER_ATTACHED_GET_THWART` y apunta con `TARGET_EFFECT` al efecto colector del atributo.
+- Para aplicar modificadores a todos los personajes de un jugador elegido, usa `TARGET_SELECTED_PLAYER_CHARACTERS` en una cadena cuyo objetivo padre sea `TARGET_ANY_PLAYER`. Envuélvelos en `EFFECT_LASTING` para que la bonificación se limpie al expirar.
 - Distingue los valores calculados del estado mutable: los puntos de vida máximos usan `GetHitPointsEffect` y la vida actual es el máximo menos el daño acumulado. El daño y la curación siguen modificando el estado mediante sus efectos; si un valor numérico aún no tiene colector, impleméntalo y añade su trigger antes de incorporar modificadores.
 
 ### Modificadores del tamaño de mano
@@ -116,11 +119,15 @@ effect: {
 
 - Usa `matchAll: true` cuando todos los efectos de la cadena sean necesarios y deban poder ejecutarse para habilitar la capacidad.
 
+- `arrow` define los costes de una capacidad y se resuelve antes de `effect`. Para costes compuestos, encadena efectos dentro de `arrow`; declara en `outputParams` los valores del contexto que deban llegar al efecto principal (por ejemplo, `['selectedCard']`). Así, la transferencia de la carta elegida queda explícita en la configuración de la carta, no implícita en el motor de flechas.
+
 - Para seleccionar objetivos, utiliza los selectores documentados en la [Guía de Objetivos](./targets-guide.md).
 - Para `TARGET_BY_TITLE`, configura `title` en los parámetros del efecto, no `name`: el selector compara `ability.effect.title` con el nombre de las cartas activas.
 - **"Inflige X de daño"**: `EFFECT_DEAL_DAMAGE`.
 - **"Quita X de amenaza"**: `EFFECT_REMOVE_THREAT`.
 - **"Genera los recursos impresos en una carta"**: usa `EFFECT_GENERATE_RESOURCES_FROM_CARD` con un `target` que resuelva una carta o zona de cartas. Si el objetivo es una zona, especifica `position`; por ejemplo, combina `TARGET_PLAYER_DISCARD` con `TARGET_TOP_CARD` para seleccionar la carta superior del descarte del jugador. Se genera un recurso por cada icono impreso, incluyendo iconos repetidos. Obténlos con `card.card.getPrintedResources()` sin pasar la carta que se está pagando a `getResources(card)`, para no aplicar recursos adicionales condicionales del cuadro de texto de una carta de recurso (véase la regla de recursos impresos en `docs/02-01-FUNDAMENTALS.md`).
+- `RESOURCE_ANY` representa un espacio de coste genérico: cada recurso generado, incluido uno universal, puede satisfacerlo. La validación de pago debe priorizar requisitos de recurso específicos antes de consumir espacios `RESOURCE_ANY`.
+- **Pago de costes con recursos condicionales**: pasa la carta cuyo coste se paga a `player.spendResources(resources, cardToPay)` y serializa los recursos disponibles con `toObj({card: cardToPay})`. Así se evalúan sus condiciones contra la carta correcta: por ejemplo, **El poder del liderazgo** genera dos recursos al pagar un Aliado de Liderazgo y uno si el Aliado es de otro aspecto. `EFFECT_PAY_PRINTED_COST` debe además aplicar `PayCostEffect` a las cartas y generadores elegidos para completar el pago.
 - **"Busca una carta y añádela a tu mano"**: encadena `EFFECT_SEARCH_CARDS` y `EFFECT_MOVE_TO_HAND` dentro de `EFFECT_CHAINED`. `EFFECT_SEARCH_CARDS` recibe `locations` (por ejemplo, `PLACE_DISCARD_PILE` o `PLACE_DECK`) y `filter`; guarda la carta elegida para que `EFFECT_MOVE_TO_HAND` la retire de su zona y la añada a la mano. Si la búsqueda es en el mazo y el texto lo indica, encadena también `EFFECT_SHUFFLE_DECK`. Para tomar la primera carta que cumpla el filtro recorriendo una pila desde arriba, usa `firstMatch: true`: en el descarte, comienza por la última carta añadida y sigue hacia las anteriores; en el mazo, comienza por la primera carta del array. La primera coincidencia se selecciona sin abrir un diálogo.
 
 ```javascript

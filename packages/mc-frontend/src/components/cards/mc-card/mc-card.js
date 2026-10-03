@@ -41,12 +41,9 @@ export class CardComponent extends LitElement {
             recovery: {type: Number},
             scheme: {type: Number},
             acceleration: {type: Number},
-            damage: {type: Number},
             life: {type: Number},
             generic: {type: Number},
             threat: {type: Number},
-            showDamage: {type: Boolean, attribute: 'show-damage'},
-            showDamageIfHas: {type: Boolean, attribute: 'show-damage-if-has'},
             showThreat: {type: Boolean, attribute: 'show-threat'},
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             statusCards: {type: Object},
@@ -79,8 +76,6 @@ export class CardComponent extends LitElement {
         this.scheme = undefined;
         this.generic = undefined;
         this.life = undefined;
-        this.showDamage = false;
-        this.showDamageIfHas = false;
         this.showThreat = false;
         this.showGeneric = false;
         this.horizontal = false;
@@ -145,6 +140,10 @@ export class CardComponent extends LitElement {
         e.stopPropagation();
 
         const {card, cardIndex} = e.detail;
+
+        if (card.playable === false) {
+            return;
+        }
 
         this.dispatchEvent(new CustomEvent('attached-card-click', {
             bubbles: true,
@@ -227,8 +226,9 @@ export class CardComponent extends LitElement {
             <div class="attached" >
                 <mc-card-list
                     .cards="${attached}"
-                    show-damage-if-has
+                    show-life
                     show-basic-stats
+                    dim-unplayable
                     size="${this._smallSize}"
                     @card-list-select="${this.handleAttachedCardClick.bind(this)}"
                     @card-list-menu-click="${this.handleAttachedMenuClick.bind(this)}"
@@ -286,22 +286,24 @@ export class CardComponent extends LitElement {
                 <div class="cards-facedown">
                     ${this.renderStats()}
                     <div class="card">
-                        <mc-card-image
-                            id="card"
-                            src="${CARD_PATH}${image}"
-                            size="${size}"
-                            .horizontal="${horizontal}"
-                            @click="${this.handleClick.bind(this)}"
-                            @contextmenu="${this.hableContextMenu.bind(this)}"
-                        ></mc-card-image>
-                        ${this.renderCounters()}
-                        ${this.renderStatusCards()}
+                        <div class="card-face">
+                            <mc-card-image
+                                id="card"
+                                src="${CARD_PATH}${image}"
+                                size="${size}"
+                                .horizontal="${horizontal}"
+                                @click="${this.handleClick.bind(this)}"
+                                @contextmenu="${this.hableContextMenu.bind(this)}"
+                            ></mc-card-image>
+                            ${this.renderCounters()}
+                            ${this.renderStatusCards()}
+                            ${this.renderBottomStats()}
+                        </div>
                         ${this.renderAttached()}
                     </div>
                     ${this.renderFaceDown()}
                 </div>
                 ${this.renderAcquiredTraits()}
-                ${this.renderBottomStats()}
                 <slot name="bottom"></slot>
                 ${this.renderMenu()}
             </div>
@@ -349,8 +351,6 @@ export class CardComponent extends LitElement {
             <div class="counters" >
                 ${this.renderAccelerationCounters()}
                 ${this.renderThreatCounters()}
-                ${this.renderDamageCounters()}
-                ${this.renderGenericCounters()}
             </div>
         `;
     }
@@ -362,6 +362,11 @@ export class CardComponent extends LitElement {
             undefined;
         const stats = [
             {label: 'VIDA', value: life, className: 'stat-life'},
+            ...(this.showGeneric && this.generic ? [{
+                label: 'CONTADORES',
+                value: this.generic,
+                className: 'stat-counters',
+            }] : []),
             {label: 'MANO', value: this.handSize, className: 'stat-hand-size'},
         ].filter(({value}) =>
             Number.isFinite(value) || typeof value === 'string'
@@ -379,27 +384,6 @@ export class CardComponent extends LitElement {
                 `)}
             </div>
         ` : html``;
-    }
-    renderDamageCounters() {
-        const {damage, showDamage, showDamageIfHas} = this;
-
-        const _render = () => {
-            return html`
-            <div class="damage" >
-                ${damage}
-            </div>
-        `;
-        };
-
-        if (showDamage && Number.isFinite(damage)) {
-            return _render();
-        }
-
-        if (showDamageIfHas && Number.isFinite(damage) && damage) {
-            return _render();
-        }
-
-        return html``;
     }
     renderFaceDown() {
         const types = this.getFaceDownTypes();
@@ -420,15 +404,6 @@ export class CardComponent extends LitElement {
         return Object.keys(types).length ? html`
             <div class="facedown" >
                 ${htmlFaceDown}
-            </div>
-        ` : html``;
-    }
-    renderGenericCounters() {
-        const {generic, showGeneric} = this;
-
-        return showGeneric && generic ? html`
-            <div class="generic" >
-                ${generic}
             </div>
         ` : html``;
     }

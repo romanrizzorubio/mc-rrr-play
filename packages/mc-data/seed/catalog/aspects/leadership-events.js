@@ -4,6 +4,7 @@ import {
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
+    EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PAY_PRINTED_COST,
@@ -17,6 +18,7 @@ import {
     TARGET_ALLY,
     TARGET_ALL_PLAYERS,
     TARGET_ANY_PLAYER,
+    TARGET_SELECTED_PLAYER_CHARACTERS,
     TIME_PHASE,
     TRAIT_TACTIC
 } from 'mc-shared';
@@ -48,6 +50,10 @@ export default [
                             'arrow': {
                                 'type': EFFECT_CHAINED,
                                 'params': {
+                                    'matchAll': true,
+                                    'outputParams': [
+                                        'selectedCard'
+                                    ],
                                     'effects': [
                                         {
                                             'type': EFFECT_SEARCH_CARDS,
@@ -97,25 +103,33 @@ export default [
                         'type': ABILITY_HERO_ACTION,
                         'params': {
                             'effect': {
-                                'type': EFFECT_CHAINED,
+                                'type': EFFECT_LASTING,
                                 'params': {
                                     'target': TARGET_ANY_PLAYER,
-                                    'effects': [
-                                        {
-                                            'type': EFFECT_MODIFY_THWART_VALUE,
-                                            'params': {
-                                                'count': 1,
-                                                'until': TIME_PHASE
-                                            }
-                                        },
-                                        {
-                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
-                                            'params': {
-                                                'count': 1,
-                                                'until': TIME_PHASE
-                                            }
+                                    'until': TIME_PHASE,
+                                    'effect': {
+                                        'type': EFFECT_CHAINED,
+                                        'params': {
+                                            'target': TARGET_ANY_PLAYER,
+                                            'matchAll': true,
+                                            'effects': [
+                                                {
+                                                    'type': EFFECT_MODIFY_THWART_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_SELECTED_PLAYER_CHARACTERS,
+                                                        'count': 1,
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_SELECTED_PLAYER_CHARACTERS,
+                                                        'count': 1,
+                                                    }
+                                                }
+                                            ]
                                         }
-                                    ]
+                                    }
                                 }
                             }
                         }
@@ -125,13 +139,13 @@ export default [
         }
     },
     {
-        '_id': 'leadership-preparate',
+        '_id': 'leadership-preparacion',
         'aspect': 'leadership',
         'order': 8,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'Prepárate',
+                'name': 'Preparación',
                 'set': 'leadership',
                 'image': 'aspect/leadership/events/01069.png',
                 'cost': 0,
@@ -141,7 +155,7 @@ export default [
                 'classification': 'leadership',
                 'abilities': [
                     {
-                        'type': ABILITY_HERO_ACTION,
+                        'type': ABILITY_ACTION,
                         'params': {
                             'effect': {
                                 'type': EFFECT_READY,

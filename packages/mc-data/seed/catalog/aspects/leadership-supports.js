@@ -4,7 +4,8 @@ import {
     EFFECT_MODIFY_MAX_ALLIES,
     RESOURCE_ENERGY,
     TRAIT_LOCATION,
-    TRAIT_SHIELD
+    TRAIT_SHIELD,
+    TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
 
 export default [
@@ -33,6 +34,7 @@ export default [
                         'type': ABILITY_CONSTANT,
                         'params': {
                             'name': 'El Triskelion',
+                            'trigger': TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
                             'effect': {
                                 'type': EFFECT_MODIFY_MAX_ALLIES,
                                 'params': {
