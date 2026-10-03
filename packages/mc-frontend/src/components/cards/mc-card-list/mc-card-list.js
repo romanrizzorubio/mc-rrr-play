@@ -20,6 +20,7 @@ export class HandComponent extends LitElement {
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             showMenuAbilities: {type: Boolean, attribute: 'show-menu-abilities'},
             showLife: {type: Boolean, attribute: 'show-life'},
+            showDamage: {type: Boolean, attribute: 'show-damage'},
             showThreat: {type: Boolean, attribute: 'show-threat'},
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
@@ -36,6 +37,7 @@ export class HandComponent extends LitElement {
         this.showAcquiredTraits = false;
         this.showMenuAbilities = false;
         this.showLife = false;
+        this.showDamage = false;
         this.showThreat = false;
         this.showGeneric = false;
         this.showExhausted = false;
@@ -119,12 +121,14 @@ export class HandComponent extends LitElement {
             showBasicStats,
             showAcquiredTraits,
             showLife,
+            showDamage,
             showThreat,
             showGeneric,
             dimUnplayable,
         } = this;
         const {
             attached,
+            damage,
             faceDown,
             image,
             name,
@@ -169,6 +173,8 @@ export class HandComponent extends LitElement {
                 .showAcquiredTraits="${showAcquiredTraits}"
                 .life="${life}"
                 .hitPoints="${hitPoints}"
+                .damage="${damage}"
+                .showDamage="${showDamage}"
                 threat="${threat}"
                 generic="${generic}"
                 size="${size}"

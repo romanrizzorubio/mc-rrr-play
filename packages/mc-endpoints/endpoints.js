@@ -1,7 +1,9 @@
 export const ENDPOINTS = {
     MATCH: {
         CREATE: '/create-match',
+        DELETE: '/delete-match',
         GET_HEROES_LIST: '/get-heroes-list',
+        GET_MATCHES_LIST: '/get-matches-list',
         GET_SCENARIOS_LIST: '/get-scenarios-list',
         INIT: '/init-match',
     },

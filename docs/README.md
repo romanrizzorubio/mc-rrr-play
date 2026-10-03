@@ -78,10 +78,10 @@ MC RRR Play
 │  └─ Motor de juego en puerto 3000
 │
 ├─ Datos (MongoDB)
-│  └─ Configuraciones de cartas, escenarios y superhéroes
+│  └─ Catálogo de juego y estado persistente de las partidas
 │
 └─ Packages compartidos
-   ├─ mc-data: acceso y catálogo inicial de MongoDB
+   ├─ mc-data: acceso al catálogo y a las partidas en MongoDB
    └─ mc-shared: constantes del dominio
 ```
 

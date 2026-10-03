@@ -15,6 +15,7 @@ export const EVENTS = {
     },
     MATCH: {
         CREATED: 'match-created',
+        JOIN: 'join-match',
         REFRESH: 'match-refresh',
     },
     PLAYER: {

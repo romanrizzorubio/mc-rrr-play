@@ -58,6 +58,7 @@ export class GameZone extends Engine {
             this.toObj();
 
         match.mc.mcSocket.send(
+            match.name,
             REFRESH_EVENTS[objectToRefresh],
             gameZone
         );

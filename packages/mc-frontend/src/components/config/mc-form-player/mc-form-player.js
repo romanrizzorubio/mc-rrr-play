@@ -67,7 +67,9 @@ export class McFormPlayer extends LitElement {
         `;
     }
     renderSelectOptions() {
-        const {heroesList} = this;
+        const heroesList = [...this.heroesList].sort((left, right) =>
+            left.name.localeCompare(right.name, 'es', {sensitivity: 'base'})
+        );
 
         return heroesList.map(this.renderSelectOption.bind(this));
     }

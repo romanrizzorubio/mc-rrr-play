@@ -2,38 +2,24 @@
 
 ## Gestión de Partidas
 
-### Crear Una Partida
+### Partidas Creadas y Reanudación
 
 **¿Qué permite?**
-El usuario puede crear una nueva partida configurando parámetros básicos.
+Ver las partidas que siguen en el backend, volver a una sala y retomar el estado guardado, o iniciar una partida nueva.
 
 **Pasos:**
-1. Acceder a "Nueva Partida"
-2. Ingresar nombre de la partida
-3. Seleccionar dificultad
-4. Presionar "Crear"
+1. Abrir "Partidas".
+2. Seleccionar una partida disponible.
+3. Elegir el jugador que se va a controlar y presionar "Continuar partida".
+4. Para borrar una partida guardada, presionar "Eliminar partida" y confirmar.
+
+Para empezar otra, presionar "Nueva partida", elegir nombre, jugador, superhéroe y escenario, y después "Crear partida".
 
 **Resultado:**
-- Se crea una partida nueva
-- El usuario se convierte en anfitrión
-- Se asigna un ID único a la partida
-- La partida entra en estado de espera
-
-### Unirse a Una Partida
-
-**¿Qué permite?**
-Un usuario puede unirse a una partida existente que aún no ha comenzado.
-
-**Pasos:**
-1. Ver lista de partidas disponibles
-2. Seleccionar la partida deseada
-3. Presionar "Unirse"
-4. Completar datos de jugador
-
-**Requisitos:**
-- Partida debe estar en estado de espera
-- Número máximo de jugadores no alcanzado
-- Nombre de usuario único en la partida
+- Las partidas inicializadas recuperan el tablero completo.
+- Si el setup de una partida continúa en el backend, se vuelven a mostrar los diálogos pendientes.
+- Las partidas se conservan en MongoDB y pueden reanudarse tras reiniciar el backend.
+- Al eliminarlas desde el lobby, dejan de estar disponibles y se borran de MongoDB.
 
 ## Configuración de Partida
 
@@ -41,6 +27,8 @@ Un usuario puede unirse a una partida existente que aún no ha comenzado.
 
 **¿Qué permite?**
 Elegir cuál superhéroe controlará durante la partida.
+
+La lista de superhéroes aparece en orden alfabético; Black Panther se muestra como Pantera Negra.
 
 **Información Mostrada:**
 - Nombre del Superhéroe

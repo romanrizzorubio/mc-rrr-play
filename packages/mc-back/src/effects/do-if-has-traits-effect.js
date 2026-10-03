@@ -29,7 +29,11 @@ export class DoIfHasTraitsEffect extends DoIfEffect {
     async canRun(params) {
         const validTargets = await this.getValidTarget(params);
 
-        if (!validTargets.length || !await super.canRun(params)) {
+        if (!validTargets.length) {
+            return false;
+        }
+
+        if (!await super.canRun(params)) {
             return false;
         }
 
@@ -40,6 +44,8 @@ export class DoIfHasTraitsEffect extends DoIfEffect {
             if (!effect) {
                 return true;
             }
+
+            this.prepareChildEffect(effect, selectedTarget);
 
             return effect.canRun(params);
         }));

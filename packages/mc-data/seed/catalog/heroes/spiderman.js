@@ -174,7 +174,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_ALLY,
                     'params': {
-                        'name': 'Black Cat',
+                        'name': 'Gata Negra',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter1.webp',
                         'traits': [
@@ -217,7 +217,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_EVENT,
                     'params': {
-                        'name': 'Backflip',
+                        'name': 'Voltereta hacia atrás',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter2.webp',
                         'traits': [
@@ -257,7 +257,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_EVENT,
                     'params': {
-                        'name': 'Enhanced Spider-Sense',
+                        'name': 'Sentido Arácnido Mejorado',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter4.webp',
                         'traits': [
@@ -293,7 +293,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_EVENT,
                     'params': {
-                        'name': 'Swinging Web Kick',
+                        'name': 'Balanceo con patada',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter6.webp',
                         'traits': [
@@ -331,7 +331,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_SUPPORT,
                     'params': {
-                        'name': 'Aunt May',
+                        'name': 'Tía May',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter9.webp',
                         'traits': [
@@ -371,7 +371,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
-                        'name': 'Spider-Tracer',
+                        'name': 'Rastreador Arácnido',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter10.webp',
                         'traits': [
@@ -408,7 +408,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
-                        'name': 'Web-Shooter',
+                        'name': 'Lanzarredes',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter12.webp',
                         'traits': [
@@ -462,7 +462,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
-                        'name': 'Webbed Up',
+                        'name': 'Envuelto en telaraña',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter14.webp',
                         'traits': [
@@ -576,7 +576,7 @@ export default {
             'card': {
                 'type': CARD_TYPE_OBLIGATION,
                 'params': {
-                    'name': 'Eviction Notice',
+                    'name': 'Aviso de desahucio',
                     'set': 'Spiderman',
                     'image': 'heroes/spiderman/petern0.webp',
                     'boost': 2,
@@ -672,7 +672,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_SIDE_SCHEME_SCENARIO,
                     'params': {
-                        'name': 'Highway Robbery',
+                        'name': 'Ladrón Alado',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/petern1.webp',
                         'boost': 3,
@@ -732,7 +732,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_MINION,
                     'params': {
-                        'name': 'Vulture',
+                        'name': 'Buitre',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/petern2.webp',
                         'boost': 2,
@@ -755,7 +755,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Sweeping Swoop',
+                        'name': 'Picado arrollador',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/petern3.webp',
                         'abilities': [
@@ -823,7 +823,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': "The Vulture's Plans",
+                        'name': 'Los Planes del Buitre',
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/petern5.webp',
                         'boost': 2,

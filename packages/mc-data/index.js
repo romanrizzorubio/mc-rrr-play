@@ -4,6 +4,7 @@ import {loadCatalog} from './seed/catalog.js';
 const collectionNames = {
     aspects: 'aspects',
     heroes: 'heroes',
+    matches: 'matches',
     scenarios: 'scenarios',
     sets: 'sets',
 };
@@ -54,6 +55,21 @@ export class MongoDataStore {
         }
 
         return record.config;
+    }
+    getMatchSnapshots() {
+        return this._collection(collectionNames.matches)
+            .find({}, {projection: {_id: 1, snapshot: 1}})
+            .toArray();
+    }
+    saveMatchSnapshot(id, snapshot) {
+        return this._collection(collectionNames.matches).replaceOne(
+            {_id: id},
+            {_id: id, snapshot},
+            {upsert: true},
+        );
+    }
+    deleteMatchSnapshot(id) {
+        return this._collection(collectionNames.matches).deleteOne({_id: id});
     }
     getHeroesList() {
         return this._collection(collectionNames.heroes)

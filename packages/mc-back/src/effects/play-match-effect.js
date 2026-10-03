@@ -1,6 +1,7 @@
 import {ChangeRoundEffect} from './change-round-effect.js';
 import {Effect} from './effect.js';
 import {PlayRoundEffect} from './play-round-effect.js';
+import {Engine} from '../engine/engine.js';
 
 export class PlayMatchEffect extends Effect {
     async execute(params) {
@@ -12,11 +13,20 @@ export class PlayMatchEffect extends Effect {
         const changeRoundEffect = new ChangeRoundEffect({
             match: this.match,
         });
+        Engine.currentRound = playRoundEffect;
 
-        match.currentPlayer = match.players.find(player => player.initial);
+        match.currentPlayer = match.currentPlayer ||
+            match.players.find(player => player.initial);
         match.playing = true;
 
         while (match.playing) {
+            if (match.phase === 'round-complete') {
+                await changeRoundEffect.runEffect(params);
+                match.phase = 'players';
+                await match.persist();
+                continue;
+            }
+
             await playRoundEffect.runEffect({
                 player: match.currentPlayer,
             });
@@ -28,6 +38,8 @@ export class PlayMatchEffect extends Effect {
             }
 
             await changeRoundEffect.runEffect(params);
+            match.phase = 'players';
+            await match.persist();
         }
     }
 }

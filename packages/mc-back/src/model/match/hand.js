@@ -79,6 +79,7 @@ export class Hand extends Engine {
         const {match, objectToRefresh} = this;
 
         match.mc.mcSocket.send(
+            match.name,
             REFRESH_EVENTS[objectToRefresh],
             await this.toObjWithPlayability()
         );

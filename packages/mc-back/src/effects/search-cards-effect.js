@@ -12,6 +12,7 @@ export class SearchCardsEffect extends Effect {
         title = 'Elige una carta',
         count = 1,
         firstMatch = false,
+        requireMatch = false,
     }) {
         super(arguments[0]);
         this.locations = locations;
@@ -20,6 +21,37 @@ export class SearchCardsEffect extends Effect {
         this.title = title;
         this.count = count;
         this.firstMatch = firstMatch;
+        this.requireMatch = requireMatch;
+    }
+
+    async canRun(params) {
+        if (!await super.canRun(params)) {
+            return false;
+        }
+
+        if (!this.requireMatch) {
+            return true;
+        }
+
+        const players = this.playersTarget === TARGET_ALL_PLAYERS ?
+            this.match.players :
+            [params.player];
+
+        return players.some(player => this.locations.some(location =>
+            this.getCardsAtLocation(player, location)
+                .some(card => checkCondition(card, this.filter))));
+    }
+
+    getCardsAtLocation(player, location) {
+        if (location === PLACE_DISCARD_PILE) {
+            return player.deck.discardPile;
+        } else if (location === PLACE_DECK) {
+            return player.deck.cards;
+        } else if (location === PLACE_HAND) {
+            return player.hand.cards;
+        }
+
+        return [];
     }
 
     async execute(params) {
@@ -42,15 +74,9 @@ export class SearchCardsEffect extends Effect {
         const options = [];
         for (const p of targetPlayers) {
             for (const location of this.locations) {
-                let cards = [];
-                if (location === PLACE_DISCARD_PILE) {
-                    cards = this.firstMatch ?
-                        p.deck.discardPile.slice().reverse() :
-                        p.deck.discardPile;
-                } else if (location === PLACE_DECK) {
-                    cards = p.deck.cards;
-                } else if (location === PLACE_HAND) {
-                    cards = p.hand.cards;
+                let cards = this.getCardsAtLocation(p, location);
+                if (this.firstMatch && location === PLACE_DISCARD_PILE) {
+                    cards = cards.slice().reverse();
                 }
 
                 if (this.firstMatch) {

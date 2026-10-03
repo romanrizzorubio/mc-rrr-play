@@ -163,6 +163,7 @@ export class Player extends Engine {
     }
     async refresh() {
         this.match.mc.mcSocket.send(
+            this.match.name,
             REFRESH_EVENTS[this.objectToRefresh],
             await this.toObjWithPlayableHand()
         );
@@ -204,7 +205,11 @@ export class Player extends Engine {
         return this.superhero.confuse();
     }
     defeat() {
-        this.match.mc.send(EVENTS.PLAYER.DEFEAT, this.toObj());
+        this.match.mc.mcSocket.send(
+            this.match.name,
+            EVENTS.PLAYER.DEFEAT,
+            this.toObj()
+        );
     }
     discardHand(card) {
         const discardFromHandEffect = new DiscardFromHandEffect({

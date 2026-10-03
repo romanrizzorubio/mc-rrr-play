@@ -81,7 +81,7 @@ import {
 export default {
     '_id': 'blackpanther',
     'order': 4,
-    'name': 'Black Panther',
+    'name': 'Pantera Negra',
     'folder': 'blackpanther',
     'config': {
         'sides': [

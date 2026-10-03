@@ -35,6 +35,8 @@ export class CardComponent extends LitElement {
             extraTraits: {type: Array},
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             hitPoints: {type: Number},
+            damage: {type: Number},
+            showDamage: {type: Boolean, attribute: 'show-damage'},
             attack: {type: Number},
             thwart: {type: Number},
             defense: {type: Number},
@@ -55,6 +57,7 @@ export class CardComponent extends LitElement {
             menuOptions: {type: Array},
             _menuOpen: {type: Boolean},
             _showBig: {type: Boolean},
+            stage: {type: Number},
         };
     }
     constructor() {
@@ -69,6 +72,8 @@ export class CardComponent extends LitElement {
         this.extraTraits = [];
         this.showAcquiredTraits = false;
         this.hitPoints = undefined;
+        this.damage = undefined;
+        this.showDamage = false;
         this.attack = undefined;
         this.thwart = undefined;
         this.defense = undefined;
@@ -84,6 +89,7 @@ export class CardComponent extends LitElement {
         this.menuOptions = [];
         this._menuOpen = false;
         this._showBig = false;
+        this.stage = undefined;
     }
     get _card() {
         return this.renderRoot?.querySelector('#card') ?? null;
@@ -227,6 +233,7 @@ export class CardComponent extends LitElement {
                 <mc-card-list
                     .cards="${attached}"
                     show-life
+                    show-damage
                     show-basic-stats
                     dim-unplayable
                     size="${this._smallSize}"
@@ -287,6 +294,7 @@ export class CardComponent extends LitElement {
                     ${this.renderStats()}
                     <div class="card">
                         <div class="card-face">
+                            ${this.renderStage()}
                             <mc-card-image
                                 id="card"
                                 src="${CARD_PATH}${image}"
@@ -337,14 +345,20 @@ export class CardComponent extends LitElement {
             </div>
         ` : html``;
     }
+    renderStatusCard(count, initial, label, className) {
+        return Number.isFinite(count) && count > 0 ? html`
+            <span
+                class="character-stat status-card ${className}"
+                aria-label="${label}: ${count} ${count === 1 ? 'carta' : 'cartas'} de estado"
+            >
+                ${initial}${count > 1 ? ` x${count}` : ''}
+            </span>
+        ` : html``;
+    }
     renderConfused() {
         const {statusCards: {confused}} = this;
 
-        return confused ? html`
-            <div class="confused" >
-                ${confused}
-            </div>
-        ` : html``;
+        return this.renderStatusCard(confused, 'C', 'Confundido', 'confused');
     }
     renderCounters() {
         return html`
@@ -362,6 +376,11 @@ export class CardComponent extends LitElement {
             undefined;
         const stats = [
             {label: 'VIDA', value: life, className: 'stat-life'},
+            ...(this.showDamage && Number.isFinite(this.damage) && this.damage > 0 ? [{
+                label: 'DAÑO',
+                value: this.damage,
+                className: 'stat-damage',
+            }] : []),
             ...(this.showGeneric && this.generic ? [{
                 label: 'CONTADORES',
                 value: this.generic,
@@ -430,6 +449,17 @@ export class CardComponent extends LitElement {
             </header>
         `;
     }
+    renderStage() {
+        const {stage} = this;
+
+        return Number.isFinite(stage) ? html`
+            <div class="stage-label">
+                <span class="character-stat stat-stage header-stat" aria-label="Etapa: ${stage}">
+                    ${stage}
+                </span>
+            </div>
+        ` : html``;
+    }
     renderMenu() {
         return; /*this.menuOptions.length ? html`
             <md-menu 
@@ -471,11 +501,7 @@ export class CardComponent extends LitElement {
     renderStunned() {
         const {statusCards: {stunned}} = this;
 
-        return stunned ? html`
-            <div class="stunned" >
-                ${stunned}
-            </div>
-        ` : html``;
+        return this.renderStatusCard(stunned, 'A', 'Aturdido', 'stunned');
     }
     renderAccelerationCounters() {
         const {acceleration} = this;
@@ -498,11 +524,7 @@ export class CardComponent extends LitElement {
     renderTough() {
         const {statusCards: {tough}} = this;
 
-        return tough ? html`
-            <div class="tough" >
-                ${tough}
-            </div>
-        ` : html``;
+        return this.renderStatusCard(tough, 'D', 'Duro', 'tough');
     }
     render() {
         return html`

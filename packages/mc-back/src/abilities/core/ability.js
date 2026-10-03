@@ -221,7 +221,9 @@ export class Ability extends Engine {
 
         this.prepareEffect({preselectedTarget});
 
-        if (await this.canRun(params)) {
+        const canRun = await this.canRun(params);
+
+        if (canRun) {
             const costsPaid = arrowPaid || await this.payArrow(params);
 
             if (costsPaid) {

@@ -72,7 +72,7 @@ export class VillainCardComponent extends LitElement {
                 image="${image}"
                 life="${life}"
                 .hitPoints="${hitPoints}"
-                .headerRight="${stage}"
+                .stage="${stage}"
                 .attack="${attack}"
                 .thwart="${thwart}"
                 .defense="${defense}"

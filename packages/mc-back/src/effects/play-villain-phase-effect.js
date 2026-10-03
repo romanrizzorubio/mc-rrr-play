@@ -5,8 +5,28 @@ import {ActivateEffect} from './activate-effect.js';
 import {DealEncounterEffect} from './deal-encounter-effect.js';
 import {PlayPhaseEffect} from './play-phase-effect.js';
 import {SeveralActivationsEffect} from './several-activations-effect.js';
+import {logGameTrace} from '../utils/game-trace.js';
 
 export class PlayVillainPhaseEffect extends PlayPhaseEffect {
+    async runTracedStep(step, action) {
+        const details = {
+            match: this.match.name,
+            step,
+        };
+
+        logGameTrace('villain-phase.step.start', details);
+
+        let outcome = 'failed';
+        try {
+            await action();
+            outcome = 'completed';
+        } finally {
+            logGameTrace('villain-phase.step.end', {
+                ...details,
+                outcome,
+            });
+        }
+    }
     stepAccelerateScheme(params) {
         const accelerationSchemeEffect = new AccelerateSchemeEffect({
             match: this.match,
@@ -92,12 +112,29 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
     }
 
     async execute(params) {
-        await this.stepAccelerateScheme(params);
-        await this.stepActivations(params);
-        await this.stepDealEncounters(params);
-        await this.stepRevealEncounters(params);
-        await this.runEndVillainPhase(params);
+        logGameTrace('villain-phase.start', {
+            match: this.match.name,
+        });
+
+        const steps = [
+            ['place-threat', () => this.stepAccelerateScheme(params)],
+            ['enemy-activations', () => this.stepActivations(params)],
+            ['deal-encounters', () => this.stepDealEncounters(params)],
+            ['reveal-encounters', () => this.stepRevealEncounters(params)],
+            ['advance-first-player', () => this.runEndVillainPhase()],
+        ];
+
+        for (let i = this.match.villainPhaseStep ; i < steps.length ; i++) {
+            const [name, action] = steps[i];
+            await this.runTracedStep(name, action);
+            this.match.villainPhaseStep = i + 1;
+            await this.match.persist();
+        }
 
         await super.execute(params);
+
+        logGameTrace('villain-phase.end', {
+            match: this.match.name,
+        });
     }
 }

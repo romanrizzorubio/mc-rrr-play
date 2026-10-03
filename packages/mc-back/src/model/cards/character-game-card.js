@@ -129,8 +129,6 @@ export class CharacterGameCard extends GameCard {
             return this.engaged.gameZone;
         } else if (this.isAlly) {
             return this.controller.gameZone;
-        } else {
-            console.log(this);
         }
     }
     get guard() {
@@ -391,7 +389,7 @@ export class CharacterGameCard extends GameCard {
 
         const card = await this.toObjWithAbilityAvailability(controller);
 
-        match.mc.mcSocket.send(REFRESH_EVENTS[this.objectToRefresh], card);
+        match.mc.mcSocket.send(match.name, REFRESH_EVENTS[this.objectToRefresh], card);
     }
     async toObjWithAbilityAvailability(player) {
         const serializedCard = await super.toObjWithAbilityAvailability(player);

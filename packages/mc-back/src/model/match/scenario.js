@@ -138,7 +138,12 @@ export class Scenario extends Engine {
     }
     async selectVillain(player) {
         if (!this.villains.length) {
-            this.match.mc.send(EVENTS.SCENARIO.DEFEAT, this.toObj());
+            this.match.mc.mcSocket.send(
+                this.match.name,
+                EVENTS.SCENARIO.DEFEAT,
+                this.toObj()
+            );
+            return;
         }
 
         const nextVillain = this.villains.shift();

@@ -20,8 +20,6 @@ export class SchemeGameCard extends GameCard {
     get gameZone() {
         if (this.isSideScheme) {
             return this.match.scenario.gameZone;
-        } else {
-            console.log(this);
         }
     }
     get initial() {
@@ -67,7 +65,11 @@ export class SchemeGameCard extends GameCard {
     }
     defeat() {
         if (this.isMain) {
-            this.match.mc.send(EVENTS.CARD.DEFEAT, this.toObj());
+            this.match.mc.mcSocket.send(
+                this.match.name,
+                EVENTS.CARD.DEFEAT,
+                this.toObj()
+            );
         }
 
         return super.defeat();

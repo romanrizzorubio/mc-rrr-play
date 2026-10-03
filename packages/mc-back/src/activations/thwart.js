@@ -16,7 +16,11 @@ export class Thwart extends Activation {
     filterTarget(card, params) {
         const {player} = params;
 
-        if (card.isScheme) {
+        if (card.isScheme && card.isCard) {
+            if (typeof card.canThwart !== 'function') {
+                throw new TypeError(`Scheme card ${card.id} does not implement canThwart`);
+            }
+
             return card.canThwart(player);
         }
 

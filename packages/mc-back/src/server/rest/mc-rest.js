@@ -40,11 +40,28 @@ export class McRest {
     }
     post(endpoint, callback) {
         this.mc.app.post(endpoint, (req, res, next) => {
+            const params = {
+                ...req.body,
+                match: this.getMatch(req.headers.match),
+            };
+
             Promise.resolve()
-                .then(() => callback({
-                    ...req.body,
-                    match: this.getMatch(req.headers.match),
-                }))
+                .then(() => callback(params))
+                .then(async response => {
+                    const match = params.match ||
+                        (params.name && this.getMatch(params.name));
+                    if (match && match.initialized) {
+                        await this.mc.persistMatch(match);
+                    }
+                    res.send(response);
+                })
+                .catch(next);
+        });
+    }
+    delete(endpoint, callback) {
+        this.mc.app.delete(endpoint, (req, res, next) => {
+            Promise.resolve()
+                .then(() => callback(req.body))
                 .then(response => res.send(response))
                 .catch(next);
         });

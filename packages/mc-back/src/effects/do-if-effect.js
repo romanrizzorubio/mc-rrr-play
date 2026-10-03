@@ -87,6 +87,14 @@ export class DoIfEffect extends Effect {
             this.effectNot.isThwart = isThwart;
         }
     }
+    prepareChildEffect(effect, selectedTarget = this.selectedTarget) {
+        if (!effect) {
+            return;
+        }
+
+        effect.attack = this.attack;
+        effect.selectedTarget = effect.target === this.target ? selectedTarget : undefined;
+    }
     getEffectProperty(name, params) {
         const checked = this.checkCondition(params);
 
@@ -100,19 +108,8 @@ export class DoIfEffect extends Effect {
     async prepare(params) {
         await super.prepare(params);
 
-        if (this.effect) {
-            this.effect.attack = this.attack;
-            if (this.effect.target === this.target) {
-                this.effect.selectedTarget = this.selectedTarget;
-            }
-        }
-
-        if (this.effectNot) {
-            this.effectNot.attack = this.attack;
-            if (this.effectNot.target === this.target) {
-                this.effectNot.selectedTarget = this.selectedTarget;
-            }
-        }
+        this.prepareChildEffect(this.effect);
+        this.prepareChildEffect(this.effectNot);
     }
     checkCondition(params) {
         return checkCondition(params, this.condition);

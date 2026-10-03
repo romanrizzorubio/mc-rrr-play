@@ -22,6 +22,12 @@ export class Match extends Engine {
         this.removedCards = [];
         this.scenario = null;
         this.playing = false;
+        this.initialized = false;
+        this.initializing = false;
+        this.phase = null;
+        this.turnIndex = 0;
+        this.endPlayerIndex = 0;
+        this.villainPhaseStep = 0;
 
         this.lasting = [];
         this.limits = {};
@@ -121,6 +127,7 @@ export class Match extends Engine {
     }
     async refresh() {
         this.mc.mcSocket.send(
+            this.name,
             REFRESH_EVENTS[this.objectToRefresh],
             await this.toObjWithPlayableHands()
         );
@@ -250,7 +257,10 @@ export class Match extends Engine {
         // Resolve Setup Identity
         //this.scenario.deck.cards.sort(a => a.name === 'Shadow of the Past' ? -1 : 1)
         //this.scenario.deck.cards.sort(a => a.isMinion ? -1 : 1)
-        this.startMatch();
+        this.initialized = true;
+        this.startMatch().catch(error => {
+            console.error(`Match "${this.name}" stopped unexpectedly`, error);
+        });
     }
     initNemesis() {
         return this.players.map(player => {
@@ -293,7 +303,7 @@ export class Match extends Engine {
             cardsShareUniqueIdentity(other, card));
     }
     listen(endpoint, callback, once) {
-        this.mc.mcSocket.listen(endpoint, callback, once);
+        this.mc.mcSocket.listen(this.name, endpoint, callback, once);
     }
     mulligan() {
         return Promise
@@ -304,13 +314,16 @@ export class Match extends Engine {
     openDialog(params) {
         const {mc} = this;
 
-        return mc.dialog.openDialog(params);
+        return mc.dialog.openDialog(this, params);
     }
     removeCard(card) {
         this.removedCards.push(card);
     }
     removeCardFromEncountersDeck(card) {
         this.scenario.removeCardFromDeck(card);
+    }
+    persist() {
+        return this.mc.persistMatch(this);
     }
     async resolveWhenReveal(player) {
         await this.scenario.gameZone.resolveWhenReveal(player);
@@ -338,6 +351,7 @@ export class Match extends Engine {
                 []));
     }
     startMatch() {
+        this.playing = true;
         const playMatchEffect = new PlayMatchEffect({
             match: this,
         });

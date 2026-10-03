@@ -23,13 +23,13 @@ class McApp extends router(navigator(outlet(LitElement))) {
             player: {type: String, attribute: 'player'},
             dialog: {type: Object},
             alert: {type: Object},
+            connectionState: {type: String},
         };
     }
     static get routes() {
         return [{
-            name: 'home',
+            name: 'matches',
             pattern: '',
-            data: { title: 'Home' }
         }, {
             name: 'create-match',
             pattern: 'create-match'
@@ -51,23 +51,40 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         this.dialog = null;
         this.alert = null;
+        this.connectionState = 'connecting';
 
         this.api = null;
         this.match = null;
         this.player = '';
+        this.pendingResumeMatch = '';
 
         this.apiDialog = null;
+        this.removeConnectionStateListener = null;
+        this.removeCommunicationErrorListener = null;
         this.addEventListener(EVENTS.MATCH.CREATED, this.handleMatchCreated.bind(this));
     }
     connectedCallback() {
         super.connectedCallback();
 
         this.api = new Api();
+        this.removeConnectionStateListener = this.api.onConnectionState(state => {
+            this.connectionState = state;
+        });
+        this.removeCommunicationErrorListener = this.api.onCommunicationError(error => {
+            this.showAlert(error.message);
+        });
         this.api.init();
+        this.api.listenMatch(this.handleSocketMatch.bind(this));
 
         this.apiDialog = new Dialog(this.api);
 
         this.apiDialog.listenDialog(this.openDialog.bind(this));
+    }
+    disconnectedCallback() {
+        this.removeConnectionStateListener?.();
+        this.removeCommunicationErrorListener?.();
+
+        super.disconnectedCallback();
     }
     router(route, params, query, data) {
         const {match} = this;
@@ -76,8 +93,11 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.params = params;
         this.query = query;
         console.log(route, params, query, data);
-        if (route === 'match' && !match) {
-            this.navigate('create-match');
+        if (route === 'create-match') {
+            this.navigate('matches');
+        } else if (route === 'match' &&
+            (!match || this.api?.match !== match.name)) {
+            this.navigate('matches');
         }
     }
     openDialog({
@@ -121,12 +141,16 @@ class McApp extends router(navigator(outlet(LitElement))) {
     handleAlertOk() {
         this.alert = null;
     }
-    handleCancelDialog() {
+    async handleCancelDialog() {
         const {dialog: {callback}} = this;
 
         this.dialog = null;
 
-        callback();
+        try {
+            await callback();
+        } catch (error) {
+            this.showAlert(error.message);
+        }
     }
     handleChangeMenu(e) {
         const {card, menuOptions, callback} = e.detail;
@@ -147,26 +171,72 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         dialog.show();
     }
-    handleDialogOk(e) {
+    async handleDialogOk(e) {
         const {detail} = e;
         const {dialog: {callback}} = this;
 
         this.dialog = null;
 
-        callback(detail);
+        try {
+            await callback(detail);
+        } catch (error) {
+            this.showAlert(error.message);
+        }
+    }
+    handleCommunicationError(e) {
+        this.showAlert(e.detail.message);
+    }
+    renderConnectionStatus() {
+        const messages = {
+            connecting: 'Conectando con el servidor...',
+            disconnected: 'Conexión perdida. Intentando reconectar...',
+            syncing: 'Conexión restablecida. Sincronizando la partida...',
+            'sync-error': 'No se pudo sincronizar la partida con el servidor.',
+        };
+        const message = messages[this.connectionState];
+
+        return message ? html`
+            <div role="status" aria-live="polite">${message}</div>
+        ` : '';
     }
     handleMatchChanged(e) {
         const {match} = e.detail;
 
         this.match = match;
     }
+    handleSocketMatch(match) {
+        this.match = match;
+        if (this.pendingResumeMatch === match.name && this.api.match === match.name) {
+            this.pendingResumeMatch = '';
+            this.navigate('match');
+        }
+    }
     handleMatchCreated(e) {
         const {match, player} = e.detail;
 
+        this.pendingResumeMatch = '';
         this.match = match;
         this.player = player.name;
 
         this.navigate('match');
+        this.api.joinMatch(true);
+    }
+    handleMatchResumeRequested(e) {
+        const {matchName, player} = e.detail;
+
+        this.player = player;
+        this.pendingResumeMatch = matchName;
+    }
+    handleMatchResumed(e) {
+        const {matchName, player} = e.detail;
+
+        this.player = player;
+        if (this.match?.name === matchName && this.pendingResumeMatch === matchName) {
+            this.pendingResumeMatch = '';
+            this.navigate('match');
+        } else if (this.match?.name !== matchName) {
+            this.pendingResumeMatch = matchName;
+        }
     }
     renderDialog() {
         const {dialog} = this;
@@ -215,14 +285,17 @@ class McApp extends router(navigator(outlet(LitElement))) {
         const {api, match, player} = this;
 
         return html`
-          <mc-navigate href="/">Home</mc-navigate>
-          <mc-navigate href="/create-match">Crear Partida</mc-navigate>
+          ${this.renderConnectionStatus()}
+          <mc-navigate href="/">Partidas</mc-navigate>
      
           <mc-main active-route=${this.route}>
-              <h1 route='home'>Home</h1>
-              <div route='create-match'>
+              <div route='matches'>
                   <mc-create-match-page
                       .api="${api}"
+                      .active="${this.route === 'matches'}"
+                      @match-resume-requested="${this.handleMatchResumeRequested.bind(this)}"
+                      @match-resumed="${this.handleMatchResumed.bind(this)}"
+                      @communication-error="${this.handleCommunicationError.bind(this)}"
                   ></mc-create-match-page>
               </div>
               <div route='match'>
@@ -233,6 +306,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                       @change-menu="${this.handleChangeMenu.bind(this)}"
                       @change-match="${this.handleMatchChanged.bind(this)}"
                       @view-discard="${this.handleViewDiscard.bind(this)}"
+                      @communication-error="${this.handleCommunicationError.bind(this)}"
                   ></mc-match-page>
               </div>
               <h1 route='not-found'>Not Found </h1>

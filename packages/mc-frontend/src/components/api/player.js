@@ -4,9 +4,12 @@ export class Player {
     constructor(api) {
         this.api = api;
     }
-    endTurn() {
+    endTurn(player) {
         return this.api.send({
             endpoint: EVENTS.TURN.END,
+            params: {
+                player,
+            },
         });
     }
     flip(player) {

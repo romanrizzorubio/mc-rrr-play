@@ -117,6 +117,10 @@ export default css`
     background-color: #ff6d00;
   }
 
+  .stat-damage {
+    background-color: #b71c1c;
+  }
+
   .stat-hand-size {
     background-color: #212121;
   }
@@ -154,6 +158,12 @@ export default css`
     text-align: right;
   }
 
+  .stage-label {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 2px 2px;
+  }
+
   .exhausted {
     transform: rotate(15deg);
     bottom: 7px;
@@ -162,7 +172,9 @@ export default css`
   .counters,
   .status {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
     text-align: center;
   }
 
@@ -181,21 +193,24 @@ export default css`
     margin: 0 auto;
   }
 
+  .status-card {
+    font-size: 0.8rem;
+    line-height: 1;
+  }
+
   .tough {
     background-color: #e16f1c;
     color: white;
-    width: 100%;
   }
 
   .stunned {
     background-color: #48C548;
-    width: 100%;
+    color: #212121;
   }
 
   .confused {
     background-color: #7a0888;
     color: white;
-    width: 100%;
   }
   
   .dialog {

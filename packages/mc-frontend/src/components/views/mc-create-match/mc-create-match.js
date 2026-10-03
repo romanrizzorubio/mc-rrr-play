@@ -87,7 +87,7 @@ export class McCreateMatch extends LitElement {
                 .disabled="${this.disabled}"
                 @click="${this.handleClick.bind(this)}"
             >
-                Continuar partida
+                Crear partida
             </md-filled-button>
         `;
     }

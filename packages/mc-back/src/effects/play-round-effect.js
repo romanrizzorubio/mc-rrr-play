@@ -29,9 +29,19 @@ export class PlayRoundEffect extends Effect {
 
         Engine.currentRound = this;
 
-        await this.playersPhase.runEffect(params);
+        if (this.match.phase !== 'villain') {
+            this.match.phase = 'players';
+            await this.playersPhase.runEffect(params);
+            this.match.phase = 'villain';
+            this.match.villainPhaseStep = 0;
+            await this.match.persist();
+        }
         await this.villainPhase.runEffect(params);
 
+        this.match.phase = 'round-complete';
+        this.match.villainPhaseStep = 0;
+        this.match.turnIndex = 0;
         await this.endLimit(TIME_ROUND);
+        await this.match.persist();
     }
 }

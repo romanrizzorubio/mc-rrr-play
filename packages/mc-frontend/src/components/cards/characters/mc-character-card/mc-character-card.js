@@ -30,6 +30,7 @@ export class McCharacterCard extends LitElement {
             extraTraits: {type: Array},
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
+            stage: {type: Number},
         };
     }
 
@@ -50,6 +51,7 @@ export class McCharacterCard extends LitElement {
         this.extraTraits = [];
         this.headerLeft = undefined;
         this.headerRight = undefined;
+        this.stage = undefined;
     }
 
     render() {
@@ -68,6 +70,7 @@ export class McCharacterCard extends LitElement {
             extraTraits,
             headerLeft,
             headerRight,
+            stage,
         } = this;
 
         return html`
@@ -83,6 +86,7 @@ export class McCharacterCard extends LitElement {
                 show-basic-stats
                 .headerLeft="${headerLeft}"
                 .headerRight="${headerRight}"
+                .stage="${stage}"
                 .attack="${attack}"
                 .thwart="${thwart}"
                 .defense="${defense}"

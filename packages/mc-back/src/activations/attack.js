@@ -66,10 +66,6 @@ export class Attack extends Activation {
     checkStatus() {
         const {character} = this;
 
-        if (!character) {
-            console.log('checkStatus', this.character);
-        }
-
         return !character.isStunned;
     }
     filterTarget(card, {player}) {

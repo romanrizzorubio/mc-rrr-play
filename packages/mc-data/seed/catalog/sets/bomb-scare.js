@@ -29,7 +29,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_SIDE_SCHEME_SCENARIO,
                     'params': {
-                        'name': 'Bomb Scare',
+                        'name': 'Amenaza de bomba',
                         'set': 'bomb-scare',
                         'image': 'sets/bomb-scare/bomb1.webp',
                         'boost': 2,
@@ -62,7 +62,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_MINION,
                     'params': {
-                        'name': 'Hydra Bomber',
+                        'name': 'Terrorista de Hydra',
                         'set': 'bomb-scare',
                         'image': 'sets/bomb-scare/bomb2.webp',
                         'traits': [
@@ -108,7 +108,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Explosion',
+                        'name': 'Explosión',
                         'set': 'bomb-scare',
                         'image': 'sets/bomb-scare/bomb4.webp',
                         'boost': 2,
@@ -148,7 +148,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'False Alarm',
+                        'name': 'Falsa Alarma',
                         'set': 'bomb-scare',
                         'image': 'sets/bomb-scare/bomb5.webp',
                         'boost': 1,

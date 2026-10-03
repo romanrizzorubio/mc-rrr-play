@@ -5,7 +5,7 @@ export class Dialog {
         this.api = api;
     }
     dialogResponse(params) {
-        this.api.send({
+        return this.api.send({
             endpoint: EVENTS.DIALOG.RESPONSE,
             params
         });
@@ -16,7 +16,11 @@ export class Dialog {
             callback: params => {
                 callback({
                     ...params,
-                    callback: this.dialogResponse.bind(this),
+                    callback: response => this.dialogResponse({
+                        match: params.match,
+                        requestId: params.requestId,
+                        response,
+                    }),
                 });
             }
         });

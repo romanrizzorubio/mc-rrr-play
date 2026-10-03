@@ -422,7 +422,7 @@ export class Engine {
             console.log('Falta Match');
         }
 
-        match.mc.mcSocket.send(REFRESH_EVENTS[objectToRefresh], this.toObj());
+        match.mc.mcSocket.send(match.name, REFRESH_EVENTS[objectToRefresh], this.toObj());
     }
     setLimit(limit) {
         if (!this.match.limits[limit.time]) {

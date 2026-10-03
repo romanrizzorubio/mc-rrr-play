@@ -1,6 +1,9 @@
 import {ABILITY_ACTION} from 'mc-shared';
 import {ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
+import {logGameTrace} from '../../utils/game-trace.js';
+
+let abilityTraceSequence = 0;
 
 export class PlayerRest {
     constructor(rest) {
@@ -58,14 +61,30 @@ export class PlayerRest {
     async resolveAbility(params) {
         const {match, card, ability} = params;
         const player = match.getPlayer(params.player);
+        const traceId = `ability-${++abilityTraceSequence}`;
 
         if (!player) {
             console.log('resolveAbility');
         }
 
-        await player.resolveAbility(card, ability);
-        await match.refresh();
+        logGameTrace('ability.resolve.start', {
+            traceId,
+            match: match.name,
+            player: player && player.name,
+        });
 
-        return player.toObjWithPlayableHand();
+        let outcome = 'failed';
+        try {
+            await player.resolveAbility(card, ability);
+            await match.refresh();
+            const result = await player.toObjWithPlayableHand();
+            outcome = 'completed';
+            return result;
+        } finally {
+            logGameTrace('ability.resolve.end', {
+                traceId,
+                outcome,
+            });
+        }
     }
 }

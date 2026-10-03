@@ -148,7 +148,7 @@ export default {
                                             'formula': CALC_TRAITS_COUNT,
                                             'target': 'player.gameZone.cards',
                                             'trait': TRAIT_TECH,
-                                            'max': 7
+                                            'max': 6
                                         }
                                     }
                                 }
@@ -611,9 +611,11 @@ export default {
                                                 {
                                                     'type': EFFECT_SEARCH_CARDS,
                                                     'params': {
+                                                        'players': TARGET_ALL_PLAYERS,
                                                         'locations': [
                                                             PLACE_DISCARD_PILE
                                                         ],
+                                                        'requireMatch': true,
                                                         'firstMatch': true,
                                                         'filter': {
                                                             'type': CARD_TYPE_UPGRADE,
@@ -679,15 +681,15 @@ export default {
                 'cardRefs': [
                     {
                         'id': 'leadership-maria-hill',
-                        'count': 10
+                        'count': 1
                     },
                     {
                         'id': 'leadership-vision',
-                        'count': 10
+                        'count': 1
                     },
                     {
                         'id': 'leadership-ojo-de-halcon',
-                        'count': 10
+                        'count': 1
                     },
                     {
                         'id': 'leadership-hacer-la-llamada',
@@ -707,7 +709,7 @@ export default {
                     },
                     {
                         'id': 'leadership-el-triskelion',
-                        'count': 10
+                        'count': 1
                     },
                     {
                         'id': 'leadership-inspiracion',
@@ -726,8 +728,8 @@ export default {
                     {'id': 'basic-energy', 'count': 1},
                     {'id': 'basic-genius', 'count': 1},
                     {'id': 'basic-strength', 'count': 1},
-                    {'id': 'basic-mockingbird', 'count': 10},
-                    {'id': 'basic-nick-fury', 'count': 10},
+                    {'id': 'basic-mockingbird', 'count': 1},
+                    {'id': 'basic-nick-fury', 'count': 1},
                 ],
             },
         ],
@@ -866,6 +868,7 @@ export default {
                     'params': {
                         'name': 'Latigazo',
                         'unique': true,
+                        'nemesis': true,
                         'traits': [
                             TRAIT_CRIMINAL
                         ],

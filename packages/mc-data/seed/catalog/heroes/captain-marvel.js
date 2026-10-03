@@ -725,7 +725,7 @@ export default {
             'card': {
                 'type': CARD_TYPE_OBLIGATION,
                 'params': {
-                    'name': 'Family Emergency',
+                    'name': 'Emergencia familiar',
                     'set': 'Captain Marvel',
                     'image': 'heroes/captain-marvel/caroln0.webp',
                     'boost': 2,
@@ -821,7 +821,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_SIDE_SCHEME_SCENARIO,
                     'params': {
-                        'name': 'The Psyche-Magnitron',
+                        'name': 'El psicomagnetrón',
                         'set': 'Captain Marvel',
                         'image': 'heroes/captain-marvel/caroln1.webp',
                         'boost': 3,
@@ -878,7 +878,7 @@ export default {
                                             'threat': 1,
                                             'target': TARGET_CONDITION_CARD,
                                             'condition': {
-                                                'name': 'The Psyche-Magnitron'
+                                                'name': 'El psicomagnetrón'
                                             }
                                         }
                                     }
@@ -893,7 +893,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Kree Manipulator',
+                        'name': 'Manipulador kree',
                         'set': 'Captain Marvel',
                         'image': 'heroes/captain-marvel/caroln3.webp',
                         'keywords': {
@@ -944,7 +944,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': "Yon-Rogg's Treason",
+                        'name': 'La traición de Yon-Rogg',
                         'set': 'Captain Marvel',
                         'image': 'heroes/captain-marvel/caroln5.webp',
                         'boost': 1,

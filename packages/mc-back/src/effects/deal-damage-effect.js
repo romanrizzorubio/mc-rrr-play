@@ -65,7 +65,7 @@ export class DealDamageEffect extends Effect {
             }
         }
     }
-    async execute(_params) {
+    async execute(params) {
         const {selectedTarget, damage} = this;
 
         const takeDamageEffect = this.match.effectsFactory.createEffect({
@@ -76,7 +76,7 @@ export class DealDamageEffect extends Effect {
             activation: this.activation,
         });
 
-        await takeDamageEffect.runEffect(_params);
+        await takeDamageEffect.runEffect(params);
 
         this.takenDamage = takeDamageEffect.takenDamage;
 

@@ -8,22 +8,21 @@ export class MoveToHandEffect extends Effect {
 
         if (card && targetPlayer && targetPlayer.hand) {
             let removedFromDeck = false;
+            const sourceDeck = [card.owner?.deck, targetPlayer.deck]
+                .find(deck => deck &&
+                    (deck.cards.includes(card) || deck.discardPile.includes(card)));
 
-            // Si la carta está en el mazo, la quitamos
-            if (targetPlayer.deck && targetPlayer.deck.cards.includes(card)) {
-                await targetPlayer.deck.searchDeck(card);
+            if (sourceDeck?.cards.includes(card)) {
+                await sourceDeck.searchDeck(card);
                 removedFromDeck = true;
-            } 
-            // Si la carta está en el descarte, la quitamos
-            else if (targetPlayer.deck && targetPlayer.deck.discardPile.includes(card)) {
-                targetPlayer.deck.searchDiscard(card);
+            } else if (sourceDeck?.discardPile.includes(card)) {
+                sourceDeck.searchDiscard(card);
                 removedFromDeck = true;
             }
 
-            // La añadimos a la mano
             targetPlayer.hand.addCard(card);
             if (removedFromDeck) {
-                targetPlayer.deck.refresh();
+                sourceDeck.refresh();
             }
             await targetPlayer.hand.refresh();
         }

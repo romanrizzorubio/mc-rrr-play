@@ -43,10 +43,10 @@ export class McMatchPage extends LitElement {
         this.api.listenCard(this.updateCard.bind(this));
         this.api.listenDeck(this.updateDeck.bind(this));
         this.api.listenHand(this.updateHand.bind(this));
-        this.api.listenMatch(this.updateMatch.bind(this));
         this.api.listenPlayer(this.updatePlayer.bind(this));
         this.api.listenPlayerZone(this.updatePlayerZone.bind(this));
         this.api.listenScenarioZone(this.updateScenarioZone.bind(this));
+        this.api.joinMatch(true);
     }
     updateCard(card) {
         const {match, player} = this;
@@ -152,9 +152,6 @@ export class McMatchPage extends LitElement {
         }
 
         return false;
-    }
-    updateMatch(match) {
-        this.changeMatch(match);
     }
     updateMinion(player, card) {
         const minion = player.gameZone.minions.find(_minion => _minion.id === card.id);
@@ -315,7 +312,7 @@ export class McMatchPage extends LitElement {
 
             switch (selected.id) {
                 case MENU_OPTION_END:
-                    apiPlayer.endTurn();
+                    this.endTurn();
                     break;
                 case MENU_OPTION_FLIP:
                     apiPlayer.flip(player);
@@ -327,7 +324,18 @@ export class McMatchPage extends LitElement {
         };
     }
     handlePlayerEnd() {
-        this.apiPlayer.endTurn();
+        this.endTurn();
+    }
+    endTurn() {
+        this.apiPlayer.endTurn(this.player).catch(error => {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        });
     }
     handleFlipSuperhero() {
         const {apiPlayer, player} = this;

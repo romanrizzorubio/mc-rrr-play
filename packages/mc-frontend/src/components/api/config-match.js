@@ -4,13 +4,24 @@ export class ConfigMatch {
     constructor(api) {
         this.api = api;
     }
-    createMatch({name}) {
-        this.api.match = name;
-        return this.api.post({
+    async createMatch({name}) {
+        this.api.beginMatch(name);
+        const match = await this.api.post({
             endpoint: ENDPOINTS.MATCH.CREATE,
             params: {
                 name,
             }
+        });
+
+        this.api.markMatchReady();
+        await this.api.joinMatch(true);
+
+        return match;
+    }
+    deleteMatch(name) {
+        return this.api.delete({
+            endpoint: ENDPOINTS.MATCH.DELETE,
+            params: {name},
         });
     }
     async createPlayer(player) {
@@ -30,18 +41,25 @@ export class ConfigMatch {
             endpoint: ENDPOINTS.MATCH.GET_HEROES_LIST,
         });
     }
+    getMatchesList() {
+        return this.api.get({
+            endpoint: ENDPOINTS.MATCH.GET_MATCHES_LIST,
+        });
+    }
     getScenariosList() {
         return this.api.get({
             endpoint: ENDPOINTS.MATCH.GET_SCENARIOS_LIST,
         });
     }
-    initMatch(expert) {
-        return this.api.post({
+    async initMatch(expert) {
+        const match = await this.api.post({
             endpoint: ENDPOINTS.MATCH.INIT,
             params: {
                 expert
             }
         });
+
+        return match;
     }
     listenMatch(callback) {
         this.api.listenMatch(callback);
