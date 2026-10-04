@@ -12,6 +12,17 @@ export class PlayerRest {
     get mc() {
         return this.rest.mc;
     }
+    async refreshPlayer(match, player) {
+        const matchState = await match.refresh();
+        const refreshedPlayer = matchState.players.find(({name}) =>
+            name === player.name);
+
+        if (!refreshedPlayer) {
+            throw new Error(`No se encontró al jugador "${player.name}" en la actualización de la partida.`);
+        }
+
+        return refreshedPlayer;
+    }
     createEndpoints() {
         this.rest.post(ENDPOINTS.PLAYER.CREATE, this.createPlayer.bind(this));
         this.rest.post(ENDPOINTS.PLAYER.FLIP, this.flip.bind(this));
@@ -39,11 +50,9 @@ export class PlayerRest {
     async flip(params) {
         const {match} = params;
         const player = match.getPlayer(params.player);
-
         await player.flip(true);
-        await match.refresh();
 
-        return player.toObjWithPlayableHand();
+        return this.refreshPlayer(match, player);
     }
     async playCard(params) {
         const {match, cardId} = params;
@@ -54,9 +63,7 @@ export class PlayerRest {
             abilityType: ABILITY_ACTION,
         });
 
-        await match.refresh();
-
-        return player.toObjWithPlayableHand();
+        return this.refreshPlayer(match, player);
     }
     async resolveAbility(params) {
         const {match, card, ability} = params;
@@ -76,8 +83,7 @@ export class PlayerRest {
         let outcome = 'failed';
         try {
             await player.resolveAbility(card, ability);
-            await match.refresh();
-            const result = await player.toObjWithPlayableHand();
+            const result = await this.refreshPlayer(match, player);
             outcome = 'completed';
             return result;
         } finally {

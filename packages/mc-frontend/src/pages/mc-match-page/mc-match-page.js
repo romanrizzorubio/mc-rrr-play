@@ -23,6 +23,7 @@ export class McMatchPage extends LitElement {
             match: {type: Object},
             player: {type: String},
             api: {type: Api},
+            playCardPending: {type: Boolean},
         };
     }
     constructor() {
@@ -34,6 +35,7 @@ export class McMatchPage extends LitElement {
         this.api = null;
 
         this.apiPlayer = null;
+        this.playCardPending = false;
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -342,11 +344,28 @@ export class McMatchPage extends LitElement {
 
         apiPlayer.flip(player);
     }
-    handleSelectCardHand(e) {
+    async handleSelectCardHand(e) {
+        if (this.playCardPending) {
+            return;
+        }
+
         const {apiPlayer, player} = this;
         const {card} = e.detail;
 
-        apiPlayer.playCard(player, card.id);
+        this.playCardPending = true;
+        try {
+            await apiPlayer.playCard(player, card.id);
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        } finally {
+            this.playCardPending = false;
+        }
     }
     render() {
         const {match, player} = this;
@@ -356,6 +375,7 @@ export class McMatchPage extends LitElement {
             <mc-match
                 .match="${match}"
                 .player="${_player}"
+                .playCardPending="${this.playCardPending}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"

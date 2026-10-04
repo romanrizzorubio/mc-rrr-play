@@ -761,6 +761,7 @@ export default {
                     'params': {
                         'name': 'Titania',
                         'unique': true,
+                        'nemesis': true,
                         'image': 'heroes/she-hulk/01162.png',
                         'traits': [
                             TRAIT_BRUTE,

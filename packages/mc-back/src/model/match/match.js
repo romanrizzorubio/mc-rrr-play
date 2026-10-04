@@ -128,11 +128,15 @@ export class Match extends Engine {
         return 'match';
     }
     async refresh() {
+        const matchState = await this.toObjWithPlayableHands();
+
         this.mc.mcSocket.send(
             this.name,
             REFRESH_EVENTS[this.objectToRefresh],
-            await this.toObjWithPlayableHands()
+            matchState
         );
+
+        return matchState;
     }
     get orderedPlayers() {
         const players = [];

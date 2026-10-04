@@ -103,6 +103,9 @@ const createEffect = (cards, {resolveAll = false, choose, playerDamage = 0} = {}
         params: {
             player: {
                 damage: playerDamage,
+                superhero: {
+                    damage: playerDamage,
+                },
                 gameZone: {
                     cards: cards.map(({gameCard}) => gameCard),
                 },
@@ -136,6 +139,7 @@ test('shows and resolves the only special ability with a valid target', async ()
 
     assert.deepEqual(resolved, [{id: 'runnable', isLastStep: true}]);
     assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].closeOnResponse, true);
 });
 
 test('offers multiple abilities and resolves only the chosen one by default', async () => {
@@ -195,6 +199,7 @@ test('resolves all valid abilities one by one and marks only the last step', asy
         {id: 'first', isLastStep: true},
     ]);
     assert.equal(dialogs.length, 2);
+    assert.deepEqual(dialogs.map(dialog => dialog.closeOnResponse), [false, true]);
 });
 
 test('rechecks target validity after resolving each ability', async () => {

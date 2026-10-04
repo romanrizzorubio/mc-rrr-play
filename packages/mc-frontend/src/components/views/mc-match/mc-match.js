@@ -16,6 +16,7 @@ export class MatchComponent extends LitElement {
         return {
             match: {type: Object},
             player: {type: Object},
+            playCardPending: {type: Boolean},
         };
     }
     constructor() {
@@ -23,6 +24,7 @@ export class MatchComponent extends LitElement {
 
         this.match = null;
         this.player = null;
+        this.playCardPending = false;
     }
     showAlert(msg) {
         this.dispatchEvent(new CustomEvent('show-alert', {
@@ -62,6 +64,7 @@ export class MatchComponent extends LitElement {
         return player ? html`
             <mc-player
                 .player="${player}"
+                .playCardPending="${this.playCardPending}"
                 @superhero-ability="${this.handleAbility.bind(this)}"
                 @game-zone-card-click="${this.handleAbility.bind(this)}"
                 @game-zone-menu-click="${this.handleAbility.bind(this)}"

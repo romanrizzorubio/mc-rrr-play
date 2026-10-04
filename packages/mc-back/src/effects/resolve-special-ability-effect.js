@@ -59,10 +59,11 @@ export class ResolveSpecialAbilityEffect extends Effect {
         return available;
     }
 
-    async selectAbility(available) {
+    async selectAbility(available, closeOnResponse) {
         let selectedIndex;
         if (available.length > 5) {
             const response = await this.openDialog({
+                closeOnResponse,
                 dialogType: DIALOG_LIST,
                 hideOk: true,
                 title: SELECT_SPECIAL_ABILITY_TITLE,
@@ -76,6 +77,7 @@ export class ResolveSpecialAbilityEffect extends Effect {
             selectedIndex = response?.selected?.id;
         } else {
             const response = await this.openDialog({
+                closeOnResponse,
                 dialogType: DIALOG_SELECT_CARD,
                 hideOk: true,
                 title: SELECT_SPECIAL_ABILITY_TITLE,
@@ -126,7 +128,7 @@ export class ResolveSpecialAbilityEffect extends Effect {
                 }
             }
 
-            const selected = await this.selectAbility(available);
+            const selected = await this.selectAbility(available, isLastStep);
 
             await selected.ability.resolveAbility({
                 ...params,

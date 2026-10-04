@@ -441,17 +441,24 @@ export class GameCard extends Engine {
         return this.discard();
     }
     async discard() {
+        let encounterDeck;
+
         if (this.card.isPlayerCard) {
             if (this.controller) {
                 this.controller.gameZone.discard(this);
                 await this.owner.deck.discard(this);
             }
         } else if (this.card.isEncounterCard) {
+            encounterDeck = this.match.scenario.deck;
             await this.match.scenario.gameZone.discard(this);
-            await this.match.scenario.deck.discard(this);
+            await encounterDeck.discard(this);
         }
 
         await this.init();
+
+        if (encounterDeck && encounterDeck.discardPile.includes(this)) {
+            await encounterDeck.refresh();
+        }
     }
     endTriggers(force) {
         if (force) {

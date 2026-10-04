@@ -18,12 +18,14 @@ export class McPlayer extends LitElement {
     static get properties() {
         return {
             player: {type: Object},
+            playCardPending: {type: Boolean},
         };
     }
     constructor() {
         super();
 
         this.player = null;
+        this.playCardPending = false;
     }
     handleChangeMenu(e) {
         e.stopPropagation();
@@ -71,6 +73,7 @@ export class McPlayer extends LitElement {
         return html`
             <mc-hand
                 .cards="${hand}"
+                .playCardPending="${this.playCardPending}"
             ></mc-hand>
         `;
     }

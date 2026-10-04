@@ -117,6 +117,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
        hand,
        title,
        subtitle,
+       closeOnResponse,
        callback,
    }) {
         this.dialog = {
@@ -128,6 +129,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
             showCancel,
             hideOk,
             hand,
+            closeOnResponse,
         };
     }
     handleViewDiscard(e) {
@@ -191,7 +193,11 @@ class McApp extends router(navigator(outlet(LitElement))) {
         const currentDialog = this.dialog;
 
         try {
-            await currentDialog.callback(detail);
+            const response = currentDialog.callback(detail);
+            if (currentDialog.closeOnResponse && this.dialog === currentDialog) {
+                this.dialog = null;
+            }
+            await response;
         } catch (error) {
             if (this.dialog === currentDialog) {
                 this.dialog = null;

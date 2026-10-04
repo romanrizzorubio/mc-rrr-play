@@ -18,7 +18,7 @@ export class MoveDamageEffect extends Effect {
 
     getDamageSource(params) {
         if (this.fromTarget === TARGET_YOU) {
-            return params.player;
+            return params.player.superhero;
         }
 
         return path(params, this.fromTarget);

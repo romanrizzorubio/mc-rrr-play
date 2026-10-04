@@ -706,6 +706,7 @@ export default {
                     'params': {
                         'name': 'Killmonger',
                         'unique': true,
+                        'nemesis': true,
                         'traits': [
                             TRAIT_ASSASSIN,
                             TRAIT_ELITE,

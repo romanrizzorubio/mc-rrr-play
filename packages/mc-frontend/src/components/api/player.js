@@ -25,7 +25,7 @@ export class Player {
     playCard(player, cardId) {
         const {api} = this;
 
-        api.post({
+        return api.post({
             endpoint: ENDPOINTS.PLAYER.PLAY_CARD,
             params: {
                 player,

@@ -16,6 +16,7 @@ export class McHand extends LitElement {
         return {
             cards: {type: Array},
             showPanel: {type: Boolean},
+            playCardPending: {type: Boolean},
         };
     }
 
@@ -24,6 +25,7 @@ export class McHand extends LitElement {
 
         this.cards = [];
         this.showPanel = true;
+        this.playCardPending = false;
     }
 
     getButton() {
@@ -57,14 +59,21 @@ export class McHand extends LitElement {
 
     render() {
         const {cards} = this;
+        const disabledCards = this.playCardPending ?
+            cards.map((_, index) => index) :
+            [];
 
         return html`
-            <div class="panel ${this.getClass()}">
+            <div
+                class="panel ${this.getClass()}"
+                aria-busy="${this.playCardPending}"
+            >
                 <md-elevated-button
                     @click="${this.handleToggle.bind(this)}"
                 >${this.getButton()}</md-elevated-button>
                 <mc-card-list
                     .cards="${cards}"
+                    .disabledCards="${disabledCards}"
                     .dimUnplayable="${true}"
                     @card-list-select="${this.handleSelect}"
                 ></mc-card-list>
