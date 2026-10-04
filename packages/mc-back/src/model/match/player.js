@@ -415,16 +415,17 @@ export class Player extends Engine {
                 },
             });
 
-            const discardFromHandEffect = new DiscardFromHandEffect({
-                target: TARGET_CARD,
-                refreshTarget: true,
-                match: this.match,
-            });
+            await this.promisesSequential(selected, card => {
+                const discardFromHandEffect = new DiscardFromHandEffect({
+                    target: TARGET_CARD,
+                    match: this.match,
+                });
 
-            await this.promisesSequential(selected, card => discardFromHandEffect.runEffect({
-                card: this.hand.getCard(card.id),
-                player: this,
-            }));
+                return discardFromHandEffect.runEffect({
+                    card: this.hand.getCard(card.id),
+                    player: this,
+                });
+            });
         }
 
         const fillHandEffect = new FillHandEffect({

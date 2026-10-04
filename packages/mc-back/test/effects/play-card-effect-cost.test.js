@@ -83,3 +83,21 @@ test('still prompts to pay a positive calculated cost', async () => {
     assert.equal(calls.dialogs.length, 1);
     assert.equal(calls.dialogs[0].data.cost, 2);
 });
+
+test('passes the play effect to card play validation', async () => {
+    let validationParams;
+    const card = {
+        async canPlay(params) {
+            validationParams = params;
+
+            return true;
+        },
+    };
+    const effect = new PlayCardEffect({
+        card,
+        match: {},
+    });
+
+    assert.equal(await effect.canRun({player: {}}), true);
+    assert.equal(validationParams.playCardEffect, effect);
+});

@@ -99,9 +99,45 @@ export class Attack extends Activation {
             return selectedTarget.controller;
         }
     }
+    getCurrentVillainTarget(target) {
+        if (Array.isArray(target)) {
+            let changed = false;
+            const targets = target.map(_target => {
+                const currentTarget = this.getCurrentVillainTarget(_target);
+
+                if (currentTarget !== _target) {
+                    changed = true;
+                }
+
+                return currentTarget;
+            });
+
+            return changed ? targets : target;
+        }
+
+        const currentVillain = this.match.villain;
+
+        if (target?.isVillain &&
+            !target.isInPlay &&
+            currentVillain?.name === target.name) {
+            return currentVillain;
+        }
+
+        return target;
+    }
     getTriggersEnds(params) {
         const {triggersEndsLaunched, effect} = this;
         const isBasic = effect?.ability?.isBasic;
+        const effectTarget = params?.effect?.selectedTarget;
+        const currentEffectTarget = this.getCurrentVillainTarget(effectTarget);
+        const attackTarget = this.getCurrentVillainTarget(effect?.selectedTarget);
+
+        if (currentEffectTarget !== effectTarget) {
+            params.effect.selectedTarget = currentEffectTarget;
+        }
+        if (attackTarget !== effect?.selectedTarget) {
+            effect.selectedTarget = attackTarget;
+        }
 
         const triggers = [
             TRIGGER_THIS_ATTACK,

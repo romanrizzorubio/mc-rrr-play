@@ -23,6 +23,7 @@ export class SuperheroCardComponent extends LitElement {
             life: {type: Number},
             hitPoints: {type: Number},
             handSize: {type: Number},
+            canEndTurn: {type: Boolean},
             attack: {type: Number},
             thwart: {type: Number},
             defense: {type: Number},
@@ -42,6 +43,7 @@ export class SuperheroCardComponent extends LitElement {
         this.life = 0;
         this.hitPoints = undefined;
         this.handSize = 0;
+        this.canEndTurn = false;
         this.attack = undefined;
         this.thwart = undefined;
         this.defense = undefined;
@@ -67,10 +69,12 @@ export class SuperheroCardComponent extends LitElement {
             disable: this.flipped
         });
 
-        options.unshift({
-            id: MENU_OPTION_END,
-            text: 'Finalizar turno',
-        });
+        if (this.canEndTurn) {
+            options.unshift({
+                id: MENU_OPTION_END,
+                text: 'Finalizar turno',
+            });
+        }
 
         return options;
     }

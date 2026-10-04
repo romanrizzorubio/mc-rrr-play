@@ -90,7 +90,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 
 | Constante | Candidatos |
 | :--- | :--- |
-| `TARGET_ATTACKED` | El objetivo seleccionado del ataque actual. |
+| `TARGET_ATTACKED` | El objetivo seleccionado del ataque actual. Si se derrotó una etapa del villano y la siguiente tiene el mismo título, apunta a la etapa activa nueva. |
 | `TARGET_ALL_SCHEMES` | Todos los planes en juego, incluidos el principal y los secundarios. |
 | `TARGET_CONDITION_CARD` | Las cartas de la partida que cumplen `condition`. |
 | `TARGET_MAIN_SCHEME` | El plan principal. |

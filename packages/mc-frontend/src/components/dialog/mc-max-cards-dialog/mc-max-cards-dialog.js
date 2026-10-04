@@ -34,6 +34,14 @@ export class McMaxCardsDialog extends McCardListDialog {
     }
     handleCardListSelect(e) {
         e.stopPropagation();
+
+        const {card} = e.detail;
+        this._response = {
+            ...this._response,
+            accepted: true,
+            selected: card,
+        };
+        this.sendResponse();
     }
     handleCancel(e) {
         super.handleOk(e);

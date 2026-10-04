@@ -11,6 +11,11 @@ export class DoIfTakeCharacterDamageEffect extends DoIfEffect {
 
         this.condition = condition;
     }
+    getValidTarget(params) {
+        const source = this.getSource(params);
+
+        return source && this.filterTarget(source, params) ? [source] : [];
+    }
     prepare(params) {
         this.selectedTarget = this.getSource(params);
     }
@@ -20,7 +25,7 @@ export class DoIfTakeCharacterDamageEffect extends DoIfEffect {
     execute(params) {
         return super.execute({
             ...params,
-            attack: this.selectedTarget,
+            attack: this.selectedTarget.activation,
         });
     }
 }

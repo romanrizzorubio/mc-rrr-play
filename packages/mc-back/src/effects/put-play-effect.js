@@ -18,11 +18,13 @@ export class PutPlayEffect extends Effect {
     constructor({
         card,
         controller,
+        maxAllyToDiscardId,
     }) {
         super(arguments[0]);
 
         this.card = card;
         this.controller = controller;
+        this.maxAllyToDiscardId = maxAllyToDiscardId;
     }
     getCard(params = {}) {
         return this.card || params.selectedCard;
@@ -112,10 +114,19 @@ export class PutPlayEffect extends Effect {
                         target: TARGET_ALLY,
                         match: this.match,
                     });
+                    if (this.maxAllyToDiscardId !== undefined) {
+                        const allyToDiscard = allies.find(ally =>
+                            ally.id === this.maxAllyToDiscardId);
+                        if (!allyToDiscard) {
+                            throw new Error('El aliado seleccionado para descartar ya no está en juego.');
+                        }
+                        discardFromGameEffect.selectedTarget = allyToDiscard;
+                    }
 
                     const delayed = new DelayedEffect({
                         selectedTarget: params.effect,
                         effect: discardFromGameEffect,
+                        match: this.match,
                     });
 
                     await delayed.runEffect({

@@ -25,6 +25,11 @@ export class PlayTurnEffect extends Effect {
         });
         await match.refresh();
 
-        return turnEnded;
+        const response = await turnEnded;
+
+        delete match.currentTurnPlayer;
+        await match.refresh();
+
+        return response;
     }
 }

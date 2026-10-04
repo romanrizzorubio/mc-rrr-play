@@ -8,7 +8,7 @@ export class PlaceDamageEffect extends Effect {
 
         this.damage = damage;
     }
-    execute(params) {
+    async execute(params) {
         const {selectedTarget} = this;
 
         const damage = this.damage || params.damage;
@@ -16,9 +16,9 @@ export class PlaceDamageEffect extends Effect {
         selectedTarget.placeDamage(damage);
 
         if (selectedTarget.attachedTo) {
-            selectedTarget.attachedTo.refresh();
+            await selectedTarget.attachedTo.refresh();
         } else {
-            selectedTarget.refresh();
+            await selectedTarget.refresh();
         }
     }
 }

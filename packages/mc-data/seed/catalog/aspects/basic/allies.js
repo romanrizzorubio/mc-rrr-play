@@ -5,18 +5,18 @@ import {
     EFFECT_CHAINED,
     EFFECT_CHOOSE,
     EFFECT_DEAL_DAMAGE,
-    EFFECT_DELAYED,
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
+    EFFECT_LASTING,
     EFFECT_REMOVE_THREAT,
     EFFECT_STUN,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_CARD,
     TARGET_ENEMY,
-    TARGET_ROUND,
     TARGET_SCHEME,
     TARGET_YOU,
+    TIME_ROUND,
     TRAIT_SHIELD,
     TRAIT_SPY,
     TRIGGER_THIS_ENTER_PLAY,
@@ -133,10 +133,11 @@ export default [
                                             }
                                         },
                                         {
-                                            'type': EFFECT_DELAYED,
+                                            'type': EFFECT_LASTING,
                                             'params': {
-                                                'target': TARGET_ROUND,
-                                                'effect': {
+                                                'target': TARGET_CARD,
+                                                'until': TIME_ROUND,
+                                                'endEffect': {
                                                     'type': EFFECT_DISCARD_GAME,
                                                     'params': {
                                                         'target': TARGET_CARD

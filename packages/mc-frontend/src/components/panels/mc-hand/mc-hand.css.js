@@ -11,6 +11,7 @@ export default css`
     width: 100%;
     left: 0;
     padding: 16px;
+    box-sizing: border-box;
     background-color: #4D4C4C;
   }
 

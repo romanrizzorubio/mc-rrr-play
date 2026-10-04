@@ -45,6 +45,27 @@ export class DefeatEffect extends Effect {
 
         await selectedTarget.defeat(player);
 
+        const currentVillain = this.match.villain;
+        if (selectedTarget.isVillain &&
+            currentVillain !== selectedTarget &&
+            currentVillain?.name === selectedTarget.name) {
+            this.selectedTarget = currentVillain;
+
+            const activation = this._activation;
+            const activationTarget = activation?.selectedTarget;
+
+            if (Array.isArray(activationTarget)) {
+                const targets = activationTarget.map(target =>
+                    target === selectedTarget ? currentVillain : target);
+                if (targets.some((target, index) =>
+                    target !== activationTarget[index])) {
+                    activation.selectedTarget = targets;
+                }
+            } else if (activationTarget === selectedTarget) {
+                activation.selectedTarget = currentVillain;
+            }
+        }
+
         if (selectedTarget.isVillain) {
             this.match.villain.refresh();
         } else {

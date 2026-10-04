@@ -35,6 +35,7 @@ export class PlayRoundEffect extends Effect {
             this.match.phase = 'villain';
             this.match.villainPhaseStep = 0;
             await this.match.persist();
+            await this.match.refresh();
         }
         await this.villainPhase.runEffect(params);
 
@@ -43,5 +44,6 @@ export class PlayRoundEffect extends Effect {
         this.match.turnIndex = 0;
         await this.endLimit(TIME_ROUND);
         await this.match.persist();
+        await this.match.refresh();
     }
 }

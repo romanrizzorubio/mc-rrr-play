@@ -3,6 +3,7 @@ import { css } from 'lit-element';
 export default css`
   :host {
     --card-size: 100px;
+    --stage-label-height: calc(0.8rem + 6px);
 
     display: block;
     position: relative;
@@ -56,6 +57,10 @@ export default css`
     font-size: 0.8rem;
     line-height: 1;
     white-space: nowrap;
+  }
+
+  .character-stats.stage-aligned {
+    margin-top: var(--stage-label-height);
   }
 
   .character-bottom-stats {
@@ -175,9 +180,21 @@ export default css`
   }
 
   .stage-label {
+    box-sizing: border-box;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+    height: var(--stage-label-height);
     padding: 0 2px 2px;
+  }
+
+  .stage-name {
+    overflow: hidden;
+    font-size: 0.7rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .exhausted {

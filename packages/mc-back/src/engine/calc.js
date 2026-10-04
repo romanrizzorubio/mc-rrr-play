@@ -22,7 +22,17 @@ const CALCULATION_MAP = {
     [CALC_IF]: (source, {ifTrue, ifFalse}) => source ? ifTrue : ifFalse,
     [CALC_MULTIPLY_2]: source => source * 2,
     [CALC_THREAT]: source => source.threat,
-    [CALC_DAMAGE]: source => source.damage,
+    [CALC_DAMAGE]: (source, {invert}) => {
+        if (!invert) {
+            return source.damage;
+        }
+
+        if (!Number.isFinite(source.hitPoints) || !Number.isFinite(source.damage)) {
+            throw new Error('CALC_DAMAGE invert requiere vida y daño calculables.');
+        }
+
+        return source.hitPoints - source.damage;
+    },
     [CALC_ALL]: source => {
         if (source.damage !== undefined) {
             return source.damage;
@@ -57,6 +67,7 @@ export class Calc {
         ifFalse,
         plus,
         multiply,
+        invert = false,
     }) {
         this.target = target;
         this.formula = formula;
@@ -69,6 +80,7 @@ export class Calc {
         this.ifFalse = ifFalse;
         this.plus = plus;
         this.multiply = multiply;
+        this.invert = invert;
     }
     differentResourceType(source) {
         const resources = source.reduce((res, card) => {

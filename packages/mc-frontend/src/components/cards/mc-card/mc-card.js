@@ -53,6 +53,7 @@ export class CardComponent extends LitElement {
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
             hideName: {type: Boolean, attribute: 'hide-name'},
+            nameWithStage: {type: Boolean, attribute: 'name-with-stage'},
             exhausted: {type: Boolean},
             menuOptions: {type: Array},
             _menuOpen: {type: Boolean},
@@ -85,6 +86,7 @@ export class CardComponent extends LitElement {
         this.showGeneric = false;
         this.horizontal = false;
         this.hideName = false;
+        this.nameWithStage = false;
         this.exhausted = false;
         this.menuOptions = [];
         this._menuOpen = false;
@@ -330,9 +332,10 @@ export class CardComponent extends LitElement {
         ].filter(({value}) =>
             value !== undefined && value !== null && Number.isFinite(value)
         );
+        const stageAligned = this.nameWithStage && Number.isFinite(this.stage);
 
         return stats.length ? html`
-            <div class="character-stats">
+            <div class="character-stats ${stageAligned ? 'stage-aligned' : ''}">
                 ${stats.map(({label, value, className}) => html`
                     <span
                         class="character-stat ${className}"
@@ -437,9 +440,9 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderHeader() {
-        const {name, headerLeft, headerRight} = this;
+        const {name, headerLeft, headerRight, hideName, nameWithStage, stage} = this;
 
-        return this.hideName ? html`` : html`
+        return hideName || (nameWithStage && Number.isFinite(stage)) ? html`` : html`
             <header>
                 <div class="header-left">
                     ${Number.isFinite(headerLeft) ? html`
@@ -460,10 +463,13 @@ export class CardComponent extends LitElement {
         `;
     }
     renderStage() {
-        const {stage} = this;
+        const {name, hideName, nameWithStage, stage} = this;
 
         return Number.isFinite(stage) ? html`
             <div class="stage-label">
+                ${nameWithStage && !hideName ? html`
+                    <span class="name stage-name">${name}</span>
+                ` : ''}
                 <span class="character-stat stat-stage header-stat" aria-label="Etapa: ${stage}">
                     ${stage}
                 </span>

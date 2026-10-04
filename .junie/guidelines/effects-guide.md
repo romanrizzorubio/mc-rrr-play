@@ -113,6 +113,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 ## Reglas de Atributos Dinámicos (Valores X)
 
 - **Atributos como X**: Cuando un valor (Ataque, Intervención, Defensa, Planificación o Recuperación) sea **X**, el atributo debe definirse directamente con la lógica de cálculo (usando un objeto compatible con `Calc`). El motor ha sido modificado en `CharacterGameCard.js` para detectar si un atributo es un objeto y evaluarlo dinámicamente, permitiendo además la suma de modificadores externos (accesorios, etc.) sobre el resultado calculado.
+- **Atributo igual a vida restante**: Para un aliado o esbirro cuyo atributo X sea igual a su vida restante, configura el atributo con `{formula: CALC_DAMAGE, target: TARGET_CARD, invert: true}`. `Calc` calcula `hitPoints - damage`, usando los puntos de vida máximos modificados y el daño acumulado actual. Sin `invert: true`, `CALC_DAMAGE` devuelve el daño acumulado, no la vida restante.
 - **Cálculo de "Todo" (CALC_ALL)**: Para efectos que afecten a la totalidad de un valor (ej: "cura TODO el daño", "quita TODA la amenaza"), se debe usar la constante `CALC_ALL` en el objeto de cálculo. Esto permite al motor determinar dinámicamente la cantidad necesaria basándose en el estado actual del objetivo.
 
 ## Reglas para Accesorios (Attachments)

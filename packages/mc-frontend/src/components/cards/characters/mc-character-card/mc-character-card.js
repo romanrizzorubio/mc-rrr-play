@@ -31,6 +31,7 @@ export class McCharacterCard extends LitElement {
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
             stage: {type: Number},
+            nameWithStage: {type: Boolean, attribute: 'name-with-stage'},
         };
     }
 
@@ -52,6 +53,7 @@ export class McCharacterCard extends LitElement {
         this.headerLeft = undefined;
         this.headerRight = undefined;
         this.stage = undefined;
+        this.nameWithStage = false;
     }
 
     render() {
@@ -71,6 +73,7 @@ export class McCharacterCard extends LitElement {
             headerLeft,
             headerRight,
             stage,
+            nameWithStage,
         } = this;
 
         return html`
@@ -87,6 +90,7 @@ export class McCharacterCard extends LitElement {
                 .headerLeft="${headerLeft}"
                 .headerRight="${headerRight}"
                 .stage="${stage}"
+                .nameWithStage="${nameWithStage}"
                 .attack="${attack}"
                 .thwart="${thwart}"
                 .defense="${defense}"

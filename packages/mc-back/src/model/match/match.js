@@ -408,7 +408,9 @@ export class Match extends Engine {
     }
     toObj() {
         const {
+            currentTurnPlayer,
             name,
+            phase,
             playing,
             players,
             scenario,
@@ -416,7 +418,9 @@ export class Match extends Engine {
 
         return {
             ...super.toObj(),
+            currentTurnPlayer: currentTurnPlayer?.name ?? null,
             name,
+            phase,
             playing,
             players: players.map(player => player.toObj()),
             scenario: scenario && scenario.toObj(),

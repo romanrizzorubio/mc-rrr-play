@@ -37,7 +37,6 @@ import {
     TARGET_ATTACKED,
     TARGET_CARD,
     TARGET_EFFECT,
-    TARGET_SOURCE,
     TARGET_VILLAIN,
     TARGET_YOU,
     TRAIT_ARMOR,
@@ -104,7 +103,7 @@ export default {
                                     'type': EFFECT_SEARCH_CARD_REVEAL,
                                     'params': {
                                         'condition': {
-                                            'name': "Breakin' & Takin'"
+                                            'name': 'Arramblar con todo'
                                         },
                                         'places': [
                                             PLACE_ENCOUNTER_DECK_CARDS,
@@ -510,7 +509,6 @@ export default {
                                                     'type': EFFECT_DO_IF_TAKE_DAMAGE,
                                                     'params': {
                                                         'source': 'effects.0',
-                                                        'target': TARGET_SOURCE,
                                                         'effect': {
                                                             'type': EFFECT_STUN,
                                                             'params': {

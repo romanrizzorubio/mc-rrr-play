@@ -8,7 +8,7 @@ export class StunEffect extends Effect {
     execute(params) {
         const {selectedTarget} = this;
 
-        if (selectedTarget instanceof Array) {
+        if (Array.isArray(selectedTarget)) {
             return this.promisesSequential(selectedTarget, target => {
                 const stunEffect = new StunEffect({
                     selectedTarget: target,

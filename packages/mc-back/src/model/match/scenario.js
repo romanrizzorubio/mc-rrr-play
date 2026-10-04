@@ -148,28 +148,34 @@ export class Scenario extends Engine {
 
         const nextVillain = this.villains.shift();
 
-        if (this.gameZone.currentVillain) {
-            if (nextVillain.name === this.gameZone.currentVillain.name) {
+        const currentVillain = this.gameZone.currentVillain;
+
+        if (currentVillain) {
+            if (nextVillain.name === currentVillain.name) {
                 nextVillain.owner = this;
-                nextVillain.stunned = this.gameZone.currentVillain.stunned;
-                nextVillain.confused = this.gameZone.currentVillain.confused;
-                nextVillain.tough = this.gameZone.currentVillain.tough;
-                nextVillain.faceDown = this.gameZone.currentVillain.faceDown;
-                nextVillain.attached = this.gameZone.currentVillain.attached;
-                nextVillain.selectedSide = this.gameZone.currentVillain.selectedSide;
-                nextVillain.counters = this.gameZone.currentVillain.counters;
-                nextVillain.exhausted = this.gameZone.currentVillain.exhausted;
-                nextVillain.accelerationTokens = this.gameZone.currentVillain.accelerationTokens;
+                nextVillain.stunned = currentVillain.stunned;
+                nextVillain.confused = currentVillain.confused;
+                nextVillain.tough = currentVillain.tough;
+                nextVillain.faceDown = currentVillain.faceDown;
+                nextVillain.attached = currentVillain.attached;
+                nextVillain.selectedSide = currentVillain.selectedSide;
+                nextVillain.counters = currentVillain.counters;
+                nextVillain.exhausted = currentVillain.exhausted;
+                nextVillain.accelerationTokens = currentVillain.accelerationTokens;
             }
 
+            currentVillain.endTriggers();
+        }
+
+        this.gameZone.currentVillain = nextVillain;
+
+        if (currentVillain) {
             const revealEncounterEffect = new RevealEncounterEffect({
                 selectedTarget: nextVillain,
                 match: this.match,
             });
             await revealEncounterEffect.runEffect({player});
         }
-
-        this.gameZone.currentVillain = nextVillain;
 
         const putPlayEffect = new PutPlayEffect({
             card: nextVillain,

@@ -18,6 +18,7 @@ export class McPlayer extends LitElement {
     static get properties() {
         return {
             player: {type: Object},
+            canEndTurn: {type: Boolean},
             playCardPending: {type: Boolean},
         };
     }
@@ -25,6 +26,7 @@ export class McPlayer extends LitElement {
         super();
 
         this.player = null;
+        this.canEndTurn = false;
         this.playCardPending = false;
     }
     handleChangeMenu(e) {
@@ -93,6 +95,7 @@ export class McPlayer extends LitElement {
                 class="panel"
                 name="${name}"
                 image="${image}"
+                .canEndTurn="${this.canEndTurn}"
                 .life="${life}"
                 .hitPoints="${hitPoints}"
                 .handSize="${handSize}"

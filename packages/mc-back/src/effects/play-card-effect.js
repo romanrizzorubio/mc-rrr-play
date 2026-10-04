@@ -23,6 +23,8 @@ export class PlayCardEffect extends Effect {
         this.modifyCost = 0;
         this.removedFromHand = false;
         this.played = false;
+        this.maxAlliesDialogAccepted = false;
+        this.maxAllyToDiscardId = undefined;
 
         if (card.isUpgrade) {
             this.target = card.card.attach;
@@ -47,6 +49,7 @@ export class PlayCardEffect extends Effect {
             player,
             abilityType,
             card,
+            playCardEffect: this,
         });
     }
     filterTarget(target, {player}) {
@@ -104,6 +107,7 @@ export class PlayCardEffect extends Effect {
                 card,
                 selectedTarget,
                 controller: player,
+                maxAllyToDiscardId: this.maxAllyToDiscardId,
                 match: this.match,
             });
 

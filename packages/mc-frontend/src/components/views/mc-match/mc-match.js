@@ -59,11 +59,14 @@ export class MatchComponent extends LitElement {
         ` : '';
     }
     renderPlayer() {
-        const {player} = this;
+        const {match, player} = this;
+        const canEndTurn = match?.phase === 'players' &&
+            match.currentTurnPlayer === player?.name;
 
         return player ? html`
             <mc-player
                 .player="${player}"
+                .canEndTurn="${canEndTurn}"
                 .playCardPending="${this.playCardPending}"
                 @superhero-ability="${this.handleAbility.bind(this)}"
                 @game-zone-card-click="${this.handleAbility.bind(this)}"
