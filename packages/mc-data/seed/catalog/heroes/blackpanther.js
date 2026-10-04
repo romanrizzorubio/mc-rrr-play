@@ -19,6 +19,8 @@ import {
     CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
+    EFFECT_CATEGORY_DAMAGE,
+    EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
@@ -31,7 +33,6 @@ import {
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
     EFFECT_PLACE_THREAT,
-    EFFECT_PREVENT_DAMAGE,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_THREAT,
     EFFECT_SEARCH_CARDS,
@@ -723,16 +724,14 @@ export default {
                                 'params': {
                                     'name': 'Killmonger',
                                     'validation': {
-                                        'type': EFFECT_PREVENT_DAMAGE,
+                                        'type': EFFECT_CANNOT_TARGET,
                                         'params': {
-                                            'target': TARGET_YOU,
-                                            'condition': {
-                                                'source': {
-                                                    'type': CARD_TYPE_UPGRADE,
-                                                    'traits': [
-                                                        TRAIT_BLACK_PANTHER
-                                                    ]
-                                                }
+                                            'effectCategories': [
+                                                EFFECT_CATEGORY_DAMAGE
+                                            ],
+                                            'effectCondition': {
+                                                'source.type': CARD_TYPE_UPGRADE,
+                                                'source.traits': TRAIT_BLACK_PANTHER
                                             }
                                         }
                                     }

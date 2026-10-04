@@ -1,4 +1,8 @@
-import {TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE, EFFECT_TAKE_DAMAGE} from 'mc-shared';
+import {
+    EFFECT_CATEGORY_DAMAGE,
+    EFFECT_TAKE_DAMAGE,
+    TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -18,6 +22,9 @@ export class DealDamageEffect extends Effect {
     }
     get character() {
         return this._character || super.character;
+    }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_DAMAGE];
     }
     checkTrigger() {
         if (Array.isArray(this.damage)) {

@@ -5,11 +5,13 @@ import {
     EFFECT_CANCEL_ATTACK,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
+    EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CHOOSE,
     EFFECT_CONFUSE,
     EFFECT_DEAL_BOOST,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DEAL_ENCOUNTER,
     EFFECT_DEFEAT,
     EFFECT_DELAYED,
     EFFECT_DISCARD_CONDITION_HAND,
@@ -26,6 +28,7 @@ import {
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_DO_IF_TAKE_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_ENGAGE,
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENEMY_SCHEME,
     EFFECT_EXHAUST,
@@ -91,11 +94,13 @@ import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelAttackEffect} from '../../effects/cancel-attack-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
+import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
 import {ChooseAbilityEffect} from '../../effects/choose-ability-effect.js';
 import {ChooseEffect} from '../../effects/choose-effect.js';
 import {ConfuseEffect} from '../../effects/confuse-effect.js';
 import {DealBoostEffect} from '../../effects/deal-boost-effect.js';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
+import {DealEncounterEffect} from '../../effects/deal-encounter-effect.js';
 import {DefeatEffect} from '../../effects/defeat-effect.js';
 import {DelayedEffect} from '../../effects/delayed-effect.js';
 import {DiscardConditionHandEffect} from '../../effects/discard-condition-hand-effect.js';
@@ -112,6 +117,7 @@ import {DoIfHasPaidEffect} from '../../effects/do-if-has-paid-effect.js';
 import {DoIfHasTraitsEffect} from '../../effects/do-if-has-traits-effect.js';
 import {DoIfTakeCharacterDamageEffect} from '../../effects/do-if-take-character-damage-effect.js';
 import {DrawEffect} from '../../effects/draw-effect.js';
+import {EngageEffect} from '../../effects/engage-effect.js';
 import {EnemyAttackEffect} from '../../effects/enemy-attack-effect.js';
 import {EnemySchemeEffect} from '../../effects/enemy-scheme-effect.js';
 import {ExhaustEffect} from '../../effects/exhaust-effect.js';
@@ -179,12 +185,14 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ATTACK]: CancelAttackEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CHAINED]: ChainedEffect,
+    [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
     [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
     [EFFECT_CHOOSE]: ChooseEffect,
     [EFFECT_CHOOSE_ABILITY]: ChooseAbilityEffect,
     [EFFECT_CONFUSE]: ConfuseEffect,
     [EFFECT_DEAL_BOOST]: DealBoostEffect,
     [EFFECT_DEAL_DAMAGE]: DealDamageEffect,
+    [EFFECT_DEAL_ENCOUNTER]: DealEncounterEffect,
     [EFFECT_DEFEAT]: DefeatEffect,
     [EFFECT_DISCARD_FROM_DECK]: DiscardFromDeckEffect,
     [EFFECT_DISCARD_DRAW]: DiscardDrawEffect,
@@ -200,6 +208,7 @@ export const EFFECT_MAP = {
     [EFFECT_DO_IF_HAS_TRAITS]: DoIfHasTraitsEffect,
     [EFFECT_DO_IF_TAKE_DAMAGE]: DoIfTakeCharacterDamageEffect,
     [EFFECT_DRAW_CARD]: DrawEffect,
+    [EFFECT_ENGAGE]: EngageEffect,
     [EFFECT_ENEMY_ATTACK]: EnemyAttackEffect,
     [EFFECT_EXHAUST]: ExhaustEffect,
     [EFFECT_FACEDOWN]: FaceDownEffect,

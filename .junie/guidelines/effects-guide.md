@@ -8,7 +8,9 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | :--- | :--- |
 | `EFFECT_ADD_TRAIT` | Para otorgar rasgos; dentro de un `EFFECT_LASTING`, el motor los quita al expirar. |
 | `EFFECT_CANCEL_ENCOUNTER` | Cancela perfidias por defecto; usa `type: CARD_TYPE_ANY` para cancelar cualquier carta de encuentro. |
+| `EFFECT_CANNOT_TARGET` | Solo dentro de `validation` de una capacidad constante. Excluye objetivos según `effectTypes` o `effectCategories` (por ejemplo, `EFFECT_CATEGORY_DAMAGE`); `condition` busca una carta en juego, `targetCondition` limita las cartas afectadas y `effectCondition` evalúa el efecto o su fuente. No se resuelve como efecto normal. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
+| `EFFECT_DEAL_ENCOUNTER` | Reparte una carta del mazo de Encuentros al jugador objetivo, boca abajo. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
 | `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
 | `EFFECT_MOVE_DAMAGE` | Para "mover daño" de un personaje a otro. |
@@ -26,7 +28,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_CONFUSE` | Para aplicar el estado "confundido". |
 | `EFFECT_TOUGH` | Para aplicar el estado "duro". |
 | `EFFECT_FLIP` | Para "dar la vuelta" a la carta de identidad (cambiar de Héroe a Alter ego o viceversa). |
-| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en el mazo o pila de descartes. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter` en las `locations` de los jugadores indicados por `players`; `distinctNames: true` muestra todas las cartas válidas y deshabilita las del mismo nombre mientras una esté seleccionada. |
+| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en las ubicaciones indicadas por `locations`, incluidos los mazos y pilas de descartes de jugador y de encuentros. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter`; `distinctNames: true` muestra todas las cartas válidas y deshabilita las del mismo nombre mientras una esté seleccionada. |
 | `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
 | `EFFECT_MOVE_TO_HAND` | Frecuentemente encadenado con búsquedas para "añadir a la mano". |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
@@ -41,6 +43,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_MODIFY_DEFENSE_VALUE` | Para modificar DEF durante su cálculo dinámico. |
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
+| `EFFECT_ENGAGE` | Para poner un esbirro en juego enfrentado al jugador objetivo. |
 | `EFFECT_REVEAL_ENCOUNTER` | Para revelar una carta de encuentro de un origen. Por defecto toma la primera ya entregada al jugador (`PLACE_PLAYER_ENCOUNTERS`); `from: PLACE_ENCOUNTER_DECK` toma la carta superior del mazo. |
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
 
@@ -68,6 +71,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 ### Ventanas de respuesta y condiciones
 
 - `ABILITY_RESPONSE` se evalúa en la ventana `PRIORITY_RESPONSE` del trigger que acaba de ocurrir. Coloca ese trigger en la ventana de fin del efecto (`getTriggersEnds`) cuando la respuesta dependa del estado final del efecto; `getTriggersInit` ocurre antes de ejecutar el efecto y `triggerInit` procesa constantes e interrupciones, no respuestas.
+- `TRIGGER_THIS_SCHEME` se dispara al final de la activación de Plan del enemigo que lo inició.
 - Las condiciones de una capacidad se comprueban contra el payload del trigger. Usa `effect.<propiedad>` para consultar el efecto que acaba de resolverse; todas las claves de `condition` deben cumplirse. No uses `activation.<propiedad>` salvo que el payload realmente incluya ese campo.
 - Para una respuesta que requiere que un héroe haya defendido un ataque, usa `TRIGGER_VILLAIN_ATTACKS_YOU` en `EnemyAttackEffect.getTriggersEnds()`; ese mismo trigger en `getTriggersInit()` corresponde a la ventana previa de interrupciones. Comprueba el estado con `{'effect.isDefended': true, 'effect.defender.isHero': true}`: `isDefended` y el defensor se actualizan durante la resolución del ataque.
 - Resuelve primero las respuestas obligadas de cada ataque (incluida represalia) y solo después sus respuestas opcionales. Un ataque iniciado al resolver una respuesta es una instancia independiente: vincula represalia al atacante y objetivo de ese efecto, no al `PlayCardEffect` ni al contexto heredado del ataque anterior.
@@ -186,7 +190,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - **Efectos al entrar en juego**:
     - **Perfidias y cartas con "Cuando se muestre"**: Usa siempre `ABILITY_WHEN_REVEALED` (o sus variantes por identidad).
     - **Obligaciones SIN "Cuando se muestre"**: Usa `ABILITY_CONSTANT` con `trigger: TRIGGER_INSTANT` dentro del array `abilities` en `params`. Además, el objeto `params` debe incluir `triggerInstant: true`. Este es un patrón específico del motor para gestionar la entrada de obligaciones que no tienen un efecto de revelación estándar.
-- **"No puede ser objetivo"**: Usa `validation` en una `ABILITY_CONSTANT` (ver Guía de Traducción).
+- **"No puede ser objetivo"**: Usa `validation` en una `ABILITY_CONSTANT` con `EFFECT_CANNOT_TARGET` (ver Guía de Traducción).
 - **Filtrado de Objetos (Filtros)**: Evita usar selectores de objetivo ultra-específicos si el efecto admite `filter` o `condition`. Filtra por tipo con la propiedad `type` y su constante (`type: CARD_TYPE_UPGRADE`), y por rasgos con `traits` (`traits: TRAIT_TECH`). Cuando un efecto tenga un campo de control documentado, usa `TARGET_YOU` en vez del literal `'you'`.
 - **Cualquier jugador vs Cada jugador**:
     - Si el texto dice "cualquier jugador" (o si eliges uno): Usa `TARGET_ANY_PLAYER`.

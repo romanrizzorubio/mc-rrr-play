@@ -20,6 +20,7 @@ import {
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_ENTER_PLAY,
     TRIGGER_THIS_GET_THWART,
+    TRIGGER_THIS_SCHEME,
     TRIGGER_THIS_THWARTS,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_VILLAIN_ATTACKS,
@@ -63,6 +64,7 @@ import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
 import {ThisEnterPlayTrigger} from '../../triggers/this-enter-play-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
+import {ThisSchemeTrigger} from '../../triggers/this-scheme-trigger.js';
 import {ThisThwartsTrigger} from '../../triggers/this-thwarts-trigger.js';
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
@@ -104,6 +106,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
     [TRIGGER_THIS_ENTER_PLAY]: ThisEnterPlayTrigger,
     [TRIGGER_THIS_GET_THWART]: ThisGetThwartTrigger,
+    [TRIGGER_THIS_SCHEME]: ThisSchemeTrigger,
     [TRIGGER_THIS_END_PLAY_CARD]: ThisEndPlayCardTrigger,
     [TRIGGER_THIS_THWARTS]: ThisThwartsTrigger,
     [TRIGGER_VILLAIN_ATTACKS]: VillainAttacksTrigger,

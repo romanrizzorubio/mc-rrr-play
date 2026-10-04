@@ -1,5 +1,8 @@
 
-import {TRIGGER_VILLAIN_SCHEMES} from 'mc-shared';
+import {
+    TRIGGER_THIS_SCHEME,
+    TRIGGER_VILLAIN_SCHEMES,
+} from 'mc-shared';
 
 import {Activation} from './activation.js';
 
@@ -30,6 +33,23 @@ export class Scheme extends Activation {
             .concat([
                 TRIGGER_VILLAIN_SCHEMES,
             ]) : [];
+    }
+    getTriggersEnds(params) {
+        const {triggersEndsLaunched} = this;
+
+        return !triggersEndsLaunched ? super.getTriggersEnds(params)
+            .concat([
+                TRIGGER_THIS_SCHEME,
+            ]) : [];
+    }
+    getTriggersParams(params) {
+        const {character} = this;
+
+        return {
+            ...super.getTriggersParams(params),
+            card: character,
+            character,
+        };
     }
     resolveStatus() {
         const {character} = this;

@@ -1,4 +1,13 @@
-import {DIALOG_SELECT_CARD,PLACE_DECK, PLACE_DISCARD_PILE, PLACE_HAND,TARGET_ALL_PLAYERS, TARGET_YOU} from 'mc-shared';
+import {
+    DIALOG_SELECT_CARD,
+    PLACE_DECK,
+    PLACE_DISCARD_PILE,
+    PLACE_ENCOUNTER_DECK_CARDS,
+    PLACE_ENCOUNTER_DISCARD,
+    PLACE_HAND,
+    TARGET_ALL_PLAYERS,
+    TARGET_YOU,
+} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
@@ -72,7 +81,8 @@ export class SearchCardsEffect extends Effect {
                 for (const location of this.locations) {
                     let cards = this.getCardsAtLocation(targetPlayer, location);
                     cards = cards.filter(card => !excludedCardIds.has(card.id));
-                    if (this.firstMatch && location === PLACE_DISCARD_PILE) {
+                    if (this.firstMatch &&
+                        (location === PLACE_DISCARD_PILE || location === PLACE_ENCOUNTER_DISCARD)) {
                         cards = cards.slice().reverse();
                     }
 
@@ -151,6 +161,10 @@ export class SearchCardsEffect extends Effect {
             return player.deck.cards;
         } else if (location === PLACE_HAND) {
             return player.hand.cards;
+        } else if (location === PLACE_ENCOUNTER_DECK_CARDS) {
+            return this.match.scenario.deck.cards;
+        } else if (location === PLACE_ENCOUNTER_DISCARD) {
+            return this.match.scenario.deck.discardPile;
         }
 
         return [];

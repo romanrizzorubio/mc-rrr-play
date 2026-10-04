@@ -162,6 +162,9 @@ export class Effect extends Engine {
     get keepTriggering() {
         return this._keepTriggering;
     }
+    get effectCategories() {
+        return [];
+    }
     get piercing() {
         return this.keywords.piercing;
     }
@@ -224,6 +227,9 @@ export class Effect extends Engine {
     /** @returns {void | Promise<unknown>} */
     execute(_params) {
         throw new Error('This effect is not created.');
+    }
+    isInvalidTarget() {
+        return false;
     }
     filterTarget(card, params) {
         const {excludeTarget, activation, isArrow} = this;
@@ -288,16 +294,29 @@ export class Effect extends Engine {
     }
     getValidTarget(params) {
         const {target, selectedTarget, ability} = this;
-
-        if (selectedTarget && this.filterTarget(selectedTarget, params)) {
-            return [selectedTarget];
-        }
-
-        return this.validTarget.getValidTarget({
+        const targetParams = {
             ...params,
             ability,
+            effect: this,
             target,
-        });
+        };
+
+        if (Array.isArray(selectedTarget)) {
+            const validTargets = selectedTarget.filter(selected =>
+                this.validTarget.filter(selected, targetParams));
+            if (validTargets.length !== selectedTarget.length) {
+                this.selectedTarget = validTargets;
+            }
+
+            return validTargets.length ? [validTargets] : [];
+        }
+        if (selectedTarget) {
+            return this.validTarget.filter(selectedTarget, targetParams) ?
+                [selectedTarget] :
+                [];
+        }
+
+        return this.validTarget.getValidTarget(targetParams);
     }
     isResolved() {
         return true;

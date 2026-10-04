@@ -311,6 +311,12 @@ export class Player extends Engine {
             return card;
         }
 
+        const minion = this.gameZone.minions.find(minion =>
+            checkCondition(minion, condition));
+        if (minion) {
+            return minion;
+        }
+
         return this.hand.cards.find(card => checkCondition(card, condition));
     }
     async mulligan() {

@@ -1,4 +1,9 @@
-import {TRIGGER_YOU_WOULD_TAKE_DAMAGE,EFFECT_DEFEAT,EFFECT_PLACE_DAMAGE} from 'mc-shared';
+import {
+    EFFECT_CATEGORY_DAMAGE,
+    EFFECT_DEFEAT,
+    EFFECT_PLACE_DAMAGE,
+    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -12,6 +17,9 @@ export class TakeDamageEffect extends Effect {
 
         this.preventDamage = 0;
         this.excess = 0;
+    }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_DAMAGE];
     }
     get takenDamage() {
         if (this.damage instanceof Array) {

@@ -1,0 +1,112 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+
+import {
+    CARD_TYPE_UPGRADE,
+    EFFECT_CATEGORY_DAMAGE,
+    TARGET_ALL_ENEMIES,
+    TARGET_CARD,
+    TRAIT_BLACK_PANTHER,
+} from 'mc-shared';
+import blackPanther from '../../../mc-data/seed/catalog/heroes/blackpanther.js';
+import legionsOfHydra from '../../../mc-data/seed/catalog/sets/legions-of-hydra.js';
+import {AssignDamageEffect} from '../../src/effects/assign-damage-effect.js';
+import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
+import {Effect} from '../../src/effects/effect.js';
+import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
+
+test('Madame Hydra is excluded from damage targets only while Legions of Hydra is in play', () => {
+    const plan = {name: 'Legiones de Hydra'};
+    let planInPlay = true;
+    const match = {
+        enemies: [],
+        searchCard(condition) {
+            return planInPlay && condition.name === plan.name ? plan : undefined;
+        },
+    };
+    const cardConfig = legionsOfHydra.config.cards.find(({card}) =>
+        card.params.name === 'Madame Hydra').card;
+    const cardsFactory = new CardsFactory({match});
+    const madameHydra = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(cardConfig),
+        owner: {},
+    });
+    const anotherEnemy = {abilities: [], id: 'another-enemy'};
+    const params = {player: {}};
+    const damageEffects = [
+        new DealDamageEffect({damage: 2, match, target: TARGET_ALL_ENEMIES}),
+        new TakeDamageEffect({damage: 2, match, target: TARGET_ALL_ENEMIES}),
+        new AssignDamageEffect({damage: 2, match, target: TARGET_ALL_ENEMIES}),
+    ];
+    assert.ok(damageEffects.every(effect =>
+        effect.effectCategories.includes(EFFECT_CATEGORY_DAMAGE)));
+    match.enemies = [madameHydra, anotherEnemy];
+
+    for (const effect of damageEffects) {
+        assert.deepEqual(effect.getValidTarget(params), [anotherEnemy]);
+    }
+    const nonDamageEffect = new Effect({match, target: TARGET_ALL_ENEMIES});
+    assert.deepEqual(nonDamageEffect.getValidTarget(params), [madameHydra, anotherEnemy]);
+
+    const preselectedTargetsDamage = new AssignDamageEffect({
+        damage: 2,
+        match,
+        selectedTarget: [madameHydra, anotherEnemy],
+        target: TARGET_ALL_ENEMIES,
+    });
+    assert.deepEqual(preselectedTargetsDamage.getValidTarget(params), [[anotherEnemy]]);
+    assert.deepEqual(preselectedTargetsDamage.selectedTarget, [anotherEnemy]);
+
+    const preselectedDamage = new DealDamageEffect({
+        damage: 2,
+        match,
+        selectedTarget: madameHydra,
+        target: TARGET_CARD,
+    });
+    assert.deepEqual(preselectedDamage.getValidTarget(params), []);
+
+    planInPlay = false;
+    for (const effect of damageEffects) {
+        assert.deepEqual(effect.getValidTarget(params), [madameHydra, anotherEnemy]);
+    }
+    const newlyValidPreselectedTargetsDamage = new AssignDamageEffect({
+        damage: 2,
+        match,
+        selectedTarget: [madameHydra, anotherEnemy],
+        target: TARGET_ALL_ENEMIES,
+    });
+    assert.deepEqual(newlyValidPreselectedTargetsDamage.getValidTarget(params), [[madameHydra, anotherEnemy]]);
+    assert.deepEqual(preselectedDamage.getValidTarget(params), [madameHydra]);
+});
+
+test('Killmonger cannot be targeted by damage from Black Panther upgrades', () => {
+    const match = {enemies: []};
+    const cardConfig = blackPanther.config.nemesis.find(({card}) =>
+        card.params.name === 'Killmonger').card;
+    const cardsFactory = new CardsFactory({match});
+    const killmonger = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(cardConfig),
+        owner: {},
+    });
+    match.enemies = [killmonger];
+
+    const blackPantherUpgradeDamage = new DealDamageEffect({
+        damage: 2,
+        match,
+        source: {
+            traits: [TRAIT_BLACK_PANTHER],
+            type: CARD_TYPE_UPGRADE,
+        },
+        target: TARGET_ALL_ENEMIES,
+    });
+    const otherDamage = new DealDamageEffect({
+        damage: 2,
+        match,
+        source: {type: CARD_TYPE_UPGRADE, traits: []},
+        target: TARGET_ALL_ENEMIES,
+    });
+
+    assert.deepEqual(blackPantherUpgradeDamage.getValidTarget({player: {}}), []);
+    assert.deepEqual(otherDamage.getValidTarget({player: {}}), [killmonger]);
+});

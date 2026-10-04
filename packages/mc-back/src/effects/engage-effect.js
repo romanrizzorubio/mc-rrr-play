@@ -5,6 +5,10 @@ import {PutPlayEffect} from './put-play-effect.js';
 
 export class EngageEffect extends PutPlayEffect {
     getTriggersEnds(params) {
+        if (!this.getCard(params)?.isMinion) {
+            return [];
+        }
+
         return super.getTriggersEnds(params)
             .concat([
                 TRIGGER_ENGAGE_HERO,
@@ -13,18 +17,29 @@ export class EngageEffect extends PutPlayEffect {
     getTriggersParams(params) {
         return {
             ...super.getTriggersParams(params),
-            card: this.card,
+            card: this.getCard(params),
         };
     }
 
     async execute(params) {
-        await super.execute(params);
+        const card = this.getCard(params);
+        if (!card) {
+            return;
+        }
+        if (!card.isMinion) {
+            throw new Error('Only minions can be engaged.');
+        }
 
-        const {selectedTarget, card} = this;
+        const {selectedTarget} = this;
+        if (!selectedTarget || typeof selectedTarget.engage !== 'function') {
+            throw new Error('EngageEffect requires a player target.');
+        }
+
+        await super.execute(params);
 
         selectedTarget.engage(card);
         card.engaged = selectedTarget;
 
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
     }
 }

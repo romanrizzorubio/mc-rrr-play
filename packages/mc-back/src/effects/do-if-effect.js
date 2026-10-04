@@ -114,6 +114,11 @@ export class DoIfEffect extends Effect {
     checkCondition(params) {
         return checkCondition(params, this.condition);
     }
+    isInvalidTarget(params) {
+        const effect = this.checkCondition(params) ? this.effect : this.effectNot;
+
+        return effect ? effect.isInvalidTarget(params) : false;
+    }
     getSource(params) {
         return path(params, this.source);
     }

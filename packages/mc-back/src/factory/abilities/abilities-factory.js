@@ -79,6 +79,13 @@ export class AbilitiesFactory {
         if (params.ifNot) {
             ifNot = this.effectsFactory.parseEffect(params.ifNot);
         }
+        let validation;
+        if (params.validation) {
+            validation = this.effectsFactory.parseEffect(params.validation);
+            if (!validation) {
+                throw new Error('Unable to parse ability validation.');
+            }
+        }
 
         return {
             type,
@@ -87,6 +94,7 @@ export class AbilitiesFactory {
                 arrow,
                 effect,
                 ifNot,
+                validation,
             }
         };
     }

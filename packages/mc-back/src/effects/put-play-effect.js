@@ -62,12 +62,22 @@ export class PutPlayEffect extends Effect {
             }
 
             if (controller) {
+                const ownerDeck = card.owner && card.owner.deck;
+                let removedFromDeck = false;
+
+                if (ownerDeck?.cards?.includes(card)) {
+                    ownerDeck.removeCardFromDeck(card);
+                    removedFromDeck = true;
+                } else if (ownerDeck?.discardPile?.includes(card)) {
+                    ownerDeck.searchDiscard(card);
+                    removedFromDeck = true;
+                }
+
+                if (removedFromDeck) {
+                    await ownerDeck.refresh();
+                }
+
                 if (!card.isMinion) {
-                    const ownerDeck = card.owner && card.owner.deck;
-                    if (ownerDeck && ownerDeck.discardPile.includes(card)) {
-                        ownerDeck.searchDiscard(card);
-                        ownerDeck.refresh();
-                    }
                     controller.gameZone.addToGameZone(card);
                 }
                 card.controller = controller;

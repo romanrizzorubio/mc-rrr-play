@@ -7,6 +7,7 @@ export * from './constants/characters.js';
 export * from './constants/classifications.js';
 export * from './constants/dialogs.js';
 export * from './constants/effects.js';
+export * from './constants/effect-categories.js';
 export * from './constants/labels.js';
 export * from './constants/places.js';
 export * from './constants/priorities.js';

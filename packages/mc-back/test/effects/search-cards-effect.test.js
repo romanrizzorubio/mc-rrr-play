@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {PLACE_DISCARD_PILE} from 'mc-shared';
+import {
+    PLACE_DISCARD_PILE,
+    PLACE_ENCOUNTER_DECK_CARDS,
+    PLACE_ENCOUNTER_DISCARD,
+} from 'mc-shared';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 
 const createCard = (id, name) => ({
@@ -52,4 +56,36 @@ test('SearchCardsEffect shows all copies but returns only one card per name', as
         'first-copy',
         'third-card',
     ]);
+});
+
+test('SearchCardsEffect searches the encounter deck and discard pile in order', async () => {
+    const deckCard = createCard('deck-card', 'Madame Hydra');
+    const discardedCard = createCard('discard-card', 'Madame Hydra');
+    const encounterDeck = {
+        cards: [deckCard],
+        discardPile: [discardedCard],
+    };
+    const player = {
+        deck: {cards: [], discardPile: []},
+        hand: {cards: []},
+    };
+    const effect = new SearchCardsEffect({
+        firstMatch: true,
+        locations: [PLACE_ENCOUNTER_DECK_CARDS, PLACE_ENCOUNTER_DISCARD],
+        filter: {name: 'Madame Hydra'},
+        match: {scenario: {deck: encounterDeck}},
+        requireMatch: true,
+    });
+    const params = {player};
+
+    assert.equal(await effect.canRun(params), true);
+    await effect.execute(params);
+    assert.equal(params.selectedCard, deckCard);
+
+    encounterDeck.cards = [];
+    encounterDeck.discardPile = [
+        createCard('older-discard-card', 'Madame Hydra'),
+        discardedCard,
+    ];
+    assert.deepEqual(effect.getOptions(params), [discardedCard]);
 });

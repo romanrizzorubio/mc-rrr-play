@@ -1,4 +1,4 @@
-import {DIALOG_ASSIGN} from 'mc-shared';
+import {DIALOG_ASSIGN, EFFECT_CATEGORY_DAMAGE} from 'mc-shared';
 
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {Effect} from './effect.js';
@@ -10,6 +10,9 @@ export class AssignDamageEffect extends Effect {
         super(arguments[0]);
 
         this.damage = damage;
+    }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_DAMAGE];
     }
     async execute(params) {
         const {selectedTarget} = this;

@@ -7,6 +7,7 @@ Esta guía describe los selectores de objetivo disponibles para las capacidades 
 - Usa constantes `TARGET_*` importadas desde `mc-shared`; no escribas sus strings directamente en los módulos de catálogo JavaScript.
 - Las constantes declaradas en `packages/mc-shared/constants/targets.js` no son necesariamente selectores resolubles. El motor solo reconoce como `params.target` los valores registrados en `targetMap`, compuesto en `packages/mc-back/src/targets/index.js`.
 - Cada resolver devuelve una lista de candidatos. Un resultado vacío significa que no hay objetivo disponible.
+- Las validaciones de las capacidades constantes se aplican a cada candidato antes de mostrar o resolver objetivos, incluidos los objetivos múltiples y preseleccionados. `EFFECT_CANNOT_TARGET` puede filtrar por tipo/categoría de efecto, presencia de cartas en juego y propiedades de la carta objetivo.
 - `TARGET_CARD` es la carta recibida en el contexto de resolución; `TARGET_TRIGGERED_CARD` es la carta del evento que activó la capacidad; `TARGET_THIS` es `ability.card`. No son intercambiables.
 - Si `params.target` se omite, `Effect` usa `TARGET_YOU`.
 - Un array en `target` combina los resultados de sus selectores; no encadena selectores ni significa “elige la carta superior”.

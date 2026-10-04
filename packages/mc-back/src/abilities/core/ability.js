@@ -15,6 +15,7 @@ export class Ability extends Engine {
         arrow,
         ifNot,
         condition,
+        validation,
         card,
         match,
         hideDialog = false,
@@ -26,6 +27,7 @@ export class Ability extends Engine {
         this.labels = labels;
         this.effect = effect;
         this.condition = condition;
+        this.validation = validation;
         this.card = card;
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
@@ -55,6 +57,9 @@ export class Ability extends Engine {
         }
         if (effect) {
             effect.ability = this;
+        }
+        if (validation) {
+            validation.ability = this;
         }
 
         this.resolved = false;

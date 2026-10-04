@@ -24,11 +24,36 @@ export class ValidTarget extends Engine {
         this._filter = filter;
     }
     filter(card, params) {
-        if (this._filter) {
-            return this._filter(card, params);
+        if (this._filter && !this._filter(card, params)) {
+            return false;
         }
 
-        return true;
+        return !this.isInvalidTarget(card, params);
+    }
+    isInvalidTarget(card, params) {
+        const effect = this.effect || params.effect;
+        if (!effect || !card || !Array.isArray(card.abilities)) {
+            return false;
+        }
+
+        const validationParams = {
+            ...params,
+            effect,
+            match: this.match || params.match,
+            targetCard: card,
+        };
+
+        return card.abilities.some(ability => {
+            const {validation} = ability;
+            if (!validation) {
+                return false;
+            }
+            if (typeof validation.isInvalidTarget !== 'function') {
+                throw new TypeError(`Invalid target validation on card "${card.name}".`);
+            }
+
+            return validation.isInvalidTarget(validationParams);
+        });
     }
     getValidTarget(params) {
         const {
