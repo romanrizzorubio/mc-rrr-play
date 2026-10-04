@@ -51,6 +51,9 @@ export class Engine {
                         if (triggersPriority === priority) {
                             const filtered = await this.promisesSequentialFilter(trigger[triggersPriority], async _trigger =>
                                 !exclude.includes(_trigger) &&
+                                !(_trigger instanceof Trigger &&
+                                    _trigger.hasTriggeredFor(params.effect) &&
+                                    !_trigger.keepTriggering) &&
                                 await _trigger.canTrigger(params));
 
                             ret = ret.concat(filtered);
@@ -108,8 +111,6 @@ export class Engine {
                 if (trigger instanceof Trigger) {
                     return !(trigger.ability.isEndLasting ||
                         trigger.ability.hideDialog ||
-                        trigger.triggered ||
-                        trigger.ability.resolved ||
                         (informationalDialogId &&
                             this.match.suppressedInformationalDialogIds?.includes(informationalDialogId)));
                 }
@@ -195,9 +196,9 @@ export class Engine {
         };
 
         const {options, optionsToShow} = _createOptions(card.triggers);
+        const selectableOptions = this._getLeafOptions(optionsToShow);
         let selected;
-        if (optionsToShow.length > 1 ||
-            (optionsToShow.length === 1 && optionsToShow[0].triggers && optionsToShow[0].triggers.length > 1)) {
+        if (selectableOptions.length > 1) {
             const result = await this.openDialog({
                 dialogType: DIALOG_LIST,
                 hideOk: mandatory,
@@ -211,7 +212,8 @@ export class Engine {
 
             selected = result.selected;
         } else {
-            selected = options[0];
+            selected = selectableOptions[0] ||
+                this._getLeafOptions(options)[0];
         }
 
         const _getOption = (triggers, id) => {
@@ -270,6 +272,11 @@ export class Engine {
             cards,
             cardsTriggers,
         };
+    }
+    _getLeafOptions(options) {
+        return options.flatMap(option => option.triggers ?
+            this._getLeafOptions(option.triggers) :
+            [option]);
     }
     _getPlayersTriggers(triggers) {
         return triggers.reduce((players, trigger) => {
@@ -454,6 +461,9 @@ export class Engine {
             const availableAdditionalTriggers = await this.promisesSequentialFilter(
                 additionalTriggers,
                 async trigger => !exclude.includes(trigger) &&
+                    !(trigger instanceof Trigger &&
+                        trigger.hasTriggeredFor(params.effect) &&
+                        !trigger.keepTriggering) &&
                     await trigger.canTrigger(params)
             );
 

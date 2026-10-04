@@ -239,7 +239,7 @@ export default {
                                         LABEL_DEFENSE
                                     ],
                                     'condition': {
-                                        'isAttack': true
+                                        'effect.isAttack': true
                                     },
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,

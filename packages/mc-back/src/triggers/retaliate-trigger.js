@@ -36,5 +36,6 @@ export class RetaliateTrigger extends Trigger {
         await this.attack.applyRetaliate(this.target, params);
         this.ability.resolved = true;
         this.triggered = true;
+        this.markTriggeredFor(params.effect);
     }
 }

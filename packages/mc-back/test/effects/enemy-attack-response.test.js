@@ -2,17 +2,20 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    DIALOG_USE_CARD,
     CHARACTER_VILLAIN,
     EFFECT_DEAL_DAMAGE,
     EFFECT_TAKE_DAMAGE,
     LABEL_ATTACK,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_RESPONSE,
+    PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_VILLAIN_ATTACKS_YOU,
+    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 import {Ability} from '../../src/abilities/core/ability.js';
 import {Attack} from '../../src/activations/attack.js';
@@ -25,8 +28,93 @@ import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
 import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {EffectsFactory} from '../../src/factory/effects/effects-factory.js';
+import {Engine} from '../../src/engine/engine.js';
+import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {TreacheryRevealTrigger} from '../../src/triggers/treachery-reveal-trigger.js';
 import protectionEvents from '../../../mc-data/seed/catalog/aspects/protection/events.js';
+import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
+
+test('Backflip is offered before attack damage is applied', async () => {
+    const backflip = spiderman.config.cards.find(({card}) =>
+        card.params.name === 'Voltereta hacia atrás');
+    assert.ok(backflip);
+
+    const match = {
+        activationsFactory: {
+            createActivation: () => ({
+                filterTarget: () => true,
+            }),
+        },
+        triggerCards: {},
+    };
+    const player = {
+        canDefend: () => true,
+        hand: {cards: []},
+        isHero: true,
+    };
+    const card = {
+        id: 'backflip',
+        isEvent: true,
+        owner: player,
+        toObj() {
+            return {id: this.id};
+        },
+        triggers: {},
+    };
+    let eventPlayed = false;
+    player.triggerEvent = async trigger => {
+        eventPlayed = trigger.ability === ability;
+
+        return {triggered: eventPlayed, paymentCancelled: false};
+    };
+
+    const abilitiesFactory = new AbilitiesFactory({match});
+    const ability = abilitiesFactory.createAbility(backflip.card.params.abilities[0]);
+    ability.card = card;
+    await ability.initTriggers(card);
+
+    const attackDamage = new TakeDamageEffect({
+        damage: 6,
+        isAttack: true,
+        match,
+        selectedTarget: player,
+    });
+    const engine = new Engine();
+    const openedDialogs = [];
+    engine.match = match;
+    engine.openDialog = async dialog => {
+        openedDialogs.push(dialog);
+
+        return {selected: {id: card.id}};
+    };
+
+    await engine.trigger(
+        PRIORITY_INTERRUPT,
+        [TRIGGER_YOU_WOULD_TAKE_DAMAGE],
+        {effect: attackDamage, player}
+    );
+
+    assert.equal(openedDialogs[0].dialogType, DIALOG_USE_CARD);
+    assert.equal(openedDialogs[0].data.cards[0].id, card.id);
+    assert.equal(eventPlayed, true);
+});
+
+test('Backflip prevents all damage from the triggering attack', async () => {
+    const backflip = spiderman.config.cards.find(({card}) =>
+        card.params.name === 'Voltereta hacia atrás');
+    assert.ok(backflip);
+
+    const [ability] = backflip.card.params.abilities;
+    const effect = new EffectsFactory({match: {}}).parseEffect(ability.params.effect);
+    const attackDamage = {
+        damage: 6,
+        preventDamage: 0,
+    };
+
+    await effect.execute({effect: attackDamage});
+
+    assert.equal(attackDamage.preventDamage, attackDamage.damage);
+});
 
 test('Poneos detras de mi resolves its attack against the villain', async () => {
     const event = protectionEvents.find(({_id}) =>

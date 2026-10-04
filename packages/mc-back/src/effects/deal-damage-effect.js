@@ -103,6 +103,7 @@ export class DealDamageEffect extends Effect {
             damage,
             ability: this.ability,
             activation: this.activation,
+            isAttack: this.isAttack,
         });
 
         await takeDamageEffect.runEffect(params);

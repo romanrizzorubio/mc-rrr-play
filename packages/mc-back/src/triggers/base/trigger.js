@@ -1,4 +1,14 @@
 export class Trigger {
+    static #triggeredEffectsByTrigger = new WeakMap();
+
+    static #getTriggeredEffects(trigger) {
+        if (!Trigger.#triggeredEffectsByTrigger.has(trigger)) {
+            Trigger.#triggeredEffectsByTrigger.set(trigger, new WeakSet());
+        }
+
+        return Trigger.#triggeredEffectsByTrigger.get(trigger);
+    }
+
     constructor({
         card,
         ability,
@@ -12,6 +22,16 @@ export class Trigger {
 
         this.triggered = false;
         this.paymentCancelled = false;
+    }
+    hasTriggeredFor(effect) {
+        return Boolean(effect &&
+            typeof effect === 'object' &&
+            Trigger.#getTriggeredEffects(this).has(effect));
+    }
+    markTriggeredFor(effect) {
+        if (effect && typeof effect === 'object') {
+            Trigger.#getTriggeredEffects(this).add(effect);
+        }
     }
     canRun(params) {
         const {ability} = this;
@@ -48,6 +68,9 @@ export class Trigger {
         });
 
         this.triggered = ability.resolved;
+        if (this.triggered) {
+            this.markTriggeredFor(params.effect);
+        }
         this.paymentCancelled = ability.paymentCancelled;
     }
     async runEvent(params) {
@@ -55,6 +78,9 @@ export class Trigger {
 
         const result = await card.owner.triggerEvent(this, params);
         this.triggered = result.triggered;
+        if (this.triggered) {
+            this.markTriggeredFor(params.effect);
+        }
         this.paymentCancelled = result.paymentCancelled;
     }
     runTrigger(params) {

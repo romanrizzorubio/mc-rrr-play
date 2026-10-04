@@ -60,11 +60,21 @@ export default css`
 
   .character-bottom-stats {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    gap: 6px;
+    column-gap: 6px;
+    row-gap: 4px;
     padding: 4px 2px 0;
     font-size: 0.85rem;
     line-height: 1;
+  }
+
+  .character-bottom-values {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: center;
+    gap: 6px;
     white-space: nowrap;
   }
 
@@ -119,7 +129,8 @@ export default css`
   }
 
   .stat-life {
-    background-color: #ff6d00;
+    background-color: #ef6c00;
+    color: #212121;
   }
 
   .stat-damage {
@@ -199,13 +210,13 @@ export default css`
   }
 
   .status-card {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     line-height: 1;
   }
 
   .tough {
-    background-color: #e16f1c;
-    color: white;
+    background-color: #ffb74d;
+    color: #212121;
   }
 
   .stunned {

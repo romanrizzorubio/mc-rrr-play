@@ -304,7 +304,6 @@ export class CardComponent extends LitElement {
                                 @contextmenu="${this.hableContextMenu.bind(this)}"
                             ></mc-card-image>
                             ${this.renderCounters()}
-                            ${this.renderStatusCards()}
                             ${this.renderBottomStats()}
                         </div>
                         ${this.renderAttached()}
@@ -374,6 +373,12 @@ export class CardComponent extends LitElement {
                 `${this.life}/${this.hitPoints}` :
                 this.life :
             undefined;
+        const statusCards = this.statusCards || {};
+        const hasStatusCards = [
+            statusCards.tough,
+            statusCards.stunned,
+            statusCards.confused,
+        ].some(count => Number.isFinite(count) && count > 0);
         const stats = [
             {label: 'VIDA', value: life, className: 'stat-life'},
             ...(this.showDamage && Number.isFinite(this.damage) && this.damage > 0 ? [{
@@ -391,16 +396,21 @@ export class CardComponent extends LitElement {
             Number.isFinite(value) || typeof value === 'string'
         );
 
-        return stats.length ? html`
+        return stats.length || hasStatusCards ? html`
             <div class="character-bottom-stats">
-                ${stats.map(({label, value, className}) => html`
-                    <span
-                        class="character-stat ${className}"
-                        aria-label="${label}: ${value}"
-                    >
-                        ${value}
-                    </span>
-                `)}
+                ${hasStatusCards ? this.renderStatusCards() : ''}
+                ${stats.length ? html`
+                    <div class="character-bottom-values">
+                        ${stats.map(({label, value, className}) => html`
+                            <span
+                                class="character-stat ${className}"
+                                aria-label="${label}: ${value}"
+                            >
+                                ${value}
+                            </span>
+                        `)}
+                    </div>
+                ` : ''}
             </div>
         ` : html``;
     }
