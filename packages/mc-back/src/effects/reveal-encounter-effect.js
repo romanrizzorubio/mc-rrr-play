@@ -1,6 +1,18 @@
-import {DIALOG_ENCOUNTERS_REVEAL,TARGET_PLAYER, TARGET_SCENARIO,TRIGGER_TREACHERY_REVEAL} from 'mc-shared';
+import {
+    DIALOG_ENCOUNTERS_REVEAL,
+    PLACE_ENCOUNTER_DECK,
+    PLACE_PLAYER_ENCOUNTERS,
+    TARGET_PLAYER,
+    TARGET_SCENARIO,
+    TRIGGER_ENCOUNTER_REVEAL,
+    TRIGGER_TREACHERY_REVEAL,
+} from 'mc-shared';
 
-import {CANCEL_ENCOUNTER_FULL, CANCEL_ENCOUNTER_NOT, CANCEL_ENCOUNTER_REVEAL} from './cancel-encounter-effect.js';
+import {
+    CANCEL_ENCOUNTER_FULL,
+    CANCEL_ENCOUNTER_NOT,
+    CANCEL_ENCOUNTER_REVEAL,
+} from './cancel-encounter-constants.js';
 import {DelayedEffect} from './delayed-effect.js';
 import {Effect} from './effect.js';
 import {EngageEffect} from './engage-effect.js';
@@ -11,11 +23,19 @@ export class RevealEncounterEffect extends Effect {
     constructor({
         card,
         player,
+        from = PLACE_PLAYER_ENCOUNTERS,
+        selectedTarget,
     }) {
         super(arguments[0]);
 
+        if (from !== PLACE_PLAYER_ENCOUNTERS && from !== PLACE_ENCOUNTER_DECK) {
+            throw new Error(`Unsupported encounter reveal source: ${from}`);
+        }
+
         this.card = card;
         this.player = player;
+        this.from = from;
+        this.hasPreselectedCard = Boolean(selectedTarget?.isEncounterCard);
 
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
@@ -48,13 +68,57 @@ export class RevealEncounterEffect extends Effect {
 
         return canceled !== CANCEL_ENCOUNTER_FULL;
     }
+    async canRun(params) {
+        if (!await super.canRun(params)) {
+            return false;
+        }
+
+        if (this.hasPreselectedCard) {
+            return true;
+        }
+
+        if (this.from === PLACE_PLAYER_ENCOUNTERS) {
+            return Boolean(params.player?.encounters.length);
+        }
+
+        const {cards, discardPile} = this.match.scenario.deck;
+        return cards.length > 0 || discardPile.length > 0;
+    }
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
+                TRIGGER_ENCOUNTER_REVEAL,
                 TRIGGER_TREACHERY_REVEAL,
             ]);
     }
+    async triggerInit(params) {
+        const shouldResolve = await super.triggerInit(params);
+
+        if (!shouldResolve && this.canceled === CANCEL_ENCOUNTER_FULL) {
+            await this.selectedTarget.discard();
+        }
+
+        return shouldResolve;
+    }
     async prepare(params) {
+        if (!this.hasPreselectedCard) {
+            if (this.from === PLACE_PLAYER_ENCOUNTERS) {
+                const {player} = params;
+                if (!player) {
+                    throw new Error('A player is required to reveal a dealt encounter card');
+                }
+
+                this.selectedTarget = player.encounters.shift();
+            } else if (this.from === PLACE_ENCOUNTER_DECK) {
+                const [card] = await this.match.drawEncounterCards();
+                this.selectedTarget = card;
+            }
+        }
+
+        if (!this.selectedTarget?.isEncounterCard) {
+            throw new Error(`No encounter card is available from ${this.from}`);
+        }
+
         await super.prepare(params);
 
         const {selectedTarget} = this;

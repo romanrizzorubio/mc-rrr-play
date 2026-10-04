@@ -1,12 +1,10 @@
 export const CHARACTER_ALL_ENGAGED_MINIONS = 'all-engaged-minions';
 export const CHARACTER_ALL_HEROES = 'all-heroes';
+export const CHARACTER_ALLY = 'ally';
 export const CHARACTER_ALTEREGO = 'alter-ego';
 export const CHARACTER_ENEMY = 'enemy';
 export const CHARACTER_ENGAGED = 'engaged';
 export const CHARACTER_HERO = 'hero';
 export const CHARACTER_IDENTITY = 'identity';
 export const CHARACTER_MINION = 'minion';
-export const CHARACTER_PLAYER = 'player';
 export const CHARACTER_VILLAIN = 'villain';
-export const CHARACTER_YOU = 'you';
-export const CHARACTER_YOUR_SUPERHERO = 'your-superhero';

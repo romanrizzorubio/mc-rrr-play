@@ -44,13 +44,13 @@ export class Engine {
             const card = match.triggerCards[cardId];
 
             await this.promisesSequential(Object.keys(card.triggers), async triggerKey => {
-                if (type.indexOf(triggerKey) > -1) {
+                if (type.includes(triggerKey)) {
                     const trigger = card.triggers[triggerKey];
 
                     await this.promisesSequential(Object.keys(trigger), async triggersPriority => {
                         if (triggersPriority === priority) {
                             const filtered = await this.promisesSequentialFilter(trigger[triggersPriority], async _trigger =>
-                                exclude.indexOf(_trigger) === -1 &&
+                                !exclude.includes(_trigger) &&
                                 await _trigger.canTrigger(params));
 
                             ret = ret.concat(filtered);
@@ -76,8 +76,24 @@ export class Engine {
                 return '¿Quieres usar alguna Respuesta?';
         }
     }
-    async _openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params) {
+    async _openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params, priority) {
         const {player} = params;
+        const cardTriggers = cards.length === 1 ?
+            cardsTriggers[cards[0].id] :
+            undefined;
+        const informationalTrigger = cardTriggers?.triggers.length === 1 ?
+            cardTriggers.triggers[0] :
+            undefined;
+        const informationalDialogId = mandatory && informationalTrigger instanceof Trigger ?
+            JSON.stringify([
+                informationalTrigger.card.id,
+                informationalTrigger.ability.id ||
+                    informationalTrigger.ability.name ||
+                    informationalTrigger.getName(params),
+                informationalTrigger.trigger,
+                priority,
+            ]) :
+            undefined;
 
         const _shouldShow = () => {
             if (cards.length > 1) {
@@ -90,13 +106,12 @@ export class Engine {
                 const trigger = card.triggers[0];
 
                 if (trigger instanceof Trigger) {
-                    if (trigger.ability.isEndLasting ||
+                    return !(trigger.ability.isEndLasting ||
                         trigger.ability.hideDialog ||
                         trigger.triggered ||
-                        trigger.ability.resolved) {
-                        return false;
-                    }
-                    return true;
+                        trigger.ability.resolved ||
+                        (informationalDialogId &&
+                            this.match.suppressedInformationalDialogIds?.includes(informationalDialogId)));
                 }
             }
 
@@ -104,7 +119,7 @@ export class Engine {
         };
 
         if (_shouldShow()) {
-            const {selected} = await this.openDialog({
+            const response = await this.openDialog({
                 dialogType: DIALOG_USE_CARD,
                 title,
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
@@ -114,15 +129,28 @@ export class Engine {
                         ...card.toObj(arguments[0]),
                         abilityNames: cardsTriggers[card.id].triggers
                             .map(trigger => trigger instanceof Trigger ?
-                                trigger.ability && trigger.ability.name :
+                                trigger.ability?.name :
                                 trigger.name)
                             .filter((name, index, names) =>
                                 name && names.indexOf(name) === index),
                     })),
                     mandatory,
+                    ...(informationalDialogId ? {informationalDialogId} : {}),
                 },
             });
 
+            if (informationalDialogId &&
+                response?.suppressedInformationalDialogId === informationalDialogId) {
+                const suppressedDialogs = this.match.suppressedInformationalDialogIds || [];
+                if (!suppressedDialogs.includes(informationalDialogId)) {
+                    this.match.suppressedInformationalDialogIds = [
+                            ...suppressedDialogs,
+                            informationalDialogId,
+                    ];
+                }
+            }
+
+            const {selected} = response || {};
             if (selected) {
                 return cardsTriggers[selected.id];
             }
@@ -245,7 +273,7 @@ export class Engine {
     }
     _getPlayersTriggers(triggers) {
         return triggers.reduce((players, trigger) => {
-            if (players.indexOf(trigger.card.owner) === -1) {
+            if (!players.includes(trigger.card.owner)) {
                 players.push(trigger.card.owner);
             }
 
@@ -264,7 +292,14 @@ export class Engine {
             params.player = player;
         }
 
-        const selectedCard = await this._openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params);
+        const selectedCard = await this._openTriggersDialogCard(
+            cards,
+            cardsTriggers,
+            title,
+            mandatory,
+            params,
+            priority
+        );
 
         if (selectedCard) {
             const selectedTrigger = await this._openTriggersDialogTriggers(selectedCard, mandatory, params);
@@ -277,7 +312,7 @@ export class Engine {
         }
     }
     calcPerPlayer(value) {
-        if (value instanceof Array) {
+        if (Array.isArray(value)) {
             const [_value, _perPlayer] = value;
 
             if (_perPlayer) {
@@ -347,6 +382,11 @@ export class Engine {
         const orderedCards = [];
 
         while (remainingCards.length > 0) {
+            if (this.match.skipDiscardOrderDialog) {
+                orderedCards.push(...remainingCards);
+                break;
+            }
+
             if (remainingCards.length === 1) {
                 orderedCards.push(remainingCards[0]);
                 break;
@@ -363,6 +403,10 @@ export class Engine {
                     })),
                 },
             });
+
+            if (response?.skipDiscardOrderDialog === true) {
+                this.match.skipDiscardOrderDialog = true;
+            }
 
             if (response?.discardAll === true) {
                 orderedCards.push(...remainingCards);
@@ -409,7 +453,7 @@ export class Engine {
             const registeredTriggers = await this._getTriggers(type, priority, params, exclude);
             const availableAdditionalTriggers = await this.promisesSequentialFilter(
                 additionalTriggers,
-                async trigger => exclude.indexOf(trigger) === -1 &&
+                async trigger => !exclude.includes(trigger) &&
                     await trigger.canTrigger(params)
             );
 

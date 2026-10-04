@@ -111,7 +111,7 @@ npm run lint:fix
 
 ### Datos (mc-data y mc-shared)
 - `mc-data` lee las configuraciones de héroes, escenarios, sets y cartas de aspecto desde las colecciones MongoDB `heroes`, `scenarios`, `sets` y `aspects`.
-- `mc-data/seed/catalog/` separa los módulos JavaScript por héroe, escenario y set; deja los archivos de aspecto directamente en `aspects/`, agrupados por aspecto y tipo, por ejemplo `aspects/aggression-allies.js`. Estos módulos importan identificadores de `mc-shared`; los precon de héroes referencian las cartas de aspecto y `mc-data` las resuelve al entregar su configuración.
+- `mc-data/seed/catalog/` separa los módulos JavaScript por héroe, escenario y set; organiza las cartas de aspecto en subcarpetas por aspecto y tipo, por ejemplo `aspects/aggression/allies.js`. Estos módulos importan identificadores de `mc-shared`; los precon de héroes referencian las cartas de aspecto y `mc-data` las resuelve al entregar su configuración.
 - Al arrancar, `mc-data` carga solo los registros que falten; `npm run seed:data` vuelve a reemplazar los documentos del seed con los valores empaquetados.
 - `mc-shared` define los identificadores estables que usan el motor del backend y las configuraciones guardadas en MongoDB.
 

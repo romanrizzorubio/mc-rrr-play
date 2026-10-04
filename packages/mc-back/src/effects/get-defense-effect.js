@@ -1,4 +1,7 @@
-import {TRIGGER_CONDITION_GET_DEFENSE} from 'mc-shared';
+import {
+    TRIGGER_CONDITION_GET_DEFENSE,
+    TRIGGER_YOUR_HERO_GET_DEFENSE,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -13,6 +16,7 @@ export class GetDefenseEffect extends Effect {
         return super.getTriggersInit()
             .concat([
                 TRIGGER_CONDITION_GET_DEFENSE,
+                TRIGGER_YOUR_HERO_GET_DEFENSE,
             ]);
     }
     async execute(_params) {

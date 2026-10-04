@@ -12,6 +12,36 @@ RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-sha
 
 import { path} from './utils.js';
 
+const CALCULATION_MAP = {
+    [CALC_COUNT]: source => source.length,
+    [CALC_TRAITS_COUNT]: (source, {trait}) =>
+        source.filter(card => (card.traits || []).includes(trait)).length,
+    [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>
+        calc.differentResourceType(source),
+    [CALC_MULTIPLY_2]: source => source * 2,
+    [CALC_THREAT]: source => source.threat,
+    [CALC_DAMAGE]: source => source.damage,
+    [CALC_ALL]: source => {
+        if (source.damage !== undefined) {
+            return source.damage;
+        }
+        if (source.threat !== undefined) {
+            return source.threat;
+        }
+        return source;
+    },
+    [CALC_ATTACK]: (source, {target}, params) => {
+        if (!source || typeof source.getAttackValue !== 'function') {
+            throw new Error(`No se encontró un personaje con ATQ calculable en "${target}".`);
+        }
+        return source.getAttackValue(params);
+    },
+    [CALC_RESOURCES]: (source, {resourceType, strict}) =>
+        source.reduce((sum, card) =>
+            sum + card.resources.filter(r =>
+                r === resourceType || (!strict && r === RESOURCE_WILD)).length, 0),
+};
+
 export class Calc {
     constructor({
         target,
@@ -54,44 +84,24 @@ export class Calc {
                 0);
     }
     calculateFormula(params) {
-        const {target, formula, trait} = this;
+        const {target, formula} = this;
 
         const source = path(params, target);
-
-        switch (formula) {
-            case CALC_COUNT:
-                return source.length;
-            case CALC_TRAITS_COUNT:
-                return source.filter(card => (card.traits || []).includes(trait)).length;
-            case CALC_DIFFERENT_RESOURCE_TYPE:
-                return this.differentResourceType(source);
-            case CALC_MULTIPLY_2:
-                return source * 2;
-            case CALC_THREAT:
-                return source.threat;
-            case CALC_DAMAGE:
-                return source.damage;
-            case CALC_ALL:
-                if (source.damage !== undefined) {
-                    return source.damage;
-                }
-                if (source.threat !== undefined) {
-                    return source.threat;
-                }
-                return source;
-            case CALC_ATTACK:
-                return source.attack;
-            case CALC_RESOURCES:
-                return source.reduce((sum, card) =>
-                    sum + card.resources.filter(r => r === this.resourceType || (!this.strict && r === RESOURCE_WILD)).length, 0);
-            default:
-                return source;
+        if (Object.hasOwn(CALCULATION_MAP, formula)) {
+            return CALCULATION_MAP[formula](source, this, params);
         }
+        return source;
     }
     calculate(params) {
-        const {max, plus, multiply} = this;
+        const value = this.calculateFormula(params);
+        if (value && typeof value.then === 'function') {
+            return value.then(result => this.applyModifiers(result));
+        }
 
-        let value = this.calculateFormula(params);
+        return this.applyModifiers(value);
+    }
+    applyModifiers(value) {
+        const {max, plus, multiply} = this;
 
         if (multiply) {
             value *= multiply;

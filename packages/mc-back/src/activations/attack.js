@@ -61,9 +61,9 @@ export class Attack extends Activation {
             return false;
         }
 
-        const targetIsInPlay = this.match.enemies.some(enemy =>
+        const enemyIsInPlay = this.match.enemies.some(enemy =>
             enemy === target || enemy.currentSide === target);
-        if (!targetIsInPlay) {
+        if (target.isEnemy && !enemyIsInPlay) {
             return false;
         }
 
@@ -121,6 +121,7 @@ export class Attack extends Activation {
 
         return {
             ...super.getTriggersParams(params),
+            ...(character ? {character} : {}),
             card: character,
             attack: this,
         };

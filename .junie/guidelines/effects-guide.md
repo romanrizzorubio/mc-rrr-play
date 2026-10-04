@@ -7,6 +7,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | Tipo de Efecto | Uso y Criterio de Selección |
 | :--- | :--- |
 | `EFFECT_ADD_TRAIT` | Para otorgar rasgos; dentro de un `EFFECT_LASTING`, el motor los quita al expirar. |
+| `EFFECT_CANCEL_ENCOUNTER` | Cancela perfidias por defecto; usa `type: CARD_TYPE_ANY` para cancelar cualquier carta de encuentro. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
 | `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
@@ -36,9 +37,10 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_CHOOSE_ABILITY` | Para elegir entre varias opciones de una misma carta. |
 | `EFFECT_PAY_PRINTED_COST` | Para pagar el coste impreso de la carta seleccionada con los recursos del jugador actual. |
 | `EFFECT_MODIFY_ATTACK_VALUE` | Para modificar el valor de ATQ de forma temporal o permanente. |
+| `EFFECT_MODIFY_DEFENSE_VALUE` | Para modificar DEF durante su cálculo dinámico. |
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
-| `EFFECT_REVEAL_ENCOUNTER` | Para "mostrar" una carta del mazo de encuentros. |
+| `EFFECT_REVEAL_ENCOUNTER` | Para revelar una carta de encuentro de un origen. Por defecto toma la primera ya entregada al jugador (`PLACE_PLAYER_ENCOUNTERS`); `from: PLACE_ENCOUNTER_DECK` toma la carta superior del mazo. |
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
 
 `EFFECT_LASTING` ejecuta inmediatamente `effect` cuando no se indica `triggerType`. Las mutaciones reversibles registran su limpieza en la duración y se revierten automáticamente al expirar; `endEffect` queda para limpiezas personalizadas. Los valores `TIME_*` se resuelven mediante `TIME_TRIGGER_MAP`; los triggers explícitos en `until` se conservan.
@@ -62,12 +64,35 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `ABILITY_OPTION` | Se usa dentro de una lista `options` (ej. en `EFFECT_CHOOSE_ABILITY`) para definir elecciones. |
 | `ABILITY_BOOST` | Para efectos que ocurren cuando la carta se muestra como carta de Aumento (Boost). |
 
+### Ventanas de respuesta y condiciones
+
+- `ABILITY_RESPONSE` se evalúa en la ventana `PRIORITY_RESPONSE` del trigger que acaba de ocurrir. Coloca ese trigger en la ventana de fin del efecto (`getTriggersEnds`) cuando la respuesta dependa del estado final del efecto; `getTriggersInit` ocurre antes de ejecutar el efecto y `triggerInit` procesa constantes e interrupciones, no respuestas.
+- Las condiciones de una capacidad se comprueban contra el payload del trigger. Usa `effect.<propiedad>` para consultar el efecto que acaba de resolverse; todas las claves de `condition` deben cumplirse. No uses `activation.<propiedad>` salvo que el payload realmente incluya ese campo.
+- Para una respuesta que requiere que un héroe haya defendido un ataque, usa `TRIGGER_VILLAIN_ATTACKS_YOU` en `EnemyAttackEffect.getTriggersEnds()`; ese mismo trigger en `getTriggersInit()` corresponde a la ventana previa de interrupciones. Comprueba el estado con `{'effect.isDefended': true, 'effect.defender.isHero': true}`: `isDefended` y el defensor se actualizan durante la resolución del ataque.
+- Resuelve primero las respuestas obligadas de cada ataque (incluida represalia) y solo después sus respuestas opcionales. Un ataque iniciado al resolver una respuesta es una instancia independiente: vincula represalia al atacante y objetivo de ese efecto, no al `PlayCardEffect` ni al contexto heredado del ataque anterior.
+- Para el ataque del villano, resuelve esas respuestas obligadas antes de abrir la ventana de `ABILITY_RESPONSE` de `TRIGGER_VILLAIN_ATTACKS_YOU`. La represalia debe ser válida para cualquier personaje defensor en juego, no solo para enemigos.
+- La opción para ocultar un aviso informativo solo se ofrece cuando hay una única capacidad obligada/constante sin elección de orden. Guarda la preferencia en `Match`, identificada por carta, capacidad, trigger y prioridad; no la compartas con otras capacidades ni con diálogos interactivos.
+- Añade pruebas que cubran la ventana posterior a la resolución y que descarten la respuesta cuando el ataque no lo defendió un héroe.
+
 ### Modificadores de valores numéricos
 
 - Calcula cada valor bajo demanda con un efecto colector `Get*Effect` (por ejemplo, `GetAttackEffect`, `GetThwartEffect`, `GetDefenseEffect`, `GetHitPointsEffect` y `GetHandSizeEffect`). El colector declara los triggers del cálculo, inicializa un acumulador `modifyX` y obtiene el resultado sumando ese acumulador al valor base.
+- Para los atributos visibles del personaje, el flujo es `CharacterGameCard.getEffectiveStats()` → `getAttackValue()`, `getThwartValue()` o `getDefenseValue()` → el `Get*Effect` correspondiente. El cálculo es asíncrono y la serialización de héroes y aliados debe esperar su resultado para que la etiqueta muestre el mismo valor efectivo que usa el motor.
+- Los colectores de combate calculan:
+
+| Atributo | Colector | Resultado |
+| :--- | :--- | :--- |
+| ATQ | `GetAttackEffect` | `selectedTarget.attack + modifyAttack` |
+| INT | `GetThwartEffect` | `selectedTarget.thwart + modifyThwart`, salvo que INT sea `null` |
+| DEF | `GetDefenseEffect` | `selectedTarget.defense + modifyDefense` |
+
+- `GetAttackEffect` procesa `TRIGGER_YOUR_HERO_GET_ATTACK` y `TRIGGER_ATTACHED_GET_ATTACK`; `GetThwartEffect` procesa `TRIGGER_YOUR_HERO_GET_THWART`, `TRIGGER_THIS_GET_THWART` y `TRIGGER_ATTACHED_GET_THWART`; `GetDefenseEffect` procesa `TRIGGER_CONDITION_GET_DEFENSE` y `TRIGGER_YOUR_HERO_GET_DEFENSE`. Usa el trigger que corresponda para limitar cuándo aplica la bonificación; los triggers `TRIGGER_YOUR_HERO_GET_*` se limitan al héroe del jugador que controla la carta.
+- Para una bonificación dinámica, apunta con `target: TARGET_EFFECT` al colector disponible en `params.effect`. `EFFECT_MODIFY_ATTACK_VALUE`, `EFFECT_MODIFY_THWART_VALUE` y `EFFECT_MODIFY_DEFENSE_VALUE` acumulan el cambio en `modifyAttack`, `modifyThwart` o `modifyDefense`; no cambies el atributo impreso ni una propiedad persistente del personaje para representar un modificador que solo aplica durante el cálculo.
+- Si una capacidad inflige daño igual al ATQ de su personaje, configura `paramsCalc.formula: CALC_ATTACK` en `EFFECT_DEAL_DAMAGE` y apunta `paramsCalc.target` al personaje. `DealDamageEffect` resuelve sus parámetros antes de ejecutarse y delega el cálculo a `Calc`, que obtiene el ATQ con `CharacterGameCard.getAttackValue()` y aplica `plus`, `multiply` y `max`. Como `CALC_ATTACK` procesa triggers asíncronos, quien consuma el resultado de `Calc` debe esperarlo.
+- Mantén las clases generales (`Ability`, `Effect` base y factorías) libres de ramas para tipos de efectos o cartas concretos. Usa hooks polimórficos genéricos en la infraestructura base y coloca la preparación específica de parámetros en la clase del efecto correspondiente; las fórmulas compartidas pertenecen a `Calc`.
 - El modificador debe resolverse durante el trigger del cálculo correspondiente. Obtén el colector desde `params.effect` y suma allí el cambio (`params.effect.modifyX += delta`); no recorras cartas desde `Match` o `Player`, ni modifiques el valor impreso para aplicar un bonus temporal. En capacidades nuevas, configura `target` para indicar el objetivo y la identidad aplicable; usa `TARGET_EFFECT` solo cuando el propio efecto colector sea el objetivo, no para elegir entre héroe y alter ego.
 - Los modificadores aditivos deben acumularse con `+=`; asignar con `=` puede reemplazar otros modificadores. Calcula los valores dinámicos con `this.calculate(params)` cuando se configure `paramsCalc` y valida que el resultado sea finito.
-- Declara el alcance mediante `target`: usa `TARGET_YOUR_SUPERHERO` para ambas identidades, `TARGET_HERO` solo para héroe o `TARGET_ALTEREGO` solo para alter ego. No uses listas de identidades ni lógica específica de cada carta para decidir dónde aplica.
+- Declara el alcance mediante `target`: usa `TARGET_YOUR_SUPERHERO` para ambas identidades del jugador actual, `TARGET_YOUR_HERO` para su héroe, `TARGET_HERO` para el héroe de cualquier jugador o `TARGET_ALTEREGO` para su alter ego. No uses listas de identidades ni lógica específica de cada carta para decidir dónde aplica.
 - Para bonificaciones de ATQ o INT de un personaje vinculado, usa `TRIGGER_ATTACHED_GET_ATTACK` o `TRIGGER_ATTACHED_GET_THWART` y apunta con `TARGET_EFFECT` al efecto colector del atributo.
 - Para aplicar modificadores a todos los personajes de un jugador elegido, usa `TARGET_SELECTED_PLAYER_CHARACTERS` en una cadena cuyo objetivo padre sea `TARGET_ANY_PLAYER`. Envuélvelos en `EFFECT_LASTING` para que la bonificación se limpie al expirar.
 - Distingue los valores calculados del estado mutable: los puntos de vida máximos usan `GetHitPointsEffect` y la vida actual es el máximo menos el daño acumulado. El daño y la curación siguen modificando el estado mediante sus efectos; si un valor numérico aún no tiene colector, impleméntalo y añade su trigger antes de incorporar modificadores.
@@ -75,12 +100,12 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 ### Modificadores del tamaño de mano
 
 - `Player.getHandSize()` usa `GetHandSizeEffect`; `ModifyHandSizeEffect` acumula el modificador en el efecto colector. Los flujos de robo, mulligan, descarte y serialización deben esperar este cálculo.
-- `ModifyHandSizeEffect` usa `TARGET_YOUR_SUPERHERO` por defecto. Configura `TARGET_HERO` o `TARGET_ALTEREGO` explícitamente cuando el bonus solo aplique a una forma.
+- `ModifyHandSizeEffect` usa `TARGET_YOUR_SUPERHERO` por defecto. Configura `TARGET_YOUR_HERO` o `TARGET_ALTEREGO` para limitarlo a una forma del jugador actual, o `TARGET_HERO` para aplicarlo al héroe de cualquier jugador.
 
 ### Modificadores de vida máxima
 
 - `Player.getHitPoints()` usa `GetHitPointsEffect`; `ModifyHitPointsEffect` acumula en el colector durante el trigger correspondiente. El cálculo se usa también para determinar la vida actual y comprobar derrotas.
-- `ModifyHitPointsEffect` usa `TARGET_YOUR_SUPERHERO` por defecto; configura `TARGET_HERO` o `TARGET_ALTEREGO` explícitamente si el modificador solo aplica a una identidad.
+- `ModifyHitPointsEffect` usa `TARGET_YOUR_SUPERHERO` por defecto; configura `TARGET_YOUR_HERO` o `TARGET_ALTEREGO` para limitarlo a una identidad del jugador actual, o `TARGET_HERO` si debe aplicarse al héroe de cualquier jugador.
 - El daño acumulado sigue siendo estado separado: `vida actual = vida máxima calculada - daño`.
 
 ## Reglas de Atributos Dinámicos (Valores X)

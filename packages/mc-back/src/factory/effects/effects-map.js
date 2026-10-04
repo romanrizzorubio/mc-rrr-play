@@ -68,7 +68,6 @@ import {
     EFFECT_RETURN_FACEDOWN,
     EFFECT_RETURN_HAND,
     EFFECT_REVEAL_ENCOUNTER,
-    EFFECT_REVEAL_FIRST_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
@@ -153,7 +152,6 @@ import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selec
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
 import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
-import {RevealFirstEncounterEffect} from '../../effects/reveal-first-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
 import {ResolveSpecialAbilityEffect} from '../../effects/resolve-special-ability-effect.js';
@@ -233,7 +231,6 @@ export const EFFECT_MAP = {
     [EFFECT_REMOVE_TRAIT]: RemoveTraitEffect,
     [EFFECT_REMOVE_USE]: RemoveCountersEffect,
     [EFFECT_RETURN_FACEDOWN]: ReturnFaceDownEffect,
-    [EFFECT_REVEAL_FIRST_ENCOUNTER]: RevealFirstEncounterEffect,
     [EFFECT_ENEMY_SCHEME]: EnemySchemeEffect,
     [EFFECT_PUT_PLAY]: PutPlayEffect,
     [EFFECT_SEARCH_CARDS]: SearchCardsEffect,

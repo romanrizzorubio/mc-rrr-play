@@ -177,6 +177,9 @@ export class Effect extends Engine {
             effect: this,
         });
     }
+    async resolveParams(params) {
+        return params;
+    }
     getLastStepParam(name, params) {
         if (params.isLastStep &&
             this.paramsLastStep &&
@@ -410,22 +413,24 @@ export class Effect extends Engine {
 
         this.saveDataCard();
 
+        const effectParams = await this.resolveParams(params);
+
         await this.prepare({
-            ...params,
+            ...effectParams,
             source: this.source,
         });
 
-        const triggersParams = this.getTriggersParams(params);
+        const triggersParams = this.getTriggersParams(effectParams);
 
         if (await this.triggerWould(triggersParams)) {
             if (await this.triggerInit(triggersParams)) {
-                await this.execute(params);
+                await this.execute(effectParams);
 
                 this.resolved = this.isResolved();
                 this.fullResolved = this.isFullResolved();
 
                 if (this.resolved && this.thenEffect) {
-                    await this.thenEffect.runEffect(params);
+                    await this.thenEffect.runEffect(effectParams);
                 }
 
                 await this.triggerEnds(triggersParams);

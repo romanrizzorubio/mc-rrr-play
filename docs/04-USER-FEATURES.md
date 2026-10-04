@@ -95,6 +95,7 @@ La pantalla se divide en varias áreas:
 **Pilas de descartes**
 - Haz clic en una pila para consultar sus cartas, desde la carta superior hacia abajo.
 - Al descartar varias cartas desde la parte superior de un mazo, se muestran antes de continuar con la resolución del efecto.
+- En el diálogo para elegir el orden, puedes marcar que no vuelva a preguntarse; la preferencia se guarda en esa partida y se mantiene al reanudarla. Cada partida nueva empieza con esta opción desactivada.
 
 ### Ejecutar Acciones
 

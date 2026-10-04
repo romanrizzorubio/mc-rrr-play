@@ -7,7 +7,7 @@ export const MixinYourHeroTrigger = C => class extends MixinYouTrigger(C) {
     canTrigger(params) {
         const {player} = params;
 
-        if (player.isHero) {
+        if (player.isHero && this.card.controller === player) {
             return super.canTrigger(params);
         }
     }

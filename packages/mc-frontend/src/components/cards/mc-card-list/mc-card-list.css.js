@@ -18,11 +18,10 @@ export default css`
   }
 
   .unplayable {
-    filter: brightness(0.5);
+    --disabled-card-brightness: 0.5;
   }
 
   mc-card.disabled {
-    filter: brightness(0.35);
     pointer-events: none;
   }
   

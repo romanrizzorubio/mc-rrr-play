@@ -9,6 +9,12 @@ import '@material/web/button/text-button.js';
 const MAX_CARDS_WITH_IMAGES = 6;
 
 export class McDiscardOrderDialog extends McCardListDialog {
+    static get properties() {
+        return {
+            ...super.properties,
+            _dontAskAgain: {type: Boolean},
+        };
+    }
     static get is() {
         return 'mc-discard-order-dialog';
     }
@@ -17,13 +23,30 @@ export class McDiscardOrderDialog extends McCardListDialog {
     }
     constructor() {
         super(arguments[0]);
+
+        this._dontAskAgain = false;
     }
-    handleSelectByName(card) {
-        this._response = {selected: card};
+    handleDontAskAgainChange(e) {
+        this._dontAskAgain = e.target.checked;
+    }
+    handleSelect(card) {
+        this._response = {
+            selected: card,
+            skipDiscardOrderDialog: this._dontAskAgain,
+        };
         this.sendResponse();
     }
+    handleSelectByName(card) {
+        this.handleSelect(card);
+    }
+    handleCardListSelect(e) {
+        this.handleSelect(e.detail.card);
+    }
     handleDiscardAll() {
-        this._response = {discardAll: true};
+        this._response = {
+            discardAll: true,
+            skipDiscardOrderDialog: this._dontAskAgain,
+        };
         this.sendResponse();
     }
     renderNames(cards) {
@@ -43,15 +66,21 @@ export class McDiscardOrderDialog extends McCardListDialog {
     renderContent() {
         const {data: {cards}} = this;
 
-        if (cards.length > MAX_CARDS_WITH_IMAGES) {
-            return this.renderNames(cards);
-        }
-
         return html`
-            <mc-card-list
-                .cards="${cards}"
-                @card-list-select="${this.handleCardListSelect.bind(this)}"
-            ></mc-card-list>
+            ${cards.length > MAX_CARDS_WITH_IMAGES ? this.renderNames(cards) : html`
+                <mc-card-list
+                    .cards="${cards}"
+                    @card-list-select="${this.handleCardListSelect.bind(this)}"
+                ></mc-card-list>
+            `}
+            <label class="remember-choice">
+                <input
+                    type="checkbox"
+                    .checked="${this._dontAskAgain}"
+                    @change="${this.handleDontAskAgainChange.bind(this)}"
+                >
+                <span>No volver a preguntar por el orden de descarte</span>
+            </label>
         `;
     }
     renderButtons() {

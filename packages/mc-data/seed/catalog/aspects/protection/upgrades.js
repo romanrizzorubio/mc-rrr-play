@@ -7,10 +7,12 @@ import {
     EFFECT_READY,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
-    TARGET_HERO,
+    TARGET_EFFECT,
     TARGET_THIS,
+    TARGET_YOUR_HERO,
     TRAIT_ARMOR,
     TRAIT_CONDITION,
+    TRIGGER_YOUR_HERO_GET_DEFENSE,
     TRIGGER_VILLAIN_ATTACKS_YOU
 } from 'mc-shared';
 
@@ -42,10 +44,11 @@ export default [
                         'type': ABILITY_CONSTANT,
                         'params': {
                             'name': 'Chaleco blindado',
+                            'trigger': TRIGGER_YOUR_HERO_GET_DEFENSE,
                             'effect': {
                                 'type': EFFECT_MODIFY_DEFENSE_VALUE,
                                 'params': {
-                                    'target': TARGET_HERO,
+                                    'target': TARGET_EFFECT,
                                     'count': 1
                                 }
                             }
@@ -80,8 +83,8 @@ export default [
                             'name': 'Indómito',
                             'trigger': TRIGGER_VILLAIN_ATTACKS_YOU,
                             'condition': {
-                                'activation.isDefended': true,
-                                'activation.defender.isHero': true
+                                'effect.isDefended': true,
+                                'effect.defender.isHero': true
                             },
                             'arrow': {
                                 'type': EFFECT_DISCARD_GAME,
@@ -92,7 +95,7 @@ export default [
                             'effect': {
                                 'type': EFFECT_READY,
                                 'params': {
-                                    'target': TARGET_HERO
+                                    'target': TARGET_YOUR_HERO
                                 }
                             }
                         }

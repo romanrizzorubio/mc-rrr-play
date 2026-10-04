@@ -54,7 +54,8 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
 | `TARGET_CHARACTER` | Todos los personajes. |
 | `TARGET_ENEMY` | Todos los enemigos. |
-| `TARGET_HERO` | El lado héroe del jugador actual, solo si está en forma de héroe. |
+| `TARGET_HERO` | El lado héroe de cualquier jugador que esté en forma de héroe. |
+| `TARGET_YOUR_HERO` | El lado héroe del jugador actual, solo si está en forma de héroe. |
 | `TARGET_MINION` | Todos los esbirros. |
 | `TARGET_VILLAIN` | El villano. |
 
@@ -64,6 +65,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | :--- | :--- |
 | `TARGET_ALLY` | Los aliados del jugador actual. |
 | `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
+| `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
 
@@ -82,7 +84,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 
 ### Objetivos en modificadores numéricos
 
-En modificadores de valores del personaje, usa `TARGET_YOUR_SUPERHERO` para ambas identidades, `TARGET_HERO` solo para héroe o `TARGET_ALTEREGO` solo para alter ego. `TARGET_EFFECT` identifica el efecto colector del cálculo, no la identidad a la que se aplica el modificador. Consulta la [guía de efectos](./effects-guide.md) para el patrón de acumulación.
+En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para ambas identidades del jugador actual, `TARGET_YOUR_HERO` para su lado héroe, `TARGET_HERO` para el lado héroe de cualquier jugador y `TARGET_ALTEREGO` para el alter ego del jugador actual. En cambio, `EFFECT_MODIFY_ATTACK_VALUE`, `EFFECT_MODIFY_THWART_VALUE` y `EFFECT_MODIFY_DEFENSE_VALUE` modifican un cálculo bajo demanda: configura `target: TARGET_EFFECT` para apuntar al colector en `params.effect`, que contiene `selectedTarget` y el acumulador `modifyAttack`, `modifyThwart` o `modifyDefense`. El trigger del colector determina cuándo aplica el cambio; no uses `TARGET_HERO` para apuntar al acumulador. Consulta la [guía de efectos](./effects-guide.md) para el flujo completo.
 
 ### Partida y encuentros (`targets/encounter.js`)
 
@@ -143,7 +145,7 @@ effect: {
 
 Las siguientes constantes están declaradas en `mc-shared`, pero no tienen un resolver en `targetMap`. No las uses directamente como `params.target` hasta implementar y registrar su resolver:
 
-`TARGET_ANY`, `TARGET_ATTACK_UNDEFENDED`, `TARGET_FRIENDLY_CHARACTER`, `TARGET_HAND_RANDOM`, `TARGET_IDENTITY`, `TARGET_OWNER`, `TARGET_RANDOM` y `TARGET_TREACHERY`.
+`TARGET_ANY`, `TARGET_ATTACK_UNDEFENDED`, `TARGET_HAND_RANDOM`, `TARGET_IDENTITY`, `TARGET_OWNER`, `TARGET_RANDOM` y `TARGET_TREACHERY`.
 
 Algunas pueden tener significado en otros campos o condiciones. `TARGET_TOP_CARD` es la excepción documentada arriba: es un selector de posición para `GenerateResourcesFromCardEffect`, no un target general.
 

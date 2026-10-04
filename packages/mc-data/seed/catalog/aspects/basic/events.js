@@ -26,7 +26,7 @@ export default [
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'Haymaker',
+                'name': 'Puñetazo demoledor',
                 'set': 'basic',
                 'image': 'aspect/basic/events/b87-1.webp',
                 'traits': [
@@ -64,7 +64,7 @@ export default [
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'Emergency',
+                'name': 'Emergencia',
                 'set': 'basic',
                 'image': 'aspect/basic/events/b85-copy-2.webp',
                 'traits': [
@@ -103,7 +103,7 @@ export default [
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'First Aid',
+                'name': 'Primeros auxilios',
                 'set': 'basic',
                 'image': 'aspect/basic/events/b86-copy-2.webp',
                 'traits': [],

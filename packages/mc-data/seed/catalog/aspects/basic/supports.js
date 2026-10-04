@@ -28,7 +28,7 @@ export default [
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
-                'name': 'Avengers Mansion',
+                'name': 'Mansión de los Vengadores',
                 'set': 'basic',
                 'image': 'aspect/basic/supports/b91-copy-2.webp',
                 'traits': [
@@ -72,7 +72,7 @@ export default [
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
-                'name': 'Helicarrier',
+                'name': 'Helitransporte',
                 'set': 'basic',
                 'image': 'aspect/basic/supports/b92-copy-2.webp',
                 'traits': [

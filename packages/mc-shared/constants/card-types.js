@@ -1,5 +1,5 @@
-export const CARD_TYPE_ALTEREGO = 'alter-ego';
 export const CARD_TYPE_ALLY = 'ally';
+export const CARD_TYPE_ALTEREGO = 'alter-ego';
 export const CARD_TYPE_ANY = 'any';
 export const CARD_TYPE_ATTACHMENT = 'attachment';
 export const CARD_TYPE_EVENT = 'event';
@@ -13,5 +13,5 @@ export const CARD_TYPE_SIDE_SCHEME_SCENARIO = 'side-scheme-scenario';
 export const CARD_TYPE_SUPERHERO = 'superhero';
 export const CARD_TYPE_SUPPORT = 'support';
 export const CARD_TYPE_TREACHERY = 'treachery';
-export const CARD_TYPE_VILLAIN = 'villain';
 export const CARD_TYPE_UPGRADE = 'upgrade';
+export const CARD_TYPE_VILLAIN = 'villain';

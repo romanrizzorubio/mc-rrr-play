@@ -63,12 +63,12 @@ import {
     TARGET_CONDITION_CARD,
     TARGET_EFFECT,
     TARGET_ENEMY,
-    TARGET_HERO,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
     TARGET_THIS,
     TARGET_VILLAIN,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TIME_ROUND,
     TRAIT_AERIAL,
@@ -274,7 +274,7 @@ export default {
                                                 {
                                                     'type': EFFECT_DO_IF_HAS_TRAITS,
                                                     'params': {
-                                                        'target': TARGET_HERO,
+                                                        'target': TARGET_YOUR_HERO,
                                                         'traits': [
                                                             TRAIT_AERIAL
                                                         ],
@@ -504,7 +504,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_DO_IF_HAS_TRAITS,
                                         'params': {
-                                            'target': TARGET_HERO,
+                                            'target': TARGET_YOUR_HERO,
                                             'traits': [
                                                 TRAIT_AERIAL
                                             ],
@@ -512,7 +512,7 @@ export default {
                                                 'type': EFFECT_MODIFY_DEFENSE_VALUE,
                                                 'params': {
                                                     'target': TARGET_EFFECT,
-                                                    'characterTarget': TARGET_HERO,
+                                                    'characterTarget': TARGET_YOUR_HERO,
                                                     'count': 1
                                                 }
                                             }

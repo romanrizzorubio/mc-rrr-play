@@ -7,6 +7,11 @@ export default css`
     display: block;
     position: relative;
   }
+
+  :host(.disabled) .card-face > mc-card-image,
+  :host(.unplayable) .card-face > mc-card-image {
+    filter: brightness(var(--disabled-card-brightness, 0.35));
+  }
   
   .cards-facedown {
     display: flex;

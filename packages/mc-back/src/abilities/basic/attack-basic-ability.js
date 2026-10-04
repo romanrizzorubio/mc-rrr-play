@@ -1,6 +1,5 @@
 import {LABEL_ATTACK,TARGET_ENEMY} from 'mc-shared';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
-import {GetAttackEffect} from '../../effects/get-attack-effect.js';
 
 import {BasicAbility} from './basic-ability.js';
 
@@ -29,14 +28,7 @@ export class AttackBasicAbility extends BasicAbility {
     async getAttackValue(params) {
         const {card} = this;
 
-        const getAttackEffect = new GetAttackEffect({
-            selectedTarget: card,
-            match: this.match,
-        });
-
-        await getAttackEffect.runEffect(params);
-
-        return getAttackEffect.attack;
+        return card.getAttackValue(params);
     }
     async resolveAbility(params) {
         const damage = await this.getAttackValue(params);

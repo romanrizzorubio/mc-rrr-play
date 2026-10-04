@@ -14,11 +14,12 @@ import {
     EFFECT_EXHAUST,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_PLACE_THREAT,
-    EFFECT_REVEAL_FIRST_ENCOUNTER,
+    EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEVERAL_ATTACKS,
     EFFECT_SURGE,
     PLACE_OUTSIDE_NEMESIS,
+    PLACE_ENCOUNTER_DECK,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_EFFECT,
     TARGET_ENCOUNTER_DECK,
@@ -63,7 +64,7 @@ export default {
                 }
             },
             {
-                'count': 2,
+                'count': 200,
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
@@ -323,8 +324,9 @@ export default {
                                 'type': ABILITY_WHEN_REVEALED,
                                 'params': {
                                     'effect': {
-                                        'type': EFFECT_REVEAL_FIRST_ENCOUNTER,
+                                        'type': EFFECT_REVEAL_ENCOUNTER,
                                         'params': {
+                                            'from': PLACE_ENCOUNTER_DECK,
                                             'target': TARGET_PLAYER
                                         }
                                     }

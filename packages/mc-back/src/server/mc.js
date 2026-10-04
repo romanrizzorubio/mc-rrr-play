@@ -85,6 +85,7 @@ export class Mc {
             if (this.matches[name] === match) {
                 delete this.matches[name];
             }
+            this.mcSocket.dialogSocket.clearPending(name);
         } finally {
             if (this.persistenceQueues.get(name) === pending) {
                 this.persistenceQueues.delete(name);
@@ -107,7 +108,9 @@ export class Mc {
             .filter(match => match.initialized && match.playing)
             .forEach(match => {
                 match.startMatch().catch(error => {
-                    console.error(`Failed to resume match "${match.name}"`, error);
+                    if (this.getMatch(match.name) === match) {
+                        console.error(`Failed to resume match "${match.name}"`, error);
+                    }
                 });
             });
     }

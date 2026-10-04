@@ -388,12 +388,11 @@ export class Player extends Engine {
             player: this,
         });
     }
-    revealEncounterCards() {
-        return this.promisesSequential(this.encounters.slice(), card => {
-            this.encounters.shift();
-
-            return this.revealEncounterCard(card);
-        });
+    async revealEncounterCards() {
+        while (this.encounters.length) {
+            const card = this.encounters.shift();
+            await this.revealEncounterCard(card);
+        }
     }
     resolveResourceAbility(cardId, cardPaid) {
         const card = this.getCard(cardId);
@@ -531,6 +530,7 @@ export class Player extends Engine {
         const hitPoints = await this.getHitPoints();
         const life = hitPoints - this.superhero.damage;
         const {superhero} = this;
+        const stats = await superhero.getEffectiveStats();
         const abilities = await Promise.all(
             superhero.currentSide.abilities.map(async (ability, index) => {
                 const serializedAbility = {
@@ -563,6 +563,7 @@ export class Player extends Engine {
                 player.gameZone,
             superhero: {
                 ...player.superhero,
+                ...stats,
                 hitPoints,
                 life,
                 abilities,

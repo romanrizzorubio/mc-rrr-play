@@ -7,6 +7,7 @@ import {
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
+    TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ENGAGE_HERO,
     TRIGGER_INSTANT,
     TRIGGER_MINION_ENTER_PLAY,
@@ -34,6 +35,7 @@ import {
     TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
+    TRIGGER_YOUR_HERO_GET_DEFENSE,
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART,
@@ -48,6 +50,7 @@ import {
 import {ConditionGetDefenseTrigger} from '../../triggers/condition-get-defense-trigger.js';
 import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-trigger.js';
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
+import {EncounterRevealTrigger} from '../../triggers/encounter-reveal-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {MinionEnterPlayTrigger} from '../../triggers/minion-enter-play-trigger.js';
@@ -77,6 +80,7 @@ import {
     YourHeroAttackDefeatEnemyTrigger
 } from '../../triggers/your-hero-attack-defeat-enemy-trigger.js';
 import {YourHeroGetAttackTrigger} from '../../triggers/your-hero-get-attack-trigger.js';
+import {YourHeroGetDefenseTrigger} from '../../triggers/your-hero-get-defense-trigger.js';
 import {
     YourHeroGetHandSizeTrigger
 } from '../../triggers/your-hero-get-hand-size-trigger.js';
@@ -114,6 +118,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOU_WOULD_TAKE_DAMAGE]: YouWouldTakeDamageTrigger,
     [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: YourHeroAttackDefeatEnemyTrigger,
     [TRIGGER_YOUR_HERO_GET_ATTACK]: YourHeroGetAttackTrigger,
+    [TRIGGER_YOUR_HERO_GET_DEFENSE]: YourHeroGetDefenseTrigger,
     [TRIGGER_YOUR_HERO_GET_HAND_SIZE]: YourHeroGetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,
     [TRIGGER_YOUR_HERO_GET_THWART]: YourHeroGetThwartTrigger,
@@ -126,6 +131,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
+    [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
 };

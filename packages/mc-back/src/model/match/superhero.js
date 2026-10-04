@@ -1,6 +1,7 @@
 import {
     TARGET_ALTEREGO,
     TARGET_HERO,
+    TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
 } from 'mc-shared';
 
@@ -22,6 +23,7 @@ export class Superhero extends CharacterGameCard {
                 case TARGET_YOUR_SUPERHERO:
                     return true;
                 case TARGET_HERO:
+                case TARGET_YOUR_HERO:
                     return isHero;
                 case TARGET_ALTEREGO:
                     return isAlterEgo;

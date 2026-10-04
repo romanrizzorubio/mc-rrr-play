@@ -64,13 +64,13 @@ import {
     TARGET_CARD,
     TARGET_EFFECT,
     TARGET_ENEMY,
-    TARGET_HERO,
     TARGET_MAIN_SCHEME,
     TARGET_MINION_HIGHEST_HP,
     TARGET_PLAYER,
     TARGET_SCHEME,
     TARGET_SIDE,
     TARGET_THIS,
+    TARGET_YOUR_HERO,
     TARGET_VILLAIN,
     TARGET_YOUR_SUPERHERO,
     TIME_ROUND,
@@ -831,7 +831,7 @@ export default {
                                         'params': {
                                             'target': TARGET_BY_TITLE,
                                             'name': 'Titania',
-                                            'targetTo': TARGET_HERO
+                                            'targetTo': TARGET_YOUR_HERO
                                         }
                                     },
                                     'ifNot': {

@@ -1,10 +1,11 @@
 export const PLACE_ASIDE_MATCH = 'ASIDE_MATCH';
+export const PLACE_DECK = 'deck';
+export const PLACE_DISCARD_PILE = 'discardPile';
 export const PLACE_ENCOUNTER_DECK = 'ENCOUNTER_DECK';
 export const PLACE_ENCOUNTER_DECK_CARDS = 'ENCOUNTER_DECK_CARDS';
 export const PLACE_ENCOUNTER_DISCARD = 'ENCOUNTER_DISCARD';
-export const PLACE_DISCARD_PILE = 'discardPile';
-export const PLACE_DECK = 'deck';
 export const PLACE_HAND = 'hand';
-export const PLACE_OUTSIDE_NEMESIS = 'OUTSIDE_NEMESIS';
-export const PLACE_SCENARIO_ZONE = 'SCENARIO_ZONE';
 export const PLACE_IN_PLAY = 'IN_PLAY';
+export const PLACE_OUTSIDE_NEMESIS = 'OUTSIDE_NEMESIS';
+export const PLACE_PLAYER_ENCOUNTERS = 'PLAYER_ENCOUNTERS';
+export const PLACE_SCENARIO_ZONE = 'SCENARIO_ZONE';

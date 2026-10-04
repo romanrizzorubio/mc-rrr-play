@@ -1,12 +1,10 @@
-import {
-    CHARACTER_YOU
-} from 'mc-shared';
+import {TARGET_YOU} from 'mc-shared';
 import {AttachEffect} from '../../../effects/attach-effect.js';
 
 export const MixinAttachableCard = C => class extends C {
     constructor({
 // AttachableCard
-        attach = CHARACTER_YOU,
+        attach = TARGET_YOU,
         maxAttach = 0,
     }) {
         super(arguments[0]);

@@ -19,6 +19,7 @@ export class DialogSocket {
                 matchName: match.name,
                 dialog,
                 resolve,
+                reject,
             });
 
             try {
@@ -48,5 +49,20 @@ export class DialogSocket {
                 socket.emit(EVENTS.DIALOG.OPEN, pending.dialog);
             }
         }
+    }
+    clearPending(matchName) {
+        let cleared = 0;
+
+        for (const [requestId, pending] of this.pending) {
+            if (pending.matchName === matchName) {
+                this.pending.delete(requestId);
+                pending.reject(new Error(
+                    `La partida "${matchName}" se ha eliminado mientras esperaba una respuesta.`
+                ));
+                cleared++;
+            }
+        }
+
+        return cleared;
     }
 }

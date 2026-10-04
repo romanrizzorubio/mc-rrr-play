@@ -1,4 +1,4 @@
-import {CHARACTER_YOU} from 'mc-shared';
+import {TARGET_YOU} from 'mc-shared';
 
 import {MixinAttachableCard} from './mixins/mixin-attachable-card.js';
 import {PlayerCard} from './player-card.js';
@@ -11,7 +11,7 @@ export class UpgradeCard extends MixinAttachableCard(PlayerCard) {
 // PlayerCard
         cost: _cost, resources: _resources, classification: _classification, canPlay: _canPlay,
 // AttachableCard
-        attach: _attach = CHARACTER_YOU,
+        attach: _attach = TARGET_YOU,
     }) {
         super(arguments[0]);
 

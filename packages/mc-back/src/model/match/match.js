@@ -28,6 +28,8 @@ export class Match extends Engine {
         this.turnIndex = 0;
         this.endPlayerIndex = 0;
         this.villainPhaseStep = 0;
+        this.skipDiscardOrderDialog = false;
+        this.suppressedInformationalDialogIds = [];
 
         this.lasting = [];
         this.limits = {};
@@ -259,7 +261,9 @@ export class Match extends Engine {
         //this.scenario.deck.cards.sort(a => a.isMinion ? -1 : 1)
         this.initialized = true;
         this.startMatch().catch(error => {
-            console.error(`Match "${this.name}" stopped unexpectedly`, error);
+            if (this.mc.getMatch(this.name) === this) {
+                console.error(`Match "${this.name}" stopped unexpectedly`, error);
+            }
         });
     }
     initNemesis() {

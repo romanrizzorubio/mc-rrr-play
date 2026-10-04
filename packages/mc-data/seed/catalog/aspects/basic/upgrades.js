@@ -20,7 +20,7 @@ export default [
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
-                'name': 'Tenacity',
+                'name': 'Tenacidad',
                 'set': 'basic',
                 'image': 'aspect/basic/upgrades/b93-copy-2.webp',
                 'traits': [

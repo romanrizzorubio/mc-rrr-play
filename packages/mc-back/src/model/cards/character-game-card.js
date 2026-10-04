@@ -8,6 +8,7 @@ import {Calc} from '../../engine/calc.js';
 
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
+import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
 export class CharacterGameCard extends GameCard {
@@ -148,6 +149,36 @@ export class CharacterGameCard extends GameCard {
         }
 
         return this.hitPoints;
+    }
+    async getAttackValue(params) {
+        const getAttackEffect = new GetAttackEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getAttackEffect.runEffect(params);
+
+        return getAttackEffect.attack;
+    }
+    async getDefenseValue(params) {
+        const getDefenseEffect = new GetDefenseEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getDefenseEffect.runEffect(params);
+
+        return getDefenseEffect.defense;
+    }
+    async getThwartValue(params) {
+        const getThwartEffect = new GetThwartEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getThwartEffect.runEffect(params);
+
+        return getThwartEffect.thwart;
     }
     get isConfused() {
         switch (this.statusAvailable) {
@@ -353,31 +384,30 @@ export class CharacterGameCard extends GameCard {
         return 0;
     }
     async getEffectiveStats() {
-        const {controller, match} = this;
+        const {controller} = this;
 
         if (!controller) {
-            throw new Error(`Ally ${this.id} has no controller for stat calculation.`);
+            throw new Error(`Character ${this.id} has no controller for stat calculation.`);
         }
 
         const params = {
             player: controller,
             card: this,
         };
-        const getAttackEffect = new GetAttackEffect({
-            selectedTarget: this,
-            match,
-        });
-        const getThwartEffect = new GetThwartEffect({
-            selectedTarget: this,
-            match,
-        });
-
-        await getAttackEffect.runEffect(params);
-        await getThwartEffect.runEffect(params);
+        const attack = Number.isFinite(this.attack) ?
+            await this.getAttackValue(params) :
+            this.attack;
+        const thwart = Number.isFinite(this.thwart) ?
+            await this.getThwartValue(params) :
+            this.thwart;
+        const defense = Number.isFinite(this.defense) ?
+            await this.getDefenseValue(params) :
+            this.defense;
 
         return {
-            attack: getAttackEffect.attack,
-            thwart: this.thwart === null ? null : getThwartEffect.thwart,
+            attack,
+            thwart,
+            defense,
         };
     }
     async refresh() {

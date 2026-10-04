@@ -12,6 +12,7 @@ import {
     TARGET_HERO,
     TARGET_MINION,
     TARGET_VILLAIN,
+    TARGET_YOUR_HERO,
 } from 'mc-shared';
 
 export const groupTargets = {
@@ -33,7 +34,10 @@ export const groupTargets = {
     [TARGET_ALL_SIDE_SCHEMES]: ({match}) => match.sideSchemes,
     [TARGET_CHARACTER]: ({match}) => match.characters,
     [TARGET_ENEMY]: ({match}) => match.enemies,
-    [TARGET_HERO]: ({player}) => player.isHero ? [player.superhero.currentSide] : [],
+    [TARGET_HERO]: ({match}) =>
+        match.heroes.map(player => player.superhero.currentSide),
     [TARGET_MINION]: ({match}) => match.minions,
     [TARGET_VILLAIN]: ({match}) => [match.villain],
+    [TARGET_YOUR_HERO]: ({player}) =>
+        player.isHero ? [player.superhero.currentSide] : [],
 };

@@ -1,10 +1,17 @@
-import {CARD_TYPE_TREACHERY} from 'mc-shared';
+import {CARD_TYPE_ANY, CARD_TYPE_TREACHERY} from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {
+    CANCEL_ENCOUNTER_FULL,
+    CANCEL_ENCOUNTER_NOT,
+    CANCEL_ENCOUNTER_REVEAL,
+} from './cancel-encounter-constants.js';
 
-export const CANCEL_ENCOUNTER_FULL = 'full';
-export const CANCEL_ENCOUNTER_NOT = 'not';
-export const CANCEL_ENCOUNTER_REVEAL = 'reveal';
+export {
+    CANCEL_ENCOUNTER_FULL,
+    CANCEL_ENCOUNTER_NOT,
+    CANCEL_ENCOUNTER_REVEAL,
+};
 
 export class CancelEncounterEffect extends Effect {
     constructor({
@@ -20,6 +27,8 @@ export class CancelEncounterEffect extends Effect {
         const {type} = this;
 
         switch (type) {
+            case CARD_TYPE_ANY:
+                return card?.isEncounterCard === true;
             case CARD_TYPE_TREACHERY:
                 return card.isTreachery;
         }

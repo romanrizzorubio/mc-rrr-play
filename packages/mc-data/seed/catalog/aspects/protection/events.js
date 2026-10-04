@@ -48,15 +48,15 @@ export default [
                             ],
                             'trigger': TRIGGER_VILLAIN_ATTACKS_YOU,
                             'condition': {
-                                'activation.isDefended': true,
-                                'activation.defender.isHero': true
+                                'effect.isDefended': true,
+                                'effect.defender.isHero': true
                             },
                             'effect': {
                                 'type': EFFECT_DEAL_DAMAGE,
                                 'params': {
                                     'target': TARGET_ENEMY,
                                     'paramsCalc': {
-                                        'target': 'player.hero',
+                                        'target': 'player.superhero.currentSide',
                                         'formula': CALC_ATTACK
                                     }
                                 }
@@ -101,7 +101,7 @@ export default [
                                         {
                                             'type': EFFECT_ENEMY_ATTACK,
                                             'params': {
-                                                'character': CHARACTER_VILLAIN,
+                                                'enemyType': CHARACTER_VILLAIN,
                                                 'target': TARGET_PLAYER
                                             }
                                         }

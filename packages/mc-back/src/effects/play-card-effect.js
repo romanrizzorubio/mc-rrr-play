@@ -27,6 +27,9 @@ export class PlayCardEffect extends Effect {
             this.target = card.card.attach;
         }
     }
+    get isAttack() {
+        return false;
+    }
     canRun(params) {
         const {card, ability, abilityType} = this;
         const {player} = params;
@@ -147,17 +150,22 @@ export class PlayCardEffect extends Effect {
         const {card} = this;
         const {player} = params;
 
-        const cardsToPay = await player.getCardsToPay(card);
-
         const cost = await this.getCost({
             ...params,
             card,
         }) + this.modifyCost;
+        const normalizedCost = Math.max(0, cost);
+
+        if (normalizedCost === 0 && !card.requirement?.length) {
+            return;
+        }
+
+        const cardsToPay = await player.getCardsToPay(card);
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
             data: {
-                cost: cost < 0 ? 0 : cost,
+                cost: normalizedCost,
                 requirement: card.requirement,
                 card: card.toObj(),
                 cards: {

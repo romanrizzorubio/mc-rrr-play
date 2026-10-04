@@ -509,11 +509,16 @@ export class GameCard extends Engine {
             delete this.match.triggerCards[this.id];
         }
     }
-    exhaust() {
-        this.exhausted = true;
-        this.sides.forEach(side => {
-            side.exhaust();
+    setExhausted(exhausted) {
+        const card = this.parent?.sides?.includes(this) ? this.parent : this;
+
+        card.exhausted = exhausted;
+        card.sides.forEach(side => {
+            side.exhausted = exhausted;
         });
+    }
+    exhaust() {
+        this.setExhausted(true);
     }
     flip(params) {
         const effect = new FlipEffect({
@@ -610,10 +615,7 @@ export class GameCard extends Engine {
         return damage;
     }
     ready() {
-        this.exhausted = false;
-        this.sides.forEach(side => {
-            side.ready();
-        });
+        this.setExhausted(false);
     }
     async remove() {
         this.controller.gameZone.remove(this);
@@ -662,7 +664,7 @@ export class GameCard extends Engine {
     reset() {
         this.damage = 0;
         this.counters = undefined;
-        this.exhausted = false;
+        this.setExhausted(false);
         this.attachedTo = undefined;
         this.accelerationTokens = 0;
         this.controller = undefined;

@@ -1,20 +1,22 @@
 import {
     ABILITY_INTERRUPT,
     CARD_TYPE_ALLY,
+    CARD_TYPE_ANY,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_EXHAUST,
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SPEND,
+    PLACE_ENCOUNTER_DECK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
-    TARGET_CARD,
     TARGET_EFFECT,
+    TARGET_THIS,
+    TRIGGER_ENCOUNTER_REVEAL,
     TRAIT_DEFENDER,
     TRAIT_SHIELD,
-    TRAIT_SPY,
-    TRIGGER_TREACHERY_REVEAL
+    TRAIT_SPY
 } from 'mc-shared';
 
 export default [
@@ -48,7 +50,7 @@ export default [
                     {
                         'type': ABILITY_INTERRUPT,
                         'params': {
-                            'trigger': TRIGGER_TREACHERY_REVEAL,
+                            'trigger': TRIGGER_ENCOUNTER_REVEAL,
                             'arrow': {
                                 'type': EFFECT_CHAINED,
                                 'params': {
@@ -56,7 +58,7 @@ export default [
                                         {
                                             'type': EFFECT_EXHAUST,
                                             'params': {
-                                                'target': TARGET_CARD
+                                                'target': TARGET_THIS
                                             }
                                         },
                                         {
@@ -78,11 +80,15 @@ export default [
                                             'type': EFFECT_CANCEL_ENCOUNTER,
                                             'params': {
                                                 'target': TARGET_EFFECT,
+                                                'type': CARD_TYPE_ANY,
                                                 'full': true
                                             }
                                         },
                                         {
-                                            'type': EFFECT_REVEAL_ENCOUNTER
+                                            'type': EFFECT_REVEAL_ENCOUNTER,
+                                            'params': {
+                                                'from': PLACE_ENCOUNTER_DECK
+                                            }
                                         }
                                     ]
                                 }

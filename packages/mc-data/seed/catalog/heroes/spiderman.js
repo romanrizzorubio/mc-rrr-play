@@ -67,13 +67,13 @@ import {
     TARGET_CARD,
     TARGET_EFFECT,
     TARGET_ENEMY,
-    TARGET_HERO,
     TARGET_MAIN_SCHEME,
     TARGET_MINION,
     TARGET_PLAYER,
     TARGET_SCHEME,
     TARGET_SOURCE,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TIME_ROUND,
     TRAIT_AERIAL,
@@ -769,7 +769,7 @@ export default {
                                                 {
                                                     'type': EFFECT_STUN,
                                                     'params': {
-                                                        'target': TARGET_HERO
+                                                        'target': TARGET_YOUR_HERO
                                                     }
                                                 },
                                                 {

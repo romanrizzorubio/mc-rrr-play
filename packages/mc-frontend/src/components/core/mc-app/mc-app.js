@@ -98,6 +98,9 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.route = route;
         this.params = params;
         this.query = query;
+        if (route !== 'match') {
+            this.dialog = null;
+        }
         console.log(route, params, query, data);
         if (route === 'create-match') {
             this.navigate('matches');

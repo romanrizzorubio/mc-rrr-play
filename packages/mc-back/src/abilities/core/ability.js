@@ -1,5 +1,6 @@
 import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from 'mc-shared';
 import {Engine} from '../../engine/engine.js';
+import {checkCondition} from '../../engine/utils.js';
 import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';
 
@@ -13,6 +14,7 @@ export class Ability extends Engine {
         maximum,
         arrow,
         ifNot,
+        condition,
         card,
         match,
         hideDialog = false,
@@ -23,6 +25,7 @@ export class Ability extends Engine {
         this.name = name;
         this.labels = labels;
         this.effect = effect;
+        this.condition = condition;
         this.card = card;
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
@@ -115,6 +118,10 @@ export class Ability extends Engine {
     }
     async canRun(params) {
         const {player} = params;
+
+        if (this.condition && !checkCondition(params, this.condition)) {
+            return false;
+        }
 
         if (this.isAttack) {
             if (! player.canAttack(params)) {

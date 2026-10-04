@@ -7,8 +7,6 @@ import {DIALOG_DEFENSE,TARGET_CARD,
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
-import {GetAttackEffect} from './get-attack-effect.js';
-import {GetDefenseEffect} from './get-defense-effect.js';
 
 
 export class EnemyAttackEffect extends EnemyActivationEffect {
@@ -32,26 +30,12 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     async getAttackValue(params) {
         const {character} = this;
 
-        const getAttackEffect = new GetAttackEffect({
-            selectedTarget: character,
-            match: this.match,
-        });
-
-        await getAttackEffect.runEffect(params);
-
-        return getAttackEffect.attack;
+        return character.getAttackValue(params);
     }
     async getDefenseValue(params) {
         const {defender} = this;
 
-        const getDefenseEffect = new GetDefenseEffect({
-            selectedTarget: defender,
-            match: this.match,
-        });
-
-        await getDefenseEffect.runEffect(params);
-
-        return getDefenseEffect.defense;
+        return defender.getDefenseValue(params);
     }
     async defense(params) {
         const defenders = this.getDefenders();
@@ -98,9 +82,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 TRIGGER_VILLAIN_ATTACKS_YOU,
             ]);
     }
-    getTriggersEnds() {
-        // The nested damage effect owns the resolved attack window.
-        return [];
+    getTriggersEnds(params) {
+        return this.activation.getTriggersEnds(params)
+            .concat([TRIGGER_VILLAIN_ATTACKS_YOU]);
     }
     async setDefender(defender) {
         if (defender) {
@@ -118,7 +102,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         }
     }
     async execute(params) {
-        const {selectedTarget} = this;
+        const {character, selectedTarget} = this;
 
         await this.dealBoostCards(params);
         await this.defense(params);
@@ -130,7 +114,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.attacked = this.defender || selectedTarget;
 
         const dealDamageEffect = new DealDamageEffect({
+            character,
             damage,
+            activation: this.activation,
             isAttack: true,
             match: this.match,
             selectedTarget: this.attacked,

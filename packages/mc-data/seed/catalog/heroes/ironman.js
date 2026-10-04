@@ -60,12 +60,12 @@ import {
     TARGET_ATTACK_UNDEFENDED,
     TARGET_BY_TITLE,
     TARGET_CARD,
-    TARGET_HERO,
     TARGET_PLAYER_DISCARD,
     TARGET_SCHEME,
     TARGET_TOP_CARD,
     TARGET_THIS,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TIME_PHASE,
     TIME_ROUND,
@@ -143,7 +143,7 @@ export default {
                                 'effect': {
                                     'type': EFFECT_MODIFY_HAND_SIZE,
                                     'params': {
-                                        'target': TARGET_HERO,
+                                        'target': TARGET_YOUR_HERO,
                                         'paramsCalc': {
                                             'formula': CALC_TRAITS_COUNT,
                                             'target': 'player.gameZone.cards',
@@ -307,7 +307,7 @@ export default {
                                             'traits': [
                                                 TRAIT_AERIAL
                                             ],
-                                            'target': TARGET_HERO,
+                                            'target': TARGET_YOUR_HERO,
                                             'effect': {
                                                 'type': EFFECT_DEAL_DAMAGE,
                                                 'damage': 8,
@@ -360,7 +360,7 @@ export default {
                                             'traits': [
                                                 TRAIT_AERIAL
                                             ],
-                                            'target': TARGET_HERO,
+                                            'target': TARGET_YOUR_HERO,
                                             'effect': {
                                                 'type': EFFECT_DEAL_DAMAGE,
                                                 'damage': 2,
@@ -487,7 +487,7 @@ export default {
                                             'traits': [
                                                 TRAIT_AERIAL
                                             ],
-                                            'target': TARGET_HERO,
+                                            'target': TARGET_YOUR_HERO,
                                             'effect': {
                                                 'type': EFFECT_REMOVE_THREAT,
                                                 'threat': 1,
@@ -561,13 +561,13 @@ export default {
                                     'effect': {
                                         'type': EFFECT_LASTING,
                                         'params': {
-                                            'target': TARGET_HERO,
+                                            'target': TARGET_YOUR_HERO,
                                             'until': TIME_PHASE,
                                             'effect': {
                                                 'type': EFFECT_ADD_TRAIT,
                                                 'params': {
                                                     'trait': TRAIT_AERIAL,
-                                                    'target': TARGET_HERO
+                                                    'target': TARGET_YOUR_HERO
                                                 }
                                             }
                                         }
@@ -907,7 +907,7 @@ export default {
                                                         'effect': {
                                                             'type': EFFECT_DEAL_DAMAGE,
                                                             'params': {
-                                                                'target': TARGET_HERO,
+                                                                'target': TARGET_YOUR_HERO,
                                                                 'damage': 0,
                                                                 'paramsCalc': {
                                                                     'formula': CALC_COUNT,

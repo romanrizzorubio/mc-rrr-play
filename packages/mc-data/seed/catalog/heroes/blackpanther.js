@@ -533,7 +533,7 @@ export default {
                 'cardRefs': [
                     {
                         'id': 'protection-viuda-negra',
-                        'count': 10
+                        'count': 1
                     },
                     {
                         'id': 'protection-luke-cage',
@@ -672,7 +672,7 @@ export default {
                             }
                         }
                     ],
-                    'image': 'heroes/black-panther/01050.png'
+                    'image': 'heroes/black-panther/01155.png'
                 }
             },
             'count': 1
@@ -692,7 +692,7 @@ export default {
                             3,
                             true
                         ],
-                        'image': 'heroes/black-panther/01052.png'
+                        'image': 'heroes/black-panther/01156.png'
                     }
                 }
             },
@@ -734,7 +734,7 @@ export default {
                                 }
                             }
                         ],
-                        'image': 'heroes/black-panther/01051.png'
+                        'image': 'heroes/black-panther/01157.png'
                     }
                 }
             },

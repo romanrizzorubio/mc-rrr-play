@@ -30,7 +30,7 @@ export default [
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
-                'name': 'Mockingbird',
+                'name': 'Pájaro Burlón',
                 'set': 'basic',
                 'image': 'aspect/basic/allies/b83-copy-2.webp',
                 'traits': [
@@ -73,7 +73,7 @@ export default [
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
-                'name': 'Nick Fury',
+                'name': 'Nick Furia',
                 'set': 'basic',
                 'image': 'aspect/basic/allies/b84-copy-2.webp',
                 'traits': [
