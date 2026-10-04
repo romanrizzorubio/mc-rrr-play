@@ -64,7 +64,7 @@ export default {
                 }
             },
             {
-                'count': 200,
+                'count': 2,
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {

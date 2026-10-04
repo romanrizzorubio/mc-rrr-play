@@ -57,6 +57,7 @@ import {
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
+    TARGET_THIS,
     TARGET_VILLAIN,
     TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
@@ -345,7 +346,9 @@ export default {
                                 'params': {
                                     'arrow': {
                                         'type': EFFECT_EXHAUST,
-                                        'params': {}
+                                        'params': {
+                                            'target': TARGET_THIS
+                                        }
                                     },
                                     'effect': {
                                         'type': EFFECT_DRAW_CARD,
