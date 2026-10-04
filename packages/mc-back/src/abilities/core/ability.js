@@ -68,6 +68,7 @@ export class Ability extends Engine {
         this.isWhenDefeated = false;
         this.isEndLasting = false;
         this.isOptionAbility = false;
+        this.paymentCancelled = false;
     }
     get card() {
         return this._card;
@@ -168,7 +169,10 @@ export class Ability extends Engine {
     initTriggers() {}
     async payArrow(params) {
         if (this.arrow) {
-            return await this.arrow.pay(params);
+            const paid = await this.arrow.pay(params);
+            this.paymentCancelled = this.arrow.paymentCancelled;
+
+            return paid;
         }
 
         return true;
@@ -226,6 +230,8 @@ export class Ability extends Engine {
     async resolveAbility(params) {
         const {player, preselectedTarget = false, arrowPaid = false} = params;
 
+        this.resolved = false;
+        this.paymentCancelled = false;
         this.prepareEffect({preselectedTarget});
 
         const canRun = await this.canRun(params);
@@ -239,6 +245,11 @@ export class Ability extends Engine {
                         ...params,
                         player,
                     });
+
+                    if (this.effect.paymentCancelled) {
+                        this.paymentCancelled = true;
+                        return;
+                    }
 
                     this.resolved = this.effect.resolved;
                 }

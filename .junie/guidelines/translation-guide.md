@@ -41,6 +41,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **wild icon** | icono universal |
 | **wild resource** | recurso universal |
 | **instead** | en vez de eso |
+| **additional** | adicional |
 | **hinder** | complicación |
 | **overkill** | **brutalidad** (overkill) / Brutalidad |
 | **linked** | **enlazada** |
@@ -98,6 +99,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **temporary** | temporal |
 | **text box** | Cuadro de texto |
 | **that** | ese/a / ese/a mismo/a |
+| **and (conector de efectos)** | y |
 | **then** | luego |
 | **this** | este/a / este/a mismo/a |
 | **thwart** | intervenir |
@@ -133,6 +135,13 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **persona (rasgo)** | individuo |
 | **condition (rasgo)** | alteración |
 | **android (rasgo)** | droide |
+
+## Preservación de conectores y puntuación
+
+- Conserva la relación entre frases al traducir el texto de una capacidad. No elimines ni añadas **"y"**, **"Luego"** o **"en vez de eso"** por estilo: cambian cómo se configuran sus efectos.
+- Traduce **Then** como **"Luego"** y **instead** como **"en vez de eso"**. No sustituyas estos términos de reglas por una paráfrasis que borre su función.
+- Mantén las fronteras entre frases y el alcance de las cláusulas. Una coma no es por sí sola un operador de resolución; tampoco añadas un punto o una coma que convierta una cláusula dependiente en una independiente, o viceversa.
+- Distingue una **"y"** que conecta efectos de una que une sustantivos u objetivos. La primera tiene significado de resolución simultánea; la segunda puede ser solo una lista.
 
 ## Representación de Iconos
 

@@ -78,6 +78,7 @@ export class Effect extends Engine {
 
         this.resolved = false;
         this.fullResolved = false;
+        this.paymentCancelled = false;
 
         this.isChoose = false;
         this._keepTriggering = false;
@@ -302,7 +303,7 @@ export class Effect extends Engine {
         return true;
     }
     isFullResolved() {
-        return true;
+        return this.isResolved();
     }
     resolveDelayedEffects(params) {
         const {player} = params;
@@ -382,17 +383,26 @@ export class Effect extends Engine {
             activation.getForcedResponseTriggers(type, params) :
             [];
 
-        await this.trigger(
-            PRIORITY_FORCED_RESPONSE,
-            type,
-            params,
-            additionalForcedResponses
-        );
+        const resolveResponses = async () => {
+            await this.trigger(
+                PRIORITY_FORCED_RESPONSE,
+                type,
+                params,
+                additionalForcedResponses
+            );
 
-        await this.trigger(PRIORITY_RESPONSE, type, params);
+            await this.trigger(PRIORITY_RESPONSE, type, params);
 
-        if (isActivation && activation && activation.afterTriggerEnds) {
-            await activation.afterTriggerEnds(params);
+            if (isActivation && activation && activation.afterTriggerEnds) {
+                await activation.afterTriggerEnds(params);
+            }
+        };
+        const {costPaymentSession} = params;
+
+        if (costPaymentSession?.committing) {
+            costPaymentSession.deferResponse(resolveResponses);
+        } else {
+            await resolveResponses();
         }
     }
     saveDataCard() {
@@ -407,9 +417,72 @@ export class Effect extends Engine {
             }, {});
         }
     }
+    getCostPaymentEffects(_params) {
+        return [];
+    }
+    shouldPromptForPayment() {
+        return true;
+    }
+    async prepareCost(params, session) {
+        this.resolved = false;
+        this.fullResolved = false;
+        this.paymentCancelled = false;
+
+        this.saveDataCard();
+
+        const effectParams = await this.resolveParams(params);
+
+        await this.prepare({
+            ...effectParams,
+            source: this.source,
+        });
+
+        if (!await this.canRun(effectParams)) {
+            return false;
+        }
+
+        const triggersParams = this.getTriggersParams(effectParams);
+        if (!await this.triggerWould(triggersParams) ||
+            !await this.triggerInit(triggersParams)) {
+            return false;
+        }
+
+        if (!await this.canRun(effectParams)) {
+            return false;
+        }
+
+        session.prepareEffect(this, effectParams, triggersParams);
+
+        return true;
+    }
+    async resolvePrepared(effectParams, triggersParams) {
+        await this.execute(effectParams);
+
+        this.resolved = this.isResolved();
+        this.fullResolved = this.isFullResolved();
+
+        if (this.resolved && this.fullResolved && this.thenEffect) {
+            await this.thenEffect.runEffect(effectParams);
+            if (this.thenEffect.paymentCancelled) {
+                this.paymentCancelled = true;
+            }
+        }
+
+        await this.triggerEnds(triggersParams);
+    }
     async runEffect(params) {
         this.resolved = false;
         this.fullResolved = false;
+        this.paymentCancelled = false;
+
+        const prepared = params.costPaymentSession?.takePreparedEffect(this);
+        if (prepared) {
+            await this.resolvePrepared(
+                prepared.effectParams,
+                prepared.triggersParams
+            );
+            return;
+        }
 
         this.saveDataCard();
 
@@ -424,16 +497,7 @@ export class Effect extends Engine {
 
         if (await this.triggerWould(triggersParams)) {
             if (await this.triggerInit(triggersParams)) {
-                await this.execute(effectParams);
-
-                this.resolved = this.isResolved();
-                this.fullResolved = this.isFullResolved();
-
-                if (this.resolved && this.thenEffect) {
-                    await this.thenEffect.runEffect(effectParams);
-                }
-
-                await this.triggerEnds(triggersParams);
+                await this.resolvePrepared(effectParams, triggersParams);
             }
         }
     }

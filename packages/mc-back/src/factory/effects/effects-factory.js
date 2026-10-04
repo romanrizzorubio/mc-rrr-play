@@ -27,7 +27,7 @@ export class EffectsFactory {
             });
         }
     }
-    _parseChained(params) {
+    _parseEffectGroup(params) {
         const {effects = []} = params;
 
         return {

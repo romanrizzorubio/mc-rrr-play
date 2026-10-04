@@ -8,6 +8,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_DO_IF,
     EFFECT_HEAL,
+    EFFECT_SIMULTANEOUS,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     TARGET_ALL_CHARACTERS,
@@ -117,7 +118,7 @@ export default [
                                                     ]
                                                 },
                                                 'effect': {
-                                                    'type': EFFECT_CHAINED,
+                                                    'type': EFFECT_SIMULTANEOUS,
                                                     'params': {
                                                         'effects': [
                                                             {

@@ -1,3 +1,7 @@
+import {
+    EFFECT_CHAINED,
+    EFFECT_SIMULTANEOUS,
+} from 'mc-shared';
 import {Arrow} from '../../abilities/core/arrow.js';
 import {EffectsFactory} from '../effects/effects-factory.js';
 import {ABILITY_MAP} from './abilities-map.js';
@@ -32,11 +36,39 @@ export class AbilitiesFactory {
             cost: arrow,
         });
     }
+    _convertCostChains(effectConfig, convertChains = true) {
+        if (Array.isArray(effectConfig)) {
+            return effectConfig.map(effect =>
+                this._convertCostChains(effect, convertChains));
+        }
+        if (!effectConfig || typeof effectConfig !== 'object') {
+            return effectConfig;
+        }
+
+        const converted = Object.fromEntries(
+            Object.entries(effectConfig).map(([key, value]) => [
+                key,
+                this._convertCostChains(
+                    value,
+                    convertChains && key !== 'thenEffect'
+                ),
+            ])
+        );
+        if (convertChains && converted.type === EFFECT_CHAINED) {
+            converted.type = EFFECT_SIMULTANEOUS;
+        }
+
+        return converted;
+    }
     _parseAbility({type, params} = {}) {
         let arrow;
         if (params.arrow) {
-            params.arrow.params.match = this.match;
-            arrow = this._createArrow(this.effectsFactory.parseEffect(params.arrow));
+            const arrowConfig = this._convertCostChains(params.arrow);
+            arrowConfig.params = {
+                ...arrowConfig.params,
+                match: this.match,
+            };
+            arrow = this._createArrow(this.effectsFactory.parseEffect(arrowConfig));
         }
 
         let effect;

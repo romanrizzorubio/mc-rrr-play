@@ -30,7 +30,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
 | `EFFECT_MOVE_TO_HAND` | Frecuentemente encadenado con búsquedas para "añadir a la mano". |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
-| `EFFECT_CHAINED` | Para ejecutar múltiples efectos en secuencia. |
+| `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. No implica por sí solo la condición estricta de "Luego". |
+| `EFFECT_SIMULTANEOUS` | Para efectos independientes conectados por "y" que las reglas mandan resolver simultáneamente. Prepara interrupciones y diálogos del grupo antes de aplicarlo, sin ventanas de respuesta entre sus efectos; después resuelve las respuestas. En `arrow`, todos los costes son obligatorios. |
 | `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
@@ -92,6 +93,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - Mantén las clases generales (`Ability`, `Effect` base y factorías) libres de ramas para tipos de efectos o cartas concretos. Usa hooks polimórficos genéricos en la infraestructura base y coloca la preparación específica de parámetros en la clase del efecto correspondiente; las fórmulas compartidas pertenecen a `Calc`.
 - El modificador debe resolverse durante el trigger del cálculo correspondiente. Obtén el colector desde `params.effect` y suma allí el cambio (`params.effect.modifyX += delta`); no recorras cartas desde `Match` o `Player`, ni modifiques el valor impreso para aplicar un bonus temporal. En capacidades nuevas, configura `target` para indicar el objetivo y la identidad aplicable; usa `TARGET_EFFECT` solo cuando el propio efecto colector sea el objetivo, no para elegir entre héroe y alter ego.
 - Los modificadores aditivos deben acumularse con `+=`; asignar con `=` puede reemplazar otros modificadores. Calcula los valores dinámicos con `this.calculate(params)` cuando se configure `paramsCalc` y valida que el resultado sea finito.
+- `CALC_IF` elige `ifTrue` o `ifFalse` según la veracidad de `paramsCalc.target`; úsalo para calcular un único valor dinámico cuando una capacidad cambia la cantidad sin crear efectos separados.
 - Declara el alcance mediante `target`: usa `TARGET_YOUR_SUPERHERO` para ambas identidades del jugador actual, `TARGET_YOUR_HERO` para su héroe, `TARGET_HERO` para el héroe de cualquier jugador o `TARGET_ALTEREGO` para su alter ego. No uses listas de identidades ni lógica específica de cada carta para decidir dónde aplica.
 - Para bonificaciones de ATQ o INT de un personaje vinculado, usa `TRIGGER_ATTACHED_GET_ATTACK` o `TRIGGER_ATTACHED_GET_THWART` y apunta con `TARGET_EFFECT` al efecto colector del atributo.
 - Para aplicar modificadores a todos los personajes de un jugador elegido, usa `TARGET_SELECTED_PLAYER_CHARACTERS` en una cadena cuyo objetivo padre sea `TARGET_ANY_PLAYER`. Envuélvelos en `EFFECT_LASTING` para que la bonificación se limpie al expirar.
@@ -123,29 +125,25 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 ### Estructura de efectos en capacidades
 
 - `params.effect` debe describir un solo efecto; no asignes un array directamente (`effect: [...]`). `EffectsFactory.parseEffect` convierte ese array en otro array, pero una capacidad necesita una instancia de efecto con `canRun`.
-- Para ejecutar varios efectos en secuencia, envuélvelos en `EFFECT_CHAINED`:
+- Antes de configurar el efecto, clasifica los conectores y la puntuación del texto:
 
-```javascript
-effect: {
-    type: EFFECT_CHAINED,
-    params: {
-        matchAll: true,
-        effects: [
-            {
-                type: EFFECT_FLIP,
-                params: {target: TARGET_YOUR_SUPERHERO}
-            },
-            {
-                type: EFFECT_FILL_HAND
-            }
-        ]
-    }
-}
-```
+| Marca | Regla del juego | Configuración |
+| :--- | :--- | :--- |
+| `.` | Separa frases que se resuelven en el orden escrito. El punto no hace que una frase dependa del éxito completo de la anterior. | Usa `EFFECT_CHAINED` para conservar el orden, sin añadir una condición de éxito que el texto no indique. |
+| `y` / `and` entre efectos | Los efectos independientes se resuelven simultáneamente; cada uno se intenta resolver lo más completamente posible. | Usa `EFFECT_SIMULTANEOUS`. Una `y` que solo une sustantivos u objetivos no crea efectos separados. |
+| `,` | La coma no es por sí sola un operador de tiempo, simultaneidad ni dependencia. | No elijas `EFFECT_CHAINED` o `EFFECT_SIMULTANEOUS` por la coma: identifica las cláusulas y los conectores con significado de reglas. |
+| **Luego** (`Then`) | El texto posterior solo se intenta si el texto anterior se resolvió por completo; si se cumple esa condición, el texto posterior debe intentarse. | Pon `thenEffect` en el efecto que representa todo el texto previo. Si ese texto es un grupo, cuélgalo del `EFFECT_CHAINED` o `EFFECT_SIMULTANEOUS` que lo contiene. |
+| **En vez de eso** (`Instead`) | Reemplaza el efecto o suceso indicado; no se resuelve además del efecto reemplazado. | Modela una sustitución/cancelación adecuada, no dos efectos incondicionales en una cadena ni un grupo simultáneo. |
+| **Adicional** (`Additional`) | Modifica otro efecto y se resuelve simultáneamente bajo las mismas condiciones. | Incorpora el valor adicional al efecto modificado cuando corresponda; no lo conviertas automáticamente en una segunda instancia, por ejemplo, de daño. |
+| **En caso contrario** (`Otherwise`) | Abre una rama cuando la condición o el efecto precedente no se cumple o no puede resolverse, con el alcance que determinan la frase y el punto y coma. | Usa una condición/`effectNot`; no lo confundas con **Luego** (que exige resolución completa) ni con **En vez de eso** (que reemplaza un efecto). |
 
-- Usa `matchAll: true` cuando todos los efectos de la cadena sean necesarios y deban poder ejecutarse para habilitar la capacidad.
+- Si la traducción, una lista con comas o la estructura gramatical no deja claro dónde empieza y termina cada efecto, revisa el texto de referencia y las reglas; pregunta antes de escoger entre cadena y grupo simultáneo.
+- Para varios efectos en frases secuenciales sin "Luego", envuélvelos en `EFFECT_CHAINED`. Mantén el orden escrito, pero no uses `matchAll` para introducir una dependencia que no aparezca en el texto.
+- Configura **Luego** con `thenEffect`, no con `matchAll`. `matchAll: true` exige que todos los hijos puedan ejecutarse para habilitar la cadena y hace que la ejecución se detenga si uno no se resuelve por completo; úsalo solo cuando esa restricción se desprenda de las reglas, no por la mera presencia de varios efectos.
+- En un grupo `EFFECT_SIMULTANEOUS`, mantén independientes los efectos hijos. Si un hijo necesita el resultado de otro (por ejemplo, una carta elegida, un conteo descartado o una cantidad calculada por un paso previo), usa la composición secuencial o un único efecto calculado; no simules una dependencia como si fuera "y".
 
-- `arrow` define los costes de una capacidad y se resuelve antes de `effect`. Para costes compuestos, encadena efectos dentro de `arrow`; declara en `outputParams` los valores del contexto que deban llegar al efecto principal (por ejemplo, `['selectedCard']`). Así, la transferencia de la carta elegida queda explícita en la configuración de la carta, no implícita en el motor de flechas.
+- `arrow` define los costes de una capacidad y se resuelve antes de `effect`. Para costes compuestos, usa `EFFECT_SIMULTANEOUS`; las cadenas existentes dentro de `arrow` se interpretan automáticamente como simultáneas, excepto las cadenas dentro de un `thenEffect`, que mantienen su orden. Declara en `outputParams` los valores del contexto que deban llegar al efecto principal (por ejemplo, `['selectedCard']`). Así, la transferencia de la carta elegida queda explícita en la configuración de la carta, no implícita en el motor de flechas.
+- El motor prepara primero las interrupciones de todos los efectos de coste. Recoge las selecciones de pago antes de aplicar cualquier coste; si quedan varios diálogos, pregunta cuál responder a continuación y reserva las cartas y generadores ya seleccionados. Después aplica todos los costes, resuelve sus respuestas y finalmente el efecto principal. Cancelar un diálogo descarta las selecciones antes de ejecutar los costes, por lo que no requiere deshacer sus efectos; la capacidad se vuelve a ofrecer. Si una interrupción impide pagar algún coste, aborta la capacidad sin volver a ofrecerla.
 
 - Para seleccionar objetivos, utiliza los selectores documentados en la [Guía de Objetivos](./targets-guide.md).
 - Para `TARGET_BY_TITLE`, configura `title` en los parámetros del efecto, no `name`: el selector compara `ability.effect.title` con el nombre de las cartas activas.
@@ -154,7 +152,7 @@ effect: {
 - **"Genera los recursos impresos en una carta"**: usa `EFFECT_GENERATE_RESOURCES_FROM_CARD` con un `target` que resuelva una carta o zona de cartas. Si el objetivo es una zona, especifica `position`; por ejemplo, combina `TARGET_PLAYER_DISCARD` con `TARGET_TOP_CARD` para seleccionar la carta superior del descarte del jugador. Se genera un recurso por cada icono impreso, incluyendo iconos repetidos. Obténlos con `card.card.getPrintedResources()` sin pasar la carta que se está pagando a `getResources(card)`, para no aplicar recursos adicionales condicionales del cuadro de texto de una carta de recurso (véase la regla de recursos impresos en `docs/02-01-FUNDAMENTALS.md`).
 - `RESOURCE_ANY` representa un espacio de coste genérico: cada recurso generado, incluido uno universal, puede satisfacerlo. La validación de pago debe priorizar requisitos de recurso específicos antes de consumir espacios `RESOURCE_ANY`.
 - **Pago de costes con recursos condicionales**: pasa la carta cuyo coste se paga a `player.spendResources(resources, cardToPay)` y serializa los recursos disponibles con `toObj({card: cardToPay})`. Así se evalúan sus condiciones contra la carta correcta: por ejemplo, **El poder del liderazgo** genera dos recursos al pagar un Aliado de Liderazgo y uno si el Aliado es de otro aspecto. `EFFECT_PAY_PRINTED_COST` debe además aplicar `PayCostEffect` a las cartas y generadores elegidos para completar el pago.
-- **"Busca una carta y añádela a tu mano"**: encadena `EFFECT_SEARCH_CARDS` y `EFFECT_MOVE_TO_HAND` dentro de `EFFECT_CHAINED`. `EFFECT_SEARCH_CARDS` recibe `locations` (por ejemplo, `PLACE_DISCARD_PILE` o `PLACE_DECK`) y `filter`; guarda la carta elegida para que `EFFECT_MOVE_TO_HAND` la retire de su zona y la añada a la mano. Si la búsqueda es en el mazo y el texto lo indica, encadena también `EFFECT_SHUFFLE_DECK`. Para tomar la primera carta que cumpla el filtro recorriendo una pila desde arriba, usa `firstMatch: true`: en el descarte, comienza por la última carta añadida y sigue hacia las anteriores; en el mazo, comienza por la primera carta del array. La primera coincidencia se selecciona sin abrir un diálogo.
+- **"Busca una carta, muévela a otra zona y baraja"**: esta secuencia depende de la carta elegida y debe permanecer en `EFFECT_CHAINED`, no convertirse a `EFFECT_SIMULTANEOUS`. Encadena `EFFECT_SEARCH_CARDS`, el efecto de movimiento correspondiente (`EFFECT_MOVE_TO_HAND`, `EFFECT_MOVE_TO_DECK`, etc.) y, cuando corresponda, `EFFECT_SHUFFLE_DECK`. `EFFECT_SEARCH_CARDS` recibe `locations` (por ejemplo, `PLACE_DISCARD_PILE` o `PLACE_DECK`) y `filter`; guarda la carta elegida para que el efecto de movimiento la retire de su zona y la traslade. Para tomar la primera carta que cumpla el filtro recorriendo una pila desde arriba, usa `firstMatch: true`: en el descarte, comienza por la última carta añadida y sigue hacia las anteriores; en el mazo, comienza por la primera carta del array. La primera coincidencia se selecciona sin abrir un diálogo.
 
 ```javascript
 {
@@ -197,4 +195,4 @@ effect: {
 
 1. **Auto-actualización**: Si al implementar una carta se identifica una necesidad que no cubren los efectos actuales, se debe investigar en `packages/mc-back/src/effects` si existe un archivo `.js` que corresponda. Si existe pero no está en esta guía, **DEBE** añadirse inmediatamente.
 2. **Creación de Nuevos Efectos**: Si la funcionalidad es genuinamente nueva, se debe crear el archivo del efecto en `packages/mc-back/src/effects`, registrar el identificador en `packages/mc-shared/constants` (o donde corresponda) y en `EffectsFactory.js`.
-3. **Consistencia**: Siempre prefiere combinar efectos existentes mediante `EFFECT_CHAINED` antes que crear un efecto ultra-específico.
+3. **Consistencia**: Combina efectos secuenciales mediante `EFFECT_CHAINED` y efectos por lote mediante `EFFECT_SIMULTANEOUS`, en lugar de crear efectos ultra-específicos.

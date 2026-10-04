@@ -11,6 +11,7 @@ import {
     EFFECT_PUT_PLAY,
     EFFECT_READY,
     EFFECT_SEARCH_CARDS,
+    EFFECT_SIMULTANEOUS,
     PLACE_DISCARD_PILE,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -108,7 +109,7 @@ export default [
                                     'target': TARGET_ANY_PLAYER,
                                     'until': TIME_PHASE,
                                     'effect': {
-                                        'type': EFFECT_CHAINED,
+                                        'type': EFFECT_SIMULTANEOUS,
                                         'params': {
                                             'target': TARGET_ANY_PLAYER,
                                             'matchAll': true,

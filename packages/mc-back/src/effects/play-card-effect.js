@@ -19,6 +19,7 @@ export class PlayCardEffect extends Effect {
 
         this.resourcesPaid = [];
         this.canceled = false;
+        this.paymentCancelled = false;
         this.modifyCost = 0;
         this.removedFromHand = false;
         this.played = false;
@@ -137,11 +138,14 @@ export class PlayCardEffect extends Effect {
     isFullResolved() {
         return !this.canceled;
     }
-    payArrow(params) {
+    async payArrow(params) {
         const {ability} = this;
 
         if (ability && ability.arrow) {
-            return ability.payArrow(params);
+            const paid = await ability.payArrow(params);
+            this.paymentCancelled = ability.paymentCancelled;
+
+            return paid;
         }
 
         return true;
@@ -189,6 +193,7 @@ export class PlayCardEffect extends Effect {
             };
         } else {
             this.canceled = true;
+            this.paymentCancelled = true;
         }
     }
     async prepare(params) {
@@ -283,6 +288,8 @@ export class PlayCardEffect extends Effect {
                 });
             } else {
                 this.canceled = true;
+                this.paymentCancelled = this.paymentCancelled ||
+                    Boolean(this.ability?.paymentCancelled);
                 card.isPlaying = false;
             }
         }

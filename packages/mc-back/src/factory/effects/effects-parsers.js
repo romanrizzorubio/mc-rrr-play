@@ -11,10 +11,12 @@ import {
     EFFECT_DO_IF_TAKE_DAMAGE,
     EFFECT_LASTING,
     EFFECT_MAY,
+    EFFECT_SIMULTANEOUS,
 } from 'mc-shared';
 
 export const EFFECT_PARSERS_MAP = {
-    [EFFECT_CHAINED]: '_parseChained',
+    [EFFECT_CHAINED]: '_parseEffectGroup',
+    [EFFECT_SIMULTANEOUS]: '_parseEffectGroup',
     [EFFECT_CHOOSE]: '_parseChoose',
     [EFFECT_CHOOSE_ABILITY]: '_parseChooseAbility',
     [EFFECT_MAY]: '_parseMay',

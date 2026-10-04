@@ -37,6 +37,7 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
+    EFFECT_SIMULTANEOUS,
     EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -383,7 +384,7 @@ export default {
                                 'type': ABILITY_SPECIAL,
                                 'params': {
                                     'effect': {
-                                        'type': EFFECT_CHAINED,
+                                        'type': EFFECT_SIMULTANEOUS,
                                         'params': {
                                             'target': TARGET_ANY_PLAYER,
                                             'effects': [
@@ -759,7 +760,7 @@ export default {
                                 'params': {
                                     'name': 'Hierba con forma de corazón',
                                     'effect': {
-                                        'type': EFFECT_CHAINED,
+                                        'type': EFFECT_SIMULTANEOUS,
                                         'params': {
                                             'effects': [
                                                 {
@@ -811,46 +812,46 @@ export default {
                                                     'type': EFFECT_DISCARD_FROM_DECK,
                                                     'params': {
                                                         'target': TARGET_ENCOUNTER_DECK,
-                                                        'count': 1
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_CHOOSE_ABILITY,
-                                                    'params': {
-                                                        'options': [
-                                                            {
-                                                                'type': ABILITY_OPTION,
-                                                                'params': {
-                                                                    'name': 'Recibir daño',
-                                                                    'effect': {
-                                                                        'type': EFFECT_DEAL_DAMAGE,
+                                                        'count': 1,
+                                                        'thenEffect': {
+                                                            'type': EFFECT_CHOOSE_ABILITY,
+                                                            'params': {
+                                                                'options': [
+                                                                    {
+                                                                        'type': ABILITY_OPTION,
                                                                         'params': {
-                                                                            'target': TARGET_YOUR_SUPERHERO,
-                                                                            'damage': 0,
-                                                                            'paramsCalc': {
-                                                                                'damage': '1 + effects.0.card.boost'
+                                                                            'name': 'Recibir daño',
+                                                                            'effect': {
+                                                                                'type': EFFECT_DEAL_DAMAGE,
+                                                                                'params': {
+                                                                                    'target': TARGET_YOUR_SUPERHERO,
+                                                                                    'damage': 0,
+                                                                                    'paramsCalc': {
+                                                                                        'damage': '1 + effects.0.card.boost'
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        'type': ABILITY_OPTION,
+                                                                        'params': {
+                                                                            'name': 'Añadir amenaza al Plan principal',
+                                                                            'effect': {
+                                                                                'type': EFFECT_PLACE_THREAT,
+                                                                                'params': {
+                                                                                    'target': TARGET_MAIN_SCHEME,
+                                                                                    'threat': 0,
+                                                                                    'paramsCalc': {
+                                                                                        'threat': '1 + effects.0.card.boost'
+                                                                                    }
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
-                                                                }
-                                                            },
-                                                            {
-                                                                'type': ABILITY_OPTION,
-                                                                'params': {
-                                                                    'name': 'Añadir amenaza al Plan principal',
-                                                                    'effect': {
-                                                                        'type': EFFECT_PLACE_THREAT,
-                                                                        'params': {
-                                                                            'target': TARGET_MAIN_SCHEME,
-                                                                            'threat': 0,
-                                                                            'paramsCalc': {
-                                                                                'threat': '1 + effects.0.card.boost'
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
+                                                                ]
                                                             }
-                                                        ]
+                                                        }
                                                     }
                                                 }
                                             ]

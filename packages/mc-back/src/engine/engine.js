@@ -478,15 +478,17 @@ export class Engine {
             if (!trigger) {
                 break;
             } else {
-                if (trigger.ability.isOptionAbility) {
-                    triggered.push(trigger);
-                    triggers.forEach(_trigger => {
-                        if (_trigger.ability.effect === trigger.ability.parent) {
-                            triggered.push(_trigger);
-                        }
-                    });
-                } else if (!trigger.keepTriggering) {
-                    triggered.push(trigger);
+                if (!trigger.paymentCancelled) {
+                    if (trigger.ability.isOptionAbility) {
+                        triggered.push(trigger);
+                        triggers.forEach(_trigger => {
+                            if (_trigger.ability.effect === trigger.ability.parent) {
+                                triggered.push(_trigger);
+                            }
+                        });
+                    } else if (!trigger.keepTriggering) {
+                        triggered.push(trigger);
+                    }
                 }
                 
                 triggers = await getTriggers(triggered);

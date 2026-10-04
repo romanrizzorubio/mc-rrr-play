@@ -75,6 +75,7 @@ export const EFFECT_SELECT_DISCARD_TO_CARD = 'select-discard-to-card';
 export const EFFECT_SELECT_FROM_TOP_DECK = 'select-from-top-deck';
 export const EFFECT_SEVERAL_ATTACKS = 'several-attacks';
 export const EFFECT_SHUFFLE_DECK = 'shuffle-deck';
+export const EFFECT_SIMULTANEOUS = 'simultaneous';
 export const EFFECT_SPEND = 'spend';
 export const EFFECT_SPEND_X = 'spend-x';
 export const EFFECT_STUN = 'stun';

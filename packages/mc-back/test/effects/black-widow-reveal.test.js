@@ -29,6 +29,7 @@ test('Black Widow cancels any revealed encounter card and reveals the next one',
     const [ability] = blackWidow.card.params.abilities;
     const [exhaustCost] = ability.params.arrow.params.effects;
     const effects = ability.params.effect.params.effects;
+    const replacementRevealConfig = effects[0].params.thenEffect;
     const revealEffect = new RevealEncounterEffect({match: {}});
 
     assert.equal(exhaustCost.type, EFFECT_EXHAUST);
@@ -41,10 +42,10 @@ test('Black Widow cancels any revealed encounter card and reveals the next one',
     ]);
     assert.deepEqual(effects.map(({type}) => type), [
         EFFECT_CANCEL_ENCOUNTER,
-        EFFECT_REVEAL_ENCOUNTER,
     ]);
     assert.equal(effects[0].params.type, CARD_TYPE_ANY);
-    assert.equal(effects[1].params.from, PLACE_ENCOUNTER_DECK);
+    assert.equal(replacementRevealConfig.type, EFFECT_REVEAL_ENCOUNTER);
+    assert.equal(replacementRevealConfig.params.from, PLACE_ENCOUNTER_DECK);
 });
 
 test('Black Widow is not offered again while exhausted during the replacement reveal', async () => {

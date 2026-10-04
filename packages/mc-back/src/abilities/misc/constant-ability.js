@@ -2,6 +2,7 @@ import {
     EFFECT_ADD_TRAIT,
     EFFECT_CHAINED,
     EFFECT_MODIFY_MAX_ALLIES,
+    EFFECT_SIMULTANEOUS,
     EFFECT_SURGE,
     EFFECT_TOUGH,
     PRIORITY_CONSTANT,
@@ -27,7 +28,7 @@ function isAutomaticConstantEffect(effect) {
         return true;
     }
 
-    if (effectType === EFFECT_CHAINED) {
+    if (effectType === EFFECT_CHAINED || effectType === EFFECT_SIMULTANEOUS) {
         return effects.length > 0 && effects.every(isAutomaticConstantEffect);
     }
 

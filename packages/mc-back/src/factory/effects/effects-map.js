@@ -70,6 +70,7 @@ import {
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
+    EFFECT_SIMULTANEOUS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_DISCARD_TO_CARD,
@@ -154,6 +155,7 @@ import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
+import {SimultaneousEffect} from '../../effects/simultaneous-effect.js';
 import {ResolveSpecialAbilityEffect} from '../../effects/resolve-special-ability-effect.js';
 import {SelectDiscardCardEffect} from '../../effects/select-discard-card-effect.js';
 import {SelectFromTopDeckEffect} from '../../effects/select-from-top-deck-effect.js';
@@ -177,6 +179,7 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ATTACK]: CancelAttackEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CHAINED]: ChainedEffect,
+    [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
     [EFFECT_CHOOSE]: ChooseEffect,
     [EFFECT_CHOOSE_ABILITY]: ChooseAbilityEffect,
     [EFFECT_CONFUSE]: ConfuseEffect,

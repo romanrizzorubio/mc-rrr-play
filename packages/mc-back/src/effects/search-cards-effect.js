@@ -45,6 +45,104 @@ export class SearchCardsEffect extends Effect {
             this.getCardsAtLocation(player, location)
                 .some(card => checkCondition(card, this.filter))));
     }
+    getCostPaymentEffects(params) {
+        return this.firstMatch ||
+            !this.shouldPromptForPayment(params) ?
+            [] :
+            [this];
+    }
+    shouldPromptForPayment(params, session) {
+        const excludedCardIds = session?.getExcludedCardIds() || new Set();
+
+        return !this.firstMatch &&
+            this.getOptions(params, excludedCardIds).length > 0;
+    }
+    getCostPaymentTitle() {
+        return this.title;
+    }
+    getOptions(params, excludedCardIds = new Set()) {
+        const game = this.match;
+        const {player} = params;
+        const targetPlayers = this.playersTarget === TARGET_ALL_PLAYERS ?
+                game.players :
+                [player];
+        const options = [];
+
+        for (const targetPlayer of targetPlayers) {
+                for (const location of this.locations) {
+                    let cards = this.getCardsAtLocation(targetPlayer, location);
+                    cards = cards.filter(card => !excludedCardIds.has(card.id));
+                    if (this.firstMatch && location === PLACE_DISCARD_PILE) {
+                        cards = cards.slice().reverse();
+                    }
+
+                    if (this.firstMatch) {
+                        const card = cards.find(candidate =>
+                            checkCondition(candidate, this.filter));
+                        if (card) {
+                            options.push(card);
+                            break;
+                        }
+                    } else {
+                        cards.forEach(card => {
+                            if (checkCondition(card, this.filter)) {
+                                options.push(card);
+                            }
+                        });
+                    }
+                }
+                if (this.firstMatch && options.length) {
+                    break;
+                }
+        }
+
+        return options;
+    }
+    async preparePayment(params, session) {
+        const options = this.getOptions(params, session.getExcludedCardIds());
+        const {player} = params;
+        if (options.length === 0) {
+            return {
+                cards: [],
+                generators: [],
+                hand: [],
+            };
+        }
+
+        const response = await this.openDialog({
+                dialogType: DIALOG_SELECT_CARD,
+                hand: player.hand.cards.map(card => card.toObj(params)),
+                data: {
+                    title: this.title,
+                    cards: options.map(card => card.toObj(params)),
+                    count: this.count,
+                    distinctNames: this.distinctNames,
+                    upTo: this.upTo,
+                },
+        });
+        if (!response) {
+                return undefined;
+        }
+
+        const selected = response.selected || [];
+        const selectedCards = selected.map(selectedCard => {
+                const card = options.find(candidate => candidate.id === selectedCard.id);
+                if (!card) {
+                    throw new Error('La selección de cartas de búsqueda no es válida.');
+                }
+
+                return card;
+        });
+
+        return {
+                cards: selectedCards,
+                generators: [],
+                hand: [],
+                reservedCards: selectedCards.filter(card =>
+                    player.hand.cards.includes(card) ||
+                    session.getExcludedCardIds().has(card.id)),
+        };
+    }
 
     getCardsAtLocation(player, location) {
         if (location === PLACE_DISCARD_PILE) {
@@ -59,8 +157,8 @@ export class SearchCardsEffect extends Effect {
     }
 
     async execute(params) {
-        const game = this.match;
         const {player} = params;
+        const {costPaymentSession} = params;
 
         if (this.firstMatch) {
             params.selectedCards = [];
@@ -68,41 +166,11 @@ export class SearchCardsEffect extends Effect {
             params.card = undefined;
         }
         
-        let targetPlayers = [];
-        if (this.playersTarget === TARGET_ALL_PLAYERS) {
-            targetPlayers = game.players;
-        } else {
-            targetPlayers = [player];
-        }
+        const options = this.getOptions(params);
+        const hasStagedPayment = costPaymentSession?.hasPayment(this) || false;
 
-        const options = [];
-        for (const p of targetPlayers) {
-            for (const location of this.locations) {
-                let cards = this.getCardsAtLocation(p, location);
-                if (this.firstMatch && location === PLACE_DISCARD_PILE) {
-                    cards = cards.slice().reverse();
-                }
-
-                if (this.firstMatch) {
-                    const card = cards.find(candidate => checkCondition(candidate, this.filter));
-                    if (card) {
-                        options.push(card);
-                        break;
-                    }
-                } else {
-                    cards.forEach(card => {
-                        if (checkCondition(card, this.filter)) {
-                            options.push(card);
-                        }
-                    });
-                }
-            }
-            if (this.firstMatch && options.length) {
-                break;
-            }
-        }
-
-        if (options.length === 0) {
+        if ((costPaymentSession && !hasStagedPayment) ||
+            (options.length === 0 && !costPaymentSession)) {
             return;
         }
 
@@ -113,22 +181,25 @@ export class SearchCardsEffect extends Effect {
             return;
         }
 
-        const response = await this.openDialog({
-            dialogType: DIALOG_SELECT_CARD,
-            hand: player.hand.cards.map(card => card.toObj(params)),
-            data: {
-                title: this.title,
-                cards: options.map(card => card.toObj(params)),
-                count: this.count,
-                distinctNames: this.distinctNames,
-                upTo: this.upTo,
-            },
-        });
-
-        const {selected} = response;
+        const selected = costPaymentSession ?
+            costPaymentSession.getPayment(this).cards :
+            (await this.openDialog({
+                dialogType: DIALOG_SELECT_CARD,
+                hand: player.hand.cards.map(card => card.toObj(params)),
+                data: {
+                    title: this.title,
+                    cards: options.map(card => card.toObj(params)),
+                    count: this.count,
+                    distinctNames: this.distinctNames,
+                    upTo: this.upTo,
+                },
+            }))?.selected;
         if (selected && selected[0]) {
             // Guardamos el resultado en params para efectos encadenados
-            params.selectedCards = selected.map(s => options.find(c => c.id === s.id));
+            params.selectedCards = selected.map(card =>
+                typeof card === 'string' ?
+                    options.find(candidate => candidate.id === card) :
+                    options.find(candidate => candidate.id === card.id) || card);
             if (this.distinctNames) {
                 const selectedNames = new Set();
                 params.selectedCards = params.selectedCards.filter(card => {

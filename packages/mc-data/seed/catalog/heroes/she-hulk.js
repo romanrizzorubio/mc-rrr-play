@@ -45,6 +45,7 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_RETURN_HAND,
     EFFECT_SELECT_DISCARD_TO_CARD,
+    EFFECT_SIMULTANEOUS,
     EFFECT_SPEND,
     EFFECT_STUN,
     EFFECT_SURGE,
@@ -393,11 +394,11 @@ export default {
                                                     'type': EFFECT_FLIP,
                                                     'params': {
                                                         'target': TARGET_YOUR_SUPERHERO,
-                                                        'formTarget': TARGET_SIDE
+                                                        'formTarget': TARGET_SIDE,
+                                                        'thenEffect': {
+                                                            'type': EFFECT_FILL_HAND
+                                                        }
                                                     }
-                                                },
-                                                {
-                                                    'type': EFFECT_FILL_HAND
                                                 }
                                             ]
                                         }
@@ -836,7 +837,7 @@ export default {
                                         }
                                     },
                                     'ifNot': {
-                                        'type': EFFECT_CHAINED,
+                                        'type': EFFECT_SIMULTANEOUS,
                                         'params': {
                                             'effects': [
                                                 {

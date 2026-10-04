@@ -11,6 +11,7 @@ export class Trigger {
         this.triggerParams = triggerParams;
 
         this.triggered = false;
+        this.paymentCancelled = false;
     }
     canRun(params) {
         const {ability} = this;
@@ -39,6 +40,7 @@ export class Trigger {
     async runCard(params) {
         const {card, ability} = this;
 
+        this.paymentCancelled = false;
         await ability.resolveAbility({
             ...params,
             triggeredCard: params.card,
@@ -46,11 +48,14 @@ export class Trigger {
         });
 
         this.triggered = ability.resolved;
+        this.paymentCancelled = ability.paymentCancelled;
     }
     async runEvent(params) {
         const {card} = this;
 
-        this.triggered = await card.owner.triggerEvent(this, params);
+        const result = await card.owner.triggerEvent(this, params);
+        this.triggered = result.triggered;
+        this.paymentCancelled = result.paymentCancelled;
     }
     runTrigger(params) {
         const {ability, card} = this;

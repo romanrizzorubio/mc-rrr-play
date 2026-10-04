@@ -81,13 +81,13 @@ export default [
                                             'params': {
                                                 'target': TARGET_EFFECT,
                                                 'type': CARD_TYPE_ANY,
-                                                'full': true
-                                            }
-                                        },
-                                        {
-                                            'type': EFFECT_REVEAL_ENCOUNTER,
-                                            'params': {
-                                                'from': PLACE_ENCOUNTER_DECK
+                                                'full': true,
+                                                'thenEffect': {
+                                                    'type': EFFECT_REVEAL_ENCOUNTER,
+                                                    'params': {
+                                                        'from': PLACE_ENCOUNTER_DECK
+                                                    }
+                                                }
                                             }
                                         }
                                     ]

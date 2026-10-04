@@ -9,6 +9,7 @@ import {
     ABILITY_RESPONSE,
     ABILITY_WHEN_REVEALED,
     CALC_COUNT,
+    CALC_IF,
     CALC_MULTIPLY_2,
     CARD_TYPE_ALLY,
     CARD_TYPE_ALTEREGO,
@@ -268,22 +269,22 @@ export default {
                                                     'type': EFFECT_REMOVE_THREAT,
                                                     'params': {
                                                         'threat': 2,
-                                                        'target': TARGET_SCHEME
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_DO_IF_HAS_TRAITS,
-                                                    'params': {
-                                                        'target': TARGET_YOUR_HERO,
-                                                        'traits': [
-                                                            TRAIT_AERIAL
-                                                        ],
-                                                        'effect': {
-                                                            'type': EFFECT_REMOVE_THREAT,
+                                                        'target': TARGET_SCHEME,
+                                                        'thenEffect': {
+                                                            'type': EFFECT_DO_IF_HAS_TRAITS,
                                                             'params': {
-                                                                'threat': 2,
-                                                                'target': TARGET_SCHEME,
-                                                                'excludeTarget': 'effects.0.selectedTarget'
+                                                                'target': TARGET_YOUR_HERO,
+                                                                'traits': [
+                                                                    TRAIT_AERIAL
+                                                                ],
+                                                                'effect': {
+                                                                    'type': EFFECT_REMOVE_THREAT,
+                                                                    'params': {
+                                                                        'threat': 2,
+                                                                        'target': TARGET_SCHEME,
+                                                                        'excludeTarget': 'effects.0.selectedTarget'
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -418,31 +419,15 @@ export default {
                                         }
                                     },
                                     'effect': {
-                                        'type': EFFECT_CHAINED,
+                                        'type': EFFECT_DRAW_CARD,
                                         'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_DRAW_CARD,
-                                                    'params': {
-                                                        'target': TARGET_YOU
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_DO_IF,
-                                                    'params': {
-                                                        'target': TARGET_CARD,
-                                                        'condition': {
-                                                            'player.isAlterEgo': true
-                                                        },
-                                                        'effect': {
-                                                            'type': EFFECT_DRAW_CARD,
-                                                            'params': {
-                                                                'target': TARGET_YOU
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ]
+                                            'target': TARGET_YOU,
+                                            'paramsCalc': {
+                                                'target': 'player.isAlterEgo',
+                                                'formula': CALC_IF,
+                                                'ifTrue': 2,
+                                                'ifFalse': 1
+                                            }
                                         }
                                     }
                                 }

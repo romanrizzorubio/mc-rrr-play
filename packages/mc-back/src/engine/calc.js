@@ -7,6 +7,7 @@ import {
     CALC_ATTACK,
     CALC_COUNT,
     CALC_DIFFERENT_RESOURCE_TYPE,
+    CALC_IF,
     CALC_ALL,
 RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-shared';
 
@@ -18,6 +19,7 @@ const CALCULATION_MAP = {
         source.filter(card => (card.traits || []).includes(trait)).length,
     [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>
         calc.differentResourceType(source),
+    [CALC_IF]: (source, {ifTrue, ifFalse}) => source ? ifTrue : ifFalse,
     [CALC_MULTIPLY_2]: source => source * 2,
     [CALC_THREAT]: source => source.threat,
     [CALC_DAMAGE]: source => source.damage,
@@ -51,6 +53,8 @@ export class Calc {
         resourceType,
         strict,
         trait,
+        ifTrue,
+        ifFalse,
         plus,
         multiply,
     }) {
@@ -61,6 +65,8 @@ export class Calc {
         this.resourceType = resourceType;
         this.strict = strict;
         this.trait = trait;
+        this.ifTrue = ifTrue;
+        this.ifFalse = ifFalse;
         this.plus = plus;
         this.multiply = multiply;
     }

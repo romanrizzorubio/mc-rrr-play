@@ -7,24 +7,61 @@ import {PayCostEffect} from './pay-cost-effect.js';
 export class PayPrintedCostEffect extends Effect {
     constructor() {
         super(arguments[0]);
+
+        this.isPaid = false;
+    }
+
+    isResolved() {
+        return this.isPaid;
+    }
+    isFullResolved() {
+        return this.isPaid;
+    }
+    getCostPaymentEffects(params) {
+        const card = params.card || this.selectedTarget;
+
+        return card && card.cost > 0 ? [this] : [];
+    }
+    getCostPaymentTitle(params) {
+        const card = params.card || this.selectedTarget;
+
+        return this.title || `Pagar el coste de ${card.name}`;
+    }
+    async preparePayment(params, session) {
+        const {player} = params;
+        const card = params.card || this.selectedTarget;
+        const requiredResources = Array(card.cost).fill(RESOURCE_ANY);
+
+        return player.spendResources(
+            requiredResources,
+            card,
+            session.getExcludedCardIds()
+        );
     }
 
     async execute(params) {
-        const {player, card} = params;
+        const {player} = params;
+        const card = params.card || this.selectedTarget;
+
+        this.isPaid = false;
         
         if (!card) {
+            this.isPaid = true;
             return;
         }
 
         const cost = card.cost;
         if (cost === 0) {
+            this.isPaid = true;
             return;
         }
 
         // Generamos un array de recursos universales para representar el coste impreso
         const requiredResources = Array(cost).fill(RESOURCE_ANY);
         
-        const paid = await player.spendResources(requiredResources, card);
+        const paid = params.costPaymentSession ?
+            params.costPaymentSession.getPayment(this) :
+            await player.spendResources(requiredResources, card);
 
         if (paid) {
             const payCostEffect = new PayCostEffect({
@@ -35,9 +72,9 @@ export class PayPrintedCostEffect extends Effect {
             });
 
             await payCostEffect.runEffect(params);
+            this.isPaid = true;
         } else {
-            // Si no se puede pagar, deberíamos interrumpir la cadena.
-            throw new Error('Cancelado: no se pudo pagar el coste impreso.');
+            this.paymentCancelled = true;
         }
     }
 }

@@ -3,6 +3,7 @@ export const CALC_ATTACK = 'attack';
 export const CALC_COUNT = 'count';
 export const CALC_DAMAGE = 'damage';
 export const CALC_DIFFERENT_RESOURCE_TYPE = 'different-resource-type';
+export const CALC_IF = 'if';
 export const CALC_MULTIPLY_2 = 'multiply-2';
 export const CALC_RESOURCES = 'resources';
 export const CALC_THREAT = 'threat';

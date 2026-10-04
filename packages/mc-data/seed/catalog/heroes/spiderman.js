@@ -48,6 +48,7 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_REMOVE_USE,
     EFFECT_RETURN_FACEDOWN,
+    EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_SURGE,
     LABEL_ATTACK,
@@ -489,24 +490,31 @@ export default {
                                             'target': TARGET_ATTACHED,
                                             'effects': [
                                                 {
-                                                    'type': EFFECT_CANCEL_ATTACK,
+                                                    'type': EFFECT_SIMULTANEOUS,
                                                     'params': {
-                                                        'target': TARGET_EFFECT
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_STUN,
-                                                    'params': {
-                                                        'target': TARGET_ATTACHED
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_DISCARD_GAME,
-                                                    'params': {
-                                                        'target': TARGET_CARD
+                                                        'effects': [
+                                                            {
+                                                                'type': EFFECT_CANCEL_ATTACK,
+                                                                'params': {
+                                                                    'target': TARGET_EFFECT
+                                                                }
+                                                            },
+                                                            {
+                                                                'type': EFFECT_DISCARD_GAME,
+                                                                'params': {
+                                                                    'target': TARGET_CARD
+                                                                }
+                                                            }
+                                                        ]
                                                     }
                                                 }
-                                            ]
+                                            ],
+                                            'thenEffect': {
+                                                'type': EFFECT_STUN,
+                                                'params': {
+                                                    'target': TARGET_ATTACHED
+                                                }
+                                            }
                                         }
                                     }
                                 }

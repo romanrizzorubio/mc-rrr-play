@@ -250,24 +250,30 @@ export class Player extends Engine {
 
         return this.gameZone.getCard(cardId);
     }
-    async getCardsToPay(cardToPlay, resourceType) {
+    async getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
         return {
-            generators: await this.getResourceGenerators(cardToPlay, resourceType),
-            hand: this.hand.getCardsToPay(cardToPlay, resourceType),
+            generators: await this.getResourceGenerators(
+                cardToPlay,
+                resourceType,
+                excludedCardIds
+            ),
+            hand: this.hand.getCardsToPay(cardToPlay, resourceType, excludedCardIds),
         };
     }
     getPrintedCard(cardId) {
         return this.gameZone.getPrintedCard(cardId);
     }
-    async getResourceGenerators(cardToPay, resourceType) {
+    async getResourceGenerators(cardToPay, resourceType, excludedCardIds = new Set()) {
         const generators = [];
 
-        if (await this.superhero.currentSide.hasResourceGenerators(cardToPay, resourceType)) {
+        if (!excludedCardIds.has(this.superhero.currentSide.id) &&
+            await this.superhero.currentSide.hasResourceGenerators(cardToPay, resourceType)) {
             generators.push(this.superhero.currentSide);
         }
 
         await this.promisesSequential(this.gameZone.cards, async card => {
-            if (await card.hasResourceGenerators(cardToPay, resourceType)) {
+            if (!excludedCardIds.has(card.id) &&
+                await card.hasResourceGenerators(cardToPay, resourceType)) {
                 generators.push(card);
             }
         });
@@ -432,8 +438,12 @@ export class Player extends Engine {
 
         await this.gameZone.readyCards();
     }
-    async spendResources(resources, cardToPay) {
-        const cardsToPay = await this.getCardsToPay(cardToPay);
+    async spendResources(resources, cardToPay, excludedCardIds = new Set()) {
+        const cardsToPay = await this.getCardsToPay(
+            cardToPay,
+            undefined,
+            excludedCardIds
+        );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
@@ -460,8 +470,12 @@ export class Player extends Engine {
             };
         }
     }
-    async spendResourcesX(resources, cardToPay, resourceType) {
-        const cardsToPay = await this.getCardsToPay(cardToPay, resourceType);
+    async spendResourcesX(resources, cardToPay, resourceType, excludedCardIds = new Set()) {
+        const cardsToPay = await this.getCardsToPay(
+            cardToPay,
+            resourceType,
+            excludedCardIds
+        );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
@@ -503,7 +517,10 @@ export class Player extends Engine {
 
         await playCardEffect.runEffect(params);
 
-        return !playCardEffect.canceled;
+        return {
+            triggered: !playCardEffect.canceled,
+            paymentCancelled: playCardEffect.paymentCancelled,
+        };
     }
     toObj() {
         const {

@@ -64,8 +64,9 @@ export class Hand extends Engine {
     getCard(cardId) {
         return this.cards.find(card => card.id === cardId);
     }
-    getCardsToPay(cardToPlay, resourceType) {
+    getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
         return this.cards.filter(card =>
+            !excludedCardIds.has(card.id) &&
             !card.isPlaying &&
             (!cardToPlay || card.id !== cardToPlay.id) &&
             (!resourceType || card.resources.some(r => r === resourceType || r === RESOURCE_WILD)));

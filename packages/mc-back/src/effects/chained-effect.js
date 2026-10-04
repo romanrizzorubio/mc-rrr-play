@@ -42,6 +42,12 @@ export class ChainedEffect extends Effect {
     isFullResolved() {
         return this.effects.every(effect => effect.isFullResolved());
     }
+    getCostPaymentEffects(params) {
+        const newParams = this.getEffectParams(params);
+
+        return this.effects.flatMap(effect =>
+            effect.getCostPaymentEffects(newParams));
+    }
     getEffectParams(params) {
         const {selectedTarget} = this;
         const targetPlayer = selectedTarget && selectedTarget.isPlayer ?
@@ -76,13 +82,37 @@ export class ChainedEffect extends Effect {
 
         return this.selectedTarget;
     }
+    async prepareCost(params, session) {
+        if (!await super.prepareCost(params, session)) {
+            return false;
+        }
+
+        const {effectParams} = session.getPreparedEffect(this);
+        const newParams = this.getEffectParams(effectParams);
+        session.prepareExecutionParams(this, newParams);
+
+        for (const effect of this.effects) {
+            if (!await effect.prepareCost(newParams, session)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     async execute(params) {
         const matchAll = this.matchAll || params.matchAll;
-        const newParams = this.getEffectParams(params);
+        const newParams = params.costPaymentSession?.getExecutionParams(this) ||
+            this.getEffectParams(params);
 
         await this.promisesSequential(this.effects, async effect => {
-            if (await effect.canRun(newParams)) {
+            if (newParams.costPaymentSession?.isPrepared(effect) ||
+                await effect.canRun(newParams)) {
                 await effect.runEffect(newParams);
+
+                if (effect.paymentCancelled) {
+                    this.paymentCancelled = true;
+                    return false;
+                }
 
                 if (matchAll && !effect.isFullResolved()) {
                     return false;

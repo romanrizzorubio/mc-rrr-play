@@ -15,8 +15,15 @@ export class DrawEffect extends Effect {
     }
     async execute(params) {
         const {player} = params;
+        const count = this.paramsCalc ?
+            await this.calculate(params) :
+            this.count;
 
-        const cards = await this.selectedTarget.deck.draw(this.count);
+        if (!Number.isFinite(count)) {
+            throw new Error('El cálculo de cartas a robar no es válido.');
+        }
+
+        const cards = await this.selectedTarget.deck.draw(count);
         const addHandEffect = new AddHandEffect({
             player,
             match: this.match,

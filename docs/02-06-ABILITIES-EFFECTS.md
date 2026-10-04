@@ -7,10 +7,12 @@ Una capacidad es el texto de juego en una carta que explica lo que la carta hace
 - Las capacidades de las cartas solo interactúan con las cartas que están **en juego**, a menos que la capacidad se refiera específicamente a un área o elemento fuera de juego.
 - Las capacidades en cartas de héroe, alter-ego, aliado, mejora y apoyo solo pueden usarse si la carta está en juego, a menos que se especifique lo contrario. Las cartas de evento interactúan implícitamente desde fuera del juego.
  - El coste de una capacidad no puede pagarse si el efecto de esa capacidad requiere uno o más objetivos y no hay al menos un objetivo válido. (Véase: [objetivo válido](#objetivo-válido-valid-target)).
-- Cuando una capacidad tiene más de una frase de texto, lee la totalidad de la capacidad para verificar efectos de alteración. Luego, resuelve la capacidad frase por frase.
+- Cuando una capacidad tiene más de una frase de texto, lee la totalidad de la capacidad para verificar efectos de alteración. A continuación, resuelve la capacidad frase por frase.
     - Si el texto del efecto de una capacidad incluye la palabra "**luego**" (then), el texto que precede a la palabra "luego" debe ser totalmente verdadero o resolverse antes de que el resto del efecto descrito después de la palabra "luego" pueda resolverse.
     - Si el texto pre-"luego" de un efecto se resuelve por completo, el texto post-"luego" del efecto también debe intentar resolverse.
     - Si el texto pre-"luego" de un efecto no se resuelve por completo, el texto post-"luego" no intenta resolverse.
+- El punto separa frases que se resuelven en el orden escrito. Por sí solo, no hace que una frase dependa de que la anterior se resuelva por completo; esa condición se establece con "luego" u otra instrucción explícita.
+- La coma organiza la frase, pero no es por sí sola un operador de tiempo o dependencia. No infieras secuencia, simultaneidad ni una condición de éxito solo por una coma; interpreta las palabras y las cláusulas que conecta.
 - Las capacidades de cartas de jugador no pueden resolverse durante la preparación del juego (preparación), a menos que tengan el disparador de tiempo "**Preparación**".
 
 #### "Después de" (After)
@@ -36,6 +38,7 @@ La palabra "y" indica que dos o más efectos dentro de una capacidad se resuelve
 
 - Los efectos individuales conectados por "y" no son dependientes entre sí. Resuelve la mayor parte de cada efecto que sea posible.
 - Cada efecto conectado por "y" puede ser cancelado o evitado de forma independiente.
+- Esta regla se aplica cuando "y" conecta efectos; una lista de elementos u objetivos no crea por sí sola un efecto separado para cada sustantivo.
 
 **Véase también**: capacidad, cancelar, evitar.
 
@@ -150,6 +153,7 @@ El término "en vez de eso" indica un efecto de reemplazo. Un efecto de reemplaz
 Un efecto de reemplazo reemplaza un efecto especificado por un efecto diferente. La mayoría de los efectos de reemplazo son capacidades de interrupción con el formato "cuando [condición de activación] fuera a ocurrir, haz [efecto de reemplazo] **en vez de eso**".
 
 - Cuando un efecto es reemplazado, ya no se considera inminente y no se pueden disparar más interrupciones o respuestas a ese efecto.
+- El efecto reemplazado no se resuelve además del efecto que lo reemplaza.
 
 **Véase también**: capacidad, efecto de alteración, cancelar, interrupción, "en caso contrario", capacidad disparada, ["vaya a" (haría)](#vaya-a-haría--would).
 
@@ -492,7 +496,7 @@ Los efectos, capacidades, cartas de evento y cartas de perfidia se resuelven baj
 #### Efecto de Alteración (Alteration Effect)
 Un efecto de alteración modifica la resolución de una capacidad que lo precede. Los tipos de efectos de alteración incluyen:
 
-- **Adicional (Additional)**: La palabra "adicional" denota un modificador a una capacidad o estado del juego. El modificador adicional se resuelve simultáneamente con cualquier capacidad que esté modificando y bajo las mismas condiciones que esa capacidad. (Por ejemplo, *Explosión de Repulsores* dice: "Acción de Héroe (ataque): Inflige 1 de daño a un enemigo y descarta las 5 cartas superiores de tu mazo. Por cada recurso [Energy] impreso descartado de esta manera, inflige 2 de daño **adicional** a ese enemigo").
+- **Adicional (Additional)**: La palabra "adicional" denota un modificador a una capacidad o estado del juego. El modificador adicional se resuelve simultáneamente con cualquier capacidad que esté modificando y bajo las mismas condiciones que esa capacidad; no crea por sí solo una instancia separada del efecto modificado. (Por ejemplo, *Explosión de Repulsores* dice: "Acción de Héroe (ataque): Inflige 1 de daño a un enemigo y descarta las 5 cartas superiores de tu mazo. Por cada recurso [Energy] impreso descartado de esta manera, inflige 2 de daño **adicional** a ese enemigo").
 
 - **Ya (Already)**: La palabra "ya" denota la resolución de una capacidad alternativa si se cumple una condición específica. El efecto "ya" comprueba si esta condición se cumple antes de que la capacidad precedente intente resolverse. Si es así, el efecto "ya" se resuelve en vez de eso. (Por ejemplo, *Soy Duro* dice: "**Cuando se muestre esta carta**: Dale a Rhino una carta de estado duro. Si Rhino **ya** tiene una carta de estado duro, esta carta gana oleada").
 
