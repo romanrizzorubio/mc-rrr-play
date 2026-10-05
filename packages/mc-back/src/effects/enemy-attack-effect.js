@@ -1,5 +1,6 @@
 import {DIALOG_DEFENSE,TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
+    TRIGGER_THIS_ATTACK,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
 } from 'mc-shared';
@@ -7,61 +8,129 @@ import {DIALOG_DEFENSE,TARGET_CARD,
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
+import {checkCondition} from '../engine/utils.js';
 
 
 export class EnemyAttackEffect extends EnemyActivationEffect {
-    constructor() {
+    constructor(params = {}) {
         super({
-            ...arguments[0],
+            ...params,
             isAttack: true,
         });
 
         this.defender = null;
         this.defValue = 0;
+        this.defendersByTarget = new Map();
+        this.defenseValues = new Map();
+        this.originalAttackTarget = undefined;
+        this.defenderConditions = [];
     }
     get isDefended() {
-        return !!this.defender;
+        return Boolean(this.defender || this.defendersByTarget.size);
     }
     getTargetDialog() {
-        const {selectedTarget} = this;
+        const selectedTarget = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget[0] :
+            this.selectedTarget;
 
         return selectedTarget.superhero;
+    }
+    getBoostTarget() {
+        return this.originalAttackTarget || super.getBoostTarget();
     }
     async getAttackValue(params) {
         const {character} = this;
 
         return character.getAttackValue(params);
     }
-    async getDefenseValue(params) {
-        const {defender} = this;
-
+    async getDefenseValue(params, defender = this.defender) {
         return defender.getDefenseValue(params);
     }
     async defense(params) {
-        const defenders = this.getDefenders();
-        if (defenders.length) {
-            const {defender} = await this.openDialog({
-                dialogType: DIALOG_DEFENSE,
-                hand: this.selectedTarget.owner.hand.cards.map(card => card.toObj(arguments[0])),
-                data: {
-                    attack: this.toObj(arguments[0]),
-                    defenders: defenders.map(d => d.toObj(arguments[0])),
-                },
-            });
+        const attackTargets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
 
-            if (defender) {
-                const objDefender = defenders.find(d => d.id === defender.id);
+        for (const attackTarget of attackTargets) {
+            const requiredDefenders = this.getRequiredDefenders(attackTarget);
+            const mustDefend = requiredDefenders.length > 0;
+            const defenders = mustDefend ?
+                requiredDefenders :
+                this.getDefenders(attackTarget);
+            if (defenders.length) {
+                const attack = this.toObj(arguments[0]);
+                attack.target = attackTarget.toObj(arguments[0]);
 
-                await this.setDefender(objDefender);
+                const {defender} = await this.openDialog({
+                    dialogType: DIALOG_DEFENSE,
+                    hand: attackTarget.owner.hand.cards.map(card => card.toObj(arguments[0])),
+                    hideOk: mustDefend,
+                    data: {
+                        attack,
+                        defenders: defenders.map(d => d.toObj(arguments[0])),
+                    },
+                });
 
-                if (objDefender.isSuperhero) {
-                    this.defValue = await this.getDefenseValue(params);
+                const objDefender = defender &&
+                    defenders.find(d => d.id === defender.id);
+                if (mustDefend && !objDefender) {
+                    throw new Error('EnemyAttackEffect requires a qualifying defender.');
+                }
+
+                if (objDefender) {
+                    await this.setDefender(objDefender, attackTarget);
+
+                    if (objDefender.isSuperhero) {
+                        const selectedDefender = this.defendersByTarget.get(attackTarget);
+                        const defenseValue = await this.getDefenseValue(
+                            params,
+                            selectedDefender
+                        );
+
+                        if (Array.isArray(this.selectedTarget)) {
+                            this.defenseValues.set(attackTarget, defenseValue);
+                        } else {
+                            this.defValue = defenseValue;
+                        }
+                    }
                 }
             }
         }
     }
-    getDefenders() {
-        return this.selectedTarget.defenders;
+    getDefenders(target = this.selectedTarget) {
+        if (Array.isArray(target)) {
+            return target.flatMap(attackTarget => this.getDefenders(attackTarget));
+        }
+
+        const defenders = target.defenders;
+        const requiredDefenders = this.getRequiredDefenders(target);
+
+        return requiredDefenders.length ? requiredDefenders : defenders;
+    }
+    getRequiredDefenders(target) {
+        if (Array.isArray(target)) {
+            return target.flatMap(attackTarget => this.getRequiredDefenders(attackTarget));
+        }
+
+        if (!this.defenderConditions.length) {
+            return [];
+        }
+
+        return target.defenders.filter(defender =>
+            this.defenderConditions.every(condition => checkCondition(defender, condition)));
+    }
+    changeAttackTargets(targets) {
+        if (!Array.isArray(targets) || !this.selectedTarget) {
+            throw new Error('EnemyAttackEffect requires attack targets and an existing target.');
+        }
+
+        if (!this.originalAttackTarget) {
+            this.originalAttackTarget = this.selectedTarget;
+        }
+        this.selectedTarget = targets;
+    }
+    addDefenderCondition(condition) {
+        this.defenderConditions.push(condition);
     }
     getTitleDialog() {
         const {character} = this;
@@ -73,6 +142,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return super.getTriggersWould()
             .concat([
                 TRIGGER_ATTACHED_WOULD_ATTACK,
+                TRIGGER_THIS_ATTACK,
             ]);
     }
     getTriggersInit() {
@@ -86,10 +156,13 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return this.activation.getTriggersEnds(params)
             .concat([TRIGGER_VILLAIN_ATTACKS_YOU]);
     }
-    async setDefender(defender) {
+    async setDefender(defender, attackTarget = this.selectedTarget) {
         if (defender) {
             this.defender = defender.isSuperhero ? defender.currentSide : defender;
-            this.selectedTarget = defender.owner;
+            this.defendersByTarget.set(attackTarget, this.defender);
+            if (!Array.isArray(this.selectedTarget)) {
+                this.selectedTarget = defender.owner;
+            }
 
             const exhaustEffect = new ExhaustEffect({
                 target: TARGET_CARD,
@@ -103,23 +176,33 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     async execute(params) {
         const {character, selectedTarget} = this;
+        const isMultiTarget = Array.isArray(selectedTarget);
+        const attackTargets = isMultiTarget ? selectedTarget : [selectedTarget];
 
         await this.dealBoostCards(params);
         await this.defense(params);
         const boost = await this.resolveBoostCards(params);
         const atkValue = await this.getAttackValue(params);
-        const defValue = this.defValue;
-        const damage = atkValue + boost - defValue;
+        const attackedTargets = attackTargets.map(attackTarget =>
+            this.defendersByTarget.get(attackTarget) ||
+                (isMultiTarget ? attackTarget : this.defender || attackTarget));
+        const damages = attackTargets.map(attackTarget => {
+            const defValue = isMultiTarget ?
+                this.defenseValues.get(attackTarget) || 0 :
+                this.defValue;
 
-        this.attacked = this.defender || selectedTarget;
+            return Math.max(0, atkValue + boost - defValue);
+        });
+
+        this.attacked = isMultiTarget ? attackedTargets : attackedTargets[0];
 
         const dealDamageEffect = new DealDamageEffect({
             character,
-            damage,
+            damage: isMultiTarget ? damages : damages[0],
             activation: this.activation,
             isAttack: true,
             match: this.match,
-            selectedTarget: this.attacked,
+            selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
             ability: this.ability,
         });
 

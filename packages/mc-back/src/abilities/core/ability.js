@@ -121,7 +121,7 @@ export class Ability extends Engine {
         return labels.some(label => label === LABEL_THWART);
     }
     get keepTriggering() {
-        return this.effect.keepTriggering;
+        return this.effect?.keepTriggering ?? false;
     }
     isValidIdentity() {
         return true;

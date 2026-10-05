@@ -216,11 +216,12 @@ export default css`
     gap: 4px;
   }
 
-  .acceleration {
-    background-color: black;
-    color: white;
-    width: 100%;
+  .stat-acceleration {
+    background-color: #fff;
+    color: #212121;
   }
+
+  .acceleration,
   .threat {
     width: auto;
     margin: 0 auto;

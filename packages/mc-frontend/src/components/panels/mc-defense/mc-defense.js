@@ -15,6 +15,7 @@ export class McDefense extends LitElement {
         return {
             attack: {type: Object},
             defenders: {type: Array},
+            mustDefend: {type: Boolean},
         };
     }
     constructor() {
@@ -22,6 +23,7 @@ export class McDefense extends LitElement {
 
         this.attack = {};
         this.defenders = [];
+        this.mustDefend = false;
     }
     getParameters() {
         const {attack} = this;
@@ -67,10 +69,13 @@ export class McDefense extends LitElement {
         }));
     }
     renderDefenders() {
-        const {defenders} = this;
+        const {defenders, mustDefend} = this;
+        const prompt = mustDefend ?
+            'Debes elegir un defensor para este ataque' :
+            'Selecciona defensor o pulsa Ok para continuar sin defender';
 
         return html`
-            <h3>Selecciona defensor o pulsa Ok para continuar sin defender</h3>
+            <h3>${prompt}</h3>
             <mc-card-list
                 .cards="${defenders}"
                 show-life

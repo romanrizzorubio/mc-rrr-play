@@ -14,6 +14,8 @@ export class McCardListDialog extends McDialog {
             data: {
                 cards: [],
                 showCounters: false,
+                showLife: false,
+                showDamage: false,
             },
             _response: {
                 selected: undefined
@@ -30,13 +32,15 @@ export class McCardListDialog extends McDialog {
         this.sendResponse();
     }
     renderContent() {
-        const {data: {cards, showCounters}, _marked} = this;
+        const {data: {cards, showCounters, showLife, showDamage}, _marked} = this;
 
         return html`
             <mc-card-list
                 .cards="${cards}"
                 .marked="${_marked}"
                 .showCounters="${showCounters}"
+                .showLife="${showLife}"
+                .showDamage="${showDamage}"
                 @card-list-select="${this.handleCardListSelect.bind(this)}"
             ></mc-card-list>
         `;

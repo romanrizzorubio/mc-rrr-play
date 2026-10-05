@@ -1,5 +1,6 @@
 import {
     EFFECT_ADD_ACCELERATION_TOKEN,
+    EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CANCEL_ATTACK,
@@ -21,6 +22,7 @@ import {
     EFFECT_DISCARD_HAND,
     EFFECT_DISCARD_RANDOM,
     EFFECT_DISCARD_REVEAL,
+    EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF_CARD_GAME,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_DAMAGE,
@@ -68,6 +70,7 @@ import {
     EFFECT_REMOVE_TRAIT,
     EFFECT_REMOVE_USE,
     EFFECT_REMOVE_THREAT,
+    EFFECT_REQUIRE_DEFENDER,
     EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
     EFFECT_RETURN_FACEDOWN,
     EFFECT_RETURN_HAND,
@@ -90,6 +93,7 @@ import {
 } from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
+import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelAttackEffect} from '../../effects/cancel-attack-effect.js';
@@ -111,6 +115,7 @@ import {DiscardFromGameEffect} from '../../effects/discard-from-game-effect.js';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
 import {DiscardRandomEffect} from '../../effects/discard-random-effect.js';
 import {DiscardRevealEffect} from '../../effects/discard-reveal-effect.js';
+import {DiscardUntilEffect} from '../../effects/discard-until-effect.js';
 import {DoIfCardGameEffect} from '../../effects/do-if-card-game-effect.js';
 import {DoIfEffect} from '../../effects/do-if-effect.js';
 import {DoIfHasDamageEffect} from '../../effects/do-if-has-damage-effect.js';
@@ -157,6 +162,7 @@ import {RemoveCardEffect} from '../../effects/remove-card-effect.js';
 import {RemoveCountersEffect} from '../../effects/remove-counters-effect.js';
 import {RemoveTraitEffect} from '../../effects/remove-trait-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
+import {RequireDefenderEffect} from '../../effects/require-defender-effect.js';
 import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selected-special-abilities-effect.js';
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
 import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
@@ -179,6 +185,7 @@ import {SelectDiscardToCardEffect} from '../../effects/select-discard-to-card-ef
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
+    [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
     [EFFECT_ASSIGN_DAMAGE]: AssignDamageEffect,
     [EFFECT_PREVENT_DAMAGE]: PreventDamageEffect,
@@ -203,6 +210,7 @@ export const EFFECT_MAP = {
     [EFFECT_DISCARD_CONDITION_HAND]: DiscardConditionHandEffect,
     [EFFECT_DISCARD_RANDOM]: DiscardRandomEffect,
     [EFFECT_DISCARD_REVEAL]: DiscardRevealEffect,
+    [EFFECT_DISCARD_UNTIL]: DiscardUntilEffect,
     [EFFECT_DO_IF]: DoIfEffect,
     [EFFECT_DO_IF_CARD_GAME]: DoIfCardGameEffect,
     [EFFECT_DO_IF_HAS_DAMAGE]: DoIfHasDamageEffect,
@@ -242,6 +250,7 @@ export const EFFECT_MAP = {
     [EFFECT_RETURN_HAND]: ReturnHandEffect,
     [EFFECT_REVEAL_ENCOUNTER]: RevealEncounterEffect,
     [EFFECT_REMOVE_THREAT]: RemoveThreatEffect,
+    [EFFECT_REQUIRE_DEFENDER]: RequireDefenderEffect,
     [EFFECT_REMOVE_COUNTER]: RemoveCountersEffect,
     [EFFECT_REMOVE_TRAIT]: RemoveTraitEffect,
     [EFFECT_REMOVE_USE]: RemoveCountersEffect,

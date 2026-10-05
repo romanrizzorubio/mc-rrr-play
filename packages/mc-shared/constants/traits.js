@@ -22,6 +22,7 @@ export const TRAIT_ITEM = 'item';
 export const TRAIT_KING = 'king';
 export const TRAIT_KREE = 'kree';
 export const TRAIT_LOCATION = 'location';
+export const TRAIT_MASTERS_OF_EVIL = 'masters of evil';
 export const TRAIT_MERCENARY = 'mercenary';
 export const TRAIT_SHIELD = 'S.H.I.E.L.D.';
 export const TRAIT_SKILL = 'skill';

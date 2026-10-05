@@ -523,8 +523,11 @@ export class CardComponent extends LitElement {
         const {acceleration} = this;
 
         return acceleration ? html`
-            <div class="acceleration" >
-                ${acceleration}
+            <div
+                class="character-stat stat-acceleration acceleration"
+                aria-label="Fichas de aceleración: ${acceleration}"
+            >
+                +${acceleration}
             </div>
         ` : html``;
     }

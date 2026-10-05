@@ -36,10 +36,13 @@ export class CancelEncounterEffect extends Effect {
         return false;
     }
     canRun(params) {
-        const {effect} = params;
+        const effect = params.effect;
+        const selectedCard = effect?.selectedTarget;
 
-        return this.matchType(effect.selectedTarget) &&
-            effect.canceled === CANCEL_ENCOUNTER_NOT;
+        return Boolean(selectedCard) &&
+            !selectedCard.hasUncancellableAbilities &&
+            this.matchType(selectedCard) &&
+            effect?.canceled === CANCEL_ENCOUNTER_NOT;
     }
     execute(_params) {
         const {selectedTarget} = this;

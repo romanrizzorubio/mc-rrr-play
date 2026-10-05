@@ -24,6 +24,9 @@ export class EnemyActivationEffect extends Effect {
     cancelActivation() {
         this.canceled = true;
     }
+    getBoostTarget() {
+        return this.selectedTarget;
+    }
     checkTrigger() {
         return !this.canceled;
     }
@@ -77,7 +80,8 @@ export class EnemyActivationEffect extends Effect {
         });
     }
     resolveBoostCards(params) {
-        const {boostCards, selectedTarget} = this;
+        const {boostCards} = this;
+        const selectedTarget = this.getBoostTarget();
 
         return boostCards.reduce(async (b, card) => {
             const resolveBoostEffect = new ResolveBoostEffect({
@@ -120,7 +124,9 @@ export class EnemyActivationEffect extends Effect {
         return {
             ...super.toObj(arguments[0]),
             character: character.toObj(arguments[0]),
-            target: selectedTarget.toObj(arguments[0]),
+            target: Array.isArray(selectedTarget) ?
+                selectedTarget.map(target => target.toObj(arguments[0])) :
+                selectedTarget.toObj(arguments[0]),
             boostCards: boostCards.map(card => card.toObj(arguments[0])),
         };
     }

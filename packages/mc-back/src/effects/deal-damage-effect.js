@@ -75,6 +75,10 @@ export class DealDamageEffect extends Effect {
     }
     async prepare(params) {
         this.damage = undefined;
+        this.dealtDamage = 0;
+        this.preventDamage = 0;
+        this.takenDamage = 0;
+        this.excessDamage = 0;
 
         await super.prepare(params);
 

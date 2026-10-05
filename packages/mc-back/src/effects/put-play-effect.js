@@ -29,6 +29,9 @@ export class PutPlayEffect extends Effect {
     getCard(params = {}) {
         return this.card || params.selectedCard;
     }
+    getController(params) {
+        return this.controller || params.player;
+    }
     getTriggersEnds(params) {
         const card = this.getCard(params);
         if (!card) {
@@ -52,11 +55,12 @@ export class PutPlayEffect extends Effect {
     }
     async execute(params) {
         const card = this.getCard(params);
-        const controller = this.controller || params.player;
+        const controller = this.getController(params);
         const {force, player} = params;
         const {selectedTarget} = this;
+        const isEnteringPlay = Boolean(card && !card.isInPlay);
 
-        if (card && (!card.isInPlay || force)) {
+        if (card && (isEnteringPlay || force)) {
             if (card.isPlayerCard && this.match.isUniqueCard(card)) {
                 return;
             }
@@ -75,6 +79,11 @@ export class PutPlayEffect extends Effect {
 
                 if (removedFromDeck) {
                     await ownerDeck.refresh();
+                }
+
+                if (isEnteringPlay &&
+                    (card.isAlly || card.isMinion || card.isSuperhero || card.isVillain)) {
+                    card.damage = 0;
                 }
 
                 if (!card.isMinion) {

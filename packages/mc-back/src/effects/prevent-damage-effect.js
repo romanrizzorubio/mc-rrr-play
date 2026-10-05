@@ -11,8 +11,12 @@ export class PreventDamageEffect extends Effect {
     }
     canRun(params) {
         const {effect} = params;
+        const takenDamage = effect.takenDamage;
+        const canPreventDamage = Array.isArray(takenDamage) ?
+            takenDamage.some(damage => damage > 0) :
+            takenDamage > 0;
 
-        return effect.takenDamage > 0 && super.canRun(params);
+        return canPreventDamage && super.canRun(params);
     }
     execute(params) {
         const {effect} = params;

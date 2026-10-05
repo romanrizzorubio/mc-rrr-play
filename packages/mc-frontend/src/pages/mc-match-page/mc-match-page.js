@@ -74,8 +74,6 @@ export class McMatchPage extends LitElement {
             if (this.updateGameZoneCard(_player, card)) {
                 return true;
             }
-
-            debugger;
         }
     }
     updateDeck(deck) {

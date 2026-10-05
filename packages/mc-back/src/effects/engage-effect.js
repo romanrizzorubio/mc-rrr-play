@@ -4,6 +4,9 @@ import {PutPlayEffect} from './put-play-effect.js';
 
 
 export class EngageEffect extends PutPlayEffect {
+    getController(params) {
+        return this.controller || this.selectedTarget || params.player;
+    }
     getTriggersEnds(params) {
         if (!this.getCard(params)?.isMinion) {
             return [];

@@ -1,7 +1,7 @@
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
-import {path} from '../../engine/utils.js';
+import {checkCondition, path} from '../../engine/utils.js';
 import {cardsShareUniqueIdentity} from '../../utils/unique-card-utils.js';
 
 import {Player} from './player.js';
@@ -376,10 +376,14 @@ export class Match extends Engine {
     searchCards(condition) {
         const cards = this.scenario.gameZone.searchCards(condition);
 
-        return cards
+        const cardsInPlayerZones = cards
             .concat(this.players.reduce((ret, player) =>
                 ret.concat(player.gameZone.searchCards(condition)),
                 []));
+
+        return cardsInPlayerZones.concat(this.minions.filter(minion =>
+            !cardsInPlayerZones.includes(minion) &&
+            checkCondition(minion, condition)));
     }
     startMatch() {
         this.playing = true;

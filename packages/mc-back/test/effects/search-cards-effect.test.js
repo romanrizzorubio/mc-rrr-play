@@ -5,6 +5,7 @@ import {
     PLACE_DISCARD_PILE,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
+    TRAIT_MASTERS_OF_EVIL,
 } from 'mc-shared';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 
@@ -88,4 +89,50 @@ test('SearchCardsEffect searches the encounter deck and discard pile in order', 
         discardedCard,
     ];
     assert.deepEqual(effect.getOptions(params), [discardedCard]);
+});
+
+test('SearchCardsEffect offers every matching encounter minion for selection', async () => {
+    const createMastersMinion = id => ({
+        ...createCard(id, id),
+        isMinion: true,
+        traits: [TRAIT_MASTERS_OF_EVIL],
+    });
+    const deckMinion = createMastersMinion('deck-minion');
+    const discardedMinion = createMastersMinion('discard-minion');
+    const otherMinion = {
+        ...createCard('other-minion', 'Other minion'),
+        isMinion: true,
+        traits: [],
+    };
+    const effect = new SearchCardsEffect({
+        locations: [PLACE_ENCOUNTER_DECK_CARDS, PLACE_ENCOUNTER_DISCARD],
+        filter: {
+            isMinion: true,
+            traits: [TRAIT_MASTERS_OF_EVIL],
+        },
+        match: {
+            scenario: {
+                deck: {
+                    cards: [deckMinion, otherMinion],
+                    discardPile: [discardedMinion],
+                },
+            },
+        },
+    });
+    const player = {hand: {cards: []}};
+    let dialog;
+    effect.openDialog = async options => {
+        dialog = options;
+
+        return {selected: [{id: discardedMinion.id}]};
+    };
+    const params = {player};
+
+    await effect.execute(params);
+
+    assert.deepEqual(dialog.data.cards.map(({id}) => id), [
+        deckMinion.id,
+        discardedMinion.id,
+    ]);
+    assert.equal(params.selectedCard, discardedMinion);
 });

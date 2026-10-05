@@ -21,6 +21,8 @@ export class McSelectTargetDialog extends McCardListDialog {
             data: {
                 ...super.defaultProperties.data,
                 showCounters: true,
+                showLife: true,
+                showDamage: true,
             },
         };
     }

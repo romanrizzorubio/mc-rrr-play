@@ -50,6 +50,23 @@ test('Madame Hydra uses a constant ability for her cannot-take-damage restrictio
     assert.equal(cardAbilities[2].type, ABILITY_FORCED_RESPONSE);
 });
 
+test('defeating Madame Hydra clears her validation-only constant trigger', async () => {
+    const match = {triggerCards: {}};
+    const cardConfig = legionsOfHydra.config.cards.find(({card}) =>
+        card.params.name === 'Madame Hydra').card;
+    const factory = new CardsFactory({match});
+    const madameHydra = factory.createGameCard({
+        card: factory.createCard(cardConfig),
+        owner: {},
+    });
+
+    await madameHydra.initTriggers();
+
+    assert.equal(match.triggerCards[madameHydra.id], madameHydra);
+    assert.doesNotThrow(() => madameHydra.endTriggers());
+    assert.equal(match.triggerCards[madameHydra.id], undefined);
+});
+
 test('Madame Hydra can place threat on Legions of Hydra after she attacks', async () => {
     const outOfPlayLegions = {name: 'Legiones de Hydra'};
     const legions = {

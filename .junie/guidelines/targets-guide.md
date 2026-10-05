@@ -19,7 +19,7 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve cero, no hay objetivo válido.
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS` y `TARGET_ALL_SCHEMES`. También puede configurarse `multipleTarget`.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS` y `TARGET_ALL_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
 
 En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devuelven colecciones, pero no están en la lista de `isMultipleTarget`; por sí solos no significan que el efecto se aplique a todos.
 
@@ -33,6 +33,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_CARD` | La carta de `params.card`. |
 | `TARGET_EFFECT` | El efecto de `params.effect`. |
 | `TARGET_EFFECT_PLAY_CARD` | El efecto de jugar una carta (`params.playCardEffect`). |
+| `TARGET_INITIAL_PLAYER` | El jugador inicial de la partida. |
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
 | `TARGET_SCENARIO` | El escenario de la partida. |
@@ -46,6 +47,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | Constante | Candidatos |
 | :--- | :--- |
 | `TARGET_ALL_CARDS` | Las cartas recibidas en `params.cards`. |
+| `TARGET_ALL_ALLIES` | Todos los aliados en juego, controlados por cualquier jugador. |
 | `TARGET_ALL_CHARACTERS` | Enemigos y personajes amigos de la partida. |
 | `TARGET_ALL_ENEMIES` | Todos los enemigos. |
 | `TARGET_ALL_HEROES` | Todos los superhéroes. |
@@ -66,6 +68,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | :--- | :--- |
 | `TARGET_ALLY` | Los aliados del jugador actual. |
 | `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
+| `TARGET_ALL_ALLIES_YOU_CONTROL` | Todos los aliados controlados por el jugador actual. |
 | `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
@@ -78,6 +81,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_ALTEREGO_SIDE` | Los lados de alter ego de `params.card`. |
 | `TARGET_ATTACHED` | La carta a la que está vinculada `ability.card`, si la hay. |
 | `TARGET_ENGAGED` | El enemigo enfrentado a `params.card`. |
+| `TARGET_ENGAGED_HERO` | El jugador enfrentado a `params.card`, solo si está en forma de héroe; devuelve ninguno si está en forma de alter ego. |
 | `TARGET_HERO_SIDE` | Los lados de héroe de `params.card`. |
 | `TARGET_OUTSIDE_NEMESIS` | Las cartas de archienemigo apartadas del juego del jugador actual. |
 | `TARGET_SIDE` | Los otros lados de `params.card`, excluyendo el lado actual. |

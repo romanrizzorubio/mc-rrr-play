@@ -26,7 +26,7 @@ export default [
                 'traits': [
                     TRAIT_CONDITION
                 ],
-                'cost': 0,
+                'cost': 2,
                 'resources': [
                     RESOURCE_ENERGY
                 ],

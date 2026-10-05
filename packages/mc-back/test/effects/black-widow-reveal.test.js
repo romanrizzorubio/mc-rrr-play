@@ -17,6 +17,7 @@ import {
 } from '../../src/effects/cancel-encounter-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {AbilitiesFactory} from '../../src/factory/abilities/abilities-factory.js';
+import {GameCard} from '../../src/model/cards/game-card.js';
 import {TRIGGER_MAP} from '../../src/factory/triggers/triggers-map.js';
 import {EncounterRevealTrigger} from '../../src/triggers/encounter-reveal-trigger.js';
 import protectionAllies from '../../../mc-data/seed/catalog/aspects/protection/allies.js';
@@ -108,4 +109,58 @@ test('cancel encounter defaults to treacheries and CARD_TYPE_ANY matches encount
     assert.equal(cancelAnyEncounter.matchType(treachery), true);
     assert.equal(cancelAnyEncounter.matchType(minion), true);
     assert.equal(cancelAnyEncounter.matchType(playerCard), false);
+});
+
+test('cancel encounter cannot cancel permanent, villain, or main scheme reveals', () => {
+    const cancelAnyEncounter = new CancelEncounterEffect({type: CARD_TYPE_ANY});
+    const protectedCards = [
+        new GameCard({
+            card: {id: 'villain', isEncounterCard: true, isVillain: true},
+        }),
+        new GameCard({
+            card: {id: 'main-scheme', isEncounterCard: true, isMainScheme: true},
+        }),
+        new GameCard({
+            card: {
+                id: 'permanent',
+                isEncounterCard: true,
+                keywords: {permanent: true},
+            },
+        }),
+    ];
+
+    for (const selectedTarget of protectedCards) {
+        assert.equal(selectedTarget.hasUncancellableAbilities, true);
+        assert.equal(cancelAnyEncounter.canRun({
+            effect: {
+                canceled: CANCEL_ENCOUNTER_NOT,
+                selectedTarget,
+            },
+        }), false);
+    }
+
+    assert.equal(cancelAnyEncounter.canRun({
+        effect: {
+            canceled: CANCEL_ENCOUNTER_NOT,
+            selectedTarget: new GameCard({
+                card: {id: 'encounter-card', isEncounterCard: true},
+            }),
+        },
+    }), true);
+});
+
+test('uncancellable abilities follow the current side of a double-sided card', () => {
+    const regularSide = new GameCard({card: {id: 'regular-side'}});
+    const permanentSide = new GameCard({
+        card: {id: 'permanent-side', keywords: {permanent: true}},
+    });
+    const doubleSidedCard = new GameCard({
+        sides: [regularSide, permanentSide],
+    });
+
+    assert.equal(doubleSidedCard.hasUncancellableAbilities, false);
+
+    doubleSidedCard.selectedSide = 1;
+
+    assert.equal(doubleSidedCard.hasUncancellableAbilities, true);
 });

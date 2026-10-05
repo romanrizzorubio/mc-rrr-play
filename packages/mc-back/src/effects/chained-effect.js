@@ -28,7 +28,7 @@ export class ChainedEffect extends Effect {
         return super.ability;
     }
     set ability(ability) {
-        this._ability = ability;
+        super.ability = ability;
         this.effects.forEach(effect => {
             effect.ability = ability;
         });
@@ -77,6 +77,8 @@ export class ChainedEffect extends Effect {
         await this.promisesSequential(this.effects, async effect => {
             if (effect.target === this.target) {
                 effect.selectedTarget = this.selectedTarget;
+            } else if (effect.refreshTarget) {
+                effect.selectedTarget = undefined;
             }
         });
 

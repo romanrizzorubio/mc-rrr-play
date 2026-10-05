@@ -310,6 +310,18 @@ export class GameCard extends Engine {
 
         return this.card.isVillain;
     }
+    get hasUncancellableAbilities() {
+        if (this.sides.length) {
+            return this.currentSide.hasUncancellableAbilities;
+        }
+
+        return Boolean(
+            this.isVillain ||
+            this.isMainScheme ||
+            this.card?.permanent ||
+            this.card?.keywords?.permanent
+        );
+    }
     get match() {
         if (this.sides.length) {
             return this.currentSide.match;
@@ -397,7 +409,7 @@ export class GameCard extends Engine {
         return this.card.uses;
     }
     addFaceDown(card) {
-        if (card instanceof Array) {
+        if (Array.isArray(card)) {
             card.forEach(_card => {
                 this.addFaceDown(_card);
             });
@@ -456,7 +468,7 @@ export class GameCard extends Engine {
 
         await this.init();
 
-        if (encounterDeck && encounterDeck.discardPile.includes(this)) {
+        if (encounterDeck?.discardPile.includes(this)) {
             await encounterDeck.refresh();
         }
     }
@@ -758,7 +770,7 @@ export class GameCard extends Engine {
         return {
             ...card.toObj(arguments[0]),
             id,
-            parentId: parent && parent.id,
+            parentId: parent?.id,
             cost,
             counters,
             exhausted,

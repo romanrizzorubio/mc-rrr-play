@@ -21,10 +21,14 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
             const {player} = params;
 
             const validTarget = new ValidTarget({
+                effect: this,
                 match: this.match,
                 multipleTarget: true,
+                condition: this.condition,
             });
             this.enemies = await validTarget.selectTarget({
+                ...params,
+                ability: this.ability,
                 target: enemiesType,
                 player,
             });

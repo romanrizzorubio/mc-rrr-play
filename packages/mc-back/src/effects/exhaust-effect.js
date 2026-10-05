@@ -5,18 +5,24 @@ export class ExhaustEffect extends Effect {
         return !card.exhausted &&
             super.filterTarget.apply(this, arguments);
     }
-    async execute(_params) {
-        const {selectedTarget} = this;
+    async execute() {
+        const selectedTargets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
+        const gameZones = new Set();
 
-        selectedTarget.exhaust();
+        for (const target of selectedTargets) {
+            target.exhaust();
+            await target.refresh();
 
-        await selectedTarget.refresh();
-
-        const gameZone = selectedTarget.gameZone ||
-            selectedTarget.controller?.gameZone ||
-            selectedTarget.owner?.gameZone;
-        if (gameZone) {
-            await gameZone.refresh();
+            const gameZone = target.gameZone ||
+                target.controller?.gameZone ||
+                target.owner?.gameZone;
+            if (gameZone) {
+                gameZones.add(gameZone);
+            }
         }
+
+        await this.promisesSequential([...gameZones], gameZone => gameZone.refresh());
     }
 }

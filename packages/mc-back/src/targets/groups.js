@@ -2,6 +2,7 @@ import {
     TARGET_ALL_CARDS,
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_ENEMIES,
+    TARGET_ALL_ALLIES,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
     TARGET_SELECTED_PLAYER_CHARACTERS,
@@ -17,6 +18,8 @@ import {
 
 export const groupTargets = {
     [TARGET_ALL_CARDS]: ({cards}) => cards,
+    [TARGET_ALL_ALLIES]: ({match}) =>
+        match.players.flatMap(player => player.allies),
     [TARGET_ALL_CHARACTERS]: ({match}) => match.enemies.concat(match.friends),
     [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,

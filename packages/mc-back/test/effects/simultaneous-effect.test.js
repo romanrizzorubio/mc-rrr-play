@@ -25,6 +25,7 @@ import {AbilitiesFactory} from '../../src/factory/abilities/abilities-factory.js
 import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {Effect} from '../../src/effects/effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {Trigger} from '../../src/triggers/base/trigger.js';
 import aggressionAllies from '../../../mc-data/seed/catalog/aspects/aggression/allies.js';
 import blackPanther from '../../../mc-data/seed/catalog/heroes/blackpanther.js';
@@ -305,6 +306,76 @@ test('Dagas de energía resolves both damage effects simultaneously', () => {
     assert.equal(effect.effects.length, 2);
 });
 
+test('Wakanda Forever resets stale damage prevention and minion targets', async () => {
+    const player = {
+        gameZone: {cards: []},
+        isHero: true,
+        isPlayer: true,
+        minions: [],
+    };
+    const staleMinion = {
+        abilities: [],
+        damage: 0,
+        id: 'stale-minion',
+        async getLife() {
+            return 10 - this.damage;
+        },
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        async refresh() {},
+    };
+    const rhino = {
+        abilities: [],
+        damage: 0,
+        async getLife() {
+            return 14 - this.damage;
+        },
+        id: 'rhino',
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        async refresh() {},
+    };
+    const match = {
+        players: [player],
+        triggerCards: {},
+        villain: rhino,
+    };
+    const cardsFactory = new CardsFactory({match});
+    match.effectsFactory = cardsFactory.abilitiesFactory.effectsFactory;
+    const daggersConfig = blackPanther.config.cards.find(({card}) =>
+        card.params.name === 'Dagas de energía').card;
+    const daggers = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(daggersConfig),
+        owner: player,
+    });
+    daggers.toObj = () => ({id: daggers.id, name: daggers.card.name});
+    daggers.abilities[0].effect.effects[0].preventDamage = 2;
+    daggers.abilities[0].effect.effects[1].selectedTarget = [staleMinion];
+    player.gameZone.cards.push(daggers);
+    const wakandaConfig = blackPanther.config.cards.find(({card}) =>
+        card.params.name === '¡Wakanda por siempre!').card;
+    const wakanda = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(wakandaConfig),
+        owner: player,
+    });
+    let specialDialogs = 0;
+    wakanda.abilities[0].effect.openDialog = async ({data}) => {
+        specialDialogs++;
+
+        return {
+            selected: [{id: data.cards[0].id}],
+        };
+    };
+
+    await wakanda.abilities[0].resolveAbility({match, player});
+
+    assert.equal(specialDialogs, 1);
+    assert.equal(rhino.damage, 2);
+    assert.equal(staleMinion.damage, 0);
+});
+
 test('Hierba con forma de corazón gives tough simultaneously to villain and minions', () => {
     const match = {triggerCards: {}};
     const factory = new AbilitiesFactory({match});
@@ -334,12 +405,51 @@ test('Envuelto en telaraña resolves cancellation and discard together, then stu
     const card = spiderMan.config.cards.find(({card: cardData}) =>
         cardData.params.name === 'Envuelto en telaraña');
     const effectConfig = card.card.params.abilities[0].params.effect;
+    const cancelAttackConfig = effectConfig.params.effects[0].params.effects[0];
     const effect = factory.effectsFactory.parseEffect(effectConfig);
 
+    assert.equal(cancelAttackConfig.params?.target, undefined);
     assert.ok(effect instanceof ChainedEffect);
     assert.ok(effect.effects[0] instanceof SimultaneousEffect);
     assert.equal(effect.effects[0].effects.length, 2);
     assert.equal(effect.thenEffect.effectType, EFFECT_STUN);
+});
+
+test('Envuelto en telaraña keeps its target when its source is discarded before the then effect', async () => {
+    const match = {triggerCards: {}};
+    const factory = new AbilitiesFactory({match});
+    const card = spiderMan.config.cards.find(({card: cardData}) =>
+        cardData.params.name === 'Envuelto en telaraña');
+    const effectConfig = card.card.params.abilities[0].params.effect;
+    const effect = factory.effectsFactory.parseEffect(effectConfig);
+    const attachedEnemy = {
+        isStunned: false,
+        refresh() {},
+        stun() {
+            this.isStunned = true;
+        },
+    };
+    const sourceCard = {attachedTo: attachedEnemy};
+    const ability = {card: sourceCard};
+
+    effect.ability = ability;
+    await effect.prepare({});
+    effect.execute = async () => {
+        sourceCard.attachedTo = undefined;
+    };
+    effect.isResolved = () => true;
+    effect.isFullResolved = () => true;
+    effect.triggerEnds = async () => {};
+    effect.thenEffect.runEffect = async params => {
+        await effect.thenEffect.prepare(params);
+        effect.thenEffect.execute(params);
+    };
+
+    await effect.resolvePrepared({}, {});
+
+    assert.equal(effect.thenEffect.ability, ability);
+    assert.equal(effect.thenEffect.selectedTarget, attachedEnemy);
+    assert.equal(attachedEnemy.isStunned, true);
 });
 
 test('Evitar una crisis removes threat from another scheme when Vuelo cósmico grants Aerial', async () => {

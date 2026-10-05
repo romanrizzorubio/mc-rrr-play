@@ -1,4 +1,5 @@
 import {
+    TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALLY,
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_FRIENDLY_CHARACTER,
@@ -7,6 +8,7 @@ import {
 } from 'mc-shared';
 
 export const playerControlledTargets = {
+    [TARGET_ALL_ALLIES_YOU_CONTROL]: ({player}) => player.allies,
     [TARGET_ALLY]: ({player}) => player.allies,
     [TARGET_ALL_ENGAGED_MINIONS]: ({player}) => player.minions,
     [TARGET_FRIENDLY_CHARACTER]: ({player}) => player.friends,

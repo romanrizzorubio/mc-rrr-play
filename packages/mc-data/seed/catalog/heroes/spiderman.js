@@ -494,10 +494,7 @@ export default {
                                                     'params': {
                                                         'effects': [
                                                             {
-                                                                'type': EFFECT_CANCEL_ATTACK,
-                                                                'params': {
-                                                                    'target': TARGET_EFFECT
-                                                                }
+                                                                'type': EFFECT_CANCEL_ATTACK
                                                             },
                                                             {
                                                                 'type': EFFECT_DISCARD_GAME,

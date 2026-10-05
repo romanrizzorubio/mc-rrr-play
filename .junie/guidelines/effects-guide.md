@@ -7,6 +7,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | Tipo de Efecto | Uso y Criterio de Selección |
 | :--- | :--- |
 | `EFFECT_ADD_TRAIT` | Para otorgar rasgos; dentro de un `EFFECT_LASTING`, el motor los quita al expirar. |
+| `EFFECT_CHANGE_ATTACK_TARGETS` | Sustituye los objetivos del ataque de enemigo actual por los indicados por `target`. |
+| `EFFECT_CANCEL_ATTACK` | Cancela la activación de ataque del contexto actual (`params.attack.effect`); en efectos anidados, no uses `TARGET_EFFECT`, que puede señalar al efecto contenedor. |
 | `EFFECT_CANCEL_ENCOUNTER` | Cancela perfidias por defecto; usa `type: CARD_TYPE_ANY` para cancelar cualquier carta de encuentro. |
 | `EFFECT_CANNOT_TARGET` | Solo dentro de `validation` de una capacidad constante. Excluye objetivos según `effectTypes` o `effectCategories` (por ejemplo, `EFFECT_CATEGORY_DAMAGE`); `condition` busca una carta en juego, `targetCondition` limita las cartas afectadas y `effectCondition` evalúa el efecto o su fuente. No se resuelve como efecto normal. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
@@ -23,17 +25,19 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_DISCARD_HAND` | Para "descartar cartas" de la mano. |
 | `EFFECT_DISCARD_GAME` | Para "descartar" cartas que ya están en juego (mejoras, apoyos, etc.). |
 | `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. Toma solo las cartas disponibles, las descarta juntas y en orden, y conserva esas cartas en `cards` para cálculos posteriores. Si el mazo queda vacío, se cicla el descarte después del lote; el efecto no continúa descartando del mazo nuevo. |
-| `EFFECT_EXHAUST` | Para "agotar" una carta. |
+| `EFFECT_DISCARD_UNTIL` | Descarta del mazo objetivo hasta la primera carta que cumpla `condition`, la deja en el descarte y la guarda en `selectedCard` para los siguientes efectos encadenados; no la revela. |
+| `EFFECT_EXHAUST` | Para "agotar" una carta; usa `TARGET_ALL_ALLIES` para agotar todos los aliados en juego o `TARGET_ALL_ALLIES_YOU_CONTROL` para agotar solo los que controla el jugador actual. |
+| `EFFECT_REQUIRE_DEFENDER` | Durante un ataque, si hay defensores que cumplen `condition`, solo ofrece esos defensores y obliga a elegir uno; no se puede continuar sin defender. Si ninguno cumple la condición, el ataque continúa con las opciones de defensa normales y puede quedar sin defender según las reglas habituales. |
 | `EFFECT_READY` | Para "preparar" una carta agotada. |
 | `EFFECT_STUN` | Para aplicar el estado "aturdido". |
 | `EFFECT_CONFUSE` | Para aplicar el estado "confundido". |
 | `EFFECT_TOUGH` | Para aplicar el estado "duro". |
 | `EFFECT_FLIP` | Para "dar la vuelta" a la carta de identidad (cambiar de Héroe a Alter ego o viceversa). |
-| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en las ubicaciones indicadas por `locations`, incluidos los mazos y pilas de descartes de jugador y de encuentros. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter`; `distinctNames: true` muestra todas las cartas válidas y deshabilita las del mismo nombre mientras una esté seleccionada. |
+| `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en las ubicaciones indicadas por `locations`, incluidos los mazos y pilas de descartes de jugador y de encuentros. Por defecto permite elegir entre todas las coincidencias; `firstMatch: true` selecciona solo la primera según el orden de búsqueda. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter`; `distinctNames: true` muestra todas las cartas válidas y deshabilita las del mismo nombre mientras una esté seleccionada. |
 | `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
 | `EFFECT_MOVE_TO_HAND` | Frecuentemente encadenado con búsquedas para "añadir a la mano". |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
-| `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. No implica por sí solo la condición estricta de "Luego". |
+| `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. No implica por sí solo la condición estricta de "Luego". Conserva el contexto de capacidad y, si `thenEffect` usa el mismo `target`, reutiliza el objetivo ya seleccionado. |
 | `EFFECT_SIMULTANEOUS` | Para efectos independientes conectados por "y" que las reglas mandan resolver simultáneamente. Prepara interrupciones y diálogos del grupo antes de aplicarlo, sin ventanas de respuesta entre sus efectos; después resuelve las respuestas. En `arrow`, todos los costes son obligatorios. |
 | `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
@@ -45,6 +49,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
 | `EFFECT_ENGAGE` | Para poner un esbirro en juego enfrentado al jugador objetivo. |
+| `EFFECT_SEVERAL_ATTACKS` | Resuelve ataques de varios enemigos; `attackTarget` usa un selector `TARGET_*` para elegir a quién ataca cada enemigo. Por ejemplo, `TARGET_ENGAGED` selecciona al jugador enfrentado al enemigo. |
 | `EFFECT_REVEAL_ENCOUNTER` | Para revelar una carta de encuentro de un origen. Por defecto toma la primera ya entregada al jugador (`PLACE_PLAYER_ENCOUNTERS`); `from: PLACE_ENCOUNTER_DECK` toma la carta superior del mazo. |
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
 

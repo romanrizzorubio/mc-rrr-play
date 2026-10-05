@@ -41,7 +41,15 @@ export class Engine {
         }
 
         return this.promisesSequentialReduce(Object.keys(match.triggerCards), async (ret, cardId) => {
+            // A previous awaited trigger check can remove this snapshotted entry.
+            if (!Object.hasOwn(match.triggerCards, cardId)) {
+                return ret;
+            }
+
             const card = match.triggerCards[cardId];
+            if (!card) {
+                throw new Error(`Missing card registered for trigger key "${cardId}"`);
+            }
 
             await this.promisesSequential(Object.keys(card.triggers), async triggerKey => {
                 if (type.includes(triggerKey)) {

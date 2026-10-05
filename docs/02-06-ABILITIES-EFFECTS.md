@@ -83,6 +83,7 @@ La palabra "no puede" es absoluta y no puede ser revocada por otras capacidades 
 - Si dos capacidades entran en conflicto, la capacidad con "no puede" tiene precedencia.
 - Si dos reglas entran en conflicto, la regla con "no puede" tiene precedencia.
 - Una capacidad puede anular una regla con "no puede" según las Reglas de Oro.
+- No se puede evitar ni cancelar la resolución de las capacidades de cartas con la palabra clave **Permanente**, cartas de villano o cartas de plan principal. Sus efectos individuales sí pueden ser evitados de forma independiente. Tampoco se puede cancelar la revelación o entrada en juego de esas cartas.
 
 **Véase también**: Reglas de Oro, objetivo.
 

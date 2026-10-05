@@ -34,8 +34,11 @@ export class TakeDamageEffect extends Effect {
         const damage = this.paramsCalc ?
             this.calculate(params) :
             this.damage;
+        const canTakeDamage = Array.isArray(damage) ?
+            damage.some(amount => amount >= 1) :
+            damage >= 1;
 
-        if (damage < 1) {
+        if (!canTakeDamage) {
             return false;
         }
 
@@ -49,10 +52,55 @@ export class TakeDamageEffect extends Effect {
         }
         return takenDamage > 0;
     }
+    getStatusTarget(target = this.selectedTarget) {
+        return target.isPlayer ?
+            target.superhero.currentSide :
+            target;
+    }
     checkStatus() {
         const {selectedTarget} = this;
 
-        return !selectedTarget.isTough;
+        if (Array.isArray(selectedTarget)) {
+            return true;
+        }
+
+        return !this.getStatusTarget(selectedTarget).isTough;
+    }
+    async triggerWould(params) {
+        const canResolve = await super.triggerWould(params);
+        const {selectedTarget} = this;
+
+        if (!canResolve || !Array.isArray(selectedTarget)) {
+            return canResolve;
+        }
+
+        const damage = Array.isArray(this.damage) ?
+            this.damage.slice() :
+            selectedTarget.map(() => this.damage);
+        const prevention = Array.isArray(this.preventDamage) ?
+            this.preventDamage :
+            selectedTarget.map(() => this.preventDamage);
+        let hasDamage = false;
+
+        for (let index = 0; index < selectedTarget.length; index++) {
+            const target = selectedTarget[index];
+            const statusTarget = this.getStatusTarget(target);
+            const prevented = prevention[index] || 0;
+
+            if (statusTarget.isTough && damage[index] - prevented > 0) {
+                statusTarget.removeTough();
+                await statusTarget.refresh();
+                damage[index] = prevented;
+            }
+
+            if (damage[index] - prevented > 0) {
+                hasDamage = true;
+            }
+        }
+
+        this.damage = damage;
+
+        return hasDamage;
     }
     getTitle() {
         return `Sufres ${this.damage} de Daño.`;
@@ -66,10 +114,11 @@ export class TakeDamageEffect extends Effect {
     }
     resolveStatus() {
         const {selectedTarget} = this;
+        const statusTarget = this.getStatusTarget(selectedTarget);
 
-        selectedTarget.removeTough();
+        statusTarget.removeTough();
 
-        selectedTarget.refresh();
+        statusTarget.refresh();
     }
     getTriggersWould() {
         return super.getTriggersWould()

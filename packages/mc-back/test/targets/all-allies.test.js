@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+
+import {
+    TARGET_ALL_ALLIES,
+    TARGET_ALL_ALLIES_YOU_CONTROL,
+    TARGET_ALLY,
+} from 'mc-shared';
+import {ValidTarget} from '../../src/targets/valid-target.js';
+import {groupTargets} from '../../src/targets/groups.js';
+import {playerControlledTargets} from '../../src/targets/player-controlled.js';
+
+test('TARGET_ALL_ALLIES selects allies controlled by every player', async () => {
+    const allies = [{id: 'ally-1'}, {id: 'ally-2'}];
+    const otherPlayerAllies = [{id: 'other-player-ally'}];
+    const player = {allies};
+    const otherPlayer = {allies: otherPlayerAllies};
+    const match = {players: [player, otherPlayer]};
+    const validTarget = new ValidTarget({
+        match,
+    });
+
+    assert.deepEqual(
+        groupTargets[TARGET_ALL_ALLIES]({match}),
+        [...allies, ...otherPlayerAllies]
+    );
+    assert.deepEqual(
+        await validTarget.selectTarget({target: TARGET_ALL_ALLIES, player}),
+        [...allies, ...otherPlayerAllies]
+    );
+    assert.equal(validTarget.isMultipleTarget({target: TARGET_ALL_ALLIES}), true);
+});
+
+test('TARGET_ALL_ALLIES_YOU_CONTROL selects only allies controlled by the current player', async () => {
+    const allies = [{id: 'ally-1'}, {id: 'ally-2'}];
+    const player = {allies};
+    const otherPlayer = {allies: [{id: 'other-player-ally'}]};
+    const validTarget = new ValidTarget({
+        match: {players: [player, otherPlayer]},
+    });
+
+    assert.deepEqual(
+        playerControlledTargets[TARGET_ALL_ALLIES_YOU_CONTROL]({player}),
+        allies
+    );
+    assert.deepEqual(
+        await validTarget.selectTarget({
+            target: TARGET_ALL_ALLIES_YOU_CONTROL,
+            player,
+        }),
+        allies
+    );
+    assert.equal(
+        validTarget.isMultipleTarget({target: TARGET_ALL_ALLIES_YOU_CONTROL}),
+        true
+    );
+    assert.equal(validTarget.isMultipleTarget({target: TARGET_ALLY}), false);
+});

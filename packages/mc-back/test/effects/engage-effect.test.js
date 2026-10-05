@@ -22,6 +22,7 @@ const createScenarioDeck = (location, card) => {
 for (const location of ['deck', 'discardPile']) {
     test(`EngageEffect moves a searched minion from the encounter ${location} into play`, async () => {
         const card = {
+            damage: 2,
             isMinion: true,
             isInPlay: false,
             isPlayerCard: false,
@@ -54,5 +55,6 @@ for (const location of ['deck', 'discardPile']) {
         assert.deepEqual(player.gameZone.minions, [card]);
         assert.equal(card.controller, player);
         assert.equal(card.engaged, player);
+        assert.equal(card.damage, 0);
     });
 }

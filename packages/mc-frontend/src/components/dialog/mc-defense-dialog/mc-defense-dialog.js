@@ -30,7 +30,17 @@ export class McDefenseDialog extends McDialog {
         };
     }
     getTitle() {
-        return 'Quieres defender';
+        const targetName = this.data.attack?.target?.name;
+
+        if (this.hideOk) {
+            return targetName ?
+                `Debes elegir un defensor para el ataque contra ${targetName}` :
+                'Debes elegir un defensor para este ataque';
+        }
+
+        return targetName ?
+            `¿Quieres defender el ataque contra ${targetName}?` :
+            'Quieres defender';
     }
     handleDefenseSelect(e) {
         const {card} = e.detail;
@@ -42,12 +52,13 @@ export class McDefenseDialog extends McDialog {
         this.sendResponse();
     }
     renderContent() {
-        const {data: {attack, defenders}} = this;
+        const {data: {attack, defenders}, hideOk} = this;
 
         return attack ? html`
             <mc-defense
                 .attack="${attack}"
                 .defenders="${defenders}"
+                .mustDefend="${hideOk}"
                 @select-defender="${this.handleDefenseSelect.bind(this)}"
             ></mc-defense>
         ` : html``;

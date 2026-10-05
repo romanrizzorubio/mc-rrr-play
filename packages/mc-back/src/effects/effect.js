@@ -90,6 +90,10 @@ export class Effect extends Engine {
     }
     set ability(ability) {
         this._ability = ability;
+
+        if (this.thenEffect) {
+            this.thenEffect.ability = ability;
+        }
     }
     get character() {
         return path(this, 'ability.character');
@@ -483,6 +487,10 @@ export class Effect extends Engine {
         this.fullResolved = this.isFullResolved();
 
         if (this.resolved && this.fullResolved && this.thenEffect) {
+            if (this.thenEffect.target === this.target) {
+                this.thenEffect.selectedTarget = this.selectedTarget;
+            }
+
             await this.thenEffect.runEffect(effectParams);
             if (this.thenEffect.paymentCancelled) {
                 this.paymentCancelled = true;
