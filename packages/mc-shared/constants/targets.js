@@ -54,6 +54,7 @@ export const TARGET_IDENTITY = CHARACTER_IDENTITY;
 export const TARGET_MAIN_SCHEME = 'main-scheme';
 export const TARGET_MINION = CHARACTER_MINION;
 export const TARGET_MINION_HIGHEST_HP = 'minion-highest-hp';
+export const TARGET_MINION_HIGHEST_PRINTED_HP = 'minion-highest-printed-hp';
 export const TARGET_OUTSIDE_NEMESIS = PLACE_OUTSIDE_NEMESIS;
 export const TARGET_OWNER = 'owner';
 export const TARGET_PLAYER = 'player';

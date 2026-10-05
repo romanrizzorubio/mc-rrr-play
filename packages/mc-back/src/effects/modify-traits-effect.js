@@ -14,6 +14,13 @@ export class ModifyTraitsEffect extends Effect {
         await super.prepare(params);
     }
     async execute(params) {
+        const {selectedTarget} = this;
+
+        if (selectedTarget && Array.isArray(selectedTarget.modifyTraits)) {
+            selectedTarget.modifyTraits.push(...this.traits);
+            return;
+        }
+
         await addCharacterTraits(this, params, this.traits);
     }
 }

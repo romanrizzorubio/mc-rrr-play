@@ -65,11 +65,17 @@ export class Hand extends Engine {
         return this.cards.find(card => card.id === cardId);
     }
     getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
-        return this.cards.filter(card =>
-            !excludedCardIds.has(card.id) &&
-            !card.isPlaying &&
-            (!cardToPlay || card.id !== cardToPlay.id) &&
-            (!resourceType || card.resources.some(r => r === resourceType || r === RESOURCE_WILD)));
+        return this.cards.filter(card => {
+            const resources = resourceType ?
+                card.card.getResources(cardToPlay) :
+                undefined;
+
+            return !excludedCardIds.has(card.id) &&
+                !card.isPlaying &&
+                (!cardToPlay || card.id !== cardToPlay.id) &&
+                (!resourceType || resources.some(r =>
+                    r === resourceType || r === RESOURCE_WILD));
+        });
     }
     searchCards(condition) {
         return this.cards

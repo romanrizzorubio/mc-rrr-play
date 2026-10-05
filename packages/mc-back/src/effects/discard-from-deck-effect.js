@@ -15,8 +15,11 @@ export class DiscardFromDeckEffect extends Effect {
     async execute(params) {
         const {player} = params;
         const {count} = this;
+        const deck = typeof this.selectedTarget?.discardTopCards === 'function' ?
+            this.selectedTarget :
+            player.deck;
 
-        this.cards = await player.deck.draw(count);
+        this.cards = await deck.discardTopCards(count);
         if (this.cards.length > 0) {
             await this.openDialog({
                 dialogType: DIALOG_REVEAL_CARDS,
@@ -28,8 +31,6 @@ export class DiscardFromDeckEffect extends Effect {
             });
         }
 
-        await player.deck.discard(this.cards);
-
-        player.deck.refresh();
+        deck.refresh();
     }
 }

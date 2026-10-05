@@ -270,21 +270,21 @@ export default {
                                                     'params': {
                                                         'threat': 2,
                                                         'target': TARGET_SCHEME,
-                                                        'thenEffect': {
-                                                            'type': EFFECT_DO_IF_HAS_TRAITS,
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_DO_IF_HAS_TRAITS,
+                                                    'params': {
+                                                        'target': TARGET_YOUR_HERO,
+                                                        'traits': [
+                                                            TRAIT_AERIAL
+                                                        ],
+                                                        'effect': {
+                                                            'type': EFFECT_REMOVE_THREAT,
                                                             'params': {
-                                                                'target': TARGET_YOUR_HERO,
-                                                                'traits': [
-                                                                    TRAIT_AERIAL
-                                                                ],
-                                                                'effect': {
-                                                                    'type': EFFECT_REMOVE_THREAT,
-                                                                    'params': {
-                                                                        'threat': 2,
-                                                                        'target': TARGET_SCHEME,
-                                                                        'excludeTarget': 'effects.0.selectedTarget'
-                                                                    }
-                                                                }
+                                                                'threat': 2,
+                                                                'target': TARGET_SCHEME,
+                                                                'excludeTarget': 'effects.0.selectedTarget'
                                                             }
                                                         }
                                                     }

@@ -77,11 +77,41 @@ export class MongoDataStore {
             .sort({order: 1})
             .toArray();
     }
-    getScenariosList() {
-        return this._collection(collectionNames.scenarios)
-            .find({}, {projection: {_id: 0, name: 1, folder: 1}})
+    async getScenariosList() {
+        const scenarios = await this._collection(collectionNames.scenarios)
+            .find({}, {
+                projection: {
+                    _id: 0,
+                    name: 1,
+                    folder: 1,
+                    order: 1,
+                    'config.sets': 1,
+                    'config.defaultSets': 1,
+                },
+            })
             .sort({order: 1})
             .toArray();
+
+        return scenarios.map(({name, folder, config}) => ({
+            name,
+            folder,
+            configuredSets: [...(config.sets || []), ...(config.defaultSets || [])],
+        }));
+    }
+    async getModularSetsList() {
+        const sets = await this._collection(collectionNames.sets)
+            .find({'config.standard': false}, {
+                projection: {
+                    _id: 1,
+                    'config.name': 1,
+                },
+            })
+            .toArray();
+
+        return sets.map(({_id, config}) => ({
+            id: _id,
+            name: config.name,
+        }));
     }
     async getHeroConfig(id) {
         const config = await this._getConfig(collectionNames.heroes, id);

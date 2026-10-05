@@ -82,10 +82,12 @@ export class CostPaymentSession {
             return {blocked: true, cancelled: false, resolved: false};
         }
 
-        const pendingPayments = effect.getCostPaymentEffects(effectParams)
-            .filter(paymentEffect =>
-                this.isPrepared(paymentEffect) && !this.isSkipped(paymentEffect));
-        while (pendingPayments.length) {
+        while (true) {
+            const pendingPayments = effect.getCostPaymentEffects(effectParams)
+                .filter(paymentEffect =>
+                    this.isPrepared(paymentEffect) &&
+                    !this.isSkipped(paymentEffect) &&
+                    !this.hasPayment(paymentEffect));
             const effectsWithDialogs = pendingPayments.filter(paymentEffect =>
                 paymentEffect.shouldPromptForPayment(effectParams, this));
             if (!effectsWithDialogs.length) {
@@ -110,9 +112,7 @@ export class CostPaymentSession {
                 this.discardDeferredResponses();
                 return {blocked: false, cancelled: true, resolved: false};
             }
-
             this.stagePayment(paymentEffect, payment);
-            pendingPayments.splice(pendingPayments.indexOf(paymentEffect), 1);
         }
 
         if (!await effect.canRun(effectParams)) {

@@ -251,6 +251,7 @@ Express y Socket.IO comparten el servidor HTTP del backend, que escucha en el pu
 | `GET` | `/get-heroes-list` | Obtener la lista de héroes |
 | `GET` | `/get-matches-list` | Listar partidas persistidas en MongoDB |
 | `GET` | `/get-scenarios-list` | Obtener la lista de escenarios |
+| `GET` | `/get-modular-sets-list` | Obtener los conjuntos modulares disponibles |
 | `POST` | `/create-match` | Crear una partida |
 | `DELETE` | `/delete-match` | Eliminar una partida de memoria y de MongoDB |
 | `POST` | `/create-player` | Añadir un jugador |
@@ -370,6 +371,8 @@ Frontend                                  Backend
    └─ Recibe JSON y renderiza la partida
 ```
 
+La creación de una partida también consulta `/get-modular-sets-list` y envía la selección al crear el escenario.
+
 ### Ejecutar Acción
 
 ```
@@ -391,7 +394,7 @@ Diálogos: el backend emite `open-dialog` con un identificador de solicitud; el 
 
 ### REST API
 
-Se usa para obtener las listas de héroes, escenarios y partidas activas, crear e inicializar una partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend. El backend obtiene las listas y configuraciones de contenido mediante `mc-data` desde MongoDB.
+Se usa para obtener las listas de héroes, escenarios, conjuntos modulares y partidas activas, crear e inicializar una partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend. El backend obtiene las listas y configuraciones de contenido mediante `mc-data` desde MongoDB.
 
 Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` resuelve las rutas (con `/` inicial) contra `httpHost` usando `new URL()`, por lo que `/create-match` se solicita como `http://localhost:3000/create-match`.
 

@@ -73,7 +73,7 @@ test('Soldado de Hydra has Guard and deals an encounter card to its engaged play
     const [whenDefeated] = soldier.abilities;
     const effect = whenDefeated.effect;
 
-    assert.equal(count, 2);
+    assert.equal(count, 3);
     assert.equal(cardConfig.type, CARD_TYPE_MINION);
     assert.equal(cardConfig.params.abilities[0].type, ABILITY_WHEN_DEFEATED);
     assert.deepEqual(soldier.traits, [TRAIT_HYDRA]);

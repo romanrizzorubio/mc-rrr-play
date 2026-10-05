@@ -63,6 +63,10 @@ Elegir el villano y escenario contra el que jugarán.
 - **Difícil** - Más amenaza, más esbirros (minions), enemigos más fuertes
 - **Experto** - Máxima dificultad, cambios de reglas
 
+### Elegir Conjuntos Modulares
+
+Al crear una partida, las listas de conjuntos modulares muestran a la izquierda los disponibles en orden alfabético y a la derecha los seleccionados para la partida. Los conjuntos modulares configurados por el escenario aparecen seleccionados por defecto. Se pueden añadir o quitar conjuntos antes de crear la partida; los conjuntos estándar del escenario se conservan automáticamente.
+
 ## Jugabilidad
 
 ### Pantalla Principal del Juego

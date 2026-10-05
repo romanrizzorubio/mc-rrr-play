@@ -9,6 +9,7 @@ import {Calc} from '../../engine/calc.js';
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
 import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
+import {GetTraitsEffect} from '../../effects/get-traits-effect.js';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
 export class CharacterGameCard extends GameCard {
@@ -333,6 +334,12 @@ export class CharacterGameCard extends GameCard {
     async defeat(player) {
         if (this.isVillain) {
             await this.match.scenario.selectVillain(player);
+        } else if (this.isSuperhero) {
+            this.stunned = 0;
+            this.confused = 0;
+            this.tough = 0;
+
+            await this.owner.defeat();
         } else {
             this.stunned = 0;
             this.confused = 0;
@@ -409,6 +416,21 @@ export class CharacterGameCard extends GameCard {
             thwart,
             defense,
         };
+    }
+    async getEffectiveTraits() {
+        const {controller} = this;
+
+        if (!controller) {
+            throw new Error(`Character ${this.id} has no controller for trait calculation.`);
+        }
+
+        const getTraitsEffect = new GetTraitsEffect({
+            selectedTarget: this.currentSide,
+            match: this.match,
+        });
+        await getTraitsEffect.runEffect({player: controller});
+
+        return getTraitsEffect.traits;
     }
     async refresh() {
         const {controller, match} = this;

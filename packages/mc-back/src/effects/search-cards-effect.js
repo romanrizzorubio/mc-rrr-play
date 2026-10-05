@@ -144,6 +144,10 @@ export class SearchCardsEffect extends Effect {
                 return card;
         });
 
+        if (selectedCards.length) {
+            this.setSelectedCards(params, selectedCards);
+        }
+
         return {
                 cards: selectedCards,
                 generators: [],
@@ -214,19 +218,23 @@ export class SearchCardsEffect extends Effect {
                 typeof card === 'string' ?
                     options.find(candidate => candidate.id === card) :
                     options.find(candidate => candidate.id === card.id) || card);
-            if (this.distinctNames) {
-                const selectedNames = new Set();
-                params.selectedCards = params.selectedCards.filter(card => {
-                    if (!card || selectedNames.has(card.name)) {
-                        return false;
-                    }
-
-                    selectedNames.add(card.name);
-                    return true;
-                });
-            }
-            params.selectedCard = params.selectedCards[0];
+            this.setSelectedCards(params, params.selectedCards);
             params.card = params.selectedCard;
         }
+    }
+    setSelectedCards(params, selectedCards) {
+        params.selectedCards = selectedCards;
+        if (this.distinctNames) {
+            const selectedNames = new Set();
+            params.selectedCards = params.selectedCards.filter(card => {
+                if (!card || selectedNames.has(card.name)) {
+                    return false;
+                }
+
+                selectedNames.add(card.name);
+                return true;
+            });
+        }
+        params.selectedCard = params.selectedCards[0];
     }
 }

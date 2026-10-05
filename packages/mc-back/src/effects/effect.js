@@ -33,7 +33,7 @@ export class Effect extends Engine {
             activation,
             keywords = {},
             isArrow = false,
-            isAttack = false,
+            isAttack,
             isDefense = false,
             isScheme = false,
             isThwart = false,
@@ -136,7 +136,7 @@ export class Effect extends Engine {
         return (isAttack || isDefense || isScheme || isThwart);
     }
     get isAttack() {
-        return this._isAttack || (!this.isArrow && this.ability && this.ability.isAttack);
+        return this._isAttack ?? (!this.isArrow && this.ability && this.ability.isAttack);
     }
     set isAttack(isAttack) {
         this._isAttack = isAttack;

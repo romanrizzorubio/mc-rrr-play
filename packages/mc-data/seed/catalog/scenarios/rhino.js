@@ -34,11 +34,11 @@ import {
     TARGET_ALL_HEROES,
     TARGET_ALL_PLAYERS,
     TARGET_ATTACHED,
-    TARGET_ATTACKED,
     TARGET_CARD,
     TARGET_EFFECT,
     TARGET_VILLAIN,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
     TRAIT_ARMOR,
     TRAIT_BRUTE,
     TRAIT_CRIMINAL,
@@ -72,7 +72,7 @@ export default {
                     'scheme': 1,
                     'attack': 2,
                     'hitPoints': [
-                        14,
+                        1,
                         true
                     ]
                 }
@@ -92,7 +92,7 @@ export default {
                     'scheme': 1,
                     'attack': 3,
                     'hitPoints': [
-                        15,
+                        1,
                         true
                     ],
                     'abilities': [
@@ -509,10 +509,11 @@ export default {
                                                     'type': EFFECT_DO_IF_TAKE_DAMAGE,
                                                     'params': {
                                                         'source': 'effects.0',
+                                                        'target': TARGET_YOUR_HERO,
                                                         'effect': {
                                                             'type': EFFECT_STUN,
                                                             'params': {
-                                                                'target': TARGET_ATTACKED
+                                                                'target': TARGET_YOUR_HERO
                                                             }
                                                         }
                                                     }

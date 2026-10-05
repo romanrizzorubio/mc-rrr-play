@@ -63,6 +63,7 @@ export class Trigger {
         this.paymentCancelled = false;
         await ability.resolveAbility({
             ...params,
+            preselectedTarget: false,
             triggeredCard: params.card,
             card,
         });

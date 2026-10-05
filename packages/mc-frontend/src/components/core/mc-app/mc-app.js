@@ -7,13 +7,19 @@ import '../mc-navigate/mc-navigate.js';
 import '../mc-main/mc-main.js';
 import '../../../pages/mc-create-match-page/mc-create-match-page.js';
 import '../../../pages/mc-match-page/mc-match-page.js';
+import '../../common/mc-alert/mc-alert.js';
 import '../../dialog/index.js';
 import '@material/web/dialog/dialog.js';
 import {Api} from '../../api/api.js';
 import {Dialog} from '../../api/dialog.js';
 import stylesDialog from '../../dialog/mc-dialog/mc-dialog.css.js';
 import {EVENTS} from 'mc-endpoints';
-import {DIALOG_REVEAL_CARDS} from 'mc-shared';
+import {
+    DIALOG_REVEAL_CARDS,
+    MATCH_END_REASON_ALL_HEROES_DEFEATED,
+    MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
+    MATCH_END_REASON_VILLAIN_DEFEATED,
+} from 'mc-shared';
 
 class McApp extends router(navigator(outlet(LitElement))) {
     static get styles() {
@@ -65,6 +71,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.pendingResumeMatch = '';
 
         this.apiDialog = null;
+        this.gameOverNotice = '';
         this.removeConnectionStateListener = null;
         this.removeCommunicationErrorListener = null;
         this.addEventListener(EVENTS.MATCH.CREATED, this.handleMatchCreated.bind(this));
@@ -233,6 +240,20 @@ class McApp extends router(navigator(outlet(LitElement))) {
     }
     handleSocketMatch(match) {
         this.match = match;
+        const gameOverNotice = `${match.name}:${match.gameOverReason}`;
+        const gameOverMessages = {
+            [MATCH_END_REASON_MAIN_SCHEME_COMPLETED]:
+                'Has perdido la partida porque se ha completado el plan principal.',
+            [MATCH_END_REASON_VILLAIN_DEFEATED]:
+                '¡Has ganado la partida! Has derrotado al villano.',
+            [MATCH_END_REASON_ALL_HEROES_DEFEATED]:
+                'Has perdido la partida porque todos los superhéroes han sido derrotados.',
+        };
+        const gameOverMessage = gameOverMessages[match.gameOverReason];
+        if (gameOverMessage && this.gameOverNotice !== gameOverNotice) {
+            this.gameOverNotice = gameOverNotice;
+            this.showAlert(gameOverMessage);
+        }
         if (this.pendingResumeMatch === match.name && this.api.match === match.name) {
             this.pendingResumeMatch = '';
             this.navigate('match');
@@ -242,6 +263,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         const {match, player} = e.detail;
 
         this.pendingResumeMatch = '';
+        this.gameOverNotice = '';
         this.match = match;
         this.player = player.name;
 

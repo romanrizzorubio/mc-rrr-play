@@ -97,13 +97,17 @@ export class DoIfEffect extends Effect {
     }
     getEffectProperty(name, params) {
         const checked = this.checkCondition(params);
+        const effect = checked ? this.effect : this.effectNot;
 
-        return checked ? this.effect.getEffectProperty(name, params) : this.effectNot.getEffectProperty(name, params);
+        return effect ? effect.getEffectProperty(name, params) : undefined;
     }
     setEffectProperty(name, value, params) {
         const checked = this.checkCondition(params);
+        const effect = checked ? this.effect : this.effectNot;
 
-        return checked ? this.effect.setEffectProperty(name, value, params) : this.effectNot.setEffectProperty(name, value, params);
+        if (effect) {
+            effect.setEffectProperty(name, value, params);
+        }
     }
     async prepare(params) {
         await super.prepare(params);
@@ -124,11 +128,10 @@ export class DoIfEffect extends Effect {
     }
     async execute(params) {
         const checked = await this.checkCondition(params);
+        const effect = checked ? this.effect : this.effectNot;
 
-        if (checked) {
-            return this.effect.runEffect(params);
-        } else if (this.effectNot) {
-            return this.effectNot.runEffect(params);
+        if (effect) {
+            return effect.runEffect(params);
         }
     }
 }

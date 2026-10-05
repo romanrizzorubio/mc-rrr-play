@@ -17,6 +17,9 @@ export class SchemeGameCard extends GameCard {
     get content() {
         return this.card.content;
     }
+    get final() {
+        return this.card.final;
+    }
     get gameZone() {
         if (this.isSideScheme) {
             return this.match.scenario.gameZone;

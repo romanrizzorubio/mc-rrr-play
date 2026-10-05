@@ -28,6 +28,9 @@ export class PlayPlayersPhaseEffect extends PlayPhaseEffect {
             await this.turn.runEffect({player});
             this.match.turnIndex = i + 1;
             await this.match.persist();
+            if (!this.match.playing) {
+                return;
+            }
         }
 
         this.match.turnIndex = players.length;

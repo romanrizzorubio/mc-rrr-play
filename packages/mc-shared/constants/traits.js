@@ -8,6 +8,7 @@ export const TRAIT_BLACK_PANTHER = 'black panther';
 export const TRAIT_BRUTE = 'brute';
 export const TRAIT_CONDITION = 'condition';
 export const TRAIT_CRIMINAL = 'criminal';
+export const TRAIT_CYBORG = 'cyborg';
 export const TRAIT_DEFENDER = 'defender';
 export const TRAIT_DEFENSE = 'defense';
 export const TRAIT_DROID = 'droid';

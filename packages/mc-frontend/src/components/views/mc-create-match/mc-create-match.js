@@ -7,6 +7,9 @@ import '../../common/mc-panel/mc-panel.js';
 
 const ID_PLAYER = 'player';
 const ID_SCENARIO = 'scenario';
+const compareSetNames = (left, right) =>
+    left.name.localeCompare(right.name, 'es', {sensitivity: 'base'}) ||
+    left.id.localeCompare(right.id);
 
 export class McCreateMatch extends LitElement {
     static get is() {
@@ -23,6 +26,8 @@ export class McCreateMatch extends LitElement {
             scenario: {type: Object},
             heroesList: {type: Array},
             scenariosList: {type: Array},
+            modularSetsList: {type: Array},
+            selectedModularSets: {type: Array},
         };
     }
 
@@ -34,6 +39,8 @@ export class McCreateMatch extends LitElement {
         this.scenario = {};
         this.heroesList = [];
         this.scenariosList = [];
+        this.modularSetsList = [];
+        this.selectedModularSets = [];
     }
     get disabled() {
         return !this.validate();
@@ -67,9 +74,46 @@ export class McCreateMatch extends LitElement {
     }
     handleScenarioChanged(e) {
         const {scenario} = e.detail;
+        const configuredScenario = this.scenariosList.find(item => item.folder === scenario);
+        const availableSetIds = new Set(this.modularSetsList.map(({id}) => id));
+
+        this.selectedModularSets = [...new Set(configuredScenario.configuredSets)]
+            .filter(id => availableSetIds.has(id));
 
         this.scenario = {
             scenario,
+            modularSets: this.selectedModularSets,
+        };
+    }
+    get sortedModularSets() {
+        return [...this.modularSetsList].sort(compareSetNames);
+    }
+    get availableModularSets() {
+        const selected = new Set(this.selectedModularSets);
+
+        return this.sortedModularSets.filter(({id}) => !selected.has(id));
+    }
+    get chosenModularSets() {
+        const selected = new Set(this.selectedModularSets);
+
+        return this.sortedModularSets.filter(({id}) => selected.has(id));
+    }
+    addModularSet(id) {
+        if (this.selectedModularSets.includes(id)) {
+            return;
+        }
+
+        this.selectedModularSets = [...this.selectedModularSets, id];
+        this.scenario = {
+            ...this.scenario,
+            modularSets: this.selectedModularSets,
+        };
+    }
+    removeModularSet(id) {
+        this.selectedModularSets = this.selectedModularSets.filter(setId => setId !== id);
+        this.scenario = {
+            ...this.scenario,
+            modularSets: this.selectedModularSets,
         };
     }
     async handlePlayerChanged(e) {
@@ -132,11 +176,66 @@ export class McCreateMatch extends LitElement {
             </mc-panel>
             `;
     }
+    renderModularSets() {
+        if (!this.scenario.scenario) {
+            return html`
+                <mc-panel title="Conjuntos modulares">
+                    <p>Selecciona un escenario para configurar los conjuntos modulares.</p>
+                </mc-panel>
+            `;
+        }
+
+        return html`
+            <mc-panel title="Conjuntos modulares">
+                <div class="modular-sets">
+                    <section aria-labelledby="available-sets-title">
+                        <h3 id="available-sets-title">Disponibles</h3>
+                        ${this.availableModularSets.length ? html`
+                            <ul class="modular-set-list">
+                                ${this.availableModularSets.map(set => html`
+                                    <li>
+                                        <button
+                                            type="button"
+                                            aria-label="Añadir ${set.name}"
+                                            @click="${() => this.addModularSet(set.id)}"
+                                        >
+                                            <span>${set.name}</span>
+                                            <span aria-hidden="true">+</span>
+                                        </button>
+                                    </li>
+                                `)}
+                            </ul>
+                        ` : html`<p class="empty-list">No hay conjuntos disponibles.</p>`}
+                    </section>
+                    <section aria-labelledby="selected-sets-title">
+                        <h3 id="selected-sets-title">Seleccionados</h3>
+                        ${this.chosenModularSets.length ? html`
+                            <ul class="modular-set-list">
+                                ${this.chosenModularSets.map(set => html`
+                                    <li>
+                                        <button
+                                            type="button"
+                                            aria-label="Quitar ${set.name}"
+                                            @click="${() => this.removeModularSet(set.id)}"
+                                        >
+                                            <span>${set.name}</span>
+                                            <span aria-hidden="true">-</span>
+                                        </button>
+                                    </li>
+                                `)}
+                            </ul>
+                        ` : html`<p class="empty-list">No hay conjuntos seleccionados.</p>`}
+                    </section>
+                </div>
+            </mc-panel>
+        `;
+    }
     render() {
         return html`
             ${this.renderMatch()}
             ${this.renderPlayer()}
             ${this.renderScenario()}
+            ${this.renderModularSets()}
             ${this.renderButton()}
         `;
     }

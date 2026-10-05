@@ -88,6 +88,10 @@ export class Ability extends Engine {
         }
     }
     get character() {
+        if (this._resolutionContext) {
+            return this._resolutionContext.character;
+        }
+
         if (this._card) {
             if (this._card.isEvent) {
                 return this._card.owner;
@@ -234,39 +238,47 @@ export class Ability extends Engine {
     }
     async resolveAbility(params) {
         const {player, preselectedTarget = false, arrowPaid = false} = params;
+        const previousResolutionContext = this._resolutionContext;
+        this._resolutionContext = {
+            character: this.character,
+        };
 
-        this.resolved = false;
-        this.paymentCancelled = false;
-        this.prepareEffect({preselectedTarget});
+        try {
+            this.resolved = false;
+            this.paymentCancelled = false;
+            this.prepareEffect({preselectedTarget});
 
-        const canRun = await this.canRun(params);
+            const canRun = await this.canRun(params);
 
-        if (canRun) {
-            const costsPaid = arrowPaid || await this.payArrow(params);
+            if (canRun) {
+                const costsPaid = arrowPaid || await this.payArrow(params);
 
-            if (costsPaid) {
-                if (this.effect) {
-                    await this.effect.runEffect({
-                        ...params,
-                        player,
-                    });
+                if (costsPaid) {
+                    if (this.effect) {
+                        await this.effect.runEffect({
+                            ...params,
+                            player,
+                        });
 
-                    if (this.effect.paymentCancelled) {
-                        this.paymentCancelled = true;
-                        return;
+                        if (this.effect.paymentCancelled) {
+                            this.paymentCancelled = true;
+                            return;
+                        }
+
+                        this.resolved = this.effect.resolved;
                     }
-
-                    this.resolved = this.effect.resolved;
+                    this.useLimit();
                 }
-                this.useLimit();
-            }
-        } else if (this.ifNot) {
-            await this.ifNot.runEffect({
-                ...params,
-                card: params.card || this.card,
-            });
+            } else if (this.ifNot) {
+                await this.ifNot.runEffect({
+                    ...params,
+                    card: params.card || this.card,
+                });
 
-            this.resolved = this.ifNot.resolved;
+                this.resolved = this.ifNot.resolved;
+            }
+        } finally {
+            this._resolutionContext = previousResolutionContext;
         }
     }
 

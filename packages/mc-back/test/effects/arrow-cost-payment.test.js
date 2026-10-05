@@ -9,6 +9,7 @@ import {
     PRIORITY_RESPONSE,
     PLACE_DISCARD_PILE,
     RESOURCE_ENERGY,
+    RESOURCE_ANY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_YOU,
@@ -22,8 +23,10 @@ import {InterruptAbility} from '../../src/abilities/interrupt/interrupt-ability.
 import {ResponseAbility} from '../../src/abilities/response/response-ability.js';
 import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {Effect} from '../../src/effects/effect.js';
+import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {SelectDiscardToCardEffect} from '../../src/effects/select-discard-to-card-effect.js';
+import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
 import {SpendEffect} from '../../src/effects/spend-effect.js';
 import {Engine} from '../../src/engine/engine.js';
 import {Trigger} from '../../src/triggers/base/trigger.js';
@@ -352,6 +355,71 @@ test('staged search choices are passed through Arrow outputParams', async () => 
 
     assert.equal(await arrow.pay(params), true);
     assert.equal(params.selectedCard, selectedCard);
+});
+
+test('stages the selected card printed cost after preparing a search choice', async () => {
+    const selectedCard = {
+        id: 'maria-hill',
+        name: 'Maria Hill',
+        cost: 2,
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
+    };
+    const paymentOrder = [];
+    const player = {
+        deck: {discardPile: [selectedCard]},
+        hand: {cards: []},
+        isPlayer: true,
+        async spendResources(resources, cardToPay) {
+            paymentOrder.push('printed-cost');
+            assert.equal(cardToPay, selectedCard);
+            assert.deepEqual(resources, Array(selectedCard.cost).fill(RESOURCE_ANY));
+
+            return {
+                generators: [],
+                hand: [],
+                resources,
+            };
+        },
+    };
+    const match = {
+        players: [player],
+        triggerCards: {},
+        async openDialog({dialogType, data}) {
+            assert.equal(dialogType, DIALOG_SELECT_CARD);
+            paymentOrder.push('select-card');
+
+            return {selected: [{id: data.cards[0].id}]};
+        },
+    };
+    const cardToPlay = {id: 'ability-card', cost: 0};
+    const cost = new SimultaneousEffect({
+        effects: [
+            new SearchCardsEffect({
+                locations: [PLACE_DISCARD_PILE],
+                match,
+                selectedTarget: player,
+                target: TARGET_YOU,
+            }),
+            new PayPrintedCostEffect({
+                match,
+                selectedTarget: player,
+                target: TARGET_YOU,
+            }),
+        ],
+        match,
+        matchAll: true,
+        outputParams: ['selectedCard'],
+        selectedTarget: player,
+        target: TARGET_YOU,
+    });
+    const params = {card: cardToPlay, player};
+
+    assert.equal(await new Arrow({cost}).pay(params), true);
+    assert.deepEqual(paymentOrder, ['select-card', 'printed-cost']);
+    assert.equal(params.selectedCard, selectedCard);
+    assert.equal(params.card, cardToPlay);
 });
 
 test('does not re-offer an ability when a cost interrupt makes payment impossible', async () => {

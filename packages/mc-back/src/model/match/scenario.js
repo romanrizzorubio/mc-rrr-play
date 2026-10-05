@@ -1,4 +1,8 @@
 import {EVENTS} from 'mc-endpoints';
+import {
+    MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
+    MATCH_END_REASON_VILLAIN_DEFEATED,
+} from 'mc-shared';
 import {PutPlayEffect} from '../../effects/put-play-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {Engine} from '../../engine/engine.js';
@@ -123,6 +127,58 @@ export class Scenario extends Engine {
         await this.gameZone.currentScheme.flip();
         this.gameZone.currentScheme.currentSide.initScheme();
     }
+    async completeMainScheme(completedScheme, params) {
+        const currentScheme = this.gameZone.currentScheme;
+        const currentSide = currentScheme.currentSide;
+
+        if (completedScheme !== currentSide ||
+            currentSide.threat < currentSide.value) {
+            return false;
+        }
+
+        const nextScheme = this.mainSchemes[0];
+        if (currentSide.final || !nextScheme) {
+            await this.match.finishGame(MATCH_END_REASON_MAIN_SCHEME_COMPLETED);
+            return false;
+        }
+
+        const nextSchemeASide = nextScheme.sides.find(side =>
+            side.isMainScheme && side.final === undefined);
+        const nextSchemeBSide = nextScheme.sides.find(side =>
+            side.isMainScheme && side.final !== undefined);
+        if (!nextSchemeASide || !nextSchemeBSide) {
+            throw new Error('La siguiente etapa del plan principal no tiene lados A y B.');
+        }
+
+        const accelerationTokens = currentSide.accelerationTokens;
+        this.mainSchemes.shift();
+        currentScheme.endTriggers(true);
+        await currentSide.removeAttached();
+        this.match.removeCard(currentScheme);
+
+        this.gameZone.currentScheme = nextScheme;
+        nextScheme.selectedSide = nextScheme.sides.indexOf(nextSchemeASide);
+
+        const player = params.player || this.match.initialPlayer;
+        await this.revealMainSchemeSide(nextSchemeASide, player);
+        await nextScheme.flip({
+            player,
+            selectedFormTarget: nextSchemeBSide,
+        });
+        nextScheme.currentSide.initScheme();
+        nextScheme.currentSide.accelerationTokens += accelerationTokens;
+        await this.revealMainSchemeSide(nextScheme.currentSide, player);
+        await this.match.refresh();
+
+        return true;
+    }
+    async revealMainSchemeSide(schemeSide, player) {
+        const revealEncounterEffect = new RevealEncounterEffect({
+            selectedTarget: schemeSide,
+            match: this.match,
+        });
+        await revealEncounterEffect.runEffect({player});
+    }
     removeCardFromDeck(card) {
         this.deck.removeCardFromDeck(card);
     }
@@ -138,6 +194,7 @@ export class Scenario extends Engine {
     }
     async selectVillain(player) {
         if (!this.villains.length) {
+            await this.match.finishGame(MATCH_END_REASON_VILLAIN_DEFEATED);
             this.match.mc.mcSocket.send(
                 this.match.name,
                 EVENTS.SCENARIO.DEFEAT,

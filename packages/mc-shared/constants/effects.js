@@ -55,6 +55,7 @@ export const EFFECT_PAY_PRINTED_COST = 'pay-printed-cost';
 export const EFFECT_PLACE_COUNTERS = 'place-counters';
 export const EFFECT_PLACE_DAMAGE = 'place-damage';
 export const EFFECT_PLACE_THREAT = 'place-threat';
+export const EFFECT_PREVENT_DEFEAT = 'prevent-defeat';
 export const EFFECT_PREVENT_DAMAGE = 'prevent-damage';
 export const EFFECT_PREVENT_PLACE_DAMAGE = 'prevent-place-damage';
 export const EFFECT_PREVENT_PLACE_THREAT = 'prevent-place-threat';

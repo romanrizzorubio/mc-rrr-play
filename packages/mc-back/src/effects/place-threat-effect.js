@@ -2,7 +2,6 @@ import {
    TARGET_SCHEME,
    TRIGGER_PLACE_THREAT,
    TRIGGER_WOULD_PLACE_THREAT,
-   EFFECT_DEFEAT,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -12,7 +11,7 @@ export class PlaceThreatEffect extends Effect {
         target = TARGET_SCHEME,
         threat,
     }) {
-        super(arguments[0]);
+        super({...arguments[0], target});
 
         this._threat = threat;
         this.preventThreat = 0;
@@ -56,17 +55,11 @@ export class PlaceThreatEffect extends Effect {
 
         selectedTarget.placeThreat(threat);
 
-        selectedTarget.refresh();
-
-        if (selectedTarget.isMain) {
-            if (selectedTarget.threat >= selectedTarget.card.value) {
-                const defeatEffect = this.match.effectsFactory.createEffect({
-                    type: EFFECT_DEFEAT,
-                    selectedTarget,
-                });
-
-                await defeatEffect.runEffect(params);
-            }
+        if (selectedTarget.isMainScheme &&
+            selectedTarget.threat >= selectedTarget.value) {
+            await this.match.scenario.completeMainScheme(selectedTarget, params);
+        } else {
+            selectedTarget.refresh();
         }
     }
 }

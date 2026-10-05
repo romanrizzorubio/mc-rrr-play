@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {EVENTS} from 'mc-endpoints';
+import {MATCH_END_REASON_VILLAIN_DEFEATED} from 'mc-shared';
+
 import {Scenario} from '../../src/model/match/scenario.js';
 
 test('replacing a villain stage removes old responses and registers the new stage', async () => {
@@ -92,4 +95,51 @@ test('replacing a villain stage removes old responses and registers the new stag
     assert.equal(scenario.villain, nextVillain);
     assert.equal(match.triggerCards[oldVillain.id], undefined);
     assert.equal(match.triggerCards[nextVillain.id], nextVillain);
+});
+
+test('defeating the final villain stage marks the match as won', async () => {
+    const emitted = [];
+    const finished = [];
+    const villain = {
+        toObj() {
+            return {id: 'rhino-stage-2'};
+        },
+    };
+    const match = {
+        mc: {
+            mcSocket: {
+                send(...params) {
+                    emitted.push(params);
+                },
+            },
+        },
+        name: 'rhino-match',
+        async finishGame(reason) {
+            finished.push(reason);
+        },
+    };
+    const scenario = new Scenario({
+        mainSchemes: [],
+        match,
+        name: 'Rino',
+        scenarioCards: [],
+        sets: [],
+        villains: [],
+    });
+    scenario.gameZone = {
+        currentVillain: villain,
+        toObj() {
+            return {};
+        },
+    };
+    scenario.toObj = () => ({name: scenario.name});
+
+    await scenario.selectVillain();
+
+    assert.deepEqual(finished, [MATCH_END_REASON_VILLAIN_DEFEATED]);
+    assert.deepEqual(emitted, [[
+        match.name,
+        EVENTS.SCENARIO.DEFEAT,
+        {name: scenario.name},
+    ]]);
 });

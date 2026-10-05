@@ -14,6 +14,21 @@ export const MixinAttachableCard = C => class extends C {
 
         this.isAttachable = true;
     }
+    getAttachConfig() {
+        return this.attach && typeof this.attach === 'object' ?
+            this.attach :
+            {target: this.attach};
+    }
+    createAttachEffect(card) {
+        const {target} = this.getAttachConfig();
+
+        return new AttachEffect({
+            card,
+            target,
+            canAttach: this.canAttach.bind(this),
+            match: this.match,
+        });
+    }
     canAttach(card) {
         if (this.maxAttach > 0) {
             const attached = card.attached.filter(attached => attached.card.id === this.id);
@@ -26,21 +41,8 @@ export const MixinAttachableCard = C => class extends C {
     }
     async attachCard(params) {
         const {card} = params;
-
-        let target = this.attach;
-        let ifNot = null;
-
-        if (this.attach instanceof Object) {
-            target = this.attach.target;
-            ifNot = this.attach.ifNot;
-        }
-
-        const attachEffect = new AttachEffect({
-            card,
-            target,
-            canAttach: this.canAttach.bind(this),
-            match: this.match,
-        });
+        const {ifNot} = this.getAttachConfig();
+        const attachEffect = this.createAttachEffect(card);
 
         const targets = await attachEffect.getValidTarget(params);
 

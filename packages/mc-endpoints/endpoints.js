@@ -5,6 +5,7 @@ export const ENDPOINTS = {
         GET_HEROES_LIST: '/get-heroes-list',
         GET_MATCHES_LIST: '/get-matches-list',
         GET_SCENARIOS_LIST: '/get-scenarios-list',
+        GET_MODULAR_SETS_LIST: '/get-modular-sets-list',
         INIT: '/init-match',
     },
     PLAYER: {

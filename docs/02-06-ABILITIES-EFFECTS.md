@@ -136,6 +136,7 @@ Si se cumplen ambas condiciones, sigue estos pasos en orden:
 - Si cualquiera de los pasos anteriores hiciera que la condición de activación de una capacidad de interrupción fuera verdadera, esa capacidad puede iniciarse justo antes de que esa condición de activación se vuelva verdadera.
 - Si cualquiera de los pasos anteriores hiciera que la condición de activación de una capacidad de respuesta fuera verdadera, esa capacidad puede iniciarse inmediatamente después de que esa condición de activación se vuelva verdadera.
 - Si la capacidad que se está iniciando está en una carta que está en juego, la secuencia no deja de completarse si esa carta abandona el juego durante esta secuencia, a menos que la salida de la carta del juego impida el pago de un coste requerido.
+- Si pagar el coste descarta la carta fuente, la capacidad y sus efectos restantes siguen resolviéndose. El motor debe conservar quién inició la capacidad; cualquier dato de la carta que se necesite después y que se reinicie al salir del juego debe guardarse antes de pagar el coste.
 
 **Véase también**: capacidad, coste, restricciones y permisos de juego, objetivo.
 

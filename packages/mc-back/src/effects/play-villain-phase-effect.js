@@ -129,6 +129,9 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             await this.runTracedStep(name, action);
             this.match.villainPhaseStep = i + 1;
             await this.match.persist();
+            if (!this.match.playing) {
+                return;
+            }
         }
 
         await super.execute(params);

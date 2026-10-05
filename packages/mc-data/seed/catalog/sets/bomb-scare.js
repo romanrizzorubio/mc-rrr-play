@@ -21,8 +21,8 @@ import {
 export default {
     '_id': 'bomb-scare',
     'config': {
-        'name': 'bomb-scare',
-        'standard': true,
+        'name': 'Amenaza de bomba',
+        'standard': false,
         'cards': [
             {
                 'count': 1,

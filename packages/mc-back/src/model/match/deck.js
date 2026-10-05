@@ -55,6 +55,13 @@ export class Deck extends Engine {
 
         await this.checkCycle();
     }
+    async discardTopCards(count) {
+        const discarded = this.cards.splice(0, count);
+
+        await this.discard(discarded);
+
+        return discarded;
+    }
     async discardUntil(condition, removeFromDiscard = false) {
         const {cards, discardPile} = this;
 

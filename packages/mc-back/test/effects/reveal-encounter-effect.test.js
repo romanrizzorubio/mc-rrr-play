@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {PLACE_ENCOUNTER_DECK} from 'mc-shared';
+import {
+    CARD_TYPE_ATTACHMENT,
+    PLACE_ENCOUNTER_DECK,
+    TARGET_MINION_HIGHEST_PRINTED_HP,
+} from 'mc-shared';
 import {CANCEL_ENCOUNTER_FULL} from '../../src/effects/cancel-encounter-effect.js';
+import {AttachEffect} from '../../src/effects/attach-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {Player} from '../../src/model/match/player.js';
 
 const createEncounterCard = id => ({
@@ -78,6 +84,117 @@ test('a fully canceled encounter card is discarded', async () => {
 
     assert.equal(await effect.triggerInit({}), false);
     assert.equal(discarded, true);
+});
+
+test('an attachment with no valid target is discarded and keeps its printed surge', async () => {
+    let discarded = false;
+    let surgeCount = 0;
+    const match = {
+        isUniqueCard: () => false,
+        minions: [],
+        triggerCards: {},
+        scenario: {},
+    };
+    const attachment = {
+        attach: {
+            target: TARGET_MINION_HIGHEST_PRINTED_HP,
+        },
+        getAttachConfig() {
+            return this.attach;
+        },
+        createAttachEffect(card) {
+            return new AttachEffect({
+                card,
+                match,
+                target: this.attach.target,
+            });
+        },
+    };
+    const selectedTarget = {
+        abilities: [],
+        card: attachment,
+        isAttachment: true,
+        isEncounterCard: true,
+        isMain: false,
+        isMinion: false,
+        isSideScheme: false,
+        isTreachery: false,
+        surge: true,
+        async discard() {
+            discarded = true;
+        },
+        endTriggers() {},
+    };
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget,
+    });
+    effect.applySurge = async () => {
+        surgeCount++;
+    };
+
+    await effect.execute({player: {}});
+
+    assert.equal(discarded, true);
+    assert.equal(surgeCount, 1);
+});
+
+test('an attachment with a valid target enters play and attaches to it', async () => {
+    let surgeCount = 0;
+    const scenario = {
+        gameZone: {
+            addToGameZone() {},
+            async refresh() {},
+        },
+    };
+    const minion = {
+        id: 'minion',
+        abilities: [],
+        attached: [],
+        currentSide: {
+            card: {hitPoints: 8},
+        },
+        async refresh() {},
+    };
+    const match = {
+        isUniqueCard: () => false,
+        minions: [minion],
+        numPlayers: 1,
+        scenario,
+        triggerCards: {},
+    };
+    const cardsFactory = new CardsFactory({match});
+    const card = cardsFactory.createCard({
+        type: CARD_TYPE_ATTACHMENT,
+        params: {
+            attach: {
+                target: TARGET_MINION_HIGHEST_PRINTED_HP,
+            },
+            keywords: {
+                surge: true,
+            },
+            maxAttach: 1,
+            name: 'Mejoras biomecánicas',
+            set: 'the-doomsday-chair',
+        },
+    });
+    const attachment = cardsFactory.createGameCard({
+        card,
+        owner: scenario,
+    });
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget: attachment,
+    });
+    effect.applySurge = async () => {
+        surgeCount++;
+    };
+
+    await effect.execute({player: {}});
+
+    assert.deepEqual(minion.attached, [attachment]);
+    assert.equal(attachment.attachedTo, minion);
+    assert.equal(surgeCount, 1);
 });
 
 test('nested reveals skip dealt cards already consumed by another reveal', async () => {

@@ -26,6 +26,7 @@ export class McCreateMatchPage extends LitElement {
             matches: {type: Array},
             resumingMatch: {type: String},
             scenariosList: {type: Array},
+            modularSetsList: {type: Array},
             selectedPlayers: {type: Object},
         };
     }
@@ -45,6 +46,7 @@ export class McCreateMatchPage extends LitElement {
         this.matchListRequestSequence = 0;
         this.resumingMatch = '';
         this.scenariosList = [];
+        this.modularSetsList = [];
         this.selectedPlayers = {};
     }
     connectedCallback() {
@@ -84,13 +86,15 @@ export class McCreateMatchPage extends LitElement {
         this.loadingCatalog = true;
 
         try {
-            const [heroesList, scenariosList] = await Promise.all([
+            const [heroesList, scenariosList, modularSetsList] = await Promise.all([
                 this.apiConfigMatch.getHeroesList(),
                 this.apiConfigMatch.getScenariosList(),
+                this.apiConfigMatch.getModularSetsList(),
             ]);
 
             this.heroesList = heroesList;
             this.scenariosList = scenariosList;
+            this.modularSetsList = modularSetsList;
         } catch (error) {
             this.creatingMatch = false;
             this.reportCommunicationError(error, 'No se pudo cargar la configuración');
@@ -300,11 +304,12 @@ export class McCreateMatchPage extends LitElement {
                 ${this.creatingGame ? html`
                     <p role="status">Creando partida y preparando el setup...</p>
                 ` : this.loadingCatalog ? html`
-                    <p role="status">Cargando héroes y escenarios...</p>
+                    <p role="status">Cargando héroes, escenarios y conjuntos modulares...</p>
                 ` : html`
                     <mc-create-match
                         .heroesList="${this.heroesList}"
                         .scenariosList="${this.scenariosList}"
+                        .modularSetsList="${this.modularSetsList}"
                         @create-match="${this.handleCreate.bind(this)}"
                     ></mc-create-match>
                 `}

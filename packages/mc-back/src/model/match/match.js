@@ -1,4 +1,4 @@
-import {REFRESH_EVENTS} from 'mc-endpoints';
+import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {path} from '../../engine/utils.js';
@@ -22,6 +22,7 @@ export class Match extends Engine {
         this.removedCards = [];
         this.scenario = null;
         this.playing = false;
+        this.gameOverReason = null;
         this.initialized = false;
         this.initializing = false;
         this.phase = null;
@@ -137,6 +138,28 @@ export class Match extends Engine {
         );
 
         return matchState;
+    }
+    async finishGame(reason) {
+        if (!reason) {
+            throw new Error('Falta el motivo por el que ha terminado la partida.');
+        }
+        if (this.gameOverReason) {
+            return;
+        }
+
+        this.playing = false;
+        this.gameOverReason = reason;
+
+        if (this.phase === 'players' && this.currentTurnPlayer) {
+            this.mc.mcSocket.dispatch(
+                this.name,
+                EVENTS.TURN.END,
+                {gameOver: true}
+            );
+        }
+
+        await this.persist();
+        await this.refresh();
     }
     get orderedPlayers() {
         const players = [];
@@ -412,6 +435,7 @@ export class Match extends Engine {
             name,
             phase,
             playing,
+            gameOverReason,
             players,
             scenario,
         } = this;
@@ -422,6 +446,7 @@ export class Match extends Engine {
             name,
             phase,
             playing,
+            gameOverReason,
             players: players.map(player => player.toObj()),
             scenario: scenario && scenario.toObj(),
         };

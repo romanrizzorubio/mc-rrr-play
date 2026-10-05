@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TRIGGER_THIS_ATTACK} from 'mc-shared';
+import {
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_TAKE_DAMAGE,
+    TRIGGER_THIS_ATTACK,
+} from 'mc-shared';
 import {Attack} from '../../src/activations/attack.js';
+import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
 import {RetaliateTrigger} from '../../src/triggers/retaliate-trigger.js';
 
 test('does not offer retaliation for an enemy removed from play by the attack', async () => {
@@ -160,4 +165,70 @@ test('the response attack uses only its own target retaliation', async () => {
     await responseRetaliation.runTrigger({});
 
     assert.deepEqual(appliedDamage, [{damage: 1, target: 'Pantera Negra'}]);
+});
+
+test('retaliation from a basic hero attack damages the player through its superhero', async () => {
+    const appliedDamage = [];
+    const heroSide = createCharacter('Pantera Negra', 1);
+    heroSide.isSuperhero = true;
+    heroSide.damage = 0;
+    const superhero = {
+        damage: 0,
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+    };
+    const player = {
+        isPlayer: true,
+        superhero,
+        placeDamage(damage) {
+            superhero.placeDamage(damage);
+        },
+    };
+    heroSide.owner = player;
+    const modok = createCharacter('M.O.D.O.K.', 2, true);
+    const match = {
+        enemies: [modok],
+        triggerCards: {},
+        effectsFactory: {
+            createEffect: params => {
+                if (params.type === EFFECT_DEAL_DAMAGE) {
+                    const effect = new DealDamageEffect({
+                        ...params,
+                        match,
+                    });
+
+                    assert.equal(effect.isAttack, false);
+
+                    return effect;
+                }
+
+                assert.equal(params.type, EFFECT_TAKE_DAMAGE);
+
+                return {
+                    takenDamage: params.damage,
+                    async runEffect() {
+                        params.selectedTarget.placeDamage(params.damage);
+                        appliedDamage.push(params.damage);
+                    },
+                };
+            },
+        },
+    };
+    const attack = new Attack({
+        effect: {
+            ability: {isAttack: true},
+            character: heroSide,
+            match,
+            ranged: false,
+            selectedTarget: modok,
+        },
+    });
+    const [trigger] = attack.getForcedResponseTriggers([TRIGGER_THIS_ATTACK]);
+
+    await trigger.runTrigger({});
+
+    assert.deepEqual(appliedDamage, [2]);
+    assert.equal(superhero.damage, 2);
+    assert.equal(heroSide.damage, 0);
 });

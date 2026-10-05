@@ -9,6 +9,7 @@ export * from './constants/dialogs.js';
 export * from './constants/effects.js';
 export * from './constants/effect-categories.js';
 export * from './constants/labels.js';
+export * from './constants/match.js';
 export * from './constants/places.js';
 export * from './constants/priorities.js';
 export * from './constants/resources.js';

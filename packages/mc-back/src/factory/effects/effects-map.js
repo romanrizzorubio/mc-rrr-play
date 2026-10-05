@@ -56,6 +56,7 @@ import {
     EFFECT_PLACE_COUNTERS,
     EFFECT_PLACE_DAMAGE,
     EFFECT_PLACE_THREAT,
+    EFFECT_PREVENT_DEFEAT,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
@@ -145,6 +146,7 @@ import {PayPrintedCostEffect} from '../../effects/pay-printed-cost-effect.js';
 import {PlaceCountersEffect} from '../../effects/place-counters-effect.js';
 import {PlaceDamageEffect} from '../../effects/place-damage-effect.js';
 import {PlaceThreatEffect} from '../../effects/place-threat-effect.js';
+import {PreventDefeatEffect} from '../../effects/prevent-defeat-effect.js';
 import {PreventDamageEffect} from '../../effects/prevent-damage-effect.js';
 import {PreventPlaceDamageEffect} from '../../effects/prevent-place-damage-effect.js';
 import {PreventPlaceThreatEffect} from '../../effects/prevent-place-threat-effect.js';
@@ -231,6 +233,7 @@ export const EFFECT_MAP = {
     [EFFECT_PLACE_COUNTERS]: PlaceCountersEffect,
     [EFFECT_PLACE_DAMAGE]: PlaceDamageEffect,
     [EFFECT_PLACE_THREAT]: PlaceThreatEffect,
+    [EFFECT_PREVENT_DEFEAT]: PreventDefeatEffect,
     [EFFECT_RANDOM_CARD]: RandomCardEffect,
     [EFFECT_READY]: ReadyEffect,
     [EFFECT_RESOLVE_SPECIAL_ABILITY]: ResolveSpecialAbilityEffect,

@@ -12,6 +12,10 @@ export class MatchRest {
         this.rest.get(ENDPOINTS.MATCH.GET_HEROES_LIST, this.getHeroesList.bind(this));
         this.rest.get(ENDPOINTS.MATCH.GET_MATCHES_LIST, this.getMatchesList.bind(this));
         this.rest.get(ENDPOINTS.MATCH.GET_SCENARIOS_LIST, this.getScenariosList.bind(this));
+        this.rest.get(
+            ENDPOINTS.MATCH.GET_MODULAR_SETS_LIST,
+            this.getModularSetsList.bind(this)
+        );
         this.rest.post(ENDPOINTS.MATCH.CREATE, this.createMatch.bind(this));
         this.rest.post(ENDPOINTS.MATCH.INIT, this.initMatch.bind(this));
         this.rest.delete(ENDPOINTS.MATCH.DELETE, this.deleteMatch.bind(this));
@@ -48,6 +52,9 @@ export class MatchRest {
     }
     getScenariosList() {
         return this.mc.data.getScenariosList();
+    }
+    getModularSetsList() {
+        return this.mc.data.getModularSetsList();
     }
     async deleteMatch({name}) {
         if (!name) {

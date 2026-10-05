@@ -42,7 +42,10 @@ export class Attack extends Activation {
         }
     }
     async applyRetaliate(target, params) {
-        const attacker = this.character;
+        const character = this.character;
+        const attacker = character?.isSuperhero && character.owner?.isPlayer ?
+            character.owner :
+            character;
 
         if (attacker && await this.canRetaliate(target)) {
             const dealDamageEffect = this.match.effectsFactory.createEffect({
@@ -50,6 +53,7 @@ export class Attack extends Activation {
                 damage: target.card.retaliate,
                 selectedTarget: attacker,
                 ability: this.effect.ability,
+                isAttack: false,
             });
 
             await dealDamageEffect.runEffect(params);

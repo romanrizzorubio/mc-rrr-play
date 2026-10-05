@@ -193,8 +193,38 @@ export class RevealEncounterEffect extends Effect {
             } else if (!selectedTarget.isTreachery) {
                 let target;
                 let controller = this.match.scenario;
+                let attachTarget;
+                let skipPutPlay = false;
                 if (selectedTarget.isAttachment) {
-                    target = selectedTarget.card.attach;
+                    const attachmentCard = selectedTarget.card;
+                    const attachConfig = attachmentCard.getAttachConfig();
+                    target = attachConfig.target;
+
+                    if (attachmentCard.attach && typeof attachmentCard.attach === 'object') {
+                        const attachEffect = attachmentCard.createAttachEffect(selectedTarget);
+                        attachTarget = await attachEffect.selectTarget({
+                            ...params,
+                            effect: attachEffect,
+                        });
+
+                        if (!attachTarget) {
+                            await selectedTarget.discard();
+                            if (attachConfig.ifNot) {
+                                const ifNotEffect = this.match.abilitiesFactory.effectsFactory
+                                    .createEffect(attachConfig.ifNot);
+                                if (!ifNotEffect) {
+                                    throw new Error('Unable to create attachment fallback effect.');
+                                }
+
+                                await ifNotEffect.runEffect({
+                                    ...params,
+                                    card: selectedTarget,
+                                    reveal: this,
+                                });
+                            }
+                            skipPutPlay = true;
+                        }
+                    }
                 } else if (selectedTarget.isSideScheme) {
                     target = TARGET_SCENARIO;
                 } else if (selectedTarget.giveToOwner) {
@@ -203,18 +233,21 @@ export class RevealEncounterEffect extends Effect {
                     params.player = selectedTarget.owner;
                 }
 
-                const putPlayEffect = new PutPlayEffect({
-                    card: selectedTarget,
-                    controller,
-                    target,
-                    match: this.match,
-                });
+                if (!skipPutPlay) {
+                    const putPlayEffect = new PutPlayEffect({
+                        card: selectedTarget,
+                        controller,
+                        target,
+                        selectedTarget: attachTarget,
+                        match: this.match,
+                    });
 
-                await putPlayEffect.runEffect({
-                    ...params,
-                    card: selectedTarget,
-                    reveal: this,
-                });
+                    await putPlayEffect.runEffect({
+                        ...params,
+                        card: selectedTarget,
+                        reveal: this,
+                    });
+                }
             }
         }
 

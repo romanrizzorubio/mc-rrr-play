@@ -51,6 +51,11 @@ export class ConfigMatch {
             endpoint: ENDPOINTS.MATCH.GET_SCENARIOS_LIST,
         });
     }
+    getModularSetsList() {
+        return this.api.get({
+            endpoint: ENDPOINTS.MATCH.GET_MODULAR_SETS_LIST,
+        });
+    }
     async initMatch(expert) {
         const match = await this.api.post({
             endpoint: ENDPOINTS.MATCH.INIT,

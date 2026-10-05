@@ -1,6 +1,7 @@
 import {
     DIALOG_DISCARD_HAND,
     DIALOG_PAY_COST,
+    MATCH_END_REASON_ALL_HEROES_DEFEATED,
     RESOURCES_X,
     TARGET_CARD,
 } from 'mc-shared';
@@ -39,6 +40,7 @@ export class Player extends Engine {
 
         this.mulliganDone = false;
         this.played = false;
+        this.defeated = false;
         this.isPlayer = true;
 
         superhero.owner = this;
@@ -204,12 +206,23 @@ export class Player extends Engine {
     confuse() {
         return this.superhero.confuse();
     }
-    defeat() {
+    async defeat() {
+        if (this.defeated) {
+            return;
+        }
+
+        this.defeated = true;
         this.match.mc.mcSocket.send(
             this.match.name,
             EVENTS.PLAYER.DEFEAT,
             this.toObj()
         );
+
+        if (this.match.players.every(player => player.defeated)) {
+            await this.match.finishGame(MATCH_END_REASON_ALL_HEROES_DEFEATED);
+        } else {
+            await this.match.refresh();
+        }
     }
     discardHand(card) {
         const discardFromHandEffect = new DiscardFromHandEffect({
@@ -532,6 +545,7 @@ export class Player extends Engine {
     toObj() {
         const {
             name,
+            defeated,
             deck,
             hand,
             superhero,
@@ -541,6 +555,7 @@ export class Player extends Engine {
 
         return {
             name,
+            defeated,
             handSize,
             deck: deck ? deck.toObj(arguments[0]) : undefined,
             hand: hand ? hand.toObj(arguments[0]) : undefined,
@@ -555,6 +570,12 @@ export class Player extends Engine {
         const life = hitPoints - this.superhero.damage;
         const {superhero} = this;
         const stats = await superhero.getEffectiveStats();
+        const effectiveTraits = await superhero.getEffectiveTraits();
+        const currentTraits = superhero.currentSide.traits;
+        const extraTraits = [...new Set([
+            ...player.superhero.extraTraits,
+            ...effectiveTraits.filter(trait => !currentTraits.includes(trait)),
+        ])];
         const abilities = await Promise.all(
             superhero.currentSide.abilities.map(async (ability, index) => {
                 const serializedAbility = {
@@ -588,6 +609,7 @@ export class Player extends Engine {
             superhero: {
                 ...player.superhero,
                 ...stats,
+                extraTraits,
                 hitPoints,
                 life,
                 abilities,

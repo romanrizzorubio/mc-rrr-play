@@ -13,6 +13,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_DEAL_ENCOUNTER` | Reparte una carta del mazo de Encuentros al jugador objetivo, boca abajo. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
 | `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
+| `EFFECT_PREVENT_DEFEAT` | Durante una interrupción de derrota, reemplaza esa derrota antes de que se resuelvan sus efectos. |
 | `EFFECT_MOVE_DAMAGE` | Para "mover daño" de un personaje a otro. |
 | `EFFECT_PREVENT_DAMAGE` | Para "prevenir" o "evitar" daño que se va a recibir. |
 | `EFFECT_REMOVE_THREAT` | Para "quitar amenaza" de planes; usa `TARGET_SCHEME` para un plan o `TARGET_ALL_SCHEMES` para todos los planes con amenaza. |
@@ -21,7 +22,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_DRAW_CARD` | Para "robar cartas" del mazo. |
 | `EFFECT_DISCARD_HAND` | Para "descartar cartas" de la mano. |
 | `EFFECT_DISCARD_GAME` | Para "descartar" cartas que ya están en juego (mejoras, apoyos, etc.). |
-| `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. |
+| `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. Toma solo las cartas disponibles, las descarta juntas y en orden, y conserva esas cartas en `cards` para cálculos posteriores. Si el mazo queda vacío, se cicla el descarte después del lote; el efecto no continúa descartando del mazo nuevo. |
 | `EFFECT_EXHAUST` | Para "agotar" una carta. |
 | `EFFECT_READY` | Para "preparar" una carta agotada. |
 | `EFFECT_STUN` | Para aplicar el estado "aturdido". |
@@ -149,6 +150,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 
 - `arrow` define los costes de una capacidad y se resuelve antes de `effect`. Para costes compuestos, usa `EFFECT_SIMULTANEOUS`; las cadenas existentes dentro de `arrow` se interpretan automáticamente como simultáneas, excepto las cadenas dentro de un `thenEffect`, que mantienen su orden. Declara en `outputParams` los valores del contexto que deban llegar al efecto principal (por ejemplo, `['selectedCard']`). Así, la transferencia de la carta elegida queda explícita en la configuración de la carta, no implícita en el motor de flechas.
 - El motor prepara primero las interrupciones de todos los efectos de coste. Recoge las selecciones de pago antes de aplicar cualquier coste; si quedan varios diálogos, pregunta cuál responder a continuación y reserva las cartas y generadores ya seleccionados. Después aplica todos los costes, resuelve sus respuestas y finalmente el efecto principal. Cancelar un diálogo descarta las selecciones antes de ejecutar los costes, por lo que no requiere deshacer sus efectos; la capacidad se vuelve a ofrecer. Si una interrupción impide pagar algún coste, aborta la capacidad sin volver a ofrecerla.
+- Si pagar el coste descarta la carta que contiene la capacidad, la capacidad y su efecto principal siguen resolviéndose por completo. Conserva desde el inicio la identidad/controlador que la inició y no lo vuelvas a derivar del `controller` de la carta fuente después de pagar; la carta sí debe abandonar el juego normalmente. Si el efecto necesita después datos que se reinician al salir del juego, guárdalos antes de aplicar el coste.
 
 - Para seleccionar objetivos, utiliza los selectores documentados en la [Guía de Objetivos](./targets-guide.md).
 - Para `TARGET_BY_TITLE`, configura `title` en los parámetros del efecto, no `name`: el selector compara `ability.effect.title` con el nombre de las cartas activas.

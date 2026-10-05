@@ -5,22 +5,27 @@ export class HealEffect extends Effect {
 // HealEffect
         character: _character,
         damage,
-        target: _target
+        target: _target,
+        allowNoDamage = false,
     }) {
         super(arguments[0]);
 
         this.damage = damage;
+        this.allowNoDamage = allowNoDamage;
     }
     filterTarget(card) {
-        return card.canHeal &&
+        return (this.allowNoDamage || card.canHeal) &&
             super.filterTarget.apply(this, arguments);
     }
 
-    execute(_params) {
-        const {selectedTarget, damage} = this;
+    async execute(params) {
+        const {selectedTarget} = this;
+        const damage = this.paramsCalc ?
+            await this.calculate(params) :
+            this.damage;
 
         selectedTarget.healDamage(damage);
 
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
     }
 }

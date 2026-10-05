@@ -17,19 +17,22 @@ export class PayPrintedCostEffect extends Effect {
     isFullResolved() {
         return this.isPaid;
     }
+    getCard(params) {
+        return params.selectedCard || params.card || this.selectedTarget;
+    }
     getCostPaymentEffects(params) {
-        const card = params.card || this.selectedTarget;
+        const card = this.getCard(params);
 
         return card && card.cost > 0 ? [this] : [];
     }
     getCostPaymentTitle(params) {
-        const card = params.card || this.selectedTarget;
+        const card = this.getCard(params);
 
         return this.title || `Pagar el coste de ${card.name}`;
     }
     async preparePayment(params, session) {
         const {player} = params;
-        const card = params.card || this.selectedTarget;
+        const card = this.getCard(params);
         const requiredResources = Array(card.cost).fill(RESOURCE_ANY);
 
         return player.spendResources(
@@ -41,7 +44,7 @@ export class PayPrintedCostEffect extends Effect {
 
     async execute(params) {
         const {player} = params;
-        const card = params.card || this.selectedTarget;
+        const card = this.getCard(params);
 
         this.isPaid = false;
         

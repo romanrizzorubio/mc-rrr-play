@@ -8,6 +8,11 @@ import {
 import {Effect} from './effect.js';
 
 export class DefeatEffect extends Effect {
+    constructor() {
+        super(arguments[0]);
+
+        this.prevented = false;
+    }
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
@@ -37,6 +42,10 @@ export class DefeatEffect extends Effect {
         }
     }
     async execute(params) {
+        if (this.prevented) {
+            return;
+        }
+
         const {selectedTarget} = this;
         const {player} = params;
         const {gameZone} = selectedTarget;
@@ -66,7 +75,7 @@ export class DefeatEffect extends Effect {
             }
         }
 
-        if (selectedTarget.isVillain) {
+        if (selectedTarget.isVillain && this.match.villain) {
             this.match.villain.refresh();
         } else {
             if (gameZone) {

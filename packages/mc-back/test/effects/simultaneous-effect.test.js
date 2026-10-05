@@ -11,6 +11,7 @@ import {
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_FILL_HAND,
     EFFECT_REVEAL_ENCOUNTER,
+    EFFECT_REMOVE_THREAT,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     PRIORITY_INTERRUPT,
@@ -19,6 +20,7 @@ import {
 import {InterruptAbility} from '../../src/abilities/interrupt/interrupt-ability.js';
 import {Engine} from '../../src/engine/engine.js';
 import {ConstantAbility} from '../../src/abilities/misc/constant-ability.js';
+import {ActivationsFactory} from '../../src/factory/activations/activations-factory.js';
 import {AbilitiesFactory} from '../../src/factory/abilities/abilities-factory.js';
 import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {Effect} from '../../src/effects/effect.js';
@@ -340,17 +342,86 @@ test('Envuelto en telaraña resolves cancellation and discard together, then stu
     assert.equal(effect.thenEffect.effectType, EFFECT_STUN);
 });
 
-test('Evitar una crisis performs its aerial bonus only after removing threat', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = captainMarvel.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Evitar una crisis');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
+test('Evitar una crisis removes threat from another scheme when Vuelo cósmico grants Aerial', async () => {
+    const makeScheme = id => ({
+        id,
+        name: id,
+        threat: 5,
+        isCard: true,
+        isScheme: true,
+        isSideScheme: true,
+        canRemoveThreat() {
+            return this.threat > 0;
+        },
+        canThwart() {
+            return this.canRemoveThreat();
+        },
+        removeThreat(threat) {
+            this.threat = Math.max(0, this.threat - threat);
+        },
+        refresh() {},
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
+    });
+    const firstScheme = makeScheme('first-scheme');
+    const secondScheme = makeScheme('second-scheme');
+    const hero = {
+        name: 'Capitana Marvel',
+        traits: [],
+        extraTraits: [],
+        refresh() {},
+    };
+    const player = {
+        isHero: true,
+        isConfused: false,
+        superhero: {currentSide: hero},
+        async canThwart() {
+            return true;
+        },
+    };
+    const match = {
+        triggerCards: {},
+        schemes: [firstScheme, secondScheme],
+    };
+    match.activationsFactory = new ActivationsFactory(match);
+    match.openDialog = async ({data}) => ({
+        selected: data.cards.find(card => card.id === firstScheme.id),
+    });
 
-    assert.ok(effect instanceof ChainedEffect);
-    assert.equal(effect.effects.length, 1);
-    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_DO_IF_HAS_TRAITS);
+    const factory = new AbilitiesFactory({match});
+    const flightCard = captainMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Vuelo cósmico').card;
+    const flightAbility = factory.createAbility(flightCard.params.abilities[0]);
+    const flightGameCard = {
+        id: 'vuelo-cosmico',
+        isEvent: false,
+        triggers: {},
+    };
+    flightAbility.card = flightGameCard;
+    flightAbility.initTriggers(flightGameCard);
+
+    const crisisCard = captainMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Evitar una crisis').card;
+    const crisisAbility = factory.createAbility(crisisCard.params.abilities[0]);
+    crisisAbility.card = {
+        id: 'evitar-una-crisis',
+        isEvent: true,
+        owner: player,
+    };
+    assert.deepEqual(crisisAbility.effect.effects.map(effect => effect.effectType), [
+        EFFECT_REMOVE_THREAT,
+        EFFECT_DO_IF_HAS_TRAITS,
+    ]);
+    assert.equal(crisisAbility.effect.effects[0].thenEffect, undefined);
+    assert.equal(crisisAbility.effect.effects[1].effect.effectType, EFFECT_REMOVE_THREAT);
+
+    const prepared = await crisisAbility.prepareToResolve({match, player});
+    await crisisAbility.resolveAbility({match, player, ...prepared});
+
+    assert.equal(firstScheme.threat, 3);
+    assert.equal(secondScheme.threat, 3);
+    assert.deepEqual(hero.traits, []);
 });
 
 test('Base orbital resolves one draw with a form-dependent count', async () => {
