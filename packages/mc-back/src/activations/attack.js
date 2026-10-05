@@ -42,36 +42,45 @@ export class Attack extends Activation {
         }
     }
     async applyRetaliate(target, params) {
+        const dealDamageEffect = await this.getRetaliateDamageEffect(target, params);
+
+        if (dealDamageEffect) {
+            await dealDamageEffect.runEffect(params);
+        }
+    }
+    async canRetaliate(target, params) {
+        return Boolean(await this.getRetaliateDamageEffect(target, params));
+    }
+    async getRetaliateDamageEffect(target, params) {
         const character = this.character;
         const attacker = character?.isSuperhero && character.owner?.isPlayer ?
             character.owner :
             character;
 
-        if (attacker && await this.canRetaliate(target)) {
-            const dealDamageEffect = this.match.effectsFactory.createEffect({
-                type: EFFECT_DEAL_DAMAGE,
-                damage: target.card.retaliate,
-                selectedTarget: attacker,
-                ability: this.effect.ability,
-                isAttack: false,
-            });
-
-            await dealDamageEffect.runEffect(params);
-        }
-    }
-    async canRetaliate(target) {
-        if (!target || !target.card || !target.card.retaliate ||
-            !target.isInPlay || this.effect.ranged || !this.character) {
-            return false;
+        if (!attacker || !target?.card?.retaliate ||
+            !target.isInPlay || this.effect.ranged || !character) {
+            return;
         }
 
         const enemyIsInPlay = this.match.enemies.some(enemy =>
             enemy === target || enemy.currentSide === target);
         if (target.isEnemy && !enemyIsInPlay) {
-            return false;
+            return;
         }
 
-        return (await target.getLife()) > 0;
+        if (await target.getLife() <= 0) {
+            return;
+        }
+
+        const dealDamageEffect = this.match.effectsFactory.createEffect({
+            type: EFFECT_DEAL_DAMAGE,
+            damage: target.card.retaliate,
+            selectedTarget: attacker,
+            ability: this.effect.ability,
+            isAttack: false,
+        });
+
+        return await dealDamageEffect.canRun(params) ? dealDamageEffect : undefined;
     }
     getForcedResponseTriggers(type) {
         if (!type.includes(TRIGGER_THIS_ATTACK) || this.effect.ranged) {

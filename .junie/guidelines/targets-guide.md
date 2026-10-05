@@ -113,16 +113,31 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 
 | Constante | Candidatos |
 | :--- | :--- |
-| `TARGET_BY_TITLE` | Las cartas activas cuyo nombre coincide con `ability.effect.title`; si una carta está representada por un lado, devuelve su carta padre y elimina duplicados. |
+| `TARGET_BY_TITLE` | Las cartas cuyo nombre coincide con `effect.title` y están en las ubicaciones indicadas por `effect.locations`; si una carta está representada por un lado, devuelve su carta padre y elimina duplicados. |
 
-Para usarlo, configura `title` en los parámetros del efecto. El selector compara ese valor con el nombre de las cartas activas; `name` no configura `ability.effect.title` y no sirve para este selector.
+Para usarlo, configura `title` y una lista no vacía `locations` en los parámetros del efecto. No busca en ninguna ubicación implícita. `name` no configura `effect.title` y no sirve para este selector.
+
+| Ubicación | Cartas consultadas |
+| :--- | :--- |
+| `PLACE_IN_PLAY` | Las cartas de las zonas de juego, planes y personajes de la partida. |
+| `PLACE_SCENARIO_ZONE` | Las cartas de la zona del escenario, sus planes y el villano. |
+| `PLACE_DECK` | Las cartas del mazo del jugador actual. |
+| `PLACE_DISCARD_PILE` | Las cartas del descarte del jugador actual. |
+| `PLACE_HAND` | Las cartas de la mano del jugador actual. |
+| `PLACE_ENCOUNTER_DECK_CARDS` | Las cartas del mazo de encuentros. |
+| `PLACE_ENCOUNTER_DISCARD` | Las cartas del descarte de encuentros. |
+| `PLACE_PLAYER_ENCOUNTERS` | Las cartas de encuentro asignadas al jugador actual. |
+| `PLACE_OUTSIDE_NEMESIS` | Las cartas de archienemigo apartadas del juego del jugador actual. |
+| `PLACE_ASIDE_MATCH` | Las cartas apartadas por el escenario. |
 
 ```javascript
 effect: {
-    type: EFFECT_READY,
+    type: EFFECT_PLACE_THREAT,
     params: {
         target: TARGET_BY_TITLE,
-        title: 'Iron Man',
+        title: 'Legiones de Hydra',
+        locations: [PLACE_SCENARIO_ZONE],
+        threat: 2,
     }
 }
 ```

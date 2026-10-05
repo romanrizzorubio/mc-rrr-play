@@ -301,6 +301,9 @@ test('retaliation resolves after a defended enemy attack with or without damage'
                     assert.equal(type, EFFECT_DEAL_DAMAGE);
 
                     return {
+                        async canRun() {
+                            return true;
+                        },
                         async runEffect() {
                             retaliationDamage.push({
                                 damage: amount,
@@ -351,6 +354,9 @@ test('retaliation resolves before the response to the enemy attack', async () =>
         enemies: [attacker],
         effectsFactory: {
             createEffect: () => ({
+                async canRun() {
+                    return true;
+                },
                 async runEffect() {
                     resolved.push('retaliation');
                 },

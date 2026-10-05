@@ -48,6 +48,7 @@ import {
     LABEL_ATTACK,
     LABEL_THWART,
     PLACE_DISCARD_PILE,
+    PLACE_IN_PLAY,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -409,6 +410,7 @@ export default {
                                         'type': EFFECT_READY,
                                         'params': {
                                             'target': TARGET_BY_TITLE,
+                                            'locations': [PLACE_IN_PLAY],
                                             'title': 'Iron Man'
                                         }
                                     }

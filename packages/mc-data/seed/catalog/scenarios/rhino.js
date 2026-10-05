@@ -72,7 +72,7 @@ export default {
                     'scheme': 1,
                     'attack': 2,
                     'hitPoints': [
-                        1,
+                        14,
                         true
                     ]
                 }
@@ -92,7 +92,7 @@ export default {
                     'scheme': 1,
                     'attack': 3,
                     'hitPoints': [
-                        1,
+                        15,
                         true
                     ],
                     'abilities': [

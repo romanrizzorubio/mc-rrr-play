@@ -17,7 +17,16 @@ test('does not offer retaliation for an enemy removed from play by the attack', 
         isInPlay: true,
         getLife: async () => 3,
     };
-    const match = {enemies: [target]};
+    const match = {
+        enemies: [target],
+        effectsFactory: {
+            createEffect: () => ({
+                async canRun() {
+                    return true;
+                },
+            }),
+        },
+    };
     const attack = new Attack({
         effect: {
             character: {},
@@ -44,7 +53,16 @@ test('allows retaliation from an in-play hero attacked by an enemy', async () =>
     const attack = new Attack({
         effect: {
             character: {},
-            match: {enemies: []},
+            match: {
+                enemies: [],
+                effectsFactory: {
+                    createEffect: () => ({
+                        async canRun() {
+                            return true;
+                        },
+                    }),
+                },
+            },
             ranged: false,
         },
     });
@@ -65,6 +83,9 @@ test('does not apply retaliation after a friendly character leaves play', async 
         enemies: [],
         effectsFactory: {
             createEffect: () => ({
+                async canRun() {
+                    return true;
+                },
                 async runEffect() {
                     retaliationApplied = true;
                 },
@@ -115,6 +136,9 @@ function createRetaliationMatch(enemies, appliedDamage) {
         enemies,
         effectsFactory: {
             createEffect: ({damage, selectedTarget}) => ({
+                async canRun() {
+                    return true;
+                },
                 async runEffect() {
                     appliedDamage.push({
                         damage,

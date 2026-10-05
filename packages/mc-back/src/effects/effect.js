@@ -41,11 +41,13 @@ export class Effect extends Engine {
             target = TARGET_YOU,
             refreshTarget = false,
             title = '',
+            locations = [],
             effectType,
         } = params;
 
         this.effectType = effectType;
         this.target = target;
+        this.locations = locations;
         this.refreshTarget = refreshTarget;
         this.source = source;
         this.title = title || params.title || '';

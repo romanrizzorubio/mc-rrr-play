@@ -21,11 +21,25 @@ export class McEncountersDealtDialog extends McDialog {
             ...super.defaultProperties,
             data: {
                 encounters: [],
+                hazardIcons: 0,
             },
         };
     }
     getTitle() {
         return 'Encuentros repartidos';
+    }
+    getSubtitle() {
+        const {hazardIcons} = this.data;
+
+        if (!hazardIcons) {
+            return '';
+        }
+
+        if (hazardIcons === 1) {
+            return 'Se reparte 1 carta de encuentro adicional por el icono de riesgo.';
+        }
+
+        return `Se reparten ${hazardIcons} cartas de encuentro adicionales por los iconos de riesgo.`;
     }
     _renderEncountersPlayer(player) {
         const {name, count} = player;

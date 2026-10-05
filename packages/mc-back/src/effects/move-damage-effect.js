@@ -1,4 +1,4 @@
-import {TARGET_YOU} from 'mc-shared';
+import {EFFECT_CATEGORY_DAMAGE, TARGET_YOU} from 'mc-shared';
 import {path} from '../engine/utils.js';
 
 import {DealDamageEffect} from './deal-damage-effect.js';
@@ -14,6 +14,10 @@ export class MoveDamageEffect extends Effect {
 
         this.baseDamage = damage;
         this.fromTarget = fromTarget;
+    }
+
+    get effectCategories() {
+        return [EFFECT_CATEGORY_DAMAGE];
     }
 
     getDamageSource(params) {
@@ -63,17 +67,6 @@ export class MoveDamageEffect extends Effect {
             return;
         }
 
-        // Primero sanamos al origen
-        const healEffect = new HealEffect({
-            selectedTarget: source,
-            damage,
-            match: this.match,
-            ability: this.ability,
-        });
-
-        await healEffect.runEffect(params);
-
-        // Luego infligimos daño al destino
         const dealDamageEffect = new DealDamageEffect({
             selectedTarget,
             damage,
@@ -82,6 +75,18 @@ export class MoveDamageEffect extends Effect {
             activation: this.activation,
         });
 
+        if (!await dealDamageEffect.canRun(params)) {
+            return;
+        }
+
+        const healEffect = new HealEffect({
+            selectedTarget: source,
+            damage,
+            match: this.match,
+            ability: this.ability,
+        });
+
+        await healEffect.runEffect(params);
         await dealDamageEffect.runEffect(params);
     }
 }

@@ -94,6 +94,7 @@ export class ValidTarget extends Engine {
             playCardEffect,
             player,
             source,
+            targetEffect: this.effect,
             triggeredCard,
         }) : [];
 

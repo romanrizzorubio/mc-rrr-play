@@ -23,8 +23,8 @@ export class RetaliateTrigger extends Trigger {
         this.attack = attack;
         this.target = target;
     }
-    canTrigger() {
-        return this.attack.canRetaliate(this.target);
+    canTrigger(params) {
+        return this.attack.canRetaliate(this.target, params);
     }
     getName() {
         return this.ability.name;

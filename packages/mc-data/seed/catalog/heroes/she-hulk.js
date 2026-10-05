@@ -52,6 +52,7 @@ import {
     EFFECT_TAKE_DAMAGE,
     LABEL_ATTACK,
     LABEL_THWART,
+    PLACE_IN_PLAY,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -280,6 +281,7 @@ export default {
                                         'type': EFFECT_READY,
                                         'params': {
                                             'target': TARGET_BY_TITLE,
+                                            'locations': [PLACE_IN_PLAY],
                                             'title': 'Hulka'
                                         }
                                     }
@@ -832,7 +834,8 @@ export default {
                                         'type': EFFECT_ENEMY_ATTACK,
                                         'params': {
                                             'target': TARGET_BY_TITLE,
-                                            'name': 'Titania',
+                                            'locations': [PLACE_IN_PLAY],
+                                            'title': 'Titania',
                                             'targetTo': TARGET_YOUR_HERO
                                         }
                                     },
@@ -844,6 +847,7 @@ export default {
                                                     'type': EFFECT_HEAL,
                                                     'params': {
                                                         'target': TARGET_BY_TITLE,
+                                                        'locations': [PLACE_IN_PLAY],
                                                         'title': 'Titania',
                                                         'damage': 0,
                                                         'paramsCalc': {

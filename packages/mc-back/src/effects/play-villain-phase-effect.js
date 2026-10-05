@@ -55,7 +55,8 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
     }
     async stepDealEncounters() {
         const players = this.match.orderedPlayers;
-        const encountersCount = players.length + this.match.hazardIcons;
+        const hazardIcons = this.match.hazardIcons;
+        const encountersCount = players.length + hazardIcons;
 
         let i = 0;
         let index = i;
@@ -82,6 +83,7 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         await this.openDialog({
             dialogType: DIALOG_ENCOUNTERS_DEALT,
             data: {
+                hazardIcons,
                 encounters: players.map(player => ({
                     name: player.superhero.name,
                     count: player.encounters.length,

@@ -17,6 +17,7 @@ import {
     EFFECT_SHUFFLE_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
+    PLACE_SCENARIO_ZONE,
     TARGET_BY_TITLE,
     TARGET_ENGAGED,
     TARGET_SCENARIO,
@@ -161,6 +162,7 @@ export default {
                                         'type': EFFECT_PLACE_THREAT,
                                         'params': {
                                             'target': TARGET_BY_TITLE,
+                                            'locations': [PLACE_SCENARIO_ZONE],
                                             'title': 'Legiones de Hydra',
                                             'threat': 2
                                         }
@@ -175,6 +177,7 @@ export default {
                                         'type': EFFECT_PLACE_THREAT,
                                         'params': {
                                             'target': TARGET_BY_TITLE,
+                                            'locations': [PLACE_SCENARIO_ZONE],
                                             'title': 'Legiones de Hydra',
                                             'threat': 2
                                         }
