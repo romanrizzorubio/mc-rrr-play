@@ -307,7 +307,7 @@ export class Effect extends Engine {
             target,
         };
 
-        if (Array.isArray(selectedTarget)) {
+        if (!this.refreshTarget && Array.isArray(selectedTarget)) {
             const validTargets = selectedTarget.filter(selected =>
                 this.validTarget.filter(selected, targetParams));
             if (validTargets.length !== selectedTarget.length) {
@@ -316,7 +316,7 @@ export class Effect extends Engine {
 
             return validTargets.length ? [validTargets] : [];
         }
-        if (selectedTarget) {
+        if (!this.refreshTarget && selectedTarget) {
             return this.validTarget.filter(selectedTarget, targetParams) ?
                 [selectedTarget] :
                 [];
@@ -377,7 +377,7 @@ export class Effect extends Engine {
                     }
                 }
             } else {
-                this.resolveStatus(params);
+                await this.resolveStatus(params);
             }
         }
 

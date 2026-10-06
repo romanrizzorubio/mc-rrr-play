@@ -23,6 +23,8 @@ export class McPayCost extends LitElement {
             resourceType: {type: String},
             requirement: {type: Array},
             isPaid: {type: Boolean},
+            allowPartial: {type: Boolean},
+            validationError: {type: String},
             cards: {type: Object},
             _wilds: {type: Array},
         };
@@ -34,6 +36,8 @@ export class McPayCost extends LitElement {
         this.resourceType = undefined;
         this.requirement = [];
         this.isPaid = false;
+        this.allowPartial = false;
+        this.validationError = '';
         this.cards = {
             generators: [],
             hand: []
@@ -146,7 +150,7 @@ export class McPayCost extends LitElement {
         `;
     }
     renderResourceIcons(hand, generators) {
-        const {requirement} = this;
+        const {allowPartial, requirement} = this;
 
         const render = [];
         if (requirement && requirement.some(req => req !== RESOURCE_ANY)) {
@@ -161,7 +165,11 @@ export class McPayCost extends LitElement {
                     return;
                 }
 
-                const paid = resources.find(r => r.resource === req && !r.used);
+                const paid = resources.find(r =>
+                    (r.resource === req ||
+                        allowPartial && r.resource === RESOURCE_WILD) &&
+                    !r.used
+                );
 
                 if (paid) {
                     paid.used = true;
@@ -222,18 +230,26 @@ export class McPayCost extends LitElement {
         return html``;
     }
     renderCost() {
-        const {cost, cards, isPaid} = this;
+        const {cost, cards, isPaid, allowPartial, validationError} = this;
+        const costLabel = allowPartial ?
+            `Requisitos: ${cost} (paga todos los recursos posibles)` :
+            `Coste: ${cost}`;
 
         if (cards) {
             const {hand, generators} = cards;
             const statusBall = isPaid ? BALL_STATUS_OK : BALL_STATUS_KO;
 
             return html`
-                <h2 class="cost-panel divider">
-                    <span><mc-ball status="${statusBall}"></mc-ball></span>
-                    <span>${this.renderResourceIcons(hand, generators)}</span>
-                    <span>Coste: ${cost}</span>
-                </h2>
+                <div class="cost-panel-divider divider">
+                    <h2 class="cost-panel">
+                        <span><mc-ball status="${statusBall}"></mc-ball></span>
+                        <span>${this.renderResourceIcons(hand, generators)}</span>
+                        <span>${costLabel}</span>
+                    </h2>
+                    ${validationError ? html`
+                        <p class="payment-error" role="alert">${validationError}</p>
+                    ` : ''}
+                </div>
             `;
         }
 

@@ -4,6 +4,7 @@ import styles from './mc-cards-group-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 export class McCardsGroupDialog extends McDialog {
     static get is() {
@@ -30,6 +31,7 @@ export class McCardsGroupDialog extends McDialog {
                 name="${card.name}"
                 image="${card.image}"
                 size="l"
+                ?horizontal="${isPlanCard(card)}"
             ></mc-card>
         `;
     }

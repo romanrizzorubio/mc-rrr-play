@@ -240,7 +240,8 @@ test('stages discard selections and reserves those cards for the remaining costs
             },
             refresh() {},
         },
-        async spendResources(resources, _cardToPay, excludedCardIds) {
+        async spendResources(resources, _cardToPay, excludedCardIds, options) {
+            assert.equal(options.allowPartial, false);
             assert.ok(excludedCardIds.has(selectedCard.id));
             assert.ok(this.hand.cards.includes(selectedCard));
 

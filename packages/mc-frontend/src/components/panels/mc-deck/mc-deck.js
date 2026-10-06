@@ -8,6 +8,7 @@ import {
     BACK_CARD_PLAYER_FULL,
     BACK_CARD_VILLAIN_FULL, CARD_PATH,
 } from '../../../misc/cards.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 export const DECK_TYPES = {
     ENCOUNTER: 0,
@@ -81,11 +82,15 @@ export class DeckComponent extends LitElement {
             },
         }));
     }
-    renderCardStack(src, count, isEmptyDiscard = false) {
+    renderCardStack(src, count, isEmptyDiscard = false, card) {
+        const horizontal = isPlanCard(card);
+
         return html`
             <mc-card-image
                 class="${isEmptyDiscard ? 'empty-discard' : ''}"
                 src="${src}"
+                .horizontal="${horizontal}"
+                .rotated="${horizontal}"
             >
             </mc-card-image>
             <span class="count">
@@ -122,7 +127,7 @@ export class DeckComponent extends LitElement {
                 ?disabled="${!card}"
                 @click="${this.handleViewDiscard.bind(this)}"
             >
-                ${this.renderCardStack(src, this.discard.length, !card)}
+                ${this.renderCardStack(src, this.discard.length, !card, card)}
             </button>
         `;
     }

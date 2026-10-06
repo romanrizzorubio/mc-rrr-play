@@ -15,6 +15,7 @@ export class Arrow extends Engine {
     canPay(params) {
         return this.cost.canRun({
             ...params,
+            isCost: true,
             matchAll: true
         });
     }

@@ -1,4 +1,4 @@
-import {DIALOG_ACTIVATE} from 'mc-shared';
+import {DIALOG_ACTIVATE, DIALOG_BOOST_DEALT} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {DealBoostEffect} from './deal-boost-effect.js';
@@ -39,6 +39,31 @@ export class EnemyActivationEffect extends Effect {
 
         return dealBoostEffect.runEffect(params);
     }
+    async showBoostCards() {
+        const {boostCards, enemy} = this;
+
+        if (!boostCards.length || this.match.skipBoostDealtNotification) {
+            return;
+        }
+
+        const count = boostCards.length;
+        const countText = count === 1 ?
+            'una carta de aumento' :
+            `${count} cartas de aumento`;
+
+        const response = await this.openDialog({
+            dialogType: DIALOG_BOOST_DEALT,
+            title: `${enemy.name} recibe ${countText}`,
+            data: {
+                allowHideFuture: true,
+                cardCount: count,
+            },
+        });
+
+        if (response?.skipBoostDealtNotification) {
+            this.match.skipBoostDealtNotification = true;
+        }
+    }
     getTriggersParams(params) {
         const {character} = this;
 
@@ -57,6 +82,16 @@ export class EnemyActivationEffect extends Effect {
         const target = this.getTargetDialog(params);
 
         return `${character.name} se activa con ${target.name}`;
+    }
+    showActivationSkippedDialog(statusType, statusMessage) {
+        return this.openDialog({
+            dialogType: DIALOG_ACTIVATE,
+            title: 'Activación omitida',
+            data: {
+                statusMessage,
+                statusType,
+            },
+        });
     }
     async prepare(params) {
         await super.prepare(params);
@@ -79,26 +114,31 @@ export class EnemyActivationEffect extends Effect {
             },
         });
     }
-    resolveBoostCards(params) {
+    async resolveBoostCards(params) {
         const {boostCards} = this;
         const selectedTarget = this.getBoostTarget();
+        let totalBoost = 0;
 
-        return boostCards.reduce(async (b, card) => {
+        for (const [cardIndex, card] of boostCards.entries()) {
             const resolveBoostEffect = new ResolveBoostEffect({
                 activation: this.activation,
+                enemyActivation: this,
                 match: this.match,
                 selectedTarget,
                 card,
+                cardIndex,
             });
 
             await resolveBoostEffect.runEffect(params);
 
-            b += resolveBoostEffect.value;
+            totalBoost += resolveBoostEffect.value;
 
-            await card.discard();
+            if (!card.isInPlay) {
+                await card.discard();
+            }
+        }
 
-            return b;
-        }, 0);
+        return totalBoost;
     }
     async selectEnemy(params) {
         const {enemyType, ability} = this;

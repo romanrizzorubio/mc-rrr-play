@@ -84,19 +84,22 @@ export class MongoDataStore {
                     _id: 0,
                     name: 1,
                     folder: 1,
-                    order: 1,
                     'config.sets': 1,
                     'config.defaultSets': 1,
                 },
             })
-            .sort({order: 1})
             .toArray();
 
-        return scenarios.map(({name, folder, config}) => ({
-            name,
-            folder,
-            configuredSets: [...(config.sets || []), ...(config.defaultSets || [])],
-        }));
+        return scenarios
+            .map(({name, folder, config}) => ({
+                name,
+                folder,
+                configuredSets: [...(config.sets || []), ...(config.defaultSets || [])],
+            }))
+            .sort((left, right) =>
+                left.name.localeCompare(right.name, 'es', {sensitivity: 'base'}) ||
+                left.folder.localeCompare(right.folder, 'es')
+            );
     }
     async getModularSetsList() {
         const sets = await this._collection(collectionNames.sets)

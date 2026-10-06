@@ -4,6 +4,7 @@ import {test} from 'node:test';
 import {
     TARGET_ALL_ALLIES,
     TARGET_ALL_ALLIES_YOU_CONTROL,
+    TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALLY,
 } from 'mc-shared';
 import {ValidTarget} from '../../src/targets/valid-target.js';
@@ -55,4 +56,31 @@ test('TARGET_ALL_ALLIES_YOU_CONTROL selects only allies controlled by the curren
         true
     );
     assert.equal(validTarget.isMultipleTarget({target: TARGET_ALLY}), false);
+});
+
+test('TARGET_ALL_CHARACTERS_YOU_CONTROL selects the current player hero and allies', async () => {
+    const hero = {id: 'hero'};
+    const ally = {id: 'ally'};
+    const player = {
+        friends: [ally, hero],
+    };
+    const validTarget = new ValidTarget({
+        match: {},
+    });
+
+    assert.deepEqual(
+        playerControlledTargets[TARGET_ALL_CHARACTERS_YOU_CONTROL]({player}),
+        [ally, hero]
+    );
+    assert.deepEqual(
+        await validTarget.selectTarget({
+            target: TARGET_ALL_CHARACTERS_YOU_CONTROL,
+            player,
+        }),
+        [ally, hero]
+    );
+    assert.equal(
+        validTarget.isMultipleTarget({target: TARGET_ALL_CHARACTERS_YOU_CONTROL}),
+        true
+    );
 });

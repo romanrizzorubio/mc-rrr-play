@@ -42,9 +42,35 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
 
         return activateEffect.runEffect(params);
     }
-    execute(params) {
-        const {enemies} = this;
+    async execute(params) {
+        const selectionParams = {
+            ...params,
+            ability: this.ability,
+            effect: this,
+        };
+        let enemies = [...(this.enemies || [])];
 
-        return this.promisesSequential(enemies, enemy => this.activate(enemy, params));
+        while (enemies.length) {
+            const availableEnemies = enemies.filter(enemy =>
+                enemy.isInPlay !== false &&
+                this.validTarget.filter(enemy, selectionParams)
+            );
+            if (!availableEnemies.length) {
+                return;
+            }
+
+            const enemy = availableEnemies.length === 1 ?
+                availableEnemies[0] :
+                await this.validTarget.selectFrom(availableEnemies, {
+                    ...selectionParams,
+                    dialogTitle: 'Elige qué enemigo se activa',
+                });
+            if (!enemy) {
+                throw new Error('SeveralActivationsEffect requires a valid enemy selection.');
+            }
+
+            enemies = enemies.filter(candidate => candidate !== enemy);
+            await this.activate(enemy, params);
+        }
     }
 }

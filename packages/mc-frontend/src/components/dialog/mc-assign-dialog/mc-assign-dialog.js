@@ -7,6 +7,7 @@ import '@material/web/slider/slider.js';
 
 import {BALL_STATUS_KO, BALL_STATUS_OK} from '../../common/mc-ball/mc-ball.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 export class McAssignDialog extends McDialog {
     static get is() {
@@ -122,6 +123,7 @@ export class McAssignDialog extends McDialog {
                 name="${name}"
                 image="${image}"
                 size="m"
+                ?horizontal="${isPlanCard(card)}"
             >
                 ${this.renderAssigned(card)}
             </mc-card>

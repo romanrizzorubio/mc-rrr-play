@@ -16,7 +16,8 @@ export class MainScenarioCard extends EncounterCard {
     toObj() {
         return {
             ...super.toObj(arguments[0]),
-            stage: this.stage
+            stage: this.stage,
+            isMainScheme: Boolean(this.isMainScheme),
         };
     }
 }

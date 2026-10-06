@@ -30,6 +30,7 @@ export class CardComponent extends LitElement {
             image: {type: String},
             size: {type: String},
             horizontal: {type: Boolean},
+            rotated: {type: Boolean, reflect: true},
             handSize: {type: Number},
             showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
             extraTraits: {type: Array},
@@ -85,6 +86,7 @@ export class CardComponent extends LitElement {
         this.showThreat = false;
         this.showGeneric = false;
         this.horizontal = false;
+        this.rotated = false;
         this.hideName = false;
         this.nameWithStage = false;
         this.exhausted = false;
@@ -153,13 +155,19 @@ export class CardComponent extends LitElement {
             return;
         }
 
+        const ability = card.abilities.findIndex(_ability =>
+            _ability.isAction || _ability.isBasic);
+        if (ability < 0) {
+            return;
+        }
+
         this.dispatchEvent(new CustomEvent('attached-card-click', {
             bubbles: true,
             composed: true,
             detail: {
                 card,
                 cardIndex,
-                ability: 0,
+                ability,
             }
         }));
     }
@@ -237,6 +245,7 @@ export class CardComponent extends LitElement {
                     show-life
                     show-damage
                     show-basic-stats
+                    show-menu-abilities
                     dim-unplayable
                     size="${this._smallSize}"
                     @card-list-select="${this.handleAttachedCardClick.bind(this)}"
@@ -257,7 +266,7 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderBigCard() {
-        const {horizontal, image, name, _showBig} = this;
+        const {horizontal, image, name, rotated, _showBig} = this;
 
         return _showBig ? html`
             <md-dialog 
@@ -274,6 +283,7 @@ export class CardComponent extends LitElement {
                         src="${CARD_PATH}${image}"
                         size="xl"
                         .horizontal="${horizontal}"
+                        .rotated="${rotated}"
                         @click="${this.handleCloseBigCard.bind(this)}"
                     ></mc-card-image>
                 </div>
@@ -286,7 +296,7 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderCard() {
-        const {horizontal, image, size, exhausted} = this;
+        const {horizontal, image, size, exhausted, rotated} = this;
 
         return html`
             <div class="${exhausted ? 'exhausted' : ''}" >
@@ -302,6 +312,7 @@ export class CardComponent extends LitElement {
                                 src="${CARD_PATH}${image}"
                                 size="${size}"
                                 .horizontal="${horizontal}"
+                                .rotated="${rotated}"
                                 @click="${this.handleClick.bind(this)}"
                                 @contextmenu="${this.hableContextMenu.bind(this)}"
                             ></mc-card-image>
@@ -440,27 +451,48 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderHeader() {
-        const {name, headerLeft, headerRight, hideName, nameWithStage, stage} = this;
+        const {
+            horizontal,
+            name,
+            headerLeft,
+            headerRight,
+            hideName,
+            nameWithStage,
+            stage,
+        } = this;
 
-        return hideName || (nameWithStage && Number.isFinite(stage)) ? html`` : html`
+        if (hideName || (nameWithStage && Number.isFinite(stage))) {
+            return html``;
+        }
+
+        if (horizontal && (Number.isFinite(headerLeft) || Number.isFinite(headerRight))) {
+            return html`
+                <header class="scheme-title-header">
+                    <div class="header-left">${this.renderHeaderStat(headerLeft, 'Umbral')}</div>
+                    <div class="name">${name}</div>
+                    <div class="header-right">${this.renderHeaderStat(headerRight, 'Etapa')}</div>
+                </header>
+            `;
+        }
+
+        return html`
             <header>
                 <div class="header-left">
-                    ${Number.isFinite(headerLeft) ? html`
-                        <span class="character-stat stat-stage header-stat" aria-label="Umbral: ${headerLeft}">
-                            ${headerLeft}
-                        </span>
-                    ` : ''}
+                    ${this.renderHeaderStat(headerLeft, 'Umbral')}
                 </div>
                 <div class="name">${name}</div>
                 <div class="header-right">
-                    ${Number.isFinite(headerRight) ? html`
-                        <span class="character-stat stat-stage header-stat" aria-label="Etapa: ${headerRight}">
-                            ${headerRight}
-                        </span>
-                    ` : ''}
+                    ${this.renderHeaderStat(headerRight, 'Etapa')}
                 </div>
             </header>
         `;
+    }
+    renderHeaderStat(value, label) {
+        return Number.isFinite(value) ? html`
+            <span class="character-stat stat-stage header-stat" aria-label="${label}: ${value}">
+                ${value}
+            </span>
+        ` : '';
     }
     renderStage() {
         const {name, hideName, nameWithStage, stage} = this;

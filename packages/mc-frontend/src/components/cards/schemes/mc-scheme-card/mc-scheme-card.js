@@ -43,11 +43,13 @@ export class SchemeCardComponent extends LitElement {
         return html`
             <mc-card
                 horizontal
+                size="m"
                 name="${name}"
                 image="${image}"
                 threat="${threat}"
                 acceleration="${acceleration}"
                 show-threat
+                .horizontal="${true}"
                 .headerLeft="${headerLeft}"
                 .headerRight="${headerRight}"
             >

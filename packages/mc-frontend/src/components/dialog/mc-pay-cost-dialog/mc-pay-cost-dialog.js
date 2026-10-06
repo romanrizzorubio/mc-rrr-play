@@ -8,9 +8,16 @@ import '../../cards/mc-card-image/mc-card-image.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {CARD_PATH} from '../../../misc/cards.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 const COST_X = 'X';
 export class McPayCostDialog extends McDialog {
+    static get properties() {
+        return {
+            ...super.properties,
+            showValidationError: {type: Boolean},
+        };
+    }
     static get is() {
         return 'mc-pay-cost-dialog';
     }
@@ -19,6 +26,8 @@ export class McPayCostDialog extends McDialog {
     }
     constructor() {
         super(arguments[0]);
+
+        this.showValidationError = false;
     }
     get className() {
         return 'large pay-cost';
@@ -37,6 +46,7 @@ export class McPayCostDialog extends McDialog {
         return {
             data: {
                 cost: 0,
+                allowPartial: false,
                 resourceType: undefined,
                 requirement: [],
                 card: undefined,
@@ -51,7 +61,8 @@ export class McPayCostDialog extends McDialog {
                     generators: [],
                     hand: []
                 },
-                resources: []
+                resources: [],
+                fullyPaid: false,
             }
         };
     }
@@ -109,11 +120,167 @@ export class McPayCostDialog extends McDialog {
         return resources;
     }
     getTitle() {
-        const {card} = this.data;
+        const {allowPartial, card} = this.data;
+        const action = allowPartial ?
+            'Pagar los recursos posibles de' :
+            'Pagar el coste de';
 
         return card && card.name ?
-            `Pagar el coste de ${card.name}` :
-            'Pagar el coste';
+            `${action} ${card.name}` :
+            allowPartial ? 'Pagar los recursos posibles' : 'Pagar el coste';
+    }
+    getPaymentResourceUnits(cards, selectedOnly = false) {
+        const {generators, hand} = cards;
+        const wilds = selectedOnly ? (this.data.wilds || []).slice() : [];
+        const selected = selectedOnly ?
+            card => card.selected :
+            () => true;
+        const addResourceUnits = (card, resources, units) => {
+            resources.forEach(resource => {
+                const selectedResource = resource === RESOURCE_WILD && wilds.length ?
+                    wilds.shift() :
+                    resource;
+                units.push({
+                    resource: selectedResource,
+                    cardId: card.id,
+                });
+            });
+        };
+        const units = hand
+            .filter(selected)
+            .reduce((ret, card) => {
+                addResourceUnits(card, card.resources, ret);
+
+                return ret;
+            }, []);
+
+        generators.filter(selected).forEach(card => {
+            card.abilities.forEach(ability => {
+                if (!ability.isResource) {
+                    return;
+                }
+
+                const resources = ability.resources || [ability.resource];
+                addResourceUnits(card, resources, units);
+            });
+        });
+
+        return units;
+    }
+    getResourceMatches(resources, requirement) {
+        const matchedResourceIndexes = Array(requirement.length).fill(-1);
+        // Match resource icons to distinct requirements, including wild resources.
+        const canPay = (resource, required) =>
+            required === RESOURCE_ANY ||
+            resource === RESOURCE_ANY ||
+            resource === RESOURCE_WILD ||
+            resource === required;
+        const assignResource = (resourceIndex, visitedRequirements) => {
+            for (let index = 0; index < requirement.length; index++) {
+                if (visitedRequirements.has(index) ||
+                    !canPay(resources[resourceIndex].resource, requirement[index])) {
+                    continue;
+                }
+
+                visitedRequirements.add(index);
+                const matchedResourceIndex = matchedResourceIndexes[index];
+                if (matchedResourceIndex === -1 ||
+                    assignResource(matchedResourceIndex, visitedRequirements)) {
+                    matchedResourceIndexes[index] = resourceIndex;
+
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        let count = 0;
+        resources.forEach((_resource, index) => {
+            if (assignResource(index, new Set())) {
+                count++;
+            }
+        });
+
+        const cardIds = new Set(matchedResourceIndexes
+            .filter(index => index > -1)
+            .map(index => resources[index].cardId));
+
+        return {count, cardIds};
+    }
+    getPartialPaymentStatus() {
+        const {data: {cards, requirement}} = this;
+        const selectedCards = [...cards.hand, ...cards.generators]
+            .filter(card => card.selected);
+        const availableMatches = this.getResourceMatches(
+            this.getPaymentResourceUnits(cards),
+            requirement
+        );
+        const selectedMatches = this.getResourceMatches(
+            this.getPaymentResourceUnits(cards, true),
+            requirement
+        );
+        const hasUnusedCard = selectedCards.some(card =>
+            !selectedMatches.cardIds.has(card.id));
+
+        return {
+            availableCount: availableMatches.count,
+            canContinue: availableMatches.count > 0 &&
+                selectedMatches.count === availableMatches.count &&
+                !hasUnusedCard,
+            hasUnusedCard,
+            selectedCount: selectedMatches.count,
+        };
+    }
+    isValidPartialPayment() {
+        return this.getPartialPaymentStatus().canContinue;
+    }
+    isFullyPaid() {
+        const {data: {cards, requirement}} = this;
+
+        return this.getResourceMatches(
+            this.getPaymentResourceUnits(cards, true),
+            requirement
+        ).count === requirement.length;
+    }
+    getValidationError() {
+        const {allowPartial, cost} = this.data;
+
+        if (allowPartial && cost !== COST_X) {
+            const {
+                availableCount,
+                hasUnusedCard,
+                selectedCount,
+            } = this.getPartialPaymentStatus();
+
+            if (!availableCount) {
+                return 'No hay recursos disponibles que cubran estos requisitos.';
+            }
+            if (selectedCount < availableCount) {
+                return 'La selección cubre menos requisitos de los posibles; cambia la asignación de comodines o selecciona otros recursos.';
+            }
+            if (hasUnusedCard) {
+                return 'Retira los recursos seleccionados que no contribuyen al pago.';
+            }
+
+            return 'La combinación seleccionada no cubre los requisitos.';
+        }
+
+        if (cost === COST_X) {
+            return 'Selecciona al menos un recurso para continuar.';
+        }
+
+        return 'Los recursos seleccionados no cubren todos los requisitos; revisa la asignación de comodines.';
+    }
+    handleOk() {
+        if (!this.validate()) {
+            this.showValidationError = true;
+
+            return;
+        }
+
+        this.showValidationError = false;
+        super.handleOk();
     }
     renderTitle() {
         const {data: {card}, hand} = this;
@@ -125,6 +292,7 @@ export class McPayCostDialog extends McDialog {
                         <mc-card-image
                             src="${CARD_PATH}${card.image}"
                             size="xs"
+                            .horizontal="${isPlanCard(card)}"
                             aria-hidden="true"
                         ></mc-card-image>
                     ` : ''}
@@ -138,14 +306,19 @@ export class McPayCostDialog extends McDialog {
         this._response = {
             ...this._response,
             resources: this.resourcesConverted,
+            fullyPaid: this.isFullyPaid(),
         };
 
         super.sendResponse();
     }
     validate() {
-        const {data: {cost, requirement}} = this;
-        const resources = this.resourcesType;
+        const {data: {allowPartial, cost, requirement}} = this;
 
+        if (allowPartial && cost !== COST_X) {
+            return this.isValidPartialPayment();
+        }
+
+        const resources = this.resourcesType;
         if (cost === COST_X) {
             if (resources.length > 0) {
                 return true;
@@ -176,6 +349,7 @@ export class McPayCostDialog extends McDialog {
     _handleChangeWildResource(e) {
         const {wilds} = e.detail;
 
+        this.showValidationError = false;
         this.data = {
             ...this.data,
             wilds
@@ -185,6 +359,7 @@ export class McPayCostDialog extends McDialog {
         const {card, type} = e.detail;
         const {data: {cards}} = this;
 
+        this.showValidationError = false;
         card.selected = !card.selected;
 
         this.data = {
@@ -203,8 +378,15 @@ export class McPayCostDialog extends McDialog {
         };
     }
     renderContent() {
-        const {cost, data: {cards, requirement, resourceType}, _response: {paid}} = this;
+        const {
+            cost,
+            data: {allowPartial, cards, requirement, resourceType},
+            _response: {paid},
+        } = this;
         const isPaid = this.validate();
+        const validationError = this.showValidationError ?
+            this.getValidationError() :
+            '';
 
         return html`
             <mc-pay-cost
@@ -213,6 +395,8 @@ export class McPayCostDialog extends McDialog {
                 .requirement="${requirement}"
                 .cards="${cards}"
                 .paid="${paid}"
+                .allowPartial="${allowPartial}"
+                .validationError="${validationError}"
                 .isPaid="${isPaid}"
                 @pay-cost-select="${this._handlePaySelect.bind(this)}"
                 @change-wild-resource="${this._handleChangeWildResource.bind(this)}"

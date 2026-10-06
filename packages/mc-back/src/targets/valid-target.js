@@ -1,6 +1,7 @@
 import {DIALOG_SELECT_TARGET,
     TARGET_ALL_ALLIES, TARGET_ALL_ALLIES_YOU_CONTROL,
-    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_ENEMIES, TARGET_ALL_HEROES, TARGET_ALL_SCHEMES,
+    TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_CHARACTERS_YOU_CONTROL,
+    TARGET_ALL_ENEMIES, TARGET_ALL_HEROES, TARGET_ALL_SCHEMES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SELECTED_PLAYER_CHARACTERS,
 } from 'mc-shared';
@@ -114,6 +115,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_ALLIES_YOU_CONTROL:
             case TARGET_ALL_CARDS:
             case TARGET_ALL_CHARACTERS:
+            case TARGET_ALL_CHARACTERS_YOU_CONTROL:
             case TARGET_ALL_ENEMIES:
             case TARGET_ALL_HEROES:
             case TARGET_ALL_HEROES_ALLIES:
@@ -125,6 +127,11 @@ export class ValidTarget extends Engine {
 
         return false;
     }
+    async selectFrom(candidates, params) {
+        const validTarget = candidates.filter(card => this.filter(card, params));
+
+        return this.selectSingleTarget(validTarget, params);
+    }
     async selectTarget(params) {
         const validTarget = this.getValidTarget(params);
 
@@ -132,6 +139,9 @@ export class ValidTarget extends Engine {
             return validTarget;
         }
 
+        return this.selectSingleTarget(validTarget, params);
+    }
+    async selectSingleTarget(validTarget, params) {
         switch (validTarget.length) {
             case 0:
                 return null;
@@ -140,9 +150,9 @@ export class ValidTarget extends Engine {
             default:
                 const {selected} = await this.openDialog({
                     dialogType: DIALOG_SELECT_TARGET,
-                    title: 'Elige tu objetivo',
+                    title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
-                        cards: validTarget.map(card => card.toObj(arguments[0])),
+                        cards: validTarget.map(card => card.toObj(params)),
                     },
                 });
 

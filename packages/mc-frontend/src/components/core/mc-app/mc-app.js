@@ -146,7 +146,10 @@ class McApp extends router(navigator(outlet(LitElement))) {
             dialogType: DIALOG_REVEAL_CARDS,
             title,
             subtitle: 'Ordenadas desde la carta superior hacia abajo.',
-            data: {cards},
+            data: {
+                cards,
+                rotatePlanCards: true,
+            },
             callback: () => {},
         });
     }
@@ -347,7 +350,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
           ${this.renderConnectionStatus()}
           <mc-navigate href="/">Partidas</mc-navigate>
      
-          <mc-main active-route=${this.route}>
+          <mc-main .activeRoute="${this.route}">
               <div route='matches'>
                   <mc-create-match-page
                       .api="${api}"

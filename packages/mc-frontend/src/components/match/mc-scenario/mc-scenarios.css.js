@@ -5,4 +5,10 @@ export default css`
     display: flex;
     justify-content: space-around;
   }
+
+  .schemes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 `;

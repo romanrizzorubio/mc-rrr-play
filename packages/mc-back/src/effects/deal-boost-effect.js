@@ -1,5 +1,3 @@
-import {DIALOG_BOOST_DEALT} from 'mc-shared';
-
 import {Effect} from './effect.js';
 
 export class DealBoostEffect extends Effect {
@@ -10,8 +8,19 @@ export class DealBoostEffect extends Effect {
 
         this.enemyActivation = enemyActivation;
     }
-    async execute(_params) {
-        const {enemyActivation} = this;
+    async execute(params) {
+        const selectedActivation = this.selectedTarget?.boostCards ?
+            this.selectedTarget :
+            undefined;
+        const contextActivation = params.effect?.boostCards ?
+            params.effect :
+            undefined;
+        const enemyActivation = this.enemyActivation ||
+            selectedActivation ||
+            contextActivation;
+        if (!enemyActivation?.enemy || !Array.isArray(enemyActivation.boostCards)) {
+            throw new Error('DealBoostEffect requires an enemy activation.');
+        }
         const {enemy} = enemyActivation;
 
         if (enemy.isVillain ||
@@ -19,14 +28,6 @@ export class DealBoostEffect extends Effect {
             const cards = await this.match.drawEncounterCards();
 
             enemyActivation.boostCards = enemyActivation.boostCards.concat(cards);
-
-            if (cards.length) {
-                await this.openDialog({
-                    dialogType: DIALOG_BOOST_DEALT,
-                    title: `${enemy.name} recibe una carta de aumento`,
-                    data: {},
-                });
-            }
         }
     }
 }

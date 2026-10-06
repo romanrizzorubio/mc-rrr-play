@@ -18,15 +18,17 @@ export class McRevealCardsDialog extends McDialog {
             data: {
                 ...super.defaultProperties.data,
                 cards: [],
+                rotatePlanCards: false,
             },
         };
     }
     renderContent() {
-        const {data: {cards}} = this;
+        const {data: {cards, rotatePlanCards}} = this;
 
         return html`
             <mc-card-list
                 .cards="${cards}"
+                .rotatePlanCards="${rotatePlanCards}"
             ></mc-card-list>
         `;
     }

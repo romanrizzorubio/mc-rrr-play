@@ -2,28 +2,61 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {EVENTS} from 'mc-endpoints';
-import {MATCH_END_REASON_MAIN_SCHEME_COMPLETED} from 'mc-shared';
+import {
+    DIALOG_ENCOUNTERS_REVEAL,
+    MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
+} from 'mc-shared';
 
 import {Match} from '../../src/model/match/match.js';
 import {Scenario} from '../../src/model/match/scenario.js';
+import {MainSchemeBCard} from '../../src/model/printed/main-scheme-b-card.js';
 
-function createSchemeSide({final, threat = 0, value, initial, accelerationTokens = 0}) {
+test('main scheme B cards default to non-final', () => {
+    assert.equal(new MainSchemeBCard({}).final, false);
+});
+
+test('main scheme B cards serialize their scheme type', () => {
+    assert.equal(new MainSchemeBCard({}).toObj().isMainScheme, true);
+});
+
+function createSchemeSide({
+    final,
+    id = 'scheme-side',
+    name = 'Main scheme',
+    stage = 1,
+    threat = 0,
+    value,
+    initial,
+    accelerationTokens = 0,
+}) {
     return {
         accelerationTokens,
         final,
+        id,
         initial,
         isMainScheme: true,
+        name,
+        stage,
         threat,
         value,
         initScheme() {
             this.threat = this.initial;
         },
         async removeAttached() {},
+        toObj() {
+            return {id: this.id, name: this.name, stage: this.stage};
+        },
     };
 }
 
 function createScenario({final = false, nextScheme} = {}) {
-    const currentSide = createSchemeSide({final, threat: 5, value: 5});
+    const currentSide = createSchemeSide({
+        final,
+        id: 'completed-stage',
+        name: 'Completed scheme',
+        threat: 5,
+        value: 5,
+    });
     const currentScheme = {
         currentSide,
         endTriggers(force) {
@@ -37,6 +70,8 @@ function createScenario({final = false, nextScheme} = {}) {
         phase: 'villain',
         playing: true,
         removedCards: [],
+        dialogs: [],
+        sequence: [],
         initialPlayer: {name: 'First player'},
         dispatchedEvents: [],
         mc: {
@@ -45,6 +80,10 @@ function createScenario({final = false, nextScheme} = {}) {
                     match.dispatchedEvents.push(args);
                 },
             },
+        },
+        async openDialog(dialog) {
+            this.dialogs.push(dialog);
+            this.sequence.push(dialog.title);
         },
         async refresh() {
             this.refreshCount = (this.refreshCount || 0) + 1;
@@ -73,14 +112,25 @@ function createScenario({final = false, nextScheme} = {}) {
     scenario.revealedMainSchemeSides = [];
     scenario.revealMainSchemeSide = async (side, player) => {
         scenario.revealedMainSchemeSides.push({player, side});
+        match.sequence.push(`effects:${side.id}`);
     };
 
     return {currentScheme, currentSide, match, scenario};
 }
 
 function createNextScheme() {
-    const aSide = createSchemeSide({});
-    const bSide = createSchemeSide({final: false, initial: 3});
+    const aSide = createSchemeSide({
+        id: 'next-stage-a',
+        name: 'Next scheme',
+        stage: 2,
+    });
+    const bSide = createSchemeSide({
+        final: false,
+        id: 'next-stage-b',
+        initial: 3,
+        name: 'Next scheme',
+        stage: 2,
+    });
     return {
         aSide,
         bSide,
@@ -116,7 +166,43 @@ test('completing a non-final main scheme reveals and advances to the next stage'
     ]);
     assert.equal(currentScheme.endedTriggers, true);
     assert.deepEqual(match.removedCards, [currentScheme]);
-    assert.equal(match.refreshCount, 1);
+    assert.equal(match.refreshCount, 3);
+    assert.deepEqual(match.dialogs.map(({dialogType, title, subtitle, data}) => ({
+        dialogType,
+        title,
+        subtitle,
+        card: data.card,
+        horizontal: data.horizontal,
+    })), [
+        {
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Completed scheme (1B)',
+            subtitle: 'Etapa completada',
+            card: {id: 'completed-stage', name: 'Completed scheme', stage: 1},
+            horizontal: true,
+        },
+        {
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Next scheme (2A)',
+            subtitle: undefined,
+            card: {id: 'next-stage-a', name: 'Next scheme', stage: 2},
+            horizontal: true,
+        },
+        {
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Next scheme (2B)',
+            subtitle: undefined,
+            card: {id: 'next-stage-b', name: 'Next scheme', stage: 2},
+            horizontal: true,
+        },
+    ]);
+    assert.deepEqual(match.sequence, [
+        'Completed scheme (1B)',
+        'Next scheme (2A)',
+        'effects:next-stage-a',
+        'Next scheme (2B)',
+        'effects:next-stage-b',
+    ]);
 });
 
 test('transfers acceleration tokens to the next main scheme stage', async () => {
@@ -144,6 +230,9 @@ test('completing a final main scheme ends the match even if another stage remain
     assert.equal(match.gameOverReason, MATCH_END_REASON_MAIN_SCHEME_COMPLETED);
     assert.equal(match.refreshCount, 1);
     assert.deepEqual(match.removedCards, []);
+    assert.deepEqual(match.dialogs.map(({title}) => title), [
+        'Completed scheme (1B)',
+    ]);
 });
 
 test('completing the last main scheme ends the match when it is not marked final', async () => {
@@ -153,6 +242,9 @@ test('completing the last main scheme ends the match when it is not marked final
 
     assert.equal(match.playing, false);
     assert.equal(match.gameOverReason, MATCH_END_REASON_MAIN_SCHEME_COMPLETED);
+    assert.deepEqual(match.dialogs.map(({title}) => title), [
+        'Completed scheme (1B)',
+    ]);
 });
 
 test('losing during the player phase ends the waiting player turn', async () => {

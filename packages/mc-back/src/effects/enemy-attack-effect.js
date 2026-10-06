@@ -38,6 +38,14 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     getBoostTarget() {
         return this.originalAttackTarget || super.getBoostTarget();
     }
+    async resolveStatus(params) {
+        await this.showActivationSkippedDialog(
+            'stunned',
+            `${this.character.name} estaba aturdido y no ataca.`
+        );
+
+        return super.resolveStatus(params);
+    }
     async getAttackValue(params) {
         const {character} = this;
 
@@ -180,6 +188,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         const attackTargets = isMultiTarget ? selectedTarget : [selectedTarget];
 
         await this.dealBoostCards(params);
+        await this.showBoostCards();
         await this.defense(params);
         const boost = await this.resolveBoostCards(params);
         const atkValue = await this.getAttackValue(params);

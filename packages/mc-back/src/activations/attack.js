@@ -57,7 +57,8 @@ export class Attack extends Activation {
             character.owner :
             character;
 
-        if (!attacker || !target?.card?.retaliate ||
+        const retaliate = target?.retaliate ?? target?.card?.retaliate;
+        if (!attacker || !retaliate ||
             !target.isInPlay || this.effect.ranged || !character) {
             return;
         }
@@ -74,7 +75,7 @@ export class Attack extends Activation {
 
         const dealDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_DEAL_DAMAGE,
-            damage: target.card.retaliate,
+            damage: retaliate,
             selectedTarget: attacker,
             ability: this.effect.ability,
             isAttack: false,

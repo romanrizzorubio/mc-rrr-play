@@ -68,6 +68,45 @@ test('RevealEncounterEffect can draw from the encounter deck', async () => {
     assert.deepEqual(player.encounters, [pendingCard]);
 });
 
+test('RevealEncounterEffect marks scheme cards as horizontal in the reveal dialog', async () => {
+    const sideScheme = {
+        ...createEncounterCard('side-scheme'),
+        isSideScheme: true,
+    };
+    const effect = new RevealEncounterEffect({
+        match: {},
+        selectedTarget: sideScheme,
+    });
+    let horizontal;
+    effect.openDialog = async ({data}) => {
+        horizontal = data.horizontal;
+    };
+
+    await effect.prepare({player: {}});
+
+    assert.equal(horizontal, true);
+});
+
+test('RevealEncounterEffect does not show a dialog for main scheme sides', async () => {
+    const schemeSide = {
+        ...createEncounterCard('main-scheme-a'),
+        isMainScheme: true,
+    };
+    const effect = new RevealEncounterEffect({
+        match: {},
+        selectedTarget: schemeSide,
+    });
+    let dialogCount = 0;
+    effect.openDialog = async () => {
+        dialogCount++;
+    };
+
+    await effect.prepare({player: {}});
+
+    assert.equal(dialogCount, 0);
+    assert.equal(effect.selectedTarget, schemeSide);
+});
+
 test('a fully canceled encounter card is discarded', async () => {
     let discarded = false;
     const effect = new RevealEncounterEffect({match: {}});

@@ -30,6 +30,9 @@ export class Activation extends Engine {
     set selectedTarget(selectedTarget) {
         this.effect.selectedTarget = selectedTarget;
     }
+    createDelayedEffect(effect) {
+        this.effect.createDelayedEffect(effect);
+    }
     async canRun() {
         return !this.checkStatus();
     }

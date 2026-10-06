@@ -9,6 +9,7 @@ import {Calc} from '../../engine/calc.js';
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
 import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
+import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
 import {GetTraitsEffect} from '../../effects/get-traits-effect.js';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
@@ -136,20 +137,37 @@ export class CharacterGameCard extends GameCard {
     get guard() {
         return this.card.guard;
     }
+    get retaliate() {
+        return this.attached.reduce(
+            (retaliate, attachment) => retaliate + attachment.card.retaliate,
+            this.card.retaliate
+        );
+    }
     get hitPoints() {
         if (this.sides.length) {
             return this.currentSide.hitPoints + this.modifyHitPoints;
         }
         return this.card.hitPoints + this.modifyHitPoints;
     }
-    async getHitPoints() {
+    async getHitPoints({player: effectPlayer} = {}) {
         const {owner} = this;
 
         if (owner && owner.isPlayer && this.isSuperhero) {
             return owner.getHitPoints();
         }
+        const getHitPointsEffect = new GetHitPointsEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+        const player = effectPlayer || (this.controller?.isPlayer ?
+            this.controller :
+            this.match.initialPlayer);
 
-        return this.hitPoints;
+        await getHitPointsEffect.runEffect({
+            player,
+        });
+
+        return getHitPointsEffect.hitPoints;
     }
     async getAttackValue(params) {
         const getAttackEffect = new GetAttackEffect({
@@ -391,14 +409,17 @@ export class CharacterGameCard extends GameCard {
         return 0;
     }
     async getEffectiveStats() {
-        const {controller} = this;
+        const {controller, match} = this;
+        const player = controller?.isPlayer ?
+            controller :
+            match.initialPlayer || controller;
 
-        if (!controller) {
-            throw new Error(`Character ${this.id} has no controller for stat calculation.`);
+        if (!player) {
+            throw new Error(`Character ${this.id} has no player for stat calculation.`);
         }
 
         const params = {
-            player: controller,
+            player,
             card: this,
         };
         const attack = Number.isFinite(this.attack) ?
@@ -410,11 +431,14 @@ export class CharacterGameCard extends GameCard {
         const defense = Number.isFinite(this.defense) ?
             await this.getDefenseValue(params) :
             this.defense;
+        const hitPoints = await this.getHitPoints({player});
 
         return {
             attack,
             thwart,
             defense,
+            hitPoints,
+            life: hitPoints - this.damage,
         };
     }
     async getEffectiveTraits() {
@@ -434,26 +458,18 @@ export class CharacterGameCard extends GameCard {
     }
     async refresh() {
         const {controller, match} = this;
-
-        if (!this.isAlly || !controller) {
-            return super.refresh();
-        }
-
-        const card = await this.toObjWithAbilityAvailability(controller);
+        const player = controller?.isPlayer ? controller : match.initialPlayer;
+        const card = await this.toObjWithAbilityAvailability(player);
 
         match.mc.mcSocket.send(match.name, REFRESH_EVENTS[this.objectToRefresh], card);
     }
     async toObjWithAbilityAvailability(player) {
         const serializedCard = await super.toObjWithAbilityAvailability(player);
 
-        if (this.isAlly) {
-            return {
-                ...serializedCard,
-                ...await this.getEffectiveStats(),
-            };
-        }
-
-        return serializedCard;
+        return {
+            ...serializedCard,
+            ...await this.getEffectiveStats(),
+        };
     }
     toObj() {
         const {

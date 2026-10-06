@@ -9,6 +9,13 @@ export class ScenarioZone extends GameZone {
         this.currentVillain = null;
         this.currentScheme = null;
     }
+    async refresh() {
+        await super.refresh();
+
+        if (this.currentVillain) {
+            await this.currentVillain.refresh();
+        }
+    }
     get accelerationTokens() {
         return super.accelerationTokens +
             this.currentVillain.currentSide.accelerationTokens +

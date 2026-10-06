@@ -49,6 +49,10 @@ export default css`
     text-align: center;
   }
 
+  .content > mc-card[horizontal] {
+    margin-inline: auto;
+  }
+
   .actions {
     display: flex;
     justify-content: flex-end;

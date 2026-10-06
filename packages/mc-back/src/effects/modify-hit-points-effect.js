@@ -25,6 +25,17 @@ export class ModifyHitPointsEffect extends Effect {
             count;
 
         if (effect instanceof GetHitPointsEffect) {
+            const selectedTargets = Array.isArray(selectedTarget) ?
+                selectedTarget :
+                [selectedTarget];
+            const queriedCharacter = effect.selectedTarget?.parent ||
+                effect.selectedTarget;
+            const modifiesQueriedCharacter = selectedTargets.some(target =>
+                (target?.parent || target) === queriedCharacter);
+
+            if (!modifiesQueriedCharacter) {
+                return;
+            }
             if (!Number.isFinite(modifyHitPoints)) {
                 throw new Error('A hit-point modifier must resolve to a finite number.');
             }

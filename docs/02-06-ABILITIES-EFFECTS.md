@@ -204,6 +204,7 @@ Algunas capacidades instruyen a un jugador a elegir entre múltiples opciones. P
 - Cuando una carta de jugador requiere que un jugador elija una opción, no puede elegir una opción que no pueda resolverse al menos parcialmente. Esto incluye opciones que:
     - Tengan un coste que el jugador no pueda pagar.
     - Requieran uno o más objetivos y no haya objetivos válidos.
+- Si la opción es un efecto de gastar recursos, puede resolverse parcialmente: se pagan tantos requisitos como permitan los recursos disponibles. Esto no se aplica a un coste, que debe satisfacerse por completo.
 - Cuando una carta requiere que un jugador elija múltiples opciones de una lista, ese jugador no puede elegir la misma opción múltiples veces.
 
 **Véase también**: capacidad, jugador, objetivo.

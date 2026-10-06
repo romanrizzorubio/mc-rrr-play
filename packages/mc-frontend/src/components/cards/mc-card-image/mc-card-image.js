@@ -14,6 +14,7 @@ export class McCardImage extends LitElement {
             src: {type: String},
             size: {type: String},
             horizontal: {type: Boolean},
+            rotated: {type: Boolean, reflect: true},
         };
     }
     constructor() {
@@ -22,16 +23,22 @@ export class McCardImage extends LitElement {
         this.src = '';
         this.size = 'm';
         this.horizontal = false;
+        this.rotated = false;
     }
     getOrientationClass() {
         return this.horizontal ? 'horizontal' : 'vertical';
     }
     render() {
         const {size} = this;
+        const classes = [
+            this.getOrientationClass(),
+            `size-${size}`,
+            this.rotated ? 'rotated' : '',
+        ].filter(Boolean).join(' ');
 
         return html`
             <img
-                class="${this.getOrientationClass()} size-${size}"
+                class="${classes}"
                 src="${this.src}" 
             />
         `;

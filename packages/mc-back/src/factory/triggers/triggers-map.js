@@ -4,6 +4,7 @@ import {
     TRIGGER_ATTACHED_GET_THWART,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
@@ -66,6 +67,9 @@ import {ThisEnterPlayTrigger} from '../../triggers/this-enter-play-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
 import {ThisSchemeTrigger} from '../../triggers/this-scheme-trigger.js';
 import {ThisThwartsTrigger} from '../../triggers/this-thwarts-trigger.js';
+import {
+    CharacterGetHitPointsTrigger
+} from '../../triggers/character-get-hit-points-trigger.js';
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
 import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigger.js';
@@ -100,6 +104,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_GET_THWART]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
+    [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,

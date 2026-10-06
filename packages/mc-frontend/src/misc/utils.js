@@ -1,5 +1,8 @@
 export const ABILITY_ID = 'ability-';
 
+export const isPlanCard = card =>
+    Boolean(card?.isMainScheme || card?.isSideScheme);
+
 export const checkCondition = (obj, condition) => {
     return Object.keys(condition).reduce((r, key) => {
         const value = condition[key];

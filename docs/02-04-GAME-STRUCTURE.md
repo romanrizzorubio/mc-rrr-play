@@ -57,6 +57,7 @@ Los pasos de la fase del villano son:
 2. **Los enemigos se activan**. En orden de jugador, cada jugador resuelve lo siguiente:
     a. El villano se activa contra el jugador. Si el jugador está en identidad de héroe, el villano ataca. Si el jugador está en identidad de alter ego, el villano ejecuta su plan.
     b. Cada esbirro enfrentado con el jugador se activa contra él. Si el jugador está en identidad de héroe, el esbirro ataca. Si el jugador está en identidad de alter ego, el esbirro ejecuta su plan.
+       Si varios esbirros deben activarse en ese paso o por un efecto, el jugador elige cuál se activa primero; la elección se repite hasta que solo quede uno, que se activa sin diálogo.
 3. **Repartir cartas de encuentro**. Reparte una carta de encuentro a cada jugador. Reparte una carta adicional por cada icono de riesgo en una carta en juego. Estas cartas adicionales se reparten en orden de jugador.
 4. **Mostrar cartas de encuentro**. El primer jugador muestra cada una de sus cartas de encuentro, de una en una en el orden en que fueron repartidas, resolviendo cada carta en función de su tipo de carta. Cada jugador repite este proceso en orden de jugador, hasta que no queden cartas de encuentro repartidas.
 5. **Pasar el marcador de jugador inicial**. Pasa el marcador de jugador inicial al siguiente jugador en el sentido de las agujas del reloj.

@@ -2,7 +2,7 @@ import {LitElement, html} from 'lit-element';
 
 import styles from './mc-card-list.css.js';
 import '../mc-card/mc-card.js';
-import {ABILITY_ID} from '../../../misc/utils.js';
+import {ABILITY_ID, isPlanCard} from '../../../misc/utils.js';
 
 export class HandComponent extends LitElement {
     static get is() {
@@ -26,6 +26,7 @@ export class HandComponent extends LitElement {
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
             dimUnplayable: {type: Boolean, attribute: 'dim-unplayable'},
+            rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
         };
     }
     constructor() {
@@ -44,6 +45,7 @@ export class HandComponent extends LitElement {
         this.showGeneric = false;
         this.showExhausted = false;
         this.dimUnplayable = false;
+        this.rotatePlanCards = false;
     }
     getMenuOptions(card) {
         if (this.showMenuAbilities) {
@@ -132,6 +134,7 @@ export class HandComponent extends LitElement {
             showThreat,
             showGeneric,
             dimUnplayable,
+            rotatePlanCards,
         } = this;
         const {
             attached,
@@ -148,6 +151,8 @@ export class HandComponent extends LitElement {
             extraTraits = [],
             statusCards,
         } = card;
+        const horizontal = isPlanCard(card);
+        const rotated = rotatePlanCards && horizontal;
         const {abilityNames = []} = card;
 
         const life = showLife && Number.isFinite(card.life) ?
@@ -186,8 +191,10 @@ export class HandComponent extends LitElement {
                 .damage="${damage}"
                 .showDamage="${showDamage}"
                 threat="${threat}"
-                generic="${generic}"
+                .generic="${generic}"
                 size="${size}"
+                ?horizontal="${horizontal}"
+                .rotated="${rotated}"
                 hide-name
                 .showThreat="${showThreat}"
                 .showGeneric="${showGeneric}"

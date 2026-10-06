@@ -458,7 +458,12 @@ export class Player extends Engine {
 
         await this.gameZone.readyCards();
     }
-    async spendResources(resources, cardToPay, excludedCardIds = new Set()) {
+    async spendResources(
+        resources,
+        cardToPay,
+        excludedCardIds = new Set(),
+        {allowPartial = false} = {}
+    ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
             undefined,
@@ -466,8 +471,9 @@ export class Player extends Engine {
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
-            showCancel: true,
+            showCancel: !allowPartial,
             data: {
+                allowPartial,
                 cost: resources.length,
                 requirement: resources,
                 card: cardToPay ? cardToPay.toObj() : undefined,
@@ -481,10 +487,11 @@ export class Player extends Engine {
         });
 
         if (response) {
-            const {paid, resources} = response;
+            const {paid, resources: paidResources, fullyPaid} = response;
 
             return {
-                resources,
+                resources: paidResources,
+                fullyPaid: fullyPaid ?? !allowPartial,
                 hand: paid.hand.map(card => this.hand.getCard(card.id)),
                 generators: paid.generators.map(card => this.getCard(card.id)),
             };
@@ -566,8 +573,6 @@ export class Player extends Engine {
     async toObjWithPlayableHand() {
         const player = this.toObj();
         const handSize = await this.getHandSize();
-        const hitPoints = await this.getHitPoints();
-        const life = hitPoints - this.superhero.damage;
         const {superhero} = this;
         const stats = await superhero.getEffectiveStats();
         const effectiveTraits = await superhero.getEffectiveTraits();
@@ -610,8 +615,6 @@ export class Player extends Engine {
                 ...player.superhero,
                 ...stats,
                 extraTraits,
-                hitPoints,
-                life,
                 abilities,
             },
         };

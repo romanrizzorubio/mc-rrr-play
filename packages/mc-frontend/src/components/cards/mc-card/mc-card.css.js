@@ -9,6 +9,39 @@ export default css`
     position: relative;
   }
 
+  :host([size="xs"]) {
+    --card-size: 25px;
+  }
+
+  :host([size="s"]) {
+    --card-size: 50px;
+  }
+
+  :host([size="l"]) {
+    --card-size: 200px;
+  }
+
+  :host([size="xl"]) {
+    --card-size: 300px;
+  }
+
+  :host([horizontal]) {
+    width: calc(var(--card-size) * 1.39667);
+  }
+
+  :host([horizontal][rotated]) {
+    width: var(--card-size);
+  }
+
+  :host([horizontal]) .card-face {
+    position: relative;
+    width: calc(var(--card-size) * 1.39667);
+  }
+
+  :host([horizontal][rotated]) .card-face {
+    width: var(--card-size);
+  }
+
   :host(.disabled) .card-face > mc-card-image,
   :host(.unplayable) .card-face > mc-card-image {
     filter: brightness(var(--disabled-card-brightness, 0.35));
@@ -45,6 +78,25 @@ export default css`
     align-items: center;
     justify-content: space-between;
     gap: 2px;
+  }
+
+  :host([horizontal]) header {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    width: 100%;
+  }
+
+  :host([horizontal]) header.scheme-title-header {
+    align-items: end;
+  }
+
+  :host([horizontal]) .scheme-title-header .name {
+    box-sizing: border-box;
+    width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   .character-stats {
@@ -175,8 +227,16 @@ export default css`
     line-height: 1.1;
   }
 
+  :host([horizontal]) .name {
+    overflow-wrap: anywhere;
+  }
+
   .header-right {
     text-align: right;
+  }
+
+  :host([horizontal]) .header-right {
+    justify-self: end;
   }
 
   .stage-label {

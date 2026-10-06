@@ -13,6 +13,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_CANNOT_TARGET` | Solo dentro de `validation` de una capacidad constante. Excluye objetivos según `effectTypes` o `effectCategories` (por ejemplo, `EFFECT_CATEGORY_DAMAGE`); `condition` busca una carta en juego, `targetCondition` limita las cartas afectadas y `effectCondition` evalúa el efecto o su fuente. No se resuelve como efecto normal. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
 | `EFFECT_DEAL_ENCOUNTER` | Reparte una carta del mazo de Encuentros al jugador objetivo, boca abajo. |
+| `EFFECT_DEAL_BOOST` | Añade una carta de aumento a la activación de enemigo actual. Debe conservar el contexto de esa activación; no la resuelvas como una activación independiente. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
 | `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
 | `EFFECT_PREVENT_DEFEAT` | Durante una interrupción de derrota, reemplaza esa derrota antes de que se resuelvan sus efectos. |
@@ -39,6 +40,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
 | `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. No implica por sí solo la condición estricta de "Luego". Conserva el contexto de capacidad y, si `thenEffect` usa el mismo `target`, reutiliza el objetivo ya seleccionado. |
 | `EFFECT_SIMULTANEOUS` | Para efectos independientes conectados por "y" que las reglas mandan resolver simultáneamente. Prepara interrupciones y diálogos del grupo antes de aplicarlo, sin ventanas de respuesta entre sus efectos; después resuelve las respuestas. En `arrow`, todos los costes son obligatorios. |
+| `EFFECT_CHOOSE` | Ofrece solo opciones que puedan resolverse al menos parcialmente. Si queda una, resuélvela directamente; abre el selector solo si quedan varias. |
+| `EFFECT_SPEND` | Como efecto, puede resolverse parcialmente: debe haber al menos un requisito pagable y se pagan tantos requisitos como permitan los recursos disponibles. Como coste, todos los requisitos deben pagarse. |
 | `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
@@ -54,6 +57,21 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
 
 `EFFECT_LASTING` ejecuta inmediatamente `effect` cuando no se indica `triggerType`. Las mutaciones reversibles registran su limpieza en la duración y se revierten automáticamente al expirar; `endEffect` queda para limpiezas personalizadas. Los valores `TIME_*` se resuelven mediante `TIME_TRIGGER_MAP`; los triggers explícitos en `until` se conservan.
+
+### Opciones y pagos parciales
+
+- Evalúa cada opción de `EFFECT_CHOOSE` por separado según si su efecto puede resolverse al menos en parte; no descartes opciones parcialmente válidas porque otra opción pueda resolverse por completo.
+- Si solo queda una opción válida, resuélvela sin pedir una selección. Si quedan varias, muestra únicamente esas opciones.
+- `EFFECT_EXHAUST` puede resolver una selección múltiple parcialmente cuando al menos uno de los objetivos puede agotarse; los objetivos ya agotados no impiden agotar los demás.
+- Cuando `EFFECT_SPEND` sea un efecto, habilítalo si se puede pagar al menos uno de sus requisitos. Al confirmar, exige la mayor cantidad de requisitos que pueda satisfacerse con los recursos disponibles y marca el efecto como parcialmente resuelto si quedan requisitos pendientes.
+- No uses pagos parciales para costes de flecha ni otros costes. Esos pagos deben satisfacer todos los requisitos.
+
+### Resolución de varias cartas de aumento
+
+- Resuelve todas las cartas de aumento de una activación, una por una y en el orden en que se repartieron. Cada icono de aumento de cada carta contribuye al total de esa activación; las capacidades de aumento también se resuelven individualmente.
+- Una carta adicional modifica la activación existente: no reemplaza su carta normal ni inicia otra activación. Acumula los valores de todas las cartas antes de calcular el ATQ o la PLA final.
+- Añade una prueba con al menos dos cartas de valores conocidos que compruebe tanto la suma total como el daño o la amenaza resultante. No deduzcas los valores de las imágenes; usa el dato estructurado `boost` del catálogo.
+- Si la interfaz revela varias cartas, deben permanecer boca abajo hasta su turno y mostrarse de izquierda a derecha. Conserva visibles los iconos y la indicación de capacidad de aumento de cada carta revelada, muestra la suma acumulada de los iconos ya revelados y no continúes la activación hasta resolverlas todas.
 
 ## Diccionario de Capacidades Comunes
 

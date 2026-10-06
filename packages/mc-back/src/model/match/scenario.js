@@ -1,5 +1,6 @@
 import {EVENTS} from 'mc-endpoints';
 import {
+    DIALOG_ENCOUNTERS_REVEAL,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
 } from 'mc-shared';
@@ -62,6 +63,9 @@ export class Scenario extends Engine {
     get mainScheme() {
         return path(this, 'gameZone.currentScheme.currentSide');
     }
+    getMainSchemeDialogTitle(schemeSide, side) {
+        return `${schemeSide.name} (${schemeSide.stage}${side})`;
+    }
     get objectToRefresh() {
         return 'scenario';
     }
@@ -123,9 +127,29 @@ export class Scenario extends Engine {
 
         await this.selectVillain();
 
-        await this.gameZone.currentScheme.setup();
-        await this.gameZone.currentScheme.flip();
-        this.gameZone.currentScheme.currentSide.initScheme();
+        const currentScheme = this.gameZone.currentScheme;
+        const player = this.match.initialPlayer;
+
+        await this.match.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: this.getMainSchemeDialogTitle(currentScheme.currentSide, 'A'),
+            data: {
+                card: currentScheme.currentSide.toObj({player}),
+                horizontal: true,
+            },
+        });
+        await currentScheme.setup({player});
+        await currentScheme.flip();
+        currentScheme.currentSide.initScheme();
+        await this.match.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: this.getMainSchemeDialogTitle(currentScheme.currentSide, 'B'),
+            data: {
+                card: currentScheme.currentSide.toObj({player}),
+                horizontal: true,
+            },
+        });
+        await this.revealMainSchemeSide(currentScheme.currentSide, player);
     }
     async completeMainScheme(completedScheme, params) {
         const currentScheme = this.gameZone.currentScheme;
@@ -137,6 +161,17 @@ export class Scenario extends Engine {
         }
 
         const nextScheme = this.mainSchemes[0];
+
+        await this.match.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: this.getMainSchemeDialogTitle(currentSide, 'B'),
+            subtitle: 'Etapa completada',
+            data: {
+                card: currentSide.toObj(params),
+                horizontal: true,
+            },
+        });
+
         if (currentSide.final || !nextScheme) {
             await this.match.finishGame(MATCH_END_REASON_MAIN_SCHEME_COMPLETED);
             return false;
@@ -160,6 +195,15 @@ export class Scenario extends Engine {
         nextScheme.selectedSide = nextScheme.sides.indexOf(nextSchemeASide);
 
         const player = params.player || this.match.initialPlayer;
+        await this.match.refresh();
+        await this.match.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: this.getMainSchemeDialogTitle(nextSchemeASide, 'A'),
+            data: {
+                card: nextSchemeASide.toObj(params),
+                horizontal: true,
+            },
+        });
         await this.revealMainSchemeSide(nextSchemeASide, player);
         await nextScheme.flip({
             player,
@@ -167,6 +211,15 @@ export class Scenario extends Engine {
         });
         nextScheme.currentSide.initScheme();
         nextScheme.currentSide.accelerationTokens += accelerationTokens;
+        await this.match.refresh();
+        await this.match.openDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: this.getMainSchemeDialogTitle(nextScheme.currentSide, 'B'),
+            data: {
+                card: nextScheme.currentSide.toObj(params),
+                horizontal: true,
+            },
+        });
         await this.revealMainSchemeSide(nextScheme.currentSide, player);
         await this.match.refresh();
 
@@ -193,6 +246,18 @@ export class Scenario extends Engine {
             .searchCard(condition);
     }
     async selectVillain(player) {
+        const currentVillain = this.gameZone.currentVillain;
+
+        if (currentVillain) {
+            await this.match.openDialog({
+                dialogType: DIALOG_ENCOUNTERS_REVEAL,
+                title: `${currentVillain.name} ha sido derrotado`,
+                data: {
+                    card: currentVillain.toObj({player}),
+                },
+            });
+        }
+
         if (!this.villains.length) {
             await this.match.finishGame(MATCH_END_REASON_VILLAIN_DEFEATED);
             this.match.mc.mcSocket.send(
@@ -204,8 +269,6 @@ export class Scenario extends Engine {
         }
 
         const nextVillain = this.villains.shift();
-
-        const currentVillain = this.gameZone.currentVillain;
 
         if (currentVillain) {
             if (nextVillain.name === currentVillain.name) {
@@ -219,6 +282,9 @@ export class Scenario extends Engine {
                 nextVillain.counters = currentVillain.counters;
                 nextVillain.exhausted = currentVillain.exhausted;
                 nextVillain.accelerationTokens = currentVillain.accelerationTokens;
+                if (currentVillain.modifyHitPoints !== undefined) {
+                    nextVillain.modifyHitPoints = currentVillain.modifyHitPoints;
+                }
             }
 
             currentVillain.endTriggers();
@@ -259,6 +325,16 @@ export class Scenario extends Engine {
             mainScheme: mainScheme && mainScheme.toObj(),
             deck: deck && deck.toObj(),
             gameZone: gameZone && gameZone.toObj(),
+        };
+    }
+    async toObjWithAbilityAvailability(player) {
+        const scenario = this.toObj();
+
+        return {
+            ...scenario,
+            villain: this.villain ?
+                await this.villain.toObjWithAbilityAvailability(player) :
+                null,
         };
     }
 }

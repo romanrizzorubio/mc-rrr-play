@@ -307,7 +307,12 @@ export class McMatchPage extends LitElement {
         }));
     }
     handleMenuOption(card) {
-        return ({selected}) => {
+        return response => {
+            if (response === undefined) {
+                return;
+            }
+
+            const {selected} = response;
             const {apiPlayer, player} = this;
 
             switch (selected.id) {

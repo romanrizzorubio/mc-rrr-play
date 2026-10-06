@@ -127,12 +127,15 @@ export class RevealEncounterEffect extends Effect {
         this.card = selectedTarget;
         this.player = player;
 
-        await this.openDialog({
-            dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            data: {
-                card: selectedTarget.toObj(arguments[0]),
-            },
-        });
+        if (!selectedTarget.isMainScheme) {
+            await this.openDialog({
+                dialogType: DIALOG_ENCOUNTERS_REVEAL,
+                data: {
+                    card: selectedTarget.toObj(arguments[0]),
+                    horizontal: Boolean(selectedTarget.isMainScheme || selectedTarget.isSideScheme),
+                },
+            });
+        }
     }
     reveal(params) {
         const {selectedTarget} = this;

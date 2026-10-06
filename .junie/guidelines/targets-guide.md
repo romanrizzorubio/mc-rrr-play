@@ -19,7 +19,7 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve cero, no hay objetivo válido.
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS` y `TARGET_ALL_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS` y `TARGET_ALL_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
 
 En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devuelven colecciones, pero no están en la lista de `isMultipleTarget`; por sí solos no significan que el efecto se aplique a todos.
 
@@ -69,6 +69,7 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_ALLY` | Los aliados del jugador actual. |
 | `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
 | `TARGET_ALL_ALLIES_YOU_CONTROL` | Todos los aliados controlados por el jugador actual. |
+| `TARGET_ALL_CHARACTERS_YOU_CONTROL` | El superhéroe y los aliados controlados por el jugador actual. |
 | `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
@@ -95,7 +96,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 
 | Constante | Candidatos |
 | :--- | :--- |
-| `TARGET_ATTACKED` | El objetivo seleccionado del ataque actual. Si se derrotó una etapa del villano y la siguiente tiene el mismo título, apunta a la etapa activa nueva. |
+| `TARGET_ATTACKED` | El personaje atacado por el ataque actual, incluido el defensor elegido. Si se derrotó una etapa del villano y la siguiente tiene el mismo título, apunta a la etapa activa nueva. (La función auxiliar está en `utils/target-utils.js`.) |
 | `TARGET_ALL_SCHEMES` | Todos los planes en juego, incluidos el principal y los secundarios. |
 | `TARGET_CONDITION_CARD` | Las cartas de la partida que cumplen `condition`. |
 | `TARGET_MAIN_SCHEME` | El plan principal. |

@@ -12,4 +12,5 @@ export default css`
   .boost-ability {
     margin-top: 16px;
   }
+
 `;

@@ -10,7 +10,7 @@ export class MainSchemeBCard extends MainScenarioCard {
         value,
         startingThreat,
         acceleration,
-        final = true
+        final = false
     }) {
         super(arguments[0]);
 

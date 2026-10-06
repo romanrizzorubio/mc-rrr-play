@@ -7,9 +7,13 @@ import {MATCH_END_REASON_VILLAIN_DEFEATED} from 'mc-shared';
 import {Scenario} from '../../src/model/match/scenario.js';
 
 test('replacing a villain stage removes old responses and registers the new stage', async () => {
+    const dialogs = [];
     const match = {
-        async openDialog() {
-            assert.equal(match.scenario.villain, nextVillain);
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+            assert.equal(match.scenario.villain, dialog.title ?
+                oldVillain :
+                nextVillain);
             return {};
         },
         isUniqueCard() {
@@ -28,10 +32,14 @@ test('replacing a villain stage removes old responses and registers the new stag
         exhausted: false,
         faceDown: [],
         id: 'rhino-stage-1',
+        modifyHitPoints: 10,
         name: 'Rino',
         selectedSide: 0,
         stunned: 0,
         tough: 0,
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
     };
     const nextVillain = {
         abilities: [],
@@ -51,6 +59,7 @@ test('replacing a villain stage removes old responses and registers the new stag
         isSideScheme: false,
         isTreachery: false,
         isVillain: true,
+        modifyHitPoints: 0,
         name: 'Rino',
         owner: null,
         selectedSide: 0,
@@ -93,14 +102,20 @@ test('replacing a villain stage removes old responses and registers the new stag
     await scenario.selectVillain(player);
 
     assert.equal(scenario.villain, nextVillain);
+    assert.equal(nextVillain.modifyHitPoints, 10);
     assert.equal(match.triggerCards[oldVillain.id], undefined);
     assert.equal(match.triggerCards[nextVillain.id], nextVillain);
+    assert.equal(dialogs[0].title, 'Rino ha sido derrotado');
+    assert.deepEqual(dialogs[0].data.card, {id: oldVillain.id, name: oldVillain.name});
+    assert.equal(dialogs[1].title, undefined);
 });
 
 test('defeating the final villain stage marks the match as won', async () => {
     const emitted = [];
     const finished = [];
+    const dialogs = [];
     const villain = {
+        name: 'Rino',
         toObj() {
             return {id: 'rhino-stage-2'};
         },
@@ -114,6 +129,9 @@ test('defeating the final villain stage marks the match as won', async () => {
             },
         },
         name: 'rhino-match',
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+        },
         async finishGame(reason) {
             finished.push(reason);
         },
@@ -137,6 +155,9 @@ test('defeating the final villain stage marks the match as won', async () => {
     await scenario.selectVillain();
 
     assert.deepEqual(finished, [MATCH_END_REASON_VILLAIN_DEFEATED]);
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].title, 'Rino ha sido derrotado');
+    assert.deepEqual(dialogs[0].data.card, {id: 'rhino-stage-2'});
     assert.deepEqual(emitted, [[
         match.name,
         EVENTS.SCENARIO.DEFEAT,

@@ -16,6 +16,10 @@ export default css`
   .cost-panel {
     display: flex;
     justify-content: space-between;
+    padding-bottom: 0;
+  }
+
+  .cost-panel-divider {
     padding-bottom: 16px;
   }
 
@@ -32,6 +36,12 @@ export default css`
   .cost-panel>:nth-child(3) {
     text-align: right;
     width: 25%;
+  }
+
+  .payment-error {
+    color: darkred;
+    margin: 8px 0 0;
+    text-align: left;
   }
 
   .panel {

@@ -29,28 +29,35 @@ export class ChooseEffect extends Effect {
             option.ability = ability;
         });
     }
-    canRun(params) {
-        return this.promisesSequentialSome(this.options, option => option.canRun(params));
+    getOptionParams(params) {
+        return params.isCost || params.costPaymentSession?.requireAllCosts ?
+            params :
+            {...params, matchAll: false};
     }
-    getValidOptions(params, matchAll) {
-        const {options} = this;
+    canRun(params) {
+        const optionParams = this.getOptionParams(params);
 
-        return this.promisesSequentialFilter(options, option => option.canRun({
-            ...params,
-            matchAll,
-        }));
+        return this.promisesSequentialSome(this.options, option =>
+            option.canRun(optionParams));
+    }
+    getValidOptions(params) {
+        const {options} = this;
+        const optionParams = this.getOptionParams(params);
+
+        return this.promisesSequentialFilter(options, option =>
+            option.canRun(optionParams));
     }
     async execute(params) {
         const {player} = params;
         const {ability: {card}} = this;
+        const optionParams = this.getOptionParams(params);
 
-        let options = await this.getValidOptions(params, true);
-
-        if (!options.length) {
-            options = await this.getValidOptions(params, false);
+        const options = await this.getValidOptions(params);
+        if (options.length === 1) {
+            return options[0].runEffect(optionParams);
         }
 
-        if (options.length) {
+        if (options.length > 1) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_LIST,
                 hideOk: true,
@@ -67,7 +74,7 @@ export class ChooseEffect extends Effect {
 
             const effect = options[selected.id];
 
-            return effect.runEffect(params);
+            return effect.runEffect(optionParams);
         }
     }
 }

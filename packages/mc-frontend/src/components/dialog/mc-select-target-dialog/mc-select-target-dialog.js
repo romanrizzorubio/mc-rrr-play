@@ -1,3 +1,5 @@
+import {html} from 'lit-element';
+
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
 import {McCardListDialog} from '../mc-card-list-dialog/mc-card-list-dialog.js';
 
@@ -25,6 +27,9 @@ export class McSelectTargetDialog extends McCardListDialog {
                 showDamage: true,
             },
         };
+    }
+    renderButtonOk() {
+        return html``;
     }
 }
 

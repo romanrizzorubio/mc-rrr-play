@@ -4,6 +4,7 @@ import styles from './mc-encounters-reveal-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 export class McEncountersRevealDialog extends McDialog {
     static get is() {
@@ -27,7 +28,8 @@ export class McEncountersRevealDialog extends McDialog {
         return this.title || 'Mostrando carta de Encuentro';
     }
     renderContent() {
-        const {data: {card, isBoost, hasBoostAbility}} = this;
+        const {data: {card, horizontal, isBoost, hasBoostAbility}} = this;
+        const isHorizontal = Boolean(horizontal || isPlanCard(card));
 
         return html`
             ${isBoost ? html`
@@ -39,6 +41,7 @@ export class McEncountersRevealDialog extends McDialog {
                 name="${card.name}"
                 image="${card.image}"
                 size="l"
+                ?horizontal="${isHorizontal}"
             ></mc-card>
             ${isBoost && hasBoostAbility ? html`
                 <div class="boost-ability">

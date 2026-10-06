@@ -4,6 +4,7 @@ import styles from './mc-list-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {isPlanCard} from '../../../misc/utils.js';
 
 export class McListDialog extends McDialog {
     static get is() {
@@ -75,13 +76,15 @@ export class McListDialog extends McDialog {
         }
     }
     renderContent() {
-        const {data: {options, card: {name, image}}} = this;
+        const {data: {options, card}} = this;
+        const {name, image} = card;
 
         return html`
             <mc-card
                 name="${name}"
                 image="${image}"
                 size="m"
+                ?horizontal="${isPlanCard(card)}"
                 hide-name
             ></mc-card>
             <md-list class="list">

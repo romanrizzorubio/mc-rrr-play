@@ -39,7 +39,7 @@ En orden de jugador, cada jugador toma su turno.
     *   **Villano se activa**:
         *   Si el jugador está en **héroe**: El villano **ataca**.
         *   Si el jugador está en **alter ego**: El villano **ejecuta el plan**.
-    *   **Esbirros se activan**: Cada esbirro enfrentado al jugador ataca o ejecuta el plan según la identidad del jugador.
+    *   **Esbirros se activan**: Cada esbirro enfrentado al jugador ataca o ejecuta el plan según la identidad del jugador. Si varios deben activarse, elige el siguiente en diálogos sucesivos; el último se activa sin diálogo.
 3.  **Repartir cartas de encuentro**: Una a cada jugador (+ iconos de riesgo).
 4.  **Mostrar cartas de encuentro**: En orden, cada jugador muestra y resuelve su(s) carta(s).
 5.  **Pasar el marcador**: El marcador de jugador inicial pasa a la izquierda.

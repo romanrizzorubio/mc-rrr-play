@@ -151,13 +151,24 @@ export class TakeDamageEffect extends Effect {
         const {selectedTarget, takenDamage} = this;
 
         if (selectedTarget instanceof Array) {
-            await Promise.all(selectedTarget.map(async (st, index) => {
+            const takeDamage = async (target, index) => {
                 if (takenDamage instanceof Array) {
-                    await this.takeDamage(st, takenDamage[index], params);
+                    await this.takeDamage(target, takenDamage[index], params);
                 } else {
-                    await this.takeDamage(st, takenDamage, params);
+                    await this.takeDamage(target, takenDamage, params);
                 }
-            }));
+            };
+
+            const resolvesOverkill = typeof this.activation?.getOverkill === 'function' &&
+                this.activation.getOverkill(params);
+
+            if (resolvesOverkill) {
+                for (const [index, target] of selectedTarget.entries()) {
+                    await takeDamage(target, index);
+                }
+            } else {
+                await Promise.all(selectedTarget.map(takeDamage));
+            }
         } else {
             await this.takeDamage(selectedTarget, takenDamage, params);
         }

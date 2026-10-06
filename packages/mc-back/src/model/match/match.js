@@ -30,6 +30,7 @@ export class Match extends Engine {
         this.endPlayerIndex = 0;
         this.villainPhaseStep = 0;
         this.skipDiscardOrderDialog = false;
+        this.skipBoostDealtNotification = false;
         this.suppressedInformationalDialogIds = [];
 
         this.lasting = [];
@@ -461,6 +462,8 @@ export class Match extends Engine {
             players: await Promise.all(
                 this.players.map(player => player.toObjWithPlayableHand())
             ),
+            scenario: this.scenario &&
+                await this.scenario.toObjWithAbilityAvailability(this.initialPlayer),
         };
     }
 }
