@@ -10,9 +10,11 @@ export class PlaceThreatEffect extends Effect {
     constructor({
         target = TARGET_SCHEME,
         threat,
+        isAccelerationThreat = false,
     }) {
         super({...arguments[0], target});
 
+        this.isAccelerationThreat = isAccelerationThreat;
         this._threat = threat;
         this.preventThreat = 0;
     }
@@ -34,6 +36,12 @@ export class PlaceThreatEffect extends Effect {
                 TRIGGER_WOULD_PLACE_THREAT,
             ]);
     }
+    getTriggersEnds(params) {
+        return super.getTriggersEnds(params)
+            .concat([
+                TRIGGER_PLACE_THREAT,
+            ]);
+    }
     getThreat(params) {
         return this.paramsCalc ?
             this.calculate(params) :
@@ -49,17 +57,21 @@ export class PlaceThreatEffect extends Effect {
         return preventThreat < threat;
     }
     async execute(params) {
-        const {selectedTarget} = this;
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
 
-        const threat = this.getThreat(params);
+        for (const selectedTarget of targets) {
+            const threat = this.getThreat(params);
 
-        selectedTarget.placeThreat(threat);
+            selectedTarget.placeThreat(threat);
 
-        if (selectedTarget.isMainScheme &&
-            selectedTarget.threat >= selectedTarget.value) {
-            await this.match.scenario.completeMainScheme(selectedTarget, params);
-        } else {
-            selectedTarget.refresh();
+            if (selectedTarget.isMainScheme &&
+                selectedTarget.threat >= selectedTarget.value) {
+                await this.match.scenario.completeMainScheme(selectedTarget, params);
+            } else {
+                selectedTarget.refresh();
+            }
         }
     }
 }

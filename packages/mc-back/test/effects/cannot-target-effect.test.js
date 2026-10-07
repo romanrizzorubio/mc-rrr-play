@@ -45,6 +45,14 @@ test('CannotTargetEffect matches effect categories, target conditions, and optio
     };
 
     assert.equal(validation.isInvalidTarget({effect, targetCard}), true);
+    assert.equal(validation.isInvalidTarget({
+        effect: {
+            ...effect,
+            source: undefined,
+            ability: {card: effect.source},
+        },
+        targetCard,
+    }), true);
     planInPlay = false;
     assert.equal(validation.isInvalidTarget({effect, targetCard}), false);
     planInPlay = true;

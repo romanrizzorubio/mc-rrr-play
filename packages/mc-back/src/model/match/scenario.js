@@ -12,6 +12,8 @@ import {checkCondition, path} from '../../engine/utils.js';
 import {Deck} from './deck.js';
 import {ScenarioZone} from './scenario-zone.js';
 
+const MAIN_SCHEME_REVEAL_TITLE = 'Mostrando el Plan principal';
+
 export class Scenario extends Engine {
     constructor({
 // Scenario
@@ -91,7 +93,11 @@ export class Scenario extends Engine {
             return this.mainScheme;
         }
 
-        return this.gameZone.getCard(cardId);
+        return this.gameZone.getCard(cardId) ||
+            this.villain?.getCard(cardId) ||
+            this.gameZone.cards
+                .map(card => card.getCard(cardId))
+                .find(Boolean);
     }
     async initScenario(obligations, expert) {
         this.gameZone = new ScenarioZone({owner: this});
@@ -132,7 +138,7 @@ export class Scenario extends Engine {
 
         await this.match.openDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: this.getMainSchemeDialogTitle(currentScheme.currentSide, 'A'),
+            title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: currentScheme.currentSide.toObj({player}),
                 horizontal: true,
@@ -143,7 +149,7 @@ export class Scenario extends Engine {
         currentScheme.currentSide.initScheme();
         await this.match.openDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: this.getMainSchemeDialogTitle(currentScheme.currentSide, 'B'),
+            title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: currentScheme.currentSide.toObj({player}),
                 horizontal: true,
@@ -198,7 +204,7 @@ export class Scenario extends Engine {
         await this.match.refresh();
         await this.match.openDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: this.getMainSchemeDialogTitle(nextSchemeASide, 'A'),
+            title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: nextSchemeASide.toObj(params),
                 horizontal: true,
@@ -214,7 +220,7 @@ export class Scenario extends Engine {
         await this.match.refresh();
         await this.match.openDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: this.getMainSchemeDialogTitle(nextScheme.currentSide, 'B'),
+            title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: nextScheme.currentSide.toObj(params),
                 horizontal: true,

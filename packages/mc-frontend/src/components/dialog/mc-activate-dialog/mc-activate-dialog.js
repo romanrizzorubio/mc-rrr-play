@@ -69,6 +69,7 @@ export class McActivateDialog extends McDialog {
             <mc-card
                 name="${character.name}"
                 image="${character.image}"
+                .isFacedownCard="${character.isFacedownCard}"
                 size="l"
                 ?horizontal="${isPlanCard(character)}"
             ></mc-card>
@@ -76,6 +77,7 @@ export class McActivateDialog extends McDialog {
             <mc-card
                 name="${target.name}"
                 image="${target.image}"
+                .isFacedownCard="${target.isFacedownCard}"
                 size="l"
                 ?horizontal="${isPlanCard(target)}"
             ></mc-card>

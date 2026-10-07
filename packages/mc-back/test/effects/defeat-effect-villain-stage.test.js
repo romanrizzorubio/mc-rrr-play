@@ -34,6 +34,7 @@ test('defeating a same-title villain stage updates the defeat and attack targets
     const effect = new DefeatEffect({
         activation,
         match: {
+            triggerCards: {},
             get villain() {
                 return currentVillain;
             },

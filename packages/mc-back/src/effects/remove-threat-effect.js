@@ -1,4 +1,4 @@
-import {EFFECT_DEFEAT} from 'mc-shared';
+import {EFFECT_DEFEAT, EFFECT_REMOVE_THREAT} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class RemoveThreatEffect extends Effect {
@@ -6,7 +6,10 @@ export class RemoveThreatEffect extends Effect {
         threat,
         thwart,
     }) {
-        super(arguments[0]);
+        super({
+            ...arguments[0],
+            effectType: EFFECT_REMOVE_THREAT,
+        });
 
         this.baseThreat = threat;
         this.threat = threat;

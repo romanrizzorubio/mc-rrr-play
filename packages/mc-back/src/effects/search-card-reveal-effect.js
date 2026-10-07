@@ -1,9 +1,36 @@
-import {DIALOG_SELECT_PLACES,PLACE_ENCOUNTER_DECK_CARDS, PLACE_OUTSIDE_NEMESIS} from 'mc-shared';
+import {
+    DIALOG_SELECT_PLACES,
+    PLACE_ENCOUNTER_DECK_CARDS,
+    PLACE_ENCOUNTER_DISCARD,
+    PLACE_OUTSIDE_NEMESIS,
+} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {Effect} from './effect.js';
 import {RevealEncounterEffect} from './reveal-encounter-effect.js';
+
+const removeFromPlace = new Map([
+    [
+        PLACE_ENCOUNTER_DECK_CARDS,
+        (effect, cards) => cards.forEach(card =>
+            effect.match.removeCardFromEncountersDeck(card)),
+    ],
+    [
+        PLACE_ENCOUNTER_DISCARD,
+        (effect, cards) => cards.forEach(card =>
+            effect.match.scenario.deck.searchDiscard(card)),
+    ],
+    [
+        PLACE_OUTSIDE_NEMESIS,
+        (effect, cards, player) => cards.forEach(card => {
+            const index = player.superhero.nemesis.indexOf(card);
+            if (index > -1) {
+                player.superhero.nemesis.splice(index, 1);
+            }
+        }),
+    ],
+]);
 
 export class SearchCardAndRevealEffect extends Effect {
     constructor({
@@ -25,20 +52,13 @@ export class SearchCardAndRevealEffect extends Effect {
         return checkCondition(card, condition);
     }
     removeRevealed(place, cards, player) {
-        switch (place) {
-            case PLACE_ENCOUNTER_DECK_CARDS:
-                cards.forEach(card => {
-                    this.match.removeCardFromEncountersDeck(card);
-                });
-                break;
-            case PLACE_OUTSIDE_NEMESIS:
-                cards.forEach(card => {
-                    const index = player.superhero.nemesis.indexOf(card);
-                    if (index > -1) {
-                        player.superhero.nemesis.splice(index, 1);
-                    }
-                });
+        const remove = removeFromPlace.get(place);
+
+        if (!remove) {
+            throw new Error(`Unsupported card search place: ${place}`);
         }
+
+        remove(this, cards, player);
     }
     search(place, player) {
         const validTarget = new ValidTarget({

@@ -24,6 +24,41 @@ export class McRest {
         this.matchRest.createEndpoints();
         this.playerRest.createEndpoints();
         this.scenarioRest.createEndpoints();
+
+        this.mc.app.use((_req, res) => {
+            res.status(404).json({
+                error: {
+                    message: 'No se encontró la ruta solicitada.',
+                    status: 404,
+                },
+            });
+        });
+        this.mc.app.use((error, _req, res, next) => {
+            if (res.headersSent) {
+                return next(error);
+            }
+
+            const requestedStatus = error.statusCode ?? error.status;
+            const status = Number.isInteger(requestedStatus) &&
+                requestedStatus >= 400 &&
+                requestedStatus <= 599 ?
+                requestedStatus :
+                500;
+            const message = status < 500 ?
+                error.message || 'Solicitud no válida.' :
+                'Error interno del servidor.';
+
+            if (status >= 500) {
+                console.error('REST request failed', error);
+            }
+
+            res.status(status).json({
+                error: {
+                    message,
+                    status,
+                },
+            });
+        });
     }
     getMatch(name) {
         return this.mc.getMatch(name);

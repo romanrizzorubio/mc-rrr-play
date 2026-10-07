@@ -15,6 +15,8 @@ Consulta esta guía antes de cambiar cómo se comunican la interfaz y el servido
 
 `Api.get()`, `Api.post()` y `Api.delete()` envían peticiones HTTP con `fetch` y JSON. `McRest` analiza el JSON, busca la partida usando la cabecera `match` para las acciones de juego y delega en los handlers de `packages/mc-back/src/server/rest/`.
 
+Las respuestas de error REST usan JSON con la forma `{error: {message, status}}` y el estado HTTP correspondiente. `McRest` devuelve `404` para rutas desconocidas, conserva estados de error válidos entre `400` y `599` y responde con un mensaje genérico `500` para errores inesperados, que registra en el servidor. `Api.request()` valida el estado y el tipo de contenido, y rechaza la promesa con el mensaje y estado del error para que la interfaz pueda mostrarlo.
+
 Rutas REST registradas actualmente:
 
 | Método | Ruta | Uso |

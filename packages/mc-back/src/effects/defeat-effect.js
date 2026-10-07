@@ -1,4 +1,5 @@
 import {
+    PRIORITY_FORCED_INTERRUPT,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_YOU_DEFEAT_MINION,
@@ -51,6 +52,16 @@ export class DefeatEffect extends Effect {
         const {gameZone} = selectedTarget;
 
         await this.defeat(params);
+
+        await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            [TRIGGER_THIS_DEFEAT_MINION],
+            {
+                ...params,
+                effect: this,
+                card: selectedTarget,
+            }
+        );
 
         await selectedTarget.defeat(player);
 

@@ -111,7 +111,10 @@ export class SpendEffect extends Effect {
                 this.resources,
                 card,
                 new Set(),
-                {allowPartial}
+                {
+                    allowPartial,
+                    showCancel: !allowPartial || Boolean(params.isChosenOption),
+                }
             );
 
         if (paid) {

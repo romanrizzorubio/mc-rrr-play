@@ -475,7 +475,7 @@ export class Player extends Engine {
         resources,
         cardToPay,
         excludedCardIds = new Set(),
-        {allowPartial = false} = {}
+        {allowPartial = false, showCancel = !allowPartial} = {}
     ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
@@ -484,7 +484,7 @@ export class Player extends Engine {
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
-            showCancel: !allowPartial,
+            showCancel,
             data: {
                 allowPartial,
                 cost: resources.length,

@@ -68,6 +68,25 @@ test('RevealEncounterEffect can draw from the encounter deck', async () => {
     assert.deepEqual(player.encounters, [pendingCard]);
 });
 
+test('RevealEncounterEffect identifies the villain in the reveal dialog', async () => {
+    const villain = {
+        ...createEncounterCard('villain'),
+        isVillain: true,
+    };
+    const effect = new RevealEncounterEffect({
+        match: {},
+        selectedTarget: villain,
+    });
+    let title;
+    effect.openDialog = async dialog => {
+        title = dialog.title;
+    };
+
+    await effect.prepare({player: {}});
+
+    assert.equal(title, 'Mostrando al villano');
+});
+
 test('RevealEncounterEffect marks scheme cards as horizontal in the reveal dialog', async () => {
     const sideScheme = {
         ...createEncounterCard('side-scheme'),

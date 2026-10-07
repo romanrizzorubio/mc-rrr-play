@@ -49,4 +49,18 @@ export class PlayerZone extends GameZone {
             encounters: encounters.length,
         };
     }
+    async toObjWithAbilityAvailability(player) {
+        const minions = await Promise.all(this.minions.map(async minion => {
+            const serializedMinion = await minion.toObjWithAbilityAvailability(player);
+
+            delete serializedMinion.playable;
+
+            return serializedMinion;
+        }));
+
+        return {
+            ...await super.toObjWithAbilityAvailability(player),
+            minions,
+        };
+    }
 }

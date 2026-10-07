@@ -83,6 +83,7 @@ export class McListDialog extends McDialog {
             <mc-card
                 name="${name}"
                 image="${image}"
+                .isFacedownCard="${card.isFacedownCard}"
                 size="m"
                 ?horizontal="${isPlanCard(card)}"
                 hide-name

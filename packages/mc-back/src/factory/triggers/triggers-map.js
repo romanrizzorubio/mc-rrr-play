@@ -6,11 +6,13 @@ import {
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
+    TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ENGAGE_HERO,
+    TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_MINION_ENTER_PLAY,
     TRIGGER_PHASE_ENDS,
@@ -56,6 +58,7 @@ import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-tri
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
 import {EncounterRevealTrigger} from '../../triggers/encounter-reveal-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
+import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {MinionEnterPlayTrigger} from '../../triggers/minion-enter-play-trigger.js';
 import {PhaseEndsTrigger} from '../../triggers/phase-ends-trigger.js';
@@ -72,6 +75,7 @@ import {ThisThwartsTrigger} from '../../triggers/this-thwarts-trigger.js';
 import {
     CharacterGetHitPointsTrigger
 } from '../../triggers/character-get-hit-points-trigger.js';
+import {CharacterGetAttackTrigger} from '../../triggers/character-get-attack-trigger.js';
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
 import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigger.js';
@@ -108,6 +112,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
+    [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,
@@ -145,4 +150,5 @@ export const TRIGGER_MAP = {
     [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
+    [TRIGGER_FACEDOWN_CARD]: FacedownCardTrigger,
 };

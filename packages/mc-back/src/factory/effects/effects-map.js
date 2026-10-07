@@ -35,6 +35,8 @@ import {
     EFFECT_ENEMY_SCHEME,
     EFFECT_EXHAUST,
     EFFECT_FACEDOWN,
+    EFFECT_PUT_FACEDOWN_CARD_IN_PLAY,
+    EFFECT_CONVERT_FACEDOWN_CARD,
     EFFECT_FILL_HAND,
     EFFECT_FLIP,
     EFFECT_GENERATE_RESOURCES_FROM_CARD,
@@ -128,6 +130,8 @@ import {EnemyAttackEffect} from '../../effects/enemy-attack-effect.js';
 import {EnemySchemeEffect} from '../../effects/enemy-scheme-effect.js';
 import {ExhaustEffect} from '../../effects/exhaust-effect.js';
 import {FaceDownEffect} from '../../effects/facedown-effect.js';
+import {PutFacedownCardInPlayEffect} from '../../effects/put-facedown-card-in-play-effect.js';
+import {ConvertFacedownCardEffect} from '../../effects/convert-facedown-card-effect.js';
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {GenerateResourcesFromCardEffect} from '../../effects/generate-resources-from-card-effect.js';
@@ -222,6 +226,8 @@ export const EFFECT_MAP = {
     [EFFECT_ENEMY_ATTACK]: EnemyAttackEffect,
     [EFFECT_EXHAUST]: ExhaustEffect,
     [EFFECT_FACEDOWN]: FaceDownEffect,
+    [EFFECT_PUT_FACEDOWN_CARD_IN_PLAY]: PutFacedownCardInPlayEffect,
+    [EFFECT_CONVERT_FACEDOWN_CARD]: ConvertFacedownCardEffect,
     [EFFECT_FLIP]: FlipEffect,
     [EFFECT_HEAL]: HealEffect,
     [EFFECT_INCLUDE_ASIDE_CARDS]: IncludeAsideCardsEffect,

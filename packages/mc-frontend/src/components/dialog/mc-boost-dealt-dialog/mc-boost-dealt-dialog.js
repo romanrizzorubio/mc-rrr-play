@@ -52,6 +52,7 @@ export class McBoostDealtDialog extends McDialog {
                         <mc-card
                             name="${boostCard.card.name}"
                             image="${boostCard.card.image}"
+                            .isFacedownCard="${boostCard.card.isFacedownCard}"
                             size="${size}"
                             ?horizontal="${boostCard.horizontal}"
                             .generic="${boostCard.card.counters}"

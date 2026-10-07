@@ -288,11 +288,21 @@ export class McMatchPage extends LitElement {
             players,
         });
     }
-    handleAbility(e) {
+    async handleAbility(e) {
         const {apiPlayer, player} = this;
         const {card, ability} = e.detail;
 
-        apiPlayer.resolveAbility(player, card.id, ability);
+        try {
+            await apiPlayer.resolveAbility(player, card.id, ability);
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        }
     }
     handleChangeMenu(e) {
         e.stopPropagation();
@@ -318,14 +328,12 @@ export class McMatchPage extends LitElement {
 
             switch (selected.id) {
                 case MENU_OPTION_END:
-                    this.endTurn();
-                    break;
+                    return this.endTurn();
                 case MENU_OPTION_FLIP:
-                    apiPlayer.flip(player);
-                    break;
+                    return apiPlayer.flip(player);
                 default:
                     const index = selected.id.substring(ABILITY_ID.length, selected.id.length);
-                    apiPlayer.resolveAbility(player, card.id, index);
+                    return apiPlayer.resolveAbility(player, card.id, index);
             }
         };
     }

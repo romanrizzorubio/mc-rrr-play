@@ -3,6 +3,7 @@ export const CARD_TYPE_ALTEREGO = 'alter-ego';
 export const CARD_TYPE_ANY = 'any';
 export const CARD_TYPE_ATTACHMENT = 'attachment';
 export const CARD_TYPE_EVENT = 'event';
+export const CARD_TYPE_ENVIRONMENT = 'environment';
 export const CARD_TYPE_HERO = 'hero';
 export const CARD_TYPE_MAIN_SCHEME_A_CARD = 'main-scheme-a-card';
 export const CARD_TYPE_MAIN_SCHEME_B_CARD = 'main-scheme-b-card';

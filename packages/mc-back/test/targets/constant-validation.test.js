@@ -131,7 +131,8 @@ test('Killmonger cannot be targeted by damage from Black Panther upgrades', () =
         card: cardsFactory.createCard(cardConfig),
         owner: {},
     });
-    match.enemies = [killmonger];
+    const anotherEnemy = {abilities: [], id: 'another-enemy'};
+    match.enemies = [killmonger, anotherEnemy];
 
     const blackPantherUpgradeDamage = new DealDamageEffect({
         damage: 2,
@@ -149,6 +150,17 @@ test('Killmonger cannot be targeted by damage from Black Panther upgrades', () =
         target: TARGET_ALL_ENEMIES,
     });
 
-    assert.deepEqual(blackPantherUpgradeDamage.getValidTarget({player: {}}), []);
-    assert.deepEqual(otherDamage.getValidTarget({player: {}}), [killmonger]);
+    assert.deepEqual(blackPantherUpgradeDamage.getValidTarget({player: {}}), [anotherEnemy]);
+    assert.deepEqual(otherDamage.getValidTarget({player: {}}), [killmonger, anotherEnemy]);
+
+    const daggersConfig = blackPanther.config.cards.find(({card}) =>
+        card.params.name === 'Dagas de energía').card;
+    const daggers = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(daggersConfig),
+        owner: {},
+    });
+    const daggersDamage = daggers.abilities[0].effect.effects[1];
+    const player = {minions: [killmonger, anotherEnemy]};
+
+    assert.deepEqual(daggersDamage.getValidTarget({player}), [anotherEnemy]);
 });

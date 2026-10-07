@@ -10,6 +10,7 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         });
 
         this.preventThreat = 0;
+        this.threatPlaced = 0;
     }
     getTargetDialog() {
         const {selectedTarget} = this;
@@ -63,5 +64,8 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         });
 
         await placeThreatEffect.runEffect(params);
+        this.threatPlaced = placeThreatEffect.resolved ?
+            placeThreatEffect.threat :
+            0;
     }
 }

@@ -19,6 +19,7 @@ import {CARD_MAP} from '../factory/cards/cards-map.js';
 import {EFFECT_MAP} from '../factory/effects/effects-map.js';
 import {TRIGGER_MAP} from '../factory/triggers/triggers-map.js';
 import {CharacterGameCard} from '../model/cards/character-game-card.js';
+import {FacedownCharacterGameCard} from '../model/cards/facedown-character-game-card.js';
 import {GameCard} from '../model/cards/game-card.js';
 import {SchemeGameCard} from '../model/cards/scheme-game-card.js';
 import {Icons} from '../model/commons/icons.js';
@@ -83,6 +84,7 @@ const modelTypes = [
     EndLastingAbility,
     Engine,
     FaceDown,
+    FacedownCharacterGameCard,
     GameCard,
     GameZone,
     Hand,

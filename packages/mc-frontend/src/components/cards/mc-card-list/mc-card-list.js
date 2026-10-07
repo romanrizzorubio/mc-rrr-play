@@ -140,6 +140,7 @@ export class HandComponent extends LitElement {
             attached,
             damage,
             faceDown,
+            isFacedownCard,
             image,
             name,
             hitPoints,
@@ -201,6 +202,7 @@ export class HandComponent extends LitElement {
                 .exhausted="${exhausted}"
                 .attached="${attached}"
                 .faceDown="${faceDown}"
+                .isFacedownCard="${isFacedownCard}"
                 .statusCards="${statusCards}"
                 .menuOptions="${this.getMenuOptions(card)}"
                 @change-menu="${this.handleChangeMenu(index)}"

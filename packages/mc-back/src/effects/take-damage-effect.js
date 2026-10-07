@@ -133,25 +133,33 @@ export class TakeDamageEffect extends Effect {
                 TRIGGER_ATTACHED_TAKES_DAMAGE,
             ]);
     }
-    async takeDamage(selectedTarget, takenDamage, params) {
+    async placeDamage(selectedTarget, takenDamage, params) {
         const placeDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_PLACE_DAMAGE,
             selectedTarget,
             damage: takenDamage,
         });
         await placeDamageEffect.runEffect(params);
+    }
+
+    async defeat(selectedTarget, params) {
+        const defeatEffect = this.match.effectsFactory.createEffect({
+            type: EFFECT_DEFEAT,
+            selectedTarget,
+            ability: this.ability,
+            activation: this.activation,
+        });
+
+        await defeatEffect.runEffect(params);
+    }
+
+    async takeDamage(selectedTarget, takenDamage, params) {
+        await this.placeDamage(selectedTarget, takenDamage, params);
 
         const life = await selectedTarget.getLife();
 
         if (life <= 0) {
-            const defeatEffect = this.match.effectsFactory.createEffect({
-                type: EFFECT_DEFEAT,
-                selectedTarget,
-                ability: this.ability,
-                activation: this.activation,
-            });
-
-            await defeatEffect.runEffect(params);
+            await this.defeat(selectedTarget, params);
         }
     }
     async execute(params) {
@@ -174,7 +182,26 @@ export class TakeDamageEffect extends Effect {
                     await takeDamage(target, index);
                 }
             } else {
-                await Promise.all(selectedTarget.map(takeDamage));
+                await Promise.all(selectedTarget.map(async (target, index) => {
+                    const targetDamage = takenDamage instanceof Array ?
+                        takenDamage[index] :
+                        takenDamage;
+
+                    await this.placeDamage(target, targetDamage, params);
+                }));
+
+                const targetsToDefeat = await Promise.all(
+                    selectedTarget.map(async target => ({
+                        target,
+                        life: await target.getLife(),
+                    }))
+                );
+
+                for (const {target, life} of targetsToDefeat) {
+                    if (life <= 0) {
+                        await this.defeat(target, params);
+                    }
+                }
             }
         } else {
             await this.takeDamage(selectedTarget, takenDamage, params);

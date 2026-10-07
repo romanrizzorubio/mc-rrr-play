@@ -130,6 +130,7 @@ export class RevealEncounterEffect extends Effect {
         if (!selectedTarget.isMainScheme) {
             await this.openDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
+                ...(selectedTarget.isVillain ? {title: 'Mostrando al villano'} : {}),
                 data: {
                     card: selectedTarget.toObj(arguments[0]),
                     horizontal: Boolean(selectedTarget.isMainScheme || selectedTarget.isSideScheme),

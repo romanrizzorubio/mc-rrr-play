@@ -36,7 +36,7 @@ export class Player {
     resolveAbility(player, card, ability) {
         const {api} = this;
 
-        api.post({
+        return api.post({
             endpoint: ENDPOINTS.PLAYER.RESOLVE_ABILITY,
             params: {
                 player,

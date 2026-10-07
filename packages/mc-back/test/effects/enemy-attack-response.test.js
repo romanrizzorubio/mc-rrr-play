@@ -11,6 +11,7 @@ import {
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TARGET_ATTACKER,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_END_PLAY_CARD,
@@ -155,6 +156,30 @@ test('Poneos detras de mi resolves its attack against the villain', async () => 
     assert.equal(attack.enemyType, CHARACTER_VILLAIN);
     assert.equal(attack.character, villain);
     assert.equal(dialogTitle, 'Rhino ataca a Spider-Man');
+});
+
+test('Contragolpe targets the attacker of the defended attack', async () => {
+    const event = protectionEvents.find(({_id}) =>
+        _id === 'protection-contragolpe');
+    assert.ok(event);
+
+    const [ability] = event.card.params.abilities;
+    const attacker = {id: 'rhino', name: 'Rhino'};
+    const otherEnemy = {id: 'ultron', name: 'Ultron'};
+    const match = {
+        enemies: [attacker, otherEnemy],
+    };
+    const effect = new EffectsFactory({match}).parseEffect(ability.params.effect);
+
+    assert.equal(ability.params.effect.params.target, TARGET_ATTACKER);
+
+    const selectedTarget = await effect.selectTarget({
+        attack: {character: attacker},
+        match,
+        player: {},
+    });
+
+    assert.equal(selectedTarget, attacker);
 });
 
 test('Poneos detras de mi is not offered after its treachery is canceled', async () => {

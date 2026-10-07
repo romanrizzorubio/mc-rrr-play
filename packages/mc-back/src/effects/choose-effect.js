@@ -78,18 +78,26 @@ export class ChooseEffect extends Effect {
             option.canRun(optionParams));
     }
     async execute(params) {
-        const {ability: {card}} = this;
+        const card = this.ability.card || params.card;
 
         for (const player of this.getPlayers(params)) {
-            const playerParams = {...params, player};
-            const optionParams = this.getOptionParams(playerParams);
+            let returnToChoice = false;
 
-            this.resetOptionTargets();
+            while (true) {
+                const playerParams = {...params, player};
+                const optionParams = this.getOptionParams(playerParams);
 
-            const options = await this.getValidOptions(playerParams);
-            if (options.length === 1) {
-                await options[0].runEffect(optionParams);
-            } else if (options.length > 1) {
+                this.resetOptionTargets();
+
+                const options = await this.getValidOptions(playerParams);
+                if (!options.length) {
+                    break;
+                }
+                if (options.length === 1 && !returnToChoice) {
+                    await options[0].runEffect(optionParams);
+                    break;
+                }
+
                 const {selected} = await this.openDialog({
                     dialogType: DIALOG_LIST,
                     hideOk: true,
@@ -107,7 +115,16 @@ export class ChooseEffect extends Effect {
                     },
                 });
 
-                await options[selected.id].runEffect(optionParams);
+                const selectedOption = options[selected.id];
+                await selectedOption.runEffect({
+                    ...optionParams,
+                    isChosenOption: true,
+                });
+                if (!selectedOption.paymentCancelled) {
+                    break;
+                }
+
+                returnToChoice = true;
             }
         }
     }

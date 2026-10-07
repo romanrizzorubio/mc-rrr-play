@@ -1,4 +1,5 @@
 import {ValidTarget} from '../targets/valid-target.js';
+import {checkCondition} from '../engine/utils.js';
 
 import {ActivateEffect} from './activate-effect.js';
 import {PlayPhaseEffect} from './play-phase-effect.js';
@@ -7,11 +8,13 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
     constructor({
         enemiesType,
         enemies,
+        enemiesCondition,
     }) {
         super(arguments[0]);
 
         this.enemiesType = enemiesType;
         this.enemies = enemies;
+        this.enemiesCondition = enemiesCondition;
     }
     async prepare(params) {
         await super.prepare(params);
@@ -32,6 +35,11 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
                 target: enemiesType,
                 player,
             });
+        }
+
+        if (this.enemiesCondition) {
+            this.enemies = this.enemies.filter(enemy =>
+                checkCondition(enemy, this.enemiesCondition));
         }
     }
     activate(enemy, params) {

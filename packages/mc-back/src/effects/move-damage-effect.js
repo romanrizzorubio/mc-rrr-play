@@ -84,6 +84,7 @@ export class MoveDamageEffect extends Effect {
             damage,
             match: this.match,
             ability: this.ability,
+            isAttack: false,
         });
 
         await healEffect.runEffect(params);

@@ -74,11 +74,11 @@ test('scenario setup shows stage 1A and 1B before resolving their effects', asyn
 
     assert.deepEqual(setupParams, {player});
     assert.deepEqual(events, [
-        'Plan inicial (1A)',
+        'Mostrando el Plan principal',
         'setup',
         'flip',
         'init-scheme',
-        'Plan inicial (1B)',
+        'Mostrando el Plan principal',
         'reveal',
     ]);
     assert.deepEqual(dialogs.map(({dialogType, title, data}) => ({
@@ -89,13 +89,13 @@ test('scenario setup shows stage 1A and 1B before resolving their effects', asyn
     })), [
         {
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: 'Plan inicial (1A)',
+            title: 'Mostrando el Plan principal',
             card: {id: 'stage-1A', name: 'Plan inicial', stage: 1},
             horizontal: true,
         },
         {
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: 'Plan inicial (1B)',
+            title: 'Mostrando el Plan principal',
             card: {id: 'stage-1B', name: 'Plan inicial', stage: 1},
             horizontal: true,
         },

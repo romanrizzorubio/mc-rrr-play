@@ -75,6 +75,23 @@ test('Hand.getCardsToPay filters to any requested specific resource and universa
     );
 });
 
+test('Hand.getCardsToPay distinguishes separate cards that share a legacy id', () => {
+    const resourceCard = {
+        id: 'duplicate-copy-id',
+        isPlaying: false,
+        card: {
+            getResources: () => [RESOURCE_ENERGY],
+        },
+    };
+    const hand = Object.create(Hand.prototype);
+    hand.cards = [resourceCard];
+
+    assert.deepEqual(
+        hand.getCardsToPay({id: 'duplicate-copy-id'}, RESOURCE_ENERGY),
+        [resourceCard]
+    );
+});
+
 test('Player.spendResources only offers cards that can pay its resource requirements', async () => {
     const cards = [
         [RESOURCE_ENERGY, 'energy'],

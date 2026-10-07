@@ -51,7 +51,7 @@ export class CannotTargetEffect extends Effect {
         return !this.effectCondition || checkCondition({
             ...params,
             effect,
-            source: effect.source ?? params.source,
+            source: effect.source ?? params.source ?? effect.ability?.card,
             targetCard,
         }, this.effectCondition);
     }

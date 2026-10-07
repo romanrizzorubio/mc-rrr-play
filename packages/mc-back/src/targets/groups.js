@@ -9,6 +9,7 @@ import {
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ALL_PLAYERS,
     TARGET_ALL_SIDE_SCHEMES,
+    TARGET_ENVIRONMENT,
     TARGET_CHARACTER,
     TARGET_ENEMY,
     TARGET_HERO,
@@ -37,6 +38,8 @@ export const groupTargets = {
     },
     [TARGET_ALL_PLAYERS]: ({match}) => match.players,
     [TARGET_ALL_SIDE_SCHEMES]: ({match}) => match.sideSchemes,
+    [TARGET_ENVIRONMENT]: ({match}) =>
+        match.scenario.gameZone.cards.filter(card => card.isEnvironment),
     [TARGET_CHARACTER]: ({match}) => match.characters,
     [TARGET_ENEMY]: ({match}) => match.enemies,
     [TARGET_HERO]: ({match}) =>

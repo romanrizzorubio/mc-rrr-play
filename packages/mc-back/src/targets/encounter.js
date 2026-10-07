@@ -6,11 +6,13 @@ import {
     TARGET_MINION_HIGHEST_PRINTED_HP,
     TARGET_SCHEME,
     TARGET_ATTACKED,
+    TARGET_ATTACKER,
 } from 'mc-shared';
 import {getAttackedTargets} from '../utils/target-utils.js';
 
 export const encounterTargets = {
     [TARGET_ATTACKED]: getAttackedTargets,
+    [TARGET_ATTACKER]: ({attack}) => attack?.character ? [attack.character] : [],
     [TARGET_ALL_SCHEMES]: ({match}) => match.schemes,
     [TARGET_CONDITION_CARD]: ({match, condition}) => match.searchCards(condition),
     [TARGET_MAIN_SCHEME]: ({match}) => [match.mainScheme],

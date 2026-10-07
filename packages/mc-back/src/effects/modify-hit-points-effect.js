@@ -31,7 +31,8 @@ export class ModifyHitPointsEffect extends Effect {
             const queriedCharacter = effect.selectedTarget?.parent ||
                 effect.selectedTarget;
             const modifiesQueriedCharacter = selectedTargets.some(target =>
-                (target?.parent || target) === queriedCharacter);
+                (target?.selectedTarget?.parent || target?.selectedTarget ||
+                    target?.parent || target) === queriedCharacter);
 
             if (!modifiesQueriedCharacter) {
                 return;

@@ -100,11 +100,24 @@ export class McScenario extends LitElement {
             <div class="schemes">
                 ${this.renderMainScheme()}
                 <mc-card-list
-                    .cards="${cards.filter(card => card.isSideScheme)}"
+                    .cards="${cards.filter(card =>
+                        card.isSideScheme)}"
                     show-basic-stats
                     show-threat
+                    show-menu-abilities
                 ></mc-card-list>
             </div>
+        `;
+    }
+    renderEnvironments() {
+        const {scenario: {gameZone: {cards}}} = this;
+
+        return html`
+            <mc-card-list
+                .cards="${cards.filter(card => card.isEnvironment)}"
+                show-basic-stats
+                show-menu-abilities
+            ></mc-card-list>
         `;
     }
     renderDeck() {
@@ -124,6 +137,7 @@ export class McScenario extends LitElement {
         return scenario ? html`
             ${this.renderDeck()}
             ${this.renderSchemes()}
+            ${this.renderEnvironments()}
             ${this.renderVillain()}
         ` : '';
     }

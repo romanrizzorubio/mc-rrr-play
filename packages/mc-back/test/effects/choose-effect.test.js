@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    DIALOG_PAY_COST,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -105,6 +106,98 @@ test('offers only partially resolvable options when multiple remain', async () =
     });
 
     assert.deepEqual(resolved, ['Second option']);
+});
+
+test('cancelling a chosen resource payment returns to the option choice', async () => {
+    const player = Object.create(Player.prototype);
+    const paymentDialogs = [];
+    player.name = 'Player';
+    player.isPlayer = true;
+    player.hand = {cards: []};
+    player.getCardsToPay = async () => ({
+        generators: [{
+            id: 'resource-generator',
+            toObj() {
+                return {id: this.id};
+            },
+        }],
+        hand: [],
+    });
+    player.openDialog = async dialog => {
+        paymentDialogs.push(dialog);
+
+        return undefined;
+    };
+
+    const match = {triggerCards: {}};
+    const sourceCard = {
+        toObj() {
+            return {name: 'Test card'};
+        },
+    };
+    const resolved = [];
+    const spendEffect = new SpendEffect({
+        match,
+        resources: [RESOURCE_MENTAL],
+        selectedTarget: player,
+        target: TARGET_YOU,
+    });
+    let choiceDialogs = 0;
+    const effect = new ChooseEffect({
+        ability: {card: sourceCard},
+        match,
+        options: [
+            spendEffect,
+            createOption('Second option', true, resolved),
+        ],
+    });
+    effect.openDialog = async ({data}) => {
+        choiceDialogs++;
+
+        return {selected: data.options[choiceDialogs === 1 ? 0 : 1]};
+    };
+
+    await effect.execute({card: sourceCard, match, player});
+
+    assert.equal(choiceDialogs, 2);
+    assert.equal(paymentDialogs.length, 1);
+    assert.equal(paymentDialogs[0].dialogType, DIALOG_PAY_COST);
+    assert.equal(paymentDialogs[0].showCancel, true);
+    assert.deepEqual(resolved, ['Second option']);
+});
+
+test('uses the effect context card when the ability has no source card', async () => {
+    const player = {
+        name: 'Player',
+        hand: {cards: []},
+    };
+    const resolved = [];
+    const sourceCard = {
+        toObj({player: currentPlayer}) {
+            return {name: 'Eficacia androide', player: currentPlayer.name};
+        },
+    };
+    let dialog;
+    const effect = new ChooseEffect({
+        ability: {},
+        options: [
+            createOption('First option', true, resolved),
+            createOption('Second option', true, resolved),
+        ],
+    });
+    effect.openDialog = async config => {
+        dialog = config;
+
+        return {selected: {id: 0}};
+    };
+
+    await effect.execute({card: sourceCard, player});
+
+    assert.deepEqual(dialog.data.card, {
+        name: 'Eficacia androide',
+        player: 'Player',
+    });
+    assert.deepEqual(resolved, ['First option']);
 });
 
 test('resolves each-player choices in player order and targets each dialog', async () => {

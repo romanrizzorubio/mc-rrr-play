@@ -28,6 +28,7 @@ export class CardComponent extends LitElement {
         return {
             name: {type: String},
             image: {type: String},
+            isFacedownCard: {type: Boolean},
             size: {type: String},
             horizontal: {type: Boolean},
             rotated: {type: Boolean, reflect: true},
@@ -67,6 +68,7 @@ export class CardComponent extends LitElement {
 
         this.name = '';
         this.image = '';
+        this.isFacedownCard = false;
         this.attached = [];
         this.size = 'm';
         this.handSize = undefined;
@@ -266,7 +268,17 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderBigCard() {
-        const {horizontal, image, name, rotated, _showBig} = this;
+        const {
+            horizontal,
+            image,
+            isFacedownCard,
+            name,
+            rotated,
+            _showBig,
+        } = this;
+        const imageSrc = isFacedownCard ?
+            BACK_CARD_PLAYER_FULL :
+            `${CARD_PATH}${image}`;
 
         return _showBig ? html`
             <md-dialog 
@@ -280,7 +292,7 @@ export class CardComponent extends LitElement {
                 <div class="content" slot="content">
                     <mc-card-image
                         id="card"
-                        src="${CARD_PATH}${image}"
+                        src="${imageSrc}"
                         size="xl"
                         .horizontal="${horizontal}"
                         .rotated="${rotated}"
@@ -296,7 +308,17 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderCard() {
-        const {horizontal, image, size, exhausted, rotated} = this;
+        const {
+            horizontal,
+            image,
+            isFacedownCard,
+            size,
+            exhausted,
+            rotated,
+        } = this;
+        const imageSrc = isFacedownCard ?
+            BACK_CARD_PLAYER_FULL :
+            `${CARD_PATH}${image}`;
 
         return html`
             <div class="${exhausted ? 'exhausted' : ''}" >
@@ -309,7 +331,7 @@ export class CardComponent extends LitElement {
                             ${this.renderStage()}
                             <mc-card-image
                                 id="card"
-                                src="${CARD_PATH}${image}"
+                                src="${imageSrc}"
                                 size="${size}"
                                 .horizontal="${horizontal}"
                                 .rotated="${rotated}"

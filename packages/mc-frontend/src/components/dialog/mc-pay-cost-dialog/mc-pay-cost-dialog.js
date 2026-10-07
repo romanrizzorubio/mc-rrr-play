@@ -6,7 +6,7 @@ import styles from './mc-pay-cost-dialog.css.js';
 import '../../panels/mc-pay-cost/mc-pay-cost.js';
 import '../../cards/mc-card-image/mc-card-image.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
-import {CARD_PATH} from '../../../misc/cards.js';
+import {BACK_CARD_PLAYER_FULL, CARD_PATH} from '../../../misc/cards.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
 import {isPlanCard} from '../../../misc/utils.js';
 
@@ -330,9 +330,11 @@ export class McPayCostDialog extends McDialog {
         return html`
             <h2 class="title" slot="headline">
                 <span class="paying-card-title">
-                    ${card && card.image ? html`
+                    ${card && (card.isFacedownCard || card.image) ? html`
                         <mc-card-image
-                            src="${CARD_PATH}${card.image}"
+                            src="${card.isFacedownCard ?
+                                BACK_CARD_PLAYER_FULL :
+                                `${CARD_PATH}${card.image}`}"
                             size="xs"
                             .horizontal="${isPlanCard(card)}"
                             aria-hidden="true"

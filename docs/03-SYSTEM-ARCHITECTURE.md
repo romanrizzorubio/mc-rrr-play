@@ -398,6 +398,8 @@ Se usa para obtener las listas de héroes, escenarios, conjuntos modulares y par
 
 Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` resuelve las rutas (con `/` inicial) contra `httpHost` usando `new URL()`, por lo que `/create-match` se solicita como `http://localhost:3000/create-match`.
 
+Los errores REST se devuelven como JSON con `{error: {message, status}}` y un estado HTTP adecuado; las rutas desconocidas responden `404` y los errores inesperados responden `500` sin exponer detalles internos. `Api.request()` convierte las respuestas fallidas en errores con el mensaje del servidor para que la interfaz los muestre al usuario.
+
 ### WebSocket (Socket.IO)
 
 Se usa para el fin de turno, los diálogos interactivos y las actualizaciones de estado en tiempo real.

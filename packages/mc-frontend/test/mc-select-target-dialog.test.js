@@ -12,6 +12,13 @@ const {McSelectTargetDialog} = await import(
     '../src/components/dialog/mc-select-target-dialog/mc-select-target-dialog.js'
 );
 
+test('target selection dialog shows life without a damage label', () => {
+    const dialog = Object.create(McSelectTargetDialog.prototype);
+
+    assert.equal(dialog.defaultProperties.data.showLife, true);
+    assert.equal(dialog.defaultProperties.data.showDamage, false);
+});
+
 test('target selection dialog hides OK because selecting a card responds immediately', () => {
     const dialog = Object.create(McSelectTargetDialog.prototype);
     const card = {id: 'minion-1'};

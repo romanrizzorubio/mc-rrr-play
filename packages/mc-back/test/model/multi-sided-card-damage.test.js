@@ -58,3 +58,31 @@ test('a multi-sided card and all of its faces share damage', () => {
     assert.equal(heroSide.damage, 6);
     assert.equal(alterEgoSide.life, 9);
 });
+
+test('a multi-sided superhero gets retaliate from its current side', () => {
+    const heroSide = createIdentitySide('hero', {
+        isHero: true,
+        isAlterEgo: false,
+    });
+    const alterEgoSide = createIdentitySide('alter-ego', {
+        isHero: false,
+        isAlterEgo: true,
+    });
+    const superhero = new Superhero({
+        sides: [heroSide, alterEgoSide],
+    });
+    heroSide.card.retaliate = 1;
+    alterEgoSide.card.retaliate = 3;
+    superhero.attached.push({
+        card: {
+            retaliate: 2,
+        },
+    });
+
+    assert.equal(superhero.card, undefined);
+    assert.equal(superhero.retaliate, 3);
+
+    superhero.selectedSide = 1;
+
+    assert.equal(superhero.retaliate, 5);
+});

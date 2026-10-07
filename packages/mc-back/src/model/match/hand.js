@@ -78,7 +78,7 @@ export class Hand extends Engine {
         return this.cards.filter(card => {
             return !excludedCardIds.has(card.id) &&
                 !card.isPlaying &&
-                (!cardToPlay || card.id !== cardToPlay.id) &&
+                (!cardToPlay || card !== cardToPlay) &&
                 (unrestricted || card.card.getResources(cardToPlay).some(resource =>
                     resourceTypes.includes(resource) || resource === RESOURCE_WILD));
         });

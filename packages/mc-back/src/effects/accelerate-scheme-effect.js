@@ -32,6 +32,7 @@ export class AccelerateSchemeEffect extends Effect {
         const threat = selectedTarget.accelerationValue + match.accelerationPlus;
 
         const placeThreatEffect = new PlaceThreatEffect({
+            isAccelerationThreat: true,
             selectedTarget,
             threat,
             match: this.match,

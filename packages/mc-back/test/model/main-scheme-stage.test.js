@@ -183,14 +183,14 @@ test('completing a non-final main scheme reveals and advances to the next stage'
         },
         {
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: 'Next scheme (2A)',
+            title: 'Mostrando el Plan principal',
             subtitle: undefined,
             card: {id: 'next-stage-a', name: 'Next scheme', stage: 2},
             horizontal: true,
         },
         {
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: 'Next scheme (2B)',
+            title: 'Mostrando el Plan principal',
             subtitle: undefined,
             card: {id: 'next-stage-b', name: 'Next scheme', stage: 2},
             horizontal: true,
@@ -198,9 +198,9 @@ test('completing a non-final main scheme reveals and advances to the next stage'
     ]);
     assert.deepEqual(match.sequence, [
         'Completed scheme (1B)',
-        'Next scheme (2A)',
+        'Mostrando el Plan principal',
         'effects:next-stage-a',
-        'Next scheme (2B)',
+        'Mostrando el Plan principal',
         'effects:next-stage-b',
     ]);
 });

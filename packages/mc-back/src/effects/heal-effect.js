@@ -17,6 +17,17 @@ export class HealEffect extends Effect {
         return (this.allowNoDamage || card.canHeal) &&
             super.filterTarget.apply(this, arguments);
     }
+    async canRun(params) {
+        if (!await super.canRun(params)) {
+            return false;
+        }
+
+        if (!this.paramsCalc || this.allowNoDamage) {
+            return true;
+        }
+
+        return (await this.calculate(params)) > 0;
+    }
 
     async execute(params) {
         const {selectedTarget} = this;

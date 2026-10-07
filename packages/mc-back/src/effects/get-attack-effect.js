@@ -1,5 +1,6 @@
 import {
     TRIGGER_ATTACHED_GET_ATTACK,
+    TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_ATTACK
 } from 'mc-shared';
 
@@ -15,6 +16,7 @@ export class GetAttackEffect extends Effect {
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
+                TRIGGER_CHARACTER_GET_ATTACK,
                 TRIGGER_YOUR_HERO_GET_ATTACK,
                 TRIGGER_ATTACHED_GET_ATTACK,
             ]);

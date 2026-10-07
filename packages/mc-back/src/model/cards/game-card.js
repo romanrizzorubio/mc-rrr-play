@@ -220,6 +220,13 @@ export class GameCard extends Engine {
 
         return this.card.isEvent;
     }
+    get isEnvironment() {
+        if (this.sides.length) {
+            return this.currentSide.isEnvironment;
+        }
+
+        return this.card.isEnvironment;
+    }
     get isFriendFront() {
         if (this.sides.length) {
             return this.currentSide.isFriendFront;
@@ -621,12 +628,16 @@ export class GameCard extends Engine {
         this.accelerationTokens += count;
     }
     initAbilities() {
-        const {abilities} = this;
+        const {abilities, boostAbility} = this;
 
         if (abilities) {
             abilities.forEach(ability => {
                 ability.card = this;
             });
+        }
+
+        if (boostAbility) {
+            boostAbility.card = this;
         }
     }
     initTriggers(params) {
@@ -776,6 +787,7 @@ export class GameCard extends Engine {
             parent,
             isAttached,
             isAlly,
+            isEnvironment,
             isSideScheme,
             isSupport,
             isUpgrade,
@@ -793,6 +805,7 @@ export class GameCard extends Engine {
             accelerationTokens,
             isAttached,
             isAlly,
+            isEnvironment,
             isSideScheme,
             isSupport,
             isUpgrade,

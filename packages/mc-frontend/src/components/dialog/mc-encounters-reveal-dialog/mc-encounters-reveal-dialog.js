@@ -40,6 +40,7 @@ export class McEncountersRevealDialog extends McDialog {
             <mc-card
                 name="${card.name}"
                 image="${card.image}"
+                .isFacedownCard="${card.isFacedownCard}"
                 size="l"
                 ?horizontal="${isHorizontal}"
             ></mc-card>

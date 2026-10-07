@@ -1,6 +1,7 @@
 import { Manager } from '/node_modules/socket.io-client/dist/socket.io.esm.min.js';
 
 import {EVENTS} from 'mc-endpoints';
+import {parseApiResponse} from '../../utils/api-response.js';
 
 export const METHODS = {
     DELETE: 'DELETE',
@@ -208,7 +209,7 @@ export class Api {
 
         const response = await fetch(new URL(endpoint, this.httpHost), options);
 
-        return await response.json();
+        return parseApiResponse(response);
     }
     async send({endpoint, params = {}}) {
         const match = params.match || this.match;

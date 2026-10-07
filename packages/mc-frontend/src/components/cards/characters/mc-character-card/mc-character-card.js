@@ -18,6 +18,7 @@ export class McCharacterCard extends LitElement {
         return {
             name: {type: String},
             image: {type: String},
+            isFacedownCard: {type: Boolean},
             life: {type: Number},
             hitPoints: {type: Number},
             attack: {type: Number},
@@ -40,6 +41,7 @@ export class McCharacterCard extends LitElement {
 
         this.name = '';
         this.image = '';
+        this.isFacedownCard = false;
         this.life = 0;
         this.hitPoints = undefined;
         this.attack = undefined;
@@ -60,6 +62,7 @@ export class McCharacterCard extends LitElement {
         const {
             name,
             image,
+            isFacedownCard,
             life,
             hitPoints,
             attack,
@@ -80,6 +83,7 @@ export class McCharacterCard extends LitElement {
             <mc-card
                 name="${name}"
                 image="${image}"
+                .isFacedownCard="${isFacedownCard}"
                 .life="${life}"
                 .hitPoints="${hitPoints}"
                 .statusCards="${statusCards}"

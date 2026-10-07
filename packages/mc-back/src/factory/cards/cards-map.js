@@ -3,6 +3,7 @@ import {
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_ATTACHMENT,
     CARD_TYPE_EVENT,
+    CARD_TYPE_ENVIRONMENT,
     CARD_TYPE_HERO,
     CARD_TYPE_MAIN_SCHEME_A_CARD,
     CARD_TYPE_MAIN_SCHEME_B_CARD,
@@ -21,6 +22,7 @@ import {AllyCard} from '../../model/printed/ally-card.js';
 import {AlterEgoCard} from '../../model/printed/alterego-card.js';
 import {AttachmentCard} from '../../model/printed/attachment-card.js';
 import {EventCard} from '../../model/printed/event-card.js';
+import {EnvironmentCard} from '../../model/printed/environment-card.js';
 import {HeroCard} from '../../model/printed/hero-card.js';
 import {MainSchemeACard} from '../../model/printed/main-scheme-a-card.js';
 import {MainSchemeBCard} from '../../model/printed/main-scheme-b-card.js';
@@ -38,6 +40,7 @@ export const CARD_MAP = {
     [CARD_TYPE_ALTEREGO]: AlterEgoCard,
     [CARD_TYPE_ATTACHMENT]: AttachmentCard,
     [CARD_TYPE_EVENT]: EventCard,
+    [CARD_TYPE_ENVIRONMENT]: EnvironmentCard,
     [CARD_TYPE_HERO]: HeroCard,
     [CARD_TYPE_MAIN_SCHEME_A_CARD]: MainSchemeACard,
     [CARD_TYPE_MAIN_SCHEME_B_CARD]: MainSchemeBCard,

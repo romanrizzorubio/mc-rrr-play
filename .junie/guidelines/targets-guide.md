@@ -19,9 +19,9 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve cero, no hay objetivo válido.
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS` y `TARGET_ALL_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
 
-En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devuelven colecciones, pero no están en la lista de `isMultipleTarget`; por sí solos no significan que el efecto se aplique a todos.
+En particular, `TARGET_ALL_PLAYERS` devuelve una colección, pero no está en la lista de `isMultipleTarget`; por sí solo no significa que el efecto se aplique a todos.
 
 ## Selectores resolubles
 
@@ -54,7 +54,8 @@ En particular, los nombres `TARGET_ALL_PLAYERS` y `TARGET_ALL_SIDE_SCHEMES` devu
 | `TARGET_ALL_HEROES` | Todos los superhéroes que estén en forma de héroe. |
 | `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes en forma de héroe y los aliados. |
 | `TARGET_ALL_PLAYERS` | Todos los jugadores. |
-| `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios. |
+| `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios; resuelve todos los resultados. |
+| `TARGET_ENVIRONMENT` | Los entornos en juego en la zona del escenario; selecciona uno si hay varios. |
 | `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
 | `TARGET_CHARACTER` | Todos los personajes. |
 | `TARGET_ENEMY` | Todos los enemigos. |
@@ -98,6 +99,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | Constante | Candidatos |
 | :--- | :--- |
 | `TARGET_ATTACKED` | El personaje atacado por el ataque actual, incluido el defensor elegido, solo si sigue en juego. Si se derrota una etapa del villano y la siguiente tiene el mismo título, apunta a la etapa activa nueva; si el objetivo queda fuera del juego sin reemplazo por una etapa del mismo villano, no devuelve candidatos. (La función auxiliar está en `utils/target-utils.js`.) |
+| `TARGET_ATTACKER` | El personaje que inició el ataque actual, tomado de `attack.character`; no devuelve candidatos si el contexto no contiene un atacante. |
 | `TARGET_ALL_SCHEMES` | Todos los planes en juego, incluidos el principal y los secundarios. |
 | `TARGET_CONDITION_CARD` | Las cartas de la partida que cumplen `condition`. |
 | `TARGET_MAIN_SCHEME` | El plan principal. |

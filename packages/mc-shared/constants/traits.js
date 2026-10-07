@@ -12,6 +12,7 @@ export const TRAIT_CYBORG = 'cyborg';
 export const TRAIT_DEFENDER = 'defender';
 export const TRAIT_DEFENSE = 'defense';
 export const TRAIT_DROID = 'droid';
+export const TRAIT_DRONE = 'drone';
 export const TRAIT_ELITE = 'elite';
 export const TRAIT_GAMMA = 'gamma';
 export const TRAIT_GENIUS = 'genius';

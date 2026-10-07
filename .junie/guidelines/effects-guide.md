@@ -14,18 +14,20 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. |
 | `EFFECT_DEAL_ENCOUNTER` | Reparte una carta del mazo de Encuentros al jugador objetivo, boca abajo. |
 | `EFFECT_DEAL_BOOST` | Añade una carta de aumento a la activación de enemigo actual. Debe conservar el contexto de esa activación; no la resuelvas como una activación independiente. |
+| `EFFECT_PUT_FACEDOWN_CARD_IN_PLAY` | Toma la carta superior del mazo del jugador o los jugadores indicados, dispara `TRIGGER_FACEDOWN_CARD` con la carta como parámetro y la pone en juego con su tipo convertido por el entorno. Usa `players: TARGET_ALL_PLAYERS` para afectar a cada jugador. |
+| `EFFECT_CONVERT_FACEDOWN_CARD` | Convierte la carta recibida en el parámetro `card` en el tipo configurado. El entorno proporciona `cardType` y `cardParams` con solo los valores conocidos; los datos impresos originales se mantienen privados para restaurar la misma carta cuando abandone el juego. |
 | `EFFECT_TAKE_DAMAGE` | Cuando un personaje "sufre daño" (take damage). Se usa para daño directo o costes. |
-| `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. |
+| `EFFECT_HEAL` | Para "curar" (heal) puntos de vida. Con `paramsCalc`, una cantidad calculada de 0 hace que el efecto no pueda resolverse y habilita `ifNot`; usa `allowNoDamage: true` cuando resolver una curación de 0 sea válido. |
 | `EFFECT_PREVENT_DEFEAT` | Durante una interrupción de derrota, reemplaza esa derrota antes de que se resuelvan sus efectos. |
 | `EFFECT_MOVE_DAMAGE` | Para "mover daño" de un personaje a otro. |
 | `EFFECT_PREVENT_DAMAGE` | Para "prevenir" o "evitar" daño que se va a recibir. |
 | `EFFECT_REMOVE_THREAT` | Para "quitar amenaza" de planes; usa `TARGET_SCHEME` para un plan o `TARGET_ALL_SCHEMES` para todos los planes con amenaza. |
 | `EFFECT_REMOVE_TRAIT` | Para quitar de un personaje uno o varios rasgos adquiridos. |
-| `EFFECT_PLACE_THREAT` | Para "colocar amenaza" en planes. |
+| `EFFECT_PLACE_THREAT` | Para "colocar amenaza" en planes; acepta los selectores múltiples `TARGET_ALL_*` para aplicarla a todos sus resultados. |
 | `EFFECT_DRAW_CARD` | Para "robar cartas" del mazo. |
 | `EFFECT_DISCARD_HAND` | Para "descartar cartas" de la mano. |
 | `EFFECT_DISCARD_GAME` | Para "descartar" cartas que ya están en juego (mejoras, apoyos, etc.). |
-| `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. Toma solo las cartas disponibles, las descarta juntas y en orden, y conserva esas cartas en `cards` para cálculos posteriores. Si el mazo queda vacío, se cicla el descarte después del lote; el efecto no continúa descartando del mazo nuevo. |
+| `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. Toma solo las cartas disponibles, las descarta juntas y en orden, y conserva esas cartas en `cards` para cálculos posteriores. Acepta un recuento dinámico mediante `paramsCalc` y `players: TARGET_ALL_PLAYERS` para afectar a cada jugador. Si el mazo queda vacío, se cicla el descarte después del lote; el efecto no continúa descartando del mazo nuevo. |
 | `EFFECT_DISCARD_UNTIL` | Descarta del mazo objetivo hasta la primera carta que cumpla `condition`, la deja en el descarte y la guarda en `selectedCard` para los siguientes efectos encadenados; no la revela. |
 | `EFFECT_EXHAUST` | Para "agotar" una carta; usa `TARGET_ALL_ALLIES` para agotar todos los aliados en juego o `TARGET_ALL_ALLIES_YOU_CONTROL` para agotar solo los que controla el jugador actual. |
 | `EFFECT_REQUIRE_DEFENDER` | Durante un ataque, si hay defensores que cumplen `condition`, solo ofrece esos defensores y obliga a elegir uno; no se puede continuar sin defender. Si ninguno cumple la condición, el ataque continúa con las opciones de defensa normales y puede quedar sin defender según las reglas habituales. |
@@ -52,7 +54,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. |
 | `EFFECT_ENGAGE` | Para poner un esbirro en juego enfrentado al jugador objetivo. |
-| `EFFECT_SEVERAL_ATTACKS` | Resuelve ataques de varios enemigos; `attackTarget` usa un selector `TARGET_*` para elegir a quién ataca cada enemigo. Por ejemplo, `TARGET_ENGAGED` selecciona al jugador enfrentado al enemigo. |
+| `EFFECT_SEVERAL_ATTACKS` | Resuelve ataques de varios enemigos; `attackTarget` usa un selector `TARGET_*` para elegir a quién ataca cada enemigo. Por ejemplo, `TARGET_ENGAGED` selecciona al jugador enfrentado al enemigo. Configura `enemiesCondition` para filtrar los enemigos antes de resolver sus ataques. |
 | `EFFECT_REVEAL_ENCOUNTER` | Para revelar una carta de encuentro de un origen. Por defecto toma la primera ya entregada al jugador (`PLACE_PLAYER_ENCOUNTERS`); `from: PLACE_ENCOUNTER_DECK` toma la carta superior del mazo. |
 | `EFFECT_SURGE` | Para aplicar la palabra clave "Oleada". |
 
@@ -65,6 +67,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - `EFFECT_EXHAUST` puede resolver una selección múltiple parcialmente cuando al menos uno de los objetivos puede agotarse; los objetivos ya agotados no impiden agotar los demás.
 - Cuando `EFFECT_SPEND` sea un efecto, habilítalo si se puede pagar al menos uno de sus requisitos. Al confirmar, exige la mayor cantidad de requisitos que pueda satisfacerse con los recursos disponibles y marca el efecto como parcialmente resuelto si quedan requisitos pendientes.
 - No uses pagos parciales para costes de flecha ni otros costes. Esos pagos deben satisfacer todos los requisitos.
+- Si `EFFECT_SPEND` es una opción seleccionable de `EFFECT_CHOOSE`, permite cancelar el diálogo de pago y vuelve a mostrar las opciones sin resolver la opción cancelada.
 
 ### Resolución de varias cartas de aumento
 
@@ -116,7 +119,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | INT | `GetThwartEffect` | `selectedTarget.thwart + modifyThwart`, salvo que INT sea `null` |
 | DEF | `GetDefenseEffect` | `selectedTarget.defense + modifyDefense` |
 
-- `GetAttackEffect` procesa `TRIGGER_YOUR_HERO_GET_ATTACK` y `TRIGGER_ATTACHED_GET_ATTACK`; `GetThwartEffect` procesa `TRIGGER_YOUR_HERO_GET_THWART`, `TRIGGER_THIS_GET_THWART` y `TRIGGER_ATTACHED_GET_THWART`; `GetDefenseEffect` procesa `TRIGGER_CONDITION_GET_DEFENSE` y `TRIGGER_YOUR_HERO_GET_DEFENSE`. Usa el trigger que corresponda para limitar cuándo aplica la bonificación; los triggers `TRIGGER_YOUR_HERO_GET_*` se limitan al héroe del jugador que controla la carta.
+- `GetAttackEffect` procesa `TRIGGER_CHARACTER_GET_ATTACK`, `TRIGGER_YOUR_HERO_GET_ATTACK` y `TRIGGER_ATTACHED_GET_ATTACK`; `GetThwartEffect` procesa `TRIGGER_YOUR_HERO_GET_THWART`, `TRIGGER_THIS_GET_THWART` y `TRIGGER_ATTACHED_GET_THWART`; `GetDefenseEffect` procesa `TRIGGER_CONDITION_GET_DEFENSE` y `TRIGGER_YOUR_HERO_GET_DEFENSE`. Usa el trigger que corresponda para limitar cuándo aplica la bonificación; los triggers `TRIGGER_YOUR_HERO_GET_*` se limitan al héroe del jugador que controla la carta.
 - Para una bonificación dinámica, apunta con `target: TARGET_EFFECT` al colector disponible en `params.effect`. `EFFECT_MODIFY_ATTACK_VALUE`, `EFFECT_MODIFY_THWART_VALUE` y `EFFECT_MODIFY_DEFENSE_VALUE` acumulan el cambio en `modifyAttack`, `modifyThwart` o `modifyDefense`; no cambies el atributo impreso ni una propiedad persistente del personaje para representar un modificador que solo aplica durante el cálculo.
 - Si una capacidad inflige daño igual al ATQ de su personaje, configura `paramsCalc.formula: CALC_ATTACK` en `EFFECT_DEAL_DAMAGE` y apunta `paramsCalc.target` al personaje. `DealDamageEffect` resuelve sus parámetros antes de ejecutarse y delega el cálculo a `Calc`, que obtiene el ATQ con `CharacterGameCard.getAttackValue()` y aplica `plus`, `multiply` y `max`. Como `CALC_ATTACK` procesa triggers asíncronos, quien consuma el resultado de `Calc` debe esperarlo.
 - Mantén las clases generales (`Ability`, `Effect` base y factorías) libres de ramas para tipos de efectos o cartas concretos. Usa hooks polimórficos genéricos en la infraestructura base y coloca la preparación específica de parámetros en la clase del efecto correspondiente; las fórmulas compartidas pertenecen a `Calc`.

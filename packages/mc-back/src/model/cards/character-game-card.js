@@ -138,9 +138,13 @@ export class CharacterGameCard extends GameCard {
         return this.card.guard;
     }
     get retaliate() {
+        const retaliate = this.sides.length ?
+            this.currentSide.retaliate :
+            this.card.retaliate;
+
         return this.attached.reduce(
-            (retaliate, attachment) => retaliate + attachment.card.retaliate,
-            this.card.retaliate
+            (total, attachment) => total + attachment.card.retaliate,
+            retaliate
         );
     }
     get hitPoints() {
@@ -255,6 +259,23 @@ export class CharacterGameCard extends GameCard {
             scheme = calc.calculate({
                 card: this,
                 match: this.match,
+            });
+        }
+
+        if (Number.isFinite(scheme)) {
+            this.attached.forEach(attachment => {
+                let attachedScheme = attachment.card.scheme;
+                if (attachedScheme instanceof Object) {
+                    const calc = new Calc(attachedScheme);
+                    attachedScheme = calc.calculate({
+                        card: attachment,
+                        match: this.match,
+                    });
+                }
+
+                if (Number.isFinite(attachedScheme)) {
+                    scheme += attachedScheme;
+                }
             });
         }
 

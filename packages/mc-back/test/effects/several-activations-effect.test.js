@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {DIALOG_SELECT_TARGET} from 'mc-shared';
+import {
+    DIALOG_SELECT_TARGET,
+    TARGET_ALL_ENGAGED_MINIONS,
+    TRAIT_DRONE,
+} from 'mc-shared';
 import {SeveralActivationsEffect} from '../../src/effects/several-activations-effect.js';
 import {SeveralAttacksEffect} from '../../src/effects/several-attacks-effect.js';
 
@@ -74,4 +78,28 @@ test('a single minion activates without a selection dialog', async () => {
 
     assert.deepEqual(activations, [enemy]);
     assert.equal(openedDialogs, 0);
+});
+
+test('several attacks filters engaged minions by their configured traits', async () => {
+    const drone = {
+        ...createEnemy('drone'),
+        traits: [TRAIT_DRONE],
+    };
+    const otherMinion = {
+        ...createEnemy('other-minion'),
+        traits: ['Androide'],
+    };
+    const effect = new SeveralAttacksEffect({
+        enemiesCondition: {traits: TRAIT_DRONE},
+        enemiesType: TARGET_ALL_ENGAGED_MINIONS,
+        match: {},
+    });
+
+    await effect.prepare({
+        player: {
+            minions: [drone, otherMinion],
+        },
+    });
+
+    assert.deepEqual(effect.enemies, [drone]);
 });

@@ -30,6 +30,7 @@ export class McCardsGroupDialog extends McDialog {
             <mc-card
                 name="${card.name}"
                 image="${card.image}"
+                .isFacedownCard="${card.isFacedownCard}"
                 size="l"
                 ?horizontal="${isPlanCard(card)}"
             ></mc-card>

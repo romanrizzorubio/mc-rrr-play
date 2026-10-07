@@ -29,6 +29,7 @@ export class Match extends Engine {
         this.turnIndex = 0;
         this.endPlayerIndex = 0;
         this.villainPhaseStep = 0;
+        this.facedownMinionSequence = 0;
         this.skipDiscardOrderDialog = false;
         this.skipBoostDealtNotification = false;
         this.suppressedInformationalDialogIds = [];

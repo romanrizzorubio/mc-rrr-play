@@ -12,7 +12,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
-    TARGET_ENEMY,
+    TARGET_ATTACKER,
     TARGET_PLAYER,
     TRAIT_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
@@ -54,7 +54,7 @@ export default [
                             'effect': {
                                 'type': EFFECT_DEAL_DAMAGE,
                                 'params': {
-                                    'target': TARGET_ENEMY,
+                                    'target': TARGET_ATTACKER,
                                     'paramsCalc': {
                                         'target': 'player.superhero.currentSide',
                                         'formula': CALC_ATTACK

@@ -98,6 +98,7 @@ export class McDefense extends LitElement {
             <mc-card
                 name="${character.name}"
                 image="${character.image}"
+                .isFacedownCard="${character.isFacedownCard}"
                 size="s"
             ></mc-card>
         `;
