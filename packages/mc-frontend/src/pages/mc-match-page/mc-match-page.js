@@ -8,6 +8,7 @@ import {
 } from '../../components/cards/characters/mc-superhero-card/mc-superhero-card.js';
 import '../../components/views/mc-match/mc-match.js';
 import {ABILITY_ID, path} from '../../misc/utils.js';
+import {getEndTurnConfirmationReasons} from '../../utils/end-turn.js';
 
 import styles from './mc-match-page.css.js';
 
@@ -331,8 +332,37 @@ export class McMatchPage extends LitElement {
     handlePlayerEnd() {
         this.endTurn();
     }
+    getEndTurnReasons() {
+        const currentPlayer = this.match?.players.find(_player =>
+            _player.name === this.player);
+
+        if (!currentPlayer) {
+            return [];
+        }
+
+        return getEndTurnConfirmationReasons(currentPlayer);
+    }
     endTurn() {
-        this.apiPlayer.endTurn(this.player).catch(error => {
+        const reasons = this.getEndTurnReasons();
+        if (reasons.length) {
+            this.dispatchEvent(new CustomEvent('turn-end-confirmation', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    reasons,
+                    callback: response => response?.confirmed ?
+                        this.sendEndTurn() :
+                        undefined,
+                },
+            }));
+
+            return;
+        }
+
+        return this.sendEndTurn();
+    }
+    sendEndTurn() {
+        return this.apiPlayer.endTurn(this.player).catch(error => {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
                 composed: true,

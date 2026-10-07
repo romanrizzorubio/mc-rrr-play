@@ -22,6 +22,7 @@ export const TARGET_ALL_CARDS = 'all-cards';
 export const TARGET_ALL_CHARACTERS = 'all-characters';
 export const TARGET_ALL_CHARACTERS_YOU_CONTROL = 'all-characters-you-control';
 export const TARGET_ALL_ENEMIES = 'all-enemies';
+export const TARGET_ALL_FRIENDLY_CHARACTERS = 'all-friendly-characters';
 export const TARGET_ALL_ENGAGED_MINIONS = CHARACTER_ALL_ENGAGED_MINIONS;
 export const TARGET_ALL_HEROES = CHARACTER_ALL_HEROES;
 export const TARGET_ALL_HEROES_ALLIES = 'all-heroes-allies';

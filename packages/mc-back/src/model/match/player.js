@@ -2,6 +2,7 @@ import {
     DIALOG_DISCARD_HAND,
     DIALOG_PAY_COST,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
+    RESOURCE_ANY,
     RESOURCES_X,
     TARGET_CARD,
 } from 'mc-shared';
@@ -15,6 +16,7 @@ import {ReadyEffect} from '../../effects/ready-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
+import {normalizeResourceTypes} from '../../utils/resource-types.js';
 
 import {Deck} from './deck.js';
 import {Hand} from './hand.js';
@@ -278,15 +280,26 @@ export class Player extends Engine {
     }
     async getResourceGenerators(cardToPay, resourceType, excludedCardIds = new Set()) {
         const generators = [];
+        const resourceTypes = normalizeResourceTypes(resourceType);
+        const unrestricted = !resourceTypes.length ||
+            resourceTypes.includes(RESOURCE_ANY);
+        const hasResourceGenerators = card => {
+            if (unrestricted) {
+                return card.hasResourceGenerators(cardToPay);
+            }
+
+            return this.promisesSequentialSome(resourceTypes, _resourceType =>
+                card.hasResourceGenerators(cardToPay, _resourceType));
+        };
 
         if (!excludedCardIds.has(this.superhero.currentSide.id) &&
-            await this.superhero.currentSide.hasResourceGenerators(cardToPay, resourceType)) {
+            await hasResourceGenerators(this.superhero.currentSide)) {
             generators.push(this.superhero.currentSide);
         }
 
         await this.promisesSequential(this.gameZone.cards, async card => {
             if (!excludedCardIds.has(card.id) &&
-                await card.hasResourceGenerators(cardToPay, resourceType)) {
+                await hasResourceGenerators(card)) {
                 generators.push(card);
             }
         });
@@ -466,7 +479,7 @@ export class Player extends Engine {
     ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
-            undefined,
+            resources,
             excludedCardIds
         );
         const response = await this.openDialog({

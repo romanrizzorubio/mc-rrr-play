@@ -2,6 +2,7 @@ import {
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_THWART,
+    TRIGGER_ATTACHED_TAKES_DAMAGE,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
@@ -45,6 +46,7 @@ import {
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
+import {AttachedTakesDamageTrigger} from '../../triggers/attached-takes-damage-trigger.js';
 import {AttachedWouldAttackTrigger} from '../../triggers/attached-would-attack-trigger.js';
 import {
     AttachedWouldDealtDamageTrigger
@@ -102,6 +104,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_DEFEAT]: AttachedDefeatTrigger,
     [TRIGGER_ATTACHED_GET_ATTACK]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_GET_THWART]: AttachedGetStatTrigger,
+    [TRIGGER_ATTACHED_TAKES_DAMAGE]: AttachedTakesDamageTrigger,
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,

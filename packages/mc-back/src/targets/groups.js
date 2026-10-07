@@ -3,6 +3,7 @@ import {
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_ENEMIES,
     TARGET_ALL_ALLIES,
+    TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
     TARGET_SELECTED_PLAYER_CHARACTERS,
@@ -22,6 +23,7 @@ export const groupTargets = {
         match.players.flatMap(player => player.allies),
     [TARGET_ALL_CHARACTERS]: ({match}) => match.enemies.concat(match.friends),
     [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
+    [TARGET_ALL_FRIENDLY_CHARACTERS]: ({match}) => match.friends,
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,
     [TARGET_ALL_HEROES_ALLIES]: ({match}) => match.heroesAndAllies,
     [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {

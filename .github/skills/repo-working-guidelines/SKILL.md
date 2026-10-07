@@ -11,6 +11,7 @@ Before working in this repository, consult the relevant guidance in `.junie/` an
 - Place reusable utility/helper modules in an appropriate `utils/` directory rather than beside feature-specific files; create the scoped directory when needed and update imports.
 - Use `docs/README.md` as the documentation index, then read the documents relevant to the task to understand the intended behavior and architecture.
 - When adding or editing card abilities, consult `.junie/guidelines/translation-guide.md`, `.junie/guidelines/effects-guide.md`, and the relevant rules in `docs/02-06-ABILITIES-EFFECTS.md`.
+- Label every user-facing choice clearly: use `title` for effect options and `name` for `ABILITY_OPTION` abilities.
 - When changing card, discard, or modal presentation, consult `.junie/guidelines/card-display-guide.md`.
 - Treat card text and structured data supplied by the user as the source of truth. Do not infer icons, attributes, traits, or effects from artwork; ask when an important rule interaction is ambiguous.
 - Default boolean configuration and state to `false`; set a boolean to `true` only when explicitly required by the card text, rules, or user. Do not infer that a later scenario stage is final.

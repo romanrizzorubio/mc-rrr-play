@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import {getAttackedTargets} from '../../src/utils/target-utils.js';
 
 test('TARGET_ATTACKED returns the defender who actually took the attack', () => {
-    const ally = {name: 'Ally'};
+    const ally = {isInPlay: true, name: 'Ally'};
     const player = {name: 'Player'};
     const attack = {
         effect: {
@@ -20,7 +20,7 @@ test('TARGET_ATTACKED returns the defender who actually took the attack', () => 
 });
 
 test('TARGET_ATTACKED resolves an undefended player attack to their current character', () => {
-    const hero = {name: 'Hero'};
+    const hero = {isInPlay: true, name: 'Hero'};
     const player = {
         isPlayer: true,
         superhero: {
@@ -37,6 +37,25 @@ test('TARGET_ATTACKED resolves an undefended player attack to their current char
     assert.deepEqual(
         getAttackedTargets({attack, match: {}}),
         [hero]
+    );
+});
+
+test('TARGET_ATTACKED has no target after the attacked minion is defeated', () => {
+    const defeatedMinion = {
+        id: 'minion',
+        isInPlay: false,
+        isMinion: true,
+        name: 'Defeated Minion',
+    };
+    const attack = {
+        effect: {
+            selectedTarget: defeatedMinion,
+        },
+    };
+
+    assert.deepEqual(
+        getAttackedTargets({attack, match: {}}),
+        []
     );
 });
 

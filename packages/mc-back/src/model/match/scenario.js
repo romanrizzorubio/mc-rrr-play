@@ -278,6 +278,9 @@ export class Scenario extends Engine {
                 nextVillain.tough = currentVillain.tough;
                 nextVillain.faceDown = currentVillain.faceDown;
                 nextVillain.attached = currentVillain.attached;
+                nextVillain.attached.forEach(attached => {
+                    attached.attachedTo = nextVillain;
+                });
                 nextVillain.selectedSide = currentVillain.selectedSide;
                 nextVillain.counters = currentVillain.counters;
                 nextVillain.exhausted = currentVillain.exhausted;

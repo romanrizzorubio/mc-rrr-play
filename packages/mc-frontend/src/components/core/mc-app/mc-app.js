@@ -125,8 +125,13 @@ class McApp extends router(navigator(outlet(LitElement))) {
        title,
        subtitle,
        closeOnResponse,
+       targetPlayer,
        callback,
    }) {
+        if (targetPlayer && targetPlayer !== this.player) {
+            return;
+        }
+
         this.dialog = {
             dialogType,
             title,
@@ -191,6 +196,17 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 card,
                 options: menuOptions,
             }
+        });
+    }
+    handleTurnEndConfirmation(e) {
+        const {callback, reasons} = e.detail;
+
+        this.openDialog({
+            dialogType: 'confirm',
+            title: 'Finalizar turno',
+            subtitle: '¿Seguro que quieres finalizar el turno?',
+            data: {reasons},
+            callback,
         });
     }
     handleCloseDialog() {
@@ -366,6 +382,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                       .match="${match}"
                       player="${player}"
                       @change-menu="${this.handleChangeMenu.bind(this)}"
+                      @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
                       @change-match="${this.handleMatchChanged.bind(this)}"
                       @view-discard="${this.handleViewDiscard.bind(this)}"
                       @communication-error="${this.handleCommunicationError.bind(this)}"

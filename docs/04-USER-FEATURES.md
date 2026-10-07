@@ -206,6 +206,7 @@ Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un o
 - Iconos claramente diferenciados
 - Mostrados en la zona del jugador
 - Contador en tiempo real
+- Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes; puedes cambiar la asignación haciendo clic en el icono.
 
 ## Sistema de Turno
 
@@ -216,6 +217,8 @@ El sistema gestiona automáticamente:
 - Límites de acciones
 - Transición entre fases
 - Resolución de triggers
+
+Al finalizar el turno, se pide confirmación si el superhéroe o algún aliado está preparado, o si hay cartas jugables en la mano. El diálogo indica cuál es el motivo; las cartas que no se pueden jugar no activan el aviso. «Sí, finalizar el turno» avanza la partida; «No, seguir jugando» mantiene el turno.
 
 ### Fases del Turno
 

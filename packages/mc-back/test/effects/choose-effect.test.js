@@ -6,6 +6,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
+    TARGET_ALL_PLAYERS,
     TARGET_YOU,
 } from 'mc-shared';
 import {ChooseEffect} from '../../src/effects/choose-effect.js';
@@ -104,6 +105,63 @@ test('offers only partially resolvable options when multiple remain', async () =
     });
 
     assert.deepEqual(resolved, ['Second option']);
+});
+
+test('resolves each-player choices in player order and targets each dialog', async () => {
+    const firstPlayer = {
+        name: 'First player',
+        hand: {cards: []},
+    };
+    const secondPlayer = {
+        name: 'Second player',
+        hand: {cards: []},
+    };
+    const match = {
+        players: [secondPlayer, firstPlayer],
+        initialPlayer: firstPlayer,
+    };
+    const resolved = [];
+    const dialogs = [];
+    const options = ['First option', 'Second option'].map(title => ({
+        target: TARGET_YOU,
+        getTitle() {
+            return title;
+        },
+        async canRun() {
+            return true;
+        },
+        async runEffect({player}) {
+            resolved.push([title, player.name]);
+        },
+    }));
+    const effect = new ChooseEffect({
+        match,
+        players: TARGET_ALL_PLAYERS,
+        ability: {
+            card: {
+                toObj() {
+                    return {name: 'Test card'};
+                },
+            },
+        },
+        options,
+    });
+    effect.openDialog = async dialog => {
+        dialogs.push(dialog);
+
+        return {selected: {id: dialogs.length - 1}};
+    };
+
+    await effect.execute({match, player: firstPlayer});
+
+    assert.deepEqual(dialogs.map(({targetPlayer}) => targetPlayer), [
+        'First player',
+        'Second player',
+    ]);
+    assert.deepEqual(resolved, [
+        ['First option', 'First player'],
+        ['Second option', 'Second player'],
+    ]);
 });
 
 test('an exhaust option remains valid when only some of its targets are ready', async () => {

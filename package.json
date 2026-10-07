@@ -15,6 +15,7 @@
     "start:frontend": "export NODE_OPTIONS=--openssl-legacy-provider && npm run serve --workspace=packages/mc-frontend -- --port 8000",
     "prestart:backend": "npm run seed:data",
     "start:backend": "npx nodemon packages/mc-back/index.js",
+    "test": "npm test --workspace=packages/mc-back",
     "mongo:up": "docker-compose up -d mongodb",
     "mongo:down": "docker-compose stop mongodb",
     "seed:data": "npm run seed --workspace=packages/mc-data",

@@ -153,13 +153,26 @@ export default {
                                 'type': ABILITY_WHEN_REVEALED_HERO,
                                 'params': {
                                     'effect': {
-                                        'type': EFFECT_SEVERAL_ATTACKS,
+                                        'type': EFFECT_CHAINED,
                                         'params': {
-                                            'enemiesType': [
-                                                CHARACTER_VILLAIN,
-                                                CHARACTER_ALL_ENGAGED_MINIONS
+                                            'effects': [
+                                                {
+                                                    'type': EFFECT_ENEMY_ATTACK,
+                                                    'params': {
+                                                        'enemyType': CHARACTER_VILLAIN,
+                                                        'target': TARGET_YOU
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_SEVERAL_ATTACKS,
+                                                    'params': {
+                                                        'enemiesType': [
+                                                            CHARACTER_ALL_ENGAGED_MINIONS
+                                                        ],
+                                                        'target': TARGET_YOU
+                                                    }
+                                                }
                                             ],
-                                            'target': TARGET_YOU
                                         }
                                     }
                                 }

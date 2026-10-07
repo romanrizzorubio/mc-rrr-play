@@ -22,7 +22,7 @@ const {McPayCost} = await import(
     '../src/components/panels/mc-pay-cost/mc-pay-cost.js'
 );
 
-function createDialog(hand, wilds) {
+function createDialog(hand, wilds, overrides = {}) {
     const dialog = Object.create(McPayCostDialog.prototype);
     dialog.data = {
         allowPartial: true,
@@ -37,10 +37,87 @@ function createDialog(hand, wilds) {
             generators: [],
             hand,
         },
+        ...overrides,
+    };
+    dialog._response = {
+        paid: {
+            generators: [],
+            hand: [],
+        },
     };
 
     return dialog;
 }
+
+test('automatically assigns wild resources to outstanding mandatory requirements and allows manual changes', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const dialog = createDialog([wildCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [RESOURCE_ENERGY],
+    });
+
+    dialog._handlePaySelect({
+        detail: {
+            card: wildCard,
+            type: 'hand',
+        },
+    });
+
+    assert.deepEqual(dialog.data.wilds, [RESOURCE_ENERGY]);
+    assert.equal(dialog.validate(), true);
+
+    dialog._handleChangeWildResource({
+        detail: {wilds: [RESOURCE_MENTAL]},
+    });
+
+    assert.deepEqual(dialog.data.wilds, [RESOURCE_MENTAL]);
+    assert.equal(dialog.validate(), false);
+});
+
+test('automatically assigns every wild to the selected resource type for an X cost', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: true,
+    };
+    const dialog = createDialog([wildCard], [], {
+        cost: 'X',
+        requirement: [],
+        resourceType: RESOURCE_PHYSICAL,
+    });
+
+    assert.deepEqual(
+        dialog.getAutomaticWilds(dialog.data.cards),
+        [RESOURCE_PHYSICAL]
+    );
+});
+
+test('preserves matching specific resources when assigning wilds to other requirements', () => {
+    const dialog = createDialog([
+        {
+            id: 'energy',
+            resources: [RESOURCE_ENERGY],
+            selected: true,
+        },
+        {
+            id: 'wild',
+            resources: [RESOURCE_WILD],
+            selected: true,
+        },
+    ], [], {
+        requirement: [RESOURCE_ENERGY, RESOURCE_MENTAL],
+    });
+
+    assert.deepEqual(
+        dialog.getAutomaticWilds(dialog.data.cards),
+        [RESOURCE_MENTAL]
+    );
+});
 
 test('a wild assigned to energy cannot also satisfy another resource requirement', () => {
     const dialog = createDialog([

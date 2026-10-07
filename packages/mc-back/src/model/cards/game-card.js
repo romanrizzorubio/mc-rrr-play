@@ -47,6 +47,20 @@ export class GameCard extends Engine {
 
         this.isCard = true;
     }
+    get damage() {
+        if (this.parent?.sides?.includes(this)) {
+            return this.parent.damage;
+        }
+
+        return this._damage;
+    }
+    set damage(damage) {
+        if (this.parent?.sides?.includes(this)) {
+            this.parent.damage = damage;
+        } else {
+            this._damage = damage;
+        }
+    }
     get owner() {
         return this._owner;
     }

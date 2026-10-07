@@ -1,7 +1,13 @@
-import {ABILITY_ACTION,DIALOG_DISCARD_RANDOM_HAND,RESOURCE_WILD} from 'mc-shared';
+import {
+    ABILITY_ACTION,
+    DIALOG_DISCARD_RANDOM_HAND,
+    RESOURCE_ANY,
+    RESOURCE_WILD,
+} from 'mc-shared';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
+import {normalizeResourceTypes} from '../../utils/resource-types.js';
 
 export class Hand extends Engine {
     constructor(owner) {
@@ -65,16 +71,16 @@ export class Hand extends Engine {
         return this.cards.find(card => card.id === cardId);
     }
     getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
-        return this.cards.filter(card => {
-            const resources = resourceType ?
-                card.card.getResources(cardToPlay) :
-                undefined;
+        const resourceTypes = normalizeResourceTypes(resourceType);
+        const unrestricted = !resourceTypes.length ||
+            resourceTypes.includes(RESOURCE_ANY);
 
+        return this.cards.filter(card => {
             return !excludedCardIds.has(card.id) &&
                 !card.isPlaying &&
                 (!cardToPlay || card.id !== cardToPlay.id) &&
-                (!resourceType || resources.some(r =>
-                    r === resourceType || r === RESOURCE_WILD));
+                (unrestricted || card.card.getResources(cardToPlay).some(resource =>
+                    resourceTypes.includes(resource) || resource === RESOURCE_WILD));
         });
     }
     searchCards(condition) {

@@ -23,29 +23,36 @@ test('replacing a villain stage removes old responses and registers the new stag
     };
     const oldVillain = {
         attached: [],
-        accelerationTokens: 0,
-        confused: 0,
-        counters: 0,
+        accelerationTokens: 2,
+        confused: 1,
+        counters: 3,
+        damage: 7,
         endTriggers() {
             delete match.triggerCards[this.id];
         },
         exhausted: false,
-        faceDown: [],
+        faceDown: [{id: 'face-down-card'}],
         id: 'rhino-stage-1',
         modifyHitPoints: 10,
         name: 'Rino',
         selectedSide: 0,
-        stunned: 0,
-        tough: 0,
+        stunned: 1,
+        tough: 1,
         toObj() {
             return {id: this.id, name: this.name};
         },
     };
+    const attachment = {attachedTo: oldVillain};
+    oldVillain.attached.push(attachment);
     const nextVillain = {
         abilities: [],
+        accelerationTokens: 0,
         attached: [],
         attachedTo: null,
         controller: null,
+        confused: 0,
+        counters: 0,
+        damage: 0,
         faceDown: [],
         id: 'rhino-stage-2',
         isAlly: false,
@@ -103,6 +110,15 @@ test('replacing a villain stage removes old responses and registers the new stag
 
     assert.equal(scenario.villain, nextVillain);
     assert.equal(nextVillain.modifyHitPoints, 10);
+    assert.equal(nextVillain.attached[0], attachment);
+    assert.equal(attachment.attachedTo, nextVillain);
+    assert.equal(nextVillain.stunned, 1);
+    assert.equal(nextVillain.confused, 1);
+    assert.equal(nextVillain.tough, 1);
+    assert.equal(nextVillain.counters, 3);
+    assert.equal(nextVillain.accelerationTokens, 2);
+    assert.deepEqual(nextVillain.faceDown, oldVillain.faceDown);
+    assert.equal(nextVillain.damage, 0);
     assert.equal(match.triggerCards[oldVillain.id], undefined);
     assert.equal(match.triggerCards[nextVillain.id], nextVillain);
     assert.equal(dialogs[0].title, 'Rino ha sido derrotado');

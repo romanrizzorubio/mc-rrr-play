@@ -40,7 +40,7 @@ export class PlaceThreatEffect extends Effect {
             this.threat;
     }
     getTitle() {
-        return `Colocas ${this.threat} de Amenaza en el Plan principal.`;
+        return this.title || `Colocas ${this.threat} de Amenaza en el Plan principal.`;
     }
     checkTrigger(params) {
         const {preventThreat} = this;

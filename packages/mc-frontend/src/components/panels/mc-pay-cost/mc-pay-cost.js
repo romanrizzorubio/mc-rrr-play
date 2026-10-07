@@ -22,6 +22,7 @@ export class McPayCost extends LitElement {
             cost: {type: String},
             resourceType: {type: String},
             requirement: {type: Array},
+            wilds: {type: Array},
             isPaid: {type: Boolean},
             allowPartial: {type: Boolean},
             validationError: {type: String},
@@ -35,6 +36,7 @@ export class McPayCost extends LitElement {
         this.cost = '';
         this.resourceType = undefined;
         this.requirement = [];
+        this.wilds = [];
         this.isPaid = false;
         this.allowPartial = false;
         this.validationError = '';
@@ -45,6 +47,9 @@ export class McPayCost extends LitElement {
         this._wilds = [];
     }
     willUpdate(_changedProperties) {
+        if (_changedProperties.has('wilds')) {
+            this._wilds = this.wilds.slice();
+        }
         if (_changedProperties.has('cards')) {
             this.cards.generators.forEach(card => {
                 card.selected = !!card.selected;

@@ -40,7 +40,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
 | `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. No implica por sí solo la condición estricta de "Luego". Conserva el contexto de capacidad y, si `thenEffect` usa el mismo `target`, reutiliza el objetivo ya seleccionado. |
 | `EFFECT_SIMULTANEOUS` | Para efectos independientes conectados por "y" que las reglas mandan resolver simultáneamente. Prepara interrupciones y diálogos del grupo antes de aplicarlo, sin ventanas de respuesta entre sus efectos; después resuelve las respuestas. En `arrow`, todos los costes son obligatorios. |
-| `EFFECT_CHOOSE` | Ofrece solo opciones que puedan resolverse al menos parcialmente. Si queda una, resuélvela directamente; abre el selector solo si quedan varias. |
+| `EFFECT_CHOOSE` | Ofrece solo opciones que puedan resolverse al menos parcialmente. Da a cada opción un `title` claro en los parámetros del efecto para que el usuario sepa qué va a elegir. Si queda una, resuélvela directamente; abre el selector solo si quedan varias. Usa `players: TARGET_ALL_PLAYERS` para que cada jugador elija, en orden, con su propio contexto. |
 | `EFFECT_SPEND` | Como efecto, puede resolverse parcialmente: debe haber al menos un requisito pagable y se pagan tantos requisitos como permitan los recursos disponibles. Como coste, todos los requisitos deben pagarse. |
 | `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
@@ -97,6 +97,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - `ABILITY_RESPONSE` se evalúa en la ventana `PRIORITY_RESPONSE` del trigger que acaba de ocurrir. Coloca ese trigger en la ventana de fin del efecto (`getTriggersEnds`) cuando la respuesta dependa del estado final del efecto; `getTriggersInit` ocurre antes de ejecutar el efecto y `triggerInit` procesa constantes e interrupciones, no respuestas.
 - `TRIGGER_THIS_SCHEME` se dispara al final de la activación de Plan del enemigo que lo inició.
 - Las condiciones de una capacidad se comprueban contra el payload del trigger. Usa `effect.<propiedad>` para consultar el efecto que acaba de resolverse; todas las claves de `condition` deben cumplirse. No uses `activation.<propiedad>` salvo que el payload realmente incluya ese campo.
+- Para una respuesta posterior a que un personaje vinculado sufra daño efectivo, usa `TRIGGER_ATTACHED_TAKES_DAMAGE`; no se activa si todo el daño a ese personaje fue evitado o absorbido por Duro.
 - Para una respuesta que requiere que un héroe haya defendido un ataque, usa `TRIGGER_VILLAIN_ATTACKS_YOU` en `EnemyAttackEffect.getTriggersEnds()`; ese mismo trigger en `getTriggersInit()` corresponde a la ventana previa de interrupciones. Comprueba el estado con `{'effect.isDefended': true, 'effect.defender.isHero': true}`: `isDefended` y el defensor se actualizan durante la resolución del ataque.
 - Resuelve primero las respuestas obligadas de cada ataque (incluida represalia) y solo después sus respuestas opcionales. Un ataque iniciado al resolver una respuesta es una instancia independiente: vincula represalia al atacante y objetivo de ese efecto, no al `PlayCardEffect` ni al contexto heredado del ataque anterior.
 - Para el ataque del villano, resuelve esas respuestas obligadas antes de abrir la ventana de `ABILITY_RESPONSE` de `TRIGGER_VILLAIN_ATTACKS_YOU`. La represalia debe ser válida para cualquier personaje defensor en juego, no solo para enemigos.
@@ -211,6 +212,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 
 - Todas las claves de `params.filter` y `params.condition` deben coincidir (AND); si la propiedad comprobada es una lista, el valor indicado puede coincidir con cualquiera de sus elementos.
 - **"Elige una opción:"**: `EFFECT_CHOOSE_ABILITY` con `options` de tipo `ABILITY_OPTION`.
+- En toda lista de opciones mostrada al usuario, incluye un texto claro para cada opción: `title` en los parámetros de un efecto de `EFFECT_CHOOSE` y `name` en los parámetros de cada `ABILITY_OPTION` de `EFFECT_CHOOSE_ABILITY`.
 - **"Puedes..."**: `EFFECT_MAY`.
 - **Efectos al entrar en juego**:
     - **Perfidias y cartas con "Cuando se muestre"**: Usa siempre `ABILITY_WHEN_REVEALED` (o sus variantes por identidad).
@@ -220,6 +222,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 - **Cualquier jugador vs Cada jugador**:
     - Si el texto dice "cualquier jugador" (o si eliges uno): Usa `TARGET_ANY_PLAYER`.
     - Si el texto dice "cada jugador" (o todos): Usa `TARGET_ALL_PLAYERS`. Esto asegura que el motor ejecute el efecto secuencialmente para todos los participantes.
+    - En `EFFECT_CHOOSE`, configura `players: TARGET_ALL_PLAYERS` para presentar la elección por separado a cada jugador y dirigir cada diálogo al jugador que debe responder.
 
 ## Instrucciones de Mantenimiento
 

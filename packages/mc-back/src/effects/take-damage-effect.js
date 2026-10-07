@@ -2,6 +2,7 @@ import {
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_DEFEAT,
     EFFECT_PLACE_DAMAGE,
+    TRIGGER_ATTACHED_TAKES_DAMAGE,
     TRIGGER_YOU_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 
@@ -124,6 +125,12 @@ export class TakeDamageEffect extends Effect {
         return super.getTriggersWould()
             .concat([
                 TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+            ]);
+    }
+    getTriggersEnds(params) {
+        return super.getTriggersEnds(params)
+            .concat([
+                TRIGGER_ATTACHED_TAKES_DAMAGE,
             ]);
     }
     async takeDamage(selectedTarget, takenDamage, params) {
