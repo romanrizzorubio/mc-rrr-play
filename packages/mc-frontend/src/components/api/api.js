@@ -1,4 +1,4 @@
-import { Manager } from '/node_modules/socket.io-client/dist/socket.io.esm.min.js';
+import {Manager} from 'socket.io-client/dist/socket.io.esm.min.js';
 
 import {EVENTS} from 'mc-endpoints';
 import {parseApiResponse} from '../../utils/api-response.js';

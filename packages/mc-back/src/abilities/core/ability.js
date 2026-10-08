@@ -139,7 +139,7 @@ export class Ability extends Engine {
             }
         }
         if (this.isThwart) {
-            if (! player.canThwart(params)) {
+            if (!await player.canThwart(params)) {
                 return false;
             }
         }
@@ -153,8 +153,11 @@ export class Ability extends Engine {
                 return false;
             }
         }
+        if (this.maximum && !this.maximum.canUse()) {
+            return false;
+        }
         if (this.arrow && !params.arrowPaid) {
-           if (! await this.arrow.canPay(params)) {
+           if (!await this.arrow.canPay({...params, ability: this})) {
                return false;
            }
         }
@@ -178,7 +181,10 @@ export class Ability extends Engine {
     initTriggers() {}
     async payArrow(params) {
         if (this.arrow) {
-            const paid = await this.arrow.pay(params);
+            const paid = await this.arrow.pay(
+                {...params, ability: this},
+                params
+            );
             this.paymentCancelled = this.arrow.paymentCancelled;
 
             return paid;
@@ -254,6 +260,8 @@ export class Ability extends Engine {
                 const costsPaid = arrowPaid || await this.payArrow(params);
 
                 if (costsPaid) {
+                    this.maximum?.use();
+
                     if (this.effect) {
                         await this.effect.runEffect({
                             ...params,
@@ -266,6 +274,8 @@ export class Ability extends Engine {
                         }
 
                         this.resolved = this.effect.resolved;
+                    } else {
+                        this.resolved = true;
                     }
                     this.useLimit();
                 }

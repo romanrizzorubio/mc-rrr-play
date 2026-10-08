@@ -213,7 +213,6 @@ test('Poneos detras de mi is not offered after its treachery is canceled', async
     };
 
     assert.equal(abilityConfig.params.condition, undefined);
-    assert.equal(ability.effect.matchAll, false);
     assert.equal(await trigger.canTrigger(params), true);
 
     params.effect.canceled = CANCEL_ENCOUNTER_REVEAL;

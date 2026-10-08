@@ -107,7 +107,7 @@ export class McCreateMatchPage extends LitElement {
             return;
         }
 
-        const {name, player, scenario} = e.detail;
+        const {name, expert, player, scenario} = e.detail;
         if (this.matches.some(match => match.name === name)) {
             this.reportCommunicationError(new Error('Ya existe una partida con ese nombre.'));
             return;
@@ -120,7 +120,7 @@ export class McCreateMatchPage extends LitElement {
             await apiConfigMatch.createMatch({name});
             const createdPlayer = await apiConfigMatch.createPlayer(player);
             await apiConfigMatch.createScenario(scenario);
-            const match = await apiConfigMatch.initMatch(false);
+            const match = await apiConfigMatch.initMatch(expert);
 
             this.creatingMatch = false;
             this.dispatchEvent(new CustomEvent(EVENTS.MATCH.CREATED, {

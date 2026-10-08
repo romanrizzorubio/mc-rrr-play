@@ -5,6 +5,60 @@ import {DIALOG_ENCOUNTERS_REVEAL} from 'mc-shared';
 
 import {Scenario} from '../../src/model/match/scenario.js';
 
+function createScenarioForDifficulty() {
+    const sideA = {
+        content: {
+            villains: [1, 2],
+            villainsExpert: [2],
+        },
+        id: 'stage-1A',
+        name: 'Plan inicial',
+        stage: 1,
+        toObj() {
+            return {id: this.id, name: this.name, stage: this.stage};
+        },
+    };
+    const sideB = {
+        id: 'stage-1B',
+        name: 'Plan inicial',
+        stage: 1,
+        initScheme() {},
+        toObj() {
+            return {id: this.id, name: this.name, stage: this.stage};
+        },
+    };
+    const currentScheme = {
+        get currentSide() {
+            return this.selectedSide === 0 ? sideA : sideB;
+        },
+        selectedSide: 0,
+        async flip() {
+            this.selectedSide = 1;
+        },
+        async setup() {},
+    };
+    const standardSet = {
+        standard: true,
+        cards: [{name: 'Standard card'}],
+        expertSet: [{name: 'Expert card'}],
+    };
+    const scenario = new Scenario({
+        mainSchemes: [currentScheme],
+        match: {
+            initialPlayer: {name: 'Initial player'},
+            async openDialog() {},
+        },
+        name: 'difficulty-test',
+        scenarioCards: [],
+        sets: [standardSet],
+        villains: [{stage: 1}, {stage: 2}],
+    });
+    scenario.selectVillain = async () => {};
+    scenario.revealMainSchemeSide = async () => {};
+
+    return scenario;
+}
+
 test('scenario setup shows stage 1A and 1B before resolving their effects', async () => {
     const player = {name: 'Initial player'};
     const events = [];
@@ -102,4 +156,27 @@ test('scenario setup shows stage 1A and 1B before resolving their effects', asyn
     ]);
     assert.equal(revealedSide, sideB);
     assert.equal(revealedPlayer, player);
+});
+
+test('standard setup keeps standard cards and villains', async () => {
+    const scenario = createScenarioForDifficulty();
+
+    await scenario.initScenario([], false);
+
+    assert.deepEqual(scenario.deck.cards.map(card => card.name).sort(), [
+        'Standard card',
+    ]);
+    assert.deepEqual(scenario.villains.map(villain => villain.stage), [1, 2]);
+});
+
+test('expert setup adds the expert set and uses expert villain stages', async () => {
+    const scenario = createScenarioForDifficulty();
+
+    await scenario.initScenario([], true);
+
+    assert.deepEqual(scenario.deck.cards.map(card => card.name).sort(), [
+        'Expert card',
+        'Standard card',
+    ]);
+    assert.deepEqual(scenario.villains.map(villain => villain.stage), [2]);
 });

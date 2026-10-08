@@ -66,6 +66,9 @@ export class Card extends Engine {
     get retaliate() {
         return this.keywords.retaliate;
     }
+    get restricted() {
+        return this.keywords.restricted;
+    }
     get surge() {
         return this.keywords.surge;
     }

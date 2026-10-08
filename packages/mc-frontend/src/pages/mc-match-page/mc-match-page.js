@@ -330,7 +330,7 @@ export class McMatchPage extends LitElement {
                 case MENU_OPTION_END:
                     return this.endTurn();
                 case MENU_OPTION_FLIP:
-                    return apiPlayer.flip(player);
+                    return this.flipSuperhero();
                 default:
                     const index = selected.id.substring(ABILITY_ID.length, selected.id.length);
                     return apiPlayer.resolveAbility(player, card.id, index);
@@ -380,10 +380,23 @@ export class McMatchPage extends LitElement {
             }));
         });
     }
-    handleFlipSuperhero() {
+    async flipSuperhero() {
         const {apiPlayer, player} = this;
 
-        apiPlayer.flip(player);
+        try {
+            this.changePlayer(await apiPlayer.flip(player));
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        }
+    }
+    handleFlipSuperhero() {
+        return this.flipSuperhero();
     }
     async handleSelectCardHand(e) {
         if (this.playCardPending) {

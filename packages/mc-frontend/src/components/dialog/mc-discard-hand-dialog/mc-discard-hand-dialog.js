@@ -23,6 +23,7 @@ export class McDiscardHandDialog extends McCardListDialog {
                 count: 0,
                 hand: 0,
                 upTo: false,
+                minCount: 1,
             },
             _response: {
                 ...super.defaultProperties._response,
@@ -74,9 +75,12 @@ export class McDiscardHandDialog extends McCardListDialog {
         return title;
     }
     validate() {
-        const {data: {hand, cards, upTo}, _response: {selected}} = this;
+        const {
+            data: {hand, cards, upTo, minCount},
+            _response: {selected},
+        } = this;
 
-        if (upTo && selected.length >= 1) {
+        if (upTo && selected.length >= minCount) {
             return true;
         }
 
@@ -85,7 +89,7 @@ export class McDiscardHandDialog extends McCardListDialog {
     handleCardListSelect(e) {
         const {card, cardIndex} = e.detail;
         const {data, _response} = this;
-        const {count, cards, hand, upTo} = data;
+        const {count, cards, hand} = data;
         const {selected} = _response;
 
         cards.splice(cardIndex, 1);

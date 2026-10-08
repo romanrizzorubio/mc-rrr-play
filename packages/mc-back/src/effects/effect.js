@@ -40,6 +40,9 @@ export class Effect extends Engine {
             saveData = [],
             target = TARGET_YOU,
             refreshTarget = false,
+            selectCount,
+            selectUpTo = false,
+            multipleTarget = false,
             title = '',
             locations = [],
             effectType,
@@ -49,6 +52,8 @@ export class Effect extends Engine {
         this.target = target;
         this.locations = locations;
         this.refreshTarget = refreshTarget;
+        this.selectCount = selectCount;
+        this.selectUpTo = selectUpTo;
         this.source = source;
         this.title = title || params.title || '';
         this.paramsCalc = paramsCalc;
@@ -76,6 +81,7 @@ export class Effect extends Engine {
             effect: this,
             match: this.match,
             filter: this.filterTarget.bind(this),
+            multipleTarget,
         });
 
         this.resolved = false;
@@ -203,6 +209,10 @@ export class Effect extends Engine {
         if (validTarget.length) {
             return true;
         }
+        if ((this.selectUpTo || this.selectCount === 0) &&
+            Array.isArray(this.selectedTarget)) {
+            return true;
+        }
 
         const {isActivation} = this;
 
@@ -254,7 +264,7 @@ export class Effect extends Engine {
 
         return true;
     }
-    getEffectProperty(name, params) {
+    getEffectProperty(name, _params) {
         return path(this, name);
     }
     getTitle() {
@@ -356,6 +366,8 @@ export class Effect extends Engine {
             ...params,
             ability,
             target,
+            selectCount: params.selectCount ?? this.selectCount,
+            selectUpTo: this.selectUpTo,
         });
     }
     async prepare(params){
@@ -363,7 +375,7 @@ export class Effect extends Engine {
             this.selectedTarget = await this.selectTarget(params);
         }
     }
-    setEffectProperty(name, value, params) {
+    setEffectProperty(name, value, _params) {
         pathSet(this, name, value);
     }
     async triggerWould(params) {
@@ -486,7 +498,10 @@ export class Effect extends Engine {
         this.resolved = this.isResolved();
         this.fullResolved = this.isFullResolved();
 
-        if (this.resolved && this.fullResolved && this.thenEffect) {
+        if (this.resolved &&
+            this.fullResolved &&
+            !this.paymentCancelled &&
+            this.thenEffect) {
             if (this.thenEffect.target === this.target) {
                 this.thenEffect.selectedTarget = this.selectedTarget;
             }

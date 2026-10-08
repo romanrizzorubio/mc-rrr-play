@@ -18,6 +18,7 @@ test('Transformador sónico stuns the character that took Klaw attack damage', a
         owner: {},
     });
     const createCharacter = () => ({
+        isInPlay: true,
         isStunned: false,
         refresh() {},
         stun() {

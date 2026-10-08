@@ -150,6 +150,7 @@ export class HandComponent extends LitElement {
             recovery,
             scheme,
             extraTraits = [],
+            extraKeywords = [],
             statusCards,
         } = card;
         const horizontal = isPlanCard(card);
@@ -186,6 +187,7 @@ export class HandComponent extends LitElement {
                 .scheme="${scheme}"
                 .showBasicStats="${showBasicStats}"
                 .extraTraits="${extraTraits}"
+                .extraKeywords="${extraKeywords}"
                 .showAcquiredTraits="${showAcquiredTraits}"
                 .life="${life}"
                 .hitPoints="${hitPoints}"

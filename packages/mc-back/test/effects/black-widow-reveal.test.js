@@ -54,7 +54,11 @@ test('Black Widow is not offered again while exhausted during the replacement re
         _id === 'protection-viuda-negra');
     const [abilityConfig] = blackWidowData.card.params.abilities;
     const blackWidow = {exhausted: true};
-    const ability = new AbilitiesFactory({match: {}}).createAbility(abilityConfig);
+    const ability = new AbilitiesFactory({
+        match: {
+            triggerCards: {},
+        },
+    }).createAbility(abilityConfig);
     const revealedCard = {isEncounterCard: true, isTreachery: false};
     const params = {
         card: revealedCard,

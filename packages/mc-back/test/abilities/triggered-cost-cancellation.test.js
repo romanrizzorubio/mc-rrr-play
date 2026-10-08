@@ -132,7 +132,6 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
                 }),
             ],
             match,
-            matchAll: true,
             selectedTarget: player,
             target: TARGET_YOU,
         });

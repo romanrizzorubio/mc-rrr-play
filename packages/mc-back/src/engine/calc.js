@@ -2,6 +2,7 @@ import {
     CALC_TRAITS_COUNT,
     CALC_RESOURCES,
     CALC_MULTIPLY_2,
+    CALC_HALF_ROUNDED_DOWN,
     CALC_THREAT,
     CALC_DAMAGE,
     CALC_ATTACK,
@@ -14,7 +15,15 @@ RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-sha
 import { path} from './utils.js';
 
 const CALCULATION_MAP = {
-    [CALC_COUNT]: source => source.length,
+    [CALC_COUNT]: (source, {target}) => {
+        if (!Array.isArray(source)) {
+            throw new Error(`CALC_COUNT requiere que "${target}" resuelva a una lista.`);
+        }
+
+        return source.length;
+    },
+    [CALC_HALF_ROUNDED_DOWN]: source =>
+        Math.floor((Array.isArray(source) ? source.length : source) / 2),
     [CALC_TRAITS_COUNT]: (source, {trait}) =>
         source.filter(card => (card.traits || []).includes(trait)).length,
     [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>

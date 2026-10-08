@@ -11,9 +11,12 @@ test('replacing a villain stage removes old responses and registers the new stag
     const match = {
         async openDialog(dialog) {
             dialogs.push(dialog);
-            assert.equal(match.scenario.villain, dialog.title ?
-                oldVillain :
-                nextVillain);
+            if (dialog.title === 'Rino ha sido derrotado') {
+                assert.equal(match.scenario.villain, oldVillain);
+            } else {
+                assert.equal(dialog.title, 'Mostrando al villano');
+                assert.equal(match.scenario.villain, nextVillain);
+            }
             return {};
         },
         isUniqueCard() {
@@ -123,7 +126,7 @@ test('replacing a villain stage removes old responses and registers the new stag
     assert.equal(match.triggerCards[nextVillain.id], nextVillain);
     assert.equal(dialogs[0].title, 'Rino ha sido derrotado');
     assert.deepEqual(dialogs[0].data.card, {id: oldVillain.id, name: oldVillain.name});
-    assert.equal(dialogs[1].title, undefined);
+    assert.equal(dialogs[1].title, 'Mostrando al villano');
 });
 
 test('defeating the final villain stage marks the match as won', async () => {

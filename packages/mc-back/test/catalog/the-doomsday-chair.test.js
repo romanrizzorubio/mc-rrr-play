@@ -90,7 +90,7 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
 
     const searchAndEngage = whenRevealed.params.effect;
     assert.equal(searchAndEngage.type, EFFECT_CHAINED);
-    assert.equal(searchAndEngage.params.matchAll, true);
+    assert.ok(searchAndEngage.params.thenEffect);
 
     const [search, engage] = searchAndEngage.params.effects;
     assert.equal(search.type, EFFECT_SEARCH_CARDS);
@@ -154,7 +154,7 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
     assert.equal(forcedInterrupt.params.trigger, TRIGGER_ATTACHED_DEFEAT);
     const replacement = forcedInterrupt.params.effect;
     assert.equal(replacement.type, EFFECT_CHAINED);
-    assert.equal(replacement.params.matchAll, true);
+    assert.ok(replacement.params.thenEffect);
     assert.equal(replacement.params.effects[0].type, EFFECT_PREVENT_DEFEAT);
     assert.equal(replacement.params.effects[0].params.target, TARGET_EFFECT);
     assert.equal(replacement.params.effects[1].type, EFFECT_HEAL);

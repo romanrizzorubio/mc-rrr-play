@@ -13,6 +13,13 @@ export default css`
     margin-top: 16px;
   }
 
+  .expert-mode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
   .modular-sets {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

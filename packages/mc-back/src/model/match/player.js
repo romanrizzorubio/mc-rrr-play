@@ -2,9 +2,11 @@ import {
     DIALOG_DISCARD_HAND,
     DIALOG_PAY_COST,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
+    PRIORITY_CONSTANT,
     RESOURCE_ANY,
     RESOURCES_X,
     TARGET_CARD,
+    TRIGGER_PLAYER_CAN_THAWRT,
 } from 'mc-shared';
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
@@ -202,8 +204,20 @@ export class Player extends Engine {
     canDefend(_params) {
         return true;
     }
-    canThwart(_params) {
-        return true;
+    async canThwart(params = {}) {
+        const restrictions = {thwart: true};
+        await this.trigger(
+            PRIORITY_CONSTANT,
+            [TRIGGER_PLAYER_CAN_THAWRT],
+            {
+                ...params,
+                player: this,
+                effect: restrictions,
+                restrictions,
+            }
+        );
+
+        return restrictions.thwart;
     }
     confuse() {
         return this.superhero.confuse();
@@ -584,16 +598,10 @@ export class Player extends Engine {
         };
     }
     async toObjWithPlayableHand() {
-        const player = this.toObj();
-        const handSize = await this.getHandSize();
         const {superhero} = this;
-        const stats = await superhero.getEffectiveStats();
         const effectiveTraits = await superhero.getEffectiveTraits();
-        const currentTraits = superhero.currentSide.traits;
-        const extraTraits = [...new Set([
-            ...player.superhero.extraTraits,
-            ...effectiveTraits.filter(trait => !currentTraits.includes(trait)),
-        ])];
+        const stats = await superhero.getEffectiveStats();
+        const handSize = await this.getHandSize();
         const abilities = await Promise.all(
             superhero.currentSide.abilities.map(async (ability, index) => {
                 const serializedAbility = {
@@ -616,19 +624,30 @@ export class Player extends Engine {
                 };
             })
         );
+        const attached = await Promise.all(superhero.attached.map(card =>
+            card.toObjWithAbilityAvailability(this)));
+        const hand = await this.hand.toObjWithPlayability();
+        const gameZone = this.gameZone ?
+            await this.gameZone.toObjWithAbilityAvailability(this) :
+            undefined;
+        const currentTraits = superhero.currentSide.traits;
+        const player = this.toObj();
+        const extraTraits = [...new Set([
+            ...player.superhero.extraTraits,
+            ...effectiveTraits,
+        ])].filter(trait => !currentTraits.includes(trait));
 
         return {
             ...player,
             handSize,
-            hand: await this.hand.toObjWithPlayability(),
-            gameZone: this.gameZone ?
-                await this.gameZone.toObjWithAbilityAvailability(this) :
-                player.gameZone,
+            hand,
+            gameZone: gameZone ?? player.gameZone,
             superhero: {
                 ...player.superhero,
                 ...stats,
                 extraTraits,
                 abilities,
+                attached,
             },
         };
     }

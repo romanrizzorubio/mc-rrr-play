@@ -69,7 +69,7 @@ export class FlipEffect extends Effect {
 
         await selectedTarget.initTriggers(params);
 
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
         const {owner} = selectedTarget;
         if (owner && owner.isPlayer) {
             await owner.hand.refresh();

@@ -155,6 +155,27 @@ export default css`
     text-transform: capitalize;
   }
 
+  .acquired-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  .acquired-keyword {
+    display: inline-flex;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background-color: #e8eef7;
+    color: #183153;
+    font-family: Georgia, serif;
+    font-size: 0.75rem;
+    font-style: italic;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
   .character-stat {
     display: inline-flex;
     padding: 2px 3px;

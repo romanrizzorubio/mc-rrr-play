@@ -1,5 +1,6 @@
 import {
     EFFECT_CHAINED,
+    EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CHOOSE,
     EFFECT_DELAYED,
@@ -9,12 +10,14 @@ import {
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_DO_IF_TAKE_DAMAGE,
+    EFFECT_FOR_EACH,
     EFFECT_LASTING,
     EFFECT_MAY,
     EFFECT_SIMULTANEOUS,
 } from 'mc-shared';
 
 export const EFFECT_PARSERS_MAP = {
+    [EFFECT_ADD_ADDITIONAL_COST]: '_parseAdditionalCost',
     [EFFECT_CHAINED]: '_parseEffectGroup',
     [EFFECT_SIMULTANEOUS]: '_parseEffectGroup',
     [EFFECT_CHOOSE]: '_parseChoose',
@@ -28,4 +31,5 @@ export const EFFECT_PARSERS_MAP = {
     [EFFECT_DO_IF_TAKE_DAMAGE]: '_parseDoIf',
     [EFFECT_DELAYED]: '_parseDelayed',
     [EFFECT_LASTING]: '_parseLasting',
+    [EFFECT_FOR_EACH]: '_parseForEach',
 };

@@ -138,6 +138,48 @@ export class ValidTarget extends Engine {
     }
     async selectTarget(params) {
         const validTarget = this.getValidTarget(params);
+        const {selectCount, selectUpTo} = params;
+
+        if (selectCount !== undefined || selectUpTo) {
+            if (selectUpTo && validTarget.length === 0) {
+                return [];
+            }
+            if (selectCount === 0) {
+                return [];
+            }
+            if (!selectUpTo && validTarget.length === 0) {
+                return null;
+            }
+            if (!selectUpTo && validTarget.length <= selectCount) {
+                return selectCount === 1 && validTarget.length === 1 ?
+                    validTarget[0] :
+                    validTarget;
+            }
+
+            const count = selectUpTo ? validTarget.length : selectCount;
+            const minCount = selectUpTo ? 0 : count;
+            const {selected} = await this.openDialog({
+                dialogType: DIALOG_SELECT_TARGET,
+                title: params.dialogTitle || 'Elige tus objetivos',
+                data: {
+                    cards: validTarget.map(card => card.toObj(params)),
+                    count,
+                    minCount,
+                    upTo: Boolean(selectUpTo),
+                    multiSelect: true,
+                },
+            });
+            const selectedTargets = Array.isArray(selected) ?
+                selected :
+                selected ? [selected] : [];
+            if (selectedTargets.length < minCount ||
+                selectedTargets.length > count) {
+                throw new Error('La selección múltiple de objetivos no es válida.');
+            }
+
+            return validTarget.filter(target =>
+                selectedTargets.some(selectedTarget => selectedTarget.id === target.id));
+        }
 
         if (this.isMultipleTarget(params)) {
             return validTarget;

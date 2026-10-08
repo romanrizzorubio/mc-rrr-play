@@ -1,7 +1,17 @@
+const PATH_ARRAY_WILDCARD = '*';
+
 export const checkCondition = (obj, condition) => {
     return Object.keys(condition).every(key => {
         const value = condition[key];
         const param = path(obj, key);
+        if (Array.isArray(param) &&
+            value &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            Object.keys(value).length === 1 &&
+            Object.prototype.hasOwnProperty.call(value, 'every')) {
+            return param.every(item => checkCondition(item, value.every));
+        }
 
         return checkValue(param, value);
     });
@@ -40,6 +50,25 @@ export const path = (obj, par) => {
     if (obj) {
         const parts = par.split('.');
         let first = parts.shift();
+        if (first === PATH_ARRAY_WILDCARD) {
+            if (!Array.isArray(obj)) {
+                return [];
+            }
+
+            return obj.flatMap(value => {
+                const resolved = parts.length ?
+                    path(value, parts.join('.')) :
+                    value;
+                if (resolved === undefined) {
+                    return [];
+                }
+
+                return Array.isArray(resolved) ?
+                    resolved.flat(Infinity) :
+                    [resolved];
+            });
+        }
+
         if (!isNaN(first)) {
             first = parseInt(first);
         }

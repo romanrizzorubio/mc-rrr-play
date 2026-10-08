@@ -143,9 +143,12 @@ export class TakeDamageEffect extends Effect {
     }
 
     async defeat(selectedTarget, params) {
+        const defeatTarget = selectedTarget.isPlayer ?
+            selectedTarget.superhero.currentSide :
+            selectedTarget;
         const defeatEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_DEFEAT,
-            selectedTarget,
+            selectedTarget: defeatTarget,
             ability: this.ability,
             activation: this.activation,
         });

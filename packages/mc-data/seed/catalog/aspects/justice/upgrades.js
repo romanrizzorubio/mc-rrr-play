@@ -1,10 +1,15 @@
 import {
     ABILITY_CONSTANT,
+    ABILITY_RESPONSE,
     CARD_TYPE_UPGRADE,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_MODIFY_THWART_VALUE,
     RESOURCE_ENERGY,
+    TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_SCHEME,
     TRAIT_SKILL,
+    TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_YOUR_HERO_GET_THWART
 } from 'mc-shared';
 
@@ -41,6 +46,41 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'count': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-seguimiento',
+        'aspect': 'justice',
+        'order': 20,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Seguimiento',
+                'set': 'justice',
+                'image': 'aspect/justice/upgrades/03032.png',
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'justice',
+                'attach': TARGET_SCHEME,
+                'maxAttach': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_ATTACHED_DEFEAT,
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 4
                                 }
                             }
                         }

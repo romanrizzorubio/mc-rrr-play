@@ -19,9 +19,12 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve cero, no hay objetivo válido.
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`. `multipleTarget` queda como opción interna para efectos que deban resolver varios candidatos de otro selector; las cartas deben usar el selector `TARGET_ALL_*` apropiado.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`.
+- Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
 
-En particular, `TARGET_ALL_PLAYERS` devuelve una colección, pero no está en la lista de `isMultipleTarget`; por sí solo no significa que el efecto se aplique a todos.
+Que un selector devuelva una colección de candidatos no significa por sí solo que el efecto se aplique a todos.
+
+Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH` con `target` y, cuando corresponda, `condition`. Este efecto filtra los candidatos, conserva el orden del selector y el contexto del candidato actual; no aplica un orden especial según el tipo de selector.
 
 ## Selectores resolubles
 
@@ -75,6 +78,12 @@ En particular, `TARGET_ALL_PLAYERS` devuelve una colección, pero no está en la
 | `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
+
+`TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL` y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. En los dos selectores globales de personajes, `condition.name` coincide con el nombre actual o el `mainName` estable del superhéroe. Si coincide por `mainName`, el objetivo resuelto es la cara cuyo nombre coincide con `condition.name` y el modificador solo aplica a esa cara; para afectar ambas caras, usa `TARGET_YOUR_SUPERHERO` cuando el texto se refiera a «tu superhéroe».
+
+### Personajes mencionados por nombre
+
+Si el texto nombra al personaje que recibe una bonificación o palabra clave, filtra los candidatos por ese nombre/identidad; no infieras que es el héroe del jugador que controla la carta. Usa el `name` del lado activo cuando el efecto solo corresponda a esa forma y `mainName` cuando deba seguir al mismo superhéroe al cambiar entre héroe y alter ego. Para bonificaciones numéricas calculadas, condiciona el trigger admitido por el colector al `name` de `effect.selectedTarget`.
 
 ### Estado y lados de cartas (`targets/card-state.js`)
 

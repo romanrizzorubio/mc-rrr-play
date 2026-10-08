@@ -22,6 +22,7 @@ export class McCreateMatch extends LitElement {
     static get properties() {
         return {
             name: {type: String},
+            expert: {type: Boolean},
             player: {type: Object},
             scenario: {type: Object},
             heroesList: {type: Array},
@@ -35,6 +36,7 @@ export class McCreateMatch extends LitElement {
         super();
 
         this.name = '';
+        this.expert = false;
         this.player = {};
         this.scenario = {};
         this.heroesList = [];
@@ -59,18 +61,21 @@ export class McCreateMatch extends LitElement {
             elScenario && elScenario.validate();
     }
     handleClick() {
-        const {name, player, scenario} = this;
+        const {name, expert, player, scenario} = this;
 
         this.dispatchEvent(new CustomEvent('create-match', {
             bubbles: true,
             composed: true,
             detail: {
-                name, player, scenario
+                name, expert, player, scenario
             }
         }));
     }
     handleNameChange(e) {
         this.name = e.target.value;
+    }
+    handleExpertChange(e) {
+        this.expert = e.target.checked;
     }
     handleScenarioChanged(e) {
         const {scenario} = e.detail;
@@ -144,6 +149,14 @@ export class McCreateMatch extends LitElement {
                     class="field field-match-name"
                     @change="${this.handleNameChange}"
                 >${name}</md-filled-text-field>
+                <label class="expert-mode">
+                    <input
+                        type="checkbox"
+                        .checked="${this.expert}"
+                        @change="${this.handleExpertChange.bind(this)}"
+                    >
+                    <span>Modo Experto</span>
+                </label>
             </mc-panel>
         `;
     }

@@ -10,11 +10,26 @@ import {
     BACK_CARD_PLAYER_FULL,
     BACK_CARD_VILLAIN_FULL, CARD_PATH
 } from '../../../misc/cards.js';
+import {translateTrait} from '../../../utils/traits.js';
 
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
     ENCOUNTER_PLAYER: 'ENCOUNTER_PLAYER',
     ENCOUNTER_VILLAIN: 'ENCOUNTER_VILLAIN',
+};
+
+const KEYWORD_LABELS = {
+    guard: 'Guardia',
+    permanent: 'Permanente',
+    toughness: 'Dureza',
+    quickStrike: 'Ataque veloz',
+    surge: 'Oleada',
+    villainous: 'Infame',
+    overkill: 'Brutalidad',
+    piercing: 'Penetrante',
+    ranged: 'A distancia',
+    restricted: 'Restringida',
+    retaliate: 'Represalia',
 };
 
 export class CardComponent extends LitElement {
@@ -35,6 +50,7 @@ export class CardComponent extends LitElement {
             handSize: {type: Number},
             showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
             extraTraits: {type: Array},
+            extraKeywords: {type: Array},
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             hitPoints: {type: Number},
             damage: {type: Number},
@@ -74,6 +90,7 @@ export class CardComponent extends LitElement {
         this.handSize = undefined;
         this.showBasicStats = false;
         this.extraTraits = [];
+        this.extraKeywords = [];
         this.showAcquiredTraits = false;
         this.hitPoints = undefined;
         this.damage = undefined;
@@ -262,8 +279,24 @@ export class CardComponent extends LitElement {
         return this.showAcquiredTraits && traits.length ? html`
             <div class="acquired-traits" role="group" aria-label="Rasgos adquiridos">
                 ${traits.map(trait => html`
-                    <span class="acquired-trait">${trait}</span>
+                    <span class="acquired-trait">${translateTrait(trait)}</span>
                 `)}
+            </div>
+        ` : html``;
+    }
+    renderAcquiredKeywords() {
+        return this.extraKeywords.length ? html`
+            <div class="acquired-keywords" role="group" aria-label="Palabras clave adquiridas">
+                ${this.extraKeywords.map(({name, value}) => {
+                    const label = KEYWORD_LABELS[name] || name;
+                    const text = typeof value === 'number' ?
+                        `${label} ${value}` :
+                        label;
+
+                    return html`
+                        <span class="acquired-keyword">${text}</span>
+                    `;
+                })}
             </div>
         ` : html``;
     }
@@ -346,6 +379,7 @@ export class CardComponent extends LitElement {
                     ${this.renderFaceDown()}
                 </div>
                 ${this.renderAcquiredTraits()}
+                ${this.renderAcquiredKeywords()}
                 <slot name="bottom"></slot>
                 ${this.renderMenu()}
             </div>

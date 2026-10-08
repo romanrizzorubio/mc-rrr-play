@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-game-zone.css.js';
 import '../../cards/mc-card-list/mc-card-list.js';
 import {BACK_CARD_ENCOUNTER, CARD_PATH} from '../../../misc/cards.js';
+import {getUpgradesForDisplay} from '../../../utils/game-zone.js';
 
 export class McGameZone extends LitElement {
     static get is() {
@@ -14,6 +15,7 @@ export class McGameZone extends LitElement {
     static get properties() {
         return {
             cards: {type: Array},
+            attachedUpgrades: {type: Array},
             minions: {type: Array},
             encounters: {type: Number},
         };
@@ -23,6 +25,7 @@ export class McGameZone extends LitElement {
         super();
 
         this.cards = [];
+        this.attachedUpgrades = [];
         this.minions = [];
         this.encounters = 0;
     }
@@ -121,12 +124,10 @@ export class McGameZone extends LitElement {
     }
 
     renderUpgrades() {
-        const {cards} = this;
+        const {attachedUpgrades, cards} = this;
 
         return this.renderCards({
-            cards: cards
-                .filter(card => card.isUpgrade && !card.isAttached)
-                .sort((a, b) => a.id > b.id ? 1 : -1),
+            cards: getUpgradesForDisplay(cards, attachedUpgrades),
             type: 'upgrades',
         });
     }

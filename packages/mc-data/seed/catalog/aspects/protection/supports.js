@@ -42,7 +42,6 @@ export default [
                                 'type': EFFECT_CHAINED,
                                 'params': {
                                     'target': TARGET_THIS,
-                                    'matchAll': true,
                                     'effects': [
                                         {
                                             'type': EFFECT_EXHAUST,

@@ -28,7 +28,7 @@ import {
     TARGET_ALL_HEROES,
     TARGET_CONDITION_CARD,
     TARGET_ENCOUNTER_DECK,
-    TARGET_ENGAGED,
+    TARGET_ENGAGED_HERO,
     TARGET_INITIAL_PLAYER,
     TARGET_THIS,
     TARGET_YOU,
@@ -246,7 +246,7 @@ test('Señores del mal is listed as a selectable modular set', async () => {
     assert.equal(chaosAbilityConfig.type, ABILITY_WHEN_REVEALED);
     const [attacksConfig, fallbackConfig] = chaosAbilityConfig.params.effect.params.effects;
     assert.equal(attacksConfig.type, EFFECT_SEVERAL_ATTACKS);
-    assert.equal(attacksConfig.params.attackTarget, TARGET_ENGAGED);
+    assert.equal(attacksConfig.params.attackTarget, TARGET_ENGAGED_HERO);
     assert.equal(attacksConfig.params.enemiesType, TARGET_CONDITION_CARD);
     assert.deepEqual(attacksConfig.params.condition, {
         isMinion: true,

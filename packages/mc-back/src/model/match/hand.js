@@ -105,13 +105,17 @@ export class Hand extends Engine {
     async toObjWithPlayability() {
         const {cards, owner} = this;
 
-        return Promise.all(cards.map(async card => ({
-            ...card.toObj(),
-            playable: !card.card.isResource && await card.canPlay({
+        return Promise.all(cards.map(async card => {
+            const playable = !card.card.isResource && await card.canPlay({
                 player: owner,
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,
-            }),
-        })));
+            });
+
+            return {
+                ...card.toObj(),
+                playable,
+            };
+        }));
     }
 }

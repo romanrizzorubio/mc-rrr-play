@@ -25,11 +25,51 @@ export class McSelectTargetDialog extends McCardListDialog {
                 showCounters: true,
                 showLife: true,
                 showDamage: false,
+                multiSelect: false,
+                upTo: false,
+                count: 1,
+                minCount: 1,
             },
         };
     }
+    handleCardListSelect(e) {
+        if (!this.data.multiSelect) {
+            return super.handleCardListSelect(e);
+        }
+
+        const {card} = e.detail;
+        const {cards, count} = this.data;
+        const selected = Array.isArray(this._response.selected) ?
+            this._response.selected.slice() :
+            [];
+        selected.push(card);
+
+        this.data = {
+            ...this.data,
+            cards: cards.filter(candidate => candidate.id !== card.id),
+        };
+        this._response = {selected};
+
+        if (selected.length === count || !this.data.cards.length) {
+            this.sendResponse();
+        }
+    }
+    validate() {
+        if (!this.data.multiSelect) {
+            return true;
+        }
+
+        const selected = Array.isArray(this._response.selected) ?
+            this._response.selected.length :
+            0;
+        return selected >= this.data.minCount &&
+            selected <= this.data.count &&
+            (this.data.upTo || selected === this.data.count);
+    }
     renderButtonOk() {
-        return html``;
+        return this.data.multiSelect && this.data.upTo ?
+            super.renderButtonOk() :
+            html``;
     }
 }
 

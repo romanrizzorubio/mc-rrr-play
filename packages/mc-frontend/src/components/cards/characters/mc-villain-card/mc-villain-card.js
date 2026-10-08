@@ -28,6 +28,7 @@ export class VillainCardComponent extends LitElement {
             attached: {type: Array},
             statusCards: {type: Object},
             extraTraits: {type: Array},
+            extraKeywords: {type: Array},
         };
     }
 
@@ -47,6 +48,7 @@ export class VillainCardComponent extends LitElement {
         this.attached = [];
         this.statusCards = {};
         this.extraTraits = [];
+        this.extraKeywords = [];
     }
 
     render() {
@@ -64,6 +66,7 @@ export class VillainCardComponent extends LitElement {
             attached,
             statusCards,
             extraTraits,
+            extraKeywords,
         } = this;
 
         return html`
@@ -82,6 +85,7 @@ export class VillainCardComponent extends LitElement {
                 .statusCards="${statusCards}"
                 .attached="${attached}"
                 .extraTraits="${extraTraits}"
+                .extraKeywords="${extraKeywords}"
             >
             </mc-character-card>
         `;

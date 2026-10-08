@@ -434,7 +434,6 @@ export default {
                                         'type': EFFECT_CHAINED,
                                         'params': {
                                             'target': TARGET_CARD,
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,

@@ -5,14 +5,17 @@ import {
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {Calc} from '../engine/calc.js';
 
 export class DealDamageEffect extends Effect {
     constructor(params) {
         super(params);
-        const {character, damage, overkill: _overkill = false} = params;
+        const {character, damage} = params;
 
         this._character = character;
         this.baseDamage = damage;
+        this.targetCountCalc = params.targetCountCalc;
+        this.selectCount = params.selectCount;
 
         this.damage = undefined;
         this.dealtDamage = 0;
@@ -57,6 +60,15 @@ export class DealDamageEffect extends Effect {
     }
     async resolveParams(params) {
         const resolvedParams = await super.resolveParams(params);
+
+        if (this.targetCountCalc) {
+            const selectCount = await new Calc(this.targetCountCalc)
+                .calculate({...resolvedParams, effect: this});
+            if (!Number.isSafeInteger(selectCount) || selectCount < 0) {
+                throw new Error('El número calculado de objetivos debe ser un entero no negativo.');
+            }
+            this.selectCount = selectCount;
+        }
 
         if (!this.paramsCalc ||
             this.getLastStepParam('damage', resolvedParams) !== undefined) {
@@ -107,6 +119,9 @@ export class DealDamageEffect extends Effect {
     /** @returns {Promise<void>} */
     async execute(params) {
         const {selectedTarget, damage} = this;
+        if (Array.isArray(selectedTarget) && selectedTarget.length === 0) {
+            return;
+        }
 
         const takeDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_TAKE_DAMAGE,

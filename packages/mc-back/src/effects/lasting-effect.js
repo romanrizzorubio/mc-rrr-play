@@ -11,6 +11,8 @@ export class LastingEffect extends Effect {
         until,
         triggerType,
         hideDialog,
+        condition,
+        limit,
     }) {
         super(arguments[0]);
 
@@ -19,6 +21,8 @@ export class LastingEffect extends Effect {
         this.triggerType = triggerType;
         this.until = until;
         this.hideDialog = hideDialog;
+        this.condition = condition;
+        this.limit = limit;
     }
     async execute(params) {
         const {effect, endEffect, ability, triggerType} = this;
@@ -51,6 +55,8 @@ export class LastingEffect extends Effect {
                 card: ability.card,
                 match: this.match,
                 hideDialog: this.hideDialog,
+                condition: this.condition,
+                limit: this.limit,
             });
             lastingAbility.initTriggers(ability.card);
         } else if (effect) {

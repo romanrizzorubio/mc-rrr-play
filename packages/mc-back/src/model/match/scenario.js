@@ -337,13 +337,13 @@ export class Scenario extends Engine {
         };
     }
     async toObjWithAbilityAvailability(player) {
-        const scenario = this.toObj();
+        const villain = this.villain ?
+            await this.villain.toObjWithAbilityAvailability(player) :
+            null;
 
         return {
-            ...scenario,
-            villain: this.villain ?
-                await this.villain.toObjWithAbilityAvailability(player) :
-                null,
+            ...this.toObj(),
+            villain,
         };
     }
 }

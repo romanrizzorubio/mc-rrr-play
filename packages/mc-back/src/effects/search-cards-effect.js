@@ -8,7 +8,8 @@ import {
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
 } from 'mc-shared';
-import {checkCondition} from '../engine/utils.js';
+import {checkFilter} from '../utils/filter-utils.js';
+import {canPlayCard} from '../utils/card-play-utils.js';
 
 import {Effect} from './effect.js';
 
@@ -22,8 +23,11 @@ export class SearchCardsEffect extends Effect {
         count = 1,
         upTo = false,
         firstMatch = false,
+        reverseLocations = [],
         requireMatch = false,
         distinctNames = false,
+        showCancel = false,
+        onlyPlayable = false,
     }) {
         super(arguments[0]);
         this.locations = locations;
@@ -33,8 +37,11 @@ export class SearchCardsEffect extends Effect {
         this.count = count;
         this.upTo = upTo;
         this.firstMatch = firstMatch;
+        this.reverseLocations = reverseLocations;
         this.requireMatch = requireMatch;
         this.distinctNames = distinctNames;
+        this.showCancel = showCancel;
+        this.onlyPlayable = onlyPlayable;
     }
 
     async canRun(params) {
@@ -46,30 +53,25 @@ export class SearchCardsEffect extends Effect {
             return true;
         }
 
-        const players = this.playersTarget === TARGET_ALL_PLAYERS ?
-            this.match.players :
-            [params.player];
+        return (await this.getOptions(params)).length > 0;
+    }
+    async getCostPaymentEffects(params) {
+        if (this.firstMatch) {
+            return [];
+        }
 
-        return players.some(player => this.locations.some(location =>
-            this.getCardsAtLocation(player, location)
-                .some(card => checkCondition(card, this.filter))));
+        return await this.shouldPromptForPayment(params) ? [this] : [];
     }
-    getCostPaymentEffects(params) {
-        return this.firstMatch ||
-            !this.shouldPromptForPayment(params) ?
-            [] :
-            [this];
-    }
-    shouldPromptForPayment(params, session) {
+    async shouldPromptForPayment(params, session) {
         const excludedCardIds = session?.getExcludedCardIds() || new Set();
 
         return !this.firstMatch &&
-            this.getOptions(params, excludedCardIds).length > 0;
+            (await this.getOptions(params, excludedCardIds)).length > 0;
     }
     getCostPaymentTitle() {
         return this.title;
     }
-    getOptions(params, excludedCardIds = new Set()) {
+    async getOptions(params, excludedCardIds = new Set()) {
         const game = this.match;
         const {player} = params;
         const targetPlayers = this.playersTarget === TARGET_ALL_PLAYERS ?
@@ -78,38 +80,45 @@ export class SearchCardsEffect extends Effect {
         const options = [];
 
         for (const targetPlayer of targetPlayers) {
-                for (const location of this.locations) {
-                    let cards = this.getCardsAtLocation(targetPlayer, location);
-                    cards = cards.filter(card => !excludedCardIds.has(card.id));
-                    if (this.firstMatch &&
-                        (location === PLACE_DISCARD_PILE || location === PLACE_ENCOUNTER_DISCARD)) {
-                        cards = cards.slice().reverse();
+            for (const location of this.locations) {
+                let cards = this.getCardsAtLocation(targetPlayer, location);
+                cards = cards.filter(card => !excludedCardIds.has(card.id));
+                if (this.firstMatch && this.reverseLocations.includes(location)) {
+                    cards = cards.slice().reverse();
+                }
+
+                for (const card of cards) {
+                    if (!await checkFilter(card, this.filter, params)) {
+                        continue;
+                    }
+                    if (this.onlyPlayable &&
+                        !await canPlayCard(card, {
+                            ...params,
+                            player: targetPlayer,
+                        })) {
+                        continue;
                     }
 
+                    options.push(card);
                     if (this.firstMatch) {
-                        const card = cards.find(candidate =>
-                            checkCondition(candidate, this.filter));
-                        if (card) {
-                            options.push(card);
-                            break;
-                        }
-                    } else {
-                        cards.forEach(card => {
-                            if (checkCondition(card, this.filter)) {
-                                options.push(card);
-                            }
-                        });
+                        break;
                     }
                 }
+
                 if (this.firstMatch && options.length) {
                     break;
                 }
+            }
+
+            if (this.firstMatch && options.length) {
+                break;
+            }
         }
 
         return options;
     }
     async preparePayment(params, session) {
-        const options = this.getOptions(params, session.getExcludedCardIds());
+        const options = await this.getOptions(params, session.getExcludedCardIds());
         const {player} = params;
         if (options.length === 0) {
             return {
@@ -121,6 +130,7 @@ export class SearchCardsEffect extends Effect {
 
         const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
+                showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
                 data: {
                     title: this.title,
@@ -184,7 +194,7 @@ export class SearchCardsEffect extends Effect {
             params.card = undefined;
         }
         
-        const options = this.getOptions(params);
+        const options = await this.getOptions(params);
         const hasStagedPayment = costPaymentSession?.hasPayment(this) || false;
 
         if ((costPaymentSession && !hasStagedPayment) ||
@@ -199,10 +209,11 @@ export class SearchCardsEffect extends Effect {
             return;
         }
 
-        const selected = costPaymentSession ?
-            costPaymentSession.getPayment(this).cards :
-            (await this.openDialog({
+        const response = costPaymentSession ?
+            undefined :
+            await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
+                showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
                 data: {
                     title: this.title,
@@ -211,7 +222,15 @@ export class SearchCardsEffect extends Effect {
                     distinctNames: this.distinctNames,
                     upTo: this.upTo,
                 },
-            }))?.selected;
+            });
+        if (this.showCancel && !costPaymentSession && !response) {
+            this.paymentCancelled = true;
+            return;
+        }
+
+        const selected = costPaymentSession ?
+            costPaymentSession.getPayment(this).cards :
+            response?.selected;
         if (selected && selected[0]) {
             // Guardamos el resultado en params para efectos encadenados
             params.selectedCards = selected.map(card =>

@@ -1,4 +1,4 @@
-import {path} from '../../engine/utils.js';
+import {checkCondition} from '../../engine/utils.js';
 
 import {Card} from './card.js';
 
@@ -39,9 +39,7 @@ export class PlayerCard extends Card {
         }
 
         if (this.paramsToPlay) {
-            return Object.keys(this.paramsToPlay)
-                .every(key =>
-                    this.paramsToPlay[key] === path(params.player, key));
+            return checkCondition(params.player, this.paramsToPlay);
         }
 
         return true;

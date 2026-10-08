@@ -49,7 +49,6 @@ export default {
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_SEARCH_CARDS,
@@ -136,7 +135,6 @@ export default {
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_PREVENT_DEFEAT,

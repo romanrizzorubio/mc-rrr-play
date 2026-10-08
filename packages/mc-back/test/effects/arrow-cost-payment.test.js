@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    CALC_COUNT,
+    DIALOG_DISCARD_HAND,
     DIALOG_LIST,
     DIALOG_SELECT_CARD,
     DIALOG_USE_CARD,
@@ -25,6 +27,7 @@ import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {Effect} from '../../src/effects/effect.js';
 import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
+import {SelectDiscardCardEffect} from '../../src/effects/select-discard-card-effect.js';
 import {SelectDiscardToCardEffect} from '../../src/effects/select-discard-to-card-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
 import {SpendEffect} from '../../src/effects/spend-effect.js';
@@ -167,7 +170,6 @@ test('stages costs in the chosen order and resolves their responses after all co
             }),
         ],
         match,
-        matchAll: true,
         selectedTarget: player,
         target: TARGET_YOU,
     });
@@ -278,7 +280,6 @@ test('stages discard selections and reserves those cards for the remaining costs
             }),
         ],
         match,
-        matchAll: true,
         selectedTarget: player,
         target: TARGET_YOU,
     });
@@ -294,6 +295,67 @@ test('stages discard selections and reserves those cards for the remaining costs
         resourceCard.id,
     ]);
     assert.deepEqual(player.hand.cards, []);
+});
+
+test('passes a calculated discard limit to the cost payment dialog', async () => {
+    const discarded = [];
+    const cards = ['discard-1', 'discard-2', 'keep'].map(id => ({
+        id,
+        isEvent: false,
+        toObj() {
+            return {id: this.id};
+        },
+    }));
+    const player = {
+        isPlayer: true,
+        hand: {
+            cards,
+            async refresh() {},
+            discardHand(card) {
+                this.cards.splice(this.cards.indexOf(card), 1);
+            },
+        },
+        deck: {
+            async discard(card) {
+                discarded.push(card.id);
+            },
+            refresh() {},
+        },
+    };
+    const match = {
+        enemies: [{id: 'villain'}, {id: 'minion'}],
+        triggerCards: {},
+        async openDialog({dialogType, data, showCancel}) {
+            assert.equal(dialogType, DIALOG_DISCARD_HAND);
+            assert.equal(data.count, 2);
+            assert.equal(showCancel, true);
+
+            return {
+                selected: [
+                    {id: 'discard-1'},
+                    {id: 'discard-2'},
+                ],
+            };
+        },
+    };
+    player.match = match;
+
+    const cost = new SelectDiscardCardEffect({
+        match,
+        minCount: 0,
+        paramsCalc: {
+            target: 'player.match.enemies',
+            formula: CALC_COUNT,
+        },
+        selectedTarget: player,
+        target: TARGET_YOU,
+        upTo: true,
+    });
+    const arrow = new Arrow({cost});
+
+    assert.equal(await arrow.pay({match, player}), true);
+    assert.deepEqual(discarded, ['discard-1', 'discard-2']);
+    assert.deepEqual(player.hand.cards.map(card => card.id), ['keep']);
 });
 
 test('staged search choices are passed through Arrow outputParams', async () => {
@@ -343,7 +405,6 @@ test('staged search choices are passed through Arrow outputParams', async () => 
             }),
         ],
         match,
-        matchAll: true,
         outputParams: ['selectedCard'],
         selectedTarget: player,
         target: TARGET_YOU,
@@ -410,7 +471,6 @@ test('stages the selected card printed cost after preparing a search choice', as
             }),
         ],
         match,
-        matchAll: true,
         outputParams: ['selectedCard'],
         selectedTarget: player,
         target: TARGET_YOU,
@@ -421,6 +481,86 @@ test('stages the selected card printed cost after preparing a search choice', as
     assert.deepEqual(paymentOrder, ['select-card', 'printed-cost']);
     assert.equal(params.selectedCard, selectedCard);
     assert.equal(params.card, cardToPlay);
+});
+
+test('passes arrow output params to the resolving ability', async () => {
+    const selectedCard = {
+        id: 'searched-ally',
+        name: 'Searched Ally',
+        cost: 2,
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
+    };
+    let resolvedSelectedCard;
+    const player = {
+        deck: {discardPile: [selectedCard]},
+        hand: {cards: []},
+        isPlayer: true,
+        async spendResources(resources, cardToPay) {
+            assert.equal(cardToPay, selectedCard);
+            assert.deepEqual(resources, Array(selectedCard.cost).fill(RESOURCE_ANY));
+
+            return {
+                generators: [],
+                hand: [],
+                resources,
+            };
+        },
+    };
+    const match = {
+        players: [player],
+        triggerCards: {},
+        async openDialog({dialogType, data}) {
+            assert.equal(dialogType, DIALOG_SELECT_CARD);
+
+            return {selected: [{id: data.cards[0].id}]};
+        },
+    };
+    const cardToPlay = {id: 'ability-card', cost: 0};
+    const cost = new ChainedEffect({
+        effects: [
+            new SearchCardsEffect({
+                locations: [PLACE_DISCARD_PILE],
+                match,
+                selectedTarget: player,
+                target: TARGET_YOU,
+            }),
+            new PayPrintedCostEffect({
+                match,
+                selectedTarget: player,
+                target: TARGET_YOU,
+            }),
+        ],
+        match,
+        outputParams: ['selectedCard'],
+        selectedTarget: player,
+        target: TARGET_YOU,
+    });
+    const effect = {
+        resolved: false,
+        async canRun() {
+            return true;
+        },
+        async runEffect(params) {
+            resolvedSelectedCard = params.selectedCard;
+            this.resolved = true;
+        },
+    };
+    const ability = new Ability({
+        arrow: new Arrow({cost}),
+        effect,
+        match,
+    });
+    ability.card = cardToPlay;
+
+    await ability.resolveAbility({
+        card: cardToPlay,
+        match,
+        player,
+    });
+
+    assert.equal(resolvedSelectedCard, selectedCard);
 });
 
 test('does not re-offer an ability when a cost interrupt makes payment impossible', async () => {

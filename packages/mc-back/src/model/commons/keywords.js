@@ -12,6 +12,7 @@ export class Keywords extends Engine {
         overkill = false,
         piercing = false,
         ranged = false,
+        restricted = false,
         retaliate = 0,
         uses,
         hint
@@ -27,6 +28,7 @@ export class Keywords extends Engine {
         this.overkill = overkill;
         this.piercing = piercing;
         this.ranged = ranged;
+        this.restricted = restricted;
         this.retaliate = retaliate;
         this._uses = uses;
         this._hint = hint;

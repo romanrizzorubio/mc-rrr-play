@@ -32,6 +32,7 @@ export class SuperheroCardComponent extends LitElement {
             exhausted: {type: Boolean},
             abilities: {type: Array},
             extraTraits: {type: Array},
+            extraKeywords: {type: Array},
         };
     }
 
@@ -52,6 +53,7 @@ export class SuperheroCardComponent extends LitElement {
         this.exhausted = false;
         this.abilities = [];
         this.extraTraits = [];
+        this.extraKeywords = [];
     }
 
     get menuOptions() {
@@ -117,6 +119,7 @@ export class SuperheroCardComponent extends LitElement {
             exhausted,
             statusCards,
             extraTraits,
+            extraKeywords,
         } = this;
 
         return html`
@@ -129,6 +132,7 @@ export class SuperheroCardComponent extends LitElement {
                     .exhausted="${exhausted}"
                     .menuOptions="${this.menuOptions}"
                     .extraTraits="${extraTraits}"
+                    .extraKeywords="${extraKeywords}"
                     show-acquired-traits
                     show-basic-stats
                     .handSize="${handSize}"

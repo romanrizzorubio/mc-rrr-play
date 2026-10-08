@@ -73,6 +73,7 @@ test('SearchCardsEffect searches the encounter deck and discard pile in order', 
     const effect = new SearchCardsEffect({
         firstMatch: true,
         locations: [PLACE_ENCOUNTER_DECK_CARDS, PLACE_ENCOUNTER_DISCARD],
+        reverseLocations: [PLACE_ENCOUNTER_DISCARD],
         filter: {name: 'Madame Hydra'},
         match: {scenario: {deck: encounterDeck}},
         requireMatch: true,
@@ -88,7 +89,17 @@ test('SearchCardsEffect searches the encounter deck and discard pile in order', 
         createCard('older-discard-card', 'Madame Hydra'),
         discardedCard,
     ];
-    assert.deepEqual(effect.getOptions(params), [discardedCard]);
+    assert.deepEqual(await effect.getOptions(params), [discardedCard]);
+
+    const effectWithDefaultOrder = new SearchCardsEffect({
+        firstMatch: true,
+        locations: [PLACE_ENCOUNTER_DISCARD],
+        filter: {name: 'Madame Hydra'},
+        match: effect.match,
+    });
+    assert.deepEqual(await effectWithDefaultOrder.getOptions(params), [
+        encounterDeck.discardPile[0],
+    ]);
 });
 
 test('SearchCardsEffect offers every matching encounter minion for selection', async () => {

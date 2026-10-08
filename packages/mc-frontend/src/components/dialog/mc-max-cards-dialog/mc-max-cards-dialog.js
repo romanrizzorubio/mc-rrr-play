@@ -7,7 +7,7 @@ import styles from './mc-max-cards-dialog.css.js';
 
 export class McMaxCardsDialog extends McCardListDialog {
     static get is() {
-        return 'mc-max-allies-dialog';
+        return 'mc-max-cards-dialog';
     }
     static get styles() {
         return [stylesDialog, stylesCardList, styles];
@@ -30,7 +30,7 @@ export class McMaxCardsDialog extends McCardListDialog {
     getTitle() {
         const {title} = this;
 
-        return `Has superado el máximo de ${title}, si continuas deberás descartar uno.`;
+        return `Has superado el máximo de ${title}; si continúas, deberás descartar una carta.`;
     }
     handleCardListSelect(e) {
         e.stopPropagation();

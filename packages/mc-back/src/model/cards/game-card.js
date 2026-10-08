@@ -25,6 +25,7 @@ export class GameCard extends Engine {
 
         this.faceDown = [];
         this.attached = [];
+        this.keywordModifiers = [];
         this.isPlaying = false;
 
         this.reset();
@@ -196,6 +197,57 @@ export class GameCard extends Engine {
     get isAttached() {
         return !!this.attachedTo;
     }
+    getKeyword(name) {
+        const printedValue = this.sides.length ?
+            this.currentSide.getKeyword(name) :
+            this.card[name] ?? this.card.keywords?.[name];
+        const defaultValue = name === 'retaliate' ? 0 :
+            name === 'uses' ? undefined : false;
+
+        return (this.keywordModifiers || []).reduce((value, modifier) => {
+            const isActive = modifier.lasting ?
+                modifier.source?.match?.lasting?.includes(modifier.source) :
+                modifier.source?.isInPlay;
+            if (!isActive) {
+                return value;
+            }
+            const conditionName = modifier.ability?.effect?.condition?.name;
+            if (this.sides.length && conditionName !== undefined &&
+                this.currentSide.name !== conditionName) {
+                return value;
+            }
+
+            const addedValue = modifier.keyword[name];
+            if (typeof addedValue === 'number') {
+                return (Number(value) || 0) + addedValue;
+            }
+
+            return Boolean(value || addedValue);
+        }, printedValue ?? defaultValue);
+    }
+    addKeywordModifier(source, ability, keyword, lasting) {
+        if (!Array.isArray(this.keywordModifiers)) {
+            this.keywordModifiers = [];
+        }
+
+        const modifier = this.keywordModifiers.find(existing =>
+            existing.source === source &&
+            existing.ability === ability &&
+            existing.lasting === lasting);
+        if (modifier) {
+            modifier.keyword = {
+                ...modifier.keyword,
+                ...keyword,
+            };
+        } else {
+            this.keywordModifiers.push({
+                source,
+                ability,
+                keyword: {...keyword},
+                lasting,
+            });
+        }
+    }
     get isAttachment() {
         if (this.sides.length) {
             return this.currentSide.isAttachment;
@@ -332,15 +384,10 @@ export class GameCard extends Engine {
         return this.card.isVillain;
     }
     get hasUncancellableAbilities() {
-        if (this.sides.length) {
-            return this.currentSide.hasUncancellableAbilities;
-        }
-
         return Boolean(
             this.isVillain ||
             this.isMainScheme ||
-            this.card?.permanent ||
-            this.card?.keywords?.permanent
+            this.getKeyword('permanent')
         );
     }
     get match() {
@@ -364,11 +411,28 @@ export class GameCard extends Engine {
         return 'card';
     }
     get quickStrike() {
-        if (this.sides.length) {
-            return this.currentSide.quickStrike;
-        }
-
-        return this.card.quickStrike;
+        return this.getKeyword('quickStrike');
+    }
+    get retaliate() {
+        return this.getKeyword('retaliate');
+    }
+    get guard() {
+        return this.getKeyword('guard');
+    }
+    get villainous() {
+        return this.getKeyword('villainous');
+    }
+    get overkill() {
+        return this.getKeyword('overkill');
+    }
+    get piercing() {
+        return this.getKeyword('piercing');
+    }
+    get ranged() {
+        return this.getKeyword('ranged');
+    }
+    get restricted() {
+        return this.getKeyword('restricted');
     }
     get requirement() {
         return this.card.requirement;
@@ -388,11 +452,13 @@ export class GameCard extends Engine {
         return this.card.stage;
     }
     get surge() {
-        if (this.sides.length) {
-            return this.currentSide.surge;
-        }
-
-        return this.card.surge;
+        return this.getKeyword('surge');
+    }
+    get toughness() {
+        return this.getKeyword('toughness');
+    }
+    get permanent() {
+        return this.getKeyword('permanent');
     }
     get traits() {
         if (this.sides.length) {
@@ -423,11 +489,7 @@ export class GameCard extends Engine {
         return this.card.unique;
     }
     get uses() {
-        if (this.sides.length) {
-            return this.currentSide.uses;
-        }
-
-        return this.card.uses;
+        return this.getKeyword('uses');
     }
     addFaceDown(card) {
         if (Array.isArray(card)) {
@@ -435,8 +497,6 @@ export class GameCard extends Engine {
                 this.addFaceDown(_card);
             });
         } else {
-            const {owner: _owner} = this;
-
             this.faceDown.push(new FaceDown({
                 attached: this,
                 card,
@@ -817,8 +877,7 @@ export class GameCard extends Engine {
             })),
         };
     }
-    async toObjWithAbilityAvailability(player) {
-        const serializedCard = this.toObj();
+    async getAbilityAvailability(player) {
         const attached = await Promise.all(this.attached.map(card =>
             card.toObjWithAbilityAvailability(player)));
         const abilities = await Promise.all(this.currentSide.abilities.map(async (ability, index) => {
@@ -843,11 +902,18 @@ export class GameCard extends Engine {
         }));
 
         return {
-            ...serializedCard,
             attached,
             abilities,
             playable: abilities.some(ability =>
                 (ability.isAction || ability.isBasic) && !ability.disable),
+        };
+    }
+    async toObjWithAbilityAvailability(player) {
+        const abilityAvailability = await this.getAbilityAvailability(player);
+
+        return {
+            ...this.toObj(),
+            ...abilityAvailability,
         };
     }
 }

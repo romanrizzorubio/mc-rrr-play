@@ -38,7 +38,8 @@ export class PayPrintedCostEffect extends Effect {
         return player.spendResources(
             requiredResources,
             card,
-            session.getExcludedCardIds()
+            session.getExcludedCardIds(),
+            {showCancel: true}
         );
     }
 

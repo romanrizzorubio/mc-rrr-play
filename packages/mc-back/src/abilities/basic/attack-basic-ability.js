@@ -1,4 +1,4 @@
-import {LABEL_ATTACK,TARGET_ENEMY} from 'mc-shared';
+import {LABEL_ATTACK, TARGET_ENEMY} from 'mc-shared';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
 
 import {BasicAbility} from './basic-ability.js';
@@ -10,7 +10,6 @@ export class AttackBasicAbility extends BasicAbility {
         super(arguments[0]);
 
         this.labels = [LABEL_ATTACK];
-
         this.effect = new DealDamageEffect({
             target,
             refreshTarget: true,
@@ -18,11 +17,12 @@ export class AttackBasicAbility extends BasicAbility {
             ability: this,
         });
     }
-    applyConsequencial() {
+    async applyConsequencial(params) {
         const {card} = this;
+        const damage = await card.getAttackConsequencialValue(params);
 
-        if (card.attackConsequencial) {
-            return super.applyConsequencial({player: card.controller}, card.attackConsequencial);
+        if (damage) {
+            return super.applyConsequencial({player: card.controller}, damage);
         }
     }
     async getAttackValue(params) {

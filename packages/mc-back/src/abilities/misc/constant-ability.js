@@ -1,4 +1,6 @@
 import {
+    EFFECT_ADD_ADDITIONAL_COST,
+    EFFECT_ADD_KEYWORD,
     EFFECT_ADD_TRAIT,
     EFFECT_CHAINED,
     EFFECT_MODIFY_MAX_ALLIES,
@@ -21,6 +23,8 @@ function isAutomaticConstantEffect(effect) {
     const hasKeyword = Object.entries(effect.keywords || {})
         .some(([key, value]) => key !== 'triggers' && key !== '_hint' && Boolean(value));
     if (effectType?.startsWith('modify-') ||
+        effectType === EFFECT_ADD_ADDITIONAL_COST ||
+        effectType === EFFECT_ADD_KEYWORD ||
         effectType === EFFECT_ADD_TRAIT ||
         effectType === EFFECT_SURGE ||
         effectType === EFFECT_TOUGH ||

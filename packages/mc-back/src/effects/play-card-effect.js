@@ -1,9 +1,16 @@
-import {DIALOG_PAY_COST,TRIGGER_END_PLAY_CARD, TRIGGER_PLAY_CARD, TRIGGER_THIS_END_PLAY_CARD} from 'mc-shared';
+import {
+    DIALOG_MAX_CARDS,
+    DIALOG_PAY_COST,
+    TRIGGER_END_PLAY_CARD,
+    TRIGGER_PLAY_CARD,
+    TRIGGER_THIS_END_PLAY_CARD,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 import {GetCostEffect} from './get-cost-effect.js';
 import {PayCostEffect} from './pay-cost-effect.js';
 import {PutPlayEffect} from './put-play-effect.js';
+import {getRestrictedCards} from '../utils/enforce-restricted-limit.js';
 
 export class PlayCardEffect extends Effect {
     constructor({
@@ -25,6 +32,8 @@ export class PlayCardEffect extends Effect {
         this.played = false;
         this.maxAlliesDialogAccepted = false;
         this.maxAllyToDiscardId = undefined;
+        this.restrictedDialogAccepted = false;
+        this.restrictedCardToDiscardId = undefined;
 
         if (card.isUpgrade) {
             this.target = card.card.attach;
@@ -33,7 +42,7 @@ export class PlayCardEffect extends Effect {
     get isAttack() {
         return false;
     }
-    canRun(params) {
+    async canRun(params) {
         const {card, ability, abilityType} = this;
         const {player} = params;
 
@@ -41,16 +50,48 @@ export class PlayCardEffect extends Effect {
             return false;
         }
 
-        if (ability) {
-            return true;
-        }
-
-        return card.canPlay({
+        if (!ability && !await card.canPlay({
             player,
             abilityType,
             card,
             playCardEffect: this,
+        })) {
+            return false;
+        }
+
+        return this.checkRestrictedCardLimit(params);
+    }
+    async checkRestrictedCardLimit(params) {
+        if (!this.card.isPlayerCard || !this.card.restricted || this.card.isEvent ||
+            this.restrictedDialogAccepted) {
+            return true;
+        }
+
+        const {player} = params;
+        if (!player?.gameZone?.cards) {
+            throw new TypeError('Restricted-card play requires a player game zone.');
+        }
+
+        const restrictedCards = getRestrictedCards(player);
+        if (restrictedCards.length < 2) {
+            return true;
+        }
+
+        const response = await this.openDialog({
+            dialogType: DIALOG_MAX_CARDS,
+            title: 'Cartas restringidas',
+            showCancel: true,
+            data: {
+                cards: restrictedCards.map(card => card.toObj(params)),
+            },
         });
+
+        if (response?.accepted) {
+            this.restrictedDialogAccepted = true;
+            this.restrictedCardToDiscardId = response.selected?.id;
+        }
+
+        return response?.accepted === true;
     }
     filterTarget(target, {player}) {
         if (super.filterTarget.apply(this, arguments)) {
@@ -108,6 +149,7 @@ export class PlayCardEffect extends Effect {
                 selectedTarget,
                 controller: player,
                 maxAllyToDiscardId: this.maxAllyToDiscardId,
+                restrictedCardToDiscardId: this.restrictedCardToDiscardId,
                 match: this.match,
             });
 

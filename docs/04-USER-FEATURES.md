@@ -15,6 +15,8 @@ Ver las partidas que siguen en el backend, volver a una sala y retomar el estado
 
 Para empezar otra, presionar "Nueva partida", elegir nombre, jugador, superhéroe y escenario, y después "Crear partida".
 
+Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida usa las etapas expertas del villano y añade el conjunto Experto al mazo de encuentros, manteniendo también el conjunto Normal.
+
 **Resultado:**
 - Las partidas inicializadas recuperan el tablero completo.
 - Si el setup de una partida continúa en el backend, se vuelven a mostrar los diálogos pendientes.

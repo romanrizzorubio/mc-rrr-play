@@ -1,6 +1,7 @@
 import {
     PRIORITY_FORCED_INTERRUPT,
     TRIGGER_ATTACHED_DEFEAT,
+    TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
@@ -13,6 +14,10 @@ export class DefeatEffect extends Effect {
         super(arguments[0]);
 
         this.prevented = false;
+    }
+    getTriggersWould() {
+        return super.getTriggersWould()
+            .concat([TRIGGER_CHARACTER_WOULD_BE_DEFEATED]);
     }
     getTriggersInit() {
         return super.getTriggersInit()

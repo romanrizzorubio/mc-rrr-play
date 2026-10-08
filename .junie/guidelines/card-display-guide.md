@@ -9,6 +9,8 @@ Consulta esta guía al cambiar componentes de cartas, descartes o diálogos que 
 - En el plan principal, coloca las etiquetas de umbral de amenaza y etapa en la cabecera, encima de la imagen, alineadas con el nombre y dentro de los límites laterales de la imagen. Si el nombre ocupa varias líneas, alinea las etiquetas por abajo.
 - En los diálogos que muestran el plan principal, usa el título `Mostrando el Plan principal`. En el diálogo de etapa completada, conserva el nombre del plan y la etapa en el título (por ejemplo, `Nombre del plan (1B)`) e indica ese estado en el subtítulo.
 - Mantén visibles los contadores vinculados a una carta en las zonas y modales donde se presenta. Conserva el dato `counters` durante la serialización y pásalo al componente como propiedad reactiva.
+- Antes de serializar una actualización visual, completa los cálculos que puedan modificar los rasgos, palabras clave o estadísticas mostrados. Usa el estado posterior a esos cálculos tanto en refrescos incrementales como en las instantáneas de partida; comprueba también el primer refresco después de cambiar de identidad sin recargar la página.
+- En personajes, muestra debajo de la imagen y de los rasgos adquiridos las palabras clave que hayan ganado y no estén impresas en su propio texto. Usa una tipografía distinta a la de los rasgos y no repitas las palabras clave impresas.
 - Representa las cartas de personaje boca abajo usando el dorso de una carta de jugador, sin serializar ni mostrar el nombre o la imagen de la carta que hay debajo.
 
 ## Revelación y resolución

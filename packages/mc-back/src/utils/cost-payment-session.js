@@ -83,13 +83,18 @@ export class CostPaymentSession {
         }
 
         while (true) {
-            const pendingPayments = effect.getCostPaymentEffects(effectParams)
+            const costPaymentEffects = await effect.getCostPaymentEffects(effectParams);
+            const pendingPayments = costPaymentEffects
                 .filter(paymentEffect =>
                     this.isPrepared(paymentEffect) &&
                     !this.isSkipped(paymentEffect) &&
                     !this.hasPayment(paymentEffect));
-            const effectsWithDialogs = pendingPayments.filter(paymentEffect =>
-                paymentEffect.shouldPromptForPayment(effectParams, this));
+            const effectsWithDialogs = [];
+            for (const paymentEffect of pendingPayments) {
+                if (await paymentEffect.shouldPromptForPayment(effectParams, this)) {
+                    effectsWithDialogs.push(paymentEffect);
+                }
+            }
             if (!effectsWithDialogs.length) {
                 break;
             }

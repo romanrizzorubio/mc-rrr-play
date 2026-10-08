@@ -33,5 +33,7 @@ export const TRAIT_SUPERPOWER = 'superpower';
 export const TRAIT_TACTIC = 'tactic';
 export const TRAIT_TECH = 'tech';
 export const TRAIT_THWART = 'thwart';
+export const TRAIT_TITLE = 'title';
+export const TRAIT_VEHICLE = 'vehicle';
 export const TRAIT_WAKANDA = 'wakanda';
 export const TRAIT_WEAPON = 'weapon';

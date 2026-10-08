@@ -85,7 +85,8 @@ export class McPlayer extends LitElement {
                 handSize,
                 superhero: {
                     name, image, life, hitPoints, attack, thwart, defense, recovery,
-                    flipped, exhausted, statusCards, abilities, extraTraits = []
+                    flipped, exhausted, statusCards, abilities, extraTraits = [],
+                    extraKeywords = []
                 }
             }
         } = this;
@@ -105,6 +106,7 @@ export class McPlayer extends LitElement {
                 .recovery="${recovery}"
                 .abilities="${abilities}"
                 .extraTraits="${extraTraits}"
+                .extraKeywords="${extraKeywords}"
                 .flipped="${flipped}"
                 .statusCards="${statusCards}"
                 .exhausted="${exhausted}"
@@ -115,12 +117,14 @@ export class McPlayer extends LitElement {
     }
     renderGameZone() {
         const gameZone = path(this, 'player.gameZone');
+        const attachedUpgrades = path(this, 'player.superhero.attached') || [];
 
         return gameZone && html`
             <mc-game-zone
                 class="panel"
                 encounters="${gameZone.encounters}"
                 .cards="${gameZone.cards}"
+                .attachedUpgrades="${attachedUpgrades}"
                 .minions="${gameZone.minions}"
             ></mc-game-zone>
         `;

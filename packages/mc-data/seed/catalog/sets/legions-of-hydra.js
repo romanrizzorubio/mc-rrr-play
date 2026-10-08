@@ -1,7 +1,6 @@
 import {
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
-    ABILITY_WHEN_DEFEATED,
     ABILITY_WHEN_REVEALED,
     CALC_TRAITS_COUNT,
     CARD_TYPE_MINION,
@@ -9,7 +8,6 @@ import {
     EFFECT_CHAINED,
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_CANNOT_TARGET,
-    EFFECT_DEAL_ENCOUNTER,
     EFFECT_DO_IF_CARD_GAME,
     EFFECT_ENGAGE,
     EFFECT_PLACE_THREAT,
@@ -19,7 +17,6 @@ import {
     PLACE_ENCOUNTER_DISCARD,
     PLACE_SCENARIO_ZONE,
     TARGET_BY_TITLE,
-    TARGET_ENGAGED,
     TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_YOU,
@@ -28,6 +25,8 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_SCHEME,
 } from 'mc-shared';
+
+import {hydraSoldier} from '../encounters/minions.js';
 
 export default {
     '_id': 'legions-of-hydra',
@@ -65,7 +64,6 @@ export default {
                                                         'effectNot': {
                                                             'type': EFFECT_CHAINED,
                                                             'params': {
-                                                                'matchAll': true,
                                                                 'effects': [
                                                                     {
                                                                         'type': EFFECT_SEARCH_CARDS,
@@ -190,37 +188,7 @@ export default {
             },
             {
                 'count': 3,
-                'card': {
-                    'type': CARD_TYPE_MINION,
-                    'params': {
-                        'name': 'Soldado de Hydra',
-                        'set': 'legions-of-hydra',
-                        'image': 'sets/legions-of-hydra/01182.png',
-                        'traits': [
-                            TRAIT_HYDRA
-                        ],
-                        'boost': 1,
-                        'attack': 2,
-                        'scheme': 1,
-                        'hitPoints': 4,
-                        'keywords': {
-                            'guard': true
-                        },
-                        'abilities': [
-                            {
-                                'type': ABILITY_WHEN_DEFEATED,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_DEAL_ENCOUNTER,
-                                        'params': {
-                                            'target': TARGET_ENGAGED
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': hydraSoldier
             }
         ]
     }

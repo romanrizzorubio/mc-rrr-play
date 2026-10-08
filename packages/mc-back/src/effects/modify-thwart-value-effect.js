@@ -1,5 +1,5 @@
 import {Effect} from './effect.js';
-import {getSelectedTargets} from '../utils/target-utils.js';
+import {getCurrentSideTargets} from '../utils/target-utils.js';
 
 export class ModifyThwartValueEffect extends Effect {
     constructor({
@@ -20,7 +20,7 @@ export class ModifyThwartValueEffect extends Effect {
             this.calculate(params) :
             count;
 
-        const targets = getSelectedTargets(selectedTarget);
+        const targets = getCurrentSideTargets(selectedTarget);
 
         for (const target of targets) {
             target.modifyThwart = (target.modifyThwart ?? 0) + modifyThwart;

@@ -7,10 +7,13 @@ export class ReadyEffect extends Effect {
     }
     async execute(_params) {
         const {selectedTarget} = this;
+        const selectedTargets = Array.isArray(selectedTarget) ?
+            selectedTarget :
+            selectedTarget ? [selectedTarget] : [];
 
-        if (selectedTarget) {
-            await selectedTarget.ready();
-            selectedTarget.refresh();
+        for (const target of selectedTargets) {
+            await target.ready();
+            await target.refresh();
         }
     }
 }

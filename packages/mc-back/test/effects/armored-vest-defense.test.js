@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TRAIT_AERIAL} from 'mc-shared';
+import {TRAIT_AERIAL, TRAIT_AVENGER} from 'mc-shared';
 import aggressionUpgrades from '../../../mc-data/seed/catalog/aspects/aggression/upgrades.js';
 import justiceUpgrades from '../../../mc-data/seed/catalog/aspects/justice/upgrades.js';
 import protectionUpgrades from '../../../mc-data/seed/catalog/aspects/protection/upgrades.js';
@@ -27,7 +27,7 @@ function createPlayer(match, name) {
             return {
                 superhero: {
                     defense: this.superhero.defense,
-                    extraTraits: this.superhero.extraTraits,
+                    extraTraits: [...this.superhero.extraTraits],
                 },
             };
         },
@@ -118,4 +118,85 @@ test('Vuelo cósmico shows its acquired Aerial trait on the hero identity', asyn
     const result = await Player.prototype.toObjWithPlayableHand.call(player);
 
     assert.deepEqual(result.superhero.extraTraits, [TRAIT_AERIAL]);
+});
+
+test('serializes attached upgrades with their ability availability for the hero controller', async () => {
+    const player = createPlayer({
+        triggerCards: {},
+    }, 'Player 1');
+    const serializedAttachment = {
+        id: 'attached-upgrade',
+        abilities: [{disable: true}],
+    };
+    player.superhero.attached.push({
+        card: {attack: 0},
+        async toObjWithAbilityAvailability(controller) {
+            assert.equal(controller, player);
+
+            return serializedAttachment;
+        },
+    });
+
+    const result = await Player.prototype.toObjWithPlayableHand.call(player);
+
+    assert.deepEqual(result.superhero.attached, [serializedAttachment]);
+});
+
+test('hides acquired traits that are printed on the active hero identity', async () => {
+    const player = createPlayer({
+        triggerCards: {},
+    }, 'Player 1');
+    player.superhero.sides = [
+        {traits: [TRAIT_AVENGER], abilities: [], controller: player},
+        {traits: [], abilities: [], controller: player},
+    ];
+    player.superhero.selectedSide = 0;
+    player.superhero.extraTraits = [TRAIT_AVENGER];
+    player.superhero.getEffectiveStats = async () => ({});
+    player.superhero.getEffectiveTraits = async () =>
+        player.superhero.currentSide.traits;
+
+    const result = await Player.prototype.toObjWithPlayableHand.call(player);
+
+    assert.deepEqual(result.superhero.extraTraits, []);
+});
+
+test('shows acquired traits not printed on the active alter-ego identity', async () => {
+    const player = createPlayer({
+        triggerCards: {},
+    }, 'Player 1');
+    player.superhero.sides = [
+        {traits: [TRAIT_AVENGER], abilities: [], controller: player},
+        {traits: [], abilities: [], controller: player},
+    ];
+    player.superhero.selectedSide = 1;
+    player.superhero.extraTraits = [TRAIT_AVENGER];
+    player.superhero.getEffectiveStats = async () => ({});
+    player.superhero.getEffectiveTraits = async () =>
+        player.superhero.currentSide.traits;
+
+    const result = await Player.prototype.toObjWithPlayableHand.call(player);
+
+    assert.deepEqual(result.superhero.extraTraits, [TRAIT_AVENGER]);
+});
+
+test('serializes traits granted during effective-trait calculation', async () => {
+    const player = createPlayer({
+        triggerCards: {},
+    }, 'Player 1');
+    player.superhero.sides = [
+        {traits: [TRAIT_AVENGER], abilities: [], controller: player},
+        {traits: [], abilities: [], controller: player},
+    ];
+    player.superhero.selectedSide = 1;
+    player.superhero.getEffectiveStats = async () => ({});
+    player.superhero.getEffectiveTraits = async () => {
+        player.superhero.extraTraits.push(TRAIT_AVENGER);
+
+        return player.superhero.currentSide.traits;
+    };
+
+    const result = await Player.prototype.toObjWithPlayableHand.call(player);
+
+    assert.deepEqual(result.superhero.extraTraits, [TRAIT_AVENGER]);
 });

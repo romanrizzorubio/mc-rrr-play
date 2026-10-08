@@ -399,7 +399,6 @@ export default {
                                     'arrow': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,

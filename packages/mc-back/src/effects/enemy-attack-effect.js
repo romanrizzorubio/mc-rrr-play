@@ -1,5 +1,11 @@
-import {DIALOG_DEFENSE,TARGET_CARD,
+import {
+    DIALOG_DEFENSE,
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
+    TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
+    TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_THIS_ATTACK,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
@@ -24,6 +30,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.defenseValues = new Map();
         this.originalAttackTarget = undefined;
         this.defenderConditions = [];
+        this.modifyDefense = 0;
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
@@ -52,7 +59,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return character.getAttackValue(params);
     }
     async getDefenseValue(params, defender = this.defender) {
-        return defender.getDefenseValue(params);
+        return await defender.getDefenseValue(params) + this.modifyDefense;
     }
     async defense(params) {
         const attackTargets = Array.isArray(this.selectedTarget) ?
@@ -86,7 +93,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 }
 
                 if (objDefender) {
-                    await this.setDefender(objDefender, attackTarget);
+                    await this.setDefender(objDefender, attackTarget, params);
 
                     if (objDefender.isSuperhero) {
                         const selectedDefender = this.defendersByTarget.get(attackTarget);
@@ -164,7 +171,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return this.activation.getTriggersEnds(params)
             .concat([TRIGGER_VILLAIN_ATTACKS_YOU]);
     }
-    async setDefender(defender, attackTarget = this.selectedTarget) {
+    async setDefender(defender, attackTarget = this.selectedTarget, params = {}) {
         if (defender) {
             this.defender = defender.isSuperhero ? defender.currentSide : defender;
             this.defendersByTarget.set(attackTarget, this.defender);
@@ -180,6 +187,19 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             await exhaustEffect.runEffect({
                 card: defender,
             });
+
+            if (this.defender.isHero) {
+                const triggerParams = {
+                    ...params,
+                    effect: this,
+                    player: this.defender.owner,
+                };
+                const trigger = [TRIGGER_HERO_DEFENDS_ATTACK];
+
+                await this.trigger(PRIORITY_CONSTANT, trigger, triggerParams);
+                await this.trigger(PRIORITY_FORCED_INTERRUPT, trigger, triggerParams);
+                await this.trigger(PRIORITY_INTERRUPT, trigger, triggerParams);
+            }
         }
     }
     async execute(params) {

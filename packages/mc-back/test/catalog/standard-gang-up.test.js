@@ -52,7 +52,6 @@ test('Gang-Up activates the villain before the engaged minions', async () => {
     assert.ok(effect instanceof ChainedEffect);
     assert.ok(effect.effects[0] instanceof EnemyAttackEffect);
     assert.ok(effect.effects[1] instanceof SeveralAttacksEffect);
-    assert.equal(effect.matchAll, false);
 
     effect.effects.forEach((child, index) => {
         child.canRun = async () => true;

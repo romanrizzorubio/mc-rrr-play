@@ -27,6 +27,7 @@ export class Match extends Engine {
         this.initializing = false;
         this.phase = null;
         this.turnIndex = 0;
+        this.turnStartProcessed = false;
         this.endPlayerIndex = 0;
         this.villainPhaseStep = 0;
         this.facedownMinionSequence = 0;
@@ -458,13 +459,16 @@ export class Match extends Engine {
         };
     }
     async toObjWithPlayableHands() {
+        const players = await Promise.all(
+            this.players.map(player => player.toObjWithPlayableHand())
+        );
+        const scenario = this.scenario &&
+            await this.scenario.toObjWithAbilityAvailability(this.initialPlayer);
+
         return {
             ...this.toObj(),
-            players: await Promise.all(
-                this.players.map(player => player.toObjWithPlayableHand())
-            ),
-            scenario: this.scenario &&
-                await this.scenario.toObjWithAbilityAvailability(this.initialPlayer),
+            players,
+            scenario,
         };
     }
 }

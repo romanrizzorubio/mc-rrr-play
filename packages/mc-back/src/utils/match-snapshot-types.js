@@ -127,6 +127,11 @@ registerSnapshotType(Match, {
         match.mc = mc;
         match.initializing = false;
         new MatchFactory(match);
+
+        if (typeof match.turnStartProcessed !== 'boolean') {
+            match.turnStartProcessed = match.phase === 'players' &&
+                Boolean(match.currentTurnPlayer);
+        }
     },
 });
 

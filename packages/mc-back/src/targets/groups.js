@@ -17,14 +17,50 @@ import {
     TARGET_VILLAIN,
     TARGET_YOUR_HERO,
 } from 'mc-shared';
+import {checkCondition} from '../engine/utils.js';
+
+const resolveCharacterCondition = (character, condition) => {
+    const {name, ...otherConditions} = condition;
+
+    if ((name !== undefined &&
+            character.name !== name &&
+            character.mainName !== name) ||
+        !checkCondition(character, otherConditions)) {
+        return undefined;
+    }
+
+    if (name !== undefined && character.sides?.length) {
+        return character.sides.find(side => side.name === name) || character;
+    }
+
+    return character;
+};
+const filterCharactersByCondition = (characters, condition) =>
+    characters.flatMap(character => {
+        const target = resolveCharacterCondition(character, condition);
+
+        return target ? [target] : [];
+    });
 
 export const groupTargets = {
     [TARGET_ALL_CARDS]: ({cards}) => cards,
     [TARGET_ALL_ALLIES]: ({match}) =>
         match.players.flatMap(player => player.allies),
-    [TARGET_ALL_CHARACTERS]: ({match}) => match.enemies.concat(match.friends),
+    [TARGET_ALL_CHARACTERS]: ({match, condition}) => {
+        const characters = match.enemies.concat(match.friends);
+
+        return condition ?
+            filterCharactersByCondition(characters, condition) :
+            characters;
+    },
     [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
-    [TARGET_ALL_FRIENDLY_CHARACTERS]: ({match}) => match.friends,
+    [TARGET_ALL_FRIENDLY_CHARACTERS]: ({match, condition}) => {
+        const characters = match.friends;
+
+        return condition ?
+            filterCharactersByCondition(characters, condition) :
+            characters;
+    },
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,
     [TARGET_ALL_HEROES_ALLIES]: ({match}) => match.heroesAndAllies,
     [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {

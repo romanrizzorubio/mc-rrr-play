@@ -8,6 +8,9 @@ import {Calc} from '../../engine/calc.js';
 
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
+import {
+    GetAttackConsequencialEffect
+} from '../../effects/get-attack-consequencial-effect.js';
 import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
 import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
 import {GetTraitsEffect} from '../../effects/get-traits-effect.js';
@@ -92,7 +95,7 @@ export class CharacterGameCard extends GameCard {
         return attack;
     }
     get attackConsequencial() {
-        return this.card.attackConsequencial;
+        return this.card.attackConsequencial ?? 0;
     }
     get canHeal() {
         return !!this.damage;
@@ -135,16 +138,12 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get guard() {
-        return this.card.guard;
+        return this.getKeyword('guard');
     }
     get retaliate() {
-        const retaliate = this.sides.length ?
-            this.currentSide.retaliate :
-            this.card.retaliate;
-
         return this.attached.reduce(
             (total, attachment) => total + attachment.card.retaliate,
-            retaliate
+            this.getKeyword('retaliate')
         );
     }
     get hitPoints() {
@@ -182,6 +181,16 @@ export class CharacterGameCard extends GameCard {
         await getAttackEffect.runEffect(params);
 
         return getAttackEffect.attack;
+    }
+    async getAttackConsequencialValue(params) {
+        const getAttackConsequencialEffect = new GetAttackConsequencialEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getAttackConsequencialEffect.runEffect(params);
+
+        return getAttackConsequencialEffect.attackConsequencial;
     }
     async getDefenseValue(params) {
         const getDefenseEffect = new GetDefenseEffect({
@@ -312,6 +321,38 @@ export class CharacterGameCard extends GameCard {
         }
         return [...traits, ...this.extraTraits];
     }
+    get extraKeywords() {
+        const printedCard = this.sides.length ?
+            this.currentSide.card :
+            this.card;
+        const keywordModifiers = [
+            ...(this.keywordModifiers || []),
+            ...(this.sides.length ? this.currentSide.keywordModifiers || [] : []),
+        ];
+        const keywordNames = new Set(keywordModifiers.flatMap(({keyword}) =>
+            Object.keys(keyword || {})
+        ));
+
+        if ((this.attached || []).some(({card}) => card.retaliate > 0)) {
+            keywordNames.add('retaliate');
+        }
+
+        return [...keywordNames].flatMap(name => {
+            const printedValue = printedCard[name] ?? printedCard.keywords?.[name];
+            if (printedValue) {
+                return [];
+            }
+
+            const value = name === 'retaliate' ?
+                this.retaliate :
+                this.getKeyword(name);
+            if (typeof value === 'number' ? value <= 0 : !value) {
+                return [];
+            }
+
+            return [{name, value}];
+        });
+    }
     get thwart() {
         let thwart = this.card.thwart;
 
@@ -350,10 +391,10 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get toughness() {
-        return this.card.toughness;
+        return this.getKeyword('toughness');
     }
     get villainous() {
-        return this.card.villainous;
+        return this.getKeyword('villainous');
     }
     canBeAttacked(player) {
         return ((this.isVillain && !player.hasGuard) ||
@@ -485,11 +526,13 @@ export class CharacterGameCard extends GameCard {
         match.mc.mcSocket.send(match.name, REFRESH_EVENTS[this.objectToRefresh], card);
     }
     async toObjWithAbilityAvailability(player) {
-        const serializedCard = await super.toObjWithAbilityAvailability(player);
+        const abilityAvailability = await this.getAbilityAvailability(player);
+        const stats = await this.getEffectiveStats();
 
         return {
-            ...serializedCard,
-            ...await this.getEffectiveStats(),
+            ...this.toObj(),
+            ...abilityAvailability,
+            ...stats,
         };
     }
     toObj() {
@@ -520,6 +563,7 @@ export class CharacterGameCard extends GameCard {
             recovery,
             scheme,
             extraTraits: [...new Set(extraTraits)],
+            extraKeywords: this.extraKeywords,
             statusCards: {
                 stunned,
                 confused,

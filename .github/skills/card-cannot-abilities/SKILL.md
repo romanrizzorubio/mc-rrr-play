@@ -17,5 +17,8 @@ Consult `.junie/guidelines/translation-guide.md` and `docs/02-06-ABILITIES-EFFEC
 ## Implementation requirements
 
 - Express the scope and any "while" condition explicitly. Reuse generic effects; do not add card-specific branches to `Ability`, `Effect`, or factories.
+- When a prohibition is checked through action permission rather than target validity, use `EFFECT_CANNOT` with a `restriction` key matching the permission context. Have the action check trigger constant abilities with that restriction initially allowed; do not add a separate `Get*Effect` collector only to carry the permission boolean.
+- Scope a permission prohibition to its source with `sourceIn`, a path to a runtime collection that must contain the ability's source card. Prefer this parameter with the generic `Trigger` over a trigger subclass that only checks source membership or a named restriction. Test both the player whose collection contains the source and another player whose collection does not.
 - Ensure every target resolver, including preselected and multi-target lists, evaluates constant validations before presenting or resolving targets.
 - Test that the protected card is excluded when the condition is active, becomes a valid target when it is inactive, and does not exclude unrelated cards.
+- If `condition`, `targetCondition`, or `effectCondition` reads runtime context paths, test the validation through its real effect/target-resolution context with matching and non-matching values; configuration-only assertions do not verify that those paths are wired correctly.

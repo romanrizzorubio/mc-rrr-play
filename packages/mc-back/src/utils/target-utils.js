@@ -2,6 +2,12 @@ export function getSelectedTargets(target) {
     return Array.isArray(target) ? target : [target];
 }
 
+export function getCurrentSideTargets(target) {
+    return getSelectedTargets(target).map(selectedTarget =>
+        selectedTarget?.currentSide ?? selectedTarget
+    );
+}
+
 export function getCurrentVillainStage(target, match) {
     if (target?.isVillain &&
         !target.isInPlay &&

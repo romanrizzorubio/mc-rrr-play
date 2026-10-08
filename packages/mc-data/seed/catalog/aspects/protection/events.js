@@ -8,13 +8,17 @@ import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_ENEMY_ATTACK,
+    EFFECT_MODIFY_DEFENSE_VALUE,
     LABEL_ATTACK,
+    LABEL_DEFENSE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
     TARGET_ATTACKER,
     TARGET_PLAYER,
     TRAIT_ATTACK,
+    TRAIT_DEFENSE,
+    TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_VILLAIN_ATTACKS_YOU
 } from 'mc-shared';
@@ -106,6 +110,46 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-defensa-habil',
+        'aspect': 'protection',
+        'order': 20,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Defensa hábil',
+                'set': 'protection',
+                'image': 'aspect/protection/events/03033.png',
+                'traits': [
+                    TRAIT_DEFENSE
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'protection',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'name': 'Defensa hábil',
+                            'labels': [
+                                LABEL_DEFENSE
+                            ],
+                            'trigger': TRIGGER_HERO_DEFENDS_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 3
                                 }
                             }
                         }

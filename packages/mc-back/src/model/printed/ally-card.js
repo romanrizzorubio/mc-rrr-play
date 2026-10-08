@@ -1,4 +1,4 @@
-import {DIALOG_MAX_ALLIES} from 'mc-shared';
+import {DIALOG_MAX_CARDS} from 'mc-shared';
 import {GetMaxAlliesEffect} from '../../effects/get-max-allies-effect.js';
 
 import {MixinCharacterCard} from './mixins/mixin-character-card.js';
@@ -47,7 +47,7 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
             }
 
             const response = await this.openDialog({
-                dialogType: DIALOG_MAX_ALLIES,
+                dialogType: DIALOG_MAX_CARDS,
                 title: 'Aliados',
                 showCancel: true,
                 data: {

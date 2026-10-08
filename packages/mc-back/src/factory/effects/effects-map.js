@@ -1,11 +1,14 @@
 import {
     EFFECT_ADD_ACCELERATION_TOKEN,
+    EFFECT_ADD_ADDITIONAL_COST,
+    EFFECT_ADD_KEYWORD,
     EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CANCEL_ATTACK,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
+    EFFECT_CANNOT,
     EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CHOOSE,
@@ -30,6 +33,7 @@ import {
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_DO_IF_TAKE_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_FOR_EACH,
     EFFECT_ENGAGE,
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENEMY_SCHEME,
@@ -43,9 +47,11 @@ import {
     EFFECT_HEAL,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_LASTING,
+    EFFECT_LOOK_AT_TOP_CARDS,
     EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_MODIFY_HAND_SIZE,
@@ -84,6 +90,7 @@ import {
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_DISCARD_TO_CARD,
     EFFECT_SELECT_FROM_TOP_DECK,
+    EFFECT_SET_LIFE,
     EFFECT_SEVERAL_ATTACKS,
     EFFECT_SHUFFLE_DECK,
     EFFECT_SPEND,
@@ -95,12 +102,15 @@ import {
 } from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
+import {AddAdditionalCostEffect} from '../../effects/add-additional-cost-effect.js';
+import {AddKeywordEffect} from '../../effects/add-keyword-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelAttackEffect} from '../../effects/cancel-attack-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
+import {CannotEffect} from '../../effects/cannot-effect.js';
 import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
 import {ChooseAbilityEffect} from '../../effects/choose-ability-effect.js';
 import {ChooseEffect} from '../../effects/choose-effect.js';
@@ -125,6 +135,7 @@ import {DoIfHasPaidEffect} from '../../effects/do-if-has-paid-effect.js';
 import {DoIfHasTraitsEffect} from '../../effects/do-if-has-traits-effect.js';
 import {DoIfTakeCharacterDamageEffect} from '../../effects/do-if-take-character-damage-effect.js';
 import {DrawEffect} from '../../effects/draw-effect.js';
+import {ForEachEffect} from '../../effects/for-each-effect.js';
 import {EngageEffect} from '../../effects/engage-effect.js';
 import {EnemyAttackEffect} from '../../effects/enemy-attack-effect.js';
 import {EnemySchemeEffect} from '../../effects/enemy-scheme-effect.js';
@@ -138,9 +149,13 @@ import {GenerateResourcesFromCardEffect} from '../../effects/generate-resources-
 import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
+import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
+import {
+    ModifyAttackConsequencialEffect
+} from '../../effects/modify-attack-consequencial-effect.js';
 import {ModifyCostEffect} from '../../effects/modify-cost-effect.js';
 import {ModifyDefenseValueEffect} from '../../effects/modify-defense-value-effect.js';
 import {ModifyHandSizeEffect} from '../../effects/modify-hand-size-effect.js';
@@ -173,6 +188,7 @@ import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
+import {SetLifeEffect} from '../../effects/set-life-effect.js';
 import {SimultaneousEffect} from '../../effects/simultaneous-effect.js';
 import {ResolveSpecialAbilityEffect} from '../../effects/resolve-special-ability-effect.js';
 import {SelectDiscardCardEffect} from '../../effects/select-discard-card-effect.js';
@@ -189,6 +205,8 @@ import {SelectDiscardToCardEffect} from '../../effects/select-discard-to-card-ef
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
+    [EFFECT_ADD_ADDITIONAL_COST]: AddAdditionalCostEffect,
+    [EFFECT_ADD_KEYWORD]: AddKeywordEffect,
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
     [EFFECT_ASSIGN_DAMAGE]: AssignDamageEffect,
@@ -198,6 +216,7 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ATTACK]: CancelAttackEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CHAINED]: ChainedEffect,
+    [EFFECT_CANNOT]: CannotEffect,
     [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
     [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
     [EFFECT_CHOOSE]: ChooseEffect,
@@ -222,6 +241,7 @@ export const EFFECT_MAP = {
     [EFFECT_DO_IF_HAS_TRAITS]: DoIfHasTraitsEffect,
     [EFFECT_DO_IF_TAKE_DAMAGE]: DoIfTakeCharacterDamageEffect,
     [EFFECT_DRAW_CARD]: DrawEffect,
+    [EFFECT_FOR_EACH]: ForEachEffect,
     [EFFECT_ENGAGE]: EngageEffect,
     [EFFECT_ENEMY_ATTACK]: EnemyAttackEffect,
     [EFFECT_EXHAUST]: ExhaustEffect,
@@ -233,9 +253,11 @@ export const EFFECT_MAP = {
     [EFFECT_INCLUDE_ASIDE_CARDS]: IncludeAsideCardsEffect,
     [EFFECT_DELAYED]: DelayedEffect,
     [EFFECT_LASTING]: LastingEffect,
+    [EFFECT_LOOK_AT_TOP_CARDS]: LookAtTopCardsEffect,
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
+    [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyAttackConsequencialEffect,
     [EFFECT_MODIFY_MAX_ALLIES]: ModifyMaxAlliesEffect,
     [EFFECT_MODIFY_COST]: ModifyCostEffect,
     [EFFECT_MODIFY_DEFENSE_VALUE]: ModifyDefenseValueEffect,
@@ -264,6 +286,7 @@ export const EFFECT_MAP = {
     [EFFECT_ENEMY_SCHEME]: EnemySchemeEffect,
     [EFFECT_PUT_PLAY]: PutPlayEffect,
     [EFFECT_SEARCH_CARDS]: SearchCardsEffect,
+    [EFFECT_SET_LIFE]: SetLifeEffect,
     [EFFECT_SHUFFLE_DECK]: ShuffleDeckEffect,
     [EFFECT_MOVE_TO_HAND]: MoveToHandEffect,
     [EFFECT_MOVE_TO_DECK]: MoveToDeckEffect,

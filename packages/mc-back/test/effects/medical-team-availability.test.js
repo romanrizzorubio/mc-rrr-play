@@ -5,7 +5,9 @@ import protectionSupports from '../../../mc-data/seed/catalog/aspects/protection
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 test('Medical Team is available when a friendly character has damage and it has uses', async () => {
-    const match = {};
+    const match = {
+        triggerCards: {},
+    };
     const cardsFactory = new CardsFactory({match});
     const superhero = {
         damage: 1,

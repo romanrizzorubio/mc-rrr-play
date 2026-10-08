@@ -196,7 +196,6 @@ export default {
                                     'arrow': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,
@@ -252,7 +251,6 @@ export default {
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_DISCARD_FROM_DECK,
@@ -543,7 +541,6 @@ export default {
                                     'arrow': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,
@@ -608,7 +605,6 @@ export default {
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_SEARCH_CARDS,
@@ -619,6 +615,9 @@ export default {
                                                         ],
                                                         'requireMatch': true,
                                                         'firstMatch': true,
+                                                        'reverseLocations': [
+                                                            PLACE_DISCARD_PILE
+                                                        ],
                                                         'filter': {
                                                             'type': CARD_TYPE_UPGRADE,
                                                             'traits': TRAIT_TECH

@@ -390,7 +390,6 @@ export default {
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_FLIP,
@@ -434,7 +433,6 @@ export default {
                                     'arrow': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,
@@ -489,7 +487,6 @@ export default {
                                     'arrow': {
                                         'type': EFFECT_CHAINED,
                                         'params': {
-                                            'matchAll': true,
                                             'effects': [
                                                 {
                                                     'type': EFFECT_EXHAUST,

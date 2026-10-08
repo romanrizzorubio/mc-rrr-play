@@ -35,6 +35,14 @@ export class EffectsFactory {
             effects: effects.map(this.parseEffect.bind(this)),
         };
     }
+    _parseAdditionalCost(params) {
+        const {cost, ...rest} = params;
+
+        return {
+            ...rest,
+            cost: this.parseEffect(cost),
+        };
+    }
     _parseChoose(params) {
         const {options = []} = params;
 
@@ -57,6 +65,14 @@ export class EffectsFactory {
         return {
             ...params,
             effect: effect ? this.parseEffect(effect) : undefined,
+        };
+    }
+    _parseForEach(params) {
+        const {effect, ...rest} = params;
+
+        return {
+            ...rest,
+            effectDefinition: effect,
         };
     }
     _parseDoIf(params) {

@@ -57,9 +57,10 @@ export class PlayerZone extends GameZone {
 
             return serializedMinion;
         }));
+        const gameZone = await super.toObjWithAbilityAvailability(player);
 
         return {
-            ...await super.toObjWithAbilityAvailability(player),
+            ...gameZone,
             minions,
         };
     }

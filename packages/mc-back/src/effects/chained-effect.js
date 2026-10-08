@@ -4,13 +4,11 @@ export class ChainedEffect extends Effect {
     constructor({
 // ChainedEffect
         effects = [],
-        matchAll = false,
         outputParams = [],
     }) {
         super(arguments[0]);
 
         this.effects = effects;
-        this.matchAll = matchAll;
         this.outputParams = outputParams;
 
         effects.forEach(effect => {
@@ -42,11 +40,12 @@ export class ChainedEffect extends Effect {
     isFullResolved() {
         return this.effects.every(effect => effect.isFullResolved());
     }
-    getCostPaymentEffects(params) {
+    async getCostPaymentEffects(params) {
         const newParams = this.getEffectParams(params);
+        const effects = await Promise.all(this.effects.map(effect =>
+            effect.getCostPaymentEffects(newParams)));
 
-        return this.effects.flatMap(effect =>
-            effect.getCostPaymentEffects(newParams));
+        return effects.flat();
     }
     getEffectParams(params) {
         const {selectedTarget} = this;
@@ -60,10 +59,17 @@ export class ChainedEffect extends Effect {
             ...(targetPlayer ? {targetPlayer} : {}),
         };
     }
+    requiresAll(params) {
+        return Boolean(
+            params.isCost ||
+            params.costPaymentSession?.requireAllCosts ||
+            this.thenEffect
+        );
+    }
     canRun(params) {
         const newParams = this.getEffectParams(params);
 
-        if (this.matchAll || params.matchAll) {
+        if (this.requiresAll(params)) {
             return this.promisesSequentialEvery(this.effects, effect =>
                 effect.canRun(newParams));
         }
@@ -102,7 +108,7 @@ export class ChainedEffect extends Effect {
         return true;
     }
     async execute(params) {
-        const matchAll = this.matchAll || params.matchAll;
+        const requiresAll = this.requiresAll(params);
         const newParams = params.costPaymentSession?.getExecutionParams(this) ||
             this.getEffectParams(params);
 
@@ -116,10 +122,10 @@ export class ChainedEffect extends Effect {
                     return false;
                 }
 
-                if (matchAll && !effect.isFullResolved()) {
+                if (requiresAll && !effect.isFullResolved()) {
                     return false;
                 }
-            } else {
+            } else if (requiresAll) {
                 return false;
             }
         });

@@ -902,7 +902,7 @@ export default {
                                                 {
                                                     type: EFFECT_SEVERAL_ATTACKS,
                                                     params: {
-                                                        target: TARGET_YOU,
+                                                        target: TARGET_YOUR_HERO,
                                                         enemiesType: [
                                                             CHARACTER_ALL_ENGAGED_MINIONS,
                                                         ],

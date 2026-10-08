@@ -117,10 +117,12 @@ export class GameZone extends Engine {
         };
     }
     async toObjWithAbilityAvailability(player) {
+        const cards = await Promise.all(this.cards.map(card =>
+            card.toObjWithAbilityAvailability(player)));
+
         return {
             ...this.toObj(),
-            cards: await Promise.all(this.cards.map(card =>
-                card.toObjWithAbilityAvailability(player))),
+            cards,
         };
     }
 }

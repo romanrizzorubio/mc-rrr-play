@@ -11,6 +11,6 @@ export class ModifyCostEffect extends Effect {
     execute(_params) {
         const {selectedTarget, count} = this;
 
-        selectedTarget.modifyCost = count;
+        selectedTarget.modifyCost = (selectedTarget.modifyCost ?? 0) + count;
     }
 }

@@ -42,6 +42,7 @@ export class McScenario extends LitElement {
                 attached,
                 statusCards,
                 extraTraits = [],
+                extraKeywords = [],
             } = villain;
 
             return html`
@@ -59,6 +60,7 @@ export class McScenario extends LitElement {
                     .statusCards="${statusCards}"
                     .attached="${attached}"
                     .extraTraits="${extraTraits}"
+                    .extraKeywords="${extraKeywords}"
                 ></mc-villain-card>
             `;
         }
