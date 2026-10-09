@@ -26,6 +26,7 @@ export class VillainCardComponent extends LitElement {
             scheme: {type: Number},
             stage: {type: Number},
             attached: {type: Array},
+            faceDown: {type: Array},
             statusCards: {type: Object},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
@@ -46,6 +47,7 @@ export class VillainCardComponent extends LitElement {
         this.scheme = undefined;
         this.stage = undefined;
         this.attached = [];
+        this.faceDown = [];
         this.statusCards = {};
         this.extraTraits = [];
         this.extraKeywords = [];
@@ -64,6 +66,7 @@ export class VillainCardComponent extends LitElement {
             scheme,
             stage,
             attached,
+            faceDown,
             statusCards,
             extraTraits,
             extraKeywords,
@@ -84,6 +87,7 @@ export class VillainCardComponent extends LitElement {
                 .scheme="${scheme}"
                 .statusCards="${statusCards}"
                 .attached="${attached}"
+                .faceDown="${faceDown}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"
             >

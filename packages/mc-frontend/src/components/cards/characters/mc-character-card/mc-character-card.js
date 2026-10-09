@@ -28,6 +28,7 @@ export class McCharacterCard extends LitElement {
             scheme: {type: Number},
             statusCards: {type: Object},
             attached: {type: Array},
+            faceDown: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
             headerLeft: {type: Number, attribute: 'header-left'},
@@ -52,6 +53,7 @@ export class McCharacterCard extends LitElement {
         this.scheme = undefined;
         this.statusCards = {};
         this.attached = [];
+        this.faceDown = [];
         this.extraTraits = [];
         this.extraKeywords = [];
         this.headerLeft = undefined;
@@ -74,6 +76,7 @@ export class McCharacterCard extends LitElement {
             scheme,
             statusCards,
             attached,
+            faceDown,
             extraTraits,
             extraKeywords,
             headerLeft,
@@ -91,6 +94,7 @@ export class McCharacterCard extends LitElement {
                 .hitPoints="${hitPoints}"
                 .statusCards="${statusCards}"
                 .attached="${attached}"
+                .faceDown="${faceDown}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"
                 show-acquired-traits

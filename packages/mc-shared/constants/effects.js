@@ -13,6 +13,7 @@ export const EFFECT_CANNOT = 'cannot';
 export const EFFECT_CANNOT_TARGET = 'cannot-target';
 export const EFFECT_CONFUSE = 'confuse';
 export const EFFECT_DEAL_BOOST = 'deal-boost';
+export const EFFECT_STORE_BOOST = 'store-boost';
 export const EFFECT_DEAL_DAMAGE = 'deal-damage';
 export const EFFECT_DEAL_ENCOUNTER = 'deal-encounter';
 export const EFFECT_DEFEAT = 'defeat';

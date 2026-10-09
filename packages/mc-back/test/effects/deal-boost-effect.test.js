@@ -46,6 +46,32 @@ test('DealBoostEffect adds an extra card to its selected enemy activation', asyn
     assert.equal(dialogCount, 0);
 });
 
+test('DealBoostEffect adds a boost during a boost ability using its activation context', async () => {
+    const boostCard = {};
+    const enemyActivation = {
+        boostCards: [],
+        enemy: {
+            isVillain: true,
+            name: 'Klaw',
+        },
+    };
+    const effect = new DealBoostEffect({
+        match: {
+            triggerCards: {},
+            async drawEncounterCards() {
+                return [boostCard];
+            },
+        },
+    });
+
+    await effect.runEffect({
+        enemyActivation,
+        player: {},
+    });
+
+    assert.deepEqual(enemyActivation.boostCards, [boostCard]);
+});
+
 test('an enemy activation shows all dealt boost cards face down together', async () => {
     const dialogs = [];
     const activation = new EnemyActivationEffect({
@@ -174,6 +200,79 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     assert.equal(dialogs[1].data.cards[1].card.boost, 2);
     assert.equal(dialogs[1].data.cards[1].hasBoostAbility, true);
     assert.equal(dialogs[1].data.cumulativeBoost, 3);
+});
+
+test('a boost dealt by a boost ability resolves in the same activation', async () => {
+    const dialogs = [];
+    const resolutions = [];
+    const discarded = [];
+    const match = {
+        triggerCards: {},
+        async drawEncounterCards() {
+            return [generatedBoost];
+        },
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+        },
+    };
+    const createBoostCard = (name, boost, boostAbility) => ({
+        boost,
+        boostAbility,
+        isInPlay: false,
+        async discard() {
+            discarded.push(name);
+        },
+        toObj() {
+            return {name, boost};
+        },
+    });
+    const generatedBoost = createBoostCard('Aumento generado', 3, {
+        async resolveAbility({enemyActivation}) {
+            assert.equal(enemyActivation, activation);
+            resolutions.push('capacidad del aumento generado');
+        },
+    });
+    const firstBoost = createBoostCard('Aumento inicial', 1, {
+        async resolveAbility({enemyActivation}) {
+            assert.equal(enemyActivation, activation);
+            resolutions.push('capacidad del aumento inicial');
+            await new DealBoostEffect({match}).runEffect({
+                enemyActivation,
+                player: {},
+            });
+        },
+    });
+    const secondBoost = createBoostCard('Segundo aumento', 2);
+    const activation = new EnemyActivationEffect({
+        enemy: {
+            isVillain: true,
+            name: 'Duende Verde',
+        },
+        match,
+        selectedTarget: {},
+    });
+    activation.boostCards = [firstBoost, secondBoost];
+
+    const totalBoost = await activation.resolveBoostCards({player: {}});
+
+    assert.equal(totalBoost, 6);
+    assert.deepEqual(activation.boostCards, [
+        firstBoost,
+        secondBoost,
+        generatedBoost,
+    ]);
+    assert.deepEqual(resolutions, [
+        'capacidad del aumento inicial',
+        'capacidad del aumento generado',
+    ]);
+    assert.deepEqual(discarded, [
+        'Aumento inicial',
+        'Segundo aumento',
+        'Aumento generado',
+    ]);
+    assert.equal(dialogs.length, 3);
+    assert.match(dialogs[1].title, /2 de 3$/);
+    assert.equal(dialogs[2].data.cumulativeBoost, 6);
 });
 
 test('boost abilities receive the current activation', async () => {

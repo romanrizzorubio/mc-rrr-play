@@ -114,6 +114,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | `TARGET_MAIN_SCHEME` | El plan principal. |
 | `TARGET_MINION_HIGHEST_HP` | Los esbirros con la mayor vida actual; puede devolver varios si hay empate. |
 | `TARGET_MINION_HIGHEST_PRINTED_HP` | Los esbirros elegibles con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
+| `TARGET_ENEMY_HIGHEST_PRINTED_HP` | Los enemigos elegibles (Villano y esbirros) con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
 | `TARGET_SCHEME` | Los planes de la partida. |
 
 ### Mazos y descartes (`targets/deck.js`)

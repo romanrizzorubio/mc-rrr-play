@@ -12,12 +12,16 @@ export class DealBoostEffect extends Effect {
         const selectedActivation = this.selectedTarget?.boostCards ?
             this.selectedTarget :
             undefined;
-        const contextActivation = params.effect?.boostCards ?
+        const effectActivation = params.effect?.boostCards ?
             params.effect :
+            undefined;
+        const parameterActivation = params.enemyActivation?.boostCards ?
+            params.enemyActivation :
             undefined;
         const enemyActivation = this.enemyActivation ||
             selectedActivation ||
-            contextActivation;
+            effectActivation ||
+            parameterActivation;
         if (!enemyActivation?.enemy || !Array.isArray(enemyActivation.boostCards)) {
             throw new Error('DealBoostEffect requires an enemy activation.');
         }
@@ -27,7 +31,7 @@ export class DealBoostEffect extends Effect {
             (enemy.isMinion && enemy.villainous)) {
             const cards = await this.match.drawEncounterCards();
 
-            enemyActivation.boostCards = enemyActivation.boostCards.concat(cards);
+            enemyActivation.boostCards.push(...cards);
         }
     }
 }

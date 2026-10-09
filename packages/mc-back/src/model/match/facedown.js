@@ -5,11 +5,13 @@ export class FaceDown extends Engine {
 // FaceDown
         card,
         attached,
+        isFutureBoost = false,
     }) {
         super();
 
         this.card = card;
         this.attached = attached;
+        this.isFutureBoost = isFutureBoost;
     }
     discard() {
         return this.card.discard();
@@ -31,6 +33,14 @@ export class FaceDown extends Engine {
         card.owner.hand.addCard(card);
     }
     toObj() {
+        if (this.isFutureBoost) {
+            return {
+                ...super.toObj(arguments[0]),
+                isEncounterCard: true,
+                isFutureBoost: true,
+            };
+        }
+
         const {card: {
             name,
             isEncounterCard,

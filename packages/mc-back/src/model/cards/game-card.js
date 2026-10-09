@@ -491,15 +491,16 @@ export class GameCard extends Engine {
     get uses() {
         return this.getKeyword('uses');
     }
-    addFaceDown(card) {
+    addFaceDown(card, {isFutureBoost = false} = {}) {
         if (Array.isArray(card)) {
             card.forEach(_card => {
-                this.addFaceDown(_card);
+                this.addFaceDown(_card, {isFutureBoost});
             });
         } else {
             this.faceDown.push(new FaceDown({
                 attached: this,
                 card,
+                isFutureBoost,
             }));
         }
     }

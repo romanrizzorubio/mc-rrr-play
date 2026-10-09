@@ -14,6 +14,7 @@ import {
     EFFECT_CHOOSE,
     EFFECT_CONFUSE,
     EFFECT_DEAL_BOOST,
+    EFFECT_STORE_BOOST,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DEFEAT,
@@ -116,6 +117,7 @@ import {ChooseAbilityEffect} from '../../effects/choose-ability-effect.js';
 import {ChooseEffect} from '../../effects/choose-effect.js';
 import {ConfuseEffect} from '../../effects/confuse-effect.js';
 import {DealBoostEffect} from '../../effects/deal-boost-effect.js';
+import {StoreBoostEffect} from '../../effects/store-boost-effect.js';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
 import {DealEncounterEffect} from '../../effects/deal-encounter-effect.js';
 import {DefeatEffect} from '../../effects/defeat-effect.js';
@@ -223,6 +225,7 @@ export const EFFECT_MAP = {
     [EFFECT_CHOOSE_ABILITY]: ChooseAbilityEffect,
     [EFFECT_CONFUSE]: ConfuseEffect,
     [EFFECT_DEAL_BOOST]: DealBoostEffect,
+    [EFFECT_STORE_BOOST]: StoreBoostEffect,
     [EFFECT_DEAL_DAMAGE]: DealDamageEffect,
     [EFFECT_DEAL_ENCOUNTER]: DealEncounterEffect,
     [EFFECT_DEFEAT]: DefeatEffect,

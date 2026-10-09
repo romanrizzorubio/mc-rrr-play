@@ -30,7 +30,18 @@ export class EnemyActivationEffect extends Effect {
     checkTrigger() {
         return !this.canceled;
     }
-    dealBoostCards(params) {
+    async dealBoostCards(params) {
+        const futureBoostCards = (this.enemy.faceDown || [])
+            .filter(faceDown => faceDown.isFutureBoost);
+
+        futureBoostCards.forEach(faceDown => {
+            faceDown.removeCard();
+            this.boostCards.push(faceDown.card);
+        });
+        if (futureBoostCards.length) {
+            await this.enemy.refresh();
+        }
+
         const dealBoostEffect = new DealBoostEffect({
             ability: this.ability,
             enemyActivation: this,
@@ -115,11 +126,11 @@ export class EnemyActivationEffect extends Effect {
         });
     }
     async resolveBoostCards(params) {
-        const {boostCards} = this;
         const selectedTarget = this.getBoostTarget();
         let totalBoost = 0;
 
-        for (const [cardIndex, card] of boostCards.entries()) {
+        for (let cardIndex = 0; cardIndex < this.boostCards.length; cardIndex++) {
+            const card = this.boostCards[cardIndex];
             const resolveBoostEffect = new ResolveBoostEffect({
                 activation: this.activation,
                 enemyActivation: this,

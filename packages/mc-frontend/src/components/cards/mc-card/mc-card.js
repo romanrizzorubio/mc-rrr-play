@@ -68,6 +68,7 @@ export class CardComponent extends LitElement {
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             statusCards: {type: Object},
             attached: {type: Array},
+            faceDown: {type: Array},
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
             hideName: {type: Boolean, attribute: 'hide-name'},
@@ -86,6 +87,7 @@ export class CardComponent extends LitElement {
         this.image = '';
         this.isFacedownCard = false;
         this.attached = [];
+        this.faceDown = [];
         this.size = 'm';
         this.handSize = undefined;
         this.showBasicStats = false;
@@ -138,9 +140,8 @@ export class CardComponent extends LitElement {
         const _addType = (ret, type, card) => {
             if (!ret[type]) {
                 ret[type] = [];
-
-                ret[type].push(card);
             }
+            ret[type].push(card);
         };
 
         return faceDown ? faceDown.reduce((ret, card) => {
@@ -494,9 +495,9 @@ export class CardComponent extends LitElement {
                 size="${this._smallSize}"
                 @click="${this.handleFaceDownClick(type, types[type])}"
             ></mc-card-image>
-            <div class="facedown-count">
-                ${types[type].length}
-            </div>
+            ${types[type].length > 1 ? html`
+                <div class="facedown-count">${types[type].length}</div>
+            ` : ''}
         `;
         });
 
