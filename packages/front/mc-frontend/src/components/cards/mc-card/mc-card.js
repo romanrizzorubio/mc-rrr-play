@@ -3,6 +3,7 @@ import 'mc-components';
 
 import styles from './mc-card.css.js';
 import '../mc-card-image/mc-card-image.js';
+import {ICON_STAR} from '../../common/mc-icon/mc-icon.js';
 
 import {
     BACK_CARD_ENCOUNTER,
@@ -60,6 +61,7 @@ export class CardComponent extends LitElement {
             defense: {type: Number},
             recovery: {type: Number},
             scheme: {type: Number},
+            unprintedStats: {type: Array},
             acceleration: {type: Number},
             life: {type: Number},
             generic: {type: Number},
@@ -102,6 +104,7 @@ export class CardComponent extends LitElement {
         this.defense = undefined;
         this.recovery = undefined;
         this.scheme = undefined;
+        this.unprintedStats = [];
         this.generic = undefined;
         this.life = undefined;
         this.showThreat = false;
@@ -379,17 +382,26 @@ export class CardComponent extends LitElement {
             </div>
         `;
     }
+    renderStatValue(stat, value) {
+        return this.unprintedStats.includes(stat) && value === 0 ?
+            html`
+                <span class="stat-star">
+                    <mc-icon icon="${ICON_STAR}"></mc-icon>
+                </span>
+            ` :
+            html`<span class="numeric-value">${value}</span>`;
+    }
     renderStats() {
         if (!this.showBasicStats) {
             return html``;
         }
 
         const stats = [
-            {label: 'INT', value: this.thwart, className: 'stat-thwart'},
-            {label: 'PLA', value: this.scheme, className: 'stat-scheme'},
-            {label: 'ATQ', value: this.attack, className: 'stat-attack'},
-            {label: 'DEF', value: this.defense, className: 'stat-defense'},
-            {label: 'REC', value: this.recovery, className: 'stat-recovery'},
+            {stat: 'thwart', label: 'INT', value: this.thwart, className: 'stat-thwart'},
+            {stat: 'scheme', label: 'PLA', value: this.scheme, className: 'stat-scheme'},
+            {stat: 'attack', label: 'ATQ', value: this.attack, className: 'stat-attack'},
+            {stat: 'defense', label: 'DEF', value: this.defense, className: 'stat-defense'},
+            {stat: 'recovery', label: 'REC', value: this.recovery, className: 'stat-recovery'},
         ].filter(({value}) =>
             value !== undefined && value !== null && Number.isFinite(value)
         );
@@ -397,12 +409,12 @@ export class CardComponent extends LitElement {
 
         return stats.length ? html`
             <div class="character-stats ${stageAligned ? 'stage-aligned' : ''}">
-                ${stats.map(({label, value, className}) => html`
+                ${stats.map(({stat, label, value, className}) => html`
                     <span
                         class="character-stat ${className}"
                         aria-label="${label}: ${value}"
                     >
-                        <span class="numeric-value">${value}</span>
+                        ${this.renderStatValue(stat, value)}
                     </span>
                 `)}
             </div>
@@ -414,7 +426,7 @@ export class CardComponent extends LitElement {
                 class="character-stat status-card ${className}"
                 aria-label="${label}: ${count} ${count === 1 ? 'carta' : 'cartas'} de estado"
             >
-                ${initial}${count > 1 ? html`
+                <span class="numeric-value">${initial}</span>${count > 1 ? html`
                     <span class="numeric-value">x${count}</span>
                 ` : ''}
             </span>

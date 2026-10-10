@@ -6,6 +6,7 @@ export const DECK_ROUTE_NAMES = new Set([
 ]);
 
 export const APP_ROUTES = [
+    { name: 'match', pattern: 'match/:id' },
     {
         name: 'matches',
         pattern: '',
@@ -15,7 +16,7 @@ export const APP_ROUTES = [
         pattern: 'create-match',
     },
     {
-        name: 'match',
+        name: 'match-legacy',
         pattern: 'match',
     },
     {
@@ -49,3 +50,5 @@ const NAVIGATION_PATHS = {
 
 export const getNavigationPath = route =>
     NAVIGATION_PATHS[route] || route;
+
+export const getMatchPath = id => `/match/${encodeURIComponent(id)}`;

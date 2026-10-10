@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    DIALOG_DEFENSE,
     DIALOG_USE_CARD,
     CHARACTER_VILLAIN,
     EFFECT_DEAL_DAMAGE,
@@ -16,7 +17,7 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_VILLAIN_ATTACKS_YOU,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 import {Ability} from '../../src/abilities/core/ability.js';
 import {Attack} from '../../src/activations/attack.js';
@@ -52,6 +53,13 @@ test('Backflip is offered before attack damage is applied', async () => {
         canDefend: () => true,
         hand: {cards: []},
         isHero: true,
+        isPlayer: true,
+        superhero: {
+            currentSide: {
+                id: 'spider-man-hero-side',
+                name: 'Spider-Man',
+            },
+        },
     };
     const card = {
         id: 'backflip',
@@ -91,7 +99,7 @@ test('Backflip is offered before attack damage is applied', async () => {
 
     await engine.trigger(
         PRIORITY_INTERRUPT,
-        [TRIGGER_YOU_WOULD_TAKE_DAMAGE],
+        [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE],
         {effect: attackDamage, player}
     );
 
@@ -280,6 +288,62 @@ test('enemy attack opens its response window with the resolved defense state', a
     assert.ok(triggerCalls[2].types.includes(TRIGGER_THIS_ATTACK));
     assert.ok(triggerCalls[2].types.includes(TRIGGER_VILLAIN_ATTACKS_YOU));
     assert.equal(triggerCalls[2].defended, true);
+});
+
+test('defense dialog shows effective hit points for each defender', async () => {
+    const player = {hand: {cards: []}};
+    const defender = {
+        id: 'spider-man',
+        isSuperhero: true,
+        currentSide: {
+            async getDefenseValue() {
+                return 3;
+            },
+        },
+        async getEffectiveStats() {
+            return {hitPoints: 16, life: 13};
+        },
+        toObj() {
+            return {
+                id: this.id,
+                hitPoints: 15,
+                life: 12,
+            };
+        },
+    };
+    const attackTarget = {
+        defenders: [defender],
+        name: 'Spider-Man',
+        owner: player,
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const effect = new EnemyAttackEffect({
+        enemy: {name: 'Rino'},
+        match: {},
+    });
+    effect.selectedTarget = attackTarget;
+    effect.toObj = () => ({});
+    let defenseDialog;
+    effect.openDialog = async dialog => {
+        defenseDialog = dialog;
+
+        return {defender: {id: defender.id}};
+    };
+    effect.setDefender = async (selectedDefender, target) => {
+        effect.defendersByTarget.set(target, selectedDefender.currentSide);
+    };
+
+    await effect.defense({player});
+
+    assert.equal(defenseDialog.dialogType, DIALOG_DEFENSE);
+    assert.deepEqual(defenseDialog.data.defenders.map(({hitPoints, life}) => ({
+        hitPoints,
+        life,
+    })), [
+        {hitPoints: 16, life: 13},
+    ]);
 });
 
 test('retaliation resolves after a defended enemy attack with or without damage', async () => {

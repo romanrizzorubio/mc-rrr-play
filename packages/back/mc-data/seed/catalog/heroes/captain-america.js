@@ -79,6 +79,7 @@ import {
     TARGET_ENGAGED_HERO,
     TARGET_SCHEME,
     TARGET_SCENARIO,
+    TARGET_SOURCE,
     TARGET_THIS,
     TARGET_UPGRADE_YOU_CONTROL,
     TARGET_YOU,
@@ -98,12 +99,12 @@ import {
     TRAIT_SOLDIER,
     TRAIT_SUPERPOWER,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_INSTANT,
     TRIGGER_PLAYER_CAN_THAWRT,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ENTER_PLAY,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 
 import {hydraSoldier} from '../encounters/minions.js';
@@ -175,7 +176,11 @@ export default {
                                                 }
                                             },
                                             {
-                                                'type': EFFECT_MOVE_TO_HAND
+                                                'type': EFFECT_MOVE_TO_HAND,
+                                                'params': {
+                                                    'target': TARGET_SOURCE,
+                                                    'source': 'selectedCards'
+                                                }
                                             },
                                             {
                                                 'type': EFFECT_SHUFFLE_DECK
@@ -412,7 +417,10 @@ export default {
                                     'labels': [
                                         LABEL_DEFENSE
                                     ],
-                                    'trigger': TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+                                    'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                                    'triggerParams': {
+                                        'target': TARGET_YOUR_SUPERHERO
+                                    },
                                     'arrow': {
                                         'type': EFFECT_EXHAUST,
                                         'params': {
@@ -425,7 +433,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
-                                            'target': TARGET_YOU
+                                            'target': TARGET_YOUR_SUPERHERO
                                         }
                                     }
                                 }

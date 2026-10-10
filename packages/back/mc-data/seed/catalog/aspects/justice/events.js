@@ -25,7 +25,7 @@ export default [
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'For Justice',
+                'name': 'Por la justicia',
                 'set': 'justice',
                 'image': 'aspect/justice/events/j60-copy-2.webp',
                 'traits': [
@@ -78,7 +78,7 @@ export default [
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
-                'name': 'Great Responsability',
+                'name': 'Una gran responsabilidad',
                 'set': 'justice',
                 'image': 'aspect/justice/events/j61-copy-2.webp',
                 'cost': 0,

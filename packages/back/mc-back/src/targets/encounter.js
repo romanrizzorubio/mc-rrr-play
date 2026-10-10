@@ -5,6 +5,7 @@ import {
     TARGET_MINION_HIGHEST_HP,
     TARGET_MINION_HIGHEST_PRINTED_HP,
     TARGET_SCHEME,
+    TARGET_SIDE_SCHEME,
     TARGET_ATTACKED,
     TARGET_ATTACKER,
     TARGET_ENEMY_HIGHEST_PRINTED_HP,
@@ -50,4 +51,5 @@ export const encounterTargets = {
         return [];
     },
     [TARGET_SCHEME]: ({match}) => match.schemes,
+    [TARGET_SIDE_SCHEME]: ({match}) => match.sideSchemes,
 };

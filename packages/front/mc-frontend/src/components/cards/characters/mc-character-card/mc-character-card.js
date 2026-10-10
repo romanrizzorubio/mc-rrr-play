@@ -24,6 +24,7 @@ export class McCharacterCard extends LitElement {
             defense: {type: Number},
             recovery: {type: Number},
             scheme: {type: Number},
+            unprintedStats: {type: Array},
             statusCards: {type: Object},
             attached: {type: Array},
             faceDown: {type: Array},
@@ -49,6 +50,7 @@ export class McCharacterCard extends LitElement {
         this.defense = undefined;
         this.recovery = undefined;
         this.scheme = undefined;
+        this.unprintedStats = [];
         this.statusCards = {};
         this.attached = [];
         this.faceDown = [];
@@ -72,6 +74,7 @@ export class McCharacterCard extends LitElement {
             defense,
             recovery,
             scheme,
+            unprintedStats,
             statusCards,
             attached,
             faceDown,
@@ -106,6 +109,7 @@ export class McCharacterCard extends LitElement {
                 .defense="${defense}"
                 .recovery="${recovery}"
                 .scheme="${scheme}"
+                .unprintedStats="${unprintedStats}"
             >
             </mc-card>
         `;

@@ -13,6 +13,7 @@ import {
     CANCEL_ENCOUNTER_NOT,
     CANCEL_ENCOUNTER_REVEAL,
 } from './cancel-encounter-constants.js';
+import {checkCondition} from '../engine/utils.js';
 import {DelayedEffect} from './delayed-effect.js';
 import {Effect} from './effect.js';
 import {EngageEffect} from './engage-effect.js';
@@ -25,6 +26,7 @@ export class RevealEncounterEffect extends Effect {
         player,
         from = PLACE_PLAYER_ENCOUNTERS,
         selectedTarget,
+        putInPlay = false,
     }) {
         super(arguments[0]);
 
@@ -36,6 +38,7 @@ export class RevealEncounterEffect extends Effect {
         this.player = player;
         this.from = from;
         this.hasPreselectedCard = Boolean(selectedTarget?.isEncounterCard);
+        this.putInPlay = putInPlay;
 
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
@@ -140,9 +143,14 @@ export class RevealEncounterEffect extends Effect {
     }
     reveal(params) {
         const {selectedTarget} = this;
+        const abilities = selectedTarget.currentSide?.abilities || selectedTarget.abilities;
 
-        if (selectedTarget.abilities) {
-            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenRevealed && _ability.isValidIdentity(params));
+        if (abilities) {
+            const ability = abilities.find(_ability =>
+                _ability.isWhenRevealed &&
+                _ability.isValidIdentity(params) &&
+                (!_ability.condition || checkCondition(params, _ability.condition))
+            );
 
             if (ability) {
                 return ability.resolveAbility({
@@ -183,7 +191,20 @@ export class RevealEncounterEffect extends Effect {
         this.surge = getSurgeEffect.surge;
 
         if (selectedTarget.isMain) {
-            selectedTarget.refresh();
+            if (this.putInPlay && selectedTarget.isVillain) {
+                const putPlayEffect = new PutPlayEffect({
+                    card: selectedTarget,
+                    controller: this.match.scenario,
+                    match: this.match,
+                });
+                await putPlayEffect.runEffect({
+                    ...params,
+                    force: true,
+                    card: selectedTarget,
+                });
+            } else {
+                await selectedTarget.refresh();
+            }
         } else {
             if (selectedTarget.isMinion) {
                 const engageEffect = new EngageEffect({
@@ -248,6 +269,7 @@ export class RevealEncounterEffect extends Effect {
 
                     await putPlayEffect.runEffect({
                         ...params,
+                        ...(this.putInPlay ? {force: true} : {}),
                         card: selectedTarget,
                         reveal: this,
                     });

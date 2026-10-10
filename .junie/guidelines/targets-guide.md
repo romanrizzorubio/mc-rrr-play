@@ -21,6 +21,7 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve cero, no hay objetivo válido.
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
+- En objetivos de doble cara, el diálogo devuelve el `id` del lado mostrado y su `parentId`; la selección se resuelve contra el candidato de la partida usando el ID directo o el ID del padre.
 - `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`.
 - Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
 
@@ -59,6 +60,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_ALL_HEROES` | Todos los superhéroes que estén en forma de héroe. |
 | `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes en forma de héroe y los aliados. |
 | `TARGET_ALL_PLAYERS` | Todos los jugadores. |
+| `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
 | `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios; resuelve todos los resultados. |
 | `TARGET_ENVIRONMENT` | Los entornos en juego en la zona del escenario; selecciona uno si hay varios. |
 | `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
@@ -117,6 +119,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | `TARGET_MINION_HIGHEST_HP` | Los esbirros con la mayor vida actual; puede devolver varios si hay empate. |
 | `TARGET_MINION_HIGHEST_PRINTED_HP` | Los esbirros elegibles con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
 | `TARGET_ENEMY_HIGHEST_PRINTED_HP` | Los enemigos elegibles (Villano y esbirros) con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
+| `TARGET_SIDE_SCHEME` | Los planes secundarios; selecciona uno si hay varios. |
 | `TARGET_SCHEME` | Los planes de la partida. |
 
 ### Mazos y descartes (`targets/deck.js`)

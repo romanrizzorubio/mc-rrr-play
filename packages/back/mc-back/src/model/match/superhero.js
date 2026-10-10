@@ -64,6 +64,9 @@ export class Superhero extends CharacterGameCard {
     get accelerationIcons() {
         return this.currentSide.accelerationIcons;
     }
+    get amplificationIcons() {
+        return this.currentSide.amplificationIcons;
+    }
     get attack() {
         return this.currentSide.attack;
     }

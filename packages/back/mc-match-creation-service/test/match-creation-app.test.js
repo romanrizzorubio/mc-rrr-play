@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import {test} from 'node:test';
 
-import {ENDPOINTS} from 'mc-endpoints';
+import {ENDPOINTS, INTERNAL_ENDPOINTS} from 'mc-endpoints';
 import {createMatchCreationApp} from '../src/match-creation-app.js';
 
 const listen = async app => {
@@ -71,6 +71,46 @@ test('match creation requests are proxied to the match service with the match he
         assert.deepEqual(forwardedRequest, {
             match: 'game-1',
             body: {name: 'game-1'},
+        });
+    } finally {
+        await creationService.close();
+        await matchService.close();
+    }
+});
+
+test('match reset requests are proxied to the reset endpoint with the match header', async () => {
+    const upstream = express();
+    upstream.use(express.json());
+    let forwardedRequest;
+    upstream.post(INTERNAL_ENDPOINTS.MATCH.RESET, (req, res) => {
+        forwardedRequest = {
+            match: req.headers.match,
+            body: req.body,
+        };
+        res.status(200).json({id: req.body.id});
+    });
+
+    const matchService = await listen(upstream);
+    const creationService = await listen(createMatchCreationApp({
+        data: {},
+        matchServiceUrl: matchService.url,
+    }));
+
+    try {
+        const response = await fetch(`${creationService.url}${ENDPOINTS.MATCH.RESET}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                match: 'game-1',
+            },
+            body: JSON.stringify({id: 'stable-match-id'}),
+        });
+
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), {id: 'stable-match-id'});
+        assert.deepEqual(forwardedRequest, {
+            match: 'game-1',
+            body: {id: 'stable-match-id'},
         });
     } finally {
         await creationService.close();

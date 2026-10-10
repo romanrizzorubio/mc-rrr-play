@@ -8,9 +8,32 @@ export default css`
   .button {
     width: 100%;
   }
-  
+
   .button {
     margin-top: 16px;
+  }
+
+  .step-status {
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+
+  .step-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .step-actions-next {
+    justify-content: flex-end;
+  }
+
+  .step-actions .button {
+    width: auto;
+    min-width: 160px;
+    margin-top: 0;
   }
 
   .expert-mode {
@@ -69,6 +92,15 @@ export default css`
   }
 
   @media (max-width: 600px) {
+    .step-actions {
+      align-items: stretch;
+      flex-direction: column-reverse;
+    }
+
+    .step-actions .button {
+      width: 100%;
+    }
+
     .modular-sets {
       grid-template-columns: 1fr;
     }

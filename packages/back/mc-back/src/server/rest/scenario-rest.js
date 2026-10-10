@@ -63,6 +63,8 @@ export class ScenarioRest {
                 ...scenarioDefaultSets.filter(isSelectedSet),
                 ...selectedModularSets.filter(id => !configuredSetIdSet.has(id)),
             ];
+            match.creationConfig ??= {players: [], scenario: null, expert: false};
+            match.creationConfig.scenario = structuredClone(scenarioConfig);
             const scenarioCreated = await matchFactory.createScenario(scenarioConfig);
             match.addScenario(scenarioCreated);
 

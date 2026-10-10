@@ -18,6 +18,7 @@ export class Card extends Engine {
         triggerInstant = false,
         icons = {},
         keywords = {},
+        unprintedStats = [],
     }) {
         super(arguments[0]);
 
@@ -38,6 +39,9 @@ export class Card extends Engine {
         this.triggerInstant = triggerInstant;
         this.icons = new Icons(icons);
         this.keywords = new Keywords(keywords);
+        if (unprintedStats.length) {
+            this.unprintedStats = [...unprintedStats];
+        }
 
         this.isAttachable = false;
         this.isCharacter = false;
@@ -80,11 +84,18 @@ export class Card extends Engine {
     }
     toObj() {
         const {id, name, image} = this;
+        const unprintedStats = this.unprintedStats ?? [];
 
-        return {
+        const card = {
             id,
             name,
             image,
         };
+
+        if (unprintedStats.length) {
+            card.unprintedStats = unprintedStats;
+        }
+
+        return card;
     }
 }

@@ -57,11 +57,20 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         const players = this.match.orderedPlayers;
         const hazardIcons = this.match.hazardIcons;
         const encountersCount = players.length + hazardIcons;
+        const hazardIconsByPlayer = new Map(
+            players.map(player => [player, 0])
+        );
 
         let i = 0;
         let index = i;
         while(i < encountersCount) {
             const player = players[index];
+            if (i >= players.length) {
+                hazardIconsByPlayer.set(
+                    player,
+                    hazardIconsByPlayer.get(player) + 1
+                );
+            }
 
             const dealEncounterEffect = new DealEncounterEffect({
                 selectedTarget: player,
@@ -87,6 +96,7 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
                 encounters: players.map(player => ({
                     name: player.superhero.name,
                     count: player.encounters.length,
+                    hazardIcons: hazardIconsByPlayer.get(player),
                 })),
             },
         });

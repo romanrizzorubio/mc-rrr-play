@@ -2,8 +2,8 @@ import {
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_DEFEAT,
     EFFECT_PLACE_DAMAGE,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -18,6 +18,37 @@ export class TakeDamageEffect extends Effect {
 
         this.preventDamage = 0;
         this.excess = 0;
+        this.canceled = false;
+    }
+    cancel({triggeredTarget} = {}) {
+        const {selectedTarget} = this;
+
+        if (!Array.isArray(selectedTarget) || !triggeredTarget) {
+            this.canceled = true;
+            return;
+        }
+
+        const targetIndex = selectedTarget.findIndex(target =>
+            target === triggeredTarget ||
+            (triggeredTarget.id !== undefined &&
+                target?.id === triggeredTarget.id &&
+                target.name === triggeredTarget.name)
+        );
+        if (targetIndex < 0) {
+            throw new Error('TakeDamageEffect could not find the replaced damage target.');
+        }
+
+        const damage = Array.isArray(this.damage) ?
+            this.damage.slice() :
+            selectedTarget.map(() => this.damage);
+        const prevention = Array.isArray(this.preventDamage) ?
+            this.preventDamage.slice() :
+            selectedTarget.map(() => this.preventDamage ?? 0);
+
+        prevention[targetIndex] = damage[targetIndex];
+        this.damage = damage;
+        this.preventDamage = prevention;
+        this.canceled = !this.checkTrigger();
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
@@ -46,6 +77,10 @@ export class TakeDamageEffect extends Effect {
         return super.canRun(params);
     }
     checkTrigger() {
+        if (this.canceled) {
+            return false;
+        }
+
         const {takenDamage} = this;
 
         if (takenDamage instanceof Array) {
@@ -132,7 +167,7 @@ export class TakeDamageEffect extends Effect {
     getTriggersWould() {
         return super.getTriggersWould()
             .concat([
-                TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+                TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
             ]);
     }
     getTriggersEnds(params) {
@@ -165,6 +200,10 @@ export class TakeDamageEffect extends Effect {
     }
 
     async takeDamage(selectedTarget, takenDamage, params) {
+        if (takenDamage <= 0) {
+            return;
+        }
+
         await this.placeDamage(selectedTarget, takenDamage, params);
 
         const life = await selectedTarget.getLife();
@@ -198,17 +237,29 @@ export class TakeDamageEffect extends Effect {
                         takenDamage[index] :
                         takenDamage;
 
-                    await this.placeDamage(target, targetDamage, params);
+                    if (targetDamage > 0) {
+                        await this.placeDamage(target, targetDamage, params);
+                    }
                 }));
 
                 const targetsToDefeat = await Promise.all(
-                    selectedTarget.map(async target => ({
-                        target,
-                        life: await target.getLife(),
-                    }))
+                    selectedTarget.map(async (target, index) => {
+                        const targetDamage = takenDamage instanceof Array ?
+                            takenDamage[index] :
+                            takenDamage;
+
+                        if (targetDamage <= 0) {
+                            return undefined;
+                        }
+
+                        return {
+                            target,
+                            life: await target.getLife(),
+                        };
+                    })
                 );
 
-                for (const {target, life} of targetsToDefeat) {
+                for (const {target, life} of targetsToDefeat.filter(Boolean)) {
                     if (life <= 0) {
                         await this.defeat(target, params);
                     }

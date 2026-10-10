@@ -10,24 +10,14 @@ export class PlayerZone extends GameZone {
     engage(minion) {
         this.minions.push(minion);
     }
-    get hasCrisis() {
-        return this.minions.some(minion => minion.hasCrisis) ||
-            super.hasCrisis;
+    get inPlayCards() {
+        return [...new Set([...super.inPlayCards, ...this.minions])];
     }
     get hasGuard() {
         return this.minions.some(minion => minion.guard);
     }
     get hasPatrol() {
         return this.minions.some(minion => minion.patrol);
-    }
-    get hazardIcons() {
-        let hazardIcons = 0;
-
-        this.minions.forEach(minion => {
-            hazardIcons += minion.hazardIcons;
-        });
-
-        return hazardIcons + super.hazardIcons;
     }
     get objectToRefresh() {
         return 'playerZone';

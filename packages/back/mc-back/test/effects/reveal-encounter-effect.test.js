@@ -10,7 +10,10 @@ import {CANCEL_ENCOUNTER_FULL} from '../../src/effects/cancel-encounter-effect.j
 import {AttachEffect} from '../../src/effects/attach-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
+import {MatchFactory} from '../../src/factory/match-factory.js';
+import {Match} from '../../src/model/match/match.js';
 import {Player} from '../../src/model/match/player.js';
+import riskyBusiness from '../../../mc-data/seed/catalog/scenarios/risky-business.js';
 
 const createEncounterCard = id => ({
     id,
@@ -124,6 +127,37 @@ test('RevealEncounterEffect does not show a dialog for main scheme sides', async
 
     assert.equal(dialogCount, 0);
     assert.equal(effect.selectedTarget, schemeSide);
+});
+
+test('RevealEncounterEffect selects the identity-matching conditional ability', async () => {
+    const match = new Match({
+        mc: {mcSocket: {send() {}}},
+        name: 'conditional-reveal',
+    });
+    match.scenario = {
+        villain: {name: 'Norman Osborn'},
+    };
+    const factory = new MatchFactory(match);
+    const cardConfig = riskyBusiness.config.cards.find(({card}) =>
+        card.params.name === 'Genio loco').card;
+    const card = factory.cardsFactory.createGameCardFromConfig(cardConfig);
+    const selectedAbilities = [];
+    card.abilities
+        .filter(ability => ability.isWhenRevealed)
+        .forEach(ability => {
+            ability.resolveAbility = async () => {
+                selectedAbilities.push(ability.condition['player.match.scenario.villain.name']);
+            };
+        });
+    const player = {match};
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget: card,
+    });
+
+    await effect.reveal({player});
+
+    assert.deepEqual(selectedAbilities, ['Norman Osborn']);
 });
 
 test('a fully canceled encounter card is discarded', async () => {

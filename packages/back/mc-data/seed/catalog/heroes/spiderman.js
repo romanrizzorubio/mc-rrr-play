@@ -24,7 +24,7 @@ import {
     CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
     CLASSIFICATION_HERO,
-    EFFECT_CANCEL_ATTACK,
+    EFFECT_CANCEL_ACTIVATION,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_CHOOSE_ABILITY,
@@ -96,7 +96,7 @@ import {
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_VILLAIN_ATTACKS_YOU,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE
 } from 'mc-shared';
 
 export default {
@@ -234,7 +234,10 @@ export default {
                             {
                                 'type': ABILITY_INTERRUPT,
                                 'params': {
-                                    'trigger': TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+                                    'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                                    'triggerParams': {
+                                        'target': TARGET_YOUR_SUPERHERO
+                                    },
                                     'labels': [
                                         LABEL_DEFENSE
                                     ],
@@ -244,7 +247,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
-                                            'target': TARGET_YOU
+                                            'target': TARGET_YOUR_SUPERHERO
                                         }
                                     }
                                 }
@@ -493,7 +496,7 @@ export default {
                                                     'params': {
                                                         'effects': [
                                                             {
-                                                                'type': EFFECT_CANCEL_ATTACK
+                                                                'type': EFFECT_CANCEL_ACTIVATION
                                                             },
                                                             {
                                                                 'type': EFFECT_DISCARD_GAME,

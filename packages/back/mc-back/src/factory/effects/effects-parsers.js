@@ -13,6 +13,7 @@ import {
     EFFECT_FOR_EACH,
     EFFECT_LASTING,
     EFFECT_MAY,
+    EFFECT_REPLACE_EFFECT,
     EFFECT_SIMULTANEOUS,
 } from 'mc-shared';
 
@@ -32,4 +33,5 @@ export const EFFECT_PARSERS_MAP = {
     [EFFECT_DELAYED]: '_parseDelayed',
     [EFFECT_LASTING]: '_parseLasting',
     [EFFECT_FOR_EACH]: '_parseForEach',
+    [EFFECT_REPLACE_EFFECT]: '_parseReplaceEffect',
 };

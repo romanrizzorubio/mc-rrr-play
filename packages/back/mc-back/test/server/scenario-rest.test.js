@@ -57,6 +57,11 @@ test('createScenario applies the selected modular sets and retains standard sets
         match.scenario.sets.map(({name}) => name),
         ['standard', 'La Silla del Juicio Final']
     );
+    assert.deepEqual(match.creationConfig.scenario.sets, ['standard']);
+    assert.deepEqual(
+        match.creationConfig.scenario.defaultSets,
+        ['the-doomsday-chair']
+    );
 });
 
 test('createScenario defaults to the modular sets configured by the scenario', async () => {

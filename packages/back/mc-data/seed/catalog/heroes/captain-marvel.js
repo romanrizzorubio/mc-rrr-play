@@ -57,6 +57,7 @@ import {
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_ACTIVATION,
+    TARGET_ALL_CHARACTERS,
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
     TARGET_ANY_PLAYER,
@@ -88,10 +89,10 @@ import {
     TRAIT_THWART,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_INSTANT,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_ENTER_PLAY,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE
 } from 'mc-shared';
 
 export default {
@@ -551,7 +552,13 @@ export default {
                             {
                                 'type': ABILITY_HERO_INTERRUPT,
                                 'params': {
-                                    'trigger': TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+                                    'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                                    'triggerParams': {
+                                        'target': TARGET_ALL_CHARACTERS,
+                                        'condition': {
+                                            'name': 'Capitana Marvel'
+                                        }
+                                    },
                                     'labels': [
                                         LABEL_DEFENSE
                                     ],
@@ -564,7 +571,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
-                                            'target': TARGET_YOU,
+                                            'target': TARGET_EFFECT,
                                             'damage': 3
                                         }
                                     }

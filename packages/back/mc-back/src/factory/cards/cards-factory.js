@@ -23,10 +23,17 @@ export class CardsFactory {
             });
         }
     }
-    createCardSides(sides) {
-        return new GameCard({
+    createCardSides(sides, index, owner, {sameCard = false} = {}) {
+        const CardClass = sides[0]?.card?.isCharacter ?
+            CharacterGameCard :
+            GameCard;
+
+        return new CardClass({
             sides,
+            index,
+            owner,
             match: this.match,
+            sameCard,
         });
     }
     createGameCard({card, index, owner}) {
@@ -48,11 +55,24 @@ export class CardsFactory {
             return new GameCard({card, index, owner, abilities, boostAbility});
         }
     }
-    createSides(sides) {
+    createGameCardFromConfig(cardConfig, {index, owner} = {}) {
+        if (Array.isArray(cardConfig.params?.sides)) {
+            const sides = this.createSides(cardConfig.params.sides, index);
+
+            return this.createCardSides(sides, index, owner, {
+                sameCard: cardConfig.params.sameCard,
+            });
+        }
+
+        const card = this.createCard(cardConfig);
+
+        return this.createGameCard({card, index, owner});
+    }
+    createSides(sides, index) {
         return sides.map(cardConfig => {
             const card = this.createCard(cardConfig);
 
-            return this.createGameCard({card});
+            return this.createGameCard({card, index});
         });
     };
 }

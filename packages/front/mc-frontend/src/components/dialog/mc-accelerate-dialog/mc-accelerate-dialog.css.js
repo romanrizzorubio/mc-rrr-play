@@ -20,6 +20,13 @@ export default css`
     justify-content: space-around;
     margin-top: 16px;
   }
+  .accelerate-icons,
+  .accelerate-tokens {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3em;
+  }
   .accelerate-modify mc-icon {
     font-size: 2em;
     display: block;

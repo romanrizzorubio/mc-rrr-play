@@ -27,6 +27,13 @@ export default css`
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .field {
@@ -69,7 +76,7 @@ export default css`
   }
 
   .save-button {
-    margin-top: 20px;
+    margin: 0;
   }
 
   @media (max-width: 700px) {

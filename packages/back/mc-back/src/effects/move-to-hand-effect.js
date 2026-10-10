@@ -1,10 +1,24 @@
+import {TARGET_CARD} from 'mc-shared';
+
 import {Effect} from './effect.js';
 
 
 export class MoveToHandEffect extends Effect {
+    constructor({
+        refreshTarget = true,
+        target = TARGET_CARD,
+        ...params
+    }) {
+        super({
+            ...params,
+            refreshTarget,
+            target,
+        });
+    }
     async execute(params) {
-        const {card, player} = params;
-        const targetPlayer = this.selectedTarget || player;
+        const {player} = params;
+        const card = this.selectedTarget;
+        const targetPlayer = player;
 
         if (card && targetPlayer && targetPlayer.hand) {
             let removedFromDeck = false;

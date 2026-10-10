@@ -11,11 +11,19 @@ export class Match extends Engine {
     constructor({
         mc,
         name,
+        id = name,
     }) {
         super(arguments[0]);
 
         this.mc = mc;
         this.name = name;
+        this.id = id;
+        this.expert = false;
+        this.creationConfig = {
+            players: [],
+            scenario: null,
+            expert: false,
+        };
 
         this.villains = [];
         this.players = [];
@@ -56,6 +64,15 @@ export class Match extends Engine {
 
         this.players.forEach(player => {
             count += player.accelerationTokens;
+        });
+
+        return count;
+    }
+    get amplificationIcons() {
+        let count = this.scenario.amplificationIcons;
+
+        this.players.forEach(player => {
+            count += player.amplificationIcons;
         });
 
         return count;
@@ -132,7 +149,17 @@ export class Match extends Engine {
         return 'match';
     }
     async refresh() {
+        const isCurrentMatch = () =>
+            typeof this.mc.getMatch !== 'function' ||
+            this.mc.getMatch(this.name) === this;
+        if (!isCurrentMatch()) {
+            return;
+        }
+
         const matchState = await this.toObjWithPlayableHands();
+        if (!isCurrentMatch()) {
+            return matchState;
+        }
 
         this.mc.mcSocket.send(
             this.name,
@@ -439,6 +466,7 @@ export class Match extends Engine {
     toObj() {
         const {
             currentTurnPlayer,
+            id,
             name,
             phase,
             playing,
@@ -450,6 +478,7 @@ export class Match extends Engine {
         return {
             ...super.toObj(),
             currentTurnPlayer: currentTurnPlayer?.name ?? null,
+            id,
             name,
             phase,
             playing,

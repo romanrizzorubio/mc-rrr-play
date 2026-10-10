@@ -6,10 +6,12 @@ import {
     TRAIT_ARMOR,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
+    TRAIT_BUSINESSMAN,
     TRAIT_CONDITION,
     TRAIT_DEFENDER,
     TRAIT_DEFENSE,
     TRAIT_DROID,
+    TRAIT_GOBLIN,
     TRAIT_LOCATION,
     TRAIT_SKILL,
     TRAIT_SPY,
@@ -26,6 +28,7 @@ test('translates supported traits to Spanish labels', () => {
         [TRAIT_ATTACK, 'Ataque'],
         [TRAIT_ARMOR, 'Armadura'],
         [TRAIT_AVENGER, 'Vengador'],
+        [TRAIT_BUSINESSMAN, 'Empresario'],
         [TRAIT_CONDITION, 'Alteración'],
         [TRAIT_DEFENDER, 'Defensor'],
         [TRAIT_DEFENSE, 'Defensa'],
@@ -37,6 +40,7 @@ test('translates supported traits to Spanish labels', () => {
         [TRAIT_VEHICLE, 'Vehículo'],
         [TRAIT_TITLE, 'Título'],
         [TRAIT_DROID, 'Androide'],
+        [TRAIT_GOBLIN, 'Duende'],
     ]);
 
     translations.forEach((label, trait) => {

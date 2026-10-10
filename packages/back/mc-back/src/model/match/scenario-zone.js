@@ -16,15 +16,17 @@ export class ScenarioZone extends GameZone {
             await this.currentVillain.refresh();
         }
     }
+    get inPlayCards() {
+        return [...new Set([
+            ...super.inPlayCards,
+            this.currentVillain,
+            this.currentScheme,
+        ].filter(Boolean))];
+    }
     get accelerationTokens() {
         return super.accelerationTokens +
             this.currentVillain.currentSide.accelerationTokens +
             this.currentScheme.currentSide.accelerationTokens;
-    }
-    get hasCrisis() {
-        return this.currentVillain.hasCrisis ||
-            this.currentScheme.hasCrisis ||
-            super.hasCrisis;
     }
     get objectToRefresh() {
         return 'scenarioZone';

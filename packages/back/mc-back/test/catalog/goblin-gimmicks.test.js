@@ -195,8 +195,17 @@ test('Bombas calabaza assigns two indirect damage total across controlled charac
         abilities: [],
         damage: 0,
         id,
+        async getEffectiveStats() {
+            return id === 'hero' ?
+                {hitPoints: 15, life: 13} :
+                {hitPoints: 5, life: 4};
+        },
         toObj() {
-            return {id: this.id, life: 10};
+            return {
+                id: this.id,
+                hitPoints: id === 'hero' ? 12 : 5,
+                life: 10,
+            };
         },
     }));
     let assignmentDialog;
@@ -234,6 +243,13 @@ test('Bombas calabaza assigns two indirect damage total across controlled charac
     assert.equal(assignmentDialog.data.count, 2);
     assert.equal(assignmentDialog.title, 'Reparte 2 de Daño indirecto');
     assert.deepEqual(assignmentDialog.data.cards.map(({id}) => id), ['hero', 'ally']);
+    assert.deepEqual(assignmentDialog.data.cards.map(({hitPoints, life}) => ({
+        hitPoints,
+        life,
+    })), [
+        {hitPoints: 15, life: 13},
+        {hitPoints: 5, life: 4},
+    ]);
     assert.deepEqual(characters.map(({damage}) => damage), [1, 1]);
     assert.equal(characters.reduce((total, {damage}) => total + damage, 0), 2);
 });

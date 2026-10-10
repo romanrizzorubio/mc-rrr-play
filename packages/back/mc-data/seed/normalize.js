@@ -61,6 +61,9 @@ const normalizeCard = card => {
     if (normalizedParams.image === undefined && typeof normalizedParams.img === 'string') {
         normalizedParams.image = normalizedParams.img;
     }
+    if (Array.isArray(normalizedParams.sides)) {
+        normalizedParams.sides = normalizedParams.sides.map(normalizeCard);
+    }
     if (Array.isArray(normalizedParams.abilities)) {
         normalizedParams.abilities = normalizedParams.abilities.map(normalizeAbility);
     }

@@ -38,7 +38,7 @@ export class McCardListDialog extends McDialog {
             <mc-card-list
                 .cards="${cards}"
                 .marked="${_marked}"
-                .showCounters="${showCounters}"
+                .showGeneric="${showCounters}"
                 .showLife="${showLife}"
                 .showDamage="${showDamage}"
                 @card-list-select="${this.handleCardListSelect.bind(this)}"

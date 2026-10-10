@@ -55,14 +55,28 @@ export class Trigger {
         return this.ability.keepTriggering;
     }
     getName(params) {
+        if (this.ability.isInterrupt) {
+            const name = this.getInterruptName(params);
+            if (name !== undefined) {
+                return name;
+            }
+        }
+
         return this.ability.getTitle(params);
+    }
+    getInterruptName() {}
+    getAbilityParams(params) {
+        return {
+            ...params,
+            triggeredEffect: params.effect,
+        };
     }
     async runCard(params) {
         const {card, ability} = this;
 
         this.paymentCancelled = false;
         await ability.resolveAbility({
-            ...params,
+            ...this.getAbilityParams(params),
             preselectedTarget: false,
             triggeredCard: params.card,
             card,

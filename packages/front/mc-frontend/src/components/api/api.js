@@ -17,6 +17,7 @@ const MATCH_CREATION_ENDPOINTS = new Set([
     ENDPOINTS.MATCH.GET_SCENARIOS_LIST,
     ENDPOINTS.MATCH.GET_MODULAR_SETS_LIST,
     ENDPOINTS.MATCH.INIT,
+    ENDPOINTS.MATCH.RESET,
     ENDPOINTS.PLAYER.CREATE,
     ENDPOINTS.SCENARIO.CREATE,
 ]);
@@ -82,6 +83,17 @@ export class Api {
         this.match = match;
         this.matchReady = false;
         this.joinedMatch = '';
+    }
+    getMatchesList() {
+        return this.get({
+            endpoint: ENDPOINTS.MATCH.GET_MATCHES_LIST,
+        });
+    }
+    resetMatch(id) {
+        return this.post({
+            endpoint: ENDPOINTS.MATCH.RESET,
+            params: {id},
+        });
     }
     onConnectionState(callback) {
         this.connectionListeners.add(callback);

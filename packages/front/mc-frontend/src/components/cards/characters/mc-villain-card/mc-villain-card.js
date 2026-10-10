@@ -22,6 +22,7 @@ export class VillainCardComponent extends LitElement {
             defense: {type: Number},
             recovery: {type: Number},
             scheme: {type: Number},
+            unprintedStats: {type: Array},
             stage: {type: Number},
             attached: {type: Array},
             faceDown: {type: Array},
@@ -43,6 +44,7 @@ export class VillainCardComponent extends LitElement {
         this.defense = undefined;
         this.recovery = undefined;
         this.scheme = undefined;
+        this.unprintedStats = [];
         this.stage = undefined;
         this.attached = [];
         this.faceDown = [];
@@ -62,6 +64,7 @@ export class VillainCardComponent extends LitElement {
             defense,
             recovery,
             scheme,
+            unprintedStats,
             stage,
             attached,
             faceDown,
@@ -83,6 +86,7 @@ export class VillainCardComponent extends LitElement {
                 .defense="${defense}"
                 .recovery="${recovery}"
                 .scheme="${scheme}"
+                .unprintedStats="${unprintedStats}"
                 .statusCards="${statusCards}"
                 .attached="${attached}"
                 .faceDown="${faceDown}"

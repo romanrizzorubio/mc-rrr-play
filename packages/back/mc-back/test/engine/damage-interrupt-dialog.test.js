@@ -4,7 +4,7 @@ import {test} from 'node:test';
 import {
     DIALOG_USE_CARD,
     PRIORITY_INTERRUPT,
-    TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 import {Engine} from '../../src/engine/engine.js';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
@@ -29,7 +29,7 @@ function createDamageInterruptTrigger(card, id, name) {
             },
         },
         card,
-        trigger: TRIGGER_YOU_WOULD_TAKE_DAMAGE,
+        trigger: TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     });
 }
 
@@ -50,7 +50,7 @@ test('damage interrupt dialog shows damage if no further interrupt is selected',
         'damage-interrupt--prevent-damage',
         'Evitar daño'
     );
-    card.triggers[TRIGGER_YOU_WOULD_TAKE_DAMAGE] = {
+    card.triggers[TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE] = {
         [PRIORITY_INTERRUPT]: [trigger],
     };
 
@@ -70,7 +70,7 @@ test('damage interrupt dialog shows damage if no further interrupt is selected',
 
     await engine.trigger(
         PRIORITY_INTERRUPT,
-        [TRIGGER_YOU_WOULD_TAKE_DAMAGE],
+        [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE],
         {effect, player}
     );
 

@@ -69,7 +69,7 @@ test('flip changes identity once and returns the refreshed player snapshot', asy
 test('createPlayer replaces the precon with the selected legal deck', async () => {
     const customDeck = [{count: 2, card: {type: 'event', params: {name: 'Carta'}}}];
     const heroConfig = {
-        sides: [],
+        sides: [{params: {name: 'Hero alter ego'}}],
         cards: [],
         precon: [{count: 1, card: {type: 'event', params: {name: 'Precon'}}}],
     };
@@ -88,12 +88,21 @@ test('createPlayer replaces the precon with the selected legal deck', async () =
         },
     };
     const match = {
+        creationConfig: {
+            players: [],
+            scenario: null,
+            expert: false,
+        },
         createPlayer: config => ({
             toObj: () => config,
         }),
     };
     const originalCreateSuperhero = MatchFactory.prototype.createSuperhero;
-    MatchFactory.prototype.createSuperhero = () => ({id: 'hero-card'});
+    MatchFactory.prototype.createSuperhero = config => {
+        config.sides[0].params.match = 'runtime match reference';
+
+        return {id: 'hero-card'};
+    };
 
     try {
         const result = await new PlayerRest({mc: {data}}).createPlayer({
@@ -109,6 +118,24 @@ test('createPlayer replaces the precon with the selected legal deck', async () =
         ]);
         assert.deepEqual(result.config.precon, customDeck);
         assert.equal(result.config.aspect, 'justice');
+        assert.deepEqual(match.creationConfig.players, [{
+            name: 'Player',
+            initial: false,
+            config: {
+                sides: [{params: {name: 'Hero alter ego'}}],
+                cards: [],
+                precon: customDeck,
+                aspect: 'justice',
+            },
+        }]);
+        assert.notEqual(match.creationConfig.players[0].config, heroConfig);
+        assert.equal(
+            Object.hasOwn(
+                match.creationConfig.players[0].config.sides[0].params,
+                'match'
+            ),
+            false
+        );
     } finally {
         MatchFactory.prototype.createSuperhero = originalCreateSuperhero;
     }

@@ -5,6 +5,7 @@ import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {isPlanCard} from '../../../misc/utils.js';
+import {renderBoostIcons} from '../../../utils/boost-icons.js';
 
 export class McEncountersRevealDialog extends McDialog {
     static get is() {
@@ -30,11 +31,13 @@ export class McEncountersRevealDialog extends McDialog {
     renderContent() {
         const {data: {card, horizontal, isBoost, hasBoostAbility}} = this;
         const isHorizontal = Boolean(horizontal || isPlanCard(card));
+        const boostIcons = renderBoostIcons(card.boost);
 
         return html`
-            ${isBoost ? html`
+            ${isBoost && boostIcons.length ? html`
                 <div class="boost-icons">
-                    <strong>Iconos de aumento:</strong> ${card.boost || 0}
+                    <strong>Iconos de aumento:</strong>
+                    <span class="boost-icon-list">${boostIcons}</span>
                 </div>
             ` : ''}
             <mc-card

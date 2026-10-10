@@ -145,6 +145,7 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     const dialogs = [];
     const resolutions = [];
     const match = {
+        amplificationIcons: 0,
         async openDialog(dialog) {
             dialogs.push(dialog);
         },
@@ -207,6 +208,7 @@ test('a boost dealt by a boost ability resolves in the same activation', async (
     const resolutions = [];
     const discarded = [];
     const match = {
+        amplificationIcons: 0,
         triggerCards: {},
         async drawEncounterCards() {
             return [generatedBoost];

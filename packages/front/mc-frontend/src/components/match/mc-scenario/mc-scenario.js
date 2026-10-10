@@ -38,6 +38,7 @@ export class McScenario extends LitElement {
                 defense,
                 recovery,
                 scheme,
+                unprintedStats = [],
                 stage,
                 attached,
                 faceDown,
@@ -58,6 +59,7 @@ export class McScenario extends LitElement {
                     .defense="${defense}"
                     .recovery="${recovery}"
                     .scheme="${scheme}"
+                    .unprintedStats="${unprintedStats}"
                     .statusCards="${statusCards}"
                     .attached="${attached}"
                     .faceDown="${faceDown}"
@@ -120,6 +122,7 @@ export class McScenario extends LitElement {
             <mc-card-list
                 .cards="${cards.filter(card => card.isEnvironment)}"
                 show-basic-stats
+                show-generic
                 show-menu-abilities
             ></mc-card-list>
         `;

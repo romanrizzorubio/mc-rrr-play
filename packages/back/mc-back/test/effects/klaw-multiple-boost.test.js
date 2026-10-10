@@ -24,6 +24,7 @@ test('Klaw adds both boost cards to the attack damage total', async () => {
     let drawCount = 0;
     let attackDamage;
     const match = {
+        amplificationIcons: 0,
         skipBoostDealtNotification: true,
         triggerCards: {},
         async drawEncounterCards() {

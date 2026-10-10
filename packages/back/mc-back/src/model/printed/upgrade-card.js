@@ -17,4 +17,18 @@ export class UpgradeCard extends MixinAttachableCard(PlayerCard) {
 
         this.isUpgrade = true;
     }
+    async canPlay(params) {
+        if (!await super.canPlay(params)) {
+            return false;
+        }
+
+        const {gameCard} = params;
+        if (!gameCard || this.getAttachConfig().target === TARGET_YOU) {
+            return true;
+        }
+
+        const attachEffect = this.createAttachEffect(gameCard);
+
+        return (await attachEffect.getValidTarget(params)).length > 0;
+    }
 }

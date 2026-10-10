@@ -67,6 +67,7 @@ function createScenario({final = false, nextScheme} = {}) {
     const match = {
         gameOverReason: null,
         name: 'main-scheme-match',
+        triggerCards: {},
         phase: 'villain',
         playing: true,
         removedCards: [],

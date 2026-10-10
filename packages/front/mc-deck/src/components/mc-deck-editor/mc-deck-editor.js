@@ -71,9 +71,19 @@ export class McDeckEditor extends LitElement {
             <section class="editor" aria-labelledby="editor-title">
                 <div class="section-heading">
                     <h2 id="editor-title">${this.deck.id ? 'Editar mazo' : 'Nuevo mazo'}</h2>
-                    <md-text-button type="button" @click="${this.handleClose.bind(this)}">
-                        Cerrar
-                    </md-text-button>
+                    <div class="section-actions">
+                        <md-text-button type="button" @click="${this.handleClose.bind(this)}">
+                            Cerrar
+                        </md-text-button>
+                        <md-filled-button
+                            type="button"
+                            class="save-button"
+                            ?disabled="${this.saving}"
+                            @click="${this.handleSave.bind(this)}"
+                        >
+                            ${this.saving ? 'Guardando...' : 'Guardar'}
+                        </md-filled-button>
+                    </div>
                 </div>
                 <div class="field">
                     <md-filled-text-field
@@ -116,14 +126,6 @@ export class McDeckEditor extends LitElement {
                         .deckAspect="${this.deck.aspect}"
                     ></mc-deck-card-pool>
                 </div>
-                <md-filled-button
-                    type="button"
-                    class="save-button"
-                    ?disabled="${this.saving}"
-                    @click="${this.handleSave.bind(this)}"
-                >
-                    ${this.saving ? 'Guardando...' : 'Guardar'}
-                </md-filled-button>
             </section>
         `;
     }

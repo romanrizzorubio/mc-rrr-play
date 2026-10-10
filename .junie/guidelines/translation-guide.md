@@ -112,6 +112,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **armor (rasgo)** | Armadura |
 | **attack (rasgo)** | Ataque |
 | **avenger (rasgo)** | Vengador |
+| **businessman (rasgo)** | Empresario |
 | **condition (rasgo)** | Alteración |
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
@@ -124,6 +125,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **thwart (rasgo)** | Intervención |
 | **title (rasgo)** | Título |
 | **vehicle (rasgo)** | Vehículo |
+| **goblin (rasgo)** | Duende |
 | **triggered ability** | capacidad activada |
 | **triggering condition** | condición de activación |
 | **tuck** | meter debajo |
@@ -198,14 +200,17 @@ Al trabajar con cartas de encuentro (obligaciones, planes secundarios, esbirros 
 
 Nota: El formato del usuario es la fuente de verdad y puede variar ligeramente; el asistente debe ser flexible al interpretar los campos descriptivos. Si no se indica explícitamente un rasgo para una carta de encuentro, se asume que no tiene ninguno. Si una palabra aparece entre `<>` (ej: `<Vengador>`), debe ser tratada como un rasgo de la carta.
 
+Si la descripción de una carta de encuentro no indica un valor impreso de Aumento, configura ese valor como `0`; no lo deduzcas de la imagen. Esto no omite una capacidad de Aumento si su texto se proporciona por separado.
+
 ### Reglas de Implementación de Código
-- **Fuente de verdad de las cartas**: El texto, los valores y los iconos proporcionados explícitamente por el usuario son la fuente de verdad. No infieras iconos de aumento, recursos, atributos, rasgos ni capacidades a partir de una imagen. Si falta un dato necesario o hay más de una interpretación razonable de una regla, pregunta antes de elegir una implementación.
+- **Fuente de verdad de las cartas**: El texto, los valores y los iconos proporcionados explícitamente por el usuario son la fuente de verdad. No infieras iconos de aumento, recursos, atributos, rasgos ni capacidades a partir de una imagen. Si falta un dato necesario o hay más de una interpretación razonable de una regla, pregunta antes de elegir una implementación. Para cartas de encuentro, si no se proporciona un valor impreso de Aumento, el valor es `0`; una capacidad de Aumento explícita sigue resolviéndose normalmente.
 - **Valores booleanos**: Los booleanos de configuración deben ser `false` por defecto y pasar a `true` solo cuando el texto de la carta, las reglas o el usuario lo indiquen expresamente. No deduzcas que una etapa posterior del plan principal es la etapa final.
 - **Restricciones de Objetivo (Validation)**: Cuando una carta "no puede ser objetivo" de ciertos efectos, añade `EFFECT_CANNOT_TARGET` en `validation` de su capacidad constante. Indica los `effectTypes` o `effectCategories` prohibidos; `condition` busca una carta en juego y es opcional. Usa `targetCondition` para restringir qué cartas pueden ser objetivo y `effectCondition` para condiciones del efecto o su fuente.
 - **Límite y Máximo**: No confundas "Límite X por [periodo]" con "Máximo X por [periodo]". Configura el primero como `limit` en la capacidad afectada; para un máximo de cartas jugadas por periodo, usa `maximum` en los parámetros de la capacidad de juego. Un límite es por instancia de capacidad; un máximo se aplica entre todas las copias de la carta por título y todos los jugadores, según las reglas.
 - **"No puede" (Cannot)**: Las capacidades que indican que algo "no puede" ocurrir son absolutas. Deben implementarse como capacidades constantes o interrupciones obligadas que cancelan/previenen el efecto original (usando `validation` para objetivos o efectos preventivos para resultados), SIN usar `EFFECT_MAY` o cualquier componente opcional.
 - Para elegir la implementación de una capacidad "No puede", sigue el skill [card-cannot-abilities](../../.github/skills/card-cannot-abilities/SKILL.md), que distingue las prohibiciones constantes de las interrupciones obligadas y cubre la validación de objetivos.
 - **Estructura de Cartas de Escenario**: Para cartas de encuentro de archienemigo, utiliza la estructura de `CARD_TYPE_SIDE_SCHEME_SCENARIO`, `CARD_TYPE_MINION`, `CARD_TYPE_TREACHERY`, etc., con los parámetros dentro de un objeto `params`.
+- En una carta compuesta de varias caras que representa la misma carta aunque sus caras tengan nombres distintos, configura `sameCard: true` en los `params` de la carta raíz. El valor predeterminado es `false`; al cambiar de cara, se conservan el daño, los estados, los contadores, las cartas vinculadas y el resto del estado de esa carta.
 - **Iconos de Plan**: Los iconos de riesgo, aceleración, etc., en planes secundarios deben definirse en el objeto `icons` (ej: `icons: {hazard: 1}`).
 - **Bonificaciones persistentes de escenario**: Si un plan u otra carta otorga un valor adicional mientras permanece en juego, impleméntalo como un efecto constante ligado a su presencia. Comprueba que el modificador alcanza al personaje correcto y deja de aplicarse al salir del juego.
 - **Nombres de Variables**: Los nombres de las constantes/variables que contienen los objetos de las cartas deben escribirse en **inglés** (camelCase), independientemente de que el nombre visible de la carta esté en español.

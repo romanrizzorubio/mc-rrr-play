@@ -149,6 +149,7 @@ export class HandComponent extends LitElement {
             defense,
             recovery,
             scheme,
+            unprintedStats = [],
             extraTraits = [],
             extraKeywords = [],
             statusCards,
@@ -185,6 +186,7 @@ export class HandComponent extends LitElement {
                 .defense="${defense}"
                 .recovery="${recovery}"
                 .scheme="${scheme}"
+                .unprintedStats="${unprintedStats}"
                 .showBasicStats="${showBasicStats}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"

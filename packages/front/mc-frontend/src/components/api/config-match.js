@@ -24,6 +24,12 @@ export class ConfigMatch {
             params: {name},
         });
     }
+    resetMatch(id) {
+        return this.api.post({
+            endpoint: ENDPOINTS.MATCH.RESET,
+            params: {id},
+        });
+    }
     async createPlayer(player) {
         return await this.api.post({
             endpoint: ENDPOINTS.PLAYER.CREATE,

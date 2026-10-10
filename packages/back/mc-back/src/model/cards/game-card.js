@@ -1,4 +1,4 @@
-import {ABILITY_ACTION,TARGET_SIDE} from 'mc-shared';
+import {ABILITY_ACTION, TARGET_SIDE} from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {FaceDown} from '../match/facedown.js';
@@ -10,6 +10,7 @@ export class GameCard extends Engine {
         owner,
         boostAbility,
         parent,
+        sameCard = false,
         sides = [],
         abilities = [],
     }) {
@@ -22,6 +23,7 @@ export class GameCard extends Engine {
         this.owner = owner;
         this.parent = parent;
         this.boostAbility = boostAbility;
+        this.sameCard = sameCard;
 
         this.faceDown = [];
         this.attached = [];
@@ -88,6 +90,12 @@ export class GameCard extends Engine {
             return this.currentSide.accelerationIcons;
         }
         return this.card.accelerationIcons;
+    }
+    get amplificationIcons() {
+        if (this.sides.length) {
+            return this.currentSide.amplificationIcons;
+        }
+        return this.card.amplificationIcons;
     }
     get boost() {
         if (this.sides.length) {
@@ -191,11 +199,25 @@ export class GameCard extends Engine {
 
         return this.card.isAlterEgo;
     }
+    get currentName() {
+        return this.name;
+    }
     get isAttachable() {
+        if (this.sides.length) {
+            return this.currentSide.isAttachable;
+        }
+
         return this.card.isAttachable;
     }
     get isAttached() {
         return !!this.attachedTo;
+    }
+    get isCharacter() {
+        if (this.sides.length) {
+            return this.currentSide.isCharacter;
+        }
+
+        return this.card.isCharacter;
     }
     getKeyword(name) {
         const printedValue = this.sides.length ?
@@ -290,7 +312,8 @@ export class GameCard extends Engine {
         const controller = this.controller;
 
         return !!controller ||
-            this.match.villain === this;
+            this.match.villain === this ||
+            this.match.scenario?.gameZone?.currentVillain === this;
     }
     get isHero() {
         if (this.sides.length) {
@@ -685,6 +708,47 @@ export class GameCard extends Engine {
 
         this.reset();
     }
+    async flipToSide(sideIndex, params) {
+        const previousName = this.name;
+        const nextSide = this.sides[sideIndex];
+        const wasInPlay = this.isInPlay;
+
+        if (!nextSide) {
+            throw new Error(`Side ${sideIndex} does not exist on card ${this.id}.`);
+        }
+
+        this.endTriggers();
+        this.selectedSide = sideIndex;
+
+        if (previousName !== this.name && this.isEncounterCard && wasInPlay) {
+            if (!this.sameCard) {
+                await this.removeFaceDown();
+                await this.removeAttached();
+                this.reset();
+                if (this.isCharacter) {
+                    this.damage = 0;
+                    this.stunned = 0;
+                    this.confused = 0;
+                    this.tough = 0;
+                    this.modifyHitPoints = 0;
+                    this.modifyAttack = 0;
+                    this.modifyThwart = 0;
+                }
+                this.accelerationTokens = 0;
+            } else if (!params.reveal) {
+                await this.initTriggers(params);
+            }
+            await this.refresh();
+
+            if (params.reveal) {
+                await params.reveal(this);
+            }
+            return;
+        }
+
+        await this.initTriggers(params);
+        await this.refresh();
+    }
     addAccelerationToken(count = 1) {
         this.accelerationTokens += count;
     }
@@ -830,6 +894,8 @@ export class GameCard extends Engine {
         if (this.sides.length) {
             return {
                 ...this.currentSide.toObj(arguments[0]),
+                counters: this.counters,
+                faceDown: this.faceDown.map(faceDown => faceDown.toObj(arguments[0])),
             };
         }
 

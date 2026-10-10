@@ -122,6 +122,9 @@ export class McAssignDialog extends McDialog {
                 name="${name}"
                 image="${image}"
                 .isFacedownCard="${card.isFacedownCard}"
+                .life="${card.life}"
+                .hitPoints="${card.hitPoints}"
+                .statusCards="${card.statusCards}"
                 size="m"
                 ?horizontal="${isPlanCard(card)}"
             >

@@ -3,6 +3,8 @@ import {
     DIALOG_ENCOUNTERS_REVEAL,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
+    PRIORITY_FORCED_RESPONSE,
+    TRIGGER_MAIN_SCHEME_COMPLETED,
 } from 'mc-shared';
 import {PutPlayEffect} from '../../effects/put-play-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
@@ -55,6 +57,9 @@ export class Scenario extends Engine {
     }
     get accelerationTokens() {
         return this.gameZone.accelerationTokens;
+    }
+    get amplificationIcons() {
+        return this.gameZone.amplificationIcons;
     }
     get hasCrisis() {
         return this.gameZone.hasCrisis;
@@ -178,6 +183,16 @@ export class Scenario extends Engine {
             },
         });
 
+        await this.trigger(
+            PRIORITY_FORCED_RESPONSE,
+            [TRIGGER_MAIN_SCHEME_COMPLETED],
+            {
+                ...params,
+                card: currentScheme,
+                effect: {selectedTarget: currentScheme},
+            }
+        );
+
         if (currentSide.final || !nextScheme) {
             await this.match.finishGame(MATCH_END_REASON_MAIN_SCHEME_COMPLETED);
             return false;
@@ -277,6 +292,11 @@ export class Scenario extends Engine {
         const nextVillain = this.villains.shift();
 
         if (currentVillain) {
+            if (currentVillain.sides?.length &&
+                currentVillain.sides.length === nextVillain.sides?.length) {
+                nextVillain.selectedSide = currentVillain.selectedSide;
+            }
+
             if (nextVillain.name === currentVillain.name) {
                 nextVillain.owner = this;
                 nextVillain.stunned = currentVillain.stunned;
@@ -287,7 +307,6 @@ export class Scenario extends Engine {
                 nextVillain.attached.forEach(attached => {
                     attached.attachedTo = nextVillain;
                 });
-                nextVillain.selectedSide = currentVillain.selectedSide;
                 nextVillain.counters = currentVillain.counters;
                 nextVillain.exhausted = currentVillain.exhausted;
                 nextVillain.accelerationTokens = currentVillain.accelerationTokens;

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TRAIT_AERIAL, TRAIT_AVENGER} from 'mc-shared';
+import {
+    PRIORITY_INTERRUPT,
+    TRAIT_AERIAL,
+    TRAIT_AVENGER,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+} from 'mc-shared';
 import aggressionUpgrades from '../../../mc-data/seed/catalog/aspects/aggression/upgrades.js';
 import justiceUpgrades from '../../../mc-data/seed/catalog/aspects/justice/upgrades.js';
 import protectionUpgrades from '../../../mc-data/seed/catalog/aspects/protection/upgrades.js';
@@ -10,7 +15,7 @@ import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {Player} from '../../src/model/match/player.js';
 import {CharacterGameCard} from '../../src/model/cards/character-game-card.js';
 
-function createPlayer(match, name) {
+function createPlayer(match, name, superheroName = 'Capitana Marvel') {
     const player = {
         name,
         isHero: true,
@@ -39,7 +44,7 @@ function createPlayer(match, name) {
             attack: 1,
             defense: 2,
             match,
-            name: 'Capitana Marvel',
+            name: superheroName,
             thwart: 1,
             traits: [],
         },
@@ -118,6 +123,91 @@ test('Vuelo cósmico shows its acquired Aerial trait on the hero identity', asyn
     const result = await Player.prototype.toObjWithPlayableHand.call(player);
 
     assert.deepEqual(result.superhero.extraTraits, [TRAIT_AERIAL]);
+});
+
+test('Vuelo cósmico prevents damage only to the character named Capitana Marvel', async () => {
+    const match = {
+        activationsFactory: {
+            createActivation: () => ({
+                filterTarget: () => true,
+                getTriggersParams: params => params,
+                getTriggersWould: () => [],
+                getTriggersInit: () => [],
+                getTriggersEnds: () => [],
+                getForcedResponseTriggers: () => [],
+                checkStatus: () => true,
+            }),
+        },
+        enemies: [],
+        friends: [],
+        triggerCards: {},
+    };
+    const peter = createPlayer(match, 'Peter Parker', 'Spider-Man');
+    const carol = createPlayer(match, 'Carol Danvers');
+    carol.superhero.sides = [
+        {
+            abilities: [],
+            controller: carol,
+            match,
+            name: 'Carol Danvers',
+            traits: [],
+        },
+        {
+            abilities: [],
+            controller: carol,
+            match,
+            name: 'Capitana Marvel',
+            traits: [],
+        },
+    ];
+    match.friends = [peter.superhero, carol.superhero];
+    const cardsFactory = new CardsFactory({match});
+    const flightCard = captainMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Vuelo cósmico').card;
+    const gameCard = cardsFactory.createGameCard({
+        card: cardsFactory.createCard(flightCard),
+        owner: peter,
+    });
+    gameCard.controller = peter;
+    await gameCard.initTriggers();
+
+    const interrupt = gameCard.triggers[TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE]
+        [PRIORITY_INTERRUPT][0];
+    carol.superhero.selectedSide = 0;
+    const carolDanversDamage = {
+        damage: 4,
+        preventDamage: 0,
+        selectedTarget: carol.superhero.currentSide,
+        takenDamage: 4,
+    };
+    carol.superhero.selectedSide = 1;
+    const carolDamage = {
+        damage: 4,
+        preventDamage: 0,
+        selectedTarget: carol.superhero.currentSide,
+        takenDamage: 4,
+    };
+    const peterDamage = {
+        damage: 4,
+        preventDamage: 0,
+        selectedTarget: peter.superhero,
+        takenDamage: 4,
+    };
+    const params = {player: peter};
+
+    assert.equal(interrupt.getTarget({...params, effect: carolDamage}), carolDamage.selectedTarget);
+    assert.equal(interrupt.getTarget({...params, effect: carolDanversDamage}), undefined);
+    assert.equal(interrupt.getTarget({...params, effect: peterDamage}), undefined);
+
+    const ability = gameCard.abilities.find(({trigger}) =>
+        trigger === TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE);
+    await ability.effect.runEffect({
+        ...interrupt.getAbilityParams({...params, effect: carolDamage}),
+        player: peter,
+    });
+
+    assert.equal(carolDamage.preventDamage, 3);
+    assert.equal(peterDamage.preventDamage, 0);
 });
 
 test('serializes attached upgrades with their ability availability for the hero controller', async () => {

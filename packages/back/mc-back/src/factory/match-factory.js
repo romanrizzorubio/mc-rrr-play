@@ -24,13 +24,19 @@ export class MatchFactory {
         const copies = [];
 
         for (let i = 0 ; i < count ; i++) {
-            const card = this.cardsFactory.createCard(cardConfig);
-            const index = (this.copyIndexesByCardId.get(card.id) || 0) + 1;
-            this.copyIndexesByCardId.set(card.id, index);
-            copies.push(this.cardsFactory.createGameCard({
-                card,
-                index,
-            }));
+            if (Array.isArray(cardConfig.params?.sides)) {
+                const cardId = cardConfig.params.sides.map(({type, params}) =>
+                    `${type}:${params.name}:${params.stage ?? ''}`
+                ).join('--');
+                const index = (this.copyIndexesByCardId.get(cardId) || 0) + 1;
+                this.copyIndexesByCardId.set(cardId, index);
+                copies.push(this.cardsFactory.createGameCardFromConfig(cardConfig, {index}));
+            } else {
+                const card = this.cardsFactory.createCard(cardConfig);
+                const index = (this.copyIndexesByCardId.get(card.id) || 0) + 1;
+                this.copyIndexesByCardId.set(card.id, index);
+                copies.push(this.cardsFactory.createGameCard({card, index}));
+            }
         }
 
         return copies;
@@ -52,11 +58,7 @@ export class MatchFactory {
     async createScenario(params) {
         const {name} = params;
         const villains = params.villains.map(cardConfig => {
-            const card = this.cardsFactory.createCard(cardConfig);
-
-            return this.cardsFactory.createGameCard({
-                card,
-            });
+            return this.cardsFactory.createGameCardFromConfig(cardConfig);
         });
         const mainSchemes = params.mainSchemes.map(side => {
             const sides = this.cardsFactory.createSides(side);

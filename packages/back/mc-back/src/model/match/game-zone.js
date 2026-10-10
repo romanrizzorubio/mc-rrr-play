@@ -12,14 +12,14 @@ export class GameZone extends Engine {
 
         this.cards = [];
     }
+    get inPlayCards() {
+        return this.cards;
+    }
     get accelerationIcons() {
-        let accelerationIcons = 0;
-
-        this.cards.forEach(card => {
-            accelerationIcons += card.accelerationIcons;
-        });
-
-        return accelerationIcons;
+        return this.inPlayCards.reduce(
+            (total, card) => total + card.accelerationIcons,
+            0
+        );
     }
     get accelerationTokens() {
         let accelerationTokens = 0;
@@ -31,16 +31,19 @@ export class GameZone extends Engine {
         return accelerationTokens;
     }
     get hasCrisis() {
-        return this.cards.some(card => card.hasCrisis);
+        return this.inPlayCards.some(card => card.hasCrisis);
+    }
+    get amplificationIcons() {
+        return this.inPlayCards.reduce(
+            (total, card) => total + card.amplificationIcons,
+            0
+        );
     }
     get hazardIcons() {
-        let hazardIcons = 0;
-
-        this.cards.forEach(card => {
-            hazardIcons += card.hazardIcons;
-        });
-
-        return hazardIcons;
+        return this.inPlayCards.reduce(
+            (total, card) => total + card.hazardIcons,
+            0
+        );
     }
     get match() {
         return path(this, 'owner.match');
@@ -65,7 +68,9 @@ export class GameZone extends Engine {
         await Promise.all(match.players.map(player => player.hand.refresh()));
     }
     addToGameZone(card) {
-        this.cards.push(card);
+        if (!this.cards.includes(card)) {
+            this.cards.push(card);
+        }
     }
     dealEncounterCard(cards) {
         this.encounters = this.encounters.concat(cards);

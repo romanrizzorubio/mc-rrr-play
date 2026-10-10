@@ -3,6 +3,7 @@ import {html} from 'lit-element';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import styles from './mc-encounters-dealt-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
+import {ICON_HAZARD} from '../../common/mc-icon/mc-icon.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
 
@@ -42,21 +43,37 @@ export class McEncountersDealtDialog extends McDialog {
         return `Se reparten ${hazardIcons} cartas de encuentro adicionales por los iconos de riesgo.`;
     }
     _renderEncountersPlayer(player) {
-        const {name, count} = player;
+        const {name, count, hazardIcons = 0} = player;
 
         return html`
-            <mc-card
-                name="${name}"
-                image="${BACK_CARD_ENCOUNTER}"
-            ></mc-card>
-            <div>${count}</div>
+            <div class="player-encounters">
+                ${hazardIcons ? html`
+                    <div class="hazard-icons">
+                        ${Array.from({length: hazardIcons}, () => html`
+                            <mc-icon
+                                icon="${ICON_HAZARD}"
+                                role="img"
+                                aria-label="icono de riesgo"
+                            ></mc-icon>
+                        `)}
+                    </div>
+                ` : ''}
+                <mc-card
+                    name="${name}"
+                    image="${BACK_CARD_ENCOUNTER}"
+                ></mc-card>
+                <div class="encounter-count">${count}</div>
+            </div>
         `;
     }
     renderContent() {
         const {data: {encounters}} = this;
 
-        return encounters
-            .map(this._renderEncountersPlayer.bind(this));
+        return html`
+            <div class="encounter-players">
+                ${encounters.map(this._renderEncountersPlayer.bind(this))}
+            </div>
+        `;
     }
 }
 

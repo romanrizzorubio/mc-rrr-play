@@ -51,7 +51,7 @@ export default css`
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 2px;
+    gap: 1px;
     width: max-content;
     margin: 0 auto;
   }
@@ -105,7 +105,7 @@ export default css`
     align-items: flex-start;
     justify-content: flex-start;
     gap: 2px;
-    padding: 0 2px 4px 0;
+    padding: 0 1px 2px 0;
     font-size: 0.8rem;
     line-height: 1;
     white-space: nowrap;
@@ -120,9 +120,9 @@ export default css`
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    column-gap: 6px;
-    row-gap: 4px;
-    padding: 4px 2px 0;
+    column-gap: 4px;
+    row-gap: 2px;
+    padding: 0 1px;
     font-size: 0.85rem;
     line-height: 1;
   }
@@ -131,7 +131,7 @@ export default css`
     display: flex;
     flex: 0 0 auto;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     white-space: nowrap;
   }
 
@@ -139,8 +139,8 @@ export default css`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 3px;
-    margin-top: 4px;
+    gap: 2px;
+    margin-top: 0;
   }
 
   .acquired-trait {
@@ -160,8 +160,8 @@ export default css`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 3px;
-    margin-top: 2px;
+    gap: 2px;
+    margin-top: 0;
   }
 
   .acquired-keyword {
@@ -183,6 +183,21 @@ export default css`
     border-radius: 3px;
     color: white;
     font-weight: 600;
+  }
+
+  .character-stats .character-stat {
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    min-width: 1.25rem;
+  }
+
+  .character-stats .stat-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    line-height: 1;
   }
 
   .numeric-value,
@@ -294,13 +309,13 @@ export default css`
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 3px;
     text-align: center;
   }
 
   .counters {
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
   }
 
   .stat-acceleration {

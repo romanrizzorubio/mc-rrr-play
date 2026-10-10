@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {EFFECT_DEFEAT} from 'mc-shared';
-import {CancelAttackEffect} from '../../src/effects/cancel-attack-effect.js';
+import {
+    EFFECT_CANCEL_ACTIVATION,
+    EFFECT_CANCEL_ATTACK,
+    EFFECT_CANCEL_SCHEME,
+    EFFECT_DEFEAT,
+} from 'mc-shared';
+import {CancelActivationEffect} from '../../src/effects/cancel-activation-effect.js';
 import {PreventDamageEffect} from '../../src/effects/prevent-damage-effect.js';
 import {PreventDefeatEffect} from '../../src/effects/prevent-defeat-effect.js';
 import {PreventPlaceThreatEffect} from '../../src/effects/prevent-place-threat-effect.js';
+import {EFFECT_MAP} from '../../src/factory/effects/effects-map.js';
 
 const protectedCards = [
     {isVillain: true},
@@ -57,25 +63,52 @@ test('a normal villain activation can be canceled', async () => {
         character: {isVillain: true},
         cancelActivation() {},
     };
-    const cancelVillainAttack = new CancelAttackEffect({
+    const cancelVillainActivation = new CancelActivationEffect({
         selectedTarget: villainActivation,
     });
-    cancelVillainAttack.getValidTarget = async () => [villainActivation];
+    cancelVillainActivation.getValidTarget = async () => [villainActivation];
 
     const otherActivation = {
         character: {isMinion: true},
         cancelActivation() {},
     };
-    const cancelOtherAttack = new CancelAttackEffect({
+    const cancelOtherActivation = new CancelActivationEffect({
         selectedTarget: otherActivation,
     });
-    cancelOtherAttack.getValidTarget = async () => [otherActivation];
+    cancelOtherActivation.getValidTarget = async () => [otherActivation];
 
-    assert.equal(await cancelVillainAttack.canRun({}), true);
-    assert.equal(await cancelOtherAttack.canRun({}), true);
+    assert.equal(await cancelVillainActivation.canRun({}), true);
+    assert.equal(await cancelOtherActivation.canRun({}), true);
 });
 
-test('a nested cancel-attack effect cancels the active attack from its context', async () => {
+test('a current scheme activation can be canceled from its context', async () => {
+    let schemeCancelled = false;
+    let selectedActivationCancelled = false;
+    const schemeActivation = {
+        isScheme: true,
+        cancelActivation() {
+            schemeCancelled = true;
+        },
+    };
+    const selectedActivation = {
+        cancelActivation() {
+            selectedActivationCancelled = true;
+        },
+    };
+    const cancelActivation = new CancelActivationEffect({
+        selectedTarget: selectedActivation,
+    });
+    cancelActivation.getValidTarget = async () => [selectedActivation];
+    const params = {effect: schemeActivation};
+
+    assert.equal(await cancelActivation.canRun(params), true);
+    cancelActivation.execute(params);
+
+    assert.equal(schemeCancelled, true);
+    assert.equal(selectedActivationCancelled, false);
+});
+
+test('a nested cancel-activation effect cancels the active attack from its context', async () => {
     let attackCancelled = false;
     const attackEffect = {
         cancelActivation() {
@@ -83,14 +116,20 @@ test('a nested cancel-attack effect cancels the active attack from its context',
         },
     };
     const enclosingEffect = {};
-    const cancelAttack = new CancelAttackEffect({
+    const cancelActivation = new CancelActivationEffect({
         selectedTarget: enclosingEffect,
     });
-    cancelAttack.getValidTarget = async () => [enclosingEffect];
+    cancelActivation.getValidTarget = async () => [enclosingEffect];
     const params = {attack: {effect: attackEffect}};
 
-    assert.equal(await cancelAttack.canRun(params), true);
-    cancelAttack.execute(params);
+    assert.equal(await cancelActivation.canRun(params), true);
+    cancelActivation.execute(params);
 
     assert.equal(attackCancelled, true);
+});
+
+test('the old attack and scheme effect types resolve to the unified implementation', () => {
+    assert.equal(EFFECT_MAP[EFFECT_CANCEL_ACTIVATION], CancelActivationEffect);
+    assert.equal(EFFECT_MAP[EFFECT_CANCEL_ATTACK], CancelActivationEffect);
+    assert.equal(EFFECT_MAP[EFFECT_CANCEL_SCHEME], CancelActivationEffect);
 });

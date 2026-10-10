@@ -7,13 +7,16 @@ export class ResolveBoostEffect extends Effect {
         enemyActivation,
         card,
         cardIndex = 0,
+        previousBoost = 0,
     }) {
         super(arguments[0]);
 
         this.enemyActivation = enemyActivation;
         this.card = card;
         this.cardIndex = cardIndex;
+        this.previousBoost = previousBoost;
 
+        this.boostValue = 0;
         this.value = 0;
     }
     async prepare(params) {
@@ -21,10 +24,10 @@ export class ResolveBoostEffect extends Effect {
 
         const {card, cardIndex, enemyActivation} = this;
         const boostCards = enemyActivation.boostCards;
+        this.boostValue = (card.boost || 0) + this.match.amplificationIcons;
 
         if (boostCards.length > 1) {
-            const cumulativeBoost = boostCards.reduce((total, boostCard, index) =>
-                index <= cardIndex ? total + (boostCard.boost || 0) : total, 0);
+            const cumulativeBoost = this.previousBoost + this.boostValue;
             const cards = boostCards.map((boostCard, index) => index <= cardIndex ? {
                 card: boostCard.toObj(params),
                 horizontal: Boolean(boostCard.isMainScheme || boostCard.isSideScheme),
@@ -66,6 +69,6 @@ export class ResolveBoostEffect extends Effect {
             });
         }
 
-        this.value = card.boost || 0;
+        this.value = this.boostValue;
     }
 }

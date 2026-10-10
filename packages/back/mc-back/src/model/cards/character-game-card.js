@@ -72,7 +72,8 @@ export class CharacterGameCard extends GameCard {
     }
 
     get attack() {
-        let attack = this.card.attack;
+        const card = this.currentSide?.card ?? this.card;
+        let attack = card.attack;
 
         if (attack instanceof Object) {
             const calc = new Calc(attack);
@@ -95,7 +96,9 @@ export class CharacterGameCard extends GameCard {
         return attack;
     }
     get attackConsequencial() {
-        return this.card.attackConsequencial ?? 0;
+        const card = this.currentSide?.card ?? this.card;
+
+        return card.attackConsequencial ?? 0;
     }
     get canHeal() {
         return !!this.damage;
@@ -118,7 +121,8 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get defense() {
-        let defense = this.card.defense;
+        const card = this.currentSide?.card ?? this.card;
+        let defense = card.defense;
 
         if (defense instanceof Object) {
             const calc = new Calc(defense);
@@ -223,7 +227,9 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get isNemesis() {
-        return this.card.nemesis;
+        const card = this.currentSide?.card ?? this.card;
+
+        return card.nemesis;
     }
     get isStunned() {
         switch (this.statusAvailable) {
@@ -247,7 +253,8 @@ export class CharacterGameCard extends GameCard {
         return hitPoints - this.damage;
     }
     get recovery() {
-        let recovery = this.card.recovery;
+        const card = this.currentSide?.card ?? this.card;
+        let recovery = card.recovery;
 
         if (recovery instanceof Object) {
             const calc = new Calc(recovery);
@@ -354,7 +361,8 @@ export class CharacterGameCard extends GameCard {
         });
     }
     get thwart() {
-        let thwart = this.card.thwart;
+        const card = this.currentSide?.card ?? this.card;
+        let thwart = card.thwart;
 
         if (thwart instanceof Object) {
             const calc = new Calc(thwart);
@@ -371,7 +379,9 @@ export class CharacterGameCard extends GameCard {
         return thwart;
     }
     get thwartConsequencial() {
-        return this.card.thwartConsequencial;
+        const card = this.currentSide?.card ?? this.card;
+
+        return card.thwartConsequencial;
     }
     get tough() {
         return this._tough;
@@ -453,7 +463,9 @@ export class CharacterGameCard extends GameCard {
         }
     }
     setTough() {
-        if (this.tough < this.card.maxTough) {
+        const card = this.currentSide?.card ?? this.card;
+
+        if (this.tough < card.maxTough) {
             if (this.isInPlay) {
                 this.tough++;
             }

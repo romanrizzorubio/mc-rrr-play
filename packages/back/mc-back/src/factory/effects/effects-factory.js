@@ -75,6 +75,14 @@ export class EffectsFactory {
             effectDefinition: effect,
         };
     }
+    _parseReplaceEffect(params) {
+        const {replacement, ...rest} = params;
+
+        return {
+            ...rest,
+            replacement: replacement ? this.parseEffect(replacement) : undefined,
+        };
+    }
     _parseDoIf(params) {
         const {effect, effectNot} = params;
 

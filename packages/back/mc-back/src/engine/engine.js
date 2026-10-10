@@ -100,15 +100,18 @@ export class Engine {
     }
     async _openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params, priority) {
         const {player} = params;
+        const cardId = cards.length === 1 ?
+            this._getTriggerCardId(cards[0]) :
+            undefined;
         const cardTriggers = cards.length === 1 ?
-            cardsTriggers[cards[0].id] :
+            cardsTriggers[cardId] :
             undefined;
         const informationalTrigger = cardTriggers?.triggers.length === 1 ?
             cardTriggers.triggers[0] :
             undefined;
         const informationalDialogId = mandatory && informationalTrigger instanceof Trigger ?
             JSON.stringify([
-                informationalTrigger.card.id,
+                this._getTriggerCardId(informationalTrigger.card),
                 informationalTrigger.ability.id ||
                     informationalTrigger.ability.name ||
                     informationalTrigger.getName(params),
@@ -122,7 +125,7 @@ export class Engine {
                 return true;
             }
 
-            const card = cardsTriggers[cards[0].id];
+            const card = cardsTriggers[this._getTriggerCardId(cards[0])];
 
             if (card.triggers.length === 1) {
                 const trigger = card.triggers[0];
@@ -149,7 +152,7 @@ export class Engine {
                 data: {
                     cards: cards.map(card => ({
                         ...card.toObj(arguments[0]),
-                        abilityNames: cardsTriggers[card.id].triggers
+                        abilityNames: cardsTriggers[this._getTriggerCardId(card)].triggers
                             .map(trigger => trigger instanceof Trigger ?
                                 trigger.ability?.name :
                                 trigger.name)
@@ -177,7 +180,7 @@ export class Engine {
                 return cardsTriggers[selected.id];
             }
         } else {
-            return cardsTriggers[cards[0].id];
+            return cardsTriggers[this._getTriggerCardId(cards[0])];
         }
 
     }
@@ -258,9 +261,10 @@ export class Engine {
         const cards = [];
 
         const cardsTriggers = await this.promisesSequentialReduce(triggers, async (ret, trigger) => {
-            if (!ret[trigger.card.id]) {
+            const cardId = this._getTriggerCardId(trigger.card);
+            if (!ret[cardId]) {
                 cards.push(trigger.card);
-                ret[trigger.card.id] = {
+                ret[cardId] = {
                     card: trigger.card,
                     triggers: [],
                 };
@@ -274,7 +278,7 @@ export class Engine {
                     .promisesSequentialFilter(options,
                             option => option.canRun(params));
 
-                ret[trigger.card.id].triggers.push({
+                ret[cardId].triggers.push({
                     name,
                     triggers: filtered
                         .map(option => this.triggersFactory.createTrigger({
@@ -285,7 +289,7 @@ export class Engine {
                         }))
                 });
             } else {
-                ret[trigger.card.id].triggers.push(trigger);
+                ret[cardId].triggers.push(trigger);
             }
 
             return ret;
@@ -300,6 +304,9 @@ export class Engine {
         return options.flatMap(option => option.triggers ?
             this._getLeafOptions(option.triggers) :
             [option]);
+    }
+    _getTriggerCardId(card) {
+        return card.currentSide?.id || card.id;
     }
     _getPlayersTriggers(triggers) {
         return triggers.reduce((players, trigger) => {
@@ -488,6 +495,14 @@ export class Engine {
     }
     async trigger(priority, type, params, additionalTriggers = []) {
         const triggered = [];
+        const isEffectActive = () => {
+            const {effect} = params;
+
+            return this.checkTrigger(params) &&
+                (effect === this ||
+                    typeof effect?.checkTrigger !== 'function' ||
+                    effect.checkTrigger(params));
+        };
 
         const getTriggers = async exclude => {
             const registeredTriggers = await this._getTriggers(type, priority, params, exclude);
@@ -502,6 +517,10 @@ export class Engine {
 
             return registeredTriggers.concat(availableAdditionalTriggers);
         };
+
+        if (!isEffectActive()) {
+            return false;
+        }
 
         let triggers = await getTriggers([]);
 
@@ -520,25 +539,29 @@ export class Engine {
 
             if (!trigger) {
                 break;
-            } else {
-                if (!trigger.paymentCancelled) {
-                    if (trigger.ability.isOptionAbility) {
-                        triggered.push(trigger);
-                        triggers.forEach(_trigger => {
-                            if (_trigger.ability.effect === trigger.ability.parent) {
-                                triggered.push(_trigger);
-                            }
-                        });
-                    } else if (!trigger.keepTriggering) {
-                        triggered.push(trigger);
-                    }
-                }
-                
-                triggers = await getTriggers(triggered);
             }
+
+            if (!isEffectActive()) {
+                return false;
+            }
+
+            if (!trigger.paymentCancelled) {
+                if (trigger.ability.isOptionAbility) {
+                    triggered.push(trigger);
+                    triggers.forEach(_trigger => {
+                        if (_trigger.ability.effect === trigger.ability.parent) {
+                            triggered.push(_trigger);
+                        }
+                    });
+                } else if (!trigger.keepTriggering) {
+                    triggered.push(trigger);
+                }
+            }
+
+            triggers = await getTriggers(triggered);
         }
 
-        return this.checkTrigger(params);
+        return isEffectActive();
     }
     async promisesSequential(items, callback) {
         for (const item of items) {
@@ -590,6 +613,8 @@ export class Engine {
                 return true;
             }
         }
+
+        return false;
     }
     toObj() {
         return {};

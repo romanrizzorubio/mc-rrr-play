@@ -5,8 +5,6 @@ import '../../config/mc-form-player/mc-form-player.js';
 import '../../config/mc-form-scenario/mc-form-scenario.js';
 import '../../common/mc-panel/mc-panel.js';
 
-const ID_PLAYER = 'player';
-const ID_SCENARIO = 'scenario';
 const compareSetNames = (left, right) =>
     left.name.localeCompare(right.name, 'es', {sensitivity: 'base'}) ||
     left.id.localeCompare(right.id);
@@ -22,6 +20,7 @@ export class McCreateMatch extends LitElement {
     static get properties() {
         return {
             name: {type: String},
+            currentStep: {type: Number},
             expert: {type: Boolean},
             player: {type: Object},
             scenario: {type: Object},
@@ -39,9 +38,10 @@ export class McCreateMatch extends LitElement {
     constructor() {
         super();
 
-        this.name = '';
+        this.name = 'RRR';
+        this.currentStep = 1;
         this.expert = false;
-        this.player = {};
+        this.player = {name: 'RRR'};
         this.scenario = {};
         this.heroesList = [];
         this.configMatch = null;
@@ -57,20 +57,33 @@ export class McCreateMatch extends LitElement {
     get disabled() {
         return !this.validate();
     }
-    get elPlayer() {
-        return this.shadowRoot.getElementById(ID_PLAYER);
+    validateFirstStep() {
+        const {name, player} = this;
+
+        return Boolean(name && player.name && player.hero);
     }
-    get elScenario() {
-        return this.shadowRoot.getElementById(ID_SCENARIO);
+    validateSecondStep() {
+        return Boolean(this.scenario.scenario);
     }
     validate() {
-        const {name, elPlayer, elScenario} = this;
+        return this.validateFirstStep() &&
+            this.validateSecondStep();
+    }
+    handleNext() {
+        if (!this.validateFirstStep()) {
+            return;
+        }
 
-        return name &&
-            elPlayer && elPlayer.validate() &&
-            elScenario && elScenario.validate();
+        this.currentStep = 2;
+    }
+    handleBack() {
+        this.currentStep = 1;
     }
     handleClick() {
+        if (this.currentStep !== 2 || !this.validate()) {
+            return;
+        }
+
         const {name, expert, player, scenario} = this;
 
         this.dispatchEvent(new CustomEvent('create-match', {
@@ -184,6 +197,30 @@ export class McCreateMatch extends LitElement {
             </md-filled-button>
         `;
     }
+    renderStepActions() {
+        if (this.currentStep === 1) {
+            return html`
+                <div class="step-actions step-actions-next">
+                    <md-filled-button
+                        class="button"
+                        .disabled="${!this.validateFirstStep()}"
+                        @click="${this.handleNext.bind(this)}"
+                    >
+                        Continuar
+                    </md-filled-button>
+                </div>
+            `;
+        }
+
+        return html`
+            <div class="step-actions">
+                <md-text-button @click="${this.handleBack.bind(this)}">
+                    Volver
+                </md-text-button>
+                ${this.renderButton()}
+            </div>
+        `;
+    }
     renderMatch() {
         const {name} = this;
 
@@ -191,30 +228,25 @@ export class McCreateMatch extends LitElement {
             <mc-panel title="Partida">
                 <md-filled-text-field
                     class="field field-match-name"
+                    .value="${name}"
                     @change="${this.handleNameChange}"
-                >${name}</md-filled-text-field>
-                <label class="expert-mode">
-                    <input
-                        type="checkbox"
-                        .checked="${this.expert}"
-                        @change="${this.handleExpertChange.bind(this)}"
-                    >
-                    <span>Modo Experto</span>
-                </label>
+                ></md-filled-text-field>
             </mc-panel>
         `;
     }
     renderPlayer() {
-        const {heroesList} = this;
+        const {heroesList, player} = this;
 
         return html`
             <mc-panel title="Jugador">
                 <mc-form-player
-                    id="${ID_PLAYER}"
                     hide-button
                     .heroesList="${heroesList}"
                     .decksList="${this.decksList}"
                     .loadingDecks="${this.loadingDecks}"
+                    .name="${player.name || ''}"
+                    .hero="${player.hero || ''}"
+                    .deckId="${player.deckId || 'precon'}"
                     @player-change="${this.handlePlayerChanged.bind(this)}"
                 >
                 </mc-form-player>
@@ -225,16 +257,24 @@ export class McCreateMatch extends LitElement {
         `;
     }
     renderScenario() {
-        const {scenariosList} = this;
+        const {scenariosList, scenario} = this;
 
         return html`
             <mc-panel title="Escenario">
                 <mc-form-scenario
-                    id="${ID_SCENARIO}"
                     .scenariosList="${scenariosList}"
+                    .scenario="${scenario.scenario || ''}"
                     @scenario-changed="${this.handleScenarioChanged.bind(this)}"
                 >
                 </mc-form-scenario>
+                <label class="expert-mode">
+                    <input
+                        type="checkbox"
+                        .checked="${this.expert}"
+                        @change="${this.handleExpertChange.bind(this)}"
+                    >
+                    <span>Modo Experto</span>
+                </label>
             </mc-panel>
             `;
     }
@@ -293,12 +333,23 @@ export class McCreateMatch extends LitElement {
         `;
     }
     render() {
+        const firstStep = this.currentStep === 1;
+        const stepTitle = firstStep ?
+            'Partida y Jugador' :
+            'Escenario y Conjuntos modulares';
+
         return html`
-            ${this.renderMatch()}
-            ${this.renderPlayer()}
-            ${this.renderScenario()}
-            ${this.renderModularSets()}
-            ${this.renderButton()}
+            <p class="step-status" role="status" aria-live="polite">
+                Paso ${this.currentStep} de 2: ${stepTitle}
+            </p>
+            ${firstStep ? html`
+                ${this.renderMatch()}
+                ${this.renderPlayer()}
+            ` : html`
+                ${this.renderScenario()}
+                ${this.renderModularSets()}
+            `}
+            ${this.renderStepActions()}
         `;
     }
 }

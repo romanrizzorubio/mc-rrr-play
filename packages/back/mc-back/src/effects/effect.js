@@ -314,6 +314,7 @@ export class Effect extends Engine {
             ...params,
             ability,
             effect: this,
+            source: this.source ?? params.source,
             target,
         };
 

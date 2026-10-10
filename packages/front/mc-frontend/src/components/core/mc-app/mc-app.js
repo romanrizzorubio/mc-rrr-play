@@ -1,6 +1,6 @@
 import {html, unsafeStatic} from 'lit/static-html.js';
 import {keyed} from 'lit/directives/keyed.js';
-import { LitElement } from 'lit-element';
+import {css, LitElement} from 'lit-element';
 import { router, navigator, outlet } from 'lit-element-router';
 
 import '../../../utils/material-elements.js';
@@ -20,6 +20,7 @@ import {
 import {
     APP_ROUTES,
     DECK_ROUTE_NAMES,
+    getMatchPath,
     getNavigationPath,
 } from '../../../utils/app-routes.js';
 import {
@@ -31,7 +32,25 @@ import {
 
 class McApp extends router(navigator(outlet(LitElement))) {
     static get styles() {
-        return [stylesDialog];
+        return [
+            stylesDialog,
+            css`
+              .match-actions {
+                box-sizing: border-box;
+                display: flex;
+                justify-content: flex-end;
+                max-width: 1200px;
+                margin: 0 auto 24px;
+                padding: 0 24px;
+              }
+
+              @media (max-width: 700px) {
+                .match-actions {
+                  padding: 0 12px;
+                }
+              }
+            `,
+        ];
     }
     static get properties() {
         return {
@@ -50,6 +69,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
             remoteErrors: {type: Object},
             appReady: {type: Boolean},
             configurationError: {type: String},
+            resettingMatch: {type: Boolean},
         };
     }
     static get routes() {
@@ -81,6 +101,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         this.apiDialog = null;
         this.gameOverNotice = '';
+        this.resettingMatch = false;
         this.removeConnectionStateListener = null;
         this.removeCommunicationErrorListener = null;
         this.addEventListener(EVENTS.MATCH.CREATED, this.handleMatchCreated.bind(this));
@@ -126,6 +147,12 @@ class McApp extends router(navigator(outlet(LitElement))) {
             this.apiDialog = new Dialog(this.api);
             this.apiDialog.listenDialog(this.openDialog.bind(this));
             this.appReady = true;
+            if (this.route === 'match' && this.params?.id &&
+                (!this.match || this.match.id !== this.params.id)) {
+                this.loadMatchById(this.params.id).catch(error =>
+                    this.handleCommunicationError({detail: {message: error.message}})
+                );
+            }
             if (DECK_ROUTE_NAMES.has(this.route)) {
                 this.ensureRemote('mcDeck');
             }
@@ -185,14 +212,45 @@ class McApp extends router(navigator(outlet(LitElement))) {
         console.log(route, params, query, data);
         if (route === 'create-match') {
             this.navigate('/');
-        } else if (route === 'match' &&
-            (!match || this.api?.match !== match.name)) {
-            this.navigate('/');
+        } else if (route === 'match-legacy') {
+            this.navigate(match?.id ? getMatchPath(match.id) : '/');
         } else if (route === 'match') {
-            this.ensureRemote('mcMatch');
+            if (!params?.id) {
+                this.navigate(match?.id ? getMatchPath(match.id) : '/');
+            } else if (!this.api) {
+                return;
+            } else if (!match || match.id !== params.id ||
+                this.api?.match !== match.name) {
+                this.loadMatchById(params.id).catch(error =>
+                    this.handleCommunicationError({detail: {message: error.message}})
+                );
+            } else {
+                this.ensureRemote('mcMatch');
+            }
         } else if (DECK_ROUTE_NAMES.has(route)) {
             this.ensureRemote('mcDeck');
         }
+    }
+    async loadMatchById(id) {
+        await this.ensureRemote('mcMatch');
+
+        const matches = await this.api.getMatchesList();
+        const selectedMatch = matches.find(match => match.id === id);
+
+        if (!selectedMatch) {
+            this.navigate('/');
+            return;
+        }
+        if (this.route !== 'match' || this.params?.id !== id) {
+            return;
+        }
+
+        const player = selectedMatch.players.find(({name}) => name === this.player) ||
+            selectedMatch.players[0];
+        this.player = player?.name || '';
+        this.api.beginMatch(selectedMatch.name);
+        this.api.markMatchReady();
+        await this.api.joinMatch(true);
     }
     async ensureRemote(remoteName) {
         if (this.loadedRemotes[remoteName]) {
@@ -402,7 +460,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         }
         if (this.pendingResumeMatch === match.name && this.api.match === match.name) {
             this.pendingResumeMatch = '';
-            this.navigate('/match');
+            this.navigate(getMatchPath(match.id));
         }
     }
     handleMatchCreated(e) {
@@ -413,7 +471,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.match = match;
         this.player = player.name;
 
-        this.navigate('/match');
+        this.navigate(getMatchPath(match.id));
         this.api.joinMatch(true);
     }
     handleMatchResumeRequested(e) {
@@ -423,12 +481,19 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.pendingResumeMatch = matchName;
     }
     handleMatchResumed(e) {
-        const {matchName, player} = e.detail;
+        const {match: resumedMatch, matchName, player} = e.detail;
 
         this.player = player;
+        if (resumedMatch) {
+            this.match = resumedMatch;
+            this.pendingResumeMatch = '';
+            this.gameOverNotice = '';
+            this.navigate(getMatchPath(resumedMatch.id));
+            return;
+        }
         if (this.match?.name === matchName && this.pendingResumeMatch === matchName) {
             this.pendingResumeMatch = '';
-            this.navigate('/match');
+            this.navigate(getMatchPath(this.match.id));
         } else if (this.match?.name !== matchName) {
             this.pendingResumeMatch = matchName;
         }
@@ -443,6 +508,26 @@ class McApp extends router(navigator(outlet(LitElement))) {
         }
 
         this.navigate(path);
+    }
+    async handleResetMatch() {
+        const match = this.match;
+        if (this.resettingMatch || !match?.id || !window.confirm(
+            `¿Reiniciar la partida "${match.name}"? Se perderá el progreso actual.`
+        )) {
+            return;
+        }
+
+        this.resettingMatch = true;
+        try {
+            this.match = await this.api.resetMatch(match.id);
+        } catch (error) {
+            this.showAlert(error.message);
+        } finally {
+            this.resettingMatch = false;
+        }
+    }
+    handleExitMatch() {
+        this.navigate(getNavigationPath('matches'));
     }
     renderDialog() {
         const {dialog} = this;
@@ -502,10 +587,24 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         return html`
           ${this.renderConnectionStatus()}
-          <mc-primary-navigation
-              .activeRoute="${this.route}"
-              @navigate-route="${this.handleNavigation.bind(this)}"
-          ></mc-primary-navigation>
+          ${this.route === 'match' ? html`
+              <div class="match-actions">
+                  <md-text-button
+                      .disabled="${this.resettingMatch || !match?.id}"
+                      @click="${this.handleResetMatch.bind(this)}"
+                  >
+                      ${this.resettingMatch ? 'Reiniciando...' : 'Reiniciar partida'}
+                  </md-text-button>
+                  <md-text-button @click="${this.handleExitMatch.bind(this)}">
+                      Salir de la partida
+                  </md-text-button>
+              </div>
+          ` : html`
+              <mc-primary-navigation
+                  .activeRoute="${this.route}"
+                  @navigate-route="${this.handleNavigation.bind(this)}"
+              ></mc-primary-navigation>
+          `}
 
           ${this.appReady ? html`<mc-main .activeRoute="${this.route}">
               <div route='matches'>

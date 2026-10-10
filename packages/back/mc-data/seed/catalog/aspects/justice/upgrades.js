@@ -1,6 +1,6 @@
 import {
     ABILITY_CONSTANT,
-    ABILITY_RESPONSE,
+    ABILITY_INTERRUPT,
     CARD_TYPE_UPGRADE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_MODIFY_THWART_VALUE,
@@ -8,7 +8,7 @@ import {
     TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_PLAYER,
-    TARGET_SCHEME,
+    TARGET_SIDE_SCHEME,
     TRAIT_SKILL,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_YOUR_HERO_GET_THWART
@@ -71,11 +71,11 @@ export default [
                     RESOURCE_ENERGY
                 ],
                 'classification': 'justice',
-                'attach': TARGET_SCHEME,
+                'attach': TARGET_SIDE_SCHEME,
                 'maxAttach': 1,
                 'abilities': [
                     {
-                        'type': ABILITY_RESPONSE,
+                        'type': ABILITY_INTERRUPT,
                         'params': {
                             'trigger': TRIGGER_ATTACHED_DEFEAT,
                             'effect': {

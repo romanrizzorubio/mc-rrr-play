@@ -27,6 +27,7 @@ export class McCreateMatchPage extends LitElement {
             matches: {type: Array},
             prepareMatch: {attribute: false},
             resumingMatch: {type: String},
+            resettingMatch: {type: String},
             scenariosList: {type: Array},
             modularSetsList: {type: Array},
             selectedPlayers: {type: Object},
@@ -48,6 +49,7 @@ export class McCreateMatchPage extends LitElement {
         this.matchListRequestSequence = 0;
         this.prepareMatch = null;
         this.resumingMatch = '';
+        this.resettingMatch = '';
         this.scenariosList = [];
         this.modularSetsList = [];
         this.selectedPlayers = {};
@@ -147,7 +149,69 @@ export class McCreateMatchPage extends LitElement {
             this.creatingGame = false;
         }
     }
+    async resetMatch(match) {
+        if (this.resettingMatch || this.deletingMatch || this.resumingMatch) {
+            return;
+        }
+        if (!window.confirm(
+            `¿Reiniciar la partida "${match.name}"? Se perderá el progreso actual.`
+        )) {
+            return;
+        }
+
+        const player = this.selectedPlayers[match.name] || match.players[0]?.name;
+        if (!player) {
+            this.reportCommunicationError(
+                new Error('La partida no tiene un jugador para iniciar el reinicio.')
+            );
+            return;
+        }
+
+        this.resettingMatch = match.id;
+        this.requestUpdate();
+        try {
+            await this.prepareMatch();
+            this.api.beginMatch(match.name);
+            this.api.markMatchReady();
+            this.dispatchEvent(new CustomEvent('match-resume-requested', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    matchName: match.name,
+                    player,
+                },
+            }));
+            const joined = await this.api.joinMatch(true);
+            if (!joined) {
+                throw new Error('No se pudo conectar a la partida para reiniciarla.');
+            }
+
+            const resetMatch = await this.apiConfigMatch.resetMatch(match.id);
+            await this.loadMatches();
+            this.dispatchEvent(new CustomEvent('match-resumed', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    matchName: match.name,
+                    player,
+                    match: resetMatch,
+                },
+            }));
+        } catch (error) {
+            this.reportCommunicationError(
+                error,
+                `No se pudo reiniciar la partida "${match.name}"`
+            );
+        } finally {
+            this.resettingMatch = '';
+            this.requestUpdate();
+        }
+    }
     async resumeMatch(match) {
+        if (this.resettingMatch || this.deletingMatch || this.resumingMatch) {
+            return;
+        }
+
         const player = this.selectedPlayers[match.name] || match.players[0]?.name;
         if (!player || (!match.initialized && !match.initializing)) {
             this.reportCommunicationError(
@@ -186,7 +250,7 @@ export class McCreateMatchPage extends LitElement {
         }
     }
     async deleteMatch(match) {
-        if (this.deletingMatch || this.resumingMatch) {
+        if (this.deletingMatch || this.resumingMatch || this.resettingMatch) {
             return;
         }
         if (!window.confirm(
@@ -243,6 +307,7 @@ export class McCreateMatchPage extends LitElement {
             (match.initialized || match.initializing);
         const resuming = this.resumingMatch === match.name;
         const deleting = this.deletingMatch === match.name;
+        const resetting = this.resettingMatch === match.id;
 
         return html`
             <li>
@@ -270,15 +335,24 @@ export class McCreateMatchPage extends LitElement {
                     ` : ''}
                     <div class="match-actions">
                         <md-filled-button
-                            .disabled="${!canResume || resuming || Boolean(this.deletingMatch)}"
+                            .disabled="${!canResume || resuming ||
+                                Boolean(this.deletingMatch) || Boolean(this.resettingMatch)}"
                             @click="${() => this.resumeMatch(match)}"
                         >
                             ${resuming ? 'Conectando...' : 'Continuar partida'}
                         </md-filled-button>
                         <md-text-button
+                            class="reset-button"
+                            .disabled="${Boolean(this.deletingMatch) ||
+                                Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
+                            @click="${() => this.resetMatch(match)}"
+                        >
+                            ${resetting ? 'Reiniciando...' : 'Reiniciar partida'}
+                        </md-text-button>
+                        <md-text-button
                             class="delete-button"
                             .disabled="${Boolean(this.deletingMatch) ||
-                                Boolean(this.resumingMatch)}"
+                                Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
                             @click="${() => this.deleteMatch(match)}"
                         >
                             ${deleting ? 'Eliminando...' : 'Eliminar partida'}
@@ -336,13 +410,15 @@ export class McCreateMatchPage extends LitElement {
                 <h1>Partidas creadas</h1>
                 <div class="actions">
                     <md-text-button
-                        .disabled="${this.loadingMatches || Boolean(this.deletingMatch)}"
+                        .disabled="${this.loadingMatches || Boolean(this.deletingMatch) ||
+                            Boolean(this.resettingMatch)}"
                         @click="${this.loadMatches.bind(this)}"
                     >
                         Actualizar
                     </md-text-button>
                     <md-filled-button
-                        .disabled="${this.loadingMatches || Boolean(this.deletingMatch)}"
+                        .disabled="${this.loadingMatches || Boolean(this.deletingMatch) ||
+                            Boolean(this.resettingMatch)}"
                         @click="${this.startCreatingMatch.bind(this)}"
                     >
                         Nueva partida

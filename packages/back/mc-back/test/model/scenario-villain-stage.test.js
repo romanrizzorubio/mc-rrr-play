@@ -11,7 +11,7 @@ test('replacing a villain stage removes old responses and registers the new stag
     const match = {
         async openDialog(dialog) {
             dialogs.push(dialog);
-            if (dialog.title === 'Rino ha sido derrotado') {
+            if (dialog.title === 'Duende Verde ha sido derrotado') {
                 assert.equal(match.scenario.villain, oldVillain);
             } else {
                 assert.equal(dialog.title, 'Mostrando al villano');
@@ -37,10 +37,16 @@ test('replacing a villain stage removes old responses and registers the new stag
         faceDown: [{id: 'face-down-card'}],
         id: 'rhino-stage-1',
         modifyHitPoints: 10,
-        name: 'Rino',
-        selectedSide: 0,
+        sides: [
+            {name: 'Norman Osborn'},
+            {name: 'Duende Verde'},
+        ],
+        selectedSide: 1,
         stunned: 1,
         tough: 1,
+        get name() {
+            return this.sides[this.selectedSide].name;
+        },
         toObj() {
             return {id: this.id, name: this.name};
         },
@@ -70,13 +76,19 @@ test('replacing a villain stage removes old responses and registers the new stag
         isTreachery: false,
         isVillain: true,
         modifyHitPoints: 0,
-        name: 'Rino',
         owner: null,
+        sides: [
+            {name: 'Norman Osborn'},
+            {name: 'Duende Verde'},
+        ],
         selectedSide: 0,
         stunned: 0,
         surge: false,
         tough: 0,
         triggers: {},
+        get name() {
+            return this.sides[this.selectedSide].name;
+        },
         async initTriggers() {
             match.triggerCards[this.id] = this;
         },
@@ -112,6 +124,8 @@ test('replacing a villain stage removes old responses and registers the new stag
     await scenario.selectVillain(player);
 
     assert.equal(scenario.villain, nextVillain);
+    assert.equal(nextVillain.selectedSide, 1);
+    assert.equal(nextVillain.name, 'Duende Verde');
     assert.equal(nextVillain.modifyHitPoints, 10);
     assert.equal(nextVillain.attached[0], attachment);
     assert.equal(attachment.attachedTo, nextVillain);
@@ -124,8 +138,11 @@ test('replacing a villain stage removes old responses and registers the new stag
     assert.equal(nextVillain.damage, 0);
     assert.equal(match.triggerCards[oldVillain.id], undefined);
     assert.equal(match.triggerCards[nextVillain.id], nextVillain);
-    assert.equal(dialogs[0].title, 'Rino ha sido derrotado');
-    assert.deepEqual(dialogs[0].data.card, {id: oldVillain.id, name: oldVillain.name});
+    assert.equal(dialogs[0].title, 'Duende Verde ha sido derrotado');
+    assert.deepEqual(dialogs[0].data.card, {
+        id: oldVillain.id,
+        name: oldVillain.name,
+    });
     assert.equal(dialogs[1].title, 'Mostrando al villano');
 });
 

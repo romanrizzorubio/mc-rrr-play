@@ -24,7 +24,7 @@ export default [
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
-                'name': 'Interrogation Room',
+                'name': 'Sala de interrogatorios',
                 'set': 'justice',
                 'image': 'aspect/justice/supports/j63-copy-2.webp',
                 'traits': [
@@ -70,7 +70,7 @@ export default [
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
-                'name': 'Surveillance Team',
+                'name': 'Equipo de vigilancia',
                 'set': 'justice',
                 'image': 'aspect/justice/supports/j64-copy.webp',
                 'traits': [

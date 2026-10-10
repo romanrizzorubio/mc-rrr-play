@@ -206,6 +206,8 @@ class YourHeroGetsAttackTrigger extends AttackTrigger {
 }
 ```
 
+Los nombres contextuales de las interrupciones se definen en la clase del trigger correspondiente mediante `getInterruptName()`. Este nombre sustituye el título de la interrupción, mientras que las respuestas y otros tipos de capacidad conservan el título configurado en la capacidad.
+
 ### 5. Activations (Activaciones)
 
 **Ubicación:** `src/activations/`
@@ -262,6 +264,7 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 | `GET` | `/get-scenarios-list` | Obtener escenarios (servicio de creación) |
 | `GET` | `/get-modular-sets-list` | Obtener conjuntos modulares (servicio de creación) |
 | `POST` | `/create-match` | Crear partida vía servicio de creación |
+| `POST` | `/reset-match` | Reiniciar una partida con su configuración original |
 | `DELETE` | `/delete-match` | Eliminar partida vía servicio de creación |
 | `POST` | `/create-player` | Añadir jugador vía servicio de creación |
 | `POST` | `/create-scenario` | Añadir escenario vía servicio de creación |
@@ -383,6 +386,7 @@ Frontend                                  Backend
 ```
 
 La creación de una partida también consulta `/get-modular-sets-list` y envía la selección al crear el escenario.
+Cada partida tiene un `id` estable que se incluye en la lista y en la ruta de juego `/match/:id`; el nombre sigue siendo su etiqueta visible.
 
 ### Ejecutar Acción
 
@@ -470,6 +474,7 @@ El estado de una partida contiene:
 
 **Partidas (MongoDB):**
 - La colección `matches` guarda el estado completo del motor, incluidos mazos, cartas, efectos y referencias entre objetos; no se usa el JSON de presentación del frontend.
+- El snapshot conserva el `id` estable y una configuración inicial compacta (configuración de los jugadores y del escenario, sets modulares y dificultad). No anida una segunda instantánea completa del motor, para evitar duplicar cartas en la persistencia.
 - Cada cambio REST de una partida inicializada se persiste antes de responder. El flujo automático guarda puntos de reanudación entre turnos y fases.
 - Al arrancar, el backend rehidrata las partidas y reanuda las que estaban activas. `MONGODB_URI` y `MONGODB_DATABASE` determinan dónde se guardan.
 

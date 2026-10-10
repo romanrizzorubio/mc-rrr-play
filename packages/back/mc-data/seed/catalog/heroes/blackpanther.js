@@ -37,7 +37,6 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_SEARCH_CARDS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
-    EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SIMULTANEOUS,
     EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
@@ -59,7 +58,9 @@ import {
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
+    TARGET_SOURCE,
     TARGET_THIS,
+    TARGET_UPGRADE_YOU_CONTROL,
     TARGET_VILLAIN,
     TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
@@ -167,7 +168,11 @@ export default {
                                                 }
                                             },
                                             {
-                                                'type': EFFECT_MOVE_TO_HAND
+                                                'type': EFFECT_MOVE_TO_HAND,
+                                                'params': {
+                                                    'target': TARGET_SOURCE,
+                                                    'source': 'selectedCards'
+                                                }
                                             },
                                             {
                                                 'type': EFFECT_SHUFFLE_DECK
@@ -241,7 +246,11 @@ export default {
                                                     }
                                                 },
                                                 {
-                                                    'type': EFFECT_MOVE_TO_HAND
+                                                    'type': EFFECT_MOVE_TO_HAND,
+                                                    'params': {
+                                                        'target': TARGET_SOURCE,
+                                                        'source': 'selectedCards'
+                                                    }
                                                 },
                                                 {
                                                     'type': EFFECT_SHUFFLE_DECK
@@ -648,14 +657,13 @@ export default {
                                                         'params': {
                                                             'effects': [
                                                                 {
-                                                                    'type': EFFECT_SELECT_DISCARD_CARD,
+                                                                    'type': EFFECT_DISCARD_GAME,
                                                                     'params': {
-                                                                        'filter': {
-                                                                            'type': CARD_TYPE_UPGRADE,
+                                                                        'target': TARGET_UPGRADE_YOU_CONTROL,
+                                                                        'condition': {
                                                                             'traits': [
                                                                                 TRAIT_BLACK_PANTHER
-                                                                            ],
-                                                                            'control': TARGET_YOU
+                                                                            ]
                                                                         }
                                                                     }
                                                                 },

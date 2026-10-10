@@ -5,6 +5,7 @@ import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
+import {renderBoostIcons} from '../../../utils/boost-icons.js';
 
 export class McBoostDealtDialog extends McDialog {
     static get is() {
@@ -41,42 +42,55 @@ export class McBoostDealtDialog extends McDialog {
             cards :
             Array.from({length: cardCount}, () => null);
         const size = displayedCards.length <= 2 ? 'l' : 'm';
+        const cumulativeBoostIcons = renderBoostIcons(cumulativeBoost);
 
         return html`
             <div class="boost-cards">
-                ${displayedCards.map(boostCard => boostCard ? html`
-                    <div class="boost-card">
-                        <div class="boost-icons">
-                            <strong>Iconos de aumento:</strong> ${boostCard.card.boost || 0}
-                        </div>
-                        <mc-card
-                            name="${boostCard.card.name}"
-                            image="${boostCard.card.image}"
-                            .isFacedownCard="${boostCard.card.isFacedownCard}"
-                            size="${size}"
-                            ?horizontal="${boostCard.horizontal}"
-                            .generic="${boostCard.card.counters}"
-                            .showGeneric="${Boolean(boostCard.card.counters)}"
-                        ></mc-card>
-                        ${boostCard.hasBoostAbility ? html`
-                            <div class="boost-ability">
-                                <strong>Capacidad de aumento:</strong> Sí
+                ${displayedCards.map(boostCard => {
+                    if (!boostCard) {
+                        return html`
+                            <div class="boost-card">
+                                <mc-card
+                                    name="Carta de aumento"
+                                    image="${BACK_CARD_ENCOUNTER}"
+                                    size="${size}"
+                                ></mc-card>
                             </div>
-                        ` : ''}
-                    </div>
-                ` : html`
-                    <div class="boost-card">
-                        <mc-card
-                            name="Carta de aumento"
-                            image="${BACK_CARD_ENCOUNTER}"
-                            size="${size}"
-                        ></mc-card>
-                    </div>
-                `)}
+                        `;
+                    }
+
+                    const boostIcons = renderBoostIcons(boostCard.card.boost);
+
+                    return html`
+                        <div class="boost-card">
+                            ${boostIcons.length ? html`
+                                <div class="boost-icons">
+                                    <strong>Iconos de aumento:</strong>
+                                    <span class="boost-icon-list">${boostIcons}</span>
+                                </div>
+                            ` : ''}
+                            <mc-card
+                                name="${boostCard.card.name}"
+                                image="${boostCard.card.image}"
+                                .isFacedownCard="${boostCard.card.isFacedownCard}"
+                                size="${size}"
+                                ?horizontal="${boostCard.horizontal}"
+                                .generic="${boostCard.card.counters}"
+                                .showGeneric="${Boolean(boostCard.card.counters)}"
+                            ></mc-card>
+                            ${boostCard.hasBoostAbility ? html`
+                                <div class="boost-ability">
+                                    <strong>Capacidad de aumento:</strong> Sí
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                })}
             </div>
-            ${Number.isFinite(cumulativeBoost) ? html`
+            ${cumulativeBoostIcons.length ? html`
                 <div class="boost-total">
-                    <strong>Iconos de aumento acumulados:</strong> ${cumulativeBoost}
+                    <strong>Iconos de aumento acumulados:</strong>
+                    <span class="boost-icon-list">${cumulativeBoostIcons}</span>
                 </div>
             ` : ''}
             ${allowHideFuture ? html`

@@ -12,7 +12,7 @@ export default [
         'card': {
             'type': CARD_TYPE_RESOURCE,
             'params': {
-                'name': 'The Power of Justice',
+                'name': 'El poder de la justicia',
                 'set': 'justice',
                 'image': 'aspect/justice/resources/j62-copy.webp',
                 'resources': [

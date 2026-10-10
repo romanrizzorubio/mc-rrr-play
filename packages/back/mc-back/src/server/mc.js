@@ -23,8 +23,12 @@ export class Mc {
     get dialog() {
         return this.mcSocket.dialogSocket;
     }
-    getMatch(name) {
-        return this.matches[name];
+    getMatch(nameOrId) {
+        return this.matches[nameOrId] ||
+            this.getMatchById(nameOrId);
+    }
+    getMatchById(id) {
+        return Object.values(this.matches).find(match => match.id === id);
     }
     setMatch(match) {
         this.matches[match.name] = match;

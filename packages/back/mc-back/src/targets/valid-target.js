@@ -11,6 +11,17 @@ import {DIALOG_SELECT_TARGET,
 import {Engine} from '../engine/engine.js';
 import {targetMap} from './index.js';
 
+const findSelectedTarget = (targets, selected) => {
+    const directMatch = targets.find(target => target.id === selected.id);
+    if (directMatch) {
+        return directMatch;
+    }
+
+    return selected.parentId === undefined ?
+        undefined :
+        targets.find(target => target.id === selected.parentId);
+};
+
 export class ValidTarget extends Engine {
     constructor({
         effect,
@@ -177,8 +188,14 @@ export class ValidTarget extends Engine {
                 throw new Error('La selección múltiple de objetivos no es válida.');
             }
 
+            const resolvedSelectedTargets = selectedTargets.map(selectedTarget =>
+                findSelectedTarget(validTarget, selectedTarget));
+            if (resolvedSelectedTargets.some(selectedTarget => !selectedTarget)) {
+                throw new Error('La selección múltiple de objetivos no es válida.');
+            }
+
             return validTarget.filter(target =>
-                selectedTargets.some(selectedTarget => selectedTarget.id === target.id));
+                resolvedSelectedTargets.includes(target));
         }
 
         if (this.isMultipleTarget(params)) {
@@ -202,7 +219,12 @@ export class ValidTarget extends Engine {
                     },
                 });
 
-                return validTarget.find(target => target.id === selected.id);
+                const selectedTarget = findSelectedTarget(validTarget, selected);
+                if (!selectedTarget) {
+                    throw new Error('La selección del objetivo no es válida.');
+                }
+
+                return selectedTarget;
         }
     }
 }

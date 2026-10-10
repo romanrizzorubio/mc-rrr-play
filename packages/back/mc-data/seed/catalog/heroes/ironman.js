@@ -63,6 +63,7 @@ import {
     TARGET_CARD,
     TARGET_PLAYER_DISCARD,
     TARGET_SCHEME,
+    TARGET_SOURCE,
     TARGET_TOP_CARD,
     TARGET_THIS,
     TARGET_YOU,
@@ -625,7 +626,11 @@ export default {
                                                     }
                                                 },
                                                 {
-                                                    'type': EFFECT_MOVE_TO_HAND
+                                                    'type': EFFECT_MOVE_TO_HAND,
+                                                    'params': {
+                                                        'target': TARGET_SOURCE,
+                                                        'source': 'selectedCards'
+                                                    }
                                                 }
                                             ]
                                         }

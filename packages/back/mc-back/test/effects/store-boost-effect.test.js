@@ -4,6 +4,7 @@ import {test} from 'node:test';
 import {DIALOG_BOOST_DEALT, TARGET_VILLAIN} from 'mc-shared';
 import {EnemyActivationEffect} from '../../src/effects/enemy-activation-effect.js';
 import {StoreBoostEffect} from '../../src/effects/store-boost-effect.js';
+import {GameCard} from '../../src/model/cards/game-card.js';
 import {FaceDown} from '../../src/model/match/facedown.js';
 import {Match} from '../../src/model/match/match.js';
 import {
@@ -48,6 +49,7 @@ test('stored boosts stay facedown and are resolved before the next activation bo
         },
     };
     const match = {
+        amplificationIcons: 0,
         villain,
         triggerCards: {},
         async drawEncounterCards(count = 1) {
@@ -119,6 +121,33 @@ test('ordinary facedown cards are not consumed as stored boosts', async () => {
 
     assert.deepEqual(activation.boostCards, [normal]);
     assert.equal(villain.faceDown.length, 1);
+});
+
+test('double-sided villains serialize stored boosts without revealing their identity', () => {
+    const villain = Object.assign(Object.create(GameCard.prototype), {
+        sides: [{
+            toObj() {
+                return {id: 'goblin-stage-1', name: 'Duende Verde'};
+            },
+        }],
+        selectedSide: 0,
+        counters: 0,
+        faceDown: [],
+    });
+    villain.faceDown.push(new FaceDown({
+        attached: villain,
+        card: createBoostCard('Hidden boost', 2, []),
+        isFutureBoost: true,
+    }));
+
+    const serialized = villain.toObj();
+
+    assert.equal(serialized.name, 'Duende Verde');
+    assert.equal(serialized.faceDown.length, 1);
+    assert.equal(serialized.faceDown[0].isEncounterCard, true);
+    assert.equal(serialized.faceDown[0].isFutureBoost, true);
+    assert.equal(serialized.faceDown[0].name, undefined);
+    assert.equal(serialized.faceDown[0].image, undefined);
 });
 
 test('stored boost markers survive match snapshot restoration', () => {

@@ -12,8 +12,9 @@ Ver las partidas que siguen en el backend, volver a una sala y retomar el estado
 2. Seleccionar una partida disponible.
 3. Elegir el jugador que se va a controlar y presionar "Continuar partida".
 4. Para borrar una partida, incluso si su setup sigue en curso, presionar "Eliminar partida" y confirmar.
+5. Para volver a empezar con la misma configuración, presionar "Reiniciar partida" y confirmar.
 
-Para empezar otra, presionar "Nueva partida", elegir nombre, jugador, superhéroe y escenario, y después "Crear partida".
+Para empezar otra, presionar "Nueva partida". La configuración se divide en dos vistas: primero se eligen el nombre de la partida y el nombre, superhéroe y mazo del jugador; al continuar, se eligen el escenario, el modo experto (justo debajo del selector de escenario) y sus conjuntos modulares. Tanto el nombre de la partida como el del jugador empiezan con **RRR** y se pueden cambiar. **Volver** permite cambiar la primera vista sin perder las selecciones de la segunda. **Crear partida** aparece en la segunda vista.
 
 Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida usa las etapas expertas del villano y añade el conjunto Experto al mazo de encuentros, manteniendo también el conjunto Normal.
 
@@ -23,6 +24,7 @@ Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida u
 - Si el setup de una partida continúa en el backend, se vuelven a mostrar los diálogos pendientes.
 - Las partidas se conservan en MongoDB y pueden reanudarse tras reiniciar el backend.
 - Al eliminarlas desde el lobby, dejan de estar disponibles y se borran de MongoDB.
+- Al reiniciarlas se conserva su identificador y la configuración original de jugadores, escenario, conjuntos modulares y dificultad.
 
 ## Configuración de Partida
 
@@ -56,7 +58,7 @@ La página principal de **Mazos** muestra todos los mazos creados con su nombre,
 
 Cada vista tiene su propia ruta: `/decks` muestra el listado, `/decks/create` permite elegir héroe, `/decks/edit` abre el editor de un mazo nuevo y `/decks/edit/:id` edita un mazo guardado. Al guardar por primera vez, la ruta del editor se actualiza para incluir el identificador asignado al mazo.
 
-En el editor se utiliza todo el ancho disponible y los listados crecen según su contenido, sin scroll interno. En pantallas amplias, el mazo actual organiza Recursos y Mejoras en la primera columna, Aliados y Apoyos en la segunda y Eventos en la tercera; las columnas se apilan sin huecos verticales entre grupos de distinta altura. En pantallas más estrechas se adaptan a dos o una columna. Cada tipo muestra su cantidad de cartas e indica si cada carta es fija del héroe, básica o de un aspecto cuyo nombre se muestra sin prefijo; las cartas fijas no se pueden modificar. Al pulsar una fila editable se solicita confirmación para quitar la carta. Pulsar una imagen abre una vista ampliada. Debajo, una tabla de cartas disponibles permite buscar, filtrar por tipo, aspecto y rasgo, y elegir cuántas copias añadir; si aún no se ha elegido aspecto muestra cartas de todos los aspectos y básicas. Al añadir la primera carta de aspecto, este queda seleccionado automáticamente y se ocultan los demás aspectos. Sus cabeceras de Carta, Tipo, Aspecto, Rasgos, Coste y Copias ordenan el listado. El coste aparece en su propia columna. Ambos listados muestran los recursos de cada carta y el mazo actual conserva el coste junto a cada carta. Las cantidades respetan el límite general de 3 copias por título, las restricciones de máximo indicadas en cada carta, la unicidad y el máximo de 50 cartas.
+En el editor se utiliza todo el ancho disponible y los listados crecen según su contenido, sin scroll interno. Los botones **Guardar** y **Cerrar** aparecen juntos en la cabecera del editor. En pantallas amplias, el mazo actual organiza Recursos y Mejoras en la primera columna, Aliados y Apoyos en la segunda y Eventos en la tercera; las columnas se apilan sin huecos verticales entre grupos de distinta altura. En pantallas más estrechas se adaptan a dos o una columna. Cada tipo muestra su cantidad de cartas e indica si cada carta es fija del héroe, básica o de un aspecto cuyo nombre se muestra sin prefijo; las cartas fijas no se pueden modificar. Al pulsar una fila editable se solicita confirmación para quitar la carta. Pulsar una imagen abre una vista ampliada. Debajo, una tabla de cartas disponibles permite buscar, filtrar por tipo, aspecto y rasgo, y elegir cuántas copias añadir; si aún no se ha elegido aspecto muestra cartas de todos los aspectos y básicas. Al añadir la primera carta de aspecto, este queda seleccionado automáticamente y se ocultan los demás aspectos. Sus cabeceras de Carta, Tipo, Aspecto, Rasgos, Coste y Copias ordenan el listado. El coste aparece en su propia columna. Ambos listados muestran los recursos de cada carta y el mazo actual conserva el coste junto a cada carta. Las cantidades respetan el límite general de 3 copias por título, las restricciones de máximo indicadas en cada carta, la unicidad y el máximo de 50 cartas.
 
 En el listado de mazos, **Guardar copia en el catálogo** sincroniza MongoDB con el fichero físico `packages/back/mc-data/seed/catalog/decks.json`, sin necesidad de hacer un commit. **Restaurar del repositorio** combina ese snapshot con los datos locales: para cada ID conserva el evento más reciente, comparando `updatedAt` para mazos y `deletedAt` para borrados explícitos. No elimina mazos que solo existan localmente; los borrados guardados en el snapshot sí se aplican y quedan registrados para que esos mazos no reaparezcan en futuras restauraciones.
 
@@ -123,6 +125,8 @@ La pantalla se divide en varias áreas:
 - Haz clic en una pila para consultar sus cartas, desde la carta superior hacia abajo.
 - Al descartar varias cartas desde la parte superior de un mazo, se muestran antes de continuar con la resolución del efecto.
 - En el diálogo para elegir el orden, puedes marcar que no vuelva a preguntarse; la preferencia se guarda en esa partida y se mantiene al reanudarla. Cada partida nueva empieza con esta opción desactivada.
+
+Durante la partida se oculta la navegación principal y aparecen los botones **Reiniciar partida** y **Salir de la partida**. Reiniciar pide confirmación y vuelve a iniciar la partida con la misma configuración; salir vuelve a la lista sin eliminarla.
 
 ### Ejecutar Acciones
 

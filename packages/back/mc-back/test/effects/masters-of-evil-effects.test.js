@@ -184,6 +184,9 @@ test('a multi-target enemy attack asks every hero for a separate defense', async
         const ally = {
             id: `${id}-ally`,
             isAlly: true,
+            async getEffectiveStats() {
+                return {hitPoints: 4, life: 4};
+            },
             toObj() {
                 return {id: this.id};
             },
@@ -306,6 +309,9 @@ test('require defender mandates an eligible ally and keeps normal defense option
         id,
         isAlly,
         isSuperhero: false,
+        async getEffectiveStats() {
+            return {hitPoints: 5, life: 5};
+        },
         toObj() {
             return {id: this.id};
         },

@@ -22,6 +22,9 @@ export class EnemyActivationEffect extends Effect {
         return this.enemy;
     }
     cancelActivation() {
+        this.cancel();
+    }
+    cancel() {
         this.canceled = true;
     }
     getBoostTarget() {
@@ -138,6 +141,7 @@ export class EnemyActivationEffect extends Effect {
                 selectedTarget,
                 card,
                 cardIndex,
+                previousBoost: totalBoost,
             });
 
             await resolveBoostEffect.runEffect(params);

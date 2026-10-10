@@ -1,7 +1,7 @@
 import {
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_RESPONSE,
-   PRIORITY_RESPONSE,
+    PRIORITY_RESPONSE,
    TARGET_ALTEREGO_SIDE,
    TARGET_HERO_SIDE,
    TRIGGER_THIS_FLIP,
@@ -9,6 +9,7 @@ import {
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {Effect} from './effect.js';
+import {RevealEncounterEffect} from './reveal-encounter-effect.js';
 
 export class FlipEffect extends Effect {
     constructor({
@@ -59,17 +60,36 @@ export class FlipEffect extends Effect {
         const {selectedTarget, selectedFormTarget} = this;
         const {sides} = selectedTarget;
         const {own} = params;
+        const sideIndex = sides.indexOf(selectedFormTarget);
 
-        selectedTarget.endTriggers();
-
-        selectedTarget.selectedSide = sides.indexOf(selectedFormTarget);
         if (own) {
             selectedTarget.flipped = true;
         }
 
-        await selectedTarget.initTriggers(params);
+        if (typeof selectedTarget.flipToSide === 'function') {
+            await selectedTarget.flipToSide(sideIndex, {
+                ...params,
+                reveal: async card => {
+                    const revealEffect = new RevealEncounterEffect({
+                        selectedTarget: card,
+                        putInPlay: true,
+                        match: this.match,
+                    });
+                    await revealEffect.runEffect({
+                        ...params,
+                        player: params.player || this.match.initialPlayer,
+                    });
+                },
+            });
+        } else {
+            selectedTarget.endTriggers();
+            selectedTarget.selectedSide = sideIndex;
+            await selectedTarget.initTriggers(params);
+        }
 
-        await selectedTarget.refresh();
+        if (typeof selectedTarget.flipToSide !== 'function') {
+            await selectedTarget.refresh();
+        }
         const {owner} = selectedTarget;
         if (owner && owner.isPlayer) {
             await owner.hand.refresh();

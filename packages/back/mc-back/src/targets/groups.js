@@ -14,6 +14,7 @@ import {
     TARGET_ENEMY,
     TARGET_HERO,
     TARGET_MINION,
+    TARGET_PLAYER_LOWEST_HERO_LIFE,
     TARGET_VILLAIN,
     TARGET_YOUR_HERO,
 } from 'mc-shared';
@@ -73,9 +74,20 @@ export const groupTargets = {
         return targetPlayer.friends.map(character => character.currentSide);
     },
     [TARGET_ALL_PLAYERS]: ({match}) => match.players,
+    [TARGET_PLAYER_LOWEST_HERO_LIFE]: ({match}) => {
+        const heroes = match.players.filter(player => player.isHero);
+        if (!heroes.length) {
+            return [];
+        }
+
+        const lowestLife = Math.min(...heroes.map(player => player.superhero.life));
+
+        return heroes.filter(player => player.superhero.life === lowestLife);
+    },
     [TARGET_ALL_SIDE_SCHEMES]: ({match}) => match.sideSchemes,
-    [TARGET_ENVIRONMENT]: ({match}) =>
-        match.scenario.gameZone.cards.filter(card => card.isEnvironment),
+    [TARGET_ENVIRONMENT]: ({condition, match}) =>
+        match.scenario.gameZone.cards.filter(card =>
+            card.isEnvironment && (!condition || checkCondition(card, condition))),
     [TARGET_CHARACTER]: ({match}) => match.characters,
     [TARGET_ENEMY]: ({match}) => match.enemies,
     [TARGET_HERO]: ({match}) =>

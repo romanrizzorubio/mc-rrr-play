@@ -58,6 +58,10 @@ export class Player extends Engine {
         return this.superhero.accelerationTokens +
             this.gameZone.accelerationTokens;
     }
+    get amplificationIcons() {
+        return this.superhero.amplificationIcons +
+            this.gameZone.amplificationIcons;
+    }
     get allies() {
         return this.gameZone.cards.filter(card => card.isAlly);
     }
@@ -112,7 +116,8 @@ export class Player extends Engine {
         return getHandSizeEffect.handSize;
     }
     get hasCrisis() {
-        return this.gameZone.hasCrisis;
+        return this.superhero.hasCrisis ||
+            this.gameZone.hasCrisis;
     }
     get hasGuard() {
         return this.gameZone.hasGuard;

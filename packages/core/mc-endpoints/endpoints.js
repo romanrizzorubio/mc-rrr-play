@@ -7,6 +7,7 @@ export const ENDPOINTS = {
         GET_SCENARIOS_LIST: '/get-scenarios-list',
         GET_MODULAR_SETS_LIST: '/get-modular-sets-list',
         INIT: '/init-match',
+        RESET: '/reset-match',
     },
     PLAYER: {
         CREATE: '/create-player',
@@ -32,6 +33,7 @@ export const INTERNAL_ENDPOINTS = {
         DELETE: '/internal/delete-match',
         GET_MATCHES_LIST: '/internal/get-matches-list',
         INIT: '/internal/init-match',
+        RESET: '/internal/reset-match',
     },
     PLAYER: {
         CREATE: '/internal/create-player',

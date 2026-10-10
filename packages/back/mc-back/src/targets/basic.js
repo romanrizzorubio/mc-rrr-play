@@ -23,7 +23,11 @@ export const basicTargets = {
     [TARGET_PLAYER]: ({player}) => [player],
     [TARGET_ROUND]: ({currentRound}) => [currentRound],
     [TARGET_SCENARIO]: ({match}) => [match.scenario],
-    [TARGET_SOURCE]: ({params, source}) => path(params, source),
+    [TARGET_SOURCE]: ({params, source}) => {
+        const targets = path(params, source);
+
+        return Array.isArray(targets) ? targets : [];
+    },
     [TARGET_THIS]: ({ability}) => [path(ability, 'card')],
     [TARGET_TRIGGERED_CARD]: ({triggeredCard}) => [triggeredCard],
     [TARGET_YOU]: ({player}) => [player],

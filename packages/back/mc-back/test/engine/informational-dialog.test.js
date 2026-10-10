@@ -3,9 +3,11 @@ import {test} from 'node:test';
 
 import {
     DIALOG_USE_CARD,
+    PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU,
 } from 'mc-shared';
 import {Engine} from '../../src/engine/engine.js';
@@ -137,6 +139,74 @@ test('optional triggered abilities prompt on every occurrence', async () => {
     );
     assert.equal(trigger.triggered, true);
     assert.equal(ability.resolved, true);
+});
+
+test('a forced interrupt on a double-sided card resolves using the selected side id', async () => {
+    const engine = new Engine();
+    const player = {
+        hand: {cards: []},
+    };
+    const currentSide = {
+        id: 'norman-osborn-side',
+    };
+    const card = {
+        currentSide,
+        id: 'norman-osborn-side--green-goblin-side',
+        owner: player,
+        toObj: () => ({
+            id: currentSide.id,
+            name: 'Norman Osborn',
+        }),
+    };
+    const ability = {
+        effect: {
+            isChoose: false,
+            isChooseAbility: false,
+        },
+        hideDialog: false,
+        id: 'norman-osborn-forced-interrupt',
+        isEndLasting: false,
+        isOptionAbility: false,
+        name: 'Interrupción obligada',
+        resolved: false,
+        getTitle() {
+            return this.name;
+        },
+        async resolveAbility() {
+            this.resolved = true;
+        },
+    };
+    const trigger = new Trigger({
+        ability,
+        card,
+        trigger: TRIGGER_VILLAIN_ATTACKS,
+    });
+    const dialogs = [];
+
+    engine.match = {
+        suppressedInformationalDialogIds: [],
+        triggerCards: {},
+    };
+    engine.openDialog = async dialog => {
+        dialogs.push(dialog);
+        return {
+            selected: {id: currentSide.id},
+        };
+    };
+
+    const selectedTrigger = await engine._openTriggersDialog(
+        [trigger],
+        PRIORITY_FORCED_INTERRUPT,
+        {effect: {}, player}
+    );
+
+    assert.equal(selectedTrigger, trigger);
+    assert.equal(ability.resolved, true);
+    assert.equal(dialogs[0].data.cards[0].id, currentSide.id);
+    assert.equal(
+        JSON.parse(dialogs[0].data.informationalDialogId)[0],
+        currentSide.id
+    );
 });
 
 test('trigger occurrence tracking stays outside persisted match snapshots', () => {

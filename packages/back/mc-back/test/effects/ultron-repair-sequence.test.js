@@ -16,6 +16,7 @@ test('Secuencia de reparación heals one per Drone as a boost and two when revea
         },
     };
     const match = {
+        amplificationIcons: 0,
         villain,
         triggerCards: {},
         async openDialog() {

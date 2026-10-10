@@ -17,30 +17,52 @@ export class AssignDamageEffect extends Effect {
     async execute(params) {
         const {selectedTarget} = this;
         const {player} = params;
+        const cardStats = await Promise.all(selectedTarget.map(async card => ({
+            card,
+            stats: await card.getEffectiveStats(),
+        })));
+        const dealDamage = (card, assignedDamage) => {
+            if (!assignedDamage) {
+                return;
+            }
+
+            const dealDamageEffect = new DealDamageEffect({
+                selectedTarget: card,
+                damage: assignedDamage,
+                match: this.match,
+            });
+
+            return dealDamageEffect.runEffect(params);
+        };
+
+        if (cardStats.length === 1) {
+            const [{card, stats: {life}}] = cardStats;
+            const assignedDamage = Math.min(this.damage, Math.max(0, life));
+
+            return dealDamage(card, assignedDamage);
+        }
+
+        const cards = cardStats.map(({card, stats: {hitPoints, life}}) => ({
+            ...card.toObj(params),
+            hitPoints,
+            life,
+        }));
 
         const {assigned} = await this.openDialog({
             dialogType: DIALOG_ASSIGN,
             title: `Reparte ${this.damage} de Daño indirecto`,
-            hand: player.hand.cards.map(card => card.toObj(arguments[0])),
+            hand: player.hand.cards.map(card => card.toObj(params)),
             data: {
                 count: this.damage,
                 field: 'life',
-                cards: selectedTarget.map(card => card.toObj(arguments[0])),
+                cards,
             },
         });
 
         return this.promisesSequential(selectedTarget, card => {
             const assignedDamage = assigned[card.id];
 
-            if (assignedDamage) {
-                const dealDamageEffect = new DealDamageEffect({
-                    selectedTarget: card,
-                    damage: assignedDamage,
-                    match: this.match,
-                });
-
-                return dealDamageEffect.runEffect(params);
-            }
+            return dealDamage(card, assignedDamage);
         });
     }
 }

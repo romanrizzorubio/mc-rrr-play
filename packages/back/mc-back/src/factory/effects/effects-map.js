@@ -5,7 +5,10 @@ import {
     EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
+    EFFECT_CANCEL_ACTIVATION,
+    EFFECT_REPLACE_EFFECT,
     EFFECT_CANCEL_ATTACK,
+    EFFECT_CANCEL_SCHEME,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_CANNOT,
@@ -108,7 +111,8 @@ import {AddKeywordEffect} from '../../effects/add-keyword-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
-import {CancelAttackEffect} from '../../effects/cancel-attack-effect.js';
+import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
+import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
@@ -215,7 +219,10 @@ export const EFFECT_MAP = {
     [EFFECT_PREVENT_DAMAGE]: PreventDamageEffect,
     [EFFECT_PREVENT_PLACE_DAMAGE]: PreventPlaceDamageEffect,
     [EFFECT_PREVENT_PLACE_THREAT]: PreventPlaceThreatEffect,
-    [EFFECT_CANCEL_ATTACK]: CancelAttackEffect,
+    [EFFECT_CANCEL_ACTIVATION]: CancelActivationEffect,
+    [EFFECT_REPLACE_EFFECT]: ReplaceEffect,
+    [EFFECT_CANCEL_ATTACK]: CancelActivationEffect,
+    [EFFECT_CANCEL_SCHEME]: CancelActivationEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CANNOT]: CannotEffect,

@@ -125,6 +125,8 @@ registerSnapshotType(Match, {
     ],
     restore: (match, {mc}) => {
         match.mc = mc;
+        match.id ??= match.name;
+        match.expert ??= false;
         match.initializing = false;
         new MatchFactory(match);
 

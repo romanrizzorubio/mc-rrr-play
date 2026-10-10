@@ -74,6 +74,16 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 this.getDefenders(attackTarget);
             if (defenders.length) {
                 const attack = this.toObj(arguments[0]);
+                const defenderCards = await Promise.all(defenders.map(async defender => {
+                    const {hitPoints, life} = await defender.getEffectiveStats();
+
+                    return {
+                        ...defender.toObj(params),
+                        hitPoints,
+                        life,
+                    };
+                }));
+
                 attack.target = attackTarget.toObj(arguments[0]);
 
                 const {defender} = await this.openDialog({
@@ -82,7 +92,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                     hideOk: mustDefend,
                     data: {
                         attack,
-                        defenders: defenders.map(d => d.toObj(arguments[0])),
+                        defenders: defenderCards,
                     },
                 });
 

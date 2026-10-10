@@ -44,12 +44,19 @@ export class PlayerRest {
                 heroConfig.precon = deckConfig.cards;
                 heroConfig.aspect = deckConfig.aspect;
             }
+            const creationPlayerConfig = structuredClone(heroConfig);
             const heroCreated = matchFactory.createSuperhero(heroConfig);
             const player = match.createPlayer({
                 name,
                 superhero: heroCreated,
                 initial,
                 config: heroConfig
+            });
+            match.creationConfig ??= {players: [], scenario: null, expert: false};
+            match.creationConfig.players.push({
+                name,
+                initial: initial ?? false,
+                config: creationPlayerConfig,
             });
 
             return player.toObj();
