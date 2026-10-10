@@ -1,6 +1,7 @@
 import {
     CARD_TYPE_RESOURCE,
-    RESOURCE_WILD
+    RESOURCE_WILD,
+    TARGET_DECK
 } from 'mc-shared';
 
 export default [
@@ -31,7 +32,8 @@ export default [
                     }
                 ],
                 'maximum': {
-                    'count': 2
+                    'count': 2,
+                    'target': TARGET_DECK
                 },
                 'classification': 'leadership'
             }

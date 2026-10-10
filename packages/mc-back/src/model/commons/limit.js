@@ -5,13 +5,13 @@ export class Limit extends Engine {
     constructor({
 // Limit
         count,
-        time,
+        target,
         ability,
     }) {
         super(arguments[0]);
 
         this.count = count;
-        this.time = time;
+        this.target = target;
         this.ability = ability;
 
         this.used = 0;
@@ -20,6 +20,13 @@ export class Limit extends Engine {
         return path(this, 'ability.match');
     }
     canUse() {
+        if (!this.target) {
+            throw new Error('Un límite de capacidad requiere un objetivo.');
+        }
+        if (!this.match?.limits) {
+            throw new Error('Un límite requiere una carta y una partida.');
+        }
+
         return this.used < this.count;
     }
 
@@ -30,6 +37,9 @@ export class Limit extends Engine {
     use() {
         this.used++;
 
-        this.setLimit(this);
+        const limits = this.match.limits[this.target] || [];
+        if (!limits.includes(this)) {
+            this.setLimit(this);
+        }
     }
 }

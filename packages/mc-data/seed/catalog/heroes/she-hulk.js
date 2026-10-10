@@ -75,7 +75,7 @@ import {
     TARGET_YOUR_HERO,
     TARGET_VILLAIN,
     TARGET_YOUR_SUPERHERO,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_ATTACK,
     TRAIT_ATTORNEY,
     TRAIT_AVENGER,
@@ -123,7 +123,7 @@ export default {
                                 'name': '¡Protesto!',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'trigger': TRIGGER_WOULD_PLACE_THREAT,
                                 'effect': {

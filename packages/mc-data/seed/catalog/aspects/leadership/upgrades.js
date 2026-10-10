@@ -5,6 +5,7 @@ import {
     EFFECT_MODIFY_THWART_VALUE,
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
+    TARGET_DECK,
     TARGET_EFFECT,
     TRAIT_CONDITION,
     TRIGGER_ATTACHED_GET_ATTACK,
@@ -33,7 +34,8 @@ export default [
                 'attach': TARGET_ALLY,
                 'maxAttach': 1,
                 'maximum': {
-                    'count': 3
+                    'count': 3,
+                    'target': TARGET_DECK
                 },
                 'abilities': [
                     {

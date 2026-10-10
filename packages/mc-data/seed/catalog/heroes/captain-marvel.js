@@ -65,13 +65,14 @@ import {
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
+    TARGET_PLAYER,
     TARGET_SCHEME,
     TARGET_THIS,
     TARGET_VILLAIN,
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_AERIAL,
     TRAIT_ARMOR,
     TRAIT_ATTACK,
@@ -122,7 +123,7 @@ export default {
                                 'name': 'Comandante',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'effect': {
                                     'type': EFFECT_DRAW_CARD,
@@ -159,7 +160,7 @@ export default {
                                 'name': 'Redirigir energía',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'arrow': {
                                     'type': EFFECT_CHAINED,
@@ -590,7 +591,8 @@ export default {
                         ],
                         'classification': CLASSIFICATION_HERO,
                         'maximum': {
-                            'count': 1
+                            'count': 1,
+                            'target': TARGET_PLAYER
                         },
                         'abilities': [
                             {

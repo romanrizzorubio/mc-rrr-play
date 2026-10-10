@@ -11,11 +11,13 @@ import {
     CHARACTER_VILLAIN,
 } from './characters.js';
 import {
+    PLACE_DECK,
     PLACE_ENCOUNTER_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_OUTSIDE_NEMESIS,
 } from './places.js';
+import {TIME_PHASE, TIME_ROUND} from './times.js';
 
 export const TARGET_ACTIVATION = 'activation';
 export const TARGET_ALL_CARDS = 'all-cards';
@@ -44,6 +46,7 @@ export const TARGET_BY_TITLE = 'target-by-title';
 export const TARGET_CARD = 'card';
 export const TARGET_CHARACTER = 'character';
 export const TARGET_CONDITION_CARD = 'condition-card';
+export const TARGET_DECK = PLACE_DECK;
 export const TARGET_EFFECT = 'effect';
 export const TARGET_EFFECT_PLAY_CARD = 'effect-play-card';
 export const TARGET_ENVIRONMENT = 'environment';
@@ -66,10 +69,11 @@ export const TARGET_MINION_HIGHEST_HP = 'minion-highest-hp';
 export const TARGET_MINION_HIGHEST_PRINTED_HP = 'minion-highest-printed-hp';
 export const TARGET_OUTSIDE_NEMESIS = PLACE_OUTSIDE_NEMESIS;
 export const TARGET_OWNER = 'owner';
+export const TARGET_PHASE = TIME_PHASE;
 export const TARGET_PLAYER = 'player';
 export const TARGET_PLAYER_DISCARD = 'player-discard';
 export const TARGET_RANDOM = 'random';
-export const TARGET_ROUND = 'round';
+export const TARGET_ROUND = TIME_ROUND;
 export const TARGET_SCENARIO = 'scenario';
 export const TARGET_SCHEME = 'scheme';
 export const TARGET_SELECTED_PLAYER_CHARACTERS = 'selected-player-characters';

@@ -8,6 +8,7 @@ import {
     EFFECT_REMOVE_USE,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
+    TARGET_PLAYER,
     TARGET_SCHEME,
     TARGET_THIS,
     TRAIT_LOCATION,
@@ -35,7 +36,8 @@ export default [
                 ],
                 'classification': 'justice',
                 'maximum': {
-                    'count': 1
+                    'count': 1,
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {

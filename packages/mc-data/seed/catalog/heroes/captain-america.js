@@ -85,7 +85,7 @@ import {
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TIME_PHASE,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_ARMOR,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
@@ -138,7 +138,7 @@ export default {
                                 'trigger': TRIGGER_PLAY_CARD,
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'condition': {
                                     'effect.card.isAlly': true
@@ -212,7 +212,7 @@ export default {
                                 'name': '¡Aguantaría todo el día!',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'arrow': {
                                     'type': EFFECT_SELECT_DISCARD_CARD,

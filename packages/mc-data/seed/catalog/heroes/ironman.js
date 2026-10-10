@@ -69,7 +69,7 @@ import {
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TIME_PHASE,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_AERIAL,
     TRAIT_ARMOR,
     TRAIT_ATTACK,
@@ -110,7 +110,7 @@ export default {
                                 'name': 'Visión de futuro',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'effect': {
                                     'type': EFFECT_SELECT_FROM_TOP_DECK,

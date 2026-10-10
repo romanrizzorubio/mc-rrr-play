@@ -6,6 +6,7 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
     TARGET_EFFECT,
+    TARGET_PLAYER,
     TRAIT_CONDITION,
     TRAIT_SKILL,
     TRIGGER_ATTACHED_GET_ATTACK,
@@ -33,7 +34,8 @@ export default [
                 ],
                 'classification': 'aggression',
                 'maximum': {
-                    'count': 1
+                    'count': 1,
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {

@@ -76,7 +76,7 @@ import {
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_AERIAL,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
@@ -127,7 +127,7 @@ export default {
                                 'name': 'Científico',
                                 'limit': {
                                     'count': 1,
-                                    'time': TIME_ROUND
+                                    'target': TARGET_ROUND
                                 },
                                 'resource': RESOURCE_MENTAL
                             }

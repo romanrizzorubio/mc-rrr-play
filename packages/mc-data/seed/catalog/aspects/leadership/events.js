@@ -25,9 +25,9 @@ import {
     TARGET_ALL_PLAYERS,
     TARGET_ANY_PLAYER,
     TARGET_SELECTED_PLAYER_CHARACTERS,
+    TARGET_ROUND,
     TARGET_YOU,
     TIME_PHASE,
-    TIME_ROUND,
     TRAIT_AVENGER,
     TRAIT_TACTIC
 } from 'mc-shared';
@@ -200,7 +200,7 @@ export default [
                         'params': {
                             'maximum': {
                                 'count': 1,
-                                'time': TIME_ROUND
+                                'target': TARGET_ROUND
                             },
                             'effect': {
                                 'type': EFFECT_CHAINED,

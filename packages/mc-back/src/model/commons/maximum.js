@@ -4,18 +4,15 @@ export class Maximum extends Engine {
     constructor({
 // Maximum
         count,
-        time,
         card,
         ability,
         target,
     }) {
         super(arguments[0]);
-
         this.count = count;
-        this.time = time;
+        this.target = target;
         this.card = card;
         this.ability = ability;
-        this.target = target;
         this.used = 0;
     }
     get match() {
@@ -25,14 +22,14 @@ export class Maximum extends Engine {
         return this.ability?.card?.name || this.card?.name;
     }
     canUse() {
-        if (!this.time) {
-            throw new Error('Un máximo de capacidad requiere un periodo.');
+        if (!this.target) {
+            throw new Error('Un máximo de capacidad requiere un objetivo.');
         }
         if (!this.match?.limits || !this.cardName) {
             throw new Error('Un máximo requiere una carta y una partida.');
         }
 
-        const used = (this.match.limits[this.time] || [])
+        const used = (this.match.limits[this.target] || [])
             .reduce((total, maximum) => {
                 if (maximum instanceof Maximum &&
                     maximum.cardName === this.cardName) {
@@ -47,7 +44,7 @@ export class Maximum extends Engine {
     use() {
         this.used++;
 
-        const maximums = this.match.limits[this.time] || [];
+        const maximums = this.match.limits[this.target] || [];
         if (!maximums.includes(this)) {
             this.setLimit(this);
         }

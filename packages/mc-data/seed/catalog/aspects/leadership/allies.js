@@ -31,7 +31,7 @@ import {
     TARGET_SCHEME,
     TARGET_YOU,
     TIME_PHASE,
-    TIME_ROUND,
+    TARGET_ROUND,
     TRAIT_AERIAL,
     TRAIT_AVENGER,
     TRAIT_DROID,
@@ -116,7 +116,7 @@ export default [
                             'name': 'Aumentar atributo',
                             'limit': {
                                 'count': 1,
-                                'time': TIME_ROUND
+                                'target': TARGET_ROUND
                             },
                             'arrow': {
                                 'type': EFFECT_SPEND,

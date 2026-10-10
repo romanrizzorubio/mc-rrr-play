@@ -3,6 +3,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    TARGET_DECK,
 } from 'mc-shared';
 
 export default [
@@ -20,6 +21,10 @@ export default [
                     RESOURCE_ENERGY,
                     RESOURCE_ENERGY
                 ],
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_DECK
+                },
                 'classification': 'basic'
             }
         }
@@ -38,6 +43,10 @@ export default [
                     RESOURCE_MENTAL,
                     RESOURCE_MENTAL
                 ],
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_DECK
+                },
                 'classification': 'basic'
             }
         }
@@ -56,6 +65,10 @@ export default [
                     RESOURCE_PHYSICAL,
                     RESOURCE_PHYSICAL
                 ],
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_DECK
+                },
                 'classification': 'basic'
             }
         }

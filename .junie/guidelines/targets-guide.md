@@ -5,6 +5,8 @@ Esta guía describe los selectores de objetivo disponibles para las capacidades 
 ## Fuente de verdad
 
 - Usa constantes `TARGET_*` importadas desde `mc-shared`; no escribas sus strings directamente en los módulos de catálogo JavaScript.
+- En cualquier campo llamado `target`, incluidos `params.target`, `limit.target` y `maximum.target`, usa una constante `TARGET_*`; no uses directamente constantes `PLACE_*`, `TIME_*` ni de otros espacios de nombres. Define el ámbito de `limit` y `maximum` con `target`, nunca con `time`. Si falta la constante `TARGET_*`, defínela en `mc-shared/constants/targets.js` como alias de la constante existente correspondiente.
+- Los `params.target` de capacidades y efectos requieren un resolver en `targetMap`. `limit.target` y `maximum.target` son metadatos de ámbito y no requieren resolver; `limit` se aplica a la instancia de su capacidad y `maximum` agrupa todas las cartas con el mismo nombre.
 - Las constantes declaradas en `packages/mc-shared/constants/targets.js` no son necesariamente selectores resolubles. El motor solo reconoce como `params.target` los valores registrados en `targetMap`, compuesto en `packages/mc-back/src/targets/index.js`.
 - Cada resolver devuelve una lista de candidatos. Un resultado vacío significa que no hay objetivo disponible.
 - Las validaciones de las capacidades constantes se aplican a cada candidato antes de mostrar o resolver objetivos, incluidos los objetivos múltiples y preseleccionados. `EFFECT_CANNOT_TARGET` puede filtrar por tipo/categoría de efecto, presencia de cartas en juego y propiedades de la carta objetivo.
@@ -181,6 +183,8 @@ effect: {
 Las siguientes constantes están declaradas en `mc-shared`, pero no tienen un resolver en `targetMap`. No las uses directamente como `params.target` hasta implementar y registrar su resolver:
 
 `TARGET_ANY`, `TARGET_ATTACK_UNDEFENDED`, `TARGET_HAND_RANDOM`, `TARGET_IDENTITY`, `TARGET_OWNER`, `TARGET_RANDOM` y `TARGET_TREACHERY`.
+
+`TARGET_DECK` tampoco tiene resolver: es un alias de `PLACE_DECK` para identificar el ámbito de mazo en `maximum.target`, no es un selector para `params.target`. `TARGET_PHASE` es un alias de `TIME_PHASE` para el ámbito de fase en `limit.target`/`maximum.target`, no un selector de efecto. `TARGET_ROUND` es un selector resoluble y también identifica el límite de una ronda; se define como alias de `TIME_ROUND` para que el cierre de ronda retire ese límite.
 
 Algunas pueden tener significado en otros campos o condiciones. `TARGET_TOP_CARD` es la excepción documentada arriba: es un selector de posición para `GenerateResourcesFromCardEffect`, no un target general.
 

@@ -8,6 +8,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     TARGET_EFFECT,
+    TARGET_PLAYER,
     TARGET_THIS,
     TARGET_YOUR_HERO,
     TRAIT_ARMOR,
@@ -37,7 +38,7 @@ export default [
                 'classification': 'protection',
                 'maximum': {
                     'count': 1,
-                    'perPlayer': true
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {

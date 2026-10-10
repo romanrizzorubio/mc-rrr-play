@@ -8,7 +8,7 @@ import {
     VALID_TARGET_FILTER_MARKER,
 } from './match-snapshot-types.js';
 
-const serializationVersion = 1;
+const serializationVersion = 2;
 
 function encodeGraph(root) {
     const ids = new WeakMap();

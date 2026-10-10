@@ -1,4 +1,4 @@
-import {TIME_ROUND, TRIGGER_ROUND_ENDS} from 'mc-shared';
+import {TARGET_ROUND, TRIGGER_ROUND_ENDS} from 'mc-shared';
 import {Engine} from '../engine/engine.js';
 
 import {Effect} from './effect.js';
@@ -54,7 +54,7 @@ export class PlayRoundEffect extends Effect {
         this.match.phase = 'round-complete';
         this.match.villainPhaseStep = 0;
         this.match.turnIndex = 0;
-        await this.endLimit(TIME_ROUND);
+        await this.endLimit(TARGET_ROUND);
         await this.match.persist();
         await this.match.refresh();
     }

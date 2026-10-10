@@ -337,14 +337,14 @@ export class Engine {
 
         return value;
     }
-    endLimit(time) {
-        if (this.match.limits[time]) {
-            this.match.limits[time].forEach(limit => {
+    endLimit(target) {
+        if (this.match.limits[target]) {
+            this.match.limits[target].forEach(limit => {
                 limit.clean();
             });
         }
 
-        delete this.match.limits[time];
+        delete this.match.limits[target];
     }
     endTriggers() {
         const {match, id} = this;
@@ -449,11 +449,16 @@ export class Engine {
         match.mc.mcSocket.send(match.name, REFRESH_EVENTS[objectToRefresh], this.toObj());
     }
     setLimit(limit) {
-        if (!this.match.limits[limit.time]) {
-            this.match.limits[limit.time] = [];
+        const {target} = limit;
+        if (!target) {
+            throw new Error('Un límite requiere un objetivo.');
         }
 
-        this.match.limits[limit.time].push(limit);
+        if (!this.match.limits[target]) {
+            this.match.limits[target] = [];
+        }
+
+        this.match.limits[target].push(limit);
     }
     checkTrigger() {
         return true;

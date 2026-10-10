@@ -12,8 +12,8 @@ import {
     TARGET_ALL_PLAYERS,
     TARGET_ALTEREGO_SIDE,
     TARGET_ENEMY,
+    TARGET_ROUND,
     TARGET_YOUR_SUPERHERO,
-    TIME_ROUND,
     TRAIT_AVENGER,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
@@ -312,7 +312,7 @@ test('Captain America cards compile and all precon references resolve', async ()
     assert.equal(avengersAssembleAbility.limit, undefined);
     assert.ok(avengersAssembleAbility.maximum);
     assert.equal(avengersAssembleAbility.maximum.count, 1);
-    assert.equal(avengersAssembleAbility.maximum.time, TIME_ROUND);
+    assert.equal(avengersAssembleAbility.maximum.target, TARGET_ROUND);
 
     const avengersTower = catalog.aspects.find(aspect =>
         aspect._id === 'basic-avengers-tower');

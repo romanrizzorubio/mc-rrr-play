@@ -1,4 +1,4 @@
-import {TIME_PHASE,TRIGGER_PHASE_ENDS} from 'mc-shared';
+import {TARGET_PHASE, TRIGGER_PHASE_ENDS} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -11,6 +11,6 @@ export class PlayPhaseEffect extends Effect {
     }
 
     async execute() {
-        await this.endLimit(TIME_PHASE);
+        await this.endLimit(TARGET_PHASE);
     }
 }

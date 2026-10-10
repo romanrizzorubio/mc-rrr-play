@@ -7,6 +7,7 @@ import {
     RESOURCE_ENERGY,
     TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_PLAYER,
     TARGET_SCHEME,
     TRAIT_SKILL,
     TRIGGER_ATTACHED_DEFEAT,
@@ -33,7 +34,8 @@ export default [
                 ],
                 'classification': 'justice',
                 'maximum': {
-                    'count': 1
+                    'count': 1,
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {

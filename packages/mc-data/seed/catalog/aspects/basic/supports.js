@@ -14,6 +14,7 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_CARD,
     TARGET_EFFECT,
+    TARGET_PHASE,
     TARGET_PLAYER,
     TIME_PHASE,
     TRAIT_AVENGER,
@@ -46,7 +47,8 @@ export default [
                 ],
                 'classification': 'basic',
                 'maximum': {
-                    'count': 1
+                    'count': 1,
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {
@@ -127,7 +129,7 @@ export default [
                                     'triggerType': TRIGGER_PLAY_CARD,
                                     'limit': {
                                         'count': 1,
-                                        'time': TIME_PHASE
+                                        'target': TARGET_PHASE
                                     },
                                     'condition': {
                                         'effect.card.isAlly': true,
@@ -170,7 +172,8 @@ export default [
                 ],
                 'classification': 'basic',
                 'maximum': {
-                    'count': 1
+                    'count': 1,
+                    'target': TARGET_PLAYER
                 },
                 'abilities': [
                     {
