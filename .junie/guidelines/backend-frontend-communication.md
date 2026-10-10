@@ -5,7 +5,7 @@ Consulta esta guía antes de cambiar cómo se comunican la interfaz y el servido
 ## Arquitectura actual
 
 - El frontend Lit inicializa `Api` en `packages/front/mc-frontend/src/components/core/mc-app/mc-app.js`. Su implementación está en `packages/front/mc-frontend/src/components/api/api.js`.
-- La carcasa carga el remoto `mc-static` al iniciar; este sirve imágenes, fuentes, favicons y CSS desde `packages/front/mc-static/static/`. El runtime config de la carcasa está en `packages/front/mc-frontend/public/app-config.json`.
+- La carcasa carga el remoto `mc-static` al iniciar; este sirve imágenes, fuentes, favicons y CSS desde `packages/front/mc-static/src/assets/`. El runtime config de la carcasa está en `packages/front/mc-frontend/public/app-config.json`.
 - El backend configura Express y Socket.IO sobre el mismo servidor HTTP en `packages/back/mc-back/src/server/mc.js`; escucha en el puerto `3000`. El frontend de desarrollo se sirve en el puerto `8000`.
 - Las rutas REST públicas e internas se centralizan en `packages/core/mc-endpoints/endpoints.js` y los eventos compartidos en `packages/core/mc-endpoints/events.js`. Frontend y servicios deben importar `ENDPOINTS`, `INTERNAL_ENDPOINTS`, `EVENTS` y `REFRESH_EVENTS` desde la entrada principal `mc-endpoints`, sin mantener copias locales ni usar subrutas del paquete.
 - Las partidas activas se mantienen en `Mc.matches` y sus instantáneas se persisten en MongoDB mediante `packages/back/mc-data`; al iniciar, el backend las rehidrata y reanuda las que siguen activas. El cliente envía el nombre de la partida en la cabecera HTTP `match`.
@@ -23,7 +23,7 @@ Rutas REST públicas disponibles en `mc-match-creation-service`:
 | Método | Ruta | Uso |
 | :--- | :--- | :--- |
 | `GET` | `/get-heroes-list` | Obtener la lista de héroes |
-| `GET` | `/get-matches-list` | Listar las partidas persistidas en MongoDB |
+| `GET` | `/get-matches-list` | Listar las partidas persistidas en MongoDB, con el héroe y aspecto de cada jugador |
 | `GET` | `/get-scenarios-list` | Obtener la lista de escenarios |
 | `POST` | `/create-match` | Crear y guardar una partida |
 | `DELETE` | `/delete-match` | Eliminar una partida activa y su instantánea persistida (JSON `{name}`) |
@@ -38,7 +38,25 @@ Rutas REST públicas disponibles en `mc-match-creation-service`:
 
 El lobby usa `GET /get-matches-list` para mostrar las partidas y `DELETE /delete-match` para eliminarlas, incluso mientras el setup está pendiente; el backend cancela los diálogos pendientes y no acepta nuevos para una partida que se está borrando. La creación ya no es automática: al elegir "Nueva partida", `components/api/config-match.js` y `pages/mc-create-match-page/mc-create-match-page.js` ejecutan las rutas de configuración en secuencia. Antes de `init-match`, la carcasa carga `mc-match`, que registra los diálogos que el backend puede solicitar durante el setup. Al reanudar una partida, el cliente se une por Socket.IO y recibe su estado por `match-refresh`. Las acciones de cambiar identidad, jugar carta y resolver capacidad siguen usando REST; el fin de turno usa Socket.IO.
 
-`Api.request()` dirige las rutas de catálogo/creación a `services.matchCreation` y las acciones de juego a `services.match`, configuradas en `packages/front/mc-frontend/public/app-config.json`. Por defecto, `/create-match` produce `http://localhost:3001/create-match`; el Socket.IO del servicio de partidas usa `ws://localhost:3000`.
+`Api.request()` dirige las rutas de catálogo/creación a `services.matchCreation`, las rutas de mazos a `services.deck` y las acciones de juego a `services.match`, configuradas en `packages/front/mc-frontend/public/app-config.json`. Por defecto, `/create-match` produce `http://localhost:3001/create-match`; el Socket.IO del servicio de partidas usa `ws://localhost:3000`.
+
+Las rutas de construcción y persistencia de mazos usan `services.deck` y el servicio `mc-deck-service` (puerto `3002`):
+
+| Método | Ruta | Uso |
+| :--- | :--- | :--- |
+| `GET` | `/deck-heroes-list` | Obtener los superhéroes disponibles para el editor, incluida la imagen de su carta de héroe |
+| `GET` | `/deck-catalog?hero=<id>` | Obtener las cartas y reglas de construcción de un superhéroe |
+| `GET` | `/decks` | Listar todos los mazos con nombre del héroe y validación para el catálogo principal |
+| `GET` | `/decks?legal=true` | Listar todos los mazos legales |
+| `GET` | `/decks?hero=<id>` | Listar mazos y borradores del editor |
+| `GET` | `/decks?hero=<id>&legal=true` | Listar solo mazos legales para crear una partida |
+| `GET` | `/decks/<id>` | Consultar un mazo guardado |
+| `POST` | `/decks` | Crear o actualizar un mazo |
+| `DELETE` | `/decks/<id>` | Eliminar un mazo |
+| `POST` | `/decks/save-repository` | Guardar el backup físico de mazos en el catálogo |
+| `POST` | `/decks/restore-repository` | Restaurar los eventos de mazos del snapshot versionado |
+
+Los mazos guardan únicamente referencias `{id, count}` a cartas editables, además del héroe, el aspecto y sus metadatos. Las cartas fijas específicas del héroe se cargan desde el catálogo al crear el jugador. El cliente solo ofrece mazos legales al iniciar una partida; los borradores permanecen disponibles para editarse.
 
 ## Socket.IO: eventos, respuestas y actualizaciones
 

@@ -4,8 +4,9 @@
 
 El monorepo incluye:
 
-- ✅ Frontends: carcasa `mc-frontend`, remotos `mc-match`, `md-deck` y `mc-static`
-- ✅ Servicios: `mc-back`, `mc-match-creation-service` y `md-deck-service`
+- ✅ Frontends: carcasa `mc-frontend`, remotos `mc-match`, `mc-deck` y `mc-static`
+- ✅ Paquete npm `mc-components` con componentes Lit compartidos
+- ✅ Servicios: `mc-back`, `mc-match-creation-service` y `mc-deck-service`
 - ✅ Packages compartidos: `mc-endpoints`, `mc-shared` y `mc-data`
 - ✅ Root `package.json` con workspaces de npm
 - ✅ Dockerfiles para frontend y backend
@@ -27,7 +28,7 @@ docker-compose up
 Luego accede a:
 - **Frontend**: http://localhost:8000
 - **mc-match**: http://localhost:8100
-- **md-deck**: http://localhost:8200
+- **mc-deck**: http://localhost:8200
 - **mc-static**: http://localhost:8300
 - **Servicio de partidas**: http://localhost:3000
 - **Servicio de creación**: http://localhost:3001
@@ -92,12 +93,13 @@ mc-rrr-play/
 │   ├── front/
 │   │   ├── mc-frontend/  # Carcasa y creación de partidas
 │   │   ├── mc-match/     # Remoto de juego
-│   │   ├── md-deck/      # Remoto hello world
-│   │   └── mc-static/    # Imágenes, fuentes y estilos compartidos
+│   │   ├── mc-deck/      # Editor remoto de mazos
+│   │   ├── mc-static/    # Imágenes, fuentes y estilos compartidos
+│   │   └── mc-components/ # Paquete npm de componentes Lit compartidos
 │   ├── back/
 │   │   ├── mc-back/      # Servicio de partidas (Express + Socket.IO)
 │   │   ├── mc-match-creation-service/ # Catálogo y orquestación
-│   │   ├── md-deck-service/ # Placeholder de mazos
+│   │   ├── mc-deck-service/ # API y persistencia de mazos
 │   │   └── mc-data/      # Acceso a MongoDB y catálogo inicial
 │   └── core/
 │       ├── mc-endpoints/ # Contratos REST y Socket.IO

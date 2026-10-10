@@ -33,12 +33,17 @@ export class PlayerRest {
         this.rest.post(ENDPOINTS.PLAYER.RESOLVE_ABILITY, this.resolveAbility.bind(this));
     }
     async createPlayer(params) {
-        const {match, name, hero, initial} = params;
+        const {match, name, hero, initial, deckId} = params;
 
         const matchFactory = new MatchFactory(match);
 
         if (name && hero) {
             const heroConfig = await this.mc.data.getHeroConfig(hero);
+            if (deckId) {
+                const deckConfig = await this.mc.data.getDeckConfig(deckId, hero);
+                heroConfig.precon = deckConfig.cards;
+                heroConfig.aspect = deckConfig.aspect;
+            }
             const heroCreated = matchFactory.createSuperhero(heroConfig);
             const player = match.createPlayer({
                 name,

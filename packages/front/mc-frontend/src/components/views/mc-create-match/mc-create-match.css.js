@@ -27,6 +27,7 @@ export default css`
   }
 
   .modular-sets h3 {
+    font-family: var(--mc-font-title, sans-serif);
     margin: 0 0 8px;
     font-size: 1rem;
   }

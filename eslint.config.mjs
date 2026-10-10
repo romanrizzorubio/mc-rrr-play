@@ -57,7 +57,7 @@ export default [
     {
         files: [
             'packages/front/mc-match/**/*.js',
-            'packages/front/md-deck/**/*.js',
+            'packages/front/mc-deck/**/*.js',
             'packages/front/mc-static/**/*.js',
         ],
         languageOptions: {

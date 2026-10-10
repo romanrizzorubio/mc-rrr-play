@@ -28,23 +28,31 @@ export default css`
     border-radius: 8px;
   }
 
+  h1,
+  .match-card h2 {
+    font-family: var(--mc-font-title, sans-serif);
+  }
+
   .match-card h2 {
     margin-top: 0;
   }
 
-  .match-card label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .match-card md-filled-select {
+    display: block;
+    width: min(100%, 320px);
     margin: 12px 0;
   }
 
-  .match-card select {
-    min-width: 160px;
+  .match-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
   }
 
   .delete-button {
-    margin-left: 8px;
+    --md-text-button-label-text-color: #b3261e;
+    --md-text-button-hover-label-text-color: #b3261e;
   }
 
   .create-form {
@@ -53,10 +61,13 @@ export default css`
 
   @media (max-width: 600px) {
     .section-heading,
-    .actions,
-    .match-card label {
+    .actions {
       align-items: stretch;
       flex-direction: column;
+    }
+
+    .match-card md-filled-select {
+      width: 100%;
     }
   }
 `;

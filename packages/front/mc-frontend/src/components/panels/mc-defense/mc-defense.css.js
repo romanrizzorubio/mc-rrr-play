@@ -6,7 +6,11 @@ export default css`
   ${base}
   :host {
     display: block;
-    --pay-cost-divider: var(--divider); 
+    --pay-cost-divider: var(--divider);
+  }
+
+  h3 {
+    font-family: var(--mc-font-title, sans-serif);
   }
   
   .divider {

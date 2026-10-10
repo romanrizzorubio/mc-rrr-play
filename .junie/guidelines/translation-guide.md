@@ -107,7 +107,23 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **thwart (atributo)** | intervención |
 | **tough** | duro |
 | **trait** | rasgo |
+| **aerial (rasgo)** | Aéreo |
+| **android (rasgo)** | droide |
+| **armor (rasgo)** | Armadura |
+| **attack (rasgo)** | Ataque |
 | **avenger (rasgo)** | Vengador |
+| **condition (rasgo)** | Alteración |
+| **defender (rasgo)** | Defensor |
+| **defense (rasgo)** | Defensa |
+| **droid (rasgo)** | Androide |
+| **location (rasgo)** | Lugar |
+| **persona (rasgo)** | Individuo |
+| **skill (rasgo)** | Habilidad |
+| **spy (rasgo)** | Espía |
+| **tactic (rasgo)** | Táctica |
+| **thwart (rasgo)** | Intervención |
+| **title (rasgo)** | Título |
+| **vehicle (rasgo)** | Vehículo |
 | **triggered ability** | capacidad activada |
 | **triggering condition** | condición de activación |
 | **tuck** | meter debajo |
@@ -133,9 +149,8 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **modular encounter set** | conjunto de encuentros modular |
 | **expert mode** | modo Experto |
 | **expert encounter set** | conjunto de encuentro experto |
-| **persona (rasgo)** | individuo |
-| **condition (rasgo)** | alteración |
-| **android (rasgo)** | droide |
+
+Al mostrar los rasgos de las cartas, utiliza estas etiquetas en español para los códigos de rasgo indicados. Distingue los rasgos de los usos de la misma palabra como acción, atributo u otro término de reglas (por ejemplo, `thwart` como rasgo se presenta como «Intervención», mientras que `thwart` como verbo es «intervenir»).
 
 ## Preservación de conectores y puntuación
 

@@ -1,0 +1,17 @@
+{
+  "name": "mc-deck-service",
+  "version": "1.0.0",
+  "description": "Player deck editor service",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mc-data": "1.0.0",
+    "mc-endpoints": "1.0.0",
+    "mc-shared": "1.0.0"
+  }
+}

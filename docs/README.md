@@ -75,12 +75,13 @@ MC RRR Play
    ├─ front
    │  ├─ mc-frontend: carcasa y lobby (puerto 8000)
    │  ├─ mc-match: juego remoto (puerto 8100)
-   │  ├─ md-deck: remoto hello world (puerto 8200)
-   │  └─ mc-static: recursos estáticos (puerto 8300)
+   │  ├─ mc-deck: editor de mazos (puerto 8200)
+   │  ├─ mc-static: recursos estáticos (puerto 8300)
+   │  └─ mc-components: paquete npm de componentes compartidos
    ├─ back
    │  ├─ mc-back: motor de partidas + Socket.IO (puerto 3000)
    │  ├─ mc-match-creation-service: creación y catálogo (puerto 3001)
-   │  ├─ md-deck-service: placeholder (puerto 3002)
+   │  ├─ mc-deck-service: API y persistencia de mazos (puerto 3002)
    │  └─ mc-data: acceso al catálogo y partidas de MongoDB
    └─ core
       ├─ mc-endpoints: contratos REST y eventos

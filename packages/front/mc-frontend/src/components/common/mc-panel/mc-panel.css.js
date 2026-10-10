@@ -6,6 +6,7 @@ export default css`
   }
   
   .title {
+    font-family: var(--mc-font-title, sans-serif);
     font-size: 1em;
     margin: 16px 0;
   }

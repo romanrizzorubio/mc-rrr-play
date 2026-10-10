@@ -13,6 +13,12 @@ export default css`
     border-bottom: var(--pay-cost-divider);
   }
 
+  h2,
+  h4,
+  h5 {
+    font-family: var(--mc-font-title, sans-serif);
+  }
+
   .cost-panel {
     display: flex;
     justify-content: space-between;

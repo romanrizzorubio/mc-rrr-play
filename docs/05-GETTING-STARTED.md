@@ -28,11 +28,12 @@ npm install
 Esto instala dependencias para todos los packages del monorepo:
 - `packages/front/mc-frontend`
 - `packages/front/mc-match`
-- `packages/front/md-deck`
+- `packages/front/mc-deck`
 - `packages/front/mc-static`
+- `packages/front/mc-components`
 - `packages/back/mc-back`
 - `packages/back/mc-match-creation-service`
-- `packages/back/md-deck-service`
+- `packages/back/mc-deck-service`
 - `packages/back/mc-data`
 - `packages/core/mc-endpoints`
 - `packages/core/mc-shared`
@@ -51,6 +52,10 @@ Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa
 npm run seed:data
 ```
 
+El seed solo actualiza las colecciones del catálogo y no modifica los mazos guardados en `decks`. `./mc-monorepo.sh clean` y `docker-compose down` conservan el volumen `mc-mongodb-data`. No uses `docker-compose down -v` salvo que quieras borrar explícitamente todos los datos de MongoDB, incluidos los mazos guardados.
+
+El hook `pre-commit` solo ejecuta las pruebas; no guarda ni añade el backup de mazos al commit. Para actualizar el fichero físico `packages/back/mc-data/seed/catalog/decks.json`, usa el botón **Guardar copia en el catálogo** del editor. La opción **Restaurar del repositorio** aplica el evento más reciente por ID (`updatedAt` para mazos y `deletedAt` para borrados), conserva los mazos locales ausentes del snapshot y propaga los borrados para que no reaparezcan en otra instalación.
+
 #### 4. Iniciar la Aplicación
 
 ##### Opción A: MongoDB en Docker y aplicación local
@@ -63,6 +68,7 @@ Esto inicia MongoDB en Docker y los frontends/microservicios en el host. Pulsa `
 - Carcasa en `http://localhost:8000`
 - Servicio de partidas en `http://localhost:3000`
 - Servicio de creación en `http://localhost:3001`
+- Servicio de mazos en `http://localhost:3002`
 - Remoto de juego en `http://localhost:8100`
 - Remoto de mazos en `http://localhost:8200`
 - Recursos estáticos en `http://localhost:8300`
@@ -225,11 +231,12 @@ mc-rrr-play/
 │   ├── front/
 │   │   ├── mc-frontend/    # 🎨 Carcasa, lobby y creación
 │   │   ├── mc-match/       # 🎮 Remoto de juego
-│   │   ├── md-deck/        # 🃏 Remoto hello world
-│   │   └── mc-static/      # 🖼️ Remoto de recursos estáticos
+│   │   ├── mc-deck/        # 🃏 Editor de mazos
+│   │   ├── mc-static/      # 🖼️ Remoto de recursos estáticos
+│   │   └── mc-components/  # 🧩 Paquete npm de componentes Lit compartidos
 │   ├── back/
 │   │   ├── mc-match-creation-service/ # Creación y catálogo
-│   │   ├── md-deck-service/ # Placeholder de mazos
+│   │   ├── mc-deck-service/ # API y persistencia de mazos
 │   │   ├── mc-back/        # 🎮 Motor de juego
 │   │   │   ├── src/
 │   │   │   │   ├── model/      # Entidades (Match, Player, etc)

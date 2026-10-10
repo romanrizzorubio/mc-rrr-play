@@ -4,7 +4,7 @@ import { LitElement } from 'lit-element';
 import { router, navigator, outlet } from 'lit-element-router';
 
 import '../../../utils/material-elements.js';
-import '../mc-navigate/mc-navigate.js';
+import '../mc-primary-navigation/mc-primary-navigation.js';
 import '../mc-main/mc-main.js';
 import '../../../pages/mc-create-match-page/mc-create-match-page.js';
 import '../../common/mc-alert/mc-alert.js';
@@ -17,6 +17,11 @@ import {
     loadRemote,
     loadRuntimeConfig,
 } from '../../../utils/remotes.js';
+import {
+    APP_ROUTES,
+    DECK_ROUTE_NAMES,
+    getNavigationPath,
+} from '../../../utils/app-routes.js';
 import {
     DIALOG_REVEAL_CARDS,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
@@ -34,6 +39,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
             params: { type: Object },
             query: { type: Object },
             api: {type: Api},
+            runtimeConfig: {attribute: false},
             match: {type: Object},
             player: {type: String, attribute: 'player'},
             dialog: {type: Object},
@@ -47,22 +53,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         };
     }
     static get routes() {
-        return [{
-            name: 'matches',
-            pattern: '',
-        }, {
-            name: 'create-match',
-            pattern: 'create-match'
-        }, {
-            name: 'match',
-            pattern: 'match'
-        }, {
-            name: 'decks',
-            pattern: 'decks'
-        }, {
-            name: 'not-found',
-            pattern: '*'
-        }];
+        return APP_ROUTES;
     }
 
     constructor() {
@@ -83,6 +74,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.configurationError = '';
 
         this.api = null;
+        this.runtimeConfig = null;
         this.match = null;
         this.player = '';
         this.pendingResumeMatch = '';
@@ -104,6 +96,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
             if (!this.isConnected) {
                 return;
             }
+            this.runtimeConfig = config;
 
             const staticRemote = await loadRemote('mcStatic');
             if (typeof staticRemote.getAssetUrl !== 'function') {
@@ -133,8 +126,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             this.apiDialog = new Dialog(this.api);
             this.apiDialog.listenDialog(this.openDialog.bind(this));
             this.appReady = true;
-            if (this.route === 'decks') {
-                this.ensureRemote('mdDeck');
+            if (DECK_ROUTE_NAMES.has(this.route)) {
+                this.ensureRemote('mcDeck');
             }
         } catch (error) {
             this.configurationError = error.message;
@@ -191,14 +184,14 @@ class McApp extends router(navigator(outlet(LitElement))) {
         }
         console.log(route, params, query, data);
         if (route === 'create-match') {
-            this.navigate('matches');
+            this.navigate('/');
         } else if (route === 'match' &&
             (!match || this.api?.match !== match.name)) {
-            this.navigate('matches');
+            this.navigate('/');
         } else if (route === 'match') {
             this.ensureRemote('mcMatch');
-        } else if (route === 'decks') {
-            this.ensureRemote('mdDeck');
+        } else if (DECK_ROUTE_NAMES.has(route)) {
+            this.ensureRemote('mcDeck');
         }
     }
     async ensureRemote(remoteName) {
@@ -409,7 +402,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         }
         if (this.pendingResumeMatch === match.name && this.api.match === match.name) {
             this.pendingResumeMatch = '';
-            this.navigate('match');
+            this.navigate('/match');
         }
     }
     handleMatchCreated(e) {
@@ -420,7 +413,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.match = match;
         this.player = player.name;
 
-        this.navigate('match');
+        this.navigate('/match');
         this.api.joinMatch(true);
     }
     handleMatchResumeRequested(e) {
@@ -435,10 +428,21 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.player = player;
         if (this.match?.name === matchName && this.pendingResumeMatch === matchName) {
             this.pendingResumeMatch = '';
-            this.navigate('match');
+            this.navigate('/match');
         } else if (this.match?.name !== matchName) {
             this.pendingResumeMatch = matchName;
         }
+    }
+    handleNavigation(e) {
+        const {route, replace = false} = e.detail;
+        const path = getNavigationPath(route);
+        if (replace) {
+            window.history.replaceState({}, null, path);
+            window.dispatchEvent(new CustomEvent('route'));
+            return;
+        }
+
+        this.navigate(path);
     }
     renderDialog() {
         const {dialog} = this;
@@ -498,8 +502,10 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         return html`
           ${this.renderConnectionStatus()}
-          <mc-navigate href="/">Partidas</mc-navigate>
-          <mc-navigate href="decks">Mazos</mc-navigate>
+          <mc-primary-navigation
+              .activeRoute="${this.route}"
+              @navigate-route="${this.handleNavigation.bind(this)}"
+          ></mc-primary-navigation>
 
           ${this.appReady ? html`<mc-main .activeRoute="${this.route}">
               <div route='matches'>
@@ -526,8 +532,15 @@ class McApp extends router(navigator(outlet(LitElement))) {
                       ></mc-match-page>
                   `)}
               </div>
-              <div route='decks'>
-                  ${this.renderRemote('mdDeck', html`<md-deck-app></md-deck-app>`)}
+              <div route='decks decks-create decks-edit-new decks-edit'>
+                  ${this.renderRemote('mcDeck', html`
+                      <mc-deck-app
+                          .serviceUrl="${this.runtimeConfig?.services?.deck}"
+                          .pageRoute="${this.route}"
+                          .routeParams="${this.params}"
+                          @navigate-route="${this.handleNavigation.bind(this)}"
+                      ></mc-deck-app>
+                  `)}
               </div>
               <h1 route='not-found'>Not Found </h1>
           </mc-main>` : html`

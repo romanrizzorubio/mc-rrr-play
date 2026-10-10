@@ -10,6 +10,7 @@
   "dependencies": {
     "lit": "^3.3.3",
     "lit-element": "^4.0.0",
+    "mc-components": "1.0.0",
     "mc-endpoints": "1.0.0",
     "mc-shared": "1.0.0",
     "socket.io-client": "^4.8.4"

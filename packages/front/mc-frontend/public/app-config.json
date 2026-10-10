@@ -1,11 +1,12 @@
 {
   "services": {
     "match": "http://localhost:3000",
-    "matchCreation": "http://localhost:3001"
+    "matchCreation": "http://localhost:3001",
+    "deck": "http://localhost:3002"
   },
   "remotes": {
     "mcMatch": "http://localhost:8100/remoteEntry.js",
-    "mdDeck": "http://localhost:8200/remoteEntry.js",
+    "mcDeck": "http://localhost:8200/remoteEntry.js",
     "mcStatic": "http://localhost:8300/remoteEntry.js"
   }
 }

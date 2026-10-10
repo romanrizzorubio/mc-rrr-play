@@ -325,8 +325,8 @@ const main = async () => {
         if (!stopRequested) {
             const remotesAndDeckService = [
                 ['start:mc-match', 'mc-match remote', 'http://127.0.0.1:8100/remoteEntry.js'],
-                ['start:md-deck', 'md-deck remote', 'http://127.0.0.1:8200/remoteEntry.js'],
-                ['start:md-deck-service', 'Deck service', 'http://127.0.0.1:3002/healthz'],
+                ['start:mc-deck', 'mc-deck remote', 'http://127.0.0.1:8200/remoteEntry.js'],
+                ['start:mc-deck-service', 'mc-deck-service', 'http://127.0.0.1:3002/healthz'],
             ].map(([scriptName, serviceName, healthUrl]) =>
                 startAndWaitForService(scriptName, serviceName, healthUrl));
 

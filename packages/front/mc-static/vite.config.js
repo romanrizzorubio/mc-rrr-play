@@ -21,7 +21,7 @@ const remoteEntryDevRoute = {
 export default defineConfig({
     plugins: [remoteEntryDevRoute],
     root: packageRoot,
-    publicDir: resolve(packageRoot, 'static'),
+    publicDir: resolve(packageRoot, 'src/assets'),
     server: {
         host: '0.0.0.0',
         port: 8300,

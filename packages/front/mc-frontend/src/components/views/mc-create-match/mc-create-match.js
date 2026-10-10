@@ -26,6 +26,10 @@ export class McCreateMatch extends LitElement {
             player: {type: Object},
             scenario: {type: Object},
             heroesList: {type: Array},
+            configMatch: {attribute: false},
+            decksList: {type: Array},
+            loadingDecks: {type: Boolean},
+            deckLoadError: {type: String},
             scenariosList: {type: Array},
             modularSetsList: {type: Array},
             selectedModularSets: {type: Array},
@@ -40,6 +44,12 @@ export class McCreateMatch extends LitElement {
         this.player = {};
         this.scenario = {};
         this.heroesList = [];
+        this.configMatch = null;
+        this.decksList = [];
+        this.loadingDecks = false;
+        this.deckLoadError = '';
+        this.deckListHero = '';
+        this.deckListRequestSequence = 0;
         this.scenariosList = [];
         this.modularSetsList = [];
         this.selectedModularSets = [];
@@ -122,12 +132,46 @@ export class McCreateMatch extends LitElement {
         };
     }
     async handlePlayerChanged(e) {
-        const {name, hero} = e.detail;
+        const {name, hero, deckId} = e.detail;
 
         this.player = {
             name,
             hero,
+            ...(deckId ? {deckId} : {}),
         };
+
+        if (hero !== this.deckListHero) {
+            this.deckListHero = hero;
+            this.deckListRequestSequence++;
+            const requestSequence = this.deckListRequestSequence;
+            this.decksList = [];
+            this.deckLoadError = '';
+            this.loadingDecks = Boolean(hero);
+            if (hero && this.configMatch) {
+                try {
+                    const decksList = await this.configMatch.getDecksList(hero, true);
+                    if (requestSequence === this.deckListRequestSequence) {
+                        this.decksList = decksList;
+                    }
+                } catch (error) {
+                    if (requestSequence === this.deckListRequestSequence) {
+                        this.deckLoadError = error.message;
+                        this.dispatchEvent(new CustomEvent('communication-error', {
+                            bubbles: true,
+                            composed: true,
+                            detail: {
+                                message: `No se pudieron cargar los mazos de este héroe: ${error.message}`,
+                            },
+                        }));
+                    }
+                } finally {
+                    if (requestSequence === this.deckListRequestSequence) {
+                        this.loadingDecks = false;
+                    }
+                }
+            }
+        }
+
     }
     renderButton() {
         return html`
@@ -169,9 +213,14 @@ export class McCreateMatch extends LitElement {
                     id="${ID_PLAYER}"
                     hide-button
                     .heroesList="${heroesList}"
+                    .decksList="${this.decksList}"
+                    .loadingDecks="${this.loadingDecks}"
                     @player-change="${this.handlePlayerChanged.bind(this)}"
                 >
                 </mc-form-player>
+                ${this.deckLoadError ? html`
+                    <p role="alert">No se pudieron cargar los mazos guardados: ${this.deckLoadError}</p>
+                ` : ''}
             </mc-panel>
         `;
     }

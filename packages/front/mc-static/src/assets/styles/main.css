@@ -1,0 +1,55 @@
+@font-face {
+  font-family: 'Avenir Next LT Pro';
+  src: url('../font/raw/AvenirNextLTPro-Regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Exo 2';
+  src: url('../font/raw/Exo2Mod-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Komika Title';
+  src: url('../font/raw/KomikaTitle.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura MC';
+  src: url('../font/raw/FUTURAMC.TTF') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ChampionsIcons';
+  src: url('../font/raw/ChampionsIcons.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+:root {
+  --mc-font-body: 'Avenir Next LT Pro', sans-serif;
+  --mc-font-title: 'Exo 2', sans-serif;
+  --mc-font-trait: 'Komika Title', sans-serif;
+  --mc-font-numeric: 'Futura MC', sans-serif;
+  --mc-font-trait-separator: 'ChampionsIcons', sans-serif;
+  --md-ref-typeface-plain: var(--mc-font-body);
+  --md-ref-typeface-brand: var(--mc-font-title);
+  font-family: var(--mc-font-body);
+}
+
+body {
+  margin: 0;
+  font-family: var(--mc-font-body);
+}

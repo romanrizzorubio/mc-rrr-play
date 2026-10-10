@@ -9,6 +9,7 @@ export default css`
   }
   
   h1 {
+    font-family: var(--mc-font-title, sans-serif);
     text-align: center;
   }
 `;

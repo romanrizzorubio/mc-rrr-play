@@ -14,6 +14,9 @@ export class McFormPlayer extends LitElement {
             name: {type: String},
             hero: {type: String},
             heroesList: {type: Array},
+            decksList: {type: Array},
+            deckId: {type: String},
+            loadingDecks: {type: Boolean},
             hideButton: {type: Boolean, attribute: 'hide-button'},
         };
     }
@@ -23,10 +26,13 @@ export class McFormPlayer extends LitElement {
         this.name = '';
         this.hero = '';
         this.heroesList = [];
+        this.decksList = [];
+        this.deckId = 'precon';
+        this.loadingDecks = false;
         this.hideButton = false;
     }
     dispatchChange() {
-        const {name, hero} = this;
+        const {name, hero, deckId} = this;
 
         this.dispatchEvent(new CustomEvent('player-change', {
             bubbles: true,
@@ -34,6 +40,7 @@ export class McFormPlayer extends LitElement {
             detail: {
                 name: name,
                 hero: hero,
+                deckId: deckId === 'precon' ? '' : deckId,
             }
         }));
     }
@@ -51,12 +58,20 @@ export class McFormPlayer extends LitElement {
         e.stopPropagation();
 
         this.hero = e.target.value;
+        this.deckId = 'precon';
+
+        this.dispatchChange();
+    }
+    handleDeckChange(e) {
+        e.stopPropagation();
+
+        this.deckId = e.target.value;
 
         this.dispatchChange();
     }
     renderSelectOption(item) {
         return html`
-            <md-select-option value="${item.folder}">
+            <md-select-option value="${item.id || item.folder}">
                 <div slot="headline">${item.name}</div>
             </md-select-option>
         `;
@@ -78,6 +93,25 @@ export class McFormPlayer extends LitElement {
               >
                   ${this.renderSelectOptions()}
               </md-filled-select>
+        `;
+    }
+    renderDeckSelect() {
+        return html`
+            <md-filled-select
+                label="Mazo"
+                value="${this.deckId}"
+                ?disabled="${!this.hero || this.loadingDecks}"
+                @change="${this.handleDeckChange.bind(this)}"
+            >
+                <md-select-option value="precon">
+                    <div slot="headline">Precon (predeterminado)</div>
+                </md-select-option>
+                ${this.decksList.map(deck => html`
+                    <md-select-option value="${deck.id}">
+                        <div slot="headline">${deck.name}</div>
+                    </md-select-option>
+                `)}
+            </md-filled-select>
         `;
     }
     renderName() {
@@ -106,6 +140,7 @@ export class McFormPlayer extends LitElement {
         return html`
             ${this.renderName()}
             ${this.renderSelect()}
+            ${this.renderDeckSelect()}
             ${this.renderButton()}
         `;
     }

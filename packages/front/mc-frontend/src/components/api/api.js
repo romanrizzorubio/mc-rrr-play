@@ -21,6 +21,15 @@ const MATCH_CREATION_ENDPOINTS = new Set([
     ENDPOINTS.SCENARIO.CREATE,
 ]);
 
+const isDeckServiceEndpoint = endpoint => {
+    const [path] = endpoint.split('?');
+
+    return path === ENDPOINTS.DECK.GET_HEROES_LIST ||
+        path === ENDPOINTS.DECK.GET_CATALOG ||
+        path === ENDPOINTS.DECK.LIST ||
+        path.startsWith(`${ENDPOINTS.DECK.LIST}/`);
+};
+
 const SOCKET_ACK_TIMEOUT = 10000;
 
 export class Api {
@@ -214,7 +223,9 @@ export class Api {
         const {endpoint} = params;
         const service = MATCH_CREATION_ENDPOINTS.has(endpoint) ?
             this.services.matchCreation :
-            this.services.match;
+            isDeckServiceEndpoint(endpoint) ?
+                this.services.deck :
+                this.services.match;
         const options = {
             ...params,
             mode: 'cors',

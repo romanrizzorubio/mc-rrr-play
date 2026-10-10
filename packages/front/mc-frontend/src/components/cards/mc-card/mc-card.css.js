@@ -149,6 +149,7 @@ export default css`
     border-radius: 3px;
     background-color: #e0e0e0;
     color: #212121;
+    font-family: var(--mc-font-trait, sans-serif);
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1.1;
@@ -182,6 +183,11 @@ export default css`
     border-radius: 3px;
     color: white;
     font-weight: 600;
+  }
+
+  .numeric-value,
+  .facedown-count {
+    font-family: var(--mc-font-numeric, sans-serif);
   }
 
   .stat-attack {
@@ -242,7 +248,7 @@ export default css`
     flex: 1;
     min-width: 0;
     text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--mc-font-title, sans-serif);
     font-size: 0.85rem;
     font-weight: 700;
     line-height: 1.1;
@@ -326,10 +332,6 @@ export default css`
   .confused {
     background-color: #7a0888;
     color: white;
-  }
-  
-  .dialog {
-    min-height: 600px;
   }
   
   .attached {

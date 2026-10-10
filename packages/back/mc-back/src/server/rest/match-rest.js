@@ -41,6 +41,7 @@ export class MatchRest {
             players: match.players.map(player => ({
                 name: player.name,
                 hero: player.superhero.mainName,
+                aspect: player.config.aspect,
             })),
         }));
     }

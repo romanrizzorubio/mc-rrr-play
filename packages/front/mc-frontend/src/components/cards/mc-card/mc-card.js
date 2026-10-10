@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+import 'mc-components';
 
 import styles from './mc-card.css.js';
 import '../mc-card-image/mc-card-image.js';
@@ -314,30 +315,23 @@ export class CardComponent extends LitElement {
             getCardAssetUrl(image);
 
         return _showBig ? html`
-            <md-dialog 
-                class="dialog" 
-                open
-                @closed="${this.handleCloseBigCard.bind(this)}"
+            <mc-card-image-dialog
+                .open="${_showBig}"
+                .title="${name}"
+                .large="${true}"
+                close-label="Ok"
+                @close-card-image-dialog="${this.handleCloseBigCard.bind(this)}"
             >
-                <div class="title" slot="headline">
-                    ${name}
-                </div>
-                <div class="content" slot="content">
-                    <mc-card-image
-                        id="card"
-                        src="${imageSrc}"
-                        size="xl"
-                        .horizontal="${horizontal}"
-                        .rotated="${rotated}"
-                        @click="${this.handleCloseBigCard.bind(this)}"
-                    ></mc-card-image>
-                </div>
-                <div slot="actions">
-                    <md-text-button
-                        @click="${this.handleCloseBigCard.bind(this)}"
-                    >Ok</md-text-button>
-                </div>
-            </md-dialog>
+                <mc-card-image
+                    slot="image"
+                    id="card"
+                    src="${imageSrc}"
+                    size="xl"
+                    .horizontal="${horizontal}"
+                    .rotated="${rotated}"
+                    @click="${this.handleCloseBigCard.bind(this)}"
+                ></mc-card-image>
+            </mc-card-image-dialog>
         ` : html``;
     }
     renderCard() {
@@ -408,7 +402,7 @@ export class CardComponent extends LitElement {
                         class="character-stat ${className}"
                         aria-label="${label}: ${value}"
                     >
-                        ${value}
+                        <span class="numeric-value">${value}</span>
                     </span>
                 `)}
             </div>
@@ -420,7 +414,9 @@ export class CardComponent extends LitElement {
                 class="character-stat status-card ${className}"
                 aria-label="${label}: ${count} ${count === 1 ? 'carta' : 'cartas'} de estado"
             >
-                ${initial}${count > 1 ? ` x${count}` : ''}
+                ${initial}${count > 1 ? html`
+                    <span class="numeric-value">x${count}</span>
+                ` : ''}
             </span>
         ` : html``;
     }
@@ -476,7 +472,7 @@ export class CardComponent extends LitElement {
                                 class="character-stat ${className}"
                                 aria-label="${label}: ${value}"
                             >
-                                ${value}
+                                <span class="numeric-value">${value}</span>
                             </span>
                         `)}
                     </div>
@@ -546,7 +542,7 @@ export class CardComponent extends LitElement {
     renderHeaderStat(value, label) {
         return Number.isFinite(value) ? html`
             <span class="character-stat stat-stage header-stat" aria-label="${label}: ${value}">
-                ${value}
+                <span class="numeric-value">${value}</span>
             </span>
         ` : '';
     }
@@ -559,7 +555,7 @@ export class CardComponent extends LitElement {
                     <span class="name stage-name">${name}</span>
                 ` : ''}
                 <span class="character-stat stat-stage header-stat" aria-label="Etapa: ${stage}">
-                    ${stage}
+                    <span class="numeric-value">${stage}</span>
                 </span>
             </div>
         ` : html``;
@@ -615,7 +611,7 @@ export class CardComponent extends LitElement {
                 class="character-stat stat-acceleration acceleration"
                 aria-label="Fichas de aceleración: ${acceleration}"
             >
-                +${acceleration}
+                <span class="numeric-value">+${acceleration}</span>
             </div>
         ` : html``;
     }
@@ -624,7 +620,7 @@ export class CardComponent extends LitElement {
 
         return showThreat || threat ? html`
             <div class="character-stat stat-threat threat" aria-label="Amenaza: ${threat}">
-                ${threat}
+                <span class="numeric-value">${threat}</span>
             </div>
         ` : html``;
     }

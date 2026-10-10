@@ -42,7 +42,13 @@ export default css`
   .title {
     display: flex;
     justify-content: space-between;
+    font-family: var(--mc-font-title, sans-serif);
     font-size: 24px;
+  }
+
+  .subtitle,
+  .footer {
+    font-family: var(--mc-font-title, sans-serif);
   }
   
   .content {

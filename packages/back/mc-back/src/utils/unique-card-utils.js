@@ -1,3 +1,5 @@
+import {uniqueCardsShareIdentity} from 'mc-shared';
+
 const getUniqueIdentity = card => {
     const sides = card.sides || [];
     const heroSide = sides.find(side => side.isHero);
@@ -13,21 +15,11 @@ const getUniqueIdentity = card => {
 };
 
 export const cardsShareUniqueIdentity = (first, second) => {
-    if (!first.unique || !second.unique) {
-        return false;
-    }
-
     const firstIdentity = getUniqueIdentity(first);
     const secondIdentity = getUniqueIdentity(second);
-    const firstNames = [firstIdentity.title, ...firstIdentity.relatedNames];
-    const secondNames = [secondIdentity.title, ...secondIdentity.relatedNames];
 
-    if (!firstIdentity.relatedNames.length &&
-        !secondIdentity.relatedNames.length &&
-        firstIdentity.title === secondIdentity.title) {
-        return true;
-    }
-
-    return firstIdentity.relatedNames.some(name => secondNames.includes(name)) ||
-        secondIdentity.relatedNames.some(name => firstNames.includes(name));
+    return uniqueCardsShareIdentity(
+        {...firstIdentity, unique: first.unique},
+        {...secondIdentity, unique: second.unique},
+    );
 };

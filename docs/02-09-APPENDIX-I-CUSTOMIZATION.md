@@ -12,6 +12,7 @@ Las reglas de personalización para los mazos de jugador son:
     *   Si el mazo de un jugador incluye una carta específica de superhéroe que se considera que "coincide" (según las reglas de unicidad; véase el **icono de unicidad**) con un superhéroe elegido por otro jugador durante la **preparación**, ese jugador puede reemplazar la carta que coincide en su mazo por una carta con la palabra clave **equipo** que nombre tanto a su propio superhéroe como al superhéroe del otro jugador.
 *   Un jugador puede elegir exactamente un aspecto (Justicia, Agresividad, Protección, Liderazgo o Masacrismo) para usar en la personalización. El resto de su mazo se personaliza entonces con cartas que pertenecen a ese aspecto y/o cartas básicas.
 *   No se pueden incluir más de tres copias (por título) de cada carta no única en el mazo.
+*   Se deben respetar las restricciones de construcción de mazo indicadas en las cartas, como «Máximo de 1 por mazo».
 *   El mazo de un jugador no puede incluir múltiples cartas que se consideren que "coinciden" bajo las reglas de unicidad (véase el **icono de unicidad**). El superhéroe se incluye en esta evaluación.
 *   Se deben seguir todos los "requisitos de construcción de mazo" que figuren en la carta de superhéroe del jugador.
 

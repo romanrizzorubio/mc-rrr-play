@@ -177,8 +177,7 @@ export default [
                 ]
             }
         }
-    }
-    ,
+    },
     {
         '_id': 'leadership-avengers-assemble',
         'aspect': 'leadership',

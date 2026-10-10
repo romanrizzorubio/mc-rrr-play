@@ -19,3 +19,7 @@ export * from './constants/times.js';
 export * from './constants/timing.js';
 export * from './constants/traits.js';
 export * from './constants/triggers.js';
+export * from './utils/aspect-translation.js';
+export * from './utils/deck-rules.js';
+export * from './utils/trait-translation.js';
+export * from './utils/unique-card-identity.js';

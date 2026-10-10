@@ -10,12 +10,13 @@ mc-monorepo/
 │   ├── front/
 │   │   ├── mc-frontend/    # Carcasa Lit y creación de partidas
 │   │   ├── mc-match/       # Remoto frontend para jugar
-│   │   ├── md-deck/        # Remoto frontend (hello world)
-│   │   └── mc-static/      # Remoto de imágenes, fuentes y estilos estáticos
+│   │   ├── mc-deck/        # Remoto frontend del editor de mazos
+│   │   ├── mc-static/      # Remoto de imágenes, fuentes y estilos estáticos
+│   │   └── mc-components/  # Paquete npm de componentes Lit compartidos
 │   ├── back/
 │   │   ├── mc-back/        # Microservicio de partidas: motor + Socket.IO
 │   │   ├── mc-match-creation-service/ # API de creación y catálogo
-│   │   ├── md-deck-service/ # Microservicio vacío de mazos
+│   │   ├── mc-deck-service/ # API y persistencia de mazos
 │   │   └── mc-data/        # Acceso a MongoDB y catálogo inicial
 │   └── core/
 │       ├── mc-endpoints/   # Contratos REST y eventos Socket.IO
@@ -63,8 +64,8 @@ npm run start:frontend
 # Iniciar remoto de juego (puerto 8100)
 npm run start:mc-match
 
-# Iniciar remoto placeholder de mazos (puerto 8200)
-npm run start:md-deck
+# Iniciar remoto editor de mazos (puerto 8200)
+npm run start:mc-deck
 
 # Iniciar servicio de partidas (puerto 3000)
 npm run start:backend
@@ -72,8 +73,8 @@ npm run start:backend
 # Iniciar servicio de creación de partidas (puerto 3001)
 npm run start:match-creation
 
-# Iniciar servicio placeholder de mazos (puerto 3002)
-npm run start:md-deck-service
+# Iniciar servicio de mazos (puerto 3002)
+npm run start:mc-deck-service
 
 # MongoDB Docker y frontend/backend locales (modo predeterminado)
 npm run start:all
@@ -125,10 +126,14 @@ npm run lint:fix
 
 ### Remotos frontend
 - `mc-match` (puerto 8100): interfaz completa de juego, cargada al abrir una partida mediante ES modules nativos.
-- `md-deck` (puerto 8200): remoto placeholder con un hello world.
+- `mc-deck` (puerto 8200): editor remoto para crear, modificar y borrar mazos.
 - `mc-static` (puerto 8300): imágenes, fuentes, favicons y hojas de estilo públicas compartidas por los frontends.
 
 Las URL de servicios y remotos se pueden ajustar en `packages/front/mc-frontend/public/app-config.json`.
+
+### Componentes frontend compartidos
+- `mc-components` es un paquete npm del monorepo, no un remoto ni un proceso independiente.
+- `mc-match`, `mc-deck` y la carcasa lo declaran como dependencia; incluye elementos compartidos como el diálogo de imagen de carta.
 
 ### Servicio de partidas (mc-back)
 - **Tecnología**: Express 4.18, Socket.IO 4.7, Body-Parser, CORS
@@ -139,15 +144,15 @@ Las URL de servicios y remotos se pueden ajustar en `packages/front/mc-frontend/
 - **Puerto**: 3001
 - **Responsabilidad**: catálogo y orquestación de la creación mediante la API interna de partidas
 
-### Servicio de mazos (md-deck-service)
+### Servicio de mazos (mc-deck-service)
 - **Puerto**: 3002
-- **Estado**: placeholder sin lógica de mazos, con endpoint de salud
+- **Responsabilidad**: catálogo de construcción, validación y persistencia de mazos en MongoDB
 
 ### Endpoints (mc-endpoints)
 - Contratos REST y eventos Socket.IO compartidos entre frontend y backend
 
 ### Datos (mc-data y mc-shared)
-- `mc-data` lee las configuraciones de héroes, escenarios, sets y cartas de aspecto desde las colecciones MongoDB `heroes`, `scenarios`, `sets` y `aspects`.
+- `mc-data` lee las configuraciones de héroes, escenarios, sets y cartas de aspecto desde las colecciones MongoDB `heroes`, `scenarios`, `sets` y `aspects`; los mazos se guardan en `decks`.
 - `mc-data/seed/catalog/` separa los módulos JavaScript por héroe, escenario y set; organiza las cartas de aspecto en subcarpetas por aspecto y tipo, por ejemplo `aspects/aggression/allies.js`. Estos módulos importan identificadores de `mc-shared`; los precon de héroes referencian las cartas de aspecto y `mc-data` las resuelve al entregar su configuración.
 - Al arrancar, `mc-data` carga solo los registros que falten; `npm run seed:data` vuelve a reemplazar los documentos del seed con los valores empaquetados.
 - `mc-shared` define los identificadores estables que usan el motor del backend y las configuraciones guardadas en MongoDB.

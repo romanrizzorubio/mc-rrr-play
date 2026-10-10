@@ -1,0 +1,20 @@
+{
+  "name": "mc-deck",
+  "version": "1.0.0",
+  "description": "Player deck editor remote frontend",
+  "type": "module",
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "lit-element": "^4.0.0",
+    "mc-components": "1.0.0",
+    "mc-endpoints": "1.0.0",
+    "mc-shared": "1.0.0"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

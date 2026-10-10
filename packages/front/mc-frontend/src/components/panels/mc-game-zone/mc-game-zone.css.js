@@ -11,6 +11,7 @@ export default css`
   }
 
   .count {
+    font-family: var(--mc-font-numeric, sans-serif);
     text-align: center;
   }
   

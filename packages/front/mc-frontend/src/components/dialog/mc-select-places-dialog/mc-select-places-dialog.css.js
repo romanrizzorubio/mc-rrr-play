@@ -4,4 +4,8 @@ export default css`
   :host {
     display: block;
   }
+
+  h3 {
+    font-family: var(--mc-font-title, sans-serif);
+  }
 `;

@@ -7,12 +7,14 @@ export default css`
 
   .title {
     align-items: center;
+    font-family: var(--mc-font-title, sans-serif);
   }
 
   .paying-card-title {
     display: flex;
     align-items: center;
     gap: 12px;
+    font-family: var(--mc-font-title, sans-serif);
   }
   
   .cost,

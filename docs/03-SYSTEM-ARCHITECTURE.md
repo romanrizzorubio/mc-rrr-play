@@ -3,18 +3,18 @@
 ## Visión General de Capas
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      PRESENTACIÓN                            │
-│ Carcasa mc-frontend + remotos mc-match / md-deck / mc-static │
-│    (Lobby, juego, mazos y recursos estáticos desacoplados)    │
-└─────────────────────┬───────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            PRESENTACIÓN                                      │
+│       Carcasa mc-frontend + remotos mc-match, mc-deck y mc-static            │
+│               (Lobby, juego, mazos y recursos compartidos)                  │
+└─────────────────────────────────┬────────────────────────────────────────────┘
                       │
                       │ HTTP REST + WebSocket (Socket.IO)
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                    MICROSERVICIOS                            │
-│ mc-match-creation-service │ mc-back │ md-deck-service        │
-│   (catálogo/creación)     │ (motor) │ (placeholder)          │
+│ mc-match-creation-service │ mc-back │ mc-deck-service        │
+│   (catálogo/creación)     │ (motor) │ (mazos)                 │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
@@ -32,15 +32,18 @@
 
 ### Packages compartidos y catálogo de juego
 
-- `packages/front/` contiene `mc-frontend` (carcasa y creación), `mc-match` (remoto de juego), `md-deck` (remoto placeholder) y `mc-static` (imágenes, fuentes, favicons y CSS público).
-- `packages/back/` contiene `mc-back`, los servicios `mc-match-creation-service` y `md-deck-service`, y `mc-data`, que conecta con MongoDB para los catálogos y las instantáneas de partidas.
+- `packages/front/` contiene `mc-frontend` (carcasa y creación), `mc-match` (remoto de juego), `mc-deck` (editor de mazos), `mc-static` (imágenes, fuentes, favicons y CSS público) y `mc-components` (paquete npm de componentes Lit reutilizables).
+- `packages/back/` contiene `mc-back`, los servicios `mc-match-creation-service` y `mc-deck-service`, y `mc-data`, que conecta con MongoDB para los catálogos, mazos e instantáneas de partidas.
 - `packages/core/mc-endpoints` publica las rutas REST y eventos Socket.IO usados por frontend y backend.
 - `packages/core/mc-shared` publica identificadores de capacidades, efectos, objetivos, rasgos, tipos de carta y otros valores del dominio. Las configuraciones de MongoDB almacenan estos valores como strings.
-- `mc-frontend` conserva el lobby y la creación. Carga `mc-match` antes de inicializar una partida, ya que el setup puede solicitar diálogos, y `md-deck` al abrir la sección de mazos; configura también `mc-static`, que sirve los recursos compartidos. La carcasa registra Material Web una sola vez para que los remotos compartan los elementos del documento sin volver a definirlos. Las URL se configuran en `packages/front/mc-frontend/public/app-config.json`.
-- `mc-static` publica los recursos bajo `/images/`, `/font/` y `/styles/`; el remoto expone `getAssetUrl()` para resolverlos desde la carcasa y el juego.
+- `mc-frontend` conserva el lobby y la creación. Carga `mc-static` para resolver recursos; los componentes Lit compartidos se instalan como dependencia npm en `mc-frontend`, `mc-match` y `mc-deck`, y quedan incluidos al compilar cada consumidor. El setup de una partida puede solicitar diálogos, por lo que `mc-match` se carga antes de inicializarla; `mc-deck` se carga al abrir la sección de mazos. La carcasa registra Material Web una sola vez para que los remotos compartan sus elementos. Las URL de los remotos se configuran en `packages/front/mc-frontend/public/app-config.json`.
+- `mc-static` almacena los recursos públicos en `src/assets/` y los publica bajo `/images/`, `/font/` y `/styles/`; el remoto expone `getAssetUrl()` para resolverlos desde la carcasa y el juego.
+- `mc-components` exporta componentes Lit reutilizables, como `mc-card-image-dialog`; los consumidores los importan directamente como dependencia y los registran en `customElements`.
 - `mc-match-creation-service` sirve los catálogos y las rutas públicas de creación, orquestando mediante endpoints internos las operaciones que requieren el motor de `mc-back`.
 - `mc-back` es el servicio de partidas: mantiene el motor, el estado persistido y Socket.IO. Sus endpoints internos de creación están bajo `/internal/`.
-- `md-deck-service` es un placeholder sin lógica de dominio de mazos.
+- `mc-deck-service` valida las reglas de construcción y persiste los mazos en la colección `decks`. Cada documento guarda el héroe, el aspecto, referencias `{id, count}` a las cartas editables y las fechas `createdAt`/`updatedAt`; las cartas fijas del héroe siguen viniendo del catálogo. Solo el botón **Guardar copia en el catálogo** sincroniza el evento más reciente por ID entre MongoDB y `packages/back/mc-data/seed/catalog/decks.json`; el hook `pre-commit` no modifica el backup. Los borrados explícitos se conservan como tombstones con `deletedAt`, para que no reaparezcan al restaurar en otra instalación. La restauración desde `mc-deck` compara las fechas de actualización y borrado por ID, conserva los mazos exclusivamente locales y aplica los eventos más recientes del repositorio. `GET /decks` entrega la biblioteca completa con nombre del héroe y tamaño validado para el listado principal.
+- El remoto `mc-deck` separa la selección de héroe, la lista de mazos y el editor (incluidas las listas de cartas) en componentes Lit independientes; `mc-deck-app` coordina el estado y `DeckServiceClient` encapsula las llamadas al servicio.
+- Las vistas de `mc-deck` se enrutan desde `mc-frontend`: `/decks`, `/decks/create`, `/decks/edit` y `/decks/edit/:id`. La carcasa mantiene el remoto montado y le comunica la ruta activa y sus parámetros para admitir navegación directa e historial del navegador.
 - En desarrollo, `npm run start:all` (o `npm run start:all:docker`) inicia MongoDB en Docker y ejecuta la carcasa, los remotos y servicios en el host; `npm run start:all:local` usa `mongod` local. `npm run docker:up` ejecuta todos los servicios en contenedores.
 - El catálogo inicial está separado en `packages/back/mc-data/seed/catalog/{heroes,scenarios,sets,aspects}/`: hay un módulo JavaScript por héroe, escenario y set; los archivos de `aspects/` están organizados en subcarpetas por aspecto y agrupan las cartas por tipo (por ejemplo, `aspects/aggression/allies.js`). Estos módulos pueden importar identificadores de `mc-shared`; sus valores se guardan como strings al persistirlos en MongoDB. Al conectar, `mc-data` inserta solo los documentos ausentes en las colecciones `heroes`, `scenarios`, `sets` y `aspects`. Antes de arrancar el backend mediante `npm run start:backend` (incluyendo `start:all` y `docker:up`), se ejecuta `npm run seed:data`, que reemplaza los documentos del catálogo empaquetado por los valores exportados por los módulos.
 - Los documentos usan `_id` como identificador estable. Héroes, escenarios y sets guardan su configuración en `config`; cada documento de `aspects` contiene una carta. Los precon de héroe guardan referencias ordenadas a esas cartas, que `getHeroConfig()` expande al cargar la configuración.
@@ -255,7 +258,7 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 | Método | Ruta | Uso |
 | :--- | :--- | :--- |
 | `GET` | `/get-heroes-list` | Obtener héroes (servicio de creación) |
-| `GET` | `/get-matches-list` | Listar partidas vía servicio de creación |
+| `GET` | `/get-matches-list` | Listar partidas vía servicio de creación, con el héroe y aspecto de cada jugador |
 | `GET` | `/get-scenarios-list` | Obtener escenarios (servicio de creación) |
 | `GET` | `/get-modular-sets-list` | Obtener conjuntos modulares (servicio de creación) |
 | `POST` | `/create-match` | Crear partida vía servicio de creación |
@@ -279,7 +282,7 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 
 ## Componentes del Frontend
 
-La carcasa `mc-frontend` ofrece el lobby, la creación y la navegación. Al iniciar, carga `mc-static` para resolver los recursos compartidos; al entrar a una partida carga `mc-match` como ES module y al abrir "Mazos" carga `md-deck`. El bundle del juego no se descarga al abrir el lobby.
+La carcasa `mc-frontend` ofrece el lobby, la creación y la navegación. Al iniciar, carga `mc-static` para resolver los recursos; los componentes compartidos están incluidos en los bundles de sus consumidores. Al entrar a una partida carga `mc-match` como ES module y al abrir "Mazos" carga `mc-deck`. El bundle del juego no se descarga al abrir el lobby.
 
 ### 1. Estructura de Componentes
 

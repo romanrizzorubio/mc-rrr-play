@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "decks": [
+    {
+      "id": "510d5aee-38e6-4a17-9d68-606aed53eff0",
+      "name": "Ironman Liderazgo",
+      "heroId": "ironman",
+      "aspect": "leadership",
+      "cards": [
+        {
+          "id": "leadership-el-poder-del-liderazgo",
+          "count": 2
+        },
+        {
+          "id": "basic-energy",
+          "count": 1
+        },
+        {
+          "id": "basic-genius",
+          "count": 1
+        },
+        {
+          "id": "basic-strength",
+          "count": 1
+        },
+        {
+          "id": "leadership-squirrel-girl",
+          "count": 1
+        },
+        {
+          "id": "leadership-falcon",
+          "count": 1
+        },
+        {
+          "id": "leadership-maria-hill",
+          "count": 1
+        },
+        {
+          "id": "basic-nick-fury",
+          "count": 1
+        },
+        {
+          "id": "leadership-ojo-de-halcon",
+          "count": 1
+        },
+        {
+          "id": "basic-mockingbird",
+          "count": 1
+        },
+        {
+          "id": "basic-enhanced-awareness",
+          "count": 3
+        },
+        {
+          "id": "leadership-el-triskelion",
+          "count": 1
+        },
+        {
+          "id": "basic-helicarrier",
+          "count": 1
+        },
+        {
+          "id": "basic-avengers-mansion",
+          "count": 1
+        },
+        {
+          "id": "leadership-hacer-la-llamada",
+          "count": 3
+        },
+        {
+          "id": "leadership-superioridad-numerica",
+          "count": 3
+        },
+        {
+          "id": "leadership-preparacion",
+          "count": 2
+        }
+      ],
+      "createdAt": "2026-10-10T16:09:09.047Z",
+      "updatedAt": "2026-10-10T16:09:09.047Z"
+    }
+  ],
+  "deletions": []
+}

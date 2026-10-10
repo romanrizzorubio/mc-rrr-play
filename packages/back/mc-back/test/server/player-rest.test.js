@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {PlayerRest} from '../../src/server/rest/player-rest.js';
 
@@ -63,4 +64,52 @@ test('flip changes identity once and returns the refreshed player snapshot', asy
 
     assert.deepEqual(flipCalls, [true]);
     assert.equal(result, refreshedPlayer);
+});
+
+test('createPlayer replaces the precon with the selected legal deck', async () => {
+    const customDeck = [{count: 2, card: {type: 'event', params: {name: 'Carta'}}}];
+    const heroConfig = {
+        sides: [],
+        cards: [],
+        precon: [{count: 1, card: {type: 'event', params: {name: 'Precon'}}}],
+    };
+    const calls = [];
+    const data = {
+        getHeroConfig: async hero => {
+            calls.push(['hero', hero]);
+            return heroConfig;
+        },
+        getDeckConfig: async (deckId, hero) => {
+            calls.push(['deck', deckId, hero]);
+            return {
+                aspect: 'justice',
+                cards: customDeck,
+            };
+        },
+    };
+    const match = {
+        createPlayer: config => ({
+            toObj: () => config,
+        }),
+    };
+    const originalCreateSuperhero = MatchFactory.prototype.createSuperhero;
+    MatchFactory.prototype.createSuperhero = () => ({id: 'hero-card'});
+
+    try {
+        const result = await new PlayerRest({mc: {data}}).createPlayer({
+            match,
+            name: 'Player',
+            hero: 'hero',
+            deckId: 'deck-1',
+        });
+
+        assert.deepEqual(calls, [
+            ['hero', 'hero'],
+            ['deck', 'deck-1', 'hero'],
+        ]);
+        assert.deepEqual(result.config.precon, customDeck);
+        assert.equal(result.config.aspect, 'justice');
+    } finally {
+        MatchFactory.prototype.createSuperhero = originalCreateSuperhero;
+    }
 });

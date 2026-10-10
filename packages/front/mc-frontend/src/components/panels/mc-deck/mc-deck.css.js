@@ -21,6 +21,7 @@ export default css`
     background-color: #212121;
     color: white;
     font-size: 0.85rem;
+    font-family: var(--mc-font-numeric, sans-serif);
     font-weight: 600;
     line-height: 1;
     text-align: center;

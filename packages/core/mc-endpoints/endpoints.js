@@ -17,6 +17,13 @@ export const ENDPOINTS = {
     SCENARIO: {
         CREATE: '/create-scenario',
     },
+    DECK: {
+        GET_HEROES_LIST: '/deck-heroes-list',
+        GET_CATALOG: '/deck-catalog',
+        LIST: '/decks',
+        SAVE_REPOSITORY: '/decks/save-repository',
+        RESTORE_REPOSITORY: '/decks/restore-repository',
+    },
 };
 
 export const INTERNAL_ENDPOINTS = {

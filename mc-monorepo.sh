@@ -43,7 +43,7 @@ Comandos:
   up            Iniciar servicios con Docker Compose
   down          Detener servicios con Docker Compose
   logs          Ver logs en tiempo real
-  clean         Limpiar node_modules y reiniciar
+  clean         Limpiar node_modules y reiniciar sin borrar datos de MongoDB
   status        Ver estado de los servicios
   help          Mostrar esta ayuda
 
@@ -86,9 +86,9 @@ function show_logs() {
 }
 
 function clean() {
-    print_warning "Limpiando node_modules y contenedores..."
+    print_warning "Limpiando node_modules y contenedores; se conservarán los datos de MongoDB..."
     rm -rf node_modules
-    docker-compose down -v
+    docker-compose down
     npm install
     print_success "Monorepo limpio y reinstalado"
 }

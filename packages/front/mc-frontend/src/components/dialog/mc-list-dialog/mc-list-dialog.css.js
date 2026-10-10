@@ -10,6 +10,7 @@ export default css`
   }
   
   .title-menu {
+    font-family: var(--mc-font-title, sans-serif);
     font-weight: bold;  
   }
   

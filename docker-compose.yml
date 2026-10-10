@@ -25,6 +25,7 @@ services:
       - NODE_ENV=development
     volumes:
       - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
+      - ./packages/front/mc-components:/app/packages/front/mc-components
       - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-frontend -- --host 0.0.0.0 --port 8000
     networks:
@@ -34,8 +35,10 @@ services:
         condition: service_healthy
       mc-match:
         condition: service_started
-      md-deck:
+      mc-deck:
         condition: service_started
+      mc-deck-service:
+        condition: service_healthy
       mc-static:
         condition: service_healthy
 
@@ -50,12 +53,13 @@ services:
     volumes:
       - ./packages/front/mc-match:/app/packages/front/mc-match
       - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
+      - ./packages/front/mc-components:/app/packages/front/mc-components
       - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-match
     networks:
       - mc-network
 
-  md-deck:
+  mc-deck:
     build:
       context: .
       dockerfile: Dockerfile.frontend
@@ -64,9 +68,10 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - ./packages/front/md-deck:/app/packages/front/md-deck
+      - ./packages/front/mc-deck:/app/packages/front/mc-deck
+      - ./packages/front/mc-components:/app/packages/front/mc-components
       - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/md-deck
+    command: npm run serve --workspace=packages/front/mc-deck
     networks:
       - mc-network
 
@@ -150,7 +155,7 @@ services:
       mongodb:
         condition: service_healthy
 
-  md-deck-service:
+  mc-deck-service:
     build:
       context: .
       dockerfile: Dockerfile.backend
@@ -159,12 +164,27 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3002
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=mc
     volumes:
-      - ./packages/back/md-deck-service:/app/packages/back/md-deck-service
+      - ./packages/back/mc-deck-service:/app/packages/back/mc-deck-service
+      - ./packages/back/mc-data:/app/packages/back/mc-data
+      - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
+      - ./packages/core/mc-shared:/app/packages/core/mc-shared
       - ./node_modules:/app/node_modules
-    command: npm run start:md-deck-service
+    command: npm run start:mc-deck-service
     networks:
       - mc-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      mc-backend:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
 
 networks:
   mc-network:

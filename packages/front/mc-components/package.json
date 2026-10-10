@@ -1,0 +1,13 @@
+{
+  "name": "mc-components",
+  "version": "1.0.0",
+  "description": "Shared Lit components for frontend workspaces",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "lit-element": "^4.0.0"
+  }
+}

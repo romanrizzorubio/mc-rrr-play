@@ -38,9 +38,9 @@ La aplicación existe para:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ mc-frontend │ mc-match │ md-deck │ mc-static       │
-│ (8000)      │ (8100)   │ (8200)  │ (8300)          │
-│ carcasa     │ juego    │ hello   │ recursos        │
+│ mc-frontend │ mc-match │ mc-deck │ mc-static       │
+│    8000     │   8100   │  8200   │   8300          │
+│   carcasa   │  juego   │  mazos  │ recursos        │
 └──────────────────────────┬──────────────────────────┘
                            │ REST + Socket.IO
 ┌──────────────────────────▼──────────────────────────┐
@@ -61,8 +61,9 @@ La aplicación existe para:
 ### 2. **Frontend**
 - `mc-frontend`: interfaz de usuario, lobby y creación de partidas
 - `mc-match`: remoto de juego cargado cuando se abre una partida
-- `md-deck`: remoto placeholder con hello world
+- `mc-deck`: remoto editor para crear, editar y guardar mazos de jugador
 - `mc-static`: remoto que sirve imágenes, fuentes, favicons y CSS público compartido
+- `mc-components`: paquete npm de componentes Lit importado por `mc-match`, `mc-deck` y la carcasa.
 - Interfaz de usuario web moderna
 - Componentes Lit-Element
 - Materialización con Material Web
@@ -71,7 +72,7 @@ La aplicación existe para:
 
 ### 3. **Servicios de creación y mazos**
 - `mc-match-creation-service` sirve el catálogo y orquesta el setup de partidas.
-- `md-deck-service` queda como placeholder para la futura creación de mazos.
+- `mc-deck-service` expone el catálogo de construcción, valida mazos y persiste los mazos editados.
 
 ### 4. **Sistema de Endpoints**
 - Definición de rutas de API

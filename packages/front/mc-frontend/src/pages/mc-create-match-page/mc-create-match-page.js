@@ -5,6 +5,7 @@ import '../../components/views/mc-create-match/mc-create-match.js';
 import {Api} from '../../components/api/api.js';
 import {ConfigMatch} from '../../components/api/config-match.js';
 import {EVENTS} from 'mc-endpoints';
+import {translateAspect} from 'mc-shared';
 
 export class McCreateMatchPage extends LitElement {
     static get is() {
@@ -229,6 +230,12 @@ export class McCreateMatchPage extends LitElement {
         }
         return match.initializing ? 'Configuración en curso' : 'Incompleta';
     }
+    getPlayerSummary(player) {
+        const hero = player.hero ? ` (${player.hero})` : '';
+        const aspect = player.aspect ? ` - ${translateAspect(player.aspect)}` : '';
+
+        return `${player.name}${hero}${aspect}`;
+    }
     renderMatch(match) {
         const {players} = match;
         const player = this.selectedPlayers[match.name] || players[0]?.name || '';
@@ -244,39 +251,39 @@ export class McCreateMatchPage extends LitElement {
                     <p><strong>Estado:</strong> ${this.getMatchStatus(match)}</p>
                     <p><strong>Escenario:</strong> ${match.scenario || 'Pendiente'}</p>
                     <p><strong>Jugadores:</strong>
-                        ${players.length ? players.map((item, index) => html`
-                            ${index ? ', ' : ''}${item.name}${item.hero ? ` (${item.hero})` : ''}
-                        `) : 'Ninguno'}
+                        ${players.length ? players
+                            .map(item => this.getPlayerSummary(item))
+                            .join(', ') : 'Ninguno'}
                     </p>
                     ${players.length ? html`
-                        <label>
-                            Continuar como
-                            <select
-                                .value="${player}"
-                                @change="${e => this.handlePlayerChange(match.name, e)}"
-                            >
-                                ${players.map(item => html`
-                                    <option value="${item.name}">${item.name}</option>
-                                `)}
-                            </select>
-                        </label>
+                        <md-filled-select
+                            label="Continuar como"
+                            .value="${player}"
+                            @change="${e => this.handlePlayerChange(match.name, e)}"
+                        >
+                            ${players.map(item => html`
+                                <md-select-option value="${item.name}">
+                                    <div slot="headline">${item.name}</div>
+                                </md-select-option>
+                            `)}
+                        </md-filled-select>
                     ` : ''}
-                    <button
-                        type="button"
-                        .disabled="${!canResume || resuming || Boolean(this.deletingMatch)}"
-                        @click="${() => this.resumeMatch(match)}"
-                    >
-                        ${resuming ? 'Conectando...' : 'Continuar partida'}
-                    </button>
-                    <button
-                        class="delete-button"
-                        type="button"
-                        .disabled="${Boolean(this.deletingMatch) ||
-                            Boolean(this.resumingMatch)}"
-                        @click="${() => this.deleteMatch(match)}"
-                    >
-                        ${deleting ? 'Eliminando...' : 'Eliminar partida'}
-                    </button>
+                    <div class="match-actions">
+                        <md-filled-button
+                            .disabled="${!canResume || resuming || Boolean(this.deletingMatch)}"
+                            @click="${() => this.resumeMatch(match)}"
+                        >
+                            ${resuming ? 'Conectando...' : 'Continuar partida'}
+                        </md-filled-button>
+                        <md-text-button
+                            class="delete-button"
+                            .disabled="${Boolean(this.deletingMatch) ||
+                                Boolean(this.resumingMatch)}"
+                            @click="${() => this.deleteMatch(match)}"
+                        >
+                            ${deleting ? 'Eliminando...' : 'Eliminar partida'}
+                        </md-text-button>
+                    </div>
                 </article>
             </li>
         `;
@@ -300,13 +307,12 @@ export class McCreateMatchPage extends LitElement {
             <section class="create-form">
                 <div class="section-heading">
                     <h2>Nueva partida</h2>
-                    <button
-                        type="button"
+                    <md-text-button
                         .disabled="${this.creatingGame}"
                         @click="${() => { this.creatingMatch = false; }}"
                     >
                         Volver a partidas
-                    </button>
+                    </md-text-button>
                 </div>
                 ${this.creatingGame ? html`
                     <p role="status">Creando partida y preparando el setup...</p>
@@ -315,6 +321,7 @@ export class McCreateMatchPage extends LitElement {
                 ` : html`
                     <mc-create-match
                         .heroesList="${this.heroesList}"
+                        .configMatch="${this.apiConfigMatch}"
                         .scenariosList="${this.scenariosList}"
                         .modularSetsList="${this.modularSetsList}"
                         @create-match="${this.handleCreate.bind(this)}"
@@ -328,20 +335,18 @@ export class McCreateMatchPage extends LitElement {
             <div class="section-heading">
                 <h1>Partidas creadas</h1>
                 <div class="actions">
-                    <button
-                        type="button"
+                    <md-text-button
                         .disabled="${this.loadingMatches || Boolean(this.deletingMatch)}"
                         @click="${this.loadMatches.bind(this)}"
                     >
                         Actualizar
-                    </button>
-                    <button
-                        type="button"
+                    </md-text-button>
+                    <md-filled-button
                         .disabled="${this.loadingMatches || Boolean(this.deletingMatch)}"
                         @click="${this.startCreatingMatch.bind(this)}"
                     >
                         Nueva partida
-                    </button>
+                    </md-filled-button>
                 </div>
             </div>
             ${this.renderMatchList()}

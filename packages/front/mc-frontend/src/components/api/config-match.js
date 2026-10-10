@@ -56,6 +56,16 @@ export class ConfigMatch {
             endpoint: ENDPOINTS.MATCH.GET_MODULAR_SETS_LIST,
         });
     }
+    getDecksList(hero, legalOnly = false) {
+        const query = new URLSearchParams({
+            hero,
+            ...(legalOnly ? {legal: 'true'} : {}),
+        });
+
+        return this.api.get({
+            endpoint: `${ENDPOINTS.DECK.LIST}?${query}`,
+        });
+    }
     async initMatch(expert) {
         const match = await this.api.post({
             endpoint: ENDPOINTS.MATCH.INIT,
