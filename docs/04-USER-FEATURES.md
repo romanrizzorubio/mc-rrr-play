@@ -11,7 +11,7 @@ Ver las partidas que siguen en el backend, volver a una sala y retomar el estado
 1. Abrir "Partidas".
 2. Seleccionar una partida disponible.
 3. Elegir el jugador que se va a controlar y presionar "Continuar partida".
-4. Para borrar una partida guardada, presionar "Eliminar partida" y confirmar.
+4. Para borrar una partida, incluso si su setup sigue en curso, presionar "Eliminar partida" y confirmar.
 
 Para empezar otra, presionar "Nueva partida", elegir nombre, jugador, superhéroe y escenario, y después "Crear partida".
 

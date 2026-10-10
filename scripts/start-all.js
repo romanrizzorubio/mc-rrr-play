@@ -28,6 +28,7 @@ const connectionErrors = new Set([
     'ENETUNREACH',
     'ETIMEDOUT',
 ]);
+const serviceStartupTimeout = 60_000;
 const children = new Map();
 let mongoContainerStarted = false;
 let stopRequested = false;
@@ -169,6 +170,43 @@ const waitForMongo = async child => {
     }
 };
 
+const waitForHttpEndpoint = async (url, child, serviceName) => {
+    const deadline = Date.now() + serviceStartupTimeout;
+
+    while (!stopRequested && Date.now() < deadline) {
+        if (child.exitCode !== null || child.signalCode !== null) {
+            throw new Error(`${serviceName} exited before ${url} became available`);
+        }
+        try {
+            const response = await fetch(url, {signal: AbortSignal.timeout(2_000)});
+            if (response.ok) {
+                console.log(`${serviceName} is ready at ${url}`);
+                return;
+            }
+        } catch (error) {
+            if (error.name !== 'TimeoutError' && !connectionErrors.has(error.cause?.code) &&
+                !connectionErrors.has(error.code)) {
+                throw error;
+            }
+        }
+        await delay(250);
+    }
+
+    if (!stopRequested) {
+        throw new Error(`Timed out waiting for ${serviceName} at ${url}`);
+    }
+};
+
+const startAndWaitForService = async (scriptName, serviceName, healthUrl) => {
+    const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const child = startChild(npmCommand, ['run', scriptName], {
+        name: serviceName,
+        processGroup: true,
+    });
+
+    await waitForHttpEndpoint(healthUrl, child, serviceName);
+};
+
 const startLocalMongo = async () => {
     if (!localMongoHosts.has(mongoHost)) {
         throw new Error('Local mode requires MONGODB_URI to point to localhost.');
@@ -264,16 +302,43 @@ const main = async () => {
             await startMongo();
         }
         if (!stopRequested) {
-            const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-            startChild(npmCommand, ['run', 'start:frontend'], {
-                name: 'Frontend',
-                processGroup: true,
-            });
-            startChild(npmCommand, ['run', 'start:backend'], {
-                name: 'Backend',
-                processGroup: true,
-            });
-            console.log('Frontend and backend started. Press Ctrl+C to stop managed processes.');
+            await startAndWaitForService(
+                'start:mc-static',
+                'mc-static remote',
+                'http://127.0.0.1:8300/remoteEntry.js',
+            );
+        }
+        if (!stopRequested) {
+            await startAndWaitForService(
+                'start:backend',
+                'Match service',
+                'http://127.0.0.1:3000/healthz',
+            );
+        }
+        if (!stopRequested) {
+            await startAndWaitForService(
+                'start:match-creation',
+                'Match creation service',
+                'http://127.0.0.1:3001/healthz',
+            );
+        }
+        if (!stopRequested) {
+            const remotesAndDeckService = [
+                ['start:mc-match', 'mc-match remote', 'http://127.0.0.1:8100/remoteEntry.js'],
+                ['start:md-deck', 'md-deck remote', 'http://127.0.0.1:8200/remoteEntry.js'],
+                ['start:md-deck-service', 'Deck service', 'http://127.0.0.1:3002/healthz'],
+            ].map(([scriptName, serviceName, healthUrl]) =>
+                startAndWaitForService(scriptName, serviceName, healthUrl));
+
+            await Promise.all(remotesAndDeckService);
+        }
+        if (!stopRequested) {
+            await startAndWaitForService(
+                'start:frontend',
+                'Frontend',
+                'http://127.0.0.1:8000/app-config.json',
+            );
+            console.log('All applications and services are ready. Press Ctrl+C to stop managed processes.');
             await stopped;
         }
     } catch (error) {

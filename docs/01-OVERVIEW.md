@@ -38,37 +38,42 @@ La aplicación existe para:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Frontend (puerto 8000)            │
-│         Aplicación web con Lit-Element 4.0           │
-│   Interfaz del usuario, jugabilidad, visualización   │
-└──────────────────┬──────────────────────────────────┘
-                   │
-                   │ WebSocket + REST API
-                   │
-┌──────────────────▼──────────────────────────────────┐
-│                    Backend (puerto 3000)             │
-│             Express.js + Socket.IO                   │
-│      Motor de juego, lógica, persistencia            │
+│ mc-frontend │ mc-match │ md-deck │ mc-static       │
+│ (8000)      │ (8100)   │ (8200)  │ (8300)          │
+│ carcasa     │ juego    │ hello   │ recursos        │
+└──────────────────────────┬──────────────────────────┘
+                           │ REST + Socket.IO
+┌──────────────────────────▼──────────────────────────┐
+│ mc-match-creation-service (3001) │ mc-back (3000)   │
+│ catálogo y creación             │ motor de partidas│
 └─────────────────────────────────────────────────────┘
 ```
 
 ## Componentes Principales
 
-### 1. **Backend (MC-Back)**
+### 1. **Servicio de partidas (MC-Back)**
 - Motor de juego que ejecuta la lógica
 - Sistema de triggers y efectos
 - Gestión de partidas y estado
 - API REST y WebSocket
 - Manejo de cartas, personajes y escenarios
 
-### 2. **Frontend (MC-Frontend)**
+### 2. **Frontend**
+- `mc-frontend`: interfaz de usuario, lobby y creación de partidas
+- `mc-match`: remoto de juego cargado cuando se abre una partida
+- `md-deck`: remoto placeholder con hello world
+- `mc-static`: remoto que sirve imágenes, fuentes, favicons y CSS público compartido
 - Interfaz de usuario web moderna
 - Componentes Lit-Element
 - Materialización con Material Web
-- Pantallas de configuración, juego y resultados
+- Navegación y configuración; el juego vive en `mc-match`
 - Comunicación en tiempo real
 
-### 3. **Sistema de Endpoints**
+### 3. **Servicios de creación y mazos**
+- `mc-match-creation-service` sirve el catálogo y orquesta el setup de partidas.
+- `md-deck-service` queda como placeholder para la futura creación de mazos.
+
+### 4. **Sistema de Endpoints**
 - Definición de rutas de API
 - Gestión de conexiones
 - Eventos de Socket.IO

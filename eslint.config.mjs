@@ -47,7 +47,19 @@ export default [
         },
     },
     {
-        files: ['packages/mc-frontend/**/*.js'],
+        files: ['packages/front/mc-frontend/**/*.js'],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+        },
+    },
+    {
+        files: [
+            'packages/front/mc-match/**/*.js',
+            'packages/front/md-deck/**/*.js',
+            'packages/front/mc-static/**/*.js',
+        ],
         languageOptions: {
             globals: {
                 ...globals.browser,
@@ -58,7 +70,7 @@ export default [
         ignores: [
             'node_modules/**',
             '**/node_modules/**',
-            'dist/**',
+            '**/dist/**',
             'scripts/lint-imports.js', // Lo borraremos pronto
         ],
     },

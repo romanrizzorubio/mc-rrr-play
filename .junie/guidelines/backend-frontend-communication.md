@@ -4,20 +4,21 @@ Consulta esta guía antes de cambiar cómo se comunican la interfaz y el servido
 
 ## Arquitectura actual
 
-- El frontend Lit inicializa `Api` en `packages/mc-frontend/src/components/core/mc-app/mc-app.js`. Su implementación está en `packages/mc-frontend/src/components/api/api.js`.
-- El backend configura Express y Socket.IO sobre el mismo servidor HTTP en `packages/mc-back/src/server/mc.js`; escucha en el puerto `3000`. El frontend de desarrollo se sirve en el puerto `8000`.
-- Las rutas REST se centralizan en `packages/mc-endpoints/endpoints.js` y los eventos compartidos en `packages/mc-endpoints/events.js`. Frontend y backend deben importar `ENDPOINTS`, `EVENTS` y `REFRESH_EVENTS` desde la entrada principal `mc-endpoints`, sin mantener copias locales ni usar subrutas del paquete.
-- Las partidas activas se mantienen en `Mc.matches` y sus instantáneas se persisten en MongoDB mediante `packages/mc-data`; al iniciar, el backend las rehidrata y reanuda las que siguen activas. El cliente envía el nombre de la partida en la cabecera HTTP `match`.
-- `packages/mc-shared` contiene los identificadores del dominio usados por las configuraciones almacenadas en MongoDB y por el motor. Mantén estables sus valores al cambiar constantes: el contenido persistido usa esos strings.
+- El frontend Lit inicializa `Api` en `packages/front/mc-frontend/src/components/core/mc-app/mc-app.js`. Su implementación está en `packages/front/mc-frontend/src/components/api/api.js`.
+- La carcasa carga el remoto `mc-static` al iniciar; este sirve imágenes, fuentes, favicons y CSS desde `packages/front/mc-static/static/`. El runtime config de la carcasa está en `packages/front/mc-frontend/public/app-config.json`.
+- El backend configura Express y Socket.IO sobre el mismo servidor HTTP en `packages/back/mc-back/src/server/mc.js`; escucha en el puerto `3000`. El frontend de desarrollo se sirve en el puerto `8000`.
+- Las rutas REST públicas e internas se centralizan en `packages/core/mc-endpoints/endpoints.js` y los eventos compartidos en `packages/core/mc-endpoints/events.js`. Frontend y servicios deben importar `ENDPOINTS`, `INTERNAL_ENDPOINTS`, `EVENTS` y `REFRESH_EVENTS` desde la entrada principal `mc-endpoints`, sin mantener copias locales ni usar subrutas del paquete.
+- Las partidas activas se mantienen en `Mc.matches` y sus instantáneas se persisten en MongoDB mediante `packages/back/mc-data`; al iniciar, el backend las rehidrata y reanuda las que siguen activas. El cliente envía el nombre de la partida en la cabecera HTTP `match`.
+- `packages/core/mc-shared` contiene los identificadores del dominio usados por las configuraciones almacenadas en MongoDB y por el motor. Mantén estables sus valores al cambiar constantes: el contenido persistido usa esos strings.
 - `mc-data` carga automáticamente los registros iniciales que falten al conectar. `npm run start:backend` ejecuta `npm run seed:data` antes de iniciar el backend (también en `start:all` y `docker:up`); el seed reemplaza los documentos del catálogo empaquetado por los valores exportados por sus módulos JavaScript.
 
 ## REST: configuración y acciones
 
-`Api.get()`, `Api.post()` y `Api.delete()` envían peticiones HTTP con `fetch` y JSON. `McRest` analiza el JSON, busca la partida usando la cabecera `match` para las acciones de juego y delega en los handlers de `packages/mc-back/src/server/rest/`.
+`Api.get()`, `Api.post()` y `Api.delete()` envían peticiones HTTP con `fetch` y JSON. Las rutas de catálogo y configuración van a `mc-match-creation-service` (puerto 3001), que sirve el catálogo y reenvía las operaciones de creación a `mc-back` por rutas internas `/internal/...`. El servicio de partidas usa la cabecera `match` para seleccionar el estado en memoria.
 
 Las respuestas de error REST usan JSON con la forma `{error: {message, status}}` y el estado HTTP correspondiente. `McRest` devuelve `404` para rutas desconocidas, conserva estados de error válidos entre `400` y `599` y responde con un mensaje genérico `500` para errores inesperados, que registra en el servidor. `Api.request()` valida el estado y el tipo de contenido, y rechaza la promesa con el mensaje y estado del error para que la interfaz pueda mostrarlo.
 
-Rutas REST registradas actualmente:
+Rutas REST públicas disponibles en `mc-match-creation-service`:
 
 | Método | Ruta | Uso |
 | :--- | :--- | :--- |
@@ -33,9 +34,11 @@ Rutas REST registradas actualmente:
 | `POST` | `/play-card` | Jugar una carta |
 | `POST` | `/resolve-ability` | Resolver una capacidad |
 
-El lobby usa `GET /get-matches-list` para mostrar las partidas persistidas y `DELETE /delete-match` para eliminarlas. La creación ya no es automática: al elegir "Nueva partida", `components/api/config-match.js` y `pages/mc-create-match-page/mc-create-match-page.js` ejecutan las rutas de configuración en secuencia. Al reanudar una partida, el cliente se une por Socket.IO y recibe su estado por `match-refresh`. Las acciones de cambiar identidad, jugar carta y resolver capacidad siguen usando REST; el fin de turno usa Socket.IO.
+`mc-back` expone las operaciones de creación mediante las rutas `INTERNAL_ENDPOINTS` con prefijo `/internal/`; las acciones de juego continúan registradas directamente en ese servicio.
 
-`Api.request()` resuelve las rutas REST (que empiezan por `/`) contra `httpHost` con `new URL()`. Por ejemplo, `/create-match` produce `http://localhost:3000/create-match`, la misma ruta que registra Express.
+El lobby usa `GET /get-matches-list` para mostrar las partidas y `DELETE /delete-match` para eliminarlas, incluso mientras el setup está pendiente; el backend cancela los diálogos pendientes y no acepta nuevos para una partida que se está borrando. La creación ya no es automática: al elegir "Nueva partida", `components/api/config-match.js` y `pages/mc-create-match-page/mc-create-match-page.js` ejecutan las rutas de configuración en secuencia. Antes de `init-match`, la carcasa carga `mc-match`, que registra los diálogos que el backend puede solicitar durante el setup. Al reanudar una partida, el cliente se une por Socket.IO y recibe su estado por `match-refresh`. Las acciones de cambiar identidad, jugar carta y resolver capacidad siguen usando REST; el fin de turno usa Socket.IO.
+
+`Api.request()` dirige las rutas de catálogo/creación a `services.matchCreation` y las acciones de juego a `services.match`, configuradas en `packages/front/mc-frontend/public/app-config.json`. Por defecto, `/create-match` produce `http://localhost:3001/create-match`; el Socket.IO del servicio de partidas usa `ws://localhost:3000`.
 
 ## Socket.IO: eventos, respuestas y actualizaciones
 
@@ -48,7 +51,7 @@ El cliente abre la conexión Socket.IO con `ws://localhost:3000` al inicializar 
 - **Confirmaciones:** los eventos de fin de turno y respuesta de diálogo incluyen el nombre de la partida y usan acknowledgements de Socket.IO. El frontend muestra los errores o expiraciones en lugar de dejar la acción sin respuesta.
 - **Reanudación desde el lobby:** `/get-matches-list` devuelve resúmenes de `Mc.matches`; al seleccionar una partida, el frontend vuelve a unirse a su sala y la instantánea `match-refresh` restaura el tablero. Las partidas se cargan desde MongoDB y sobreviven a reinicios del backend.
 
-Los nombres de estos eventos y sus payloads forman parte del contrato de `packages/mc-endpoints/events.js`. Al añadir o cambiar un evento, actualiza ese paquete y el listener/emisor correspondiente.
+Los nombres de estos eventos y sus payloads forman parte del contrato de `packages/core/mc-endpoints/events.js`. Al añadir o cambiar un evento, actualiza ese paquete y el listener/emisor correspondiente.
 
 ## Flujo y responsabilidades
 

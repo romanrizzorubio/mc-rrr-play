@@ -26,19 +26,24 @@ npm install
 ```
 
 Esto instala dependencias para todos los packages del monorepo:
-- `packages/mc-frontend`
-- `packages/mc-back`
-- `packages/mc-endpoints`
-- `packages/mc-shared`
-- `packages/mc-data`
+- `packages/front/mc-frontend`
+- `packages/front/mc-match`
+- `packages/front/md-deck`
+- `packages/front/mc-static`
+- `packages/back/mc-back`
+- `packages/back/mc-match-creation-service`
+- `packages/back/md-deck-service`
+- `packages/back/mc-data`
+- `packages/core/mc-endpoints`
+- `packages/core/mc-shared`
 
 #### 3. Preparar MongoDB
 
 Elige cómo ejecutar MongoDB:
 
-- `npm run start:all` (igual que `npm run start:all:docker`) usa el contenedor Docker y ejecuta frontend/backend en el host. Los datos persisten en `mc-mongodb-data`; `npm run mongo:down` lo detiene.
+- `npm run start:all` (igual que `npm run start:all:docker`) usa el contenedor Docker y ejecuta la carcasa, los remotos y servicios en el host. Los datos persisten en `mc-mongodb-data`; `npm run mongo:down` lo detiene.
 - `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`. Requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
-- `npm run docker:up` ejecuta frontend, backend y MongoDB en contenedores.
+- `npm run docker:up` ejecuta los frontends, microservicios y MongoDB en contenedores.
 
 Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
 
@@ -54,9 +59,13 @@ npm run seed:data
 npm run start:all
 ```
 
-Esto inicia MongoDB en Docker y frontend/backend en el host. Pulsa `Ctrl+C` para detener los procesos locales; el contenedor de MongoDB queda activo. La aplicación queda disponible en:
-- Frontend en `http://localhost:8000`
-- Backend en `http://localhost:3000`
+Esto inicia MongoDB en Docker y los frontends/microservicios en el host. Pulsa `Ctrl+C` para detenerlos; el contenedor de MongoDB queda activo. La aplicación queda disponible en:
+- Carcasa en `http://localhost:8000`
+- Servicio de partidas en `http://localhost:3000`
+- Servicio de creación en `http://localhost:3001`
+- Remoto de juego en `http://localhost:8100`
+- Remoto de mazos en `http://localhost:8200`
+- Recursos estáticos en `http://localhost:8300`
 
 ##### Opción B: MongoDB local
 
@@ -66,7 +75,7 @@ Si tienes MongoDB Community Server instalado y `mongod` en el `PATH`, inicia Mon
 npm run start:all:local
 ```
 
-Los datos locales se guardan en `.local/mongodb`. Para depurar frontend y backend por separado desde el IDE, usa `npm run mongo:up` y luego inicia cada aplicación individualmente.
+Los datos locales se guardan en `.local/mongodb`. Para depurar frontend y backend por separado desde el IDE, usa `npm run mongo:up` y luego inicia cada aplicación individualmente. Al ejecutar la carcasa por separado, inicia también `npm run start:mc-static` en otra terminal.
 
 ### Instalación con Docker
 
@@ -162,7 +171,7 @@ Una vez iniciada la aplicación:
 **Síntomas:** Página en blanco en localhost:8000
 
 **Soluciones:**
-1. Verifica que el servidor está ejecutándose: `npm run start:frontend`
+1. Verifica que los servidores están ejecutándose: `npm run start:frontend` y `npm run start:mc-static` en terminales separadas.
 2. Abre la consola del navegador (F12) para ver errores
 3. Limpia caché: Ctrl+Shift+Del (Chrome/Firefox)
 
@@ -171,7 +180,7 @@ Una vez iniciada la aplicación:
 **Síntomas:** Errores de conexión al crear partida
 
 **Soluciones:**
-1. Verifica que backend corre: `node packages/mc-back/index.js`
+1. Verifica que backend corre: `node packages/back/mc-back/index.js`
 2. Revisa que puerto 3000 está disponible
 3. Mira logs: `npm run docker:logs` (si uses Docker)
 
@@ -204,7 +213,7 @@ lsof -ti:8000 | xargs kill -9
 1. Verifica hot-reload está habilitado
 2. Recarga página (F5)
 3. Limpia caché (Ctrl+Shift+Del)
-4. Reinicia servidor: `npm run start:frontend`
+4. Reinicia los servidores `mc-frontend` y `mc-static`.
 
 ## Estructura de Carpetas Útil
 
@@ -213,25 +222,27 @@ mc-rrr-play/
 ├── docs/                    # 📚 Esta documentación
 │
 ├── packages/
-│   ├── mc-frontend/        # 🎨 Interfaz usuario
-│   │   ├── src/
-│   │   │   ├── components/  # Componentes web
-│   │   │   └── misc/        # Utilidades
-│   │   └── index.html
-│   │
-│   ├── mc-back/            # 🎮 Motor de juego
-│   │   ├── src/
-│   │   │   ├── model/       # Entidades (Match, Player, etc)
-│   │   │   ├── engine/      # Motor de reglas
-│   │   │   ├── abilities/   # Capacidades de cartas
-│   │   │   ├── triggers/    # Sistema de triggers
-│   │   │   ├── effects/     # Efectos del juego
-│   │   │   └── server/      # API REST + WebSocket
-│   │   └── index.js
-│   │
-│   ├── mc-endpoints/       # 🔌 Contratos REST y Socket.IO
-│   ├── mc-shared/          # Constantes compartidas del dominio
-│   └── mc-data/            # MongoDB; catálogo JavaScript por entidad y carta de aspecto
+│   ├── front/
+│   │   ├── mc-frontend/    # 🎨 Carcasa, lobby y creación
+│   │   ├── mc-match/       # 🎮 Remoto de juego
+│   │   ├── md-deck/        # 🃏 Remoto hello world
+│   │   └── mc-static/      # 🖼️ Remoto de recursos estáticos
+│   ├── back/
+│   │   ├── mc-match-creation-service/ # Creación y catálogo
+│   │   ├── md-deck-service/ # Placeholder de mazos
+│   │   ├── mc-back/        # 🎮 Motor de juego
+│   │   │   ├── src/
+│   │   │   │   ├── model/      # Entidades (Match, Player, etc)
+│   │   │   │   ├── engine/     # Motor de reglas
+│   │   │   │   ├── abilities/  # Capacidades de cartas
+│   │   │   │   ├── triggers/   # Sistema de triggers
+│   │   │   │   ├── effects/    # Efectos del juego
+│   │   │   │   └── server/     # API REST + WebSocket
+│   │   │   └── index.js
+│   │   └── mc-data/        # MongoDB; catálogo JavaScript por entidad y carta
+│   └── core/
+│       ├── mc-endpoints/   # 🔌 Contratos REST y Socket.IO
+│       └── mc-shared/      # Constantes compartidas del dominio
 │
 ├── docker-compose.yml       # Configuración Docker
 ├── package.json             # Monorepo config
@@ -250,7 +261,10 @@ npm install
 # Iniciar todo
 npm run start:all
 
-# Frontend solo
+# Remoto estático (en una terminal)
+npm run start:mc-static
+
+# Carcasa (en otra terminal)
 npm run start:frontend
 
 # Backend solo
@@ -305,4 +319,4 @@ npm run docker:down
 
 ### Preguntas Sobre Desarrollo
 - Lee [03-SYSTEM-ARCHITECTURE.md](./03-SYSTEM-ARCHITECTURE.md)
-- Explora el código fuente en `packages/mc-back/src`
+- Explora el código fuente en `packages/back/mc-back/src`

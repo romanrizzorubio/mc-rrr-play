@@ -1,0 +1,12 @@
+{
+  "name": "md-deck-service",
+  "version": "1.0.0",
+  "description": "Deck creation service placeholder",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

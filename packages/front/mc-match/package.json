@@ -1,0 +1,20 @@
+{
+  "name": "mc-match",
+  "version": "1.0.0",
+  "description": "Remote frontend for playing a match",
+  "type": "module",
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "lit": "^3.3.3",
+    "lit-element": "^4.0.0",
+    "mc-endpoints": "1.0.0",
+    "mc-shared": "1.0.0",
+    "socket.io-client": "^4.8.4"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

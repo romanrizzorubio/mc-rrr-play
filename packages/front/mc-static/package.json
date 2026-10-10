@@ -1,0 +1,13 @@
+{
+  "name": "mc-static",
+  "version": "1.0.0",
+  "description": "Remote for shared frontend static assets",
+  "type": "module",
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

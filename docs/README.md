@@ -71,18 +71,20 @@ Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digi
 ```
 MC RRR Play
 │
-├─ Frontend (Lit-Element)
-│  └─ Interfaz web en puerto 8000
-│
-├─ Backend (Express + Socket.IO)
-│  └─ Motor de juego en puerto 3000
-│
-├─ Datos (MongoDB)
-│  └─ Catálogo de juego y estado persistente de las partidas
-│
-└─ Packages compartidos
-   ├─ mc-data: acceso al catálogo y a las partidas en MongoDB
-   └─ mc-shared: constantes del dominio
+└─ packages
+   ├─ front
+   │  ├─ mc-frontend: carcasa y lobby (puerto 8000)
+   │  ├─ mc-match: juego remoto (puerto 8100)
+   │  ├─ md-deck: remoto hello world (puerto 8200)
+   │  └─ mc-static: recursos estáticos (puerto 8300)
+   ├─ back
+   │  ├─ mc-back: motor de partidas + Socket.IO (puerto 3000)
+   │  ├─ mc-match-creation-service: creación y catálogo (puerto 3001)
+   │  ├─ md-deck-service: placeholder (puerto 3002)
+   │  └─ mc-data: acceso al catálogo y partidas de MongoDB
+   └─ core
+      ├─ mc-endpoints: contratos REST y eventos
+      └─ mc-shared: constantes del dominio
 ```
 
 ## 🚀 Inicio Rápido (2 minutos)

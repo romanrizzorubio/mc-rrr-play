@@ -5,16 +5,16 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      PRESENTACIÓN                            │
-│              Frontend (Lit-Element Components)               │
-│         (Interfaz visual, entrada de usuario)                │
+│ Carcasa mc-frontend + remotos mc-match / md-deck / mc-static │
+│    (Lobby, juego, mazos y recursos estáticos desacoplados)    │
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       │ HTTP REST + WebSocket (Socket.IO)
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
-│                    COMUNICACIÓN                              │
-│         Express.js + Socket.IO (Backend/Frontend)            │
-│     (Enrutamiento, validación, sincronización)               │
+│                    MICROSERVICIOS                            │
+│ mc-match-creation-service │ mc-back │ md-deck-service        │
+│   (catálogo/creación)     │ (motor) │ (placeholder)          │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
@@ -32,11 +32,17 @@
 
 ### Packages compartidos y catálogo de juego
 
-- `packages/mc-endpoints` publica las rutas REST y los eventos Socket.IO usados por frontend y backend.
-- `packages/mc-shared` publica los identificadores de capacidades, efectos, objetivos, rasgos, tipos de carta y otros valores del dominio. Las configuraciones de MongoDB almacenan estos valores como strings.
-- `packages/mc-data` conecta con MongoDB y proporciona al backend los catálogos y configuraciones de héroes, escenarios, sets y cartas de aspecto; también almacena las instantáneas de las partidas. La conexión se configura con `MONGODB_URI` y `MONGODB_DATABASE`.
-- En desarrollo, `npm run start:all` (o `npm run start:all:docker`) inicia MongoDB en Docker y ejecuta frontend/backend en el host; `npm run start:all:local` usa `mongod` local. `npm run docker:up` ejecuta los tres servicios en contenedores.
-- El catálogo inicial está separado en `packages/mc-data/seed/catalog/{heroes,scenarios,sets,aspects}/`: hay un módulo JavaScript por héroe, escenario y set; los archivos de `aspects/` están organizados en subcarpetas por aspecto y agrupan las cartas por tipo (por ejemplo, `aspects/aggression/allies.js`). Estos módulos pueden importar identificadores de `mc-shared`; sus valores se guardan como strings al persistirlos en MongoDB. Al conectar, `mc-data` inserta solo los documentos ausentes en las colecciones `heroes`, `scenarios`, `sets` y `aspects`. Antes de arrancar el backend mediante `npm run start:backend` (incluyendo `start:all` y `docker:up`), se ejecuta `npm run seed:data`, que reemplaza los documentos del catálogo empaquetado por los valores exportados por los módulos.
+- `packages/front/` contiene `mc-frontend` (carcasa y creación), `mc-match` (remoto de juego), `md-deck` (remoto placeholder) y `mc-static` (imágenes, fuentes, favicons y CSS público).
+- `packages/back/` contiene `mc-back`, los servicios `mc-match-creation-service` y `md-deck-service`, y `mc-data`, que conecta con MongoDB para los catálogos y las instantáneas de partidas.
+- `packages/core/mc-endpoints` publica las rutas REST y eventos Socket.IO usados por frontend y backend.
+- `packages/core/mc-shared` publica identificadores de capacidades, efectos, objetivos, rasgos, tipos de carta y otros valores del dominio. Las configuraciones de MongoDB almacenan estos valores como strings.
+- `mc-frontend` conserva el lobby y la creación. Carga `mc-match` antes de inicializar una partida, ya que el setup puede solicitar diálogos, y `md-deck` al abrir la sección de mazos; configura también `mc-static`, que sirve los recursos compartidos. La carcasa registra Material Web una sola vez para que los remotos compartan los elementos del documento sin volver a definirlos. Las URL se configuran en `packages/front/mc-frontend/public/app-config.json`.
+- `mc-static` publica los recursos bajo `/images/`, `/font/` y `/styles/`; el remoto expone `getAssetUrl()` para resolverlos desde la carcasa y el juego.
+- `mc-match-creation-service` sirve los catálogos y las rutas públicas de creación, orquestando mediante endpoints internos las operaciones que requieren el motor de `mc-back`.
+- `mc-back` es el servicio de partidas: mantiene el motor, el estado persistido y Socket.IO. Sus endpoints internos de creación están bajo `/internal/`.
+- `md-deck-service` es un placeholder sin lógica de dominio de mazos.
+- En desarrollo, `npm run start:all` (o `npm run start:all:docker`) inicia MongoDB en Docker y ejecuta la carcasa, los remotos y servicios en el host; `npm run start:all:local` usa `mongod` local. `npm run docker:up` ejecuta todos los servicios en contenedores.
+- El catálogo inicial está separado en `packages/back/mc-data/seed/catalog/{heroes,scenarios,sets,aspects}/`: hay un módulo JavaScript por héroe, escenario y set; los archivos de `aspects/` están organizados en subcarpetas por aspecto y agrupan las cartas por tipo (por ejemplo, `aspects/aggression/allies.js`). Estos módulos pueden importar identificadores de `mc-shared`; sus valores se guardan como strings al persistirlos en MongoDB. Al conectar, `mc-data` inserta solo los documentos ausentes en las colecciones `heroes`, `scenarios`, `sets` y `aspects`. Antes de arrancar el backend mediante `npm run start:backend` (incluyendo `start:all` y `docker:up`), se ejecuta `npm run seed:data`, que reemplaza los documentos del catálogo empaquetado por los valores exportados por los módulos.
 - Los documentos usan `_id` como identificador estable. Héroes, escenarios y sets guardan su configuración en `config`; cada documento de `aspects` contiene una carta. Los precon de héroe guardan referencias ordenadas a esas cartas, que `getHeroConfig()` expande al cargar la configuración.
 - El seed normaliza las cartas al formato `{type, params}` que consume `CardsFactory`, conservando dentro de `params` sus capacidades y efectos.
 - El backend mantiene las partidas activas en `Mc.matches` y guarda sus instantáneas en la colección `matches` de MongoDB. Al iniciar, restaura el motor y reanuda la fase y el turno guardados.
@@ -236,33 +242,33 @@ class Effect {
 
 ### 7. Server (Servidor)
 
-**Ubicación:** `packages/mc-back/src/server/`
+**Ubicación:** `packages/back/mc-back/src/server/`
 
-Express y Socket.IO comparten el servidor HTTP del backend, que escucha en el puerto `3000`.
+Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que escucha en el puerto `3000`. El servicio de creación escucha en `3001` y consume los catálogos en MongoDB.
 
 #### McRest
 - Define rutas GET, POST y DELETE, analiza cuerpos JSON y obtiene la partida a partir de la cabecera HTTP `match` para las acciones de juego.
 - Restaura en `Mc.matches` las partidas de MongoDB y persiste sus cambios.
 
-**Rutas REST registradas actualmente:**
+**Rutas REST públicas y responsables:**
 
 | Método | Ruta | Uso |
 | :--- | :--- | :--- |
-| `GET` | `/get-heroes-list` | Obtener la lista de héroes |
-| `GET` | `/get-matches-list` | Listar partidas persistidas en MongoDB |
-| `GET` | `/get-scenarios-list` | Obtener la lista de escenarios |
-| `GET` | `/get-modular-sets-list` | Obtener los conjuntos modulares disponibles |
-| `POST` | `/create-match` | Crear una partida |
-| `DELETE` | `/delete-match` | Eliminar una partida de memoria y de MongoDB |
-| `POST` | `/create-player` | Añadir un jugador |
-| `POST` | `/create-scenario` | Añadir un escenario |
-| `POST` | `/init-match` | Inicializar la partida |
-| `POST` | `/player-flip` | Cambiar la identidad del jugador |
-| `POST` | `/play-card` | Jugar una carta |
-| `POST` | `/resolve-ability` | Resolver una capacidad |
+| `GET` | `/get-heroes-list` | Obtener héroes (servicio de creación) |
+| `GET` | `/get-matches-list` | Listar partidas vía servicio de creación |
+| `GET` | `/get-scenarios-list` | Obtener escenarios (servicio de creación) |
+| `GET` | `/get-modular-sets-list` | Obtener conjuntos modulares (servicio de creación) |
+| `POST` | `/create-match` | Crear partida vía servicio de creación |
+| `DELETE` | `/delete-match` | Eliminar partida vía servicio de creación |
+| `POST` | `/create-player` | Añadir jugador vía servicio de creación |
+| `POST` | `/create-scenario` | Añadir escenario vía servicio de creación |
+| `POST` | `/init-match` | Inicializar vía servicio de creación |
+| `POST` | `/player-flip` | Cambiar identidad directamente en `mc-back` |
+| `POST` | `/play-card` | Jugar carta directamente en `mc-back` |
+| `POST` | `/resolve-ability` | Resolver capacidad directamente en `mc-back` |
 
 #### McSocket
-- Gestiona los eventos Socket.IO definidos en `packages/mc-endpoints/events.js`.
+- Gestiona los eventos Socket.IO definidos en `packages/core/mc-endpoints/events.js`.
 - Une cada socket a una sala `mc-match:<nombre>` mediante `join-match` y enruta las actualizaciones a esa partida.
 - Recibe `end-turn` y gestiona el intercambio correlacionado `open-dialog` / `dialog-response`.
 - La instantánea `match-refresh` incluye la fase y el jugador activo para que la interfaz solo ofrezca finalizar el turno a quien corresponda.
@@ -272,6 +278,8 @@ Express y Socket.IO comparten el servidor HTTP del backend, que escucha en el pu
 **Eventos principales:** `join-match`, `end-turn`, `open-dialog`, `dialog-response` y los eventos `*-refresh` descritos en [Comunicación](#comunicación).
 
 ## Componentes del Frontend
+
+La carcasa `mc-frontend` ofrece el lobby, la creación y la navegación. Al iniciar, carga `mc-static` para resolver los recursos compartidos; al entrar a una partida carga `mc-match` como ES module y al abrir "Mazos" carga `md-deck`. El bundle del juego no se descarga al abrir el lobby.
 
 ### 1. Estructura de Componentes
 
@@ -394,9 +402,9 @@ Diálogos: el backend emite `open-dialog` con un identificador de solicitud; el 
 
 ### REST API
 
-Se usa para obtener las listas de héroes, escenarios, conjuntos modulares y partidas activas, crear e inicializar una partida y ejecutar las acciones de cambiar identidad, jugar carta y resolver capacidad. Las rutas se declaran en `packages/mc-back/src/server/rest/` y sus constantes compartidas están en `packages/mc-endpoints/endpoints.js`, importadas tanto por el backend como por el frontend. El backend obtiene las listas y configuraciones de contenido mediante `mc-data` desde MongoDB.
+Se usa para obtener listas de héroes, escenarios, conjuntos modulares y partidas activas, crear e inicializar partidas y ejecutar acciones de juego. El servicio de creación sirve el catálogo y enruta las operaciones de creación al servicio de partidas; `mc-back` conserva las acciones de juego y Socket.IO. Las rutas públicas e internas están centralizadas en `packages/core/mc-endpoints/endpoints.js`.
 
-Las peticiones llevan JSON; el backend identifica la partida con la cabecera `match`. Las rutas registradas actualmente son las indicadas en la tabla de **McRest**. `Api.request()` resuelve las rutas (con `/` inicial) contra `httpHost` usando `new URL()`, por lo que `/create-match` se solicita como `http://localhost:3000/create-match`.
+Las peticiones llevan JSON; las rutas de partida usan la cabecera `match`. `Api.request()` dirige las rutas públicas de creación y catálogo al servicio `matchCreation` y las acciones de juego a `match`, según `public/app-config.json`. Por defecto, `/create-match` se solicita a `http://localhost:3001/create-match`; las acciones de juego y Socket.IO usan `http://localhost:3000`.
 
 Los errores REST se devuelven como JSON con `{error: {message, status}}` y un estado HTTP adecuado; las rutas desconocidas responden `404` y los errores inesperados responden `500` sin exponer detalles internos. `Api.request()` convierte las respuestas fallidas en errores con el mensaje del servidor para que la interfaz los muestre al usuario.
 
@@ -413,7 +421,7 @@ socket.on('open-dialog', (params) => { /* mostrar diálogo */ })
 socket.emit('dialog-response', {match, requestId, response}, acknowledgement)
 ```
 
-Los nombres de eventos son los valores centralizados en `packages/mc-endpoints/events.js`. Los eventos de juego se aíslan por sala de partida. Al reconectar, el frontend vuelve a unirse para recibir el estado completo si el setup ya terminó y los diálogos pendientes, incluso si se perdieron actualizaciones incrementales.
+Los nombres de eventos son los valores centralizados en `packages/core/mc-endpoints/events.js`. Los eventos de juego se aíslan por sala de partida. Al reconectar, el frontend vuelve a unirse para recibir el estado completo si el setup ya terminó y los diálogos pendientes, incluso si se perdieron actualizaciones incrementales.
 
 ## Gestión de Estado
 
@@ -455,7 +463,7 @@ El estado de una partida contiene:
 - `scenarios`: lista visible e información de configuración completa de cada escenario.
 - `sets`: configuración de los sets de encuentro.
 - `aspects`: cartas de aspecto almacenadas individualmente y referenciadas desde los precon de héroe.
-- `mc-data` carga automáticamente los registros ausentes del catálogo inicial de `packages/mc-data/seed/catalog/`; `npm run seed:data` vuelve a reemplazar los documentos empaquetados. Al desplegar, configura `MONGODB_URI` y `MONGODB_DATABASE` para apuntar a la base correspondiente.
+- `mc-data` carga automáticamente los registros ausentes del catálogo inicial de `packages/back/mc-data/seed/catalog/`; `npm run seed:data` vuelve a reemplazar los documentos empaquetados. Al desplegar, configura `MONGODB_URI` y `MONGODB_DATABASE` para apuntar a la base correspondiente.
 
 **Partidas (MongoDB):**
 - La colección `matches` guarda el estado completo del motor, incluidos mazos, cartas, efectos y referencias entre objetos; no se usa el JSON de presentación del frontend.

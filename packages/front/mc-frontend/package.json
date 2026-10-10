@@ -1,0 +1,26 @@
+{
+  "name": "mc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "auxi-index.js",
+  "type": "module",
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build",
+    "test": "node --test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@material/web": "^1.0.1",
+    "lit": "^3.3.3",
+    "lit-element": "^4.0.0",
+    "lit-element-router": "^2.0.3",
+    "mc-endpoints": "1.0.0",
+    "mc-shared": "1.0.0",
+    "socket.io-client": "^4.8.4"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}

@@ -24,11 +24,71 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - ./packages/mc-frontend:/app/packages/mc-frontend
+      - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
       - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/mc-frontend -- --host 0.0.0.0 --port 8000
+    command: npm run serve --workspace=packages/front/mc-frontend -- --host 0.0.0.0 --port 8000
     networks:
       - mc-network
+    depends_on:
+      mc-match-creation:
+        condition: service_healthy
+      mc-match:
+        condition: service_started
+      md-deck:
+        condition: service_started
+      mc-static:
+        condition: service_healthy
+
+  mc-match:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8100:8100"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/front/mc-match:/app/packages/front/mc-match
+      - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
+      - ./node_modules:/app/node_modules
+    command: npm run serve --workspace=packages/front/mc-match
+    networks:
+      - mc-network
+
+  md-deck:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8200:8200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/front/md-deck:/app/packages/front/md-deck
+      - ./node_modules:/app/node_modules
+    command: npm run serve --workspace=packages/front/md-deck
+    networks:
+      - mc-network
+
+  mc-static:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8300:8300"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/front/mc-static:/app/packages/front/mc-static
+      - ./node_modules:/app/node_modules
+    command: npm run serve --workspace=packages/front/mc-static
+    networks:
+      - mc-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8300/remoteEntry.js').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   mc-backend:
     build:
@@ -41,19 +101,70 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
-      - ./packages/mc-back:/app/packages/mc-back
-      - ./packages/mc-endpoints:/app/packages/mc-endpoints
-      - ./packages/mc-data:/app/packages/mc-data
-      - ./packages/mc-shared:/app/packages/mc-shared
+      - ./packages/back/mc-back:/app/packages/back/mc-back
+      - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
+      - ./packages/back/mc-data:/app/packages/back/mc-data
+      - ./packages/core/mc-shared:/app/packages/core/mc-shared
       - ./node_modules:/app/node_modules
     command: npm run start:backend
     networks:
       - mc-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     depends_on:
-      mc-frontend:
-        condition: service_started
       mongodb:
         condition: service_healthy
+
+  mc-match-creation:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - MATCH_SERVICE_URL=http://mc-backend:3000
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=mc
+    volumes:
+      - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
+      - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
+      - ./packages/back/mc-data:/app/packages/back/mc-data
+      - ./packages/core/mc-shared:/app/packages/core/mc-shared
+      - ./node_modules:/app/node_modules
+    command: npm run start:match-creation
+    networks:
+      - mc-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      mc-backend:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  md-deck-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+    volumes:
+      - ./packages/back/md-deck-service:/app/packages/back/md-deck-service
+      - ./node_modules:/app/node_modules
+    command: npm run start:md-deck-service
+    networks:
+      - mc-network
 
 networks:
   mc-network:

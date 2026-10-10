@@ -7,11 +7,19 @@ Monorepo que contiene el frontend, el motor de juego, los contratos compartidos 
 ```
 mc-monorepo/
 ├── packages/
-│   ├── mc-frontend/    # Frontend con Lit-Element
-│   ├── mc-back/        # Backend Express + Socket.IO
-│   ├── mc-endpoints/   # Contratos REST y eventos Socket.IO
-│   ├── mc-shared/      # Constantes e identificadores del juego
-│   └── mc-data/        # Acceso a MongoDB y catálogo inicial
+│   ├── front/
+│   │   ├── mc-frontend/    # Carcasa Lit y creación de partidas
+│   │   ├── mc-match/       # Remoto frontend para jugar
+│   │   ├── md-deck/        # Remoto frontend (hello world)
+│   │   └── mc-static/      # Remoto de imágenes, fuentes y estilos estáticos
+│   ├── back/
+│   │   ├── mc-back/        # Microservicio de partidas: motor + Socket.IO
+│   │   ├── mc-match-creation-service/ # API de creación y catálogo
+│   │   ├── md-deck-service/ # Microservicio vacío de mazos
+│   │   └── mc-data/        # Acceso a MongoDB y catálogo inicial
+│   └── core/
+│       ├── mc-endpoints/   # Contratos REST y eventos Socket.IO
+│       └── mc-shared/      # Constantes e identificadores del juego
 ├── docker-compose.yml
 ├── Dockerfile.frontend
 ├── Dockerfile.backend
@@ -31,7 +39,7 @@ mc-monorepo/
 npm install
 ```
 
-El backend usa `MONGODB_URI` (por defecto `mongodb://localhost:27017`) y `MONGODB_DATABASE` (por defecto `mc`). `npm run start:all` usa MongoDB en Docker y ejecuta frontend/backend en el host; es equivalente a `npm run start:all:docker`. Para iniciar MongoDB como proceso local usa `npm run start:all:local`, que reutiliza una instancia activa o ejecuta `mongod` con los datos en `.local/mongodb`. `MONGODB_DB_PATH` y `MONGOD_BIN` permiten cambiar la ruta de datos y el ejecutable. El contenedor Docker persiste en `mc-mongodb-data` y queda activo al cerrar la aplicación; usa `npm run mongo:down` para detenerlo. `npm run docker:up` levanta los tres servicios en contenedores.
+Los servicios usan `MONGODB_URI` (por defecto `mongodb://localhost:27017`) y `MONGODB_DATABASE` (por defecto `mc`). `npm run start:all` usa MongoDB en Docker y ejecuta la carcasa, remotos y servicios en el host; es equivalente a `npm run start:all:docker`. Para iniciar MongoDB como proceso local usa `npm run start:all:local`, que reutiliza una instancia activa o ejecuta `mongod` con los datos en `.local/mongodb`. `MONGODB_DB_PATH` y `MONGOD_BIN` permiten cambiar la ruta de datos y el ejecutable. El contenedor Docker persiste en `mc-mongodb-data` y queda activo al cerrar la aplicación; usa `npm run mongo:down` para detenerlo. `npm run docker:up` levanta todos los servicios en contenedores.
 
 Al arrancar, `mc-data` añade automáticamente los registros iniciales que falten. Para volver a aplicar el catálogo empaquetado manualmente:
 
@@ -46,11 +54,26 @@ En Docker, `docker-compose` inicia MongoDB con un volumen persistente; el backen
 ### Desarrollo Local
 
 ```bash
-# Iniciar frontend (puerto 8000)
+# En una terminal, iniciar primero el remoto de recursos estáticos (puerto 8300)
+npm run start:mc-static
+
+# En otra terminal, iniciar la carcasa principal (puerto 8000)
 npm run start:frontend
 
-# Iniciar backend (puerto 3000)
+# Iniciar remoto de juego (puerto 8100)
+npm run start:mc-match
+
+# Iniciar remoto placeholder de mazos (puerto 8200)
+npm run start:md-deck
+
+# Iniciar servicio de partidas (puerto 3000)
 npm run start:backend
+
+# Iniciar servicio de creación de partidas (puerto 3001)
+npm run start:match-creation
+
+# Iniciar servicio placeholder de mazos (puerto 3002)
+npm run start:md-deck-service
 
 # MongoDB Docker y frontend/backend locales (modo predeterminado)
 npm run start:all
@@ -94,17 +117,31 @@ npm run lint:fix
 
 ## Servicios
 
-### Frontend (mc-frontend)
+### Carcasa (mc-frontend)
 - **Tecnología**: Lit-Element 4.0, Material Web
 - **Puerto**: 8000
-- **Comando**: `npm run serve`
+- **Responsabilidad**: lobby, creación de partidas, navegación y carga diferida de remotos
 - **URL**: http://localhost:8000
 
-### Backend (mc-back)
+### Remotos frontend
+- `mc-match` (puerto 8100): interfaz completa de juego, cargada al abrir una partida mediante ES modules nativos.
+- `md-deck` (puerto 8200): remoto placeholder con un hello world.
+- `mc-static` (puerto 8300): imágenes, fuentes, favicons y hojas de estilo públicas compartidas por los frontends.
+
+Las URL de servicios y remotos se pueden ajustar en `packages/front/mc-frontend/public/app-config.json`.
+
+### Servicio de partidas (mc-back)
 - **Tecnología**: Express 4.18, Socket.IO 4.7, Body-Parser, CORS
 - **Puerto**: 3000
-- **Comando**: `node index.js`
-- **URL**: http://localhost:3000
+- **Responsabilidad**: estado y motor de juego, persistencia de partidas y eventos Socket.IO
+
+### Servicio de creación (mc-match-creation-service)
+- **Puerto**: 3001
+- **Responsabilidad**: catálogo y orquestación de la creación mediante la API interna de partidas
+
+### Servicio de mazos (md-deck-service)
+- **Puerto**: 3002
+- **Estado**: placeholder sin lógica de mazos, con endpoint de salud
 
 ### Endpoints (mc-endpoints)
 - Contratos REST y eventos Socket.IO compartidos entre frontend y backend
@@ -117,7 +154,7 @@ npm run lint:fix
 
 ## Desarrollo con Docker
 
-Para desarrollar con frontend y backend locales (y depurarlos desde el IDE), usa `npm run start:all`; solo MongoDB se ejecuta en Docker. Para ejecutar los tres servicios en contenedores, usa `npm run docker:up`.
+Para desarrollar con la carcasa, los remotos y microservicios locales (y depurarlos desde el IDE), usa `npm run start:all`; solo MongoDB se ejecuta en Docker. Para ejecutar todo el stack en contenedores, usa `npm run docker:up`.
 
 Para desarrollar el stack completo en Docker con hot-reload:
 
@@ -130,5 +167,5 @@ Los cambios en los archivos se sincronizarán automáticamente con los contenedo
 ## Notas
 
 - Las aplicaciones están comunicadas a través de la red `mc-network`
-- El backend depende del frontend (se inicia después)
+- El servicio de creación consume la API interna del servicio de partidas
 - Los volúmenes compartidos permiten desarrollo en tiempo real
