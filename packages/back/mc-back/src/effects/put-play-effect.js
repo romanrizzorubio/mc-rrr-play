@@ -14,11 +14,14 @@ import {Effect} from './effect.js';
 import {GetMaxAlliesEffect} from './get-max-allies-effect.js';
 import {enforceRestrictedLimit} from '../utils/enforce-restricted-limit.js';
 import {canPlayCard} from '../utils/card-play-utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 
 
 export class PutPlayEffect extends Effect {
     constructor({
         card,
+        cardSource,
+        cardCondition,
         controller,
         maxAllyToDiscardId,
         restrictedCardToDiscardId,
@@ -27,6 +30,8 @@ export class PutPlayEffect extends Effect {
         super(arguments[0]);
 
         this.card = card;
+        this.cardSource = cardSource;
+        this.cardCondition = cardCondition;
         this.controller = controller;
         this.maxAllyToDiscardId = maxAllyToDiscardId;
         this.restrictedCardToDiscardId = restrictedCardToDiscardId;
@@ -34,13 +39,29 @@ export class PutPlayEffect extends Effect {
         this.playabilityFailed = false;
     }
     getCard(params = {}) {
-        return this.card || params.selectedCard;
+        if (this.card || params.selectedCard) {
+            return this.card || params.selectedCard;
+        }
+
+        if (this.cardSource) {
+            const sourceCards = path(params, this.cardSource);
+            if (!Array.isArray(sourceCards)) {
+                throw new TypeError('PutPlayEffect cardSource must resolve to a card list.');
+            }
+
+            return sourceCards.find(card =>
+                !this.cardCondition || checkCondition(card, this.cardCondition));
+        }
     }
     getController(params) {
         return this.controller || params.player;
     }
     async canRun(params) {
         const card = this.getCard(params);
+        if (this.cardSource && !card) {
+            return false;
+        }
+
         if (!this.requirePlayable || !card?.isPlayerCard) {
             return super.canRun(params);
         }

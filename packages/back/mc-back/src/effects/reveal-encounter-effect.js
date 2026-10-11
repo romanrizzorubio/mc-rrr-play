@@ -1,10 +1,12 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
+    PRIORITY_CONSTANT,
     PLACE_ENCOUNTER_DECK,
     PLACE_PLAYER_ENCOUNTERS,
     TARGET_PLAYER,
     TARGET_SCENARIO,
     TRIGGER_ENCOUNTER_REVEAL,
+    TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
     TRIGGER_TREACHERY_REVEAL,
 } from 'mc-shared';
 
@@ -15,6 +17,7 @@ import {
 } from './cancel-encounter-constants.js';
 import {checkCondition} from '../engine/utils.js';
 import {DelayedEffect} from './delayed-effect.js';
+import {DealEncounterEffect} from './deal-encounter-effect.js';
 import {Effect} from './effect.js';
 import {EngageEffect} from './engage-effect.js';
 import {GetSurgeEffect} from './get-surge-effect.js';
@@ -141,22 +144,37 @@ export class RevealEncounterEffect extends Effect {
             });
         }
     }
-    reveal(params) {
+    async reveal(params) {
         const {selectedTarget} = this;
         const abilities = selectedTarget.currentSide?.abilities || selectedTarget.abilities;
 
-        if (abilities) {
-            const ability = abilities.find(_ability =>
-                _ability.isWhenRevealed &&
-                _ability.isValidIdentity(params) &&
-                (!_ability.condition || checkCondition(params, _ability.condition))
-            );
+        if (!abilities) {
+            return;
+        }
 
-            if (ability) {
-                return ability.resolveAbility({
-                    ...params,
-                    card: selectedTarget,
-                });
+        const whenRevealedAbilities = abilities.filter(ability =>
+            ability.isWhenRevealed &&
+                ability.isValidIdentity(params) &&
+                (!ability.condition || checkCondition(params, ability.condition))
+        );
+
+        for (const ability of whenRevealedAbilities) {
+            await ability.resolveAbility({
+                ...params,
+                card: selectedTarget,
+            });
+
+            if (ability.resolved) {
+                await this.trigger(
+                    PRIORITY_CONSTANT,
+                    [TRIGGER_ENCOUNTER_ABILITY_RESOLVED],
+                    {
+                        ...params,
+                        effect: ability.effect || ability,
+                        card: selectedTarget,
+                        revealedAbility: ability,
+                    }
+                );
             }
         }
     }
@@ -175,9 +193,27 @@ export class RevealEncounterEffect extends Effect {
 
             await selectedTarget.discard();
 
-            if (!preventSurge) {
-                return await this.applySurge(params);
+            if (selectedTarget.isEncounterCard && !selectedTarget.isVillain) {
+                const encounterPlayer = player || this.player;
+                if (!encounterPlayer) {
+                    throw new Error(
+                        'A player is required to receive a facedown encounter card.'
+                    );
+                }
+
+                const dealEncounterEffect = new DealEncounterEffect({
+                    match: this.match,
+                    selectedTarget: encounterPlayer,
+                });
+                await dealEncounterEffect.runEffect({
+                    ...params,
+                    player: encounterPlayer,
+                });
+            } else if (!preventSurge) {
+                await this.applySurge(params);
             }
+
+            return;
         }
 
         const getSurgeEffect = new GetSurgeEffect({

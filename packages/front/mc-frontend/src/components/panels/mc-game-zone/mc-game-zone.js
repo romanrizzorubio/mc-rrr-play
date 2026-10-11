@@ -78,7 +78,7 @@ export class McGameZone extends LitElement {
                 show-generic
                 .showLife="${showLife}"
                 .showThreat="${showThreat}"
-                .dimUnplayable="${true}"
+                .highlightPlayable="${true}"
                 show-exhausted
                 @card-list-select="${this.handleSelect}"
                 @card-list-menu-click="${this.handleMenuClick}"

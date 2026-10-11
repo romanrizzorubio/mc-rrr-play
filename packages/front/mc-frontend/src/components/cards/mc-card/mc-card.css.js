@@ -42,9 +42,14 @@ export default css`
     width: var(--card-size);
   }
 
-  :host(.disabled) .card-face > mc-card-image,
-  :host(.unplayable) .card-face > mc-card-image {
+  :host(.disabled) .card-face > mc-card-image {
     filter: brightness(var(--disabled-card-brightness, 0.35));
+  }
+
+  :host(.playable) .card-face > mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
+      drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
   }
   
   .cards-facedown {

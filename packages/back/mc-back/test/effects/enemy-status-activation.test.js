@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {DIALOG_ACTIVATE} from 'mc-shared';
+import {
+    DIALOG_ACTIVATE,
+    TARGET_REVEALED_ABILITY,
+} from 'mc-shared';
+import standard from '../../../mc-data/seed/catalog/sets/standard.js';
 import {Attack} from '../../src/activations/attack.js';
 import {Scheme} from '../../src/activations/scheme.js';
 import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {EnemySchemeEffect} from '../../src/effects/enemy-scheme-effect.js';
+import {ResolveAbilityEffect} from '../../src/effects/resolve-ability-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 function createCharacter() {
     return {
@@ -109,3 +115,116 @@ test('confused enemy scheme shows why it was skipped before consuming confusion'
     assert.equal(await activation, false);
     assert.equal(character.isConfused, false);
 });
+
+test('resolving Mover ficha again uses only the second scheme activation boost', async () => {
+    const resolvedBoosts = [];
+    const discardedBoosts = [];
+    const boosts = [
+        createBoostCard('Primer aumento', 2, resolvedBoosts, discardedBoosts),
+        createBoostCard('Segundo aumento', 3, resolvedBoosts, discardedBoosts),
+    ];
+    const placedThreat = [];
+    const dialogs = [];
+    let drawnBoosts = 0;
+    let enemySelections = 0;
+    const player = {isPlayer: true, name: 'Jugador'};
+    const match = {
+        amplificationIcons: 0,
+        skipBoostDealtNotification: true,
+        triggerCards: {},
+        activationsFactory: {
+            createActivation: ({effect}) => new Scheme({effect}),
+        },
+        async drawEncounterCards() {
+            return [boosts[drawnBoosts++]];
+        },
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+
+            return {};
+        },
+    };
+    const factory = new CardsFactory({match});
+    match.effectsFactory = factory.abilitiesFactory.effectsFactory;
+
+    const treacheryConfig = standard.config.cards.find(({card}) =>
+        card.params.name === 'Mover ficha').card;
+    const treachery = factory.createGameCard({
+        card: factory.createCard(treacheryConfig),
+        owner: player,
+    });
+    const ability = treachery.abilities[0];
+    const enemy = {
+        isVillain: true,
+        name: 'Villano',
+        scheme: 2,
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const mainScheme = {
+        isMainScheme: true,
+        threat: 0,
+        value: 100,
+        placeThreat(threat) {
+            placedThreat.push(threat);
+            this.threat += threat;
+        },
+        refresh() {},
+        toObj() {
+            return {name: 'Plan principal'};
+        },
+    };
+    const effect = ability.effect;
+    effect.selectedTarget = mainScheme;
+    effect.validTarget.getValidTarget = () => [mainScheme];
+    effect.selectTarget = async () => mainScheme;
+    effect.selectEnemy = async () => {
+        enemySelections++;
+        effect.enemy = enemy;
+    };
+
+    await ability.resolveAbility({
+        card: treachery,
+        player,
+        preselectedTarget: true,
+    });
+    const resolveAgain = new ResolveAbilityEffect({
+        match,
+        target: TARGET_REVEALED_ABILITY,
+    });
+    await resolveAgain.execute({
+        card: treachery,
+        player,
+        revealedAbility: ability,
+    });
+
+    assert.equal(drawnBoosts, 2);
+    assert.equal(enemySelections, 2);
+    assert.deepEqual(resolvedBoosts, ['Primer aumento', 'Segundo aumento']);
+    assert.deepEqual(discardedBoosts, ['Primer aumento', 'Segundo aumento']);
+    assert.deepEqual(placedThreat, [4, 5]);
+    assert.equal(mainScheme.threat, 9);
+    assert.equal(
+        dialogs.filter(({data}) => data?.isBoost).length,
+        2
+    );
+});
+
+function createBoostCard(name, boost, resolvedBoosts, discardedBoosts) {
+    return {
+        boost,
+        boostAbility: {
+            async resolveAbility() {
+                resolvedBoosts.push(name);
+            },
+        },
+        isInPlay: false,
+        async discard() {
+            discardedBoosts.push(name);
+        },
+        toObj() {
+            return {name, boost};
+        },
+    };
+}

@@ -17,10 +17,6 @@ export default css`
     text-align: center;
   }
 
-  .unplayable {
-    --disabled-card-brightness: 0.5;
-  }
-
   mc-card.disabled {
     pointer-events: none;
   }

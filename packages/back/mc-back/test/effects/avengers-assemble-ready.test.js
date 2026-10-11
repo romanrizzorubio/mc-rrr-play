@@ -50,8 +50,12 @@ test('Avengers Assemble readies each exhausted Avenger the player controls', asy
         traits: [],
     });
     const player = new Player({name: 'Player', superhero});
-    player.gameZone = {cards: [avengerAlly, readyAvenger, nonAvenger]};
     const match = {triggerCards: {}};
+    superhero.card.match = match;
+    player.gameZone = {cards: [avengerAlly, readyAvenger, nonAvenger]};
+    [avengerAlly, readyAvenger, nonAvenger].forEach(card => {
+        card.owner = player;
+    });
 
     superhero.exhaust();
     avengerAlly.exhaust();

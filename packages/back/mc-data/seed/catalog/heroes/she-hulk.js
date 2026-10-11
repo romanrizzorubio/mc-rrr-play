@@ -44,7 +44,7 @@ import {
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_THREAT,
     EFFECT_RETURN_HAND,
-    EFFECT_SELECT_DISCARD_TO_CARD,
+    EFFECT_SELECT_DISCARD_TO_FIND_CARD,
     EFFECT_SIMULTANEOUS,
     EFFECT_SPEND,
     EFFECT_STUN,
@@ -348,7 +348,7 @@ export default {
                                         LABEL_THWART
                                     ],
                                     'arrow': {
-                                        'type': EFFECT_SELECT_DISCARD_TO_CARD,
+                                        'type': EFFECT_SELECT_DISCARD_TO_FIND_CARD,
                                         'params': {
                                             'target': TARGET_PLAYER,
                                             'count': 5

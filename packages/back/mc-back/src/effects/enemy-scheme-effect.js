@@ -12,6 +12,11 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         this.preventThreat = 0;
         this.threatPlaced = 0;
     }
+    resetForResolution() {
+        super.resetForResolution();
+        this.preventThreat = 0;
+        this.threatPlaced = 0;
+    }
     getTargetDialog() {
         const {selectedTarget} = this;
 

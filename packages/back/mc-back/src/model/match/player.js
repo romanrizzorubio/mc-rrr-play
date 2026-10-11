@@ -6,7 +6,9 @@ import {
     RESOURCE_ANY,
     RESOURCES_X,
     TARGET_CARD,
-    TRIGGER_PLAYER_CAN_THAWRT,
+    TRIGGER_PLAYER_CAN_FLIP,
+    TRIGGER_PLAYER_CAN_READY,
+    TRIGGER_PLAYER_CAN_THWART,
 } from 'mc-shared';
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
@@ -146,6 +148,9 @@ export class Player extends Engine {
     get isAlterEgo() {
         return this.superhero.isAlterEgo;
     }
+    get isSuperhero() {
+        return this.superhero.isSuperhero;
+    }
     get isConfused() {
         return this.superhero.isConfused;
     }
@@ -213,7 +218,7 @@ export class Player extends Engine {
         const restrictions = {thwart: true};
         await this.trigger(
             PRIORITY_CONSTANT,
-            [TRIGGER_PLAYER_CAN_THAWRT],
+            [TRIGGER_PLAYER_CAN_THWART],
             {
                 ...params,
                 player: this,
@@ -223,6 +228,36 @@ export class Player extends Engine {
         );
 
         return restrictions.thwart;
+    }
+    async canReady(params = {}) {
+        const restrictions = {ready: true};
+        await this.trigger(
+            PRIORITY_CONSTANT,
+            [TRIGGER_PLAYER_CAN_READY],
+            {
+                ...params,
+                player: this,
+                effect: restrictions,
+                restrictions,
+            }
+        );
+
+        return restrictions.ready;
+    }
+    async canFlip(params = {}) {
+        const restrictions = {flip: true};
+        await this.trigger(
+            PRIORITY_CONSTANT,
+            [TRIGGER_PLAYER_CAN_FLIP],
+            {
+                ...params,
+                player: this,
+                effect: restrictions,
+                restrictions,
+            }
+        );
+
+        return restrictions.flip;
     }
     confuse() {
         return this.superhero.confuse();
@@ -606,6 +641,7 @@ export class Player extends Engine {
         const {superhero} = this;
         const effectiveTraits = await superhero.getEffectiveTraits();
         const stats = await superhero.getEffectiveStats();
+        const canFlip = await this.canFlip({card: superhero});
         const handSize = await this.getHandSize();
         const abilities = await Promise.all(
             superhero.currentSide.abilities.map(async (ability, index) => {
@@ -653,6 +689,7 @@ export class Player extends Engine {
                 extraTraits,
                 abilities,
                 attached,
+                canFlip,
             },
         };
     }

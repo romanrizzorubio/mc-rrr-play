@@ -6,6 +6,7 @@ import {Calc} from '../../src/engine/calc.js';
 import {DiscardDrawEffect} from '../../src/effects/discard-draw-effect.js';
 import {DiscardFromDeckEffect} from '../../src/effects/discard-from-deck-effect.js';
 import {Deck} from '../../src/model/match/deck.js';
+import {Match} from '../../src/model/match/match.js';
 
 const createCard = (id, resources) => ({
     id,
@@ -80,6 +81,31 @@ test('DiscardFromDeckEffect stops after reshuffling a deck shorter than the requ
         target: 'effects.0.cards',
     }).calculate({effects: [effect]});
     assert.equal(resources, 1);
+});
+
+test('DiscardFromDeckEffect scales [count, true] by the number of players', async () => {
+    for (const numPlayers of [1, 3]) {
+        const cards = Array.from({length: numPlayers + 1}, (_, index) =>
+            createCard(`card-${index}`, []));
+        const encounterDeck = createDeck({cards});
+        const playerDeck = createDeck({cards: []}).deck;
+        const match = new Match({name: 'test'});
+        match.players = Array.from({length: numPlayers}, (_, index) => ({
+            defeated: index === numPlayers - 1,
+        }));
+        const effect = new DiscardFromDeckEffect({
+            count: [1, true],
+            match,
+        });
+        effect.selectedTarget = encounterDeck.deck;
+        effect.openDialog = async () => {};
+
+        await effect.execute({player: {deck: playerDeck}});
+
+        assert.equal(effect.cards.length, numPlayers);
+        assert.equal(encounterDeck.deck.discardPile.length, numPlayers);
+        assert.equal(encounterDeck.deck.cards.length, 1);
+    }
 });
 
 test('DiscardDrawEffect returns a cached match from the reshuffled deck', async () => {

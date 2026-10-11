@@ -1,36 +1,13 @@
-import {
-    DIALOG_SELECT_PLACES,
-    PLACE_ENCOUNTER_DECK_CARDS,
-    PLACE_ENCOUNTER_DISCARD,
-    PLACE_OUTSIDE_NEMESIS,
-} from 'mc-shared';
+import {DIALOG_SELECT_PLACES} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
+import {
+    removeFromPlace,
+    SET_ASIDE_PLACES,
+} from '../utils/search-card-reveal-effect-utils.js';
 
 import {Effect} from './effect.js';
 import {RevealEncounterEffect} from './reveal-encounter-effect.js';
-
-const removeFromPlace = new Map([
-    [
-        PLACE_ENCOUNTER_DECK_CARDS,
-        (effect, cards) => cards.forEach(card =>
-            effect.match.removeCardFromEncountersDeck(card)),
-    ],
-    [
-        PLACE_ENCOUNTER_DISCARD,
-        (effect, cards) => cards.forEach(card =>
-            effect.match.scenario.deck.searchDiscard(card)),
-    ],
-    [
-        PLACE_OUTSIDE_NEMESIS,
-        (effect, cards, player) => cards.forEach(card => {
-            const index = player.superhero.nemesis.indexOf(card);
-            if (index > -1) {
-                player.superhero.nemesis.splice(index, 1);
-            }
-        }),
-    ],
-]);
 
 export class SearchCardAndRevealEffect extends Effect {
     constructor({
@@ -45,6 +22,8 @@ export class SearchCardAndRevealEffect extends Effect {
         this.revealAll = revealAll;
 
         this.cards = [];
+        this.hasEnteredGame = false;
+        this.hasResolvedCard = false;
     }
     checkCondition(card, _player) {
         const {condition} = this;
@@ -72,36 +51,40 @@ export class SearchCardAndRevealEffect extends Effect {
         });
     }
     isFullResolved() {
-        return this.hasEnterGame;
+        return this.hasResolvedCard;
     }
-    reveal(card, params) {
+    async reveal(card, params, place) {
         const revealEncounterEffect = new RevealEncounterEffect({
             selectedTarget: card,
             match: this.match,
         });
 
-        this.hasEnterGame = true;
-        return revealEncounterEffect.runEffect({
+        await revealEncounterEffect.runEffect({
             ...params,
             preventSurge: true,
         });
+        this.hasResolvedCard = true;
+        if (SET_ASIDE_PLACES.has(place)) {
+            this.hasEnteredGame = true;
+        }
     }
     async execute(params) {
         const {player} = params;
         const {places, revealAll} = this;
 
-        this.hasEnterGame = false;
+        this.hasEnteredGame = false;
+        this.hasResolvedCard = false;
         if (revealAll) {
             const cards = places.reduce((ret, place) => {
                 const searched = this.search(place, player);
 
                 this.removeRevealed(place, searched, player);
 
-                return ret.concat(searched);
+                return ret.concat(searched.map(card => ({card, place})));
             }, []);
 
-            await this.promisesSequential(cards, async card => {
-                await this.reveal(card, params);
+            await this.promisesSequential(cards, async ({card, place}) => {
+                await this.reveal(card, params, place);
             });
 
         } else {
@@ -140,7 +123,7 @@ export class SearchCardAndRevealEffect extends Effect {
                 }
 
                 this.removeRevealed(place, [card], player);
-                await this.reveal(card, params);
+                await this.reveal(card, params, place);
             }
         }
     }

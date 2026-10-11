@@ -44,6 +44,9 @@ En orden de jugador, cada jugador toma su turno.
 4.  **Mostrar cartas de encuentro**: En orden, cada jugador muestra y resuelve su(s) carta(s).
 5.  **Pasar el marcador**: El marcador de jugador inicial pasa a la izquierda.
 
+### Cantidades por jugador
+Cuando una carta indica una cantidad "por jugador", multiplícala por el número de jugadores de la partida. En los datos de cartas, el patrón `[N, true]` expresa que el valor base `N` se aplica por jugador; por ejemplo, `startingThreat: [2, true]` o el `count` de `EFFECT_DISCARD_FROM_DECK`. Los jugadores derrotados siguen formando parte del recuento de jugadores de la partida.
+
 ---
 
 ## 3. Gestión de Combate y Activaciones

@@ -3,7 +3,6 @@ import {
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
     CARD_TYPE_TREACHERY,
-    CHARACTER_ALL_ENGAGED_MINIONS,
     CHARACTER_VILLAIN,
     EFFECT_CHAINED,
     EFFECT_DISCARD_GAME,
@@ -16,7 +15,6 @@ import {
     EFFECT_PLACE_THREAT,
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
-    EFFECT_SEVERAL_ATTACKS,
     EFFECT_SURGE,
     PLACE_OUTSIDE_NEMESIS,
     PLACE_ENCOUNTER_DECK,
@@ -31,6 +29,8 @@ import {
     TARGET_YOU
 } from 'mc-shared';
 
+import {gangUp} from '../encounters/treacheries.js';
+
 export default {
     '_id': 'standard',
     'config': {
@@ -42,7 +42,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Advance',
+                        'name': 'Mover ficha',
                         'set': 'standard',
                         'image': 'sets/standard/standard1.webp',
                         'boost': 0,
@@ -68,7 +68,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Assault',
+                        'name': 'Agresión',
                         'set': 'standard',
                         'image': 'sets/standard/standard3.webp',
                         'boost': 0,
@@ -103,7 +103,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Caught Off Guard',
+                        'name': 'Con la guardia baja',
                         'set': 'standard',
                         'image': 'sets/standard/standard5.webp',
                         'boost': 1,
@@ -132,61 +132,14 @@ export default {
             },
             {
                 'count': 1,
-                'card': {
-                    'type': CARD_TYPE_TREACHERY,
-                    'params': {
-                        'name': 'Gang-Up',
-                        'set': 'standard',
-                        'image': 'sets/standard/standard6.webp',
-                        'boost': 1,
-                        'abilities': [
-                            {
-                                'type': ABILITY_WHEN_REVEALED_ALTEREGO,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_SURGE,
-                                        'params': {}
-                                    }
-                                }
-                            },
-                            {
-                                'type': ABILITY_WHEN_REVEALED_HERO,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_ENEMY_ATTACK,
-                                                    'params': {
-                                                        'enemyType': CHARACTER_VILLAIN,
-                                                        'target': TARGET_YOU
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_SEVERAL_ATTACKS,
-                                                    'params': {
-                                                        'enemiesType': [
-                                                            CHARACTER_ALL_ENGAGED_MINIONS
-                                                        ],
-                                                        'target': TARGET_YOU
-                                                    }
-                                                }
-                                            ],
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': gangUp
             },
             {
                 'count': 1,
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Shadow of the Past',
+                        'name': 'Una sombra del pasado',
                         'set': 'standard',
                         'image': 'sets/standard/standard7.webp',
                         'boost': 2,
@@ -238,7 +191,7 @@ export default {
                                                     'type': EFFECT_DO_IF,
                                                     'params': {
                                                         'condition': {
-                                                            'effects.0.hasEnterGame': false
+                                                            'effects.0.hasEnteredGame': false
                                                         },
                                                         'target': TARGET_EFFECT,
                                                         'effect': {
@@ -262,7 +215,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Exhaustion',
+                        'name': 'Agotamiento',
                         'set': 'expert',
                         'image': 'sets/expert/expert1.webp',
                         'boost': 2,
@@ -290,7 +243,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Masterplan',
+                        'name': 'Plan Maestro',
                         'set': 'expert',
                         'image': 'sets/expert/expert2.webp',
                         'boost': 2,
@@ -325,7 +278,7 @@ export default {
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {
-                        'name': 'Under Fire',
+                        'name': 'Bajo fuego intenso',
                         'set': 'expert',
                         'image': 'sets/expert/expert3.webp',
                         'boost': 3,

@@ -17,6 +17,14 @@ export class AssignDamageEffect extends Effect {
     async execute(params) {
         const {selectedTarget} = this;
         const {player} = params;
+        const damage = this.paramsCalc ?
+            await this.calculate(params) :
+            this.damage;
+        if (damage <= 0) {
+            return;
+        }
+
+        this.damage = damage;
         const cardStats = await Promise.all(selectedTarget.map(async card => ({
             card,
             stats: await card.getEffectiveStats(),

@@ -13,6 +13,7 @@ export class EnemyActivationEffect extends Effect {
         super(arguments[0]);
 
         this.enemy = enemy;
+        this.configuredEnemy = enemy;
         this.enemyType = enemyType;
 
         this.boostCards = [];
@@ -97,6 +98,14 @@ export class EnemyActivationEffect extends Effect {
 
         return `${character.name} se activa con ${target.name}`;
     }
+    resetForResolution() {
+        this.enemy = this.configuredEnemy;
+        this.boostCards = [];
+        this.canceled = false;
+        this._activation = undefined;
+        this.delayedEffects = [];
+        this.lastingEffects = [];
+    }
     showActivationSkippedDialog(statusType, statusMessage) {
         return this.openDialog({
             dialogType: DIALOG_ACTIVATE,
@@ -108,6 +117,7 @@ export class EnemyActivationEffect extends Effect {
         });
     }
     async prepare(params) {
+        this.resetForResolution();
         await super.prepare(params);
 
         const {enemy} = this;

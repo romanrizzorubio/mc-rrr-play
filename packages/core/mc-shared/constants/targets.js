@@ -74,6 +74,7 @@ export const TARGET_PLAYER = 'player';
 export const TARGET_PLAYER_LOWEST_HERO_LIFE = 'player-lowest-hero-life';
 export const TARGET_PLAYER_DISCARD = 'player-discard';
 export const TARGET_RANDOM = 'random';
+export const TARGET_REVEALED_ABILITY = 'revealedAbility';
 export const TARGET_ROUND = TIME_ROUND;
 export const TARGET_SCENARIO = 'scenario';
 export const TARGET_SCHEME = 'scheme';

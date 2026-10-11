@@ -28,7 +28,7 @@ import {Effect} from '../../src/effects/effect.js';
 import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {SelectDiscardCardEffect} from '../../src/effects/select-discard-card-effect.js';
-import {SelectDiscardToCardEffect} from '../../src/effects/select-discard-to-card-effect.js';
+import {SelectDiscardToFindCardEffect} from '../../src/effects/select-discard-to-find-card-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
 import {SpendEffect} from '../../src/effects/spend-effect.js';
 import {Engine} from '../../src/engine/engine.js';
@@ -266,7 +266,7 @@ test('stages discard selections and reserves those cards for the remaining costs
     };
     const cost = new ChainedEffect({
         effects: [
-            new SelectDiscardToCardEffect({
+            new SelectDiscardToFindCardEffect({
                 count: 1,
                 match,
                 selectedTarget: player,

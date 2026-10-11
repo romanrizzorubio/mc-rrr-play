@@ -81,6 +81,7 @@ import {
     EFFECT_REMOVE_COUNTER,
     EFFECT_REMOVE_TRAIT,
     EFFECT_REMOVE_USE,
+    EFFECT_RESOLVE_ABILITY,
     EFFECT_REMOVE_THREAT,
     EFFECT_REQUIRE_DEFENDER,
     EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
@@ -92,7 +93,7 @@ import {
     EFFECT_SIMULTANEOUS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
-    EFFECT_SELECT_DISCARD_TO_CARD,
+    EFFECT_SELECT_DISCARD_TO_FIND_CARD,
     EFFECT_SELECT_FROM_TOP_DECK,
     EFFECT_SET_LIFE,
     EFFECT_SEVERAL_ATTACKS,
@@ -189,6 +190,7 @@ import {RemoveTraitEffect} from '../../effects/remove-trait-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
 import {RequireDefenderEffect} from '../../effects/require-defender-effect.js';
 import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selected-special-abilities-effect.js';
+import {ResolveAbilityEffect} from '../../effects/resolve-ability-effect.js';
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
 import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
@@ -207,7 +209,7 @@ import {StunEffect} from '../../effects/stun-effect.js';
 import {SurgeEffect} from '../../effects/surge-effect.js';
 import {TakeDamageEffect} from '../../effects/take-damage-effect.js';
 import {ToughEffect} from '../../effects/tough-effect.js';
-import {SelectDiscardToCardEffect} from '../../effects/select-discard-to-card-effect.js';
+import {SelectDiscardToFindCardEffect} from '../../effects/select-discard-to-find-card-effect.js';
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
@@ -283,6 +285,7 @@ export const EFFECT_MAP = {
     [EFFECT_RANDOM_CARD]: RandomCardEffect,
     [EFFECT_READY]: ReadyEffect,
     [EFFECT_RESOLVE_SPECIAL_ABILITY]: ResolveSpecialAbilityEffect,
+    [EFFECT_RESOLVE_ABILITY]: ResolveAbilityEffect,
     [EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES]: ResolveSelectedSpecialAbilitiesEffect,
     [EFFECT_REMOVE_CARD]: RemoveCardEffect,
     [EFFECT_RETURN_HAND]: ReturnHandEffect,
@@ -305,7 +308,7 @@ export const EFFECT_MAP = {
     [EFFECT_GENERATE_RESOURCES_FROM_CARD]: GenerateResourcesFromCardEffect,
     [EFFECT_SEARCH_CARD_REVEAL]: SearchCardAndRevealEffect,
     [EFFECT_SELECT_DISCARD_CARD]: SelectDiscardCardEffect,
-    [EFFECT_SELECT_DISCARD_TO_CARD]: SelectDiscardToCardEffect,
+    [EFFECT_SELECT_DISCARD_TO_FIND_CARD]: SelectDiscardToFindCardEffect,
     [EFFECT_SELECT_FROM_TOP_DECK]: SelectFromTopDeckEffect,
     [EFFECT_SEVERAL_ATTACKS]: SeveralAttacksEffect,
     [EFFECT_SPEND]: SpendEffect,

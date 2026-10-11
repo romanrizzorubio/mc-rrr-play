@@ -16,6 +16,7 @@ import {
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_ENCOUNTER_REVEAL,
+    TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
     TRIGGER_ENGAGE_HERO,
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
@@ -25,7 +26,9 @@ import {
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLACE_THREAT,
     TRIGGER_PLAY_CARD,
-    TRIGGER_PLAYER_CAN_THAWRT,
+    TRIGGER_PLAYER_CAN_THWART,
+    TRIGGER_PLAYER_CAN_READY,
+    TRIGGER_PLAYER_CAN_FLIP,
     TRIGGER_PLAYER_TURN_START,
     TRIGGER_ROUND_ENDS,
     TRIGGER_THIS_ATTACK,
@@ -67,6 +70,9 @@ import {ConditionGetDefenseTrigger} from '../../triggers/condition-get-defense-t
 import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-trigger.js';
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
 import {EncounterRevealTrigger} from '../../triggers/encounter-reveal-trigger.js';
+import {
+    EncounterAbilityResolvedTrigger
+} from '../../triggers/encounter-ability-resolved-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
@@ -180,9 +186,12 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
-    [TRIGGER_PLAYER_CAN_THAWRT]: Trigger,
+    [TRIGGER_PLAYER_CAN_THWART]: Trigger,
+    [TRIGGER_PLAYER_CAN_READY]: Trigger,
+    [TRIGGER_PLAYER_CAN_FLIP]: Trigger,
     [TRIGGER_PLAYER_TURN_START]: PlayerTurnStartTrigger,
     [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,
+    [TRIGGER_ENCOUNTER_ABILITY_RESOLVED]: EncounterAbilityResolvedTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
     [TRIGGER_FACEDOWN_CARD]: FacedownCardTrigger,

@@ -25,7 +25,7 @@ export class HandComponent extends LitElement {
             showThreat: {type: Boolean, attribute: 'show-threat'},
             showGeneric: {type: Boolean, attribute: 'show-generic'},
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
-            dimUnplayable: {type: Boolean, attribute: 'dim-unplayable'},
+            highlightPlayable: {type: Boolean, attribute: 'highlight-playable'},
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
         };
     }
@@ -44,7 +44,7 @@ export class HandComponent extends LitElement {
         this.showThreat = false;
         this.showGeneric = false;
         this.showExhausted = false;
-        this.dimUnplayable = false;
+        this.highlightPlayable = false;
         this.rotatePlanCards = false;
     }
     getMenuOptions(card) {
@@ -133,7 +133,7 @@ export class HandComponent extends LitElement {
             showDamage,
             showThreat,
             showGeneric,
-            dimUnplayable,
+            highlightPlayable,
             rotatePlanCards,
         } = this;
         const {
@@ -172,8 +172,12 @@ export class HandComponent extends LitElement {
         if (disabledCards.includes(index)) {
             classes.push('disabled');
         }
-        if (dimUnplayable && card.playable === false) {
-            classes.push('unplayable');
+        if (
+            highlightPlayable &&
+            card.playable === true &&
+            !disabledCards.includes(index)
+        ) {
+            classes.push('playable');
         }
 
         return html`

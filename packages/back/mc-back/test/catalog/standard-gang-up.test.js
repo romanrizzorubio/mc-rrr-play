@@ -16,9 +16,9 @@ import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {SeveralAttacksEffect} from '../../src/effects/several-attacks-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
-test('Gang-Up activates the villain before the engaged minions', async () => {
+test('Todos a una activates the villain before the engaged minions', async () => {
     const entry = standard.config.cards.find(({card}) =>
-        card.params.name === 'Gang-Up');
+        card.params.name === 'Todos a una');
     assert.ok(entry);
 
     const cardConfig = entry.card;

@@ -2,8 +2,14 @@
 
 Consulta esta guía al cambiar componentes de cartas, descartes o diálogos que las muestran.
 
+## Texto con iconos
+
+- Para renderizar texto de interfaz que incluya códigos de icono entre corchetes, usa `renderTextWithIcons` de `mc-frontend/src/utils/render-text-with-icons.js`. Convierte los códigos compatibles con `mc-icon` en iconos y conserva literalmente los códigos desconocidos.
+
 ## Orientación y composición
 
+- En listas que muestran la jugabilidad, resalta las cartas con `playable === true` con un halo amarillo difuminado alrededor de la imagen solamente; no reduzcas el brillo de las cartas no jugables. Conserva el tratamiento de deshabilitado temporal para acciones pendientes.
+- Muestra junto al superhéroe los accesorios vinculados a él; las mejoras vinculadas ya se muestran con el resto de las mejoras y no deben duplicarse.
 - Calcula como cero las estadísticas no impresas indicadas por `unprintedStats`, pero muéstralas con una estrella compacta de la fuente Marvel Champions mientras su valor efectivo siga siendo cero. Centra los valores en indicadores compactos y alinea verticalmente la estrella.
 - Muestra las cartas de plan en horizontal en todos los modales.
 - Al mostrar una carta de plan en un descarte, rota su imagen 90 grados hacia la izquierda.

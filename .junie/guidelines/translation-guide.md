@@ -194,7 +194,7 @@ Al trabajar con cartas de encuentro (obligaciones, planes secundarios, esbirros 
 - **[u] Nombre**: Nombre de la carta (con `[u]` si es única).
 - **Rasgos**: Rasgos separados por puntos.
 - **Atributos de esbirro**: PLA (Planificación), ATQ (Ataque), Vida.
-- **Atributos de plan secundario**: Amenaza inicial (usar `startingThreat: [X, true]` para indicar amenaza "por jugador" `[v]`), Iconos en el objeto `icons` (ej: `icons: {hazard: 1}`).
+- **Atributos de plan secundario**: Amenaza inicial (usar `startingThreat: [X, true]` para indicar amenaza "por jugador" `[v]`), Iconos en el objeto `icons` (ej: `icons: {hazard: 1}`). En `EFFECT_DISCARD_FROM_DECK`, representar "descarta X cartas por jugador" con `count: [X, true]`; no calcular el número de jugadores mediante `paramsCalc`.
 - **Texto de Aumento (Boost)**: Valor numérico o iconos (estrellas/recursos).
 - **Capacidades**: "Cuando se muestre esta carta" (When Revealed), "Cuando se derrote esta carta" (When Defeated), Respuesta obligada, etc.
 

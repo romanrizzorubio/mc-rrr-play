@@ -73,7 +73,7 @@ export class McHand extends LitElement {
                 <mc-card-list
                     .cards="${cards}"
                     .disabledCards="${disabledCards}"
-                    .dimUnplayable="${true}"
+                    .highlightPlayable="${true}"
                     @card-list-select="${this.handleSelect}"
                 ></mc-card-list>
             </div>

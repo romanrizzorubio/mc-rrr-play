@@ -20,6 +20,24 @@ export class FlipEffect extends Effect {
 
         this.formTarget = formTarget;
         this.selectedFormTarget = selectedFormTarget;
+        this.blocked = false;
+    }
+    async canFlipTarget(target, params) {
+        if (!target) {
+            return true;
+        }
+
+        const owner = target.owner;
+
+        if (!owner?.isPlayer || typeof owner.canFlip !== 'function') {
+            return true;
+        }
+
+        const card = target.parent?.sides?.includes(target) ?
+            target.parent :
+            target;
+
+        return owner.canFlip({...params, card});
     }
     filterTarget(card) {
         if (super.filterTarget.apply(this, arguments)) {
@@ -56,11 +74,27 @@ export class FlipEffect extends Effect {
         }
     }
 
+    async canRun(params) {
+        if (!await super.canRun(params)) {
+            return false;
+        }
+
+        const targets = (await this.getValidTarget(params)).flat(Infinity);
+
+        return this.promisesSequentialSome(targets, target =>
+            this.canFlipTarget(target, params));
+    }
+
     async execute(params) {
         const {selectedTarget, selectedFormTarget} = this;
         const {sides} = selectedTarget;
         const {own} = params;
         const sideIndex = sides.indexOf(selectedFormTarget);
+
+        this.blocked = !await this.canFlipTarget(selectedTarget, params);
+        if (this.blocked) {
+            return;
+        }
 
         if (own) {
             selectedTarget.flipped = true;
@@ -103,5 +137,8 @@ export class FlipEffect extends Effect {
         await this.trigger(PRIORITY_CONSTANT, TRIGGER_THIS_FLIP, triggerParams);
         await this.trigger(PRIORITY_FORCED_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
         await this.trigger(PRIORITY_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
+    }
+    isResolved() {
+        return !this.blocked;
     }
 }

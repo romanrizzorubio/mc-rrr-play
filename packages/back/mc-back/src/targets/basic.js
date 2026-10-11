@@ -6,6 +6,7 @@ import {
     TARGET_EFFECT_PLAY_CARD,
     TARGET_INITIAL_PLAYER,
     TARGET_PLAYER,
+    TARGET_REVEALED_ABILITY,
     TARGET_ROUND,
     TARGET_SCENARIO,
     TARGET_SOURCE,
@@ -21,6 +22,11 @@ export const basicTargets = {
     [TARGET_EFFECT_PLAY_CARD]: ({playCardEffect}) => [playCardEffect],
     [TARGET_INITIAL_PLAYER]: ({match}) => match.initialPlayer ? [match.initialPlayer] : [],
     [TARGET_PLAYER]: ({player}) => [player],
+    [TARGET_REVEALED_ABILITY]: ({params}) => {
+        const ability = path(params, TARGET_REVEALED_ABILITY);
+
+        return ability ? [ability] : [];
+    },
     [TARGET_ROUND]: ({currentRound}) => [currentRound],
     [TARGET_SCENARIO]: ({match}) => [match.scenario],
     [TARGET_SOURCE]: ({params, source}) => {

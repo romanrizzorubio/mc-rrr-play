@@ -28,11 +28,12 @@ test('Indomitable readies both hero sides so it can defend a later attack', asyn
     const player = new Player({name: 'Player', superhero});
     player.gameZone = {cards: []};
 
+    heroSide.card.match = {triggerCards: {}};
     heroSide.exhaust();
     assert.equal(superhero.exhausted, true);
     assert.equal(alterEgoSide.exhausted, true);
 
-    const match = {triggerCards: {}};
+    const match = heroSide.card.match;
     const readyEffect = new ReadyEffect({...readyConfig.params, match});
     await readyEffect.runEffect({player});
 

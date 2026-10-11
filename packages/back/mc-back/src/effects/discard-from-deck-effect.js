@@ -26,7 +26,7 @@ export class DiscardFromDeckEffect extends Effect {
                 player.deck;
             const discardCount = this.paramsCalc ?
                 await this.calculate({...params, player}) :
-                count;
+                this.calcPerPlayer(count);
             const cards = await deck.discardTopCards(discardCount);
 
             this.cards = this.cards.concat(cards);

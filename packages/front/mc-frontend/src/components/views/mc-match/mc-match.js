@@ -69,6 +69,7 @@ export class MatchComponent extends LitElement {
                 .canEndTurn="${canEndTurn}"
                 .playCardPending="${this.playCardPending}"
                 @superhero-ability="${this.handleAbility.bind(this)}"
+                @attached-card-click="${this.handleAbility.bind(this)}"
                 @game-zone-card-click="${this.handleAbility.bind(this)}"
                 @game-zone-menu-click="${this.handleAbility.bind(this)}"
             ></mc-player>

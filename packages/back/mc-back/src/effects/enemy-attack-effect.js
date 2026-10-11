@@ -32,6 +32,17 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.defenderConditions = [];
         this.modifyDefense = 0;
     }
+    resetForResolution() {
+        super.resetForResolution();
+        this.defender = null;
+        this.defValue = 0;
+        this.defendersByTarget.clear();
+        this.defenseValues.clear();
+        this.originalAttackTarget = undefined;
+        this.defenderConditions = [];
+        this.modifyDefense = 0;
+        this.attacked = undefined;
+    }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
     }

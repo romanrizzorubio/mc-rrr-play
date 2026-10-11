@@ -24,12 +24,14 @@ export class SuperheroCardComponent extends LitElement {
             hitPoints: {type: Number},
             handSize: {type: Number},
             canEndTurn: {type: Boolean},
+            canFlip: {type: Boolean},
             attack: {type: Number},
             thwart: {type: Number},
             defense: {type: Number},
             recovery: {type: Number},
             flipped: {type: Boolean},
             exhausted: {type: Boolean},
+            attached: {type: Array},
             abilities: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
@@ -45,12 +47,14 @@ export class SuperheroCardComponent extends LitElement {
         this.hitPoints = undefined;
         this.handSize = 0;
         this.canEndTurn = false;
+        this.canFlip = false;
         this.attack = undefined;
         this.thwart = undefined;
         this.defense = undefined;
         this.recovery = undefined;
         this.flipped = false;
         this.exhausted = false;
+        this.attached = [];
         this.abilities = [];
         this.extraTraits = [];
         this.extraKeywords = [];
@@ -68,7 +72,7 @@ export class SuperheroCardComponent extends LitElement {
         options.unshift({
             id: MENU_OPTION_FLIP,
             text: 'Cambiar de identidad',
-            disable: this.flipped
+            disable: this.flipped || !this.canFlip
         });
 
         if (this.canEndTurn) {
@@ -118,6 +122,7 @@ export class SuperheroCardComponent extends LitElement {
             recovery,
             exhausted,
             statusCards,
+            attached,
             extraTraits,
             extraKeywords,
         } = this;
@@ -130,6 +135,7 @@ export class SuperheroCardComponent extends LitElement {
                     .hitPoints="${hitPoints}"
                     .statusCards="${statusCards}"
                     .exhausted="${exhausted}"
+                    .attached="${attached}"
                     .menuOptions="${this.menuOptions}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"

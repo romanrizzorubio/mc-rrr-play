@@ -28,6 +28,9 @@ function createPlayer(match, name, superheroName = 'Capitana Marvel') {
         async getHitPoints() {
             return 12;
         },
+        async canFlip() {
+            return true;
+        },
         toObj() {
             return {
                 superhero: {

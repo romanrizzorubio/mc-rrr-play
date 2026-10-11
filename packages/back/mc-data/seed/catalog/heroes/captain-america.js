@@ -102,7 +102,7 @@ import {
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_INSTANT,
-    TRIGGER_PLAYER_CAN_THAWRT,
+    TRIGGER_PLAYER_CAN_THWART,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ENTER_PLAY,
 } from 'mc-shared';
@@ -929,7 +929,7 @@ export default {
                                 'type': ABILITY_CONSTANT,
                                 'params': {
                                     'hideDialog': true,
-                                    'trigger': TRIGGER_PLAYER_CAN_THAWRT,
+                                    'trigger': TRIGGER_PLAYER_CAN_THWART,
                                     'effect': {
                                         'type': EFFECT_CANNOT,
                                         'params': {

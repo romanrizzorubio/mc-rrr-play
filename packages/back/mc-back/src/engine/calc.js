@@ -1,5 +1,6 @@
 import {
     CALC_TRAITS_COUNT,
+    CALC_BOOST_ICONS,
     CALC_RESOURCES,
     CALC_MULTIPLY_2,
     CALC_HALF_ROUNDED_DOWN,
@@ -15,6 +16,13 @@ RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-sha
 import { path} from './utils.js';
 
 const CALCULATION_MAP = {
+    [CALC_BOOST_ICONS]: source => {
+        if (!Array.isArray(source)) {
+            throw new Error('CALC_BOOST_ICONS requiere que el objetivo resuelva a una lista.');
+        }
+
+        return source.reduce((sum, card) => sum + (card.boost ?? 0), 0);
+    },
     [CALC_COUNT]: (source, {target}) => {
         if (!Array.isArray(source)) {
             throw new Error(`CALC_COUNT requiere que "${target}" resuelva a una lista.`);

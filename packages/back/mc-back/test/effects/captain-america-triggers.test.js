@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {PRIORITY_CONSTANT, TRIGGER_PLAYER_CAN_THAWRT} from 'mc-shared';
+import {PRIORITY_CONSTANT, TRIGGER_PLAYER_CAN_THWART} from 'mc-shared';
 import {CannotEffect} from '../../src/effects/cannot-effect.js';
 import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {Player} from '../../src/model/match/player.js';
@@ -69,7 +69,7 @@ test('Player.canThwart exposes a parameterized restriction check', async () => {
 
     player.trigger = async (priority, triggers, params) => {
         assert.equal(priority, PRIORITY_CONSTANT);
-        assert.deepEqual(triggers, [TRIGGER_PLAYER_CAN_THAWRT]);
+        assert.deepEqual(triggers, [TRIGGER_PLAYER_CAN_THWART]);
         triggerParams = params;
         if (await trigger.canTrigger(params)) {
             effect.execute(params);

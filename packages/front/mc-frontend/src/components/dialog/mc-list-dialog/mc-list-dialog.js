@@ -5,6 +5,7 @@ import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {isPlanCard} from '../../../misc/utils.js';
+import {renderTextWithIcons} from '../../../utils/render-text-with-icons.js';
 
 export class McListDialog extends McDialog {
     static get is() {
@@ -47,13 +48,17 @@ export class McListDialog extends McDialog {
         };
     }
     renderItem(option, submenu = false) {
+        const text = typeof option.text === 'string' ?
+            renderTextWithIcons(option.text) :
+            option.text;
+
         if (option.triggers) {
             return html`
                 <md-list-item>
                     <div 
                         slot="headline" 
                         class="title-menu"
-                    >${option.text}</div>
+                    >${text}</div>
                 </md-list-item>
                 ${option.triggers.map(trigger => 
                     this.renderItem(trigger, true)
@@ -70,7 +75,7 @@ export class McListDialog extends McDialog {
                     <div 
                         slot="headline"
                         class="${submenu === false ? '' : 'submenu'}"
-                    >${option.text}</div>
+                    >${text}</div>
                 </md-list-item>
             `;
         }

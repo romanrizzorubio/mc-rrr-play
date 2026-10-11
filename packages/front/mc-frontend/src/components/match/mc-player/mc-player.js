@@ -85,11 +85,12 @@ export class McPlayer extends LitElement {
                 handSize,
                 superhero: {
                     name, image, life, hitPoints, attack, thwart, defense, recovery,
-                    flipped, exhausted, statusCards, abilities, extraTraits = [],
-                    extraKeywords = []
+                    flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
+                    extraKeywords = [], attached = []
                 }
             }
         } = this;
+        const attachedCards = attached.filter(card => !card.isUpgrade);
 
         return html`
             <mc-superhero-card
@@ -109,6 +110,8 @@ export class McPlayer extends LitElement {
                 .extraKeywords="${extraKeywords}"
                 .flipped="${flipped}"
                 .statusCards="${statusCards}"
+                .canFlip="${canFlip}"
+                .attached="${attachedCards}"
                 .exhausted="${exhausted}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @superhero-ability="${this.handelSuperheroAbility.bind(this)}"

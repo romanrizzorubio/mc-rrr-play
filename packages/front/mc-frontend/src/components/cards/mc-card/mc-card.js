@@ -269,7 +269,7 @@ export class CardComponent extends LitElement {
                     show-damage
                     show-basic-stats
                     show-menu-abilities
-                    dim-unplayable
+                    highlight-playable
                     size="${this._smallSize}"
                     @card-list-select="${this.handleAttachedCardClick.bind(this)}"
                     @card-list-menu-click="${this.handleAttachedMenuClick.bind(this)}"
