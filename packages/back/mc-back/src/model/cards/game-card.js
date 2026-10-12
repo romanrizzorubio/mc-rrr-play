@@ -27,8 +27,10 @@ export class GameCard extends Engine {
 
         this.faceDown = [];
         this.attached = [];
+        this.tuckedCards = [];
         this.keywordModifiers = [];
         this.isPlaying = false;
+        this.printedTextBlank = false;
 
         this.reset();
 
@@ -467,6 +469,13 @@ export class GameCard extends Engine {
 
         return this.card.resources || [];
     }
+    get set() {
+        if (this.sides.length) {
+            return this.currentSide.set;
+        }
+
+        return this.card.set;
+    }
     get stage() {
         if (this.sides.length) {
             return this.currentSide.stage;
@@ -545,7 +554,12 @@ export class GameCard extends Engine {
         }
 
         const {maximum} = this.card;
-        if (maximum) {
+        if (this.card.controllerTarget &&
+            !this.match.players.some(player =>
+                !player.getPrintedCard(this.card.id))) {
+            return false;
+        }
+        if (maximum && !this.card.controllerTarget) {
             const card = this.owner.getPrintedCard(this.card.id);
             if (card) {
                 return false;
@@ -704,6 +718,7 @@ export class GameCard extends Engine {
         }
 
         await this.removeFaceDown();
+        await this.removeTuckedCards();
         await this.removeAttached();
 
         this.reset();
@@ -723,6 +738,7 @@ export class GameCard extends Engine {
         if (previousName !== this.name && this.isEncounterCard && wasInPlay) {
             if (!this.sameCard) {
                 await this.removeFaceDown();
+                await this.removeTuckedCards();
                 await this.removeAttached();
                 this.reset();
                 if (this.isCharacter) {
@@ -827,12 +843,37 @@ export class GameCard extends Engine {
 
         this.faceDown = [];
     }
+    async removeTuckedCards() {
+        const tuckedCards = this.tuckedCards;
+        const playerDecks = new Set();
+        this.tuckedCards = [];
+
+        await this.promisesSequential(tuckedCards, async card => {
+            if (card.isPlayerCard) {
+                const deck = card.owner?.deck;
+                if (!deck) {
+                    throw new Error('A tucked player card has no owner deck.');
+                }
+
+                await card.init();
+                await deck.discard(card);
+                playerDecks.add(deck);
+            } else if (card.isEncounterCard) {
+                await card.discard();
+            } else {
+                throw new Error(`Cannot discard tucked card "${card.name}".`);
+            }
+        });
+
+        await this.promisesSequential([...playerDecks], deck => deck.refresh());
+    }
     removeCounters(count) {
         this.counters -= count;
     }
     reset() {
         this.damage = 0;
         this.counters = undefined;
+        this.printedTextBlank = false;
         this.setExhausted(false);
         this.attachedTo = undefined;
         this.accelerationTokens = 0;
@@ -896,6 +937,7 @@ export class GameCard extends Engine {
                 ...this.currentSide.toObj(arguments[0]),
                 counters: this.counters,
                 faceDown: this.faceDown.map(faceDown => faceDown.toObj(arguments[0])),
+                tuckedCards: this.tuckedCards.map(card => card.toObj(arguments[0])),
             };
         }
 
@@ -918,6 +960,8 @@ export class GameCard extends Engine {
             isSideScheme,
             isSupport,
             isUpgrade,
+            printedTextBlank,
+            tuckedCards,
         } = this;
 
         return {
@@ -936,8 +980,10 @@ export class GameCard extends Engine {
             isSideScheme,
             isSupport,
             isUpgrade,
+            printedTextBlank,
             attached: attached.map(_attached => _attached.toObj(arguments[0])),
             faceDown: faceDown.map(_facedown => _facedown.toObj(arguments[0])),
+            tuckedCards: tuckedCards.map(_tuckedCard => _tuckedCard.toObj(arguments[0])),
             abilities: abilities.map((ability, index) => ({
                 ...ability.toObj(arguments[0]),
                 index,

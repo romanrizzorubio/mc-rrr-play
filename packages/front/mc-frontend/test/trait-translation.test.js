@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TRAIT_AVENGER} from 'mc-shared';
+import {TRAIT_AVENGER, TRAIT_PERSONA} from 'mc-shared';
 import {translateTrait} from '../src/utils/traits.js';
 
 test('translates the Avenger trait to Spanish', () => {
     assert.equal(translateTrait(TRAIT_AVENGER), 'Vengador');
+});
+
+test('translates the Persona trait to Spanish', () => {
+    assert.equal(translateTrait(TRAIT_PERSONA), 'Individuo');
 });
 
 test('preserves unknown trait labels', () => {

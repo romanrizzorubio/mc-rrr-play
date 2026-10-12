@@ -9,7 +9,9 @@ Consulta esta guía al cambiar componentes de cartas, descartes o diálogos que 
 ## Orientación y composición
 
 - En listas que muestran la jugabilidad, resalta las cartas con `playable === true` con un halo amarillo difuminado alrededor de la imagen solamente; no reduzcas el brillo de las cartas no jugables. Conserva el tratamiento de deshabilitado temporal para acciones pendientes.
+- Resalta la pila de descartes del jugador cuando contenga cartas que puedan jugarse desde ella y resalta esas cartas en el diálogo del descarte. No resaltes las pilas de otros jugadores.
 - Muestra junto al superhéroe los accesorios vinculados a él; las mejoras vinculadas ya se muestran con el resto de las mejoras y no deben duplicarse.
+- Representa las cartas metidas debajo —bocarriba, no como cartas boca abajo— con una pequeña pestaña bajo su anfitrión que muestre el borde inferior de cada carta. Al pulsar el anfitrión, muestra todas en un diálogo; si también tiene acciones, incluye «Ver cartas metidas debajo» en el menú de acciones.
 - Calcula como cero las estadísticas no impresas indicadas por `unprintedStats`, pero muéstralas con una estrella compacta de la fuente Marvel Champions mientras su valor efectivo siga siendo cero. Centra los valores en indicadores compactos y alinea verticalmente la estrella.
 - Muestra las cartas de plan en horizontal en todos los modales.
 - Al mostrar una carta de plan en un descarte, rota su imagen 90 grados hacia la izquierda.

@@ -10,6 +10,7 @@ import {
     EFFECT_LASTING,
     EFFECT_REMOVE_THREAT,
     EFFECT_STUN,
+    PLACE_DISCARD_PILE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_CARD,
@@ -19,6 +20,7 @@ import {
     TIME_ROUND,
     TRAIT_SHIELD,
     TRAIT_SPY,
+    TRAIT_INHUMAN,
     TRIGGER_THIS_ENTER_PLAY,
 } from 'mc-shared';
 
@@ -46,8 +48,8 @@ export default [
                 'subtitle': 'Bobbi Morse',
                 'thwart': 1,
                 'attack': 1,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -88,8 +90,8 @@ export default [
                 'classification': 'basic',
                 'thwart': 2,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -151,6 +153,36 @@ export default [
                         }
                     }
                 ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-mandibulas',
+        'aspect': 'basic',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Mandíbulas',
+                'set': 'basic',
+                'image': 'aspect/basic/allies/05018.png',
+                'traits': [
+                    TRAIT_INHUMAN
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'thwart': 2,
+                'attack': 2,
+                'thwartConsequential': 2,
+                'attackConsequential': 2,
+                'hitPoints': 4,
+                'playFrom': [
+                    PLACE_DISCARD_PILE,
+                ],
             }
         }
     },

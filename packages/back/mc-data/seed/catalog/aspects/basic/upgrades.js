@@ -1,6 +1,7 @@
 import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
+    ABILITY_HERO_RESOURCE,
     ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
@@ -8,6 +9,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_HIT_POINTS,
+    EFFECT_MODIFY_RECOVERY_VALUE,
     EFFECT_REMOVE_COUNTER,
     EFFECT_READY,
     EFFECT_SPEND,
@@ -16,14 +18,19 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ATTACHED,
     TARGET_CARD,
+    TARGET_ANY_PLAYER,
+    TARGET_EFFECT,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_PLAYER,
     TARGET_THIS,
+    TARGET_YOUR_SUPERHERO,
     TRAIT_AVENGER,
     TRAIT_CONDITION,
     TRAIT_TITLE,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CONDITION_GET_TRAITS,
+    TRIGGER_YOUR_HERO_GET_HIT_POINTS,
+    TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
 } from 'mc-shared';
 
 export default [
@@ -182,6 +189,141 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-aguante',
+        'aspect': 'basic',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Aguante',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/05023.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'basic',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_HERO_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_YOUR_SUPERHERO,
+                                    'count': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-reflejos-mejorados',
+        'aspect': 'basic',
+        'order': 31,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Reflejos mejorados',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/05024.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'basic',
+                'keywords': {
+                    'uses': 3
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_ENERGY,
+                            'arrow': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_COUNTER,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                                'count': 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-tomarse-un-respiro',
+        'aspect': 'basic',
+        'order': 32,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Tomarse un respiro',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/05033.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
+                            'effect': {
+                                'type': EFFECT_MODIFY_RECOVERY_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 2
                                 }
                             }
                         }

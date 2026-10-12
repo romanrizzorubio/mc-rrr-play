@@ -260,8 +260,12 @@ export class Match extends Engine {
 
         return player;
     }
-    discardUntil(condition, removeFromDiscard = false) {
-        return this.scenario.discardUntil(condition, removeFromDiscard);
+    discardUntil(condition, removeFromDiscard = false, discardedCards) {
+        return this.scenario.discardUntil(
+            condition,
+            removeFromDiscard,
+            discardedCards
+        );
     }
     drawEncounterCards(count = 1) {
         return this.scenario.drawEncounterCards(count);

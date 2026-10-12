@@ -9,10 +9,11 @@ import {Calc} from '../../engine/calc.js';
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
 import {
-    GetAttackConsequencialEffect
+    GetattackConsequentialEffect
 } from '../../effects/get-attack-consequencial-effect.js';
 import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
 import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
+import {GetRecoveryEffect} from '../../effects/get-recovery-effect.js';
 import {GetTraitsEffect} from '../../effects/get-traits-effect.js';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
@@ -30,6 +31,7 @@ export class CharacterGameCard extends GameCard {
 
         this.modifyHitPoints = 0;
         this.modifyAttack = 0;
+        this.modifyDefense = 0;
         this.modifyThwart = 0;
         this.extraTraits = [];
 
@@ -95,10 +97,10 @@ export class CharacterGameCard extends GameCard {
 
         return attack;
     }
-    get attackConsequencial() {
+    get attackConsequential() {
         const card = this.currentSide?.card ?? this.card;
 
-        return card.attackConsequencial ?? 0;
+        return card.attackConsequential ?? 0;
     }
     get canHeal() {
         return !!this.damage;
@@ -130,6 +132,10 @@ export class CharacterGameCard extends GameCard {
                 card: this,
                 match: this.match,
             });
+        }
+
+        if (Number.isFinite(defense)) {
+            defense += this.modifyDefense;
         }
 
         return defense;
@@ -186,15 +192,15 @@ export class CharacterGameCard extends GameCard {
 
         return getAttackEffect.attack;
     }
-    async getAttackConsequencialValue(params) {
-        const getAttackConsequencialEffect = new GetAttackConsequencialEffect({
+    async getattackConsequentialValue(params) {
+        const getattackConsequentialEffect = new GetattackConsequentialEffect({
             selectedTarget: this,
             match: this.match,
         });
 
-        await getAttackConsequencialEffect.runEffect(params);
+        await getattackConsequentialEffect.runEffect(params);
 
-        return getAttackConsequencialEffect.attackConsequencial;
+        return getattackConsequentialEffect.attackConsequential;
     }
     async getDefenseValue(params) {
         const getDefenseEffect = new GetDefenseEffect({
@@ -215,6 +221,26 @@ export class CharacterGameCard extends GameCard {
         await getThwartEffect.runEffect(params);
 
         return getThwartEffect.thwart;
+    }
+    async getRecoveryValue(params = {}) {
+        const getRecoveryEffect = new GetRecoveryEffect({
+            selectedTarget: this.currentSide,
+            match: this.match,
+        });
+        const player = params.player ||
+            (this.controller?.isPlayer ? this.controller : this.match.initialPlayer);
+
+        if (!player) {
+            throw new Error(`Character ${this.id} has no player for recovery calculation.`);
+        }
+
+        await getRecoveryEffect.runEffect({
+            ...params,
+            card: this,
+            player,
+        });
+
+        return getRecoveryEffect.recovery;
     }
     get isConfused() {
         switch (this.statusAvailable) {
@@ -378,10 +404,10 @@ export class CharacterGameCard extends GameCard {
 
         return thwart;
     }
-    get thwartConsequencial() {
+    get thwartConsequential() {
         const card = this.currentSide?.card ?? this.card;
 
-        return card.thwartConsequencial;
+        return card.thwartConsequential;
     }
     get tough() {
         return this._tough;
@@ -506,6 +532,9 @@ export class CharacterGameCard extends GameCard {
             await this.getDefenseValue(params) :
             this.defense;
         const hitPoints = await this.getHitPoints({player});
+        const recovery = this.isAlterEgo ?
+            await this.getRecoveryValue(params) :
+            this.recovery;
 
         return {
             attack,
@@ -513,6 +542,7 @@ export class CharacterGameCard extends GameCard {
             defense,
             hitPoints,
             life: hitPoints - this.damage,
+            recovery,
         };
     }
     async getEffectiveTraits() {

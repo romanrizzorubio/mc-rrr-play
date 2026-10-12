@@ -18,6 +18,7 @@ import {GetHandSizeEffect} from '../../effects/get-hand-size-effect.js';
 import {PlayCardEffect} from '../../effects/play-card-effect.js';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
+import {findPlayerCardToPlayFrom} from '../../utils/player-card-play-from.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
@@ -317,7 +318,8 @@ export class Player extends Engine {
             return this.superhero.currentSide;
         }
 
-        return this.gameZone.getCard(cardId);
+        return this.gameZone.getCard(cardId) ||
+            this.gameZone.minions.find(minion => minion.id === cardId);
     }
     async getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
         return {
@@ -424,7 +426,12 @@ export class Player extends Engine {
         cardId,
         abilityType,
     }) {
-        const card = this.hand.getCard(cardId);
+        const card = this.hand.getCard(cardId) ||
+            findPlayerCardToPlayFrom(this, cardId);
+
+        if (!card) {
+            return;
+        }
 
         const playCardEffect = new PlayCardEffect({
             card,
@@ -529,7 +536,11 @@ export class Player extends Engine {
         resources,
         cardToPay,
         excludedCardIds = new Set(),
-        {allowPartial = false, showCancel = !allowPartial} = {}
+        {
+            allowPartial = false,
+            showCancel = !allowPartial,
+            differentTypes = false,
+        } = {}
     ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
@@ -539,8 +550,10 @@ export class Player extends Engine {
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel,
+            ...(differentTypes ? {title: 'Paga recursos de tipos distintos'} : {}),
             data: {
                 allowPartial,
+                differentTypes,
                 cost: resources.length,
                 requirement: resources,
                 card: cardToPay ? cardToPay.toObj() : undefined,
@@ -555,6 +568,10 @@ export class Player extends Engine {
 
         if (response) {
             const {paid, resources: paidResources, fullyPaid} = response;
+            if (differentTypes &&
+                new Set(paidResources || []).size < resources.length) {
+                throw new Error('El pago requiere recursos de tipos distintos.');
+            }
 
             return {
                 resources: paidResources,

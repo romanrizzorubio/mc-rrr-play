@@ -14,7 +14,7 @@ export class RecoveryBasicAbility extends BasicAbility {
     async resolveAbility(params) {
         const {card} = this;
 
-        const damage = card.recovery;
+        const damage = await card.getRecoveryValue(params);
 
         return super.resolveAbility({
             ...params,

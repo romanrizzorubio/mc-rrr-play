@@ -4,6 +4,7 @@ import {
 } from 'mc-shared';
 import {Arrow} from '../../abilities/core/arrow.js';
 import {EffectsFactory} from '../effects/effects-factory.js';
+import {findPrePlayConfirmationEffect} from '../../utils/pre-play-confirmation.js';
 import {ABILITY_MAP} from './abilities-map.js';
 
 export class AbilitiesFactory {
@@ -16,8 +17,29 @@ export class AbilitiesFactory {
         return this.cardsFactory.match;
     }
     createAbility(ability = {}) {
-        const {type, params} = this._parseAbility(ability);
+        const {type, params: parsedParams} = this._parseAbility(ability);
+        const {prePlayConfirmation, ...params} = parsedParams;
 
+        if (prePlayConfirmation !== undefined) {
+            if (!params.effect) {
+                throw new TypeError(
+                    'A pre-play confirmation must be configured on an ability effect.'
+                );
+            }
+
+            const confirmationEffect =
+                findPrePlayConfirmationEffect(params.effect);
+            if (!confirmationEffect) {
+                throw new TypeError(
+                    'The ability effect does not support pre-play confirmation.'
+                );
+            }
+
+            confirmationEffect.prePlayConfirmation = {
+                ...prePlayConfirmation,
+                ...confirmationEffect.prePlayConfirmation,
+            };
+        }
         params.match = this.match;
         const AbilityClass = Object.hasOwn(ABILITY_MAP, type) ?
             ABILITY_MAP[type] :

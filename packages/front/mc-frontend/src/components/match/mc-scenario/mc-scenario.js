@@ -42,6 +42,7 @@ export class McScenario extends LitElement {
                 stage,
                 attached,
                 faceDown,
+                tuckedCards,
                 statusCards,
                 extraTraits = [],
                 extraKeywords = [],
@@ -63,6 +64,7 @@ export class McScenario extends LitElement {
                     .statusCards="${statusCards}"
                     .attached="${attached}"
                     .faceDown="${faceDown}"
+                    .tuckedCards="${tuckedCards}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
                 ></mc-villain-card>

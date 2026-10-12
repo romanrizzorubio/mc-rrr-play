@@ -14,6 +14,7 @@ export class DealDamageEffect extends Effect {
 
         this._character = character;
         this.baseDamage = damage;
+        this.damageModifier = 0;
         this.targetCountCalc = params.targetCountCalc;
         this.selectCount = params.selectCount;
 
@@ -106,6 +107,13 @@ export class DealDamageEffect extends Effect {
             } else {
                 this.damage = this.baseDamage ?? params.damage;
             }
+        }
+        if (Array.isArray(this.damage)) {
+            this.damage = this.damage.map(damage => damage + this.damageModifier);
+        } else if (Number.isFinite(this.damage)) {
+            this.damage += this.damageModifier;
+        } else if (this.damageModifier) {
+            throw new TypeError('DealDamageEffect requires a numeric damage value to modify.');
         }
 
         const {isAttack, activation} = this;

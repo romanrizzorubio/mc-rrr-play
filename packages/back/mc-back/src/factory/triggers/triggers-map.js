@@ -6,6 +6,7 @@ import {
     TRIGGER_ATTACHED_TAKES_DAMAGE,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
+    TRIGGER_BOOST_REVEALED,
     TRIGGER_ABILITY_COST,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
@@ -16,6 +17,7 @@ import {
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_ENCOUNTER_REVEAL,
+    TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
     TRIGGER_ENGAGE_HERO,
     TRIGGER_FACEDOWN_CARD,
@@ -51,12 +53,14 @@ import {
     TRIGGER_YOU_BASIC_THWART,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_WOULD_PLACE_THREAT,
+    TRIGGER_YOU_PLAY_CARD,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART,
+    TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
@@ -70,6 +74,7 @@ import {ConditionGetDefenseTrigger} from '../../triggers/condition-get-defense-t
 import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-trigger.js';
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
 import {EncounterRevealTrigger} from '../../triggers/encounter-reveal-trigger.js';
+import {EnemyAttacksYouTrigger} from '../../triggers/enemy-attacks-you-trigger.js';
 import {
     EncounterAbilityResolvedTrigger
 } from '../../triggers/encounter-ability-resolved-trigger.js';
@@ -118,6 +123,7 @@ import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
 import {YouDefeatMinionTrigger} from '../../triggers/you-defeat-minion-trigger.js';
+import {YouPlayCardTrigger} from '../../triggers/you-play-card-trigger.js';
 import {Trigger} from '../../triggers/base/trigger.js';
 import {
     YourHeroAttackDefeatEnemyTrigger
@@ -132,6 +138,9 @@ import {
 } from '../../triggers/your-hero-get-hit-points-trigger.js';
 import {YourHeroGetThwartTrigger} from '../../triggers/your-hero-get-thwart-trigger.js';
 import {
+    YourAlteregoGetRecoveryTrigger
+} from '../../triggers/your-alterego-get-recovery-trigger.js';
+import {
     YourPlayerGetMaxAlliesTrigger
 } from '../../triggers/your-player-get-max-allies-trigger.js';
 
@@ -144,6 +153,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_TAKES_DAMAGE]: AttachedTakesDamageTrigger,
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
+    [TRIGGER_BOOST_REVEALED]: Trigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
@@ -176,8 +186,10 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOUR_HERO_GET_HAND_SIZE]: YourHeroGetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,
     [TRIGGER_YOUR_HERO_GET_THWART]: YourHeroGetThwartTrigger,
+    [TRIGGER_YOUR_ALTEREGO_GET_RECOVERY]: YourAlteregoGetRecoveryTrigger,
     [TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES]: YourPlayerGetMaxAlliesTrigger,
     [TRIGGER_END_PLAY_CARD]: EndPlayCardTrigger,
+    [TRIGGER_ENEMY_ATTACKS_YOU]: EnemyAttacksYouTrigger,
     [TRIGGER_INSTANT]: InstantTrigger,
     [TRIGGER_MINION_ENTER_PLAY]: MinionEnterPlayTrigger,
     [TRIGGER_MAIN_SCHEME_COMPLETED]: MainSchemeCompletedTrigger,
@@ -186,6 +198,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
+    [TRIGGER_YOU_PLAY_CARD]: YouPlayCardTrigger,
     [TRIGGER_PLAYER_CAN_THWART]: Trigger,
     [TRIGGER_PLAYER_CAN_READY]: Trigger,
     [TRIGGER_PLAYER_CAN_FLIP]: Trigger,

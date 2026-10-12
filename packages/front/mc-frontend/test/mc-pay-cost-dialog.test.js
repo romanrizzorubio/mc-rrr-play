@@ -32,6 +32,7 @@ function createDialog(hand, wilds, overrides = {}) {
             RESOURCE_MENTAL,
             RESOURCE_PHYSICAL,
         ],
+        resourcePreferences: [],
         wilds,
         cards: {
             generators: [],
@@ -116,6 +117,60 @@ test('preserves matching specific resources when assigning wilds to other requir
     assert.deepEqual(
         dialog.getAutomaticWilds(dialog.data.cards),
         [RESOURCE_MENTAL]
+    );
+});
+
+test('assigns leftover wild resources to conditional payment bonuses after requirements', () => {
+    const firstWild = {
+        id: 'first-wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const secondWild = {
+        id: 'second-wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const dialog = createDialog([firstWild, secondWild], [], {
+        allowPartial: false,
+        cost: 2,
+        requirement: [RESOURCE_MENTAL],
+        resourcePreferences: [RESOURCE_PHYSICAL],
+    });
+
+    dialog._handlePaySelect({
+        detail: {card: firstWild, type: 'hand'},
+    });
+    dialog._handlePaySelect({
+        detail: {card: secondWild, type: 'hand'},
+    });
+
+    assert.deepEqual(
+        dialog.data.wilds,
+        [RESOURCE_MENTAL, RESOURCE_PHYSICAL]
+    );
+    assert.deepEqual(
+        dialog.resourcesConverted,
+        [RESOURCE_MENTAL, RESOURCE_PHYSICAL]
+    );
+});
+
+test('automatically converts a wild resource to activate a card payment bonus', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: true,
+    };
+    const dialog = createDialog([wildCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [],
+        resourcePreferences: [RESOURCE_PHYSICAL],
+    });
+
+    assert.deepEqual(
+        dialog.getAutomaticWilds(dialog.data.cards),
+        [RESOURCE_PHYSICAL]
     );
 });
 

@@ -1,6 +1,7 @@
 import {
     EFFECT_ADD_ACCELERATION_TOKEN,
     EFFECT_ADD_ADDITIONAL_COST,
+    EFFECT_BLANK_TEXT,
     EFFECT_ADD_KEYWORD,
     EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
@@ -10,6 +11,7 @@ import {
     EFFECT_CANCEL_ATTACK,
     EFFECT_CANCEL_SCHEME,
     EFFECT_CANCEL_ENCOUNTER,
+    EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CHAINED,
     EFFECT_CANNOT,
     EFFECT_CANNOT_TARGET,
@@ -31,6 +33,7 @@ import {
     EFFECT_DISCARD_REVEAL,
     EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF_CARD_GAME,
+    EFFECT_DO_IF_TARGET,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_DAMAGE,
     EFFECT_DO_IF_HAS_PAID,
@@ -57,10 +60,12 @@ import {
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     EFFECT_MODIFY_COST,
+    EFFECT_MODIFY_EFFECT_VALUE,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_MODIFY_HAND_SIZE,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_MAX_ALLIES,
+    EFFECT_MODIFY_RECOVERY_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MOVE_DAMAGE,
@@ -103,11 +108,13 @@ import {
     EFFECT_STUN,
     EFFECT_SURGE,
     EFFECT_TAKE_DAMAGE,
+    EFFECT_TUCK_UNDER,
     EFFECT_TOUGH,
 } from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
 import {AddAdditionalCostEffect} from '../../effects/add-additional-cost-effect.js';
+import {BlankTextEffect} from '../../effects/blank-text-effect.js';
 import {AddKeywordEffect} from '../../effects/add-keyword-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
@@ -115,6 +122,7 @@ import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
 import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
+import {CancelBoostIconsEffect} from '../../effects/cancel-boost-icons-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
 import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
@@ -136,6 +144,7 @@ import {DiscardRandomEffect} from '../../effects/discard-random-effect.js';
 import {DiscardRevealEffect} from '../../effects/discard-reveal-effect.js';
 import {DiscardUntilEffect} from '../../effects/discard-until-effect.js';
 import {DoIfCardGameEffect} from '../../effects/do-if-card-game-effect.js';
+import {DoIfTargetEffect} from '../../effects/do-if-target-effect.js';
 import {DoIfEffect} from '../../effects/do-if-effect.js';
 import {DoIfHasDamageEffect} from '../../effects/do-if-has-damage-effect.js';
 import {DoIfHasPaidEffect} from '../../effects/do-if-has-paid-effect.js';
@@ -161,13 +170,15 @@ import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
 import {
-    ModifyAttackConsequencialEffect
+    ModifyattackConsequentialEffect
 } from '../../effects/modify-attack-consequencial-effect.js';
 import {ModifyCostEffect} from '../../effects/modify-cost-effect.js';
+import {ModifyEffectValueEffect} from '../../effects/modify-effect-value-effect.js';
 import {ModifyDefenseValueEffect} from '../../effects/modify-defense-value-effect.js';
 import {ModifyHandSizeEffect} from '../../effects/modify-hand-size-effect.js';
 import {ModifyHitPointsEffect} from '../../effects/modify-hit-points-effect.js';
 import {ModifyMaxAlliesEffect} from '../../effects/modify-max-allies-effect.js';
+import {ModifyRecoveryEffect} from '../../effects/modify-recovery-effect.js';
 import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
@@ -193,6 +204,7 @@ import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selec
 import {ResolveAbilityEffect} from '../../effects/resolve-ability-effect.js';
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
 import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
+import {TuckUnderEffect} from '../../effects/tuck-under-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
 import {SearchCardsEffect} from '../../effects/search-cards-effect.js';
@@ -214,6 +226,7 @@ import {SelectDiscardToFindCardEffect} from '../../effects/select-discard-to-fin
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
     [EFFECT_ADD_ADDITIONAL_COST]: AddAdditionalCostEffect,
+    [EFFECT_BLANK_TEXT]: BlankTextEffect,
     [EFFECT_ADD_KEYWORD]: AddKeywordEffect,
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
@@ -226,6 +239,7 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ATTACK]: CancelActivationEffect,
     [EFFECT_CANCEL_SCHEME]: CancelActivationEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
+    [EFFECT_CANCEL_BOOST_ICONS]: CancelBoostIconsEffect,
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CANNOT]: CannotEffect,
     [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
@@ -248,6 +262,7 @@ export const EFFECT_MAP = {
     [EFFECT_DISCARD_UNTIL]: DiscardUntilEffect,
     [EFFECT_DO_IF]: DoIfEffect,
     [EFFECT_DO_IF_CARD_GAME]: DoIfCardGameEffect,
+    [EFFECT_DO_IF_TARGET]: DoIfTargetEffect,
     [EFFECT_DO_IF_HAS_DAMAGE]: DoIfHasDamageEffect,
     [EFFECT_DO_IF_HAS_PAID]: DoIfHasPaidEffect,
     [EFFECT_DO_IF_HAS_TRAITS]: DoIfHasTraitsEffect,
@@ -269,9 +284,11 @@ export const EFFECT_MAP = {
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
-    [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyAttackConsequencialEffect,
+    [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyattackConsequentialEffect,
     [EFFECT_MODIFY_MAX_ALLIES]: ModifyMaxAlliesEffect,
+    [EFFECT_MODIFY_RECOVERY_VALUE]: ModifyRecoveryEffect,
     [EFFECT_MODIFY_COST]: ModifyCostEffect,
+    [EFFECT_MODIFY_EFFECT_VALUE]: ModifyEffectValueEffect,
     [EFFECT_MODIFY_DEFENSE_VALUE]: ModifyDefenseValueEffect,
     [EFFECT_MODIFY_HAND_SIZE]: ModifyHandSizeEffect,
     [EFFECT_MODIFY_THWART_VALUE]: ModifyThwartValueEffect,
@@ -316,5 +333,6 @@ export const EFFECT_MAP = {
     [EFFECT_SURGE]: SurgeEffect,
     [EFFECT_STUN]: StunEffect,
     [EFFECT_TAKE_DAMAGE]: TakeDamageEffect,
+    [EFFECT_TUCK_UNDER]: TuckUnderEffect,
     [EFFECT_TOUGH]: ToughEffect,
 };

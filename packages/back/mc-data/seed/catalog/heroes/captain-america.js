@@ -260,8 +260,8 @@ export default {
                         'classification': CLASSIFICATION_HERO,
                         'thwart': 2,
                         'attack': 1,
-                        'thwartConsequencial': 1,
-                        'attackConsequencial': 1,
+                        'thwartConsequential': 1,
+                        'attackConsequential': 1,
                         'hitPoints': 3,
                         'abilities': [
                             {
@@ -433,6 +433,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
+                                            'requiresPrePlayConfirmation': true,
                                             'target': TARGET_YOUR_SUPERHERO
                                         }
                                     }

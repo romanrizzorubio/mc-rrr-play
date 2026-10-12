@@ -9,6 +9,7 @@ import {
     EFFECT_EXHAUST,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PAY_PRINTED_COST,
     EFFECT_PUT_PLAY,
@@ -20,6 +21,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
+    TARGET_HERO,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALL_PLAYERS,
@@ -28,6 +30,7 @@ import {
     TARGET_ROUND,
     TARGET_YOU,
     TIME_PHASE,
+    TIME_ROUND,
     TRAIT_AVENGER,
     TRAIT_TACTIC
 } from 'mc-shared';
@@ -289,6 +292,67 @@ export default [
                                     'paramsCalc': {
                                         'target': 'effect.ability.arrow.cost.selectedTarget',
                                         'formula': CALC_COUNT
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-moral-elevada',
+        'aspect': 'leadership',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Moral elevada',
+                'set': 'leadership',
+                'image': 'aspect/leadership/events/05032.png',
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'leadership',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_LASTING,
+                                'params': {
+                                    'target': TARGET_HERO,
+                                    'until': TIME_ROUND,
+                                    'effect': {
+                                        'type': EFFECT_SIMULTANEOUS,
+                                        'params': {
+                                            'target': TARGET_HERO,
+                                            'effects': [
+                                                {
+                                                    'type': EFFECT_MODIFY_THWART_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_HERO,
+                                                        'count': 1
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_HERO,
+                                                        'count': 1
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_HERO,
+                                                        'count': 1
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     }
                                 }
                             }

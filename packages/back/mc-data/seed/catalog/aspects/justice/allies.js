@@ -37,8 +37,8 @@ export default [
                 'subtitle': 'Matt Murdock',
                 'thwart': 2,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -79,8 +79,8 @@ export default [
                 'classification': 'justice',
                 'thwart': 1,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {

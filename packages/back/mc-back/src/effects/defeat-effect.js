@@ -15,6 +15,10 @@ export class DefeatEffect extends Effect {
 
         this.prevented = false;
     }
+    checkTrigger() {
+        return !this.prevented &&
+            (this.selectedTarget?.isInPlay || this.resolved);
+    }
     getTriggersWould() {
         return super.getTriggersWould()
             .concat([TRIGGER_CHARACTER_WOULD_BE_DEFEATED]);

@@ -3,14 +3,36 @@ import {Effect} from './effect.js';
 export class ReturnHandEffect extends Effect {
     async execute() {
         const {selectedTarget} = this;
-        const player = selectedTarget.controller;
+        const player = selectedTarget.controller || selectedTarget.owner;
+        if (!player?.hand) {
+            throw new TypeError('ReturnHandEffect requires a card with an owner.');
+        }
 
-        await selectedTarget.remove();
+        if (selectedTarget.isInPlay) {
+            await selectedTarget.remove();
+            await player.gameZone.refresh();
+        } else {
+            const deck = selectedTarget.owner?.deck;
+            let removedFromDeck = false;
 
-        player.hand.addCards([selectedTarget]);
+            if (deck?.discardPile.includes(selectedTarget)) {
+                deck.searchDiscard(selectedTarget);
+                removedFromDeck = true;
+            } else if (deck?.cards.includes(selectedTarget)) {
+                deck.removeCardFromDeck(selectedTarget);
+                removedFromDeck = true;
+            }
 
-        await player.gameZone.refresh();
+            if (removedFromDeck) {
+                await deck.refresh();
+            }
+        }
+
+        if (!player.hand.cards.includes(selectedTarget)) {
+            player.hand.addCards([selectedTarget]);
+        }
+
         await player.hand.refresh();
-        selectedTarget.refresh();
+        await selectedTarget.refresh();
     }
 }

@@ -62,8 +62,12 @@ export class Deck extends Engine {
 
         return discarded;
     }
-    async discardUntil(condition, removeFromDiscard = false) {
+    async discardUntil(condition, removeFromDiscard = false, discardedCards) {
         const {cards, discardPile} = this;
+
+        if (discardedCards !== undefined && !Array.isArray(discardedCards)) {
+            throw new TypeError('Deck.discardUntil discardedCards must be an array.');
+        }
 
         let found;
 
@@ -75,11 +79,13 @@ export class Deck extends Engine {
 
                 if (!removeFromDiscard) {
                     discardPile.push(card);
+                    discardedCards?.push(card);
                 }
 
                 break;
             } else {
                 discardPile.push(card);
+                discardedCards?.push(card);
             }
         }
 

@@ -101,6 +101,11 @@ export class Effect extends Engine {
             this.thenEffect.ability = ability;
         }
     }
+    getPaymentResourcePreferences() {
+        return this.thenEffect ?
+            this.thenEffect.getPaymentResourcePreferences() :
+            [];
+    }
     get character() {
         return path(this, 'ability.character');
     }

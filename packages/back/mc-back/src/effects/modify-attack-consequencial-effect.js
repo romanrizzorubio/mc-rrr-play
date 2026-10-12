@@ -1,7 +1,7 @@
-import {GetAttackConsequencialEffect} from './get-attack-consequencial-effect.js';
+import {GetattackConsequentialEffect} from './get-attack-consequencial-effect.js';
 import {Effect} from './effect.js';
 
-export class ModifyAttackConsequencialEffect extends Effect {
+export class ModifyattackConsequentialEffect extends Effect {
     constructor({
         count = 0,
     }) {
@@ -11,16 +11,16 @@ export class ModifyAttackConsequencialEffect extends Effect {
     }
     execute(params) {
         const {selectedTarget} = this;
-        const modifyAttackConsequencial = this.paramsCalc ?
+        const modifyattackConsequential = this.paramsCalc ?
             this.calculate(params) :
             this.count;
 
-        if (!(selectedTarget instanceof GetAttackConsequencialEffect)) {
+        if (!(selectedTarget instanceof GetattackConsequentialEffect)) {
             throw new Error(
-                'ModifyAttackConsequencialEffect requires a GetAttackConsequencialEffect context.'
+                'ModifyattackConsequentialEffect requires a GetattackConsequentialEffect context.'
             );
         }
 
-        selectedTarget.modifyAttackConsequencial += modifyAttackConsequencial;
+        selectedTarget.modifyattackConsequential += modifyattackConsequential;
     }
 }

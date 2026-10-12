@@ -46,7 +46,8 @@ Cada superhéroe en el juego viene con un conjunto de archienemigo asociado. Al 
 - Un conjunto de archienemigo es un subconjunto de un conjunto específico de superhéroe.
 - Las cartas de un conjunto de archienemigo solo pueden usarse junto con un superhéroe si esas cartas comparten un icono de conjunto con ese superhéroe.
 - El "esbirro archienemigo" de un superhéroe es el esbirro que pertenece al conjunto de archienemigo de ese superhéroe.
-    - Si un conjunto de archienemigo tiene múltiples esbirros en él, el "esbirro archienemigo" se designa mediante el texto entre paréntesis impreso en uno o más de esos esbirros.
+    - Si un conjunto contiene un solo esbirro, ese es el esbirro archienemigo.
+    - Si contiene varios, cada esbirro con el texto entre paréntesis que lo identifica como esbirro archienemigo es un esbirro archienemigo. Todos los esbirros así identificados entran en juego; los demás se barajan en el mazo de Encuentros con las cartas restantes del conjunto cuando este se pone en juego.
 - El "plan secundario archienemigo" de un superhéroe es el plan secundario que pertenece al conjunto de archienemigo de ese superhéroe.
 
 **Véase también**: superhéroe, carta específica de superhéroe, en juego y fuera de juego, jugador.

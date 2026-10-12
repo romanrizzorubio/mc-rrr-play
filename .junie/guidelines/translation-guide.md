@@ -34,6 +34,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **remove** | quitar |
 | **take damage** | sufrir daño |
 | **delayed effect** | efecto postergado |
+| **face down / facedown** | boca abajo |
 | **tucked cards** | cartas metidas debajo |
 | **excess damage** | daño sobrante |
 | **reveal** | mostrar |
@@ -152,6 +153,8 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **expert mode** | modo Experto |
 | **expert encounter set** | conjunto de encuentro experto |
 
+No confundas **face down / facedown** («boca abajo», orientación de una carta) con **tucked** («metida debajo»): una carta metida debajo se coloca bocarriba bajo otra carta.
+
 Al mostrar los rasgos de las cartas, utiliza estas etiquetas en español para los códigos de rasgo indicados. Distingue los rasgos de los usos de la misma palabra como acción, atributo u otro término de reglas (por ejemplo, `thwart` como rasgo se presenta como «Intervención», mientras que `thwart` como verbo es «intervenir»).
 
 ## Preservación de conectores y puntuación
@@ -214,7 +217,7 @@ Si la descripción de una carta de encuentro no indica un valor impreso de Aumen
 - **Iconos de Plan**: Los iconos de riesgo, aceleración, etc., en planes secundarios deben definirse en el objeto `icons` (ej: `icons: {hazard: 1}`).
 - **Bonificaciones persistentes de escenario**: Si un plan u otra carta otorga un valor adicional mientras permanece en juego, impleméntalo como un efecto constante ligado a su presencia. Comprueba que el modificador alcanza al personaje correcto y deja de aplicarse al salir del juego.
 - **Nombres de Variables**: Los nombres de las constantes/variables que contienen los objetos de las cartas deben escribirse en **inglés** (camelCase), independientemente de que el nombre visible de la carta esté en español.
-- **Registro de Archienemigos**: Las cartas pertenecientes al conjunto de archienemigo deben añadirse al array `nemesis` dentro del archivo `index.js` del héroe correspondiente.
+- **Registro de Archienemigos**: Las cartas pertenecientes al conjunto de archienemigo deben añadirse al array `nemesis` dentro del archivo `index.js` del héroe correspondiente. Para designar los esbirros archienemigos y resolver el resto del conjunto, sigue el skill [nemesis-set-handling](../../.github/skills/nemesis-set-handling/SKILL.md).
 - **Cartas de encuentro reutilizadas**: Si una carta de encuentro existente se incluye en otro conjunto o conjunto de archienemigo, define su objeto una sola vez bajo `catalog/encounters/`, en un fichero según su tipo (por ejemplo, `encounters/minions.js` para esbirros comunes). Añade al fichero de tipo las futuras cartas comunes de esa categoría, expórtalas por nombre e impórtalas desde cada catálogo. Configura el número de copias (`count`) en cada catálogo; no dupliques ni alteres la definición compartida. Conserva el conjunto y la imagen impresos de la carta reutilizada.
 
 ## Instrucciones de Desarrollo

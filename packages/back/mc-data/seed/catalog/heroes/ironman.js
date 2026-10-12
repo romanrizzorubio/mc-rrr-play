@@ -78,7 +78,7 @@ import {
     TRAIT_CONDITION,
     TRAIT_CRIMINAL,
     TRAIT_GENIUS,
-    TRAIT_INDIVIDUAL,
+    TRAIT_PERSONA,
     TRAIT_ITEM,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
@@ -185,9 +185,9 @@ export default {
                         ],
                         'classification': CLASSIFICATION_HERO,
                         'thwart': 1,
-                        'thwartConsequencial': 1,
+                        'thwartConsequential': 1,
                         'attack': 2,
-                        'attackConsequencial': 2,
+                        'attackConsequential': 2,
                         'hitPoints': 4,
                         'abilities': [
                             {
@@ -650,7 +650,7 @@ export default {
                         'name': 'Pepper Potts',
                         'unique': true,
                         'traits': [
-                            TRAIT_INDIVIDUAL
+                            TRAIT_PERSONA
                         ],
                         'cost': 3,
                         'resources': [

@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+import {PLACE_DISCARD_PILE} from 'mc-shared';
 
 import styles from './mc-deck.css.js';
 import '../../cards/mc-card-image/mc-card-image.js';
@@ -29,6 +30,7 @@ export class DeckComponent extends LitElement {
             cards: {type: Array},
             discard: {type: Array},
             discardLabel: {type: String, attribute: 'discard-label'},
+            highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
             showDeck: {type: Boolean, attribute: 'show-deck'},
             type: {type: Number}
         };
@@ -39,11 +41,18 @@ export class DeckComponent extends LitElement {
         this.cards = [];
         this.discard = [];
         this.discardLabel = '';
+        this.highlightPlayableDiscard = false;
         this.showDeck = true;
         this.type = DECK_TYPES.ENCOUNTER;
     }
     getDiscardTop() {
         return this.discard[this.discard.length - 1];
+    }
+    hasPlayableCardInDiscard() {
+        return this.highlightPlayableDiscard &&
+            this.type === DECK_TYPES.PLAYER &&
+            this.discard.some(card =>
+                card.playFrom?.includes(PLACE_DISCARD_PILE) === true);
     }
     getImageBack() {
         switch (this.type) {
@@ -80,6 +89,7 @@ export class DeckComponent extends LitElement {
             detail: {
                 cards: this.discard.slice().reverse(),
                 title: this.getDiscardTitle(),
+                isPlayerDeck: this.type === DECK_TYPES.PLAYER,
             },
         }));
     }
@@ -119,10 +129,11 @@ export class DeckComponent extends LitElement {
         if (card) {
             src = getCardAssetUrl(card.image);
         }
+        const playable = this.hasPlayableCardInDiscard();
 
         return html`
             <button
-                class="panel discard-button"
+                class="panel discard-button ${playable ? 'playable' : ''}"
                 type="button"
                 aria-label="Ver ${title} (${this.discard.length} cartas)"
                 ?disabled="${!card}"

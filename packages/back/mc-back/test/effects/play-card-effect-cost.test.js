@@ -8,16 +8,20 @@ import {
     PLACE_DISCARD_PILE,
     RESOURCE_ANY,
     RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
 } from 'mc-shared';
 import {Arrow} from '../../src/abilities/core/arrow.js';
+import {ChainedEffect} from '../../src/effects/chained-effect.js';
+import {DoIfHasPaidEffect} from '../../src/effects/do-if-has-paid-effect.js';
+import {Effect} from '../../src/effects/effect.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
 
-function createPlayCardEffect({calculatedCost, requirement = []}) {
+function createPlayCardEffect({calculatedCost, requirement = [], ability}) {
     const card = {
         cost: 3,
         isUpgrade: false,
@@ -42,6 +46,7 @@ function createPlayCardEffect({calculatedCost, requirement = []}) {
         },
     };
     const effect = new PlayCardEffect({
+        ability,
         card,
         match: {},
     });
@@ -95,6 +100,35 @@ test('still prompts to pay a positive calculated cost', async () => {
 
     assert.equal(calls.dialogs.length, 1);
     assert.equal(calls.dialogs[0].data.cost, 2);
+});
+
+test('passes conditional paid-resource preferences to the payment dialog', async () => {
+    const paidResourceCondition = new DoIfHasPaidEffect({
+        match: {},
+        resources: [RESOURCE_PHYSICAL],
+    });
+    const ability = {
+        effect: new ChainedEffect({
+            effects: [
+                new Effect({
+                    match: {},
+                    thenEffect: paidResourceCondition,
+                }),
+            ],
+            match: {},
+        }),
+    };
+    const {calls, effect, player} = createPlayCardEffect({
+        ability,
+        calculatedCost: 2,
+    });
+
+    await effect.payCost({player});
+
+    assert.deepEqual(
+        calls.dialogs[0].data.resourcePreferences,
+        [RESOURCE_PHYSICAL]
+    );
 });
 
 test('passes the play effect to card play validation', async () => {

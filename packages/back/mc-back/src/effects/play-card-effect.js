@@ -1,9 +1,11 @@
 import {
     DIALOG_MAX_CARDS,
     DIALOG_PAY_COST,
+    PLACE_HAND,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_END_PLAY_CARD,
+    TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -11,6 +13,7 @@ import {GetCostEffect} from './get-cost-effect.js';
 import {PayCostEffect} from './pay-cost-effect.js';
 import {PutPlayEffect} from './put-play-effect.js';
 import {getRestrictedCards} from '../utils/enforce-restricted-limit.js';
+import {getPlayerCardPlayFromLocation} from '../utils/player-card-play-from.js';
 
 export class PlayCardEffect extends Effect {
     constructor({
@@ -27,8 +30,10 @@ export class PlayCardEffect extends Effect {
         this.resourcesPaid = [];
         this.canceled = false;
         this.paymentCancelled = false;
+        this.prePlayConfirmationAcceptedFor = undefined;
         this.modifyCost = 0;
         this.removedFromHand = false;
+        this.removedFromPlace = undefined;
         this.played = false;
         this.maxAlliesDialogAccepted = false;
         this.maxAllyToDiscardId = undefined;
@@ -36,7 +41,7 @@ export class PlayCardEffect extends Effect {
         this.restrictedCardToDiscardId = undefined;
 
         if (card.isUpgrade) {
-            this.target = card.card.attach;
+            this.target = card.card.controllerTarget || card.card.attach;
         }
     }
     get isAttack() {
@@ -93,11 +98,30 @@ export class PlayCardEffect extends Effect {
 
         return response?.accepted === true;
     }
+    async confirmBeforePlay(params) {
+        const effect = this.ability?.effect;
+        if (!effect ||
+            typeof effect.confirmBeforeResolve !== 'function') {
+            return true;
+        }
+
+        const confirmed = await effect.confirmBeforeResolve(params);
+        this.prePlayConfirmationAcceptedFor =
+            confirmed ?
+                effect :
+                undefined;
+
+        return confirmed;
+    }
     filterTarget(target, {player}) {
         if (super.filterTarget.apply(this, arguments)) {
             const {card} = this;
 
             if (card.isUpgrade) {
+                if (card.card.controllerTarget) {
+                    return target?.isPlayer &&
+                        !target.getPrintedCard(card.card.id);
+                }
                 return card.canAttach(target, player);
             }
 
@@ -110,6 +134,7 @@ export class PlayCardEffect extends Effect {
         return super.getTriggersInit()
             .concat([
                 TRIGGER_PLAY_CARD,
+                TRIGGER_YOU_PLAY_CARD,
             ]);
     }
     getTriggersEnds() {
@@ -118,6 +143,12 @@ export class PlayCardEffect extends Effect {
                 TRIGGER_END_PLAY_CARD,
                 TRIGGER_THIS_END_PLAY_CARD,
             ]);
+    }
+    getTriggersParams(params) {
+        return {
+            ...super.getTriggersParams(params),
+            card: this.card,
+        };
     }
     async doPlay(params) {
         const {card, cardsPaid, ability, selectedTarget} = this;
@@ -140,6 +171,8 @@ export class PlayCardEffect extends Effect {
             await ability.resolveAbility({
                 ...params,
                 playCardEffect: this,
+                prePlayConfirmationAcceptedFor:
+                    this.prePlayConfirmationAcceptedFor,
             });
 
             await player.deck.discard(card);
@@ -147,7 +180,9 @@ export class PlayCardEffect extends Effect {
             const putPlayEffect = new PutPlayEffect({
                 card,
                 selectedTarget,
-                controller: player,
+                controller: card.card.controllerTarget ?
+                    selectedTarget :
+                    player,
                 maxAllyToDiscardId: this.maxAllyToDiscardId,
                 restrictedCardToDiscardId: this.restrictedCardToDiscardId,
                 match: this.match,
@@ -160,10 +195,11 @@ export class PlayCardEffect extends Effect {
             });
         }
         card.isPlaying = false;
-        if (!this.removedFromHand || player.hand.cards.includes(card)) {
+        if (player.hand.cards.includes(card)) {
             player.hand.discardHand(card);
         }
         this.removedFromHand = false;
+        this.removedFromPlace = undefined;
         await player.hand.refresh();
     }
     async getCost(params) {
@@ -210,6 +246,9 @@ export class PlayCardEffect extends Effect {
             return;
         }
 
+        const resourcePreferences = this.ability?.effect ?
+            this.ability.effect.getPaymentResourcePreferences() :
+            [];
         const cardsToPay = await player.getCardsToPay(card);
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
@@ -217,6 +256,7 @@ export class PlayCardEffect extends Effect {
             data: {
                 cost: normalizedCost,
                 requirement: card.requirement,
+                resourcePreferences,
                 card: card.toObj(),
                 cards: {
                     generators: cardsToPay.generators
@@ -251,11 +291,25 @@ export class PlayCardEffect extends Effect {
         if (this.removedFromHand) {
             player.hand.discardHand(card);
             await player.hand.refresh();
+        } else {
+            const sourcePlayer = card.owner ?? player;
+            const source = getPlayerCardPlayFromLocation(
+                card,
+                card.card.playFrom,
+                sourcePlayer
+            );
+            if (source) {
+                source.cards.splice(source.index, 1);
+                this.removedFromPlace = source;
+                await (source.place === PLACE_HAND ?
+                    sourcePlayer.hand :
+                    sourcePlayer.deck).refresh();
+            }
         }
 
         await super.prepare(params);
     }
-    async returnToHand(player) {
+    async returnToSource(player) {
         const {card} = this;
 
         card.isPlaying = false;
@@ -265,15 +319,32 @@ export class PlayCardEffect extends Effect {
             }
             this.removedFromHand = false;
             await player.hand.refresh();
+        } else if (this.removedFromPlace) {
+            const {cards, index, place, player: sourcePlayer} =
+                this.removedFromPlace;
+
+            if (!cards.includes(card)) {
+                cards.splice(index, 0, card);
+            }
+            this.removedFromPlace = undefined;
+            await (place === PLACE_HAND ?
+                sourcePlayer.hand :
+                sourcePlayer.deck).refresh();
         }
     }
     async runEffect(params) {
         try {
+            if (!await this.confirmBeforePlay(params)) {
+                this.canceled = true;
+                this.paymentCancelled = true;
+                return;
+            }
+
             await super.runEffect(params);
         } finally {
             if (!this.played) {
                 this.canceled = true;
-                await this.returnToHand(params.player);
+                await this.returnToSource(params.player);
             }
         }
     }

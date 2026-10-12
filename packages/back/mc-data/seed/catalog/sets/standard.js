@@ -15,6 +15,7 @@ import {
     EFFECT_PLACE_THREAT,
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
+    EFFECT_SHUFFLE_DECK,
     EFFECT_SURGE,
     PLACE_OUTSIDE_NEMESIS,
     PLACE_ENCOUNTER_DECK,
@@ -185,6 +186,12 @@ export default {
                                                         'from': PLACE_OUTSIDE_NEMESIS,
                                                         'target': TARGET_ENCOUNTER_DECK,
                                                         'ownerTarget': TARGET_SCENARIO
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_SHUFFLE_DECK,
+                                                    'params': {
+                                                        'target': TARGET_SCENARIO
                                                     }
                                                 },
                                                 {

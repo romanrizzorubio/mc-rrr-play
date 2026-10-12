@@ -8,6 +8,7 @@ import {
 } from '../../components/cards/characters/mc-superhero-card/mc-superhero-card.js';
 import '../../components/views/mc-match/mc-match.js';
 import {ABILITY_ID, path} from '../../misc/utils.js';
+import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../misc/card-menu.js';
 import {getEndTurnConfirmationReasons} from '../../utils/end-turn.js';
 
 import styles from './mc-match-page.css.js';
@@ -325,6 +326,18 @@ export class McMatchPage extends LitElement {
 
             const {selected} = response;
             const {apiPlayer, player} = this;
+
+            if (selected.id === MENU_OPTION_VIEW_TUCKED_CARDS) {
+                this.dispatchEvent(new CustomEvent('view-tucked-cards', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        card,
+                        cards: card.tuckedCards || [],
+                    },
+                }));
+                return;
+            }
 
             switch (selected.id) {
                 case MENU_OPTION_END:

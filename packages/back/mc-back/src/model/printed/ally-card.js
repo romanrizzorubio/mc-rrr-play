@@ -20,14 +20,14 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
         thwart: _thwart,
 // AllyCard
         subtitle,
-        thwartConsequencial,
-        attackConsequencial,
+        thwartConsequential,
+        attackConsequential,
     }) {
         super(arguments[0]);
 
         this.subtitle = subtitle;
-        this.thwartConsequencial = thwartConsequencial;
-        this.attackConsequencial = attackConsequencial;
+        this.thwartConsequential = thwartConsequential;
+        this.attackConsequential = attackConsequential;
 
         this.isAlly = true;
     }

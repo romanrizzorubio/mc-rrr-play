@@ -6,6 +6,7 @@ import {
     TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
+    TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
@@ -71,6 +72,32 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     async getDefenseValue(params, defender = this.defender) {
         return await defender.getDefenseValue(params) + this.modifyDefense;
+    }
+    async getDefenseBonusPreview(params) {
+        const {character, defender} = this;
+        if (!character || !defender) {
+            throw new TypeError(
+                'Defense-bonus preview requires an enemy and a hero defender.'
+            );
+        }
+
+        const attackValue = await this.getAttackValue(params);
+        const defenseValue = await this.getDefenseValue(params, defender);
+        if (typeof character.name !== 'string' ||
+            typeof defender.name !== 'string' ||
+            !Number.isFinite(attackValue) ||
+            !Number.isFinite(defenseValue)) {
+            throw new TypeError(
+                'Defense-bonus preview received invalid attack or defense values.'
+            );
+        }
+
+        return {
+            enemyName: character.name,
+            attackValue,
+            defenderName: defender.name,
+            defenseValue,
+        };
     }
     async defense(params) {
         const attackTargets = Array.isArray(this.selectedTarget) ?
@@ -186,6 +213,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             .concat([
                 TRIGGER_VILLAIN_ATTACKS,
                 TRIGGER_VILLAIN_ATTACKS_YOU,
+                TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
     }
     getTriggersEnds(params) {

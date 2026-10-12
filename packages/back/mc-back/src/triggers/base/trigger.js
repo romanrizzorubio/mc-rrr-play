@@ -91,7 +91,10 @@ export class Trigger {
     async runEvent(params) {
         const {card} = this;
 
-        const result = await card.owner.triggerEvent(this, params);
+        const result = await card.owner.triggerEvent(
+            this,
+            this.getAbilityParams(params)
+        );
         this.triggered = result.triggered;
         if (this.triggered) {
             this.markTriggeredFor(params.effect);

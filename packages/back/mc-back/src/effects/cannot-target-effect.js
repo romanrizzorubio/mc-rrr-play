@@ -1,4 +1,4 @@
-import {checkCondition} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
 
@@ -9,6 +9,7 @@ export class CannotTargetEffect extends Effect {
         effectCategories,
         targetCondition,
         effectCondition,
+        conditionTargetMatch,
     }) {
         super(arguments[0]);
 
@@ -20,6 +21,7 @@ export class CannotTargetEffect extends Effect {
             Array.isArray(effectCategories) ? effectCategories : [effectCategories];
         this.targetCondition = targetCondition;
         this.effectCondition = effectCondition;
+        this.conditionTargetMatch = conditionTargetMatch;
 
         if (!this.blockedEffectTypes.length && !this.blockedEffectCategories.length) {
             throw new TypeError('CannotTargetEffect requires effectTypes or effectCategories.');
@@ -34,6 +36,9 @@ export class CannotTargetEffect extends Effect {
         if (!effect || !targetCard) {
             return false;
         }
+        if (this.ability?.card?.printedTextBlank) {
+            return false;
+        }
 
         const matchesEffectType = this.blockedEffectTypes.includes(effect.effectType);
         const matchesEffectCategory = this.blockedEffectCategories.some(category =>
@@ -44,8 +49,18 @@ export class CannotTargetEffect extends Effect {
         if (this.targetCondition && !checkCondition(targetCard, this.targetCondition)) {
             return false;
         }
-        if (this.condition && !this.match.searchCard(this.condition)) {
-            return false;
+        if (this.condition) {
+            if (this.conditionTargetMatch) {
+                const targetValue = path(targetCard, this.conditionTargetMatch);
+                if (targetValue === undefined ||
+                    !this.match.searchCards(this.condition).some(card =>
+                        card !== targetCard &&
+                        path(card, this.conditionTargetMatch) === targetValue)) {
+                    return false;
+                }
+            } else if (!this.match.searchCard(this.condition)) {
+                return false;
+            }
         }
 
         return !this.effectCondition || checkCondition({

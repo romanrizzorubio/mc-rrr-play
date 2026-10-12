@@ -13,6 +13,7 @@ export class RemoveThreatEffect extends Effect {
 
         this.baseThreat = threat;
         this.threat = threat;
+        this.threatModifier = 0;
         this.thwart = thwart;
     }
     filterTarget(card) {
@@ -29,6 +30,11 @@ export class RemoveThreatEffect extends Effect {
             this.threat = this.calculate(params);
         } else {
             this.threat = this.baseThreat ?? params.threat;
+        }
+        if (Number.isFinite(this.threat)) {
+            this.threat += this.threatModifier;
+        } else if (this.threatModifier) {
+            throw new TypeError('RemoveThreatEffect requires a numeric threat value to modify.');
         }
     }
     async execute(params) {

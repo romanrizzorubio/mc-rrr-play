@@ -31,6 +31,10 @@ test('DiscardUntilEffect discards through a matching card and returns it for the
     };
     const deck = new Deck({owner: {match: {}}});
     deck.cards = [discardedMinion, mastersOfEvilMinion, remainingCard];
+    let refreshCount = 0;
+    deck.refresh = async () => {
+        refreshCount++;
+    };
 
     const effect = new DiscardUntilEffect({
         condition: {
@@ -52,6 +56,7 @@ test('DiscardUntilEffect discards through a matching card and returns it for the
     assert.deepEqual(deck.discardPile, [discardedMinion, mastersOfEvilMinion]);
     assert.deepEqual(deck.cards, [remainingCard]);
     assert.deepEqual(dialogs, []);
+    assert.equal(refreshCount, 1);
 });
 
 test('EngageEffect assigns a minion to the player it engages', async () => {

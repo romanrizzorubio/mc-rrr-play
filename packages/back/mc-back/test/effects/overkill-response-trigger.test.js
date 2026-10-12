@@ -4,12 +4,16 @@ import {test} from 'node:test';
 import {
     DIALOG_PAY_COST,
     DIALOG_USE_CARD,
+    PRIORITY_RESPONSE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
 } from 'mc-shared';
 import aggressionEvents from '../../../mc-data/seed/catalog/aspects/aggression/events.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
+import {GameCard} from '../../src/model/cards/game-card.js';
+import {GameZone} from '../../src/model/match/game-zone.js';
 import {Hand} from '../../src/model/match/hand.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 
@@ -57,10 +61,13 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
         refresh() {},
     };
     const villain = createEnemy('Villain', 3, true);
-    match.scenario = {
+    const scenario = {
+        match,
         schemes: [mainScheme],
         villain,
     };
+    scenario.gameZone = new GameZone({owner: scenario});
+    match.scenario = scenario;
 
     match.openDialog = async dialog => {
         if (dialog.dialogType === DIALOG_PAY_COST) {
@@ -109,6 +116,24 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
 
     const minion = createEnemy('Minion', 2, false);
     minion.canBeAttacked = () => true;
+    minion.id = 'defeated-minion';
+    minion.owner = player;
+    minion.match = match;
+    minion.gameZone = scenario.gameZone;
+    minion.triggers = {
+        [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: {
+            [PRIORITY_RESPONSE]: [{
+                ability: {hideDialog: false, name: 'Minion response'},
+                canTrigger: async () => true,
+                card: minion,
+                name: 'Minion response',
+            }],
+        },
+    };
+    minion.endTriggers = GameCard.prototype.endTriggers;
+    minion.toObj = () => ({id: minion.id, name: minion.name});
+    match.triggerCards[minion.id] = minion;
+    scenario.gameZone.addToGameZone(minion);
     player.minions.push(minion);
 
     const waitForDialogCount = count => {
@@ -176,6 +201,7 @@ function createEnemy(name, hitPoints, isVillain) {
         },
         refresh() {},
         async defeat() {
+            this.gameZone?.discard(this);
             this.isInPlay = false;
         },
     };

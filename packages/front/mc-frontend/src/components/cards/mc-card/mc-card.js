@@ -4,6 +4,7 @@ import 'mc-components';
 import styles from './mc-card.css.js';
 import '../mc-card-image/mc-card-image.js';
 import {ICON_STAR} from '../../common/mc-icon/mc-icon.js';
+import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
 
 import {
     BACK_CARD_ENCOUNTER,
@@ -36,6 +37,22 @@ const KEYWORD_LABELS = {
 export class CardComponent extends LitElement {
     static get is() {
         return 'mc-card';
+    }
+    renderTucked() {
+        const tuckedCards = this.tuckedCards || [];
+
+        return tuckedCards.length ? html`
+            <div class="tucked" aria-hidden="true">
+                ${tuckedCards.slice(0, 2).map(card => html`
+                    <div class="tucked-card-peek">
+                        <mc-card-image
+                            src="${getCardAssetUrl(card.image)}"
+                            size="${this._smallSize}"
+                        ></mc-card-image>
+                    </div>
+                `)}
+            </div>
+        ` : html``;
     }
     static get styles() {
         return styles;
@@ -71,6 +88,7 @@ export class CardComponent extends LitElement {
             statusCards: {type: Object},
             attached: {type: Array},
             faceDown: {type: Array},
+            tuckedCards: {type: Array},
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
             hideName: {type: Boolean, attribute: 'hide-name'},
@@ -90,6 +108,7 @@ export class CardComponent extends LitElement {
         this.isFacedownCard = false;
         this.attached = [];
         this.faceDown = [];
+        this.tuckedCards = [];
         this.size = 'm';
         this.handSize = undefined;
         this.showBasicStats = false;
@@ -205,8 +224,27 @@ export class CardComponent extends LitElement {
             }
         }));
     }
+    handleViewTuckedCards() {
+        this.dispatchEvent(new CustomEvent('view-tucked-cards', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: {
+                    name: this.name,
+                    image: this.image,
+                },
+                cards: this.tuckedCards,
+            },
+        }));
+    }
     handleClick() {
-        if (this.menuOptions.length) {
+        const hasOtherAction = this.menuOptions.some(option =>
+            option.id !== MENU_OPTION_VIEW_TUCKED_CARDS && !option.disable
+        );
+
+        if (this.tuckedCards?.length && !hasOtherAction) {
+            this.handleViewTuckedCards();
+        } else if (this.menuOptions.length) {
             this.dispatchEvent(new CustomEvent('change-menu', {
                 bubbles: true,
                 composed: true,
@@ -356,20 +394,23 @@ export class CardComponent extends LitElement {
                 <slot name="top"></slot>
                 <div class="cards-facedown">
                     ${this.renderStats()}
-                    <div class="card">
+                    <div class="card ${this.tuckedCards?.length ? 'has-tucked-cards' : ''}">
                         <div class="card-face">
-                            ${this.renderStage()}
-                            <mc-card-image
-                                id="card"
-                                src="${imageSrc}"
-                                size="${size}"
-                                .horizontal="${horizontal}"
-                                .rotated="${rotated}"
-                                @click="${this.handleClick.bind(this)}"
-                                @contextmenu="${this.hableContextMenu.bind(this)}"
-                            ></mc-card-image>
-                            ${this.renderCounters()}
-                            ${this.renderBottomStats()}
+                            ${this.renderTucked()}
+                            <div class="card-front">
+                                ${this.renderStage()}
+                                <mc-card-image
+                                    id="card"
+                                    src="${imageSrc}"
+                                    size="${size}"
+                                    .horizontal="${horizontal}"
+                                    .rotated="${rotated}"
+                                    @click="${this.handleClick.bind(this)}"
+                                    @contextmenu="${this.hableContextMenu.bind(this)}"
+                                ></mc-card-image>
+                                ${this.renderCounters()}
+                                ${this.renderBottomStats()}
+                            </div>
                         </div>
                         ${this.renderAttached()}
                     </div>

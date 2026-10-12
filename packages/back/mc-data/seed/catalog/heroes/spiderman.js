@@ -85,7 +85,7 @@ import {
     TRAIT_DEFENSE,
     TRAIT_GENIUS,
     TRAIT_HEROFORHIRE,
-    TRAIT_INDIVIDUAL,
+    TRAIT_PERSONA,
     TRAIT_ITEM,
     TRAIT_SKILL,
     TRAIT_SUPERPOWER,
@@ -190,8 +190,8 @@ export default {
                         'subtitle': 'Felicia Hardy',
                         'thwart': 1,
                         'attack': 1,
-                        'thwartConsequencial': 1,
-                        'attackConsequencial': 0,
+                        'thwartConsequential': 1,
+                        'attackConsequential': 0,
                         'hitPoints': 2,
                         'abilities': [
                             {
@@ -247,6 +247,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
+                                            'requiresPrePlayConfirmation': true,
                                             'target': TARGET_YOUR_SUPERHERO
                                         }
                                     }
@@ -339,7 +340,7 @@ export default {
                         'set': 'Spiderman',
                         'image': 'heroes/spiderman/peter9.webp',
                         'traits': [
-                            TRAIT_INDIVIDUAL
+                            TRAIT_PERSONA
                         ],
                         'unique': true,
                         'cost': 1,

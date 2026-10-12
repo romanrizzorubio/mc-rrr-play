@@ -7,11 +7,15 @@ export class ReturnFaceDownEffect extends Effect {
     constructor({
         faceDownTarget = TARGET_CARD,
         selectedFaceDown,
+        selectCount,
+        selectUpTo = false,
     }) {
         super(arguments[0]);
 
         this.faceDownTarget = faceDownTarget;
         this.selectedFaceDown = selectedFaceDown;
+        this.selectCount = selectCount;
+        this.selectUpTo = selectUpTo;
     }
     async prepare(params) {
         await super.prepare(params);
@@ -26,15 +30,24 @@ export class ReturnFaceDownEffect extends Effect {
             ...params,
             target: faceDownTarget,
             cards: selectedTarget.faceDown,
+            selectCount: this.selectCount,
+            selectUpTo: this.selectUpTo,
         });
     }
     async execute() {
-        const {selectedFaceDown} = this;
+        const {selectedFaceDown, selectedTarget} = this;
+        const faceDownCards = Array.isArray(selectedFaceDown) ?
+            selectedFaceDown :
+            selectedFaceDown ? [selectedFaceDown] : [];
+        const owners = new Set();
 
-        await this.promisesSequential(selectedFaceDown, faceDown => {
+        faceDownCards.forEach(faceDown => owners.add(faceDown.card.owner));
+        await this.promisesSequential(faceDownCards, faceDown => {
             faceDown.returnToOwnerHand();
         });
 
-        selectedFaceDown.refresh();
+        await selectedTarget.refresh();
+        await this.promisesSequential([...owners].filter(Boolean), owner =>
+            owner.hand.refresh());
     }
 }

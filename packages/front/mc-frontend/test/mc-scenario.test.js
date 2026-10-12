@@ -40,6 +40,7 @@ test('scenario environments render their generic counters', () => {
 
 test('scenario villains forward unprinted stats to the villain card', () => {
     const unprintedStats = ['attack'];
+    const tuckedCards = [{id: 'tucked-card'}];
     const villain = {
         name: 'Norman Osborn',
         image: 'norman-osborn.png',
@@ -47,12 +48,14 @@ test('scenario villains forward unprinted stats to the villain card', () => {
         attack: 0,
         scheme: 2,
         unprintedStats,
+        tuckedCards,
     };
     const template = McScenario.prototype.renderVillain.call({
         scenario: {villain},
     });
 
     assertUnprintedStatsForwarded(template, unprintedStats);
+    assert.ok(template.values.includes(tuckedCards));
 });
 
 test('villain card wrappers forward unprinted stats to the card renderer', () => {

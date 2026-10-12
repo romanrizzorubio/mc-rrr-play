@@ -2,6 +2,7 @@ import {
     ABILITY_HERO_ACTION,
     ABILITY_RESPONSE,
     CARD_TYPE_EVENT,
+    EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_REMOVE_THREAT,
@@ -145,6 +146,59 @@ export default [
                                 'params': {
                                     'target': TARGET_ENEMY,
                                     'damage': 5
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-cuerpo-a-cuerpo',
+        'aspect': 'aggression',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Cuerpo a cuerpo',
+                'set': 'aggression',
+                'image': 'aspect/aggression/events/05030.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'aggression',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 3
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 3,
+                                                'excludeTarget': 'effects.0.selectedTarget'
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

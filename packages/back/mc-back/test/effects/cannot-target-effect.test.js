@@ -90,3 +90,37 @@ test('CannotTargetEffect can match individual effect types and defaults to an un
     }), false);
     assert.throws(() => new CannotTargetEffect({}), /requires effectTypes or effectCategories/);
 });
+
+test('CannotTargetEffect matches another minion engaged with the same player and respects blank text', () => {
+    const player = {};
+    const otherPlayer = {};
+    const edison = {
+        engaged: player,
+        isMinion: true,
+    };
+    let minions = [edison, {
+        engaged: player,
+        isMinion: true,
+    }];
+    const validation = new CannotTargetEffect({
+        condition: {isMinion: true},
+        conditionTargetMatch: 'engaged',
+        effectCategories: [EFFECT_CATEGORY_DAMAGE],
+        match: {
+            searchCards(condition) {
+                return minions.filter(card => card.isMinion === condition.isMinion);
+            },
+        },
+    });
+    const effect = {effectCategories: [EFFECT_CATEGORY_DAMAGE]};
+
+    assert.equal(validation.isInvalidTarget({effect, targetCard: edison}), true);
+    minions = [edison];
+    assert.equal(validation.isInvalidTarget({effect, targetCard: edison}), false);
+    minions = [edison, {engaged: otherPlayer, isMinion: true}];
+    assert.equal(validation.isInvalidTarget({effect, targetCard: edison}), false);
+
+    validation.ability = {card: {printedTextBlank: true}};
+    minions = [edison, {engaged: player, isMinion: true}];
+    assert.equal(validation.isInvalidTarget({effect, targetCard: edison}), false);
+});

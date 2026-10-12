@@ -63,8 +63,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 2,
                 'attack': 1,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 2,
                 'abilities': [
                     {
@@ -106,8 +106,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 1,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -201,8 +201,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 1,
                 'attack': 1,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -266,8 +266,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 2,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {
@@ -330,8 +330,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 1,
                 'attack': 1,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 2,
                 'abilities': [
                     {
@@ -373,8 +373,8 @@ export default [
                 'classification': 'leadership',
                 'thwart': 1,
                 'attack': 3,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {

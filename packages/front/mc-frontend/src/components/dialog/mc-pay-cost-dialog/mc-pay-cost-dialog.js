@@ -48,8 +48,10 @@ export class McPayCostDialog extends McDialog {
             data: {
                 cost: 0,
                 allowPartial: false,
+                differentTypes: false,
                 resourceType: undefined,
                 requirement: [],
+                resourcePreferences: [],
                 card: undefined,
                 cards: {
                     generators: [],
@@ -176,6 +178,7 @@ export class McPayCostDialog extends McDialog {
             cost,
             requirement,
             resourceType,
+            resourcePreferences,
         } = this.data;
         const resources = this.getPaymentResourceUnits(cards, true, []);
         const wilds = resources
@@ -192,6 +195,7 @@ export class McPayCostDialog extends McDialog {
                 resourceCounts.set(resource, (resourceCounts.get(resource) || 0) + 1);
             }
         });
+        const paidResourceCounts = new Map(resourceCounts);
 
         let wildIndex = 0;
         requirement.forEach(required => {
@@ -204,7 +208,21 @@ export class McPayCostDialog extends McDialog {
                 resourceCounts.set(required, available - 1);
             } else if (wildIndex < wilds.length) {
                 wilds[wildIndex++] = required;
+                paidResourceCounts.set(
+                    required,
+                    (paidResourceCounts.get(required) || 0) + 1
+                );
             }
+        });
+
+        new Set(resourcePreferences).forEach(resource => {
+            if ((paidResourceCounts.get(resource) || 0) > 0 ||
+                wildIndex >= wilds.length) {
+                return;
+            }
+
+            wilds[wildIndex++] = resource;
+            paidResourceCounts.set(resource, 1);
         });
 
         return wilds;
@@ -286,7 +304,12 @@ export class McPayCostDialog extends McDialog {
         ).count === requirement.length;
     }
     getValidationError() {
-        const {allowPartial, cost} = this.data;
+        const {allowPartial, cost, differentTypes, requirement} = this.data;
+
+        if (differentTypes &&
+            new Set(this.resourcesType).size < requirement.length) {
+            return 'Selecciona recursos de tipos distintos.';
+        }
 
         if (allowPartial && cost !== COST_X) {
             const {
@@ -356,13 +379,16 @@ export class McPayCostDialog extends McDialog {
         super.sendResponse();
     }
     validate() {
-        const {data: {allowPartial, cost, requirement}} = this;
+        const {data: {allowPartial, cost, requirement, differentTypes}} = this;
 
         if (allowPartial && cost !== COST_X) {
             return this.isValidPartialPayment();
         }
 
         const resources = this.resourcesType;
+        if (differentTypes && new Set(resources).size < requirement.length) {
+            return false;
+        }
         if (cost === COST_X) {
             if (resources.length > 0) {
                 return true;

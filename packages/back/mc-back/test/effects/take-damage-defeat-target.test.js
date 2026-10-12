@@ -19,6 +19,7 @@ async function defeatActiveSide(name, isAlterEgo) {
         abilities: [],
         confused: 1,
         isAlterEgo,
+        isInPlay: true,
         isSuperhero: true,
         isVillain: false,
         name,

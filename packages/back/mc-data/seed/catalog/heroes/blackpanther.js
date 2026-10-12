@@ -42,6 +42,7 @@ import {
     EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_THWART,
+    DECK_POSITION_SHUFFLE,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
     PLACE_IN_PLAY,
@@ -264,9 +265,9 @@ export default {
                         'cost': 2,
                         'hitPoints': 3,
                         'thwart': 1,
-                        'thwartConsequencial': 1,
+                        'thwartConsequential': 1,
                         'attack': 1,
-                        'attackConsequencial': 1,
+                        'attackConsequential': 1,
                         'image': 'heroes/black-panther/01041.png'
                     }
                 }
@@ -301,10 +302,10 @@ export default {
                                                     }
                                                 },
                                                 {
-                                                    'type': EFFECT_MOVE_TO_DECK
-                                                },
-                                                {
-                                                    'type': EFFECT_SHUFFLE_DECK
+                                                    'type': EFFECT_MOVE_TO_DECK,
+                                                    'params': {
+                                                        'position': DECK_POSITION_SHUFFLE
+                                                    }
                                                 }
                                             ]
                                         }

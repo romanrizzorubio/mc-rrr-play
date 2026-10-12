@@ -123,6 +123,7 @@ La pantalla se divide en varias áreas:
 
 **Pilas de descartes**
 - Haz clic en una pila para consultar sus cartas, desde la carta superior hacia abajo.
+- Si tu descarte contiene cartas que puedes jugar desde ahí, la pila aparece resaltada y las cartas jugables también se resaltan en el diálogo.
 - Al descartar varias cartas desde la parte superior de un mazo, se muestran antes de continuar con la resolución del efecto.
 - En el diálogo para elegir el orden, puedes marcar que no vuelva a preguntarse; la preferencia se guarda en esa partida y se mantiene al reanudarla. Cada partida nueva empieza con esta opción desactivada.
 
@@ -233,7 +234,7 @@ Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un o
 - Iconos claramente diferenciados
 - Mostrados en la zona del jugador
 - Contador en tiempo real
-- Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes; puedes cambiar la asignación haciendo clic en el icono.
+- Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes y, después, a los tipos de recurso que activan bonificaciones de la carta (como Arremetida o Golpe contundente); puedes cambiar la asignación haciendo clic en el icono.
 
 ## Sistema de Turno
 

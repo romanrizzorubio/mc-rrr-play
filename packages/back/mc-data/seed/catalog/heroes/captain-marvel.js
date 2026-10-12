@@ -219,8 +219,8 @@ export default {
                         'subtitle': 'Jessica Drew',
                         'thwart': 2,
                         'attack': 2,
-                        'thwartConsequencial': 1,
-                        'attackConsequencial': 1,
+                        'thwartConsequential': 1,
+                        'attackConsequential': 1,
                         'hitPoints': 2,
                         'abilities': [
                             {
@@ -571,6 +571,7 @@ export default {
                                     'effect': {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
+                                            'requiresPrePlayConfirmation': true,
                                             'target': TARGET_EFFECT,
                                             'damage': 3
                                         }

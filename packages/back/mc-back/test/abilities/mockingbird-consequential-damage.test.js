@@ -6,6 +6,7 @@ import {ActivationsFactory} from '../../src/factory/activations/activations-fact
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {EffectsFactory} from '../../src/factory/effects/effects-factory.js';
 import basicAllies from '../../../mc-data/seed/catalog/aspects/basic/allies.js';
+import msMarvel from '../../../mc-data/seed/catalog/heroes/ms-marvel.js';
 
 test('Mockingbird suffers consequential damage when its attack defeats a villain stage', async () => {
     const match = {
@@ -81,4 +82,62 @@ test('Mockingbird suffers consequential damage when its attack defeats a villain
     assert.equal(mockingbird.damage, 1);
     assert.equal(mockingbird.life, 2);
     assert.equal(consequentialRefreshCompleted, true);
+});
+
+test('Puñal Rojo suffers consequential damage when it attacks', async () => {
+    const match = {
+        enemies: [],
+        villain: null,
+        triggerCards: {},
+    };
+    const villain = {
+        damage: 0,
+        isEnemy: true,
+        isInPlay: true,
+        isTough: false,
+        isVillain: true,
+        name: 'Rino',
+        canBeAttacked: () => true,
+        async getLife() {
+            return 10 - this.damage;
+        },
+        async defeat() {},
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        async refresh() {},
+    };
+    match.enemies = [villain];
+    match.villain = villain;
+    const cardsFactory = new CardsFactory({match});
+    match.activationsFactory = new ActivationsFactory(match);
+    match.effectsFactory = new EffectsFactory(cardsFactory.abilitiesFactory);
+
+    const redDaggerConfig = msMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Puñal Rojo');
+    assert.ok(redDaggerConfig);
+    const printedCard = cardsFactory.createCard(
+        structuredClone(redDaggerConfig.card)
+    );
+    const player = {
+        gameZone: {
+            async refresh() {},
+        },
+        canAttack: () => true,
+    };
+    const redDagger = cardsFactory.createGameCard({card: printedCard});
+    redDagger.controller = player;
+    redDagger.refresh = async () => {};
+
+    const attackAbility = redDagger.abilities.find(ability =>
+        ability instanceof AttackBasicAbility);
+    assert.ok(attackAbility);
+
+    await redDagger.resolveAbility({
+        abilityIndex: redDagger.abilities.indexOf(attackAbility),
+        player,
+    });
+
+    assert.equal(villain.damage, 2);
+    assert.equal(redDagger.damage, 1);
 });

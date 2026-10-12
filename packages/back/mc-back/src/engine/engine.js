@@ -87,18 +87,7 @@ export class Engine {
                 return '¿Quieres usar alguna Respuesta?';
         }
     }
-    _getInterruptDialogSubtitle(priority, params) {
-        if (priority !== PRIORITY_INTERRUPT) {
-            return undefined;
-        }
-
-        const {effect} = params;
-
-        return typeof effect?.getInterruptDialogSubtitle === 'function' ?
-            effect.getInterruptDialogSubtitle() :
-            undefined;
-    }
-    async _openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params, priority) {
+    async _openTriggersDialogCard(cards, cardsTriggers, title, mandatory, params, priority, showCounters) {
         const {player} = params;
         const cardId = cards.length === 1 ?
             this._getTriggerCardId(cards[0]) :
@@ -142,11 +131,9 @@ export class Engine {
         };
 
         if (_shouldShow()) {
-            const subtitle = this._getInterruptDialogSubtitle(priority, params);
             const response = await this.openDialog({
                 dialogType: DIALOG_USE_CARD,
                 title,
-                ...(subtitle ? {subtitle} : {}),
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 hideOk: mandatory,
                 data: {
@@ -160,6 +147,7 @@ export class Engine {
                                 name && names.indexOf(name) === index),
                     })),
                     mandatory,
+                    showCounters,
                     ...(informationalDialogId ? {informationalDialogId} : {}),
                 },
             });
@@ -184,7 +172,7 @@ export class Engine {
         }
 
     }
-    async _openTriggersDialogTriggers(card, mandatory, params, priority) {
+    async _openTriggersDialogTriggers(card, mandatory, params, showCounters) {
         const {player} = params;
 
         const _createOptions = (triggers, prefix = '') => {
@@ -223,16 +211,15 @@ export class Engine {
         const selectableOptions = this._getLeafOptions(optionsToShow);
         let selected;
         if (selectableOptions.length > 1) {
-            const subtitle = this._getInterruptDialogSubtitle(priority, params);
             const result = await this.openDialog({
                 dialogType: DIALOG_LIST,
                 hideOk: mandatory,
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 title: 'Elige una opción',
-                ...(subtitle ? {subtitle} : {}),
                 data: {
                     options: optionsToShow,
                     card: card.card.toObj(arguments[0]),
+                    showCounters,
                 },
             });
 
@@ -322,6 +309,8 @@ export class Engine {
 
         const title = this._getDialogTitle(priority, cards.length === 1);
         const mandatory = Engine.isMandatory(priority);
+        const showCounters = priority === PRIORITY_FORCED_INTERRUPT ||
+            priority === PRIORITY_INTERRUPT;
 
         const players = this._getPlayersTriggers(triggers);
         const player = players[0];
@@ -335,7 +324,8 @@ export class Engine {
             title,
             mandatory,
             params,
-            priority
+            priority,
+            showCounters
         );
 
         if (selectedCard) {
@@ -343,7 +333,7 @@ export class Engine {
                 selectedCard,
                 mandatory,
                 params,
-                priority
+                showCounters
             );
 
             if (selectedTrigger) {

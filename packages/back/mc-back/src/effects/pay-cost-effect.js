@@ -16,6 +16,7 @@ export class PayCostEffect extends Effect {
 
         return this.promisesSequential(generators, card => card.resolveResourceAbility({
             ...params,
+            cardToPay: this.selectedTarget ?? params.cardToPay,
             card,
         }));
     }

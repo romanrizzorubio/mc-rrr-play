@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {DIALOG_BOOST_DEALT, TARGET_VILLAIN} from 'mc-shared';
 import {EnemyActivationEffect} from '../../src/effects/enemy-activation-effect.js';
@@ -24,149 +24,154 @@ const createBoostCard = (name, boost, discarded) => ({
     },
 });
 
-test('stored boosts stay facedown and are resolved before the next activation boost', async () => {
-    const discarded = [];
-    const dialogs = [];
-    const first = createBoostCard('Pending 1', 2, discarded);
-    const second = createBoostCard('Pending 2', 3, discarded);
-    const normal = createBoostCard('Normal', 1, discarded);
-    const drawnCards = [first, second, normal];
-    let refreshCount = 0;
-    const villain = {
-        isVillain: true,
-        faceDown: [],
-        addFaceDown(cards, {isFutureBoost}) {
-            cards.forEach(card => {
-                this.faceDown.push(new FaceDown({
-                    attached: this,
-                    card,
-                    isFutureBoost,
-                }));
-            });
-        },
-        async refresh() {
-            refreshCount++;
-        },
-    };
-    const match = {
-        amplificationIcons: 0,
-        villain,
-        triggerCards: {},
-        async drawEncounterCards(count = 1) {
-            return drawnCards.splice(0, count);
-        },
-        async openDialog(dialog) {
-            dialogs.push(dialog);
-
-            return {};
-        },
-    };
-    const storeEffect = new StoreBoostEffect({
-        count: 2,
-        match,
-        target: TARGET_VILLAIN,
-    });
-
-    await storeEffect.runEffect({player: {}});
-
-    assert.equal(villain.faceDown.length, 2);
-    assert.ok(villain.faceDown.every(faceDown => faceDown.isFutureBoost));
-    assert.equal(villain.faceDown[0].toObj().name, undefined);
-    assert.equal(villain.faceDown[0].toObj().image, undefined);
-    assert.equal(villain.faceDown[0].toObj().isEncounterCard, true);
-
-    const activation = new EnemyActivationEffect({
-        enemy: villain,
-        match,
-        selectedTarget: {},
-    });
-    await activation.dealBoostCards({player: {}});
-
-    assert.deepEqual(activation.boostCards, [first, second, normal]);
-    assert.equal(villain.faceDown.length, 0);
-    assert.equal(refreshCount, 2);
-
-    const boostTotal = await activation.resolveBoostCards({player: {}});
-
-    assert.equal(boostTotal, 6);
-    assert.deepEqual(discarded, ['Pending 1', 'Pending 2', 'Normal']);
-    assert.equal(dialogs.length, 3);
-    assert.ok(dialogs.every(({dialogType}) => dialogType === DIALOG_BOOST_DEALT));
-});
-
-test('ordinary facedown cards are not consumed as stored boosts', async () => {
-    const ordinary = createBoostCard('Ordinary facedown', 4, []);
-    const normal = createBoostCard('Normal', 1, []);
-    const villain = {
-        isVillain: true,
-        faceDown: [],
-        async refresh() {},
-    };
-    villain.faceDown.push(new FaceDown({
-        attached: villain,
-        card: ordinary,
-    }));
-    const match = {
-        triggerCards: {},
-        async drawEncounterCards() {
-            return [normal];
-        },
-    };
-    const activation = new EnemyActivationEffect({
-        enemy: villain,
-        match,
-    });
-
-    await activation.dealBoostCards({player: {}});
-
-    assert.deepEqual(activation.boostCards, [normal]);
-    assert.equal(villain.faceDown.length, 1);
-});
-
-test('double-sided villains serialize stored boosts without revealing their identity', () => {
-    const villain = Object.assign(Object.create(GameCard.prototype), {
-        sides: [{
-            toObj() {
-                return {id: 'goblin-stage-1', name: 'Duende Verde'};
+describe('stored villain boosts', () => {
+    test('stored boosts stay facedown and are resolved before the next activation boost', async () => {
+        const discarded = [];
+        const dialogs = [];
+        const first = createBoostCard('Pending 1', 2, discarded);
+        const second = createBoostCard('Pending 2', 3, discarded);
+        const normal = createBoostCard('Normal', 1, discarded);
+        const drawnCards = [first, second, normal];
+        let refreshCount = 0;
+        const villain = {
+            isVillain: true,
+            faceDown: [],
+            addFaceDown(cards, {isFutureBoost}) {
+                cards.forEach(card => {
+                    this.faceDown.push(new FaceDown({
+                        attached: this,
+                        card,
+                        isFutureBoost,
+                    }));
+                });
             },
-        }],
-        selectedSide: 0,
-        counters: 0,
-        faceDown: [],
+            async refresh() {
+                refreshCount++;
+            },
+        };
+        const match = {
+            amplificationIcons: 0,
+            villain,
+            triggerCards: {},
+            async drawEncounterCards(count = 1) {
+                return drawnCards.splice(0, count);
+            },
+            async openDialog(dialog) {
+                dialogs.push(dialog);
+
+                return {};
+            },
+        };
+        const storeEffect = new StoreBoostEffect({
+            count: 2,
+            match,
+            target: TARGET_VILLAIN,
+        });
+
+        await storeEffect.runEffect({player: {}});
+
+        assert.equal(villain.faceDown.length, 2);
+        assert.ok(villain.faceDown.every(faceDown => faceDown.isFutureBoost));
+        assert.equal(villain.faceDown[0].toObj().name, undefined);
+        assert.equal(villain.faceDown[0].toObj().image, undefined);
+        assert.equal(villain.faceDown[0].toObj().isEncounterCard, true);
+
+        const activation = new EnemyActivationEffect({
+            enemy: villain,
+            match,
+            selectedTarget: {},
+        });
+        await activation.dealBoostCards({player: {}});
+
+        assert.deepEqual(activation.boostCards, [first, second, normal]);
+        assert.equal(villain.faceDown.length, 0);
+        assert.equal(refreshCount, 2);
+
+        const boostTotal = await activation.resolveBoostCards({player: {}});
+
+        assert.equal(boostTotal, 6);
+        assert.deepEqual(discarded, ['Pending 1', 'Pending 2', 'Normal']);
+        assert.equal(dialogs.length, 3);
+        assert.ok(dialogs.every(({dialogType}) => dialogType === DIALOG_BOOST_DEALT));
     });
-    villain.faceDown.push(new FaceDown({
-        attached: villain,
-        card: createBoostCard('Hidden boost', 2, []),
-        isFutureBoost: true,
-    }));
 
-    const serialized = villain.toObj();
+    test('ordinary facedown cards are not consumed as stored boosts', async () => {
+        const ordinary = createBoostCard('Ordinary facedown', 4, []);
+        const normal = createBoostCard('Normal', 1, []);
+        const villain = {
+            isVillain: true,
+            faceDown: [],
+            async refresh() {},
+        };
+        villain.faceDown.push(new FaceDown({
+            attached: villain,
+            card: ordinary,
+        }));
+        const match = {
+            triggerCards: {},
+            async drawEncounterCards() {
+                return [normal];
+            },
+        };
+        const activation = new EnemyActivationEffect({
+            enemy: villain,
+            match,
+        });
 
-    assert.equal(serialized.name, 'Duende Verde');
-    assert.equal(serialized.faceDown.length, 1);
-    assert.equal(serialized.faceDown[0].isEncounterCard, true);
-    assert.equal(serialized.faceDown[0].isFutureBoost, true);
-    assert.equal(serialized.faceDown[0].name, undefined);
-    assert.equal(serialized.faceDown[0].image, undefined);
-});
+        await activation.dealBoostCards({player: {}});
 
-test('stored boost markers survive match snapshot restoration', () => {
-    const match = new Match({
-        mc: {},
-        name: 'stored-villain-boost',
+        assert.deepEqual(activation.boostCards, [normal]);
+        assert.equal(villain.faceDown.length, 1);
     });
-    const villain = {faceDown: []};
-    villain.faceDown.push(new FaceDown({
-        attached: villain,
-        card: {name: 'Hidden boost'},
-        isFutureBoost: true,
-    }));
-    match.scenario = {villain};
 
-    const restoredMatch = restoreMatch(serializeMatch(match), {});
-    const restoredBoost = restoredMatch.scenario.villain.faceDown[0];
+    test('double-sided villains serialize stored boosts without revealing their identity', () => {
+        const villain = new GameCard({
+            sides: [
+                new GameCard({
+                    card: {
+                        id: 'goblin-stage-1',
+                        name: 'Duende Verde',
+                        toObj() {
+                            return {id: this.id, name: this.name};
+                        },
+                    },
+                }),
+            ],
+        });
+        villain.faceDown.push(new FaceDown({
+            attached: villain,
+            card: createBoostCard('Hidden boost', 2, []),
+            isFutureBoost: true,
+        }));
 
-    assert.ok(restoredBoost instanceof FaceDown);
-    assert.equal(restoredBoost.isFutureBoost, true);
-    assert.equal(restoredBoost.attached, restoredMatch.scenario.villain);
+        const serialized = villain.toObj();
+
+        assert.equal(serialized.name, 'Duende Verde');
+        assert.equal(serialized.faceDown.length, 1);
+        assert.equal(serialized.faceDown[0].isEncounterCard, true);
+        assert.equal(serialized.faceDown[0].isFutureBoost, true);
+        assert.equal(serialized.faceDown[0].name, undefined);
+        assert.equal(serialized.faceDown[0].image, undefined);
+    });
+
+    test('stored boost markers survive match snapshot restoration', () => {
+        const match = new Match({
+            mc: {},
+            name: 'stored-villain-boost',
+        });
+        const villain = {faceDown: []};
+        villain.faceDown.push(new FaceDown({
+            attached: villain,
+            card: {name: 'Hidden boost'},
+            isFutureBoost: true,
+        }));
+        match.scenario = {villain};
+
+        const restoredMatch = restoreMatch(serializeMatch(match), {});
+        const restoredBoost = restoredMatch.scenario.villain.faceDown[0];
+
+        assert.ok(restoredBoost instanceof FaceDown);
+        assert.equal(restoredBoost.isFutureBoost, true);
+        assert.equal(restoredBoost.attached, restoredMatch.scenario.villain);
+    });
 });

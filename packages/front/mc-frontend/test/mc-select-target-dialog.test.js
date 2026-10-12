@@ -11,6 +11,9 @@ globalThis.window = {
 const {McSelectTargetDialog} = await import(
     '../src/components/dialog/mc-select-target-dialog/mc-select-target-dialog.js'
 );
+const {McListDialog} = await import(
+    '../src/components/dialog/mc-list-dialog/mc-list-dialog.js'
+);
 
 function createDialog() {
     const dialog = Object.create(McSelectTargetDialog.prototype);
@@ -57,4 +60,29 @@ test('target selection dialog hides OK because selecting a card responds immedia
 
     assert.equal(responseSent, true);
     assert.deepEqual(dialog._response, {selected: card});
+});
+
+test('list dialog displays counters when requested for an interrupt card', () => {
+    const dialog = Object.create(McListDialog.prototype);
+    dialog.data = {
+        options: [],
+        card: {
+            counters: 2,
+            image: 'aspect/protection/upgrades/05017.png',
+            name: 'Barrera de energía',
+        },
+        showCounters: true,
+    };
+    dialog.initProperties();
+
+    const template = dialog.renderContent();
+    const genericBinding = template.strings.findIndex(part =>
+        part.includes('.generic='));
+    const showGenericBinding = template.strings.findIndex(part =>
+        part.includes('.showGeneric='));
+
+    assert.notEqual(genericBinding, -1);
+    assert.notEqual(showGenericBinding, -1);
+    assert.equal(template.values[genericBinding], 2);
+    assert.equal(template.values[showGenericBinding], true);
 });
