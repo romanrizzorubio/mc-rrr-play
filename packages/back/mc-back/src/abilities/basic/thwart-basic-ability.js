@@ -23,8 +23,8 @@ export class ThwartBasicAbility extends BasicAbility {
     applyConsequencial() {
         const {card} = this;
 
-        if (card.thwartConsequencial) {
-            return super.applyConsequencial({player: card.controller}, card.thwartConsequencial);
+        if (card.thwartConsequential) {
+            return super.applyConsequencial({player: card.controller}, card.thwartConsequential);
         }
     }
     canRun(params) {

@@ -44,6 +44,7 @@ test('SearchCardAndRevealEffect removes searched cards from their selected place
 
     encounterDiscard.push(discardCard);
     nemesis.push(nemesisCard);
+    scenarioAside.push(nemesisCard);
     scenarioAside.push(asideCard);
 
     effect.removeRevealed(PLACE_ENCOUNTER_DECK_CARDS, [deckCard], player);

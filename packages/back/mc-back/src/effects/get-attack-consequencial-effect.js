@@ -5,12 +5,12 @@ import {
 
 import {Effect} from './effect.js';
 
-export class GetAttackConsequencialEffect extends Effect {
+export class GetattackConsequentialEffect extends Effect {
     constructor({}) {
         super(arguments[0]);
 
-        this.attackConsequencial = 0;
-        this.modifyAttackConsequencial = 0;
+        this.attackConsequential = 0;
+        this.modifyattackConsequential = 0;
     }
     getTriggersInit() {
         return super.getTriggersInit()
@@ -20,8 +20,8 @@ export class GetAttackConsequencialEffect extends Effect {
             ]);
     }
     async execute(_params) {
-        this.attackConsequencial =
-            (this.selectedTarget.attackConsequencial ?? 0) +
-            this.modifyAttackConsequencial;
+        this.attackConsequential =
+            (this.selectedTarget.attackConsequential ?? 0) +
+            this.modifyattackConsequential;
     }
 }

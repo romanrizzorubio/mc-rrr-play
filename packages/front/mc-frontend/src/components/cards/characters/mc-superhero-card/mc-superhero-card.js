@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-superhero-card.css.js';
 import '../../mc-card/mc-card.js';
 import {ABILITY_ID} from '../../../../misc/utils.js';
+import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../../misc/card-menu.js';
 import {EVENTS} from 'mc-endpoints';
 
 export const MENU_OPTION_END = EVENTS.TURN.END;
@@ -32,6 +33,7 @@ export class SuperheroCardComponent extends LitElement {
             flipped: {type: Boolean},
             exhausted: {type: Boolean},
             attached: {type: Array},
+            tuckedCards: {type: Array},
             abilities: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
@@ -55,6 +57,7 @@ export class SuperheroCardComponent extends LitElement {
         this.flipped = false;
         this.exhausted = false;
         this.attached = [];
+        this.tuckedCards = [];
         this.abilities = [];
         this.extraTraits = [];
         this.extraKeywords = [];
@@ -82,6 +85,13 @@ export class SuperheroCardComponent extends LitElement {
             });
         }
 
+        if (this.tuckedCards?.length) {
+            options.push({
+                id: MENU_OPTION_VIEW_TUCKED_CARDS,
+                text: 'Ver cartas metidas debajo',
+            });
+        }
+
         return options;
     }
 
@@ -97,6 +107,18 @@ export class SuperheroCardComponent extends LitElement {
             this.dispatchEvent(new CustomEvent('superhero-flip', {
                 bubbles: true,
                 composed: true,
+            }));
+        } else if (option === MENU_OPTION_VIEW_TUCKED_CARDS) {
+            this.dispatchEvent(new CustomEvent('view-tucked-cards', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: {
+                        name: this.name,
+                        image: this.image,
+                    },
+                    cards: this.tuckedCards,
+                },
             }));
         } else {
             const index = option.substring(ABILITY_ID.length, option.length);
@@ -123,6 +145,7 @@ export class SuperheroCardComponent extends LitElement {
             exhausted,
             statusCards,
             attached,
+            tuckedCards,
             extraTraits,
             extraKeywords,
         } = this;
@@ -136,6 +159,7 @@ export class SuperheroCardComponent extends LitElement {
                     .statusCards="${statusCards}"
                     .exhausted="${exhausted}"
                     .attached="${attached}"
+                    .tuckedCards="${tuckedCards}"
                     .menuOptions="${this.menuOptions}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"

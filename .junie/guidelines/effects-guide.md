@@ -2,6 +2,35 @@
 
 Esta guía define los efectos disponibles en el motor del juego y proporciona criterios para elegir el efecto adecuado según el texto de la carta.
 
+### Confirmación antes de resolver un efecto
+
+`requiresPrePlayConfirmation` es una marca booleana de opt-in del efecto concreto: su valor predeterminado es `false`; configúrala como `true` solo cuando el jugador deba confirmar antes de pagar el coste o retirar la carta. La marca activa la confirmación implementada por la clase concreta, pero no genera el diálogo por sí sola. No la pongas en la habilidad ni en `Effect`. En catálogos se configura dentro de `params` del efecto correspondiente. Si ese efecto está dentro de un `EFFECT_CHAINED` o `EFFECT_SIMULTANEOUS`, pon la marca en el hijo que requiere confirmación; el efecto compuesto delega en sus hijos y no debe llevar la marca.
+
+En `Ability.resolveAbility`, `confirmBeforeResolve(params)` se consulta después de `canRun` y antes de pagar el coste de activación. Para jugar un evento, `PlayCardEffect` la consulta antes de retirar la carta o iniciar su pago. Si se acepta, guarda qué efecto confirmó para que no se vuelva a abrir el mismo diálogo al resolver la habilidad. Al aceptar, sigue el flujo normal; al cancelar, no se pagan costes ni se retira la carta y el intento puede volver a ofrecerse.
+
+Los efectos que implementan la marca calculan los datos de su propio efecto, no mediante rutas repetidas en cada carta:
+
+| Efecto | Datos derivados |
+| :--- | :--- |
+| `EFFECT_PREVENT_DAMAGE` | El daño entrante y el personaje afectado se obtienen del contexto del disparador; la imagen de la vista previa siempre es la carta que tiene la interrupción. La cantidad mostrada es el daño que ese efecto puede prevenir: el daño entrante completo si `damage` es 0, o el menor entre el daño entrante y `damage` si el efecto tiene un límite. |
+| `EFFECT_MODIFY_DEFENSE_VALUE` | El bonificador se calcula con la misma lógica que lo aplica al resolver el efecto (`count` o `paramsCalc`). La vista previa del ataque obtiene del `EnemyAttackEffect` el ATQ, el defensor y su DEF actual, incluidos bonificadores previos. |
+| `EFFECT_CANCEL_BOOST_ICONS` | La cantidad son los iconos que aún quedan en el `ResolveBoostEffect`, incluidos los añadidos por Amplificación; la carta mostrada es la carta de aumento que se está resolviendo. |
+
+Cada efecto concreto construye los datos y calcula los valores de su diálogo en su propio `confirmBeforeResolve(params)`. Reutiliza la misma fórmula o método que se aplica al resolver el efecto para que la vista previa no difiera del resultado. El helper compartido solo abre el diálogo, usa el título de la carta asociada a la habilidad si no se especificó otro y devuelve si el usuario confirmó; no debe acumular ramas por tipo de efecto o presentación. Para el desglose de Defensa hábil, `ModifyDefenseValueEffect` combina su bonificador (el mismo `getModifyDefense(params)` usado al resolver) con la vista previa que proporciona `EnemyAttackEffect.getDefenseBonusPreview(params)`. `McConfirmDialog` proporciona los textos comunes del subtítulo y de los botones, y muestra la cantidad de daño, los iconos de aumento o el desglose de ATQ/DEF según los datos recibidos. Por ejemplo:
+
+```js
+{
+    type: EFFECT_PREVENT_DAMAGE,
+    params: {
+        requiresPrePlayConfirmation: true,
+        target: TARGET_EFFECT,
+        damage: 1
+    }
+}
+```
+
+La fábrica conserva compatibilidad con datos antiguos que usaban `prePlayConfirmation` como objeto en la habilidad, en el efecto compuesto o en el efecto concreto; cada clase concreta interpreta las opciones antiguas que le correspondan. No uses ese objeto en configuraciones nuevas para estos tres efectos. Opciones históricas como `countPath`, `cardPath`, `maxCount` o `bonusPath` solo se mantienen por compatibilidad: los valores de presentación y de resolución se derivan del efecto.
+
 ## Diccionario de Efectos Comunes
 
 | Tipo de Efecto | Uso y Criterio de Selección |
@@ -13,6 +42,7 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_CANCEL_ACTIVATION` | Cancela la activación actual (ataque o ejecución del plan) desde su contexto (`params.attack.effect`, `params.effect` o el objetivo ya seleccionado, en ese orden); la activación no se resuelve. |
 | `EFFECT_REPLACE_EFFECT` | Reemplaza el efecto actual cancelándolo mediante su método `cancel()` y resolviendo el efecto configurado en `replacement`. En un efecto de daño a varios personajes, el reemplazo cancela el daño solo para el personaje indicado por el contexto; los demás objetivos siguen resolviendo el daño. El motor deja de resolver triggers del evento cuando su efecto deja de estar activo. Úsalo para "en vez de eso"; no configures la cancelación y el efecto de reemplazo como pasos independientes de una cadena. |
 | `EFFECT_CANCEL_ENCOUNTER` | Cancela perfidias por defecto; usa `type: CARD_TYPE_ANY` para cancelar cualquier carta de encuentro. |
+| `EFFECT_CANCEL_BOOST_ICONS` | Cancela los iconos de aumento que aún queden en la carta del `ResolveBoostEffect` actual, incluidos los que Amplificación añade a esa carta. No cancela los iconos de Amplificación como capacidad ni impide que se apliquen a otras cartas. Solo puede resolverse si queda al menos un icono de aumento en la carta. Guarda cuántos iconos canceló esta resolución en `cancelledBoostIcons` para efectos posteriores de la misma cadena. |
 | `EFFECT_CANNOT_TARGET` | Solo dentro de `validation` de una capacidad constante. Excluye objetivos según `effectTypes` o `effectCategories` (por ejemplo, `EFFECT_CATEGORY_DAMAGE`); `condition` busca una carta en juego, `targetCondition` limita las cartas afectadas y `effectCondition` evalúa el efecto o su fuente. No se resuelve como efecto normal. |
 | `EFFECT_DEAL_DAMAGE` | Cuando una carta "inflige daño" (deal damage). Es el efecto estándar de ataque. Para seleccionar varios objetivos, configura `multipleTarget: true`; `selectCount` o `targetCountCalc` determina cuántos se eligen. Usa `targetCountCalc` cuando el recuento solo esté disponible después de pagar un coste. |
 | `EFFECT_ASSIGN_DAMAGE` | Para daño indirecto que el jugador reparte entre los personajes indicados. `damage` es el total a distribuir entre todos los objetivos, no una cantidad por personaje; también admite `paramsCalc`. Si solo hay un personaje elegible, asigna el daño automáticamente hasta su vida restante efectiva sin abrir el diálogo. |
@@ -35,8 +65,8 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_SELECT_DISCARD_TO_FIND_CARD` | Para elegir y descartar cartas de una mano. Admite `cardCondition`, `resourceRequirements` para exigir iconos concretos y un recuento dinámico mediante `paramsCalc`. `title` se muestra como instrucción en el diálogo; los códigos de icono, como `[m]` y `[p]`, se renderizan como iconos. Usa `resourceTypes` cuando cada icono de recurso impreso satisface un requisito; una carta con varios iconos puede satisfacer varios requisitos y el diálogo muestra cuántos iconos faltan. |
 | `EFFECT_DISCARD_GAME` | Para "descartar" cartas que ya están en juego (mejoras, apoyos, etc.). |
 | `EFFECT_DISCARD_FROM_DECK` | Para "descartar" cartas directamente desde la parte superior del mazo. Toma solo las cartas disponibles, las descarta juntas y en orden, y conserva esas cartas en `cards` para cálculos posteriores. Acepta un recuento dinámico mediante `paramsCalc`, `count: [N, true]` para descartar N cartas por jugador, y `players: TARGET_ALL_PLAYERS` para afectar a cada jugador. Si el mazo queda vacío, se cicla el descarte después del lote; el efecto no continúa descartando del mazo nuevo. |
-| `EFFECT_DISCARD_UNTIL` | Descarta del mazo objetivo hasta la primera carta que cumpla `condition`, la deja en el descarte y la guarda en `selectedCard` para los siguientes efectos encadenados; no la revela. |
-| `EFFECT_EXHAUST` | Para "agotar" una carta; usa `TARGET_ALL_ALLIES` para agotar todos los aliados en juego o `TARGET_ALL_ALLIES_YOU_CONTROL` para agotar solo los que controla el jugador actual. |
+| `EFFECT_DISCARD_UNTIL` | Descarta del mazo objetivo hasta la primera carta que cumpla `condition`, la deja en el descarte y la guarda en `selectedCard` para los siguientes efectos encadenados; por defecto no muestra las cartas. Usa `showDiscardedCards: true` para abrir un diálogo informativo con las cartas descartadas, incluida la coincidencia, en orden desde la parte superior del mazo. |
+| `EFFECT_EXHAUST` | Para "agotar" una carta; usa `TARGET_ALL_ALLIES` para agotar todos los aliados en juego, `TARGET_ALL_ALLIES_YOU_CONTROL` para agotar solo los que controla el jugador actual y `TARGET_ALL_SUPPORTS` para todos los apoyos en juego. |
 | `EFFECT_REQUIRE_DEFENDER` | Durante un ataque, si hay defensores que cumplen `condition`, solo ofrece esos defensores y obliga a elegir uno; no se puede continuar sin defender. Si ninguno cumple la condición, el ataque continúa con las opciones de defensa normales y puede quedar sin defender según las reglas habituales. |
 | `EFFECT_READY` | Para "preparar" una carta agotada. |
 | `EFFECT_STUN` | Para aplicar el estado "aturdido". |
@@ -45,7 +75,9 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_FLIP` | Para "dar la vuelta" a la carta de identidad (cambiar de Héroe a Alter ego o viceversa). |
 | `EFFECT_SEARCH_CARDS` | Para "buscar" cartas en las ubicaciones indicadas por `locations`, incluidos los mazos y pilas de descartes de jugador y de encuentros. Por defecto permite elegir entre todas las coincidencias; `firstMatch: true` selecciona solo la primera según el orden de búsqueda y `reverseLocations` invierte el orden de las cartas en las ubicaciones indicadas para esa selección. `requireMatch: true` deshabilita la capacidad si no hay cartas que cumplan `filter`; sus campos admiten comparaciones calculadas como `{operator: '<=', paramsCalc: {...}, defaultValue: 0}`, evaluadas para cada carta. `onlyPlayable: true` también exige que cada resultado supere `card.canPlay` en modo de comprobación, sin abrir diálogos. `distinctNames: true` muestra todas las cartas válidas y deshabilita las cartas del mismo nombre mientras una esté seleccionada. `showCancel: true` muestra una opción para cancelar la selección y evita que continúe la cadena del efecto. |
 | `EFFECT_GENERATE_RESOURCES_FROM_CARD` | Para generar un recurso por cada icono de recurso impreso en una carta seleccionada mediante `params.target` y, opcionalmente, `params.position`. |
-| `EFFECT_MOVE_TO_HAND` | Para mover a la mano del jugador actual la carta objetivo. Si depende de una carta obtenida por `EFFECT_SEARCH_CARDS`, configura `target: TARGET_SOURCE` y `source: 'selectedCards'` para que use ese resultado y no una carta ajena recibida en `params.card`. |
+| `EFFECT_MOVE_TO_HAND` | Para mover una o varias cartas a la mano del jugador actual. `target: TARGET_SOURCE` con `source` apunta a la colección de candidatos; las cartas elegidas se retiran de su mazo/descarte habitual o de una colección viva (por ejemplo, `ability.card.tuckedCards`), que se actualiza y refresca. Usa `selectCount` y `selectUpTo` para limitar una selección múltiple. |
+| `EFFECT_MOVE_TO_DECK` | Para mover cartas al mazo. `position` admite `DECK_POSITION_TOP`, `DECK_POSITION_BOTTOM` o `DECK_POSITION_SHUFFLE`; por defecto usa `DECK_POSITION_SHUFFLE`. Las cartas múltiples conservan el orden recibido al colocarse arriba o abajo; `shuffle` las mezcla junto con el resto del mazo. |
+| `EFFECT_TUCK_UNDER` | Para meter cartas de la mano debajo de la carta anfitriona indicada por `target`. `cards` recibe un array de cartas ya seleccionadas, o una ruta del contexto (por ejemplo, `'selectedCards'`) que resuelva a ese array; este efecto no selecciona las cartas. En una cadena, elige las cartas antes con un efecto como `EFFECT_SEARCH_CARDS` y pásalas mediante `cards`. Las cartas metidas debajo permanecen bocarriba, no están en juego ni vinculadas, y se descartan si el anfitrión abandona el juego. |
 | `EFFECT_SHUFFLE_DECK` | Para "barajar" el mazo. |
 | `EFFECT_CHAINED` | Para pasos que se resuelven en orden o cuando un paso necesita el resultado de otro. Si un hijo no puede ejecutarse, lo omite y continúa con los siguientes. Los costes requieren que todos sus hijos se resuelvan; un `thenEffect` solo se ejecuta si todos los hijos previos se resolvieron por completo. Estas condiciones se detectan automáticamente, sin `matchAll`. Conserva el contexto de capacidad y, si `thenEffect` usa el mismo `target`, reutiliza el objetivo ya seleccionado. |
 | `EFFECT_CANNOT` | Para una capacidad constante que prohíbe una acción comprobada por una restricción. `restriction` nombra la clave de `params.restrictions` que debe pasar a `false`; `sourceIn` puede limitarla a cuando la carta fuente aparece en la lista resuelta desde esa ruta de parámetros; `targetCondition` puede limitarla según la carta evaluada (`triggeredCard` o `card`). Las comprobaciones de permiso para preparar o cambiar de identidad usan sus triggers de jugador con la restricción inicialmente permitida. Usa `EFFECT_CANNOT_TARGET` cuando la prohibición deba invalidar objetivos. |
@@ -55,12 +87,12 @@ Esta guía define los efectos disponibles en el motor del juego y proporciona cr
 | `EFFECT_SPEND` | Como efecto, puede resolverse parcialmente: debe haber al menos un requisito pagable y se pagan tantos requisitos como permitan los recursos disponibles. Como coste, todos los requisitos deben pagarse. |
 | `EFFECT_RESOLVE_SPECIAL_ABILITY` | Selecciona y resuelve capacidades Especiales válidas en las cartas de `locations` que coincidan con `filter`. `resolveAll: true` repite hasta que no queden capacidades válidas; por defecto se resuelve solo una. |
 | `EFFECT_RESOLVE_ABILITY` | Vuelve a resolver la capacidad indicada por `target`, usando `TARGET_REVEALED_ABILITY` para la capacidad «Cuando se muestre esta carta» del contexto. Usa el objeto de capacidad concreto que produjo el evento, no una búsqueda por nombre. |
-| `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. |
+| `EFFECT_LASTING` | Para registrar un efecto hasta un límite temporal y, opcionalmente, ejecutar una limpieza al expirar. Usa `TRIGGER_YOU_PLAY_CARD` para disparar solo cuando el controlador de la capacidad juegue una carta; `TRIGGER_PLAY_CARD` no limita el jugador. |
 | `EFFECT_MAY` | Para efectos opcionales ("Puedes..."). |
 | `EFFECT_CHOOSE_ABILITY` | Para elegir entre varias opciones de una misma carta. |
 | `EFFECT_PAY_PRINTED_COST` | Para pagar el coste impreso de la carta seleccionada con los recursos del jugador actual. |
 | `EFFECT_MODIFY_ATTACK_VALUE` | Para modificar el valor de ATQ de forma temporal o permanente. |
-| `EFFECT_MODIFY_ATTACK_CONSEQUENCIAL` | Para modificar el daño derivado que sufre un aliado después de atacar; resuelve el valor mediante `GetAttackConsequencialEffect`, igual que los modificadores de ATQ usan `GetAttackEffect`. |
+| `EFFECT_MODIFY_ATTACK_CONSEQUENCIAL` | Para modificar el daño derivado que sufre un aliado después de atacar; resuelve el valor mediante `GetattackConsequentialEffect`, igual que los modificadores de ATQ usan `GetAttackEffect`. |
 | `EFFECT_MODIFY_DEFENSE_VALUE` | Para modificar DEF durante su cálculo dinámico. |
 | `EFFECT_MODIFY_THWART_VALUE` | Para modificar el valor de Intervención (INT). |
 | `EFFECT_PUT_PLAY` | Para "poner en juego" una carta sin pagar su coste. `requirePlayable: true` comprueba las restricciones normales de juego de una carta de jugador antes de ponerla en juego. `cardSource` puede señalar una lista del contexto de ejecución y `cardCondition` escoger de ella la carta que se pondrá en juego. |
@@ -90,6 +122,10 @@ condition: {
 
 Prefiere este filtro declarativo a añadir propiedades especiales por carta, callbacks o métodos de filtrado específicos en `ForEachEffect`. No ramifiques el efecto según un selector concreto como `TARGET_ALL_PLAYERS`: pásalo al resolvedor estándar, conserva el orden que devuelva y aplica únicamente los filtros configurados. Sin filtro, devuelve los objetivos resueltos sin reordenarlos.
 
+`TARGET_ALL_SUPPORTS` resuelve los apoyos que están en juego, independientemente de quién los controle. Úsalo cuando el texto afecte a todos los apoyos y aplícale `condition` si el efecto solo debe alcanzar algunos.
+
+Las cartas que pueden jugarse desde una zona adicional declaran `playFrom` como una lista de ubicaciones (`PLACE_*`), por ejemplo `playFrom: [PLACE_DISCARD_PILE]`. La mano sigue siendo un origen normal sin declararla; el motor también admite la baraja y la pila de descartes como orígenes configurables. La elegibilidad sigue pasando por `card.canPlay`, además de las restricciones normales de juego.
+
 ### Pruebas de rutas sobre el contexto del efecto
 
 - Cuando una configuración lea rutas del contexto de ejecución (`paramsCalc`, `targetCountCalc`, `condition`, `effectCondition`, `condition.exclude`, `sourceIn` u otra equivalente), añade una prueba de regresión que invoque la capacidad o el efecto con la misma forma de contexto que usa el motor.
@@ -101,6 +137,8 @@ Prefiere este filtro declarativo a añadir propiedades especiales por carta, cal
 «Ese/a» identifica el objetivo concreto indicado antes en el texto. Configura la cadena y los efectos dependientes para reutilizar ese mismo objetivo; no vuelvas a abrir una selección independiente. Si no existe un objetivo válido para el efecto inicial, no debe resolverse el efecto que depende de «ese/a».
 
 `multipleTarget: true` evita la preselección de un solo objetivo antes de pagar costes. El efecto realiza su selección durante la resolución; usa un recuento dinámico cuando el número de objetivos dependa de cartas u otros resultados del coste.
+
+`selectUpTo: true` permite seleccionar desde cero objetivos hasta el máximo indicado por `selectCount`; si se omite `selectCount`, el máximo es el total de candidatos válidos.
 
 `EFFECT_LASTING` ejecuta inmediatamente `effect` cuando no se indica `triggerType`. Las mutaciones reversibles registran su limpieza en la duración y se revierten automáticamente al expirar; `endEffect` queda para limpiezas personalizadas. Los valores `TIME_*` se resuelven mediante `TIME_TRIGGER_MAP`; los triggers explícitos en `until` se conservan.
 
@@ -144,6 +182,7 @@ Prefiere este filtro declarativo a añadir propiedades especiales por carta, cal
 ### Ventanas de respuesta y condiciones
 
 - `ABILITY_RESPONSE` se evalúa en la ventana `PRIORITY_RESPONSE` del trigger que acaba de ocurrir. Coloca ese trigger en la ventana de fin del efecto (`getTriggersEnds`) cuando la respuesta dependa del estado final del efecto; `getTriggersInit` ocurre antes de ejecutar el efecto y `triggerInit` procesa constantes e interrupciones, no respuestas.
+- El motor vuelve a evaluar las interrupciones y respuestas disponibles después de cada resolución. Al añadir o devolver un Evento a la mano durante una ventana abierta, inicializa sus triggers de nuevo; la carta devuelta, incluso si es el mismo objeto físico, cuenta como una nueva opción para esa ocurrencia.
 - `TRIGGER_THIS_SCHEME` se dispara al final de la activación de Plan del enemigo que lo inició.
 - Las condiciones de una capacidad se comprueban contra el payload del trigger. Usa `effect.<propiedad>` para consultar el efecto que acaba de resolverse; todas las claves de `condition` deben cumplirse. Para exigir que cada elemento de una lista cumpla una condición, usa `{every: {...}}` en la clave que apunta a la lista. No uses `activation.<propiedad>` salvo que el payload realmente incluya ese campo.
 - En `TRIGGER_THIS_ATTACK`, cuando el ataque inflige daño, la ventana de fin se procesa desde el `TakeDamageEffect` antes de que `DealDamageEffect` copie el daño a `attack.takenDamage`. Comprueba el daño efectivo con `{'effect.takenDamage': '>0'}` y el personaje que lo recibió con `effect.selectedTarget` (por ejemplo, `effect.selectedTarget.isSuperhero`); no supongas que `effect.attacked` existe en ese payload, porque corresponde al efecto de ataque envolvente. Este patrón escalar es para un único objetivo: si `takenDamage` o `selectedTarget` son listas, adapta la condición al objetivo concreto y prueba esa forma.

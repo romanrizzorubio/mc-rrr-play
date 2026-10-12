@@ -30,11 +30,22 @@ export class FaceDownEffect extends Effect {
             });
         }
     }
-    execute(_params) {
+    async execute() {
         const {selectedTarget, cards} = this;
+        const selectedCards = Array.isArray(cards) ? cards : [cards];
+        const owners = new Set();
+
+        selectedCards.forEach(card => {
+            const owner = card.owner;
+            if (owner?.hand?.cards.includes(card)) {
+                owner.hand.discardHand(card);
+                owners.add(owner);
+            }
+        });
 
         selectedTarget.addFaceDown(cards);
 
+        await this.promisesSequential([...owners], owner => owner.hand.refresh());
         selectedTarget.refresh();
     }
 }

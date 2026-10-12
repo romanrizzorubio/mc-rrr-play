@@ -5,6 +5,13 @@ import {
     PLACE_OUTSIDE_NEMESIS,
 } from 'mc-shared';
 
+const removeCardFrom = (collection, card) => {
+    const index = collection.indexOf(card);
+    if (index > -1) {
+        collection.splice(index, 1);
+    }
+};
+
 export const SET_ASIDE_PLACES = new Set([
     PLACE_ASIDE_MATCH,
     PLACE_OUTSIDE_NEMESIS,
@@ -13,12 +20,8 @@ export const SET_ASIDE_PLACES = new Set([
 export const removeFromPlace = new Map([
     [
         PLACE_ASIDE_MATCH,
-        (effect, cards) => cards.forEach(card => {
-            const index = effect.match.scenario.apart.indexOf(card);
-            if (index > -1) {
-                effect.match.scenario.apart.splice(index, 1);
-            }
-        }),
+        (effect, cards) => cards.forEach(card =>
+            removeCardFrom(effect.match.scenario.apart, card)),
     ],
     [
         PLACE_ENCOUNTER_DECK_CARDS,
@@ -32,11 +35,9 @@ export const removeFromPlace = new Map([
     ],
     [
         PLACE_OUTSIDE_NEMESIS,
-        (_effect, cards, player) => cards.forEach(card => {
-            const index = player.superhero.nemesis.indexOf(card);
-            if (index > -1) {
-                player.superhero.nemesis.splice(index, 1);
-            }
+        (effect, cards, player) => cards.forEach(card => {
+            removeCardFrom(player.superhero.nemesis, card);
+            removeCardFrom(effect.match.scenario.apart, card);
         }),
     ],
 ]);

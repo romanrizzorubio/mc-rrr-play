@@ -12,11 +12,13 @@ import {getResourceName} from '../utils/resource-name.js';
 
 export class SpendEffect extends Effect {
     constructor({
-        resources
+        resources,
+        differentTypes = false,
     }) {
         super(arguments[0]);
 
         this.resources = resources;
+        this.differentTypes = differentTypes;
 
         this.isPaid = false;
         this.isFullyPaid = false;
@@ -89,6 +91,7 @@ export class SpendEffect extends Effect {
             session.getExcludedCardIds(),
             {
                 allowPartial: this.allowPartialPayment(params),
+                differentTypes: this.differentTypes,
             }
         );
     }
@@ -114,6 +117,7 @@ export class SpendEffect extends Effect {
                 {
                     allowPartial,
                     showCancel: !allowPartial || Boolean(params.isChosenOption),
+                    differentTypes: this.differentTypes,
                 }
             );
 

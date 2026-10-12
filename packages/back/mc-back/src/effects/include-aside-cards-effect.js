@@ -1,10 +1,7 @@
-import {
-    PLACE_ASIDE_MATCH,
-   PLACE_OUTSIDE_NEMESIS,
-   TARGET_SCENARIO,
-} from 'mc-shared';
+import {PLACE_ASIDE_MATCH, TARGET_SCENARIO} from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
+import {removeFromPlace} from '../utils/card-place-utils.js';
 
 import {Effect} from './effect.js';
 
@@ -38,15 +35,12 @@ export class IncludeAsideCardsEffect extends Effect {
         return false;
     }
     removeIncluded(place, cards, player) {
-        switch (place) {
-            case PLACE_OUTSIDE_NEMESIS:
-                cards.forEach(card => {
-                    const index = player.superhero.nemesis.indexOf(card);
-                    if (index > -1) {
-                        player.superhero.nemesis.splice(index, 1);
-                    }
-                });
+        const remove = removeFromPlace.get(place);
+        if (!remove) {
+            throw new Error(`Unsupported card inclusion place: ${place}`);
         }
+
+        remove(this, cards, player);
     }
     async prepare(params) {
         await super.prepare(params);

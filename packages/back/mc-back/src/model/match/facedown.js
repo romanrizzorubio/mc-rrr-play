@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto';
+
 import {Engine} from '../../engine/engine.js';
 
 export class FaceDown extends Engine {
@@ -12,6 +14,7 @@ export class FaceDown extends Engine {
         this.card = card;
         this.attached = attached;
         this.isFutureBoost = isFutureBoost;
+        this.id = randomUUID();
     }
     discard() {
         return this.card.discard();
@@ -41,23 +44,15 @@ export class FaceDown extends Engine {
             };
         }
 
-        const {card: {
-            name,
-            isEncounterCard,
-            isPlayerCard,
-            isVillain,
-            owner,
-            card: {image},
-        }} = this;
+        const {card} = this;
 
         return {
             ...super.toObj(arguments[0]),
-            name,
-            image,
-            isEncounterCard,
-            isPlayerCard,
-            isVillain,
-            owner: owner.name,
+            id: this.id,
+            isFaceDown: true,
+            isEncounterCard: card.isEncounterCard,
+            isPlayerCard: card.isPlayerCard,
+            owner: card.owner?.name,
         };
     }
 }

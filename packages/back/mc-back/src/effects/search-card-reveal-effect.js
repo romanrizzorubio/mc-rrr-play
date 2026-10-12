@@ -4,7 +4,7 @@ import {ValidTarget} from '../targets/valid-target.js';
 import {
     removeFromPlace,
     SET_ASIDE_PLACES,
-} from '../utils/search-card-reveal-effect-utils.js';
+} from '../utils/card-place-utils.js';
 
 import {Effect} from './effect.js';
 import {RevealEncounterEffect} from './reveal-encounter-effect.js';

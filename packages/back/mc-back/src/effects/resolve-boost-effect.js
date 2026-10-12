@@ -1,6 +1,11 @@
-import {DIALOG_BOOST_DEALT, DIALOG_ENCOUNTERS_REVEAL} from 'mc-shared';
+import {
+    DIALOG_BOOST_DEALT,
+    DIALOG_ENCOUNTERS_REVEAL,
+    TRIGGER_BOOST_REVEALED,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {getBoostIconCancellation} from '../utils/boost-icons.js';
 
 export class ResolveBoostEffect extends Effect {
     constructor({
@@ -18,6 +23,21 @@ export class ResolveBoostEffect extends Effect {
 
         this.boostValue = 0;
         this.value = 0;
+        this.cancelledBoostIcons = 0;
+    }
+    get hasCancelableBoostIcons() {
+        return getBoostIconCancellation(this).remainingBoostIcons > 0;
+    }
+    getTriggersInit() {
+        return super.getTriggersInit()
+            .concat([TRIGGER_BOOST_REVEALED]);
+    }
+    getTriggersParams(params) {
+        return {
+            ...super.getTriggersParams(params),
+            card: this.card,
+            triggeredCard: this.card,
+        };
     }
     async prepare(params) {
         await super.prepare(params);

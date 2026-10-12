@@ -81,7 +81,7 @@ export class Ability extends Engine {
     set card(card) {
         this._card = card;
 
-        if (this.effect && this.effect.isChooseAbility) {
+        if (this.effect?.isChooseAbility) {
             this.effect.options.forEach(option => {
                 option.card = card;
             });
@@ -108,17 +108,17 @@ export class Ability extends Engine {
     get isAttack() {
         const {labels} = this;
 
-        return labels.some(label => label === LABEL_ATTACK);
+        return labels.includes(LABEL_ATTACK);
     }
     get isDefense() {
         const {labels} = this;
 
-        return labels.some(label => label === LABEL_DEFENSE);
+        return labels.includes(LABEL_DEFENSE);
     }
     get isThwart() {
         const {labels} = this;
 
-        return labels.some(label => label === LABEL_THWART);
+        return labels.includes(LABEL_THWART);
     }
     get keepTriggering() {
         return this.effect?.keepTriggering ?? false;
@@ -128,6 +128,10 @@ export class Ability extends Engine {
     }
     async canRun(params) {
         const {player} = params;
+
+        if (this.card?.printedTextBlank) {
+            return false;
+        }
 
         if (this.condition && !checkCondition(params, this.condition)) {
             return false;
@@ -257,6 +261,19 @@ export class Ability extends Engine {
             const canRun = await this.canRun(params);
 
             if (canRun) {
+                const effect = this.effect;
+                const canConfirmBeforeResolve =
+                    typeof effect?.confirmBeforeResolve === 'function';
+                const confirmationAccepted =
+                    !effect ||
+                    params.prePlayConfirmationAcceptedFor === effect ||
+                    !canConfirmBeforeResolve ||
+                    await effect.confirmBeforeResolve(params);
+                if (!confirmationAccepted) {
+                    this.paymentCancelled = true;
+                    return;
+                }
+
                 const costsPaid = arrowPaid || await this.payArrow(params);
 
                 if (costsPaid) {

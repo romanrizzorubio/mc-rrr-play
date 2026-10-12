@@ -108,6 +108,88 @@ test('Backflip is offered before attack damage is applied', async () => {
     assert.equal(eventPlayed, true);
 });
 
+test('Backflip confirmation shows the damage and character before playing the event', async () => {
+    const backflip = spiderman.config.cards.find(({card}) =>
+        card.params.name === 'Voltereta hacia atrás');
+    assert.ok(backflip);
+
+    let confirmation;
+    const match = {
+        activationsFactory: {
+            createActivation: () => undefined,
+        },
+        players: [],
+        triggerCards: {},
+        openDialog: async dialog => {
+            confirmation = dialog;
+
+            return {confirmed: true};
+        },
+    };
+    const damagedCharacter = {
+        image: 'heroes/spiderman/peter1.webp',
+        name: 'Spider-Man',
+        toObj() {
+            return {
+                image: this.image,
+                name: this.name,
+            };
+        },
+    };
+    const player = {
+        isHero: true,
+        isPlayer: true,
+        superhero: {
+            currentSide: damagedCharacter,
+        },
+    };
+    match.players.push(player);
+    const card = {
+        id: 'backflip',
+        image: 'heroes/spiderman/05002.png',
+        isEvent: true,
+        name: 'Voltereta hacia atrás',
+        owner: player,
+        triggers: {},
+        toObj() {
+            return {
+                id: this.id,
+                image: this.image,
+                name: this.name,
+            };
+        },
+    };
+    const ability = new AbilitiesFactory({match})
+        .createAbility(backflip.card.params.abilities[0]);
+    ability.card = card;
+    assert.equal(ability.prePlayConfirmation, undefined);
+    assert.equal(typeof ability.confirmBeforeResolve, 'undefined');
+    assert.equal(ability.effect.requiresPrePlayConfirmation, true);
+    await ability.initTriggers(card);
+    const trigger = card.triggers[TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE]
+        [PRIORITY_INTERRUPT][0];
+    const effect = new TakeDamageEffect({
+        damage: 4,
+        isAttack: true,
+        match,
+        selectedTarget: player,
+    });
+    const triggerParams = trigger.getAbilityParams(
+        effect.getTriggersParams({match, player})
+    );
+    const playCardEffect = new PlayCardEffect({ability, card, match});
+
+    assert.equal(await playCardEffect.confirmBeforePlay({
+        ...triggerParams,
+        player,
+    }), true);
+
+    assert.equal(confirmation.title, 'Voltereta hacia atrás');
+    assert.equal(confirmation.data.preventedDamage, 4);
+    assert.equal(confirmation.data.card.image, card.image);
+    assert.equal(playCardEffect.prePlayConfirmationAcceptedFor, ability.effect);
+});
+
 test('Backflip prevents all damage from the triggering attack', async () => {
     const backflip = spiderman.config.cards.find(({card}) =>
         card.params.name === 'Voltereta hacia atrás');
@@ -123,6 +205,74 @@ test('Backflip prevents all damage from the triggering attack', async () => {
     await effect.execute({effect: attackDamage});
 
     assert.equal(attackDamage.preventDamage, attackDamage.damage);
+});
+
+test('Defensa hábil previews current enemy attack and successive defense bonuses', async () => {
+    const event = protectionEvents.find(({card}) =>
+        card.params.name === 'Defensa hábil');
+    assert.ok(event);
+
+    const dialogs = [];
+    const match = {
+        openDialog: async dialog => {
+            dialogs.push(dialog);
+
+            return {confirmed: true};
+        },
+    };
+    const abilitiesFactory = new AbilitiesFactory({match});
+    const createAbility = () =>
+        abilitiesFactory.createAbility(event.card.params.abilities[0]);
+    const attack = new EnemyAttackEffect({
+        enemy: {
+            name: 'Rhino',
+            getAttackValue: async () => 2,
+        },
+        match,
+    });
+    attack.defender = {
+        isHero: true,
+        name: 'Spider-Man',
+        getDefenseValue: async () => 2,
+    };
+    attack.modifyDefense = 1;
+
+    const firstAbility = createAbility();
+    firstAbility.card = {name: 'Defensa hábil'};
+    assert.equal(firstAbility.effect.requiresPrePlayConfirmation, true);
+    assert.equal(firstAbility.effect.prePlayConfirmation, undefined);
+    assert.equal(await firstAbility.effect.confirmBeforeResolve({
+        effect: attack,
+        player: {},
+    }), true);
+    assert.equal(dialogs[0].title, 'Defensa hábil');
+    assert.equal(dialogs[0].subtitle, undefined);
+    assert.deepEqual(dialogs[0].data.defenseBonus, {
+        enemyName: 'Rhino',
+        attackValue: 2,
+        defenderName: 'Spider-Man',
+        defenseValue: 3,
+        bonus: 3,
+        totalDefense: 6,
+    });
+
+    firstAbility.effect.selectedTarget = attack;
+    await firstAbility.effect.execute({});
+
+    const secondAbility = createAbility();
+    secondAbility.card = {name: 'Defensa hábil'};
+    await secondAbility.effect.confirmBeforeResolve({
+        effect: attack,
+        player: {},
+    });
+    assert.deepEqual(dialogs[1].data.defenseBonus, {
+        enemyName: 'Rhino',
+        attackValue: 2,
+        defenderName: 'Spider-Man',
+        defenseValue: 6,
+        bonus: 3,
+        totalDefense: 9,
+    });
 });
 
 test('Poneos detras de mi resolves its attack against the villain', async () => {

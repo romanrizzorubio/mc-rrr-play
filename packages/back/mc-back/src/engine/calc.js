@@ -13,7 +13,7 @@ import {
     CALC_ALL,
 RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-shared';
 
-import { path} from './utils.js';
+import {checkCondition, path} from './utils.js';
 
 const CALCULATION_MAP = {
     [CALC_BOOST_ICONS]: source => {
@@ -23,12 +23,19 @@ const CALCULATION_MAP = {
 
         return source.reduce((sum, card) => sum + (card.boost ?? 0), 0);
     },
-    [CALC_COUNT]: (source, {target}) => {
+    [CALC_COUNT]: (source, {target, conditions}) => {
         if (!Array.isArray(source)) {
             throw new Error(`CALC_COUNT requiere que "${target}" resuelva a una lista.`);
         }
 
-        return source.length;
+        if (!conditions) {
+            return source.length;
+        }
+
+        const filters = Array.isArray(conditions) ? conditions : [conditions];
+
+        return source.filter(item =>
+            filters.some(condition => checkCondition(item, condition))).length;
     },
     [CALC_HALF_ROUNDED_DOWN]: source =>
         Math.floor((Array.isArray(source) ? source.length : source) / 2),

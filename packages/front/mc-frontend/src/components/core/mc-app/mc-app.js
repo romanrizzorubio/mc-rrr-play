@@ -9,6 +9,7 @@ import '../mc-main/mc-main.js';
 import '../../../pages/mc-create-match-page/mc-create-match-page.js';
 import '../../common/mc-alert/mc-alert.js';
 import {Api} from '../../api/api.js';
+import {Player} from '../../api/player.js';
 import {Dialog} from '../../api/dialog.js';
 import stylesDialog from '../../dialog/mc-dialog/mc-dialog.css.js';
 import {EVENTS} from 'mc-endpoints';
@@ -28,6 +29,7 @@ import {
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
+    PLACE_DISCARD_PILE,
 } from 'mc-shared';
 
 class McApp extends router(navigator(outlet(LitElement))) {
@@ -330,16 +332,43 @@ class McApp extends router(navigator(outlet(LitElement))) {
         };
     }
     handleViewDiscard(e) {
-        const {cards, title} = e.detail;
+        const {cards, title, isPlayerDeck} = e.detail;
+        const playFromPlace = isPlayerDeck ? PLACE_DISCARD_PILE : null;
 
         this.openDialog({
             dialogType: DIALOG_REVEAL_CARDS,
             title,
-            subtitle: 'Ordenadas desde la carta superior hacia abajo.',
+            subtitle: isPlayerDeck ?
+                'Ordenadas desde la carta superior hacia abajo. Selecciona una carta que puedas jugar desde el descarte.' :
+                'Ordenadas desde la carta superior hacia abajo.',
             data: {
                 cards,
                 rotatePlanCards: true,
+                playFromPlace,
             },
+            callback: async response => {
+                if (response?.selected?.playFrom?.includes(playFromPlace)) {
+                    await new Player(this.api).playCard(
+                        this.player,
+                        response.selected.id
+                    );
+                }
+            },
+        });
+    }
+    handleViewTuckedCards(e) {
+        const {card, cards} = e.detail;
+
+        if (!cards?.length) {
+            return;
+        }
+
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title: card?.name ?
+                `Cartas metidas debajo de ${card.name}` :
+                'Cartas metidas debajo',
+            data: {cards},
             callback: () => {},
         });
     }
@@ -627,6 +656,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                           @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
                           @change-match="${this.handleMatchChanged.bind(this)}"
                           @view-discard="${this.handleViewDiscard.bind(this)}"
+                          @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
                           @communication-error="${this.handleCommunicationError.bind(this)}"
                       ></mc-match-page>
                   `)}

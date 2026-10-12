@@ -1,4 +1,5 @@
 import {checkCondition} from '../../engine/utils.js';
+import {getPlayerCardLocation} from '../../utils/player-card-play-from.js';
 
 import {Card} from './card.js';
 
@@ -10,14 +11,22 @@ export class PlayerCard extends Card {
         cost,
         classification,
         paramsToPlay,
+        controllerTarget,
+        playFrom = [],
         resources = [],
         requirement = [],
     }) {
         super(arguments[0]);
 
+        if (!Array.isArray(playFrom)) {
+            throw new TypeError('Player card playFrom must be an array of places.');
+        }
+
         this.cost = cost;
         this.resources = resources;
         this.paramsToPlay = paramsToPlay;
+        this.controllerTarget = controllerTarget;
+        this.playFrom = [...playFrom];
         this.classification = classification;
         this.requirement = requirement;
 
@@ -33,6 +42,13 @@ export class PlayerCard extends Card {
     }
     canPlay(params) {
         const {gameCard} = params;
+
+        const sourcePlayer = gameCard?.owner ?? params.player;
+        const place = gameCard && !sourcePlayer?.hand?.cards.includes(gameCard) &&
+            getPlayerCardLocation(gameCard, sourcePlayer)?.place;
+        if (place && !this.playFrom.includes(place)) {
+            return false;
+        }
 
         if (this.match && this.match.isUniqueCard(gameCard || this)) {
             return false;
@@ -51,7 +67,7 @@ export class PlayerCard extends Card {
         return this.getResources();
     }
     toObj(params = {}) {
-        const {cost} = this;
+        const {cost, playFrom} = this;
         const {card} = params;
 
         const resources = this.getResources(card);
@@ -60,6 +76,7 @@ export class PlayerCard extends Card {
             ...super.toObj(arguments[0]),
             cost,
             resources,
+            playFrom: [...playFrom],
         };
     }
 }

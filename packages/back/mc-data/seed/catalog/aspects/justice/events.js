@@ -3,17 +3,23 @@ import {
     ABILITY_HERO_INTERRUPT,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
+    EFFECT_CONFUSE,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_REMOVE_THREAT,
     EFFECT_TAKE_DAMAGE,
     LABEL_THWART,
+    LABEL_ATTACK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_ENEMY,
     TARGET_SCHEME,
     TARGET_YOU,
     TRAIT_THWART,
+    TRAIT_ATTACK,
     TRIGGER_WOULD_PLACE_THREAT
 } from 'mc-shared';
 
@@ -111,6 +117,59 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-golpe-contundente',
+        'aspect': 'justice',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Golpe contundente',
+                'set': 'justice',
+                'image': 'aspect/justice/events/05031.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'justice',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CONFUSE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'thenEffect': {
+                                        'type': EFFECT_DO_IF_HAS_PAID,
+                                        'params': {
+                                            'target': TARGET_ENEMY,
+                                            'resources': [
+                                                RESOURCE_PHYSICAL
+                                            ],
+                                            'effect': {
+                                                'type': EFFECT_DEAL_DAMAGE,
+                                                'params': {
+                                                    'target': TARGET_ENEMY,
+                                                    'damage': 3
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

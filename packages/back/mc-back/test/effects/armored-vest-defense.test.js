@@ -57,6 +57,7 @@ function createPlayer(match, name, superheroName = 'Capitana Marvel') {
         damage: 0,
         extraTraits: [],
         modifyAttack: 0,
+        modifyDefense: 0,
         modifyThwart: 0,
         modifyHitPoints: 0,
         _controller: player,

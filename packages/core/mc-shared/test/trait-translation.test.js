@@ -13,6 +13,7 @@ import {
     TRAIT_DROID,
     TRAIT_GOBLIN,
     TRAIT_LOCATION,
+    TRAIT_PERSONA,
     TRAIT_SKILL,
     TRAIT_SPY,
     TRAIT_TACTIC,
@@ -41,6 +42,7 @@ test('translates supported traits to Spanish labels', () => {
         [TRAIT_TITLE, 'Título'],
         [TRAIT_DROID, 'Androide'],
         [TRAIT_GOBLIN, 'Duende'],
+        [TRAIT_PERSONA, 'Individuo'],
     ]);
 
     translations.forEach((label, trait) => {

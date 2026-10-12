@@ -93,14 +93,6 @@ export class TakeDamageEffect extends Effect {
             target.superhero.currentSide :
             target;
     }
-    getInterruptDialogSubtitle() {
-        const {takenDamage} = this;
-        const damage = Array.isArray(takenDamage) ?
-            takenDamage.reduce((total, amount) => total + Math.max(amount, 0), 0) :
-            Math.max(takenDamage, 0);
-
-        return `Si no eliges ninguna Interrupción más, sufrirás ${damage} de Daño en total.`;
-    }
     checkStatus() {
         const {selectedTarget} = this;
 

@@ -126,6 +126,13 @@ export class DoIfEffect extends Effect {
     getSource(params) {
         return path(params, this.source);
     }
+    getPaymentResourcePreferences() {
+        return [
+            ...super.getPaymentResourcePreferences(),
+            ...(this.effect?.getPaymentResourcePreferences() ?? []),
+            ...(this.effectNot?.getPaymentResourcePreferences() ?? []),
+        ];
+    }
     async execute(params) {
         const checked = await this.checkCondition(params);
         const effect = checked ? this.effect : this.effectNot;

@@ -28,6 +28,7 @@ export class McCharacterCard extends LitElement {
             statusCards: {type: Object},
             attached: {type: Array},
             faceDown: {type: Array},
+            tuckedCards: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
             headerLeft: {type: Number, attribute: 'header-left'},
@@ -54,6 +55,7 @@ export class McCharacterCard extends LitElement {
         this.statusCards = {};
         this.attached = [];
         this.faceDown = [];
+        this.tuckedCards = [];
         this.extraTraits = [];
         this.extraKeywords = [];
         this.headerLeft = undefined;
@@ -78,6 +80,7 @@ export class McCharacterCard extends LitElement {
             statusCards,
             attached,
             faceDown,
+            tuckedCards,
             extraTraits,
             extraKeywords,
             headerLeft,
@@ -96,6 +99,7 @@ export class McCharacterCard extends LitElement {
                 .statusCards="${statusCards}"
                 .attached="${attached}"
                 .faceDown="${faceDown}"
+                .tuckedCards="${tuckedCards}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"
                 show-acquired-traits

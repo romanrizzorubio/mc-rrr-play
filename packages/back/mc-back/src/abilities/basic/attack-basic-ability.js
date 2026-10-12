@@ -19,7 +19,7 @@ export class AttackBasicAbility extends BasicAbility {
     }
     async applyConsequencial(params) {
         const {card} = this;
-        const damage = await card.getAttackConsequencialValue(params);
+        const damage = await card.getattackConsequentialValue(params);
 
         if (damage) {
             return super.applyConsequencial({player: card.controller}, damage);

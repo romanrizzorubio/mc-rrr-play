@@ -6,6 +6,17 @@ globalThis.window = {
     customElements: {
         define() {},
     },
+    mcStaticRemote: {
+        getAssetUrl(path) {
+            return path;
+        },
+    },
+};
+globalThis.CustomEvent = class {
+    constructor(type, options = {}) {
+        this.type = type;
+        Object.assign(this, options);
+    }
 };
 
 const {CardComponent} = await import(
@@ -70,4 +81,32 @@ test('renders the calculated value when an unprinted stat becomes nonzero', () =
 
     assert.match(attack.strings.join(''), /numeric-value/);
     assert.equal(attack.values[0], 1);
+});
+
+test('renders tucked cards as a short visible strip beneath the host card', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        tuckedCards: [
+            {image: 'tucked-one.png'},
+            {image: 'tucked-two.png'},
+            {image: 'tucked-three.png'},
+        ],
+        size: 'm',
+    });
+    const template = card.renderTucked();
+    const styles = CardComponent.styles.cssText;
+
+    assert.equal(template.values[0].length, 2);
+    assert.ok(template.values[0].every(preview =>
+        preview.strings.join('').includes('class="tucked-card-peek"')
+    ));
+    assert.deepEqual(
+        template.values[0].map(preview => preview.values[0]),
+        [
+            'images/cards/tucked-one.png',
+            'images/cards/tucked-two.png',
+        ]
+    );
+    assert.match(styles, /top: calc\(100% - 8px\)/);
+    assert.match(styles, /height: 16px/);
+    assert.match(styles, /\.tucked-card-peek\s*\{[^}]*align-items: flex-end/s);
 });

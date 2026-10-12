@@ -4,16 +4,20 @@ import {
     CARD_TYPE_ANY,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_EXHAUST,
-    EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SPEND,
+    EFFECT_REVEAL_ENCOUNTER,
     PLACE_ENCOUNTER_DECK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_ATTACKER,
     TARGET_THIS,
     TRIGGER_ENCOUNTER_REVEAL,
+    TRIGGER_ENEMY_ATTACKS_YOU,
+    TRAIT_CHAMPION,
     TRAIT_DEFENDER,
     TRAIT_SHIELD,
     TRAIT_SPY
@@ -43,8 +47,8 @@ export default [
                 'classification': 'protection',
                 'thwart': 2,
                 'attack': 1,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 2,
                 'abilities': [
                     {
@@ -120,12 +124,63 @@ export default [
                 'classification': 'protection',
                 'thwart': 1,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 5,
                 'keywords': {
                     'toughness': true
                 }
+            }
+        }
+    },
+    {
+        '_id': 'protection-nova',
+        'aspect': 'protection',
+        'order': 30,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Nova',
+                'subtitle': 'Sam Alexander',
+                'set': 'protection',
+                'image': 'aspect/protection/allies/05012.png',
+                'traits': [
+                    TRAIT_CHAMPION
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'protection',
+                'thwart': 1,
+                'attack': 2,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
+                            'arrow': {
+                                'type': EFFECT_SPEND,
+                                'params': {
+                                    'resources': [
+                                        RESOURCE_ENERGY
+                                    ]
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ATTACKER,
+                                    'damage': 2
+                                }
+                            }
+                        }
+                    }
+                ]
             }
         }
     }

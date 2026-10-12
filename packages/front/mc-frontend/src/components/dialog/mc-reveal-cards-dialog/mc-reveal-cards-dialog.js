@@ -19,18 +19,47 @@ export class McRevealCardsDialog extends McDialog {
                 ...super.defaultProperties.data,
                 cards: [],
                 rotatePlanCards: false,
+                playFromPlace: null,
             },
         };
     }
     renderContent() {
-        const {data: {cards, rotatePlanCards}} = this;
+        const {data: {cards, rotatePlanCards, playFromPlace}} = this;
+        const cardsWithPlayability = playFromPlace ?
+            cards.map(card => ({
+                ...card,
+                playable: card.playFrom?.includes(playFromPlace) === true,
+            })) :
+            cards;
+        const disabledCards = playFromPlace ?
+            cards.reduce((disabled, card, index) => {
+                if (!card.playFrom?.includes(playFromPlace)) {
+                    disabled.push(index);
+                }
+                return disabled;
+            }, []) :
+            [];
 
         return html`
             <mc-card-list
-                .cards="${cards}"
+                .cards="${cardsWithPlayability}"
+                .disabledCards="${disabledCards}"
+                .highlightPlayable="${Boolean(playFromPlace)}"
                 .rotatePlanCards="${rotatePlanCards}"
+                @card-list-select="${this.handleSelectCard.bind(this)}"
             ></mc-card-list>
         `;
+    }
+    handleSelectCard(e) {
+        const {data: {playFromPlace}} = this;
+        const {card} = e.detail;
+
+        if (!playFromPlace || !card.playFrom?.includes(playFromPlace)) {
+            return;
+        }
+
+        this._response = {selected: card};
+        this.sendResponse();
     }
     renderButtons() {
         return html`

@@ -86,7 +86,7 @@ export class McPlayer extends LitElement {
                 superhero: {
                     name, image, life, hitPoints, attack, thwart, defense, recovery,
                     flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
-                    extraKeywords = [], attached = []
+                    extraKeywords = [], attached = [], tuckedCards = []
                 }
             }
         } = this;
@@ -112,6 +112,7 @@ export class McPlayer extends LitElement {
                 .statusCards="${statusCards}"
                 .canFlip="${canFlip}"
                 .attached="${attachedCards}"
+                .tuckedCards="${tuckedCards}"
                 .exhausted="${exhausted}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @superhero-ability="${this.handelSuperheroAbility.bind(this)}"
@@ -143,6 +144,7 @@ export class McPlayer extends LitElement {
                 .cards="${cards}"
                 .discard="${discard}"
                 discard-label="Descarte de ${name}"
+                .highlightPlayableDiscard="${true}"
                 type="${DECK_TYPES.PLAYER}"
             ></mc-deck>
         ` : '';

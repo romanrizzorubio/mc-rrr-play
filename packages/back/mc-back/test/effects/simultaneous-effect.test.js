@@ -10,11 +10,17 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_FILL_HAND,
+    EFFECT_LASTING,
+    EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_MODIFY_THWART_VALUE,
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_REMOVE_THREAT,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     PRIORITY_INTERRUPT,
+    TARGET_HERO,
+    TIME_ROUND,
     TRIGGER_ENCOUNTER_REVEAL,
 } from 'mc-shared';
 import {InterruptAbility} from '../../src/abilities/interrupt/interrupt-ability.js';
@@ -577,6 +583,30 @@ test('Liderar en vanguardia applies its attack and thwart modifiers simultaneous
 
     assert.ok(effect.effect instanceof SimultaneousEffect);
     assert.equal(effect.effect.effects.length, 2);
+});
+
+test('Moral elevada applies all three hero modifiers simultaneously until the end of the round', () => {
+    const match = {triggerCards: {}};
+    const factory = new AbilitiesFactory({match});
+    const card = leadershipEvents.find(({card: cardData}) =>
+        cardData.params.name === 'Moral elevada');
+    const effectConfig = card.card.params.abilities[0].params.effect;
+    const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+    assert.equal(effect.effectType, EFFECT_LASTING);
+    assert.equal(effect.target, TARGET_HERO);
+    assert.equal(effect.until, TIME_ROUND);
+    assert.ok(effect.effect instanceof SimultaneousEffect);
+    assert.equal(effect.effect.target, TARGET_HERO);
+    assert.deepEqual(
+        effect.effect.effects.map(child => child.effectType),
+        [
+            EFFECT_MODIFY_THWART_VALUE,
+            EFFECT_MODIFY_ATTACK_VALUE,
+            EFFECT_MODIFY_DEFENSE_VALUE,
+        ]
+    );
+    assert.ok(effect.effect.effects.every(child => child.target === TARGET_HERO));
 });
 
 test('Hulk resolves the wild-resource branch as one simultaneous group', () => {

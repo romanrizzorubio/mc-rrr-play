@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-card-list.css.js';
 import '../mc-card/mc-card.js';
 import {ABILITY_ID, isPlanCard} from '../../../misc/utils.js';
+import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
 
 export class HandComponent extends LitElement {
     static get is() {
@@ -48,8 +49,9 @@ export class HandComponent extends LitElement {
         this.rotatePlanCards = false;
     }
     getMenuOptions(card) {
-        if (this.showMenuAbilities) {
-            const options = card.abilities.reduce((ret, ability, index) => {
+        const tuckedCards = card.tuckedCards || [];
+        const abilities = this.showMenuAbilities ?
+            (card.abilities || []).reduce((ret, ability, index) => {
                 if (ability.isAction || ability.isBasic) {
                     ret.push({
                         id: `${ABILITY_ID}${index}`,
@@ -59,14 +61,42 @@ export class HandComponent extends LitElement {
                 }
 
                 return ret;
-            }, []);
+            }, []) :
+            [];
 
-            if (options.length > 1) {
-                return options;
+        if (tuckedCards.length && abilities.length) {
+            return [
+                ...abilities,
+                {
+                    id: MENU_OPTION_VIEW_TUCKED_CARDS,
+                    text: 'Ver cartas metidas debajo',
+                },
+            ];
+        }
+
+        if (this.showMenuAbilities) {
+            if (abilities.length > 1) {
+                return abilities;
             }
         }
 
         return [];
+    }
+    handleViewTuckedCards(index) {
+        return e => {
+            e.stopPropagation();
+
+            const card = this.cards[index];
+
+            this.dispatchEvent(new CustomEvent('view-tucked-cards', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card,
+                    cards: card.tuckedCards || [],
+                },
+            }));
+        };
     }
     handleChangeMenu(index) {
         const {cards} = this;
@@ -140,6 +170,7 @@ export class HandComponent extends LitElement {
             attached,
             damage,
             faceDown,
+            tuckedCards,
             isFacedownCard,
             image,
             name,
@@ -210,11 +241,13 @@ export class HandComponent extends LitElement {
                 .exhausted="${exhausted}"
                 .attached="${attached}"
                 .faceDown="${faceDown}"
+                .tuckedCards="${tuckedCards}"
                 .isFacedownCard="${isFacedownCard}"
                 .statusCards="${statusCards}"
                 .menuOptions="${this.getMenuOptions(card)}"
                 @change-menu="${this.handleChangeMenu(index)}"
                 @card-click="${this.handleClick(index)}"
+                @view-tucked-cards="${this.handleViewTuckedCards(index)}"
                 @card-menu-click="${this.handleMenuClick(index)}"
             >${abilityNames.map(abilityName => html`
                 <div slot="top" class="ability-name">${abilityName}</div>

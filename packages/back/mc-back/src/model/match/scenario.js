@@ -85,8 +85,8 @@ export class Scenario extends Engine {
     get villain() {
         return path(this, 'gameZone.currentVillain');
     }
-    discardUntil(condition, removeFromDiscard = false) {
-        return this.deck.discardUntil(condition, removeFromDiscard);
+    discardUntil(condition, removeFromDiscard = false, discardedCards) {
+        return this.deck.discardUntil(condition, removeFromDiscard, discardedCards);
     }
     drawEncounterCards(count = 1) {
         return this.deck.draw(count);

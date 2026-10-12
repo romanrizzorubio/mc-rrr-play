@@ -44,8 +44,8 @@ export default [
                 'subtitle': 'Bruce Banner',
                 'thwart': null,
                 'attack': 3,
-                'thwartConsequencial': null,
-                'attackConsequencial': 1,
+                'thwartConsequential': null,
+                'attackConsequential': 1,
                 'hitPoints': 5,
                 'abilities': [
                     {
@@ -177,8 +177,8 @@ export default [
                 'subtitle': 'Greer Grant Nelson',
                 'thwart': 1,
                 'attack': 2,
-                'thwartConsequencial': 1,
-                'attackConsequencial': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
                 'hitPoints': 3,
                 'abilities': [
                     {

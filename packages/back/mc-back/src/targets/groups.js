@@ -8,6 +8,7 @@ import {
     TARGET_ALL_HEROES_ALLIES,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ALL_PLAYERS,
+    TARGET_ALL_SUPPORTS,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_ENVIRONMENT,
     TARGET_CHARACTER,
@@ -44,6 +45,8 @@ const filterCharactersByCondition = (characters, condition) =>
     });
 
 export const groupTargets = {
+    [TARGET_ALL_SUPPORTS]: ({match}) =>
+        match.searchCards({isSupport: true}),
     [TARGET_ALL_CARDS]: ({cards}) => cards,
     [TARGET_ALL_ALLIES]: ({match}) =>
         match.players.flatMap(player => player.allies),

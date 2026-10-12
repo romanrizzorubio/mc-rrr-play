@@ -13,7 +13,7 @@ test('Enfurecido modifies its attached ally attack consequential through an effe
     const enfurecido = aspects.find(aspect =>
         aspect._id === 'aggression-enfurecido');
     assert.ok(enfurecido);
-    assert.equal(enfurecido.card.params.attackConsequencial, undefined);
+    assert.equal(enfurecido.card.params.attackConsequential, undefined);
 
     const player = {
         hand: {cards: []},
@@ -33,26 +33,26 @@ test('Enfurecido modifies its attached ally attack consequential through an effe
                 attack: 1,
                 thwart: 1,
                 hitPoints: 3,
-                attackConsequencial: 1,
+                attackConsequential: 1,
             },
         }),
         owner: player,
     });
     const upgradeCard = cardsFactory.createCard(enfurecido.card);
-    assert.equal('attackConsequencial' in upgradeCard, false);
+    assert.equal('attackConsequential' in upgradeCard, false);
     const upgrade = cardsFactory.createGameCard({
         card: upgradeCard,
         owner: player,
     });
 
-    assert.equal(await ally.getAttackConsequencialValue({player}), 1);
+    assert.equal(await ally.getattackConsequentialValue({player}), 1);
 
     ally.attached.push(upgrade);
     upgrade.attachedTo = ally;
     await upgrade.initTriggers();
 
     assert.ok(upgrade.triggers[TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL]);
-    assert.equal(await ally.getAttackConsequencialValue({player}), 2);
+    assert.equal(await ally.getattackConsequentialValue({player}), 2);
 
     ally.refresh = async () => {};
     const attackAbility = ally.abilities.find(ability =>

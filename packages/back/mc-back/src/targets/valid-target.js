@@ -167,7 +167,9 @@ export class ValidTarget extends Engine {
                     validTarget;
             }
 
-            const count = selectUpTo ? validTarget.length : selectCount;
+            const count = selectUpTo ?
+                Math.min(validTarget.length, selectCount ?? validTarget.length) :
+                selectCount;
             const minCount = selectUpTo ? 0 : count;
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,

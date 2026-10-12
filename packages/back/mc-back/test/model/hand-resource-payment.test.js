@@ -9,6 +9,9 @@ import {
     RESOURCE_WILD,
 } from 'mc-shared';
 import aggressionResources from '../../../mc-data/seed/catalog/aspects/aggression/resources.js';
+import msMarvel from '../../../mc-data/seed/catalog/heroes/ms-marvel.js';
+import {PayCostEffect} from '../../src/effects/pay-cost-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {Hand} from '../../src/model/match/hand.js';
 import {Player} from '../../src/model/match/player.js';
 import {ResourceCard} from '../../src/model/printed/resource-card.js';
@@ -170,4 +173,72 @@ test('Player.getResourceGenerators filters abilities by every required resource 
         ['energy-generator', RESOURCE_MENTAL],
         ['energy-generator', RESOURCE_PHYSICAL],
     ]);
+});
+
+test('Ms. Marvel suit can pay for an event and resolves against that event', async () => {
+    const match = {triggerCards: {}};
+    const cardsFactory = new CardsFactory({match});
+    const player = Object.create(Player.prototype);
+    player.isPlayer = true;
+    player.superhero = {
+        isHero: true,
+        currentSide: {
+            id: 'hero-side',
+            isHero: true,
+            async hasResourceGenerators() {
+                return false;
+            },
+        },
+    };
+    player.gameZone = {
+        cards: [],
+        getCard(cardId) {
+            return this.cards.find(card => card.id === cardId);
+        },
+        async refresh() {},
+    };
+    player.hand = {
+        cards: [],
+        getCardsToPay() {
+            return [];
+        },
+    };
+    let paymentDialog;
+    player.openDialog = async dialog => {
+        paymentDialog = dialog;
+    };
+
+    const suitConfig = msMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Traje de polímero biocinético').card;
+    const eventConfig = msMarvel.config.cards.find(({card}) =>
+        card.params.name === 'Escabullirse').card;
+    const suit = cardsFactory.createGameCardFromConfig(suitConfig, {owner: player});
+    const event = cardsFactory.createGameCardFromConfig(eventConfig, {owner: player});
+    suit.controller = player;
+    suit.refresh = async () => {};
+    player.gameZone.cards.push(suit);
+
+    assert.deepEqual(await player.getResourceGenerators(suit), []);
+    await player.spendResources([RESOURCE_ANY, RESOURCE_ANY], event);
+
+    assert.deepEqual(
+        paymentDialog.data.cards.generators.map(({id}) => id),
+        [suit.id]
+    );
+    assert.deepEqual(
+        paymentDialog.data.cards.generators[0].abilities
+            .filter(({isResource}) => isResource)
+            .map(({resource}) => resource),
+        [RESOURCE_WILD]
+    );
+
+    const payCostEffect = new PayCostEffect({
+        generators: [suit],
+        hand: [],
+        selectedTarget: event,
+        match,
+    });
+    await payCostEffect.payGenerators({player});
+
+    assert.equal(suit.exhausted, true);
 });

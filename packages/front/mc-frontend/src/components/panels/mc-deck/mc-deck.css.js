@@ -42,6 +42,12 @@ export default css`
     cursor: default;
   }
 
+  .discard-button.playable mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
+      drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
+  }
+
   .discard-button:focus-visible {
     outline: 2px solid #212121;
     outline-offset: 3px;

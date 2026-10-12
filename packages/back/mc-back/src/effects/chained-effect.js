@@ -59,6 +59,24 @@ export class ChainedEffect extends Effect {
             ...(targetPlayer ? {targetPlayer} : {}),
         };
     }
+    getPaymentResourcePreferences() {
+        return [
+            ...super.getPaymentResourcePreferences(),
+            ...this.effects.flatMap(effect =>
+                effect.getPaymentResourcePreferences())
+        ];
+    }
+    async confirmBeforeResolve(params) {
+        const effectParams = this.getEffectParams(params);
+        for (const effect of this.effects) {
+            if (typeof effect.confirmBeforeResolve === 'function' &&
+                !await effect.confirmBeforeResolve(effectParams)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     requiresAll(params) {
         return Boolean(
             params.isCost ||

@@ -33,6 +33,7 @@ export const TARGET_ALL_SCHEMES = 'all-schemes';
 export const TARGET_ALL_SIDE_SCHEMES = 'all-side-schemes';
 export const TARGET_ALL_ALLIES = 'all-allies';
 export const TARGET_ALL_ALLIES_YOU_CONTROL = 'all-allies-you-control';
+export const TARGET_ALL_SUPPORTS = 'all-supports';
 export const TARGET_ALLY = CHARACTER_ALLY;
 export const TARGET_ALTEREGO = CHARACTER_ALTEREGO;
 export const TARGET_ALTEREGO_SIDE = `${TARGET_ALTEREGO}-side`;

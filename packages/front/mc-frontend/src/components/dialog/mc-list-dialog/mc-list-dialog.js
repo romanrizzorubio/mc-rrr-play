@@ -23,6 +23,7 @@ export class McListDialog extends McDialog {
             data: {
                 options: [],
                 card: {},
+                showCounters: false,
             },
             _response: {
                 selected: undefined
@@ -81,16 +82,18 @@ export class McListDialog extends McDialog {
         }
     }
     renderContent() {
-        const {data: {options, card}} = this;
-        const {name, image} = card;
+        const {data: {options, card, showCounters}} = this;
+        const {name, image, counters} = card;
 
         return html`
             <mc-card
                 name="${name}"
                 image="${image}"
                 .isFacedownCard="${card.isFacedownCard}"
+                .generic="${showCounters ? counters : undefined}"
                 size="m"
                 ?horizontal="${isPlanCard(card)}"
+                .showGeneric="${showCounters}"
                 hide-name
             ></mc-card>
             <md-list class="list">

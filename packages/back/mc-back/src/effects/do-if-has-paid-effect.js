@@ -13,6 +13,12 @@ export class DoIfHasPaidEffect extends DoIfEffect {
 
         this.resources = resources;
     }
+    getPaymentResourcePreferences() {
+        return [
+            ...super.getPaymentResourcePreferences(),
+            ...this.resources,
+        ];
+    }
     checkCondition(params) {
         const {playCardEffect} = params;
 

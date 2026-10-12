@@ -42,11 +42,11 @@ export default css`
     width: var(--card-size);
   }
 
-  :host(.disabled) .card-face > mc-card-image {
+  :host(.disabled) .card-front > mc-card-image {
     filter: brightness(var(--disabled-card-brightness, 0.35));
   }
 
-  :host(.playable) .card-face > mc-card-image {
+  :host(.playable) .card-front > mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
       drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
@@ -64,10 +64,54 @@ export default css`
   .card {
     display: flex;
     align-items: flex-start;
+    position: relative;
   }
 
   .facedown-count {
     text-align: center;
+  }
+
+  .card.has-tucked-cards {
+    padding-bottom: 8px;
+  }
+
+  .card-face {
+    position: relative;
+  }
+
+  .card-front {
+    position: relative;
+    z-index: 1;
+  }
+
+  .tucked {
+    display: flex;
+    position: absolute;
+    top: calc(100% - 8px);
+    left: 0;
+    right: 0;
+    z-index: 0;
+    justify-content: center;
+    height: 16px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .tucked-card-peek {
+    display: flex;
+    align-items: flex-end;
+    flex: 0 0 calc(var(--card-size) / 2);
+    width: calc(var(--card-size) / 2);
+    height: 16px;
+    overflow: hidden;
+  }
+
+  .tucked-card-peek + .tucked-card-peek {
+    margin-left: calc(var(--card-size) * -0.35);
+  }
+
+  .tucked-card-peek mc-card-image {
+    width: 100%;
   }
 
   .vertical {

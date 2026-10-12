@@ -1,5 +1,6 @@
 import {EFFECT_MAP} from './effects-map.js';
 import {EFFECT_PARSERS_MAP} from './effects-parsers.js';
+import {findPrePlayConfirmationEffect} from '../../utils/pre-play-confirmation.js';
 
 export class EffectsFactory {
     constructor(abilitiesFactory) {
@@ -28,12 +29,29 @@ export class EffectsFactory {
         }
     }
     _parseEffectGroup(params) {
-        const {effects = []} = params;
-
-        return {
-            ...params,
-            effects: effects.map(this.parseEffect.bind(this)),
+        const {effects = [], prePlayConfirmation, ...groupParams} = params;
+        const parsedEffects = effects.map(this.parseEffect.bind(this));
+        const effectGroup = {
+            ...groupParams,
+            effects: parsedEffects,
         };
+
+        if (prePlayConfirmation !== undefined) {
+            const confirmationEffect =
+                findPrePlayConfirmationEffect(effectGroup);
+            if (!confirmationEffect) {
+                throw new TypeError(
+                    'The effect group has no effect that supports pre-play confirmation.'
+                );
+            }
+
+            confirmationEffect.prePlayConfirmation = {
+                ...prePlayConfirmation,
+                ...confirmationEffect.prePlayConfirmation,
+            };
+        }
+
+        return effectGroup;
     }
     _parseAdditionalCost(params) {
         const {cost, ...rest} = params;
