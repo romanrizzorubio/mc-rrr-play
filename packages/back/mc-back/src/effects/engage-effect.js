@@ -1,9 +1,19 @@
-import {DIALOG_ENCOUNTERS_REVEAL, TRIGGER_ENGAGE_HERO} from 'mc-shared';
+import {
+    DIALOG_ENCOUNTERS_REVEAL,
+    TRIGGER_ENGAGE_HERO,
+} from 'mc-shared';
 
 import {PutPlayEffect} from './put-play-effect.js';
 
 
 export class EngageEffect extends PutPlayEffect {
+    constructor({
+        deferEngageHeroTrigger = false,
+    }) {
+        super(arguments[0]);
+
+        this.deferEngageHeroTrigger = deferEngageHeroTrigger;
+    }
     getCard(params = {}) {
         return super.getCard(params) ||
             (params.card?.isMinion ? params.card : undefined);
@@ -16,10 +26,11 @@ export class EngageEffect extends PutPlayEffect {
             return [];
         }
 
-        return super.getTriggersEnds(params)
-            .concat([
-                TRIGGER_ENGAGE_HERO,
-            ]);
+        const triggerTypes = super.getTriggersEnds(params);
+
+        return this.deferEngageHeroTrigger ?
+            triggerTypes :
+            triggerTypes.concat([TRIGGER_ENGAGE_HERO]);
     }
     getTriggersParams(params) {
         return {
@@ -27,7 +38,22 @@ export class EngageEffect extends PutPlayEffect {
             card: this.getCard(params),
         };
     }
+    async resolveDeferredEngageHeroTrigger(params) {
+        if (!this.deferEngageHeroTrigger || !this.resolved) {
+            return;
+        }
 
+        await this.triggerEnds(
+            this.getTriggersParams({
+                ...params,
+                player: this.selectedTarget,
+            }),
+            {
+                triggerTypes: [TRIGGER_ENGAGE_HERO],
+                resolveDelayedEffects: false,
+            }
+        );
+    }
     async execute(params) {
         const card = this.getCard(params);
         if (!card) {

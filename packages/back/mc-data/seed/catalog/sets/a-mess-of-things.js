@@ -7,11 +7,10 @@ import {
     CARD_TYPE_TREACHERY,
     EFFECT_CHAINED,
     EFFECT_DO_IF,
+    EFFECT_ENEMY_ATTACK,
     EFFECT_FOR_EACH,
     EFFECT_PLACE_THREAT,
-    EFFECT_SEVERAL_ATTACKS,
     EFFECT_STUN,
-    EFFECT_SURGE,
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ATTACKED,
     TARGET_CONDITION_CARD,
@@ -73,7 +72,9 @@ export default {
                         set: 'a-mess-of-things',
                         image: 'sets/a-mess-of-things/02038.png',
                         unique: true,
-                        quickStrike: true,
+                        keywords: {
+                            quickStrike: true,
+                        },
                         boost: 2,
                         attack: 3,
                         scheme: 3,
@@ -118,22 +119,22 @@ export default {
                                         params: {
                                             effects: [
                                                 {
-                                                    type: EFFECT_SEVERAL_ATTACKS,
+                                                    type: EFFECT_ENEMY_ATTACK,
                                                     params: {
-                                                        attackTarget: TARGET_YOUR_HERO,
-                                                        enemiesType: TARGET_CONDITION_CARD,
+                                                        enemyType: TARGET_CONDITION_CARD,
                                                         condition: {
                                                             isMinion: true,
                                                             isInPlay: true,
                                                             name: 'Escorpión',
                                                         },
+                                                        target: TARGET_YOUR_HERO,
                                                     },
                                                 },
                                                 {
                                                     type: EFFECT_DO_IF,
                                                     params: {
                                                         condition: {
-                                                            'effects.0.attacks.length': 0,
+                                                            'effects.0.resolved': false,
                                                         },
                                                         effect: {
                                                             type: EFFECT_STUN,

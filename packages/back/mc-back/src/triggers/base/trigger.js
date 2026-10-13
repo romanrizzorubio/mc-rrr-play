@@ -64,6 +64,9 @@ export class Trigger {
 
         return this.ability.getTitle(params);
     }
+    getDialogTitle(params) {
+        return this.ability?.getTriggerDialogTitle?.(params);
+    }
     getInterruptName() {}
     getAbilityParams(params) {
         return {

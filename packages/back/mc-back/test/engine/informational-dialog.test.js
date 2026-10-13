@@ -6,11 +6,13 @@ import {
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
+    TRIGGER_ENGAGE_HERO,
     TRIGGER_THIS_ATTACK,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU,
 } from 'mc-shared';
 import {Engine} from '../../src/engine/engine.js';
+import {QuickstrikeAbility} from '../../src/abilities/misc/quickstrike-ability.js';
 import {Match} from '../../src/model/match/match.js';
 import {Trigger} from '../../src/triggers/base/trigger.js';
 import {
@@ -34,6 +36,46 @@ function createTrigger(card, name) {
         trigger: TRIGGER_THIS_ATTACK,
     });
 }
+
+test('quickstrike uses its title in the mandatory response dialog', async () => {
+    const engine = new Engine();
+    const player = {
+        hand: {cards: []},
+    };
+    const card = {
+        id: 'scorpion',
+        owner: player,
+        toObj() {
+            return {id: this.id};
+        },
+    };
+    const ability = new QuickstrikeAbility({
+        card,
+        match: {triggerCards: {}},
+    });
+    const trigger = new Trigger({
+        ability,
+        card,
+        trigger: TRIGGER_ENGAGE_HERO,
+    });
+    const dialogs = [];
+
+    engine.match = {};
+    engine.openDialog = async dialog => {
+        dialogs.push(dialog);
+
+        return {selected: {id: card.id}};
+    };
+    trigger.runTrigger = async () => {};
+
+    await engine._openTriggersDialog(
+        [trigger],
+        PRIORITY_FORCED_RESPONSE,
+        {player}
+    );
+
+    assert.equal(dialogs[0].title, 'Se activa el Ataque veloz');
+});
 
 test('a single nested trigger option resolves its leaf trigger', async () => {
     const engine = new Engine();

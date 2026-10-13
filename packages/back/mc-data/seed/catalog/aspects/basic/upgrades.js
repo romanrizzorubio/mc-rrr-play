@@ -2,7 +2,6 @@ import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESOURCE,
-    ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
     EFFECT_ADD_TRAIT,
@@ -167,7 +166,7 @@ export default [
                 },
                 'abilities': [
                     {
-                        'type': ABILITY_RESOURCE,
+                        'type': ABILITY_HERO_RESOURCE,
                         'params': {
                             'resource': RESOURCE_MENTAL,
                             'arrow': {

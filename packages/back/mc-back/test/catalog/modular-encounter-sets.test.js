@@ -12,14 +12,18 @@ import {
     TARGET_YOUR_SUPERHERO,
     TRAIT_CRIMINAL,
     TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
+    TRIGGER_ENGAGE_HERO,
     TRIGGER_PLAYER_CAN_FLIP,
     TRIGGER_PLAYER_CAN_READY,
+    PRIORITY_FORCED_RESPONSE,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import aMessOfThings from '../../../mc-data/seed/catalog/sets/a-mess-of-things.js';
 import powerDrain from '../../../mc-data/seed/catalog/sets/power-drain.js';
 import runningInterference from '../../../mc-data/seed/catalog/sets/running-interference.js';
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
+import {QuickstrikeAbility} from '../../src/abilities/misc/quickstrike-ability.js';
+import {ForcedResponseAbility} from '../../src/abilities/response/forced-response-ability.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 const cardsByName = set => new Map(set.config.cards.map(entry => [
@@ -58,6 +62,60 @@ test('the three modular encounter sets are registered with their printed card co
     const interferenceCards = cardsByName(runningInterference);
     assert.equal(interferenceCards.get('Cobertura mediática').count, 2);
     assert.equal(interferenceCards.get('Con las manos atadas').card.params.attach, TARGET_YOUR_SUPERHERO);
+});
+
+test('Scorpion registers quickstrike as a forced response when it engages a hero', async () => {
+    const match = {
+        players: [],
+        triggerCards: {},
+    };
+    const factory = new CardsFactory({match});
+    const scorpionConfig = cardsByName(aMessOfThings).get('Escorpión').card;
+    const scorpion = factory.createGameCard({
+        card: factory.createCard(scorpionConfig),
+        owner: {},
+    });
+    const quickstrike = scorpion.abilities.find(ability =>
+        ability instanceof QuickstrikeAbility
+    );
+
+    assert.equal(scorpion.quickStrike, true);
+    assert.ok(quickstrike instanceof ForcedResponseAbility);
+
+    quickstrike.initTriggers(scorpion);
+
+    assert.deepEqual(
+        Object.keys(scorpion.triggers[TRIGGER_ENGAGE_HERO]),
+        [PRIORITY_FORCED_RESPONSE]
+    );
+    assert.equal(
+        scorpion.triggers[TRIGGER_ENGAGE_HERO][PRIORITY_FORCED_RESPONSE][0].ability,
+        quickstrike
+    );
+
+    const scenario = {};
+    const hero = {isHero: true};
+    const alterEgo = {isHero: false};
+    const revealingPlayer = {isHero: false};
+    scorpion.controller = scenario;
+    scorpion.engaged = hero;
+    const trigger = scorpion.triggers[TRIGGER_ENGAGE_HERO][PRIORITY_FORCED_RESPONSE][0];
+
+    assert.equal(await trigger.canTrigger({
+        card: scorpion,
+        effect: {selectedTarget: hero},
+        player: revealingPlayer,
+    }), true);
+    assert.equal(trigger.getAbilityParams({
+        effect: {selectedTarget: hero},
+        player: revealingPlayer,
+    }).player, hero);
+    scorpion.engaged = alterEgo;
+    assert.equal(Boolean(await trigger.canTrigger({
+        card: scorpion,
+        effect: {selectedTarget: alterEgo},
+        player: alterEgo,
+    })), false);
 });
 
 test('all abilities in the modular encounter sets compile to individual effects', () => {

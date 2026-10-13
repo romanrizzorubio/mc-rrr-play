@@ -3,19 +3,28 @@ import {test} from 'node:test';
 
 import {
     CALC_BOOST_ICONS,
+    DIALOG_ACTIVATE,
+    EFFECT_ENEMY_ATTACK,
     EFFECT_TAKE_DAMAGE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    TARGET_CONDITION_CARD,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
+    TRIGGER_THIS_ATTACK,
 } from 'mc-shared';
 import aMessOfThings from '../../../mc-data/seed/catalog/sets/a-mess-of-things.js';
 import powerDrain from '../../../mc-data/seed/catalog/sets/power-drain.js';
 import runningInterference from '../../../mc-data/seed/catalog/sets/running-interference.js';
 import {Attack} from '../../src/activations/attack.js';
 import {AssignDamageEffect} from '../../src/effects/assign-damage-effect.js';
+import {ChainedEffect} from '../../src/effects/chained-effect.js';
+import {DoIfEffect} from '../../src/effects/do-if-effect.js';
+import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {ResolveAbilityEffect} from '../../src/effects/resolve-ability-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {SelectDiscardToFindCardEffect} from '../../src/effects/select-discard-to-find-card-effect.js';
+import {StunEffect} from '../../src/effects/stun-effect.js';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
@@ -47,6 +56,216 @@ function createPlayer(cards) {
 
     return {player, discarded};
 }
+
+function createTailSweep(match) {
+    const tailSweepConfig = aMessOfThings.config.cards.find(({card}) =>
+        card.params.name === 'Barrido de cola').card;
+    const factory = new CardsFactory({match});
+
+    return factory.createGameCard({
+        card: factory.createCard(tailSweepConfig),
+        owner: {},
+    });
+}
+
+test('Barrido de cola stuns if its single forced attack does not resolve', async () => {
+    const condition = {
+        isMinion: true,
+        isInPlay: true,
+        name: 'Escorpión',
+    };
+    const scorpion = {
+        abilities: [],
+        isInPlay: true,
+        isMinion: true,
+        name: 'Escorpión',
+    };
+    const resolveTailSweep = async ({
+        attackResolves,
+        hasScorpion,
+        isHero,
+    }) => {
+        const match = {
+            activationsFactory: {
+                createActivation: () => ({filterTarget: () => true}),
+            },
+            players: [],
+            triggerCards: {},
+            searchCards(searchCondition) {
+                assert.deepEqual(searchCondition, condition);
+
+                return hasScorpion ? [scorpion] : [];
+            },
+        };
+        const card = createTailSweep(match);
+        const effect = card.abilities[0].effect;
+        const [attack, failedAttackFallback] = effect.effects;
+        const player = {
+            isHero,
+            match,
+        };
+        const hero = {
+            name: 'Spider-Man',
+            owner: player,
+        };
+        player.superhero = {currentSide: hero};
+
+        let attackAttempts = 0;
+        let stuns = 0;
+        attack.resolved = true;
+        attack.runEffect = async () => {
+            attackAttempts++;
+            attack.resolved = attackResolves;
+        };
+        failedAttackFallback.runEffect = params =>
+            failedAttackFallback.execute(params);
+        failedAttackFallback.effect.runEffect = async () => {
+            stuns++;
+        };
+
+        await effect.execute({player});
+
+        return {attackAttempts, stuns};
+    };
+    const match = {triggerCards: {}, players: []};
+    const card = createTailSweep(match);
+    const effect = card.abilities[0].effect;
+    const [attack, failedAttackFallback] = effect.effects;
+
+    assert.ok(effect instanceof ChainedEffect);
+    assert.ok(attack instanceof EnemyAttackEffect);
+    assert.ok(failedAttackFallback instanceof DoIfEffect);
+    assert.ok(failedAttackFallback.effect instanceof StunEffect);
+    assert.equal(attack.effectType, EFFECT_ENEMY_ATTACK);
+    assert.equal(attack.target, TARGET_YOUR_HERO);
+    assert.equal(attack.enemyType, TARGET_CONDITION_CARD);
+    assert.deepEqual(failedAttackFallback.condition, {
+        'effects.0.resolved': false,
+    });
+    assert.equal(
+        effect.effects.filter(child => child instanceof EnemyAttackEffect).length,
+        1
+    );
+
+    assert.deepEqual(
+        await resolveTailSweep({
+            attackResolves: false,
+            hasScorpion: false,
+            isHero: true,
+        }),
+        {attackAttempts: 0, stuns: 1}
+    );
+    assert.deepEqual(
+        await resolveTailSweep({
+            attackResolves: false,
+            hasScorpion: true,
+            isHero: false,
+        }),
+        {attackAttempts: 0, stuns: 1}
+    );
+    assert.deepEqual(
+        await resolveTailSweep({
+            attackResolves: false,
+            hasScorpion: true,
+            isHero: true,
+        }),
+        {attackAttempts: 1, stuns: 1}
+    );
+    assert.deepEqual(
+        await resolveTailSweep({
+            attackResolves: true,
+            hasScorpion: true,
+            isHero: true,
+        }),
+        {attackAttempts: 1, stuns: 0}
+    );
+});
+
+test('Barrido de cola selects Scorpion for its enemy attack', async () => {
+    const scorpion = {
+        abilities: [],
+        isInPlay: true,
+        isMinion: true,
+        name: 'Escorpión',
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const hero = {
+        name: 'Spider-Man',
+        owner: undefined,
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const superhero = {
+        currentSide: hero,
+        name: hero.name,
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const dialogs = [];
+    const condition = {
+        isMinion: true,
+        isInPlay: true,
+        name: 'Escorpión',
+    };
+    const match = {
+        activationsFactory: {
+            createActivation: () => ({filterTarget: () => true}),
+        },
+        players: [],
+        triggerCards: {},
+        searchCards(searchCondition) {
+            assert.deepEqual(searchCondition, condition);
+
+            return [scorpion];
+        },
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+
+            return {};
+        },
+    };
+    const card = createTailSweep(match);
+    const attack = card.abilities[0].effect.effects[0];
+    const defender = {
+        async getEffectiveStats() {
+            return {hitPoints: 4, life: 4};
+        },
+        toObj() {
+            return {id: 'ally'};
+        },
+    };
+    const player = {
+        defenders: [defender],
+        hand: {
+            cards: [{
+                toObj() {
+                    return {id: 'hand-card'};
+                },
+            }],
+        },
+        isHero: true,
+        match,
+        superhero,
+    };
+    hero.owner = player;
+
+    await attack.prepare({player});
+
+    assert.equal(attack.character, scorpion);
+    assert.equal(attack.selectedTarget, hero);
+    assert.equal(attack.target, TARGET_YOUR_HERO);
+    assert.strictEqual(attack.getDefenders(), player.defenders);
+    assert.equal(dialogs[0].dialogType, DIALOG_ACTIVATE);
+    assert.equal(dialogs[0].title, 'Escorpión ataca a Spider-Man');
+    attack.toObj = () => ({});
+    await attack.defense({player});
+
+    assert.deepEqual(dialogs[1].hand, [{id: 'hand-card'}]);
+});
 
 test('SelectDiscardToFindCardEffect calculates discarded resources from the prior encounter discard results', async () => {
     const cards = [
@@ -460,7 +679,9 @@ test('Scorpion resolves its forced response from the damage effect context', asy
         card: factory.createCard(scorpionConfig),
         owner: {},
     });
-    const [forcedResponse] = scorpion.abilities;
+    const forcedResponse = scorpion.abilities.find(ability =>
+        ability.trigger === TRIGGER_THIS_ATTACK
+    );
     const defender = {
         isInPlay: true,
         isStunned: false,

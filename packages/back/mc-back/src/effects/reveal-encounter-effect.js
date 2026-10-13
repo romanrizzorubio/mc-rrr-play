@@ -226,6 +226,7 @@ export class RevealEncounterEffect extends Effect {
         });
         this.surge = getSurgeEffect.surge;
 
+        let engageEffect;
         if (selectedTarget.isMain) {
             if (this.putInPlay && selectedTarget.isVillain) {
                 const putPlayEffect = new PutPlayEffect({
@@ -243,10 +244,11 @@ export class RevealEncounterEffect extends Effect {
             }
         } else {
             if (selectedTarget.isMinion) {
-                const engageEffect = new EngageEffect({
+                engageEffect = new EngageEffect({
                     card: selectedTarget,
                     controller: this.match.scenario,
                     target: selectedTarget.faceTo,
+                    deferEngageHeroTrigger: true,
                     match: this.match,
                 });
 
@@ -320,6 +322,10 @@ export class RevealEncounterEffect extends Effect {
                 reveal: this,
                 card: selectedTarget,
             });
+        }
+
+        if (engageEffect) {
+            await engageEffect.resolveDeferredEngageHeroTrigger(params);
         }
 
         if (selectedTarget.isTreachery) {

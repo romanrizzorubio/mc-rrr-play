@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    DIALOG_ACTIVATE,
     DIALOG_DEFENSE,
     DIALOG_USE_CARD,
     CHARACTER_VILLAIN,
@@ -35,6 +36,36 @@ import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {TreacheryRevealTrigger} from '../../src/triggers/treachery-reveal-trigger.js';
 import protectionEvents from '../../../mc-data/seed/catalog/aspects/protection/events.js';
 import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
+
+test('enemy attacks show a directly selected hero in the activation dialog', async () => {
+    const hero = {
+        name: 'Spider-Man',
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const scorpion = {
+        name: 'Escorpión',
+        toObj() {
+            return {name: this.name};
+        },
+    };
+    const attack = new EnemyAttackEffect({
+        enemy: scorpion,
+        match: {},
+        selectedTarget: hero,
+    });
+    let dialog;
+    attack.openDialog = async params => {
+        dialog = params;
+    };
+
+    await attack.prepare({player: hero});
+
+    assert.equal(dialog.dialogType, DIALOG_ACTIVATE);
+    assert.equal(dialog.title, 'Escorpión ataca a Spider-Man');
+    assert.deepEqual(dialog.data.target, {name: 'Spider-Man'});
+});
 
 test('Backflip is offered before attack damage is applied', async () => {
     const backflip = spiderman.config.cards.find(({card}) =>

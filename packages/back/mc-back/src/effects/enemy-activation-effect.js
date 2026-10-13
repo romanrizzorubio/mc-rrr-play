@@ -169,6 +169,7 @@ export class EnemyActivationEffect extends Effect {
         const {enemyType, ability} = this;
 
         const validTarget = new ValidTarget({
+            condition: this.condition,
             effect: this,
             match: this.match,
         });

@@ -307,7 +307,15 @@ export class Engine {
     async _openTriggersDialog(triggers, priority, params) {
         const {cards, cardsTriggers} = await this._getCardTriggers(triggers, params);
 
-        const title = this._getDialogTitle(priority, cards.length === 1);
+        const cardTriggers = cards.length === 1 ?
+            cardsTriggers[this._getTriggerCardId(cards[0])]?.triggers :
+            undefined;
+        const informationalTrigger = cardTriggers?.length === 1 ?
+            cardTriggers[0] :
+            undefined;
+        const title = (informationalTrigger instanceof Trigger ?
+            informationalTrigger.getDialogTitle(params) :
+            undefined) ?? this._getDialogTitle(priority, cards.length === 1);
         const mandatory = Engine.isMandatory(priority);
         const showCounters = priority === PRIORITY_FORCED_INTERRUPT ||
             priority === PRIORITY_INTERRUPT;

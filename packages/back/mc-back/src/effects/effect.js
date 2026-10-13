@@ -414,27 +414,31 @@ export class Effect extends Engine {
 
         return false;
     }
-    async triggerEnds(params) {
-        const type = this.getTriggersEnds(params);
+    async triggerEnds(params, {
+        triggerTypes = this.getTriggersEnds(params),
+        resolveDelayedEffects = true,
+    } = {}) {
 
-        await this.resolveDelayedEffects(params);
-        await this.trigger(PRIORITY_CONSTANT, type, params);
+        if (resolveDelayedEffects) {
+            await this.resolveDelayedEffects(params);
+        }
+        await this.trigger(PRIORITY_CONSTANT, triggerTypes, params);
 
         const {isActivation, activation} = this;
         const additionalForcedResponses = isActivation && activation &&
             typeof activation.getForcedResponseTriggers === 'function' ?
-            activation.getForcedResponseTriggers(type, params) :
+            activation.getForcedResponseTriggers(triggerTypes, params) :
             [];
 
         const resolveResponses = async () => {
             await this.trigger(
                 PRIORITY_FORCED_RESPONSE,
-                type,
+                triggerTypes,
                 params,
                 additionalForcedResponses
             );
 
-            await this.trigger(PRIORITY_RESPONSE, type, params);
+            await this.trigger(PRIORITY_RESPONSE, triggerTypes, params);
 
             if (isActivation && activation && activation.afterTriggerEnds) {
                 await activation.afterTriggerEnds(params);

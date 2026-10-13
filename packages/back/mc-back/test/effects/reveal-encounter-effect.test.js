@@ -5,6 +5,9 @@ import {
     CARD_TYPE_ATTACHMENT,
     PLACE_ENCOUNTER_DECK,
     TARGET_MINION_HIGHEST_PRINTED_HP,
+    TARGET_YOU,
+    PRIORITY_FORCED_RESPONSE,
+    TRIGGER_ENGAGE_HERO,
 } from 'mc-shared';
 import {CANCEL_ENCOUNTER_FULL} from '../../src/effects/cancel-encounter-effect.js';
 import {AttachEffect} from '../../src/effects/attach-effect.js';
@@ -158,6 +161,78 @@ test('RevealEncounterEffect selects the identity-matching conditional ability', 
     await effect.reveal({player});
 
     assert.deepEqual(selectedAbilities, ['Norman Osborn']);
+});
+
+test('Quickstrike resolves after a minion\'s When Revealed ability', async () => {
+    const resolutionOrder = [];
+    const scenario = {};
+    const match = {
+        isUniqueCard: () => false,
+        scenario,
+        triggerCards: {},
+    };
+    const player = {
+        isHero: true,
+        engage() {},
+        async refresh() {},
+    };
+    const quickstrikeTrigger = {
+        ability: {
+            hideDialog: true,
+            isOptionAbility: false,
+        },
+        canTrigger: ({effect, player}) =>
+            player.isHero && effect.selectedTarget === player,
+        async runTrigger() {
+            resolutionOrder.push('quickstrike');
+        },
+    };
+    const whenRevealedAbility = {
+        isWhenRevealed: true,
+        isValidIdentity: () => true,
+        async resolveAbility() {
+            resolutionOrder.push('when revealed');
+            this.resolved = true;
+        },
+    };
+    const minion = {
+        id: 'quickstrike-minion',
+        abilities: [whenRevealedAbility],
+        damage: 0,
+        faceTo: TARGET_YOU,
+        isAttachable: false,
+        isEncounterCard: true,
+        isInPlay: false,
+        isMain: false,
+        isMinion: true,
+        isTreachery: false,
+        isSideScheme: false,
+        isAttachment: false,
+        isVillain: false,
+        surge: false,
+        triggers: {
+            [TRIGGER_ENGAGE_HERO]: {
+                [PRIORITY_FORCED_RESPONSE]: [quickstrikeTrigger],
+            },
+        },
+        async initTriggers() {
+            match.triggerCards[this.id] = this;
+        },
+        async refresh() {},
+        endTriggers() {},
+        toObj() {
+            return {id: this.id};
+        },
+    };
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget: minion,
+    });
+
+    await effect.execute({player});
+
+    assert.deepEqual(resolutionOrder, ['when revealed', 'quickstrike']);
+    assert.equal(minion.controller, scenario);
 });
 
 test('a fully canceled encounter card is discarded', async () => {
