@@ -1,6 +1,7 @@
 
 import {
     TRIGGER_THIS_SCHEME,
+    TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_SCHEMES,
 } from 'mc-shared';
 
@@ -31,6 +32,7 @@ export class Scheme extends Activation {
 
         return !triggersInitLaunched ? super.getTriggersInit(params)
             .concat([
+                TRIGGER_VILLAIN_ACTIVATES,
                 TRIGGER_VILLAIN_SCHEMES,
             ]) : [];
     }

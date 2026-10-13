@@ -14,6 +14,7 @@ export class McGameZone extends LitElement {
     }
     static get properties() {
         return {
+            player: {type: Object},
             cards: {type: Array},
             attachedUpgrades: {type: Array},
             minions: {type: Array},
@@ -24,6 +25,7 @@ export class McGameZone extends LitElement {
     constructor() {
         super();
 
+        this.player = null;
         this.cards = [];
         this.attachedUpgrades = [];
         this.minions = [];
@@ -35,7 +37,11 @@ export class McGameZone extends LitElement {
 
         const {card, cardIndex} = e.detail;
         const ability = card.abilities.findIndex(_ability =>
-            _ability.isAction || _ability.isBasic);
+            (_ability.isAction || _ability.isBasic) && !_ability.disable);
+
+        if (ability < 0) {
+            return;
+        }
 
         this.dispatchEvent(new CustomEvent('game-zone-card-click', {
             bubbles: true,
@@ -66,11 +72,14 @@ export class McGameZone extends LitElement {
         showLife,
         showThreat,
         showAcquiredTraits,
+        basicActivationType,
     }) {
         return html`
             <mc-card-list
                 class="${type}"
                 .cards="${cards}"
+                .player="${this.player}"
+                basic-activation-type="${basicActivationType || ''}"
                 size="s"
                 show-menu-abilities
                 show-basic-stats
@@ -120,6 +129,7 @@ export class McGameZone extends LitElement {
             type: 'minions',
             showLife: true,
             showAcquiredTraits: true,
+            basicActivationType: 'attack',
         });
     }
 

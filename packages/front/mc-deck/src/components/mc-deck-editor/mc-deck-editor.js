@@ -120,6 +120,32 @@ export class McDeckEditor extends LitElement {
                 ${this.renderValidation()}
                 <div class="deck-editor-grid">
                     <mc-deck-selected-cards .cards="${this.selectedCards}"></mc-deck-selected-cards>
+                    <div
+                        class="deck-editor-middle"
+                        role="group"
+                        aria-label="Resumen y acciones del mazo"
+                    >
+                        <div class="deck-editor-middle-counts">
+                            <p>Mazo actual: <strong>${this.deckSize}</strong> cartas</p>
+                            <p>Cartas disponibles: <strong>${this.availableCards.length}</strong></p>
+                        </div>
+                        <div class="section-actions">
+                            <md-text-button
+                                type="button"
+                                @click="${this.handleClose.bind(this)}"
+                            >
+                                Cancelar
+                            </md-text-button>
+                            <md-filled-button
+                                type="button"
+                                class="save-button"
+                                ?disabled="${this.saving}"
+                                @click="${this.handleSave.bind(this)}"
+                            >
+                                ${this.saving ? 'Guardando...' : 'Guardar'}
+                            </md-filled-button>
+                        </div>
+                    </div>
                     <mc-deck-card-pool
                         .cards="${this.availableCards}"
                         .search="${this.search}"

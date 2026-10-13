@@ -136,7 +136,7 @@ export default {
                 'card': gangUp
             },
             {
-                'count': 100,
+                'count': 1,
                 'card': {
                     'type': CARD_TYPE_TREACHERY,
                     'params': {

@@ -126,6 +126,7 @@ export class McPlayer extends LitElement {
         return gameZone && html`
             <mc-game-zone
                 class="panel"
+                .player="${this.player}"
                 encounters="${gameZone.encounters}"
                 .cards="${gameZone.cards}"
                 .attachedUpgrades="${attachedUpgrades}"

@@ -5,9 +5,13 @@ import {
     PRIORITY_RESPONSE,
     TRIGGER_END_PLAY_CARD,
     TARGET_TRIGGERED_CARD,
+    TARGET_YOUR_SUPERHERO,
 } from 'mc-shared';
+import {Ability} from '../../src/abilities/core/ability.js';
+import {Arrow} from '../../src/abilities/core/arrow.js';
 import {ResponseAbility} from '../../src/abilities/response/response-ability.js';
 import {AddHandEffect} from '../../src/effects/add-hand-effect.js';
+import {ExhaustEffect} from '../../src/effects/exhaust-effect.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {ReturnHandEffect} from '../../src/effects/return-hand-effect.js';
 import {Engine} from '../../src/engine/engine.js';
@@ -250,4 +254,91 @@ test('a response event added to hand during a trigger window becomes available i
 
     assert.equal(plays, 1);
     assert.equal(owner.hand.cards.includes(drawnEvent), false);
+});
+
+test('an arrow-paid context does not leak into nested response windows', async () => {
+    const {match, owner} = createMatchAndPlayer();
+    let responses = 0;
+    const superhero = {
+        exhausted: false,
+        exhaust() {
+            this.exhausted = true;
+        },
+        async refresh() {},
+    };
+    owner.superhero = superhero;
+
+    const morphogenetics = new ResponseAbility({
+        arrow: new Arrow({
+            cost: new ExhaustEffect({
+                match,
+                target: TARGET_YOUR_SUPERHERO,
+            }),
+            match,
+        }),
+        effect: {
+            resolved: false,
+            async canRun() {
+                return true;
+            },
+            async runEffect() {
+                this.resolved = true;
+                responses++;
+            },
+        },
+        hideDialog: true,
+        match,
+        name: 'Morfogenética',
+        trigger: TRIGGER_END_PLAY_CARD,
+    });
+    const hero = {
+        abilities: [morphogenetics],
+        id: 'ms-marvel',
+        owner,
+        triggers: {},
+        get currentSide() {
+            return this;
+        },
+    };
+    morphogenetics.card = hero;
+    morphogenetics.initTriggers(hero);
+
+    const events = [
+        {isEvent: true, name: 'Evento de ataque'},
+        {isEvent: true, name: 'A por ellos'},
+    ];
+    const engine = new Engine();
+    engine.match = match;
+    const eventAbility = new Ability({
+        effect: {
+            resolved: false,
+            async canRun() {
+                return true;
+            },
+            async runEffect(params) {
+                for (const event of events) {
+                    await engine.trigger(
+                        PRIORITY_RESPONSE,
+                        [TRIGGER_END_PLAY_CARD],
+                        {
+                            ...params,
+                            card: event,
+                            effect: {card: event, resolved: true},
+                        }
+                    );
+                }
+                this.resolved = true;
+            },
+        },
+        match,
+    });
+
+    await eventAbility.resolveAbility({
+        arrowPaid: true,
+        card: events[0],
+        player: owner,
+    });
+
+    assert.equal(responses, 1);
+    assert.equal(superhero.exhausted, true);
 });

@@ -154,3 +154,68 @@ test('confirmation dialog shows enemy attack and defense bonus details', () => {
     assert.ok(dialog.renderButtonOk().values.includes('OK'));
     assert.ok(dialog.renderButtonCancel().values.includes('Cancelar'));
 });
+
+test('basic activation confirmation titles the action and shows unlabeled cards without a subtitle', () => {
+    const hero = {
+        image: 'heroes/spiderman/peter1.webp',
+        name: 'Spider-Man',
+    };
+    const target = {
+        id: 'main-scheme',
+        image: 'scenarios/rhino/main-scheme.webp',
+        isMainScheme: true,
+        name: 'Breakin & Takin',
+        threat: 2,
+    };
+    const dialog = Object.assign(Object.create(McConfirmDialog.prototype), {
+        data: {
+            basicActivation: {
+                activationType: 'thwart',
+                superhero: hero,
+                target,
+            },
+            cancelText: 'Cancelar',
+        },
+        _dontShowBasicActivationConfirmation: false,
+        subtitle: '',
+    });
+    const content = dialog.renderContent();
+    const previews = content.values.filter(value =>
+        value?.strings?.join('').includes('basic-activation-card')
+    );
+
+    assert.equal(previews.length, 2);
+    assert.equal(dialog.getTitle(), '¿Quieres realizar esta intervención?');
+    assert.equal(dialog.getSubtitle(), '');
+    assert.equal(dialog.renderSubtitle(), '');
+    assert.ok(!content.strings.join('').includes('Tipo de activación'));
+    assert.ok(!content.values.includes('Superhéroe'));
+    assert.ok(!content.values.includes('Objetivo'));
+    assert.ok(content.strings.join('').includes('type="checkbox"'));
+    assert.ok(dialog.renderButtonOk().values.includes('Ok'));
+    assert.ok(dialog.renderButtonCancel().values.includes('Cancelar'));
+
+    dialog.data.basicActivation.activationType = 'attack';
+    assert.equal(dialog.getTitle(), '¿Quieres realizar este ataque?');
+
+    const targetPreview = dialog.renderBasicActivationCard(target);
+    assert.equal(targetPreview.values.at(-1), true);
+});
+
+test('basic activation confirmation returns the selected hide-dialog preference', () => {
+    const dialog = Object.assign(Object.create(McConfirmDialog.prototype), {
+        data: {basicActivation: {}},
+        _dontShowBasicActivationConfirmation: true,
+    });
+    let response;
+    dialog.dispatchEvent = event => {
+        response = event.detail;
+    };
+
+    dialog.sendResponse();
+
+    assert.deepEqual(response, {
+        confirmed: true,
+        skipBasicActivationConfirmation: true,
+    });
+});

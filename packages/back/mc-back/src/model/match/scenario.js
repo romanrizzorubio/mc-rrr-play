@@ -183,14 +183,26 @@ export class Scenario extends Engine {
             },
         });
 
+        const completionParams = {
+            ...params,
+            card: currentScheme,
+            effect: {selectedTarget: currentScheme},
+            match: this.match,
+        };
+        const whenCompletedAbilities = (currentSide.abilities || []).filter(
+            ability => ability.isWhenCompleted &&
+                ability.isValidIdentity(completionParams) &&
+                (!ability.condition ||
+                    checkCondition(completionParams, ability.condition))
+        );
+        for (const ability of whenCompletedAbilities) {
+            await ability.resolveAbility(completionParams);
+        }
+
         await this.trigger(
             PRIORITY_FORCED_RESPONSE,
             [TRIGGER_MAIN_SCHEME_COMPLETED],
-            {
-                ...params,
-                card: currentScheme,
-                effect: {selectedTarget: currentScheme},
-            }
+            completionParams
         );
 
         if (currentSide.final || !nextScheme) {
@@ -356,13 +368,21 @@ export class Scenario extends Engine {
         };
     }
     async toObjWithAbilityAvailability(player) {
-        const villain = this.villain ?
-            await this.villain.toObjWithAbilityAvailability(player) :
-            null;
+        const [villain, mainScheme, gameZone] = await Promise.all([
+            this.villain ?
+            this.villain.toObjWithAbilityAvailability(player) :
+            null,
+            this.gameZone.currentScheme ?
+            this.gameZone.currentScheme.toObjWithAbilityAvailability(player) :
+                null,
+            this.gameZone.toObjWithAbilityAvailability(player),
+        ]);
 
         return {
             ...this.toObj(),
             villain,
+            mainScheme,
+            gameZone,
         };
     }
 }

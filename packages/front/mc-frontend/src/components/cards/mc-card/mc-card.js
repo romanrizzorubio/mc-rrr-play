@@ -60,6 +60,9 @@ export class CardComponent extends LitElement {
     static get properties() {
         return {
             name: {type: String},
+            card: {type: Object},
+            basicActivation: {type: Object},
+            clickDisabled: {type: Boolean},
             image: {type: String},
             isFacedownCard: {type: Boolean},
             size: {type: String},
@@ -104,6 +107,9 @@ export class CardComponent extends LitElement {
         super();
 
         this.name = '';
+        this.card = null;
+        this.basicActivation = null;
+        this.clickDisabled = false;
         this.image = '';
         this.isFacedownCard = false;
         this.attached = [];
@@ -238,24 +244,50 @@ export class CardComponent extends LitElement {
         }));
     }
     handleClick() {
+        if (this.clickDisabled) {
+            return;
+        }
+
         const hasOtherAction = this.menuOptions.some(option =>
             option.id !== MENU_OPTION_VIEW_TUCKED_CARDS && !option.disable
         );
 
-        if (this.tuckedCards?.length && !hasOtherAction) {
+        if (this.menuOptions.length && hasOtherAction) {
+            this.dispatchEvent(new CustomEvent('change-menu', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    menuOptions: this.menuOptions,
+                }
+            }));
+        } else if (this.basicActivation) {
+            this.dispatchEvent(new CustomEvent('basic-activation', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    option: this.basicActivation,
+                },
+            }));
+        } else if (this.tuckedCards?.length && !hasOtherAction) {
             this.handleViewTuckedCards();
         } else if (this.menuOptions.length) {
             this.dispatchEvent(new CustomEvent('change-menu', {
                 bubbles: true,
                 composed: true,
                 detail: {
+                    card: this.card,
                     menuOptions: this.menuOptions,
                 }
             }));
         } else {
             this.dispatchEvent(new CustomEvent('card-click', {
                 bubbles: true,
-                composed: true
+                composed: true,
+                detail: {
+                    card: this.card,
+                },
             }));
         }
     }

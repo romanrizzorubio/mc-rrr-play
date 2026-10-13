@@ -35,6 +35,7 @@ import {
     TRIGGER_ROUND_ENDS,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_COUNTERS_REMOVED,
+    TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_ENTER_PLAY,
@@ -43,6 +44,7 @@ import {
     TRIGGER_THIS_SCHEME,
     TRIGGER_THIS_THWARTS,
     TRIGGER_TREACHERY_REVEAL,
+    TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU,
     TRIGGER_VILLAIN_SCHEMES,
@@ -91,6 +93,7 @@ import {PlaceThreatTrigger} from '../../triggers/place-threat-trigger.js';
 import {PlayCardTrigger} from '../../triggers/play-card-trigger.js';
 import {PlayerTurnStartTrigger} from '../../triggers/player-turn-start-trigger.js';
 import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
+import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
 import {ThisEnterPlayTrigger} from '../../triggers/this-enter-play-trigger.js';
@@ -115,6 +118,7 @@ import {HeroDefendsAttackTrigger} from '../../triggers/hero-defends-attack-trigg
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
 import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigger.js';
+import {VillainActivatesTrigger} from '../../triggers/villain-activates-trigger.js';
 import {VillainSchemesTrigger} from '../../triggers/villain-schemes-trigger.js';
 import {WouldPlaceThreatTrigger} from '../../triggers/would-place-threat-trigger.js';
 import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
@@ -164,6 +168,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,
     [TRIGGER_THIS_COUNTERS_REMOVED]: ThisCountersRemovedTrigger,
+    [TRIGGER_THIS_DEFEAT]: ThisDefeatTrigger,
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
     [TRIGGER_THIS_ENTER_PLAY]: ThisEnterPlayTrigger,
     [TRIGGER_THIS_FLIP]: ThisFlipTrigger,
@@ -173,6 +178,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_THWARTS]: ThisThwartsTrigger,
     [TRIGGER_VILLAIN_ATTACKS]: VillainAttacksTrigger,
     [TRIGGER_VILLAIN_ATTACKS_YOU]: VillainAttacksYouTrigger,
+    [TRIGGER_VILLAIN_ACTIVATES]: VillainActivatesTrigger,
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,

@@ -18,6 +18,7 @@ export const ABILITY_RESPONSE = 'response';
 export const ABILITY_SETUP = 'setup';
 export const ABILITY_SPECIAL = 'special';
 export const ABILITY_WHEN_DEFEATED = 'when-defeated';
+export const ABILITY_WHEN_COMPLETED = 'when-completed';
 export const ABILITY_WHEN_REVEALED = 'when-revealed';
 export const ABILITY_WHEN_REVEALED_ALTEREGO = 'when-revealed-alterego';
 export const ABILITY_WHEN_REVEALED_HERO = 'when-revealed-hero';

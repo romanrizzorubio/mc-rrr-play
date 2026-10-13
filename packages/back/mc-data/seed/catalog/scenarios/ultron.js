@@ -73,7 +73,7 @@ import {
     TRIGGER_PLACE_THREAT,
     TRIGGER_THIS_SCHEME,
     TRIGGER_THIS_ATTACK,
-    TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_THIS_DEFEAT,
     TRIGGER_VILLAIN_ATTACKS_YOU,
 } from 'mc-shared';
 
@@ -772,7 +772,7 @@ export default {
                             {
                                 type: ABILITY_FORCED_INTERRUPT,
                                 params: {
-                                    trigger: TRIGGER_THIS_DEFEAT_MINION,
+                                    trigger: TRIGGER_THIS_DEFEAT,
                                     effect: facedownDrone({
                                         target: TARGET_ENGAGED,
                                     }),

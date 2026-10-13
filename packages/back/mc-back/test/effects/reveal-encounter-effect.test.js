@@ -3,6 +3,7 @@ import {test} from 'node:test';
 
 import {
     CARD_TYPE_ATTACHMENT,
+    DIALOG_SURGE,
     PLACE_ENCOUNTER_DECK,
     TARGET_MINION_HIGHEST_PRINTED_HP,
     TARGET_YOU,
@@ -16,6 +17,10 @@ import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {Player} from '../../src/model/match/player.js';
+import {
+    restoreMatch,
+    serializeMatch,
+} from '../../src/utils/match-serialization.js';
 import riskyBusiness from '../../../mc-data/seed/catalog/scenarios/risky-business.js';
 
 const createEncounterCard = id => ({
@@ -72,6 +77,63 @@ test('RevealEncounterEffect can draw from the encounter deck', async () => {
 
     assert.deepEqual(revealedCard, {id: 'top'});
     assert.deepEqual(player.encounters, [pendingCard]);
+});
+
+test('surge shows an encounter-back dialog before drawing and can hide future notices', async () => {
+    const dialogs = [];
+    const steps = [];
+    const match = {
+        skipSurgeNotification: false,
+        triggerCards: {},
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+            steps.push('dialog');
+
+            return {skipSurgeNotification: true};
+        },
+        async drawEncounterCards() {
+            steps.push('draw');
+
+            return [{isEncounterCard: true}];
+        },
+    };
+    const selectedTarget = {
+        createDelayedEffect() {},
+        endTriggers() {},
+    };
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget,
+    });
+
+    await effect.applySurge({player: {}});
+
+    assert.deepEqual(steps, ['dialog', 'draw']);
+    assert.equal(dialogs[0].dialogType, DIALOG_SURGE);
+    assert.equal(dialogs[0].title, 'Oleada');
+    assert.equal(
+        dialogs[0].subtitle,
+        'Se resuelve una Oleada: se revela y resuelve una carta adicional del mazo de Encuentros.'
+    );
+    assert.equal(dialogs[0].data.allowHideFuture, true);
+    assert.equal(match.skipSurgeNotification, true);
+
+    await effect.applySurge({player: {}});
+
+    assert.deepEqual(steps, ['dialog', 'draw', 'draw']);
+    assert.equal(dialogs.length, 1);
+});
+
+test('surge notification preference persists with the match', () => {
+    const match = new Match({
+        mc: {},
+        name: 'surge-notification-preference',
+    });
+    match.skipSurgeNotification = true;
+
+    const restoredMatch = restoreMatch(serializeMatch(match), {});
+
+    assert.equal(restoredMatch.skipSurgeNotification, true);
 });
 
 test('RevealEncounterEffect identifies the villain in the reveal dialog', async () => {

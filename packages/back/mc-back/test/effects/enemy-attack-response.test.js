@@ -46,6 +46,9 @@ test('enemy attacks show a directly selected hero in the activation dialog', asy
     };
     const scorpion = {
         name: 'Escorpión',
+        async getAttackValue() {
+            return 2;
+        },
         toObj() {
             return {name: this.name};
         },
@@ -65,6 +68,7 @@ test('enemy attacks show a directly selected hero in the activation dialog', asy
     assert.equal(dialog.dialogType, DIALOG_ACTIVATE);
     assert.equal(dialog.title, 'Escorpión ataca a Spider-Man');
     assert.deepEqual(dialog.data.target, {name: 'Spider-Man'});
+    assert.equal(dialog.data.character.attack, 2);
 });
 
 test('Backflip is offered before attack damage is applied', async () => {
@@ -314,6 +318,9 @@ test('Poneos detras de mi resolves its attack against the villain', async () => 
     const [ability] = event.card.params.abilities;
     const villain = {
         name: 'Rhino',
+        async getAttackValue() {
+            return 2;
+        },
         toObj() {
             return {name: this.name};
         },
@@ -505,7 +512,8 @@ test('defense dialog shows effective hit points for each defender', async () => 
         match: {},
     });
     effect.selectedTarget = attackTarget;
-    effect.toObj = () => ({});
+    effect.getAttackValue = async () => 5;
+    effect.toObj = () => ({character: {attack: 2}});
     let defenseDialog;
     effect.openDialog = async dialog => {
         defenseDialog = dialog;
@@ -519,12 +527,31 @@ test('defense dialog shows effective hit points for each defender', async () => 
     await effect.defense({player});
 
     assert.equal(defenseDialog.dialogType, DIALOG_DEFENSE);
+    assert.equal(defenseDialog.data.attack.character.attack, 5);
     assert.deepEqual(defenseDialog.data.defenders.map(({hitPoints, life}) => ({
         hitPoints,
         life,
     })), [
         {hitPoints: 16, life: 13},
     ]);
+});
+
+test('enemy attack adds its activation modifier to the calculated character ATK', async () => {
+    const effect = new EnemyAttackEffect({
+        enemy: {
+            async getAttackValue() {
+                return 5;
+            },
+        },
+        match: {},
+    });
+    effect.modifyAttack = 2;
+
+    assert.equal(await effect.getAttackValue({}), 7);
+
+    effect.resetForResolution();
+
+    assert.equal(effect.modifyAttack, 0);
 });
 
 test('retaliation resolves after a defended enemy attack with or without damage', async () => {

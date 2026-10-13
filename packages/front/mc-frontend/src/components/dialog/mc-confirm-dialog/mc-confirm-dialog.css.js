@@ -6,6 +6,29 @@ export default css`
     justify-content: center;
   }
 
+  .basic-activation-preview {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .basic-activation-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .remember-choice {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
   .boost-icons {
     display: flex;
     flex-direction: column;

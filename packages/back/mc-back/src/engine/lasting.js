@@ -13,6 +13,7 @@ export class Lasting extends Engine {
         effect,
         endEffect,
         selectedTarget,
+        triggerCard = card,
         until = TIME_PHASE,
     }) {
         super(arguments[0]);
@@ -23,6 +24,7 @@ export class Lasting extends Engine {
         this.effect = effect;
         this.endEffect = endEffect;
         this.selectedTarget = selectedTarget;
+        this.triggerCard = triggerCard;
         this.until = until;
         this.cleanups = [];
     }
@@ -30,7 +32,7 @@ export class Lasting extends Engine {
         return this._match || path(this, 'effect.match');
     }
     createEndLasting(until, params) {
-        const {card} = this;
+        const {triggerCard} = this;
 
         if (until instanceof Array) {
             until.forEach(_until => {
@@ -48,7 +50,7 @@ export class Lasting extends Engine {
                 hideDialog: true,
             });
 
-            endLastingAbility.initTriggers(card);
+            endLastingAbility.initTriggers(triggerCard);
         }
     }
     registerCleanup(effect, selectedTarget) {

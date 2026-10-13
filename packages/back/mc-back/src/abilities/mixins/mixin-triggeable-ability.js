@@ -8,9 +8,9 @@ export const MixinTriggeableAbility = C => class extends C {
         this.trigger = trigger;
         this.triggerParams = triggerParams;
     }
-    canRun(params) {
+    canRun(params, effect = this.effect) {
         if (this.isValidIdentity(params)) {
-            return super.canRun(arguments[0]);
+            return super.canRun(params, effect);
         }
 
         return false;

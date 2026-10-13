@@ -52,6 +52,28 @@ export class McMatchPage extends LitElement {
         this.api.listenScenarioZone(this.updateScenarioZone.bind(this));
         this.api.joinMatch(true);
     }
+    getBasicActivationPreferenceKey() {
+        const matchId = this.match?.id ?? this.match?.name;
+
+        return matchId && this.player ?
+            `mc-match:${matchId}:${this.player}:hide-basic-activation-confirmation` :
+            '';
+    }
+    shouldSkipBasicActivationConfirmation() {
+        const key = this.getBasicActivationPreferenceKey();
+
+        return Boolean(
+            key &&
+            globalThis.window?.sessionStorage?.getItem(key) === 'true'
+        );
+    }
+    rememberBasicActivationConfirmationChoice() {
+        const key = this.getBasicActivationPreferenceKey();
+
+        if (key) {
+            globalThis.window?.sessionStorage?.setItem(key, 'true');
+        }
+    }
     updateCard(card) {
         const {match, player} = this;
 
@@ -305,6 +327,48 @@ export class McMatchPage extends LitElement {
             }));
         }
     }
+    handleBasicActivation(e) {
+        e.stopPropagation();
+
+        const {card, option} = e.detail;
+
+        return this.handleBasicActivationSelection(card, option);
+    }
+    handleBasicActivationSelection(card, option) {
+        const player = this.match?.players.find(_player =>
+            _player.name === this.player
+        );
+
+        if (!player || !card || !option?.basicActivation) {
+            return;
+        }
+
+        if (this.shouldSkipBasicActivationConfirmation()) {
+            return this.resolveBasicActivation(card, option);
+        }
+
+        this.dispatchEvent(new CustomEvent('basic-activation-confirmation', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                basicActivation: {
+                    superhero: player.superhero,
+                    target: card,
+                    activationType: option.activationType,
+                },
+                callback: response => {
+                    if (!response?.confirmed) {
+                        return;
+                    }
+                    if (response.skipBasicActivationConfirmation) {
+                        this.rememberBasicActivationConfirmationChoice();
+                    }
+
+                    return this.resolveBasicActivation(card, option);
+                },
+            },
+        }));
+    }
     handleChangeMenu(e) {
         e.stopPropagation();
         const {card} = e.detail;
@@ -337,6 +401,9 @@ export class McMatchPage extends LitElement {
                     },
                 }));
                 return;
+            }
+            if (selected.basicActivation) {
+                return this.handleBasicActivationSelection(card, selected);
             }
 
             switch (selected.id) {
@@ -444,12 +511,40 @@ export class McMatchPage extends LitElement {
                 .player="${_player}"
                 .playCardPending="${this.playCardPending}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
+                @basic-activation="${this.handleBasicActivation.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"
                 @player-end="${this.handlePlayerEnd.bind(this)}"
             ></mc-match>
         `;
+    }
+    async resolveBasicActivation(card, option) {
+        try {
+            const player = this.match?.players.find(_player =>
+                _player.name === this.player
+            );
+
+            if (!player || !Number.isSafeInteger(option.abilityIndex) ||
+                !option.targetId) {
+                throw new Error('No se pudo iniciar la activación básica seleccionada.');
+            }
+
+            await this.apiPlayer.resolveAbility(
+                this.player,
+                player.superhero.id,
+                option.abilityIndex,
+                option.targetId
+            );
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        }
     }
 }
 

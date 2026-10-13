@@ -206,6 +206,41 @@ test('completing a non-final main scheme reveals and advances to the next stage'
     ]);
 });
 
+test('resolves every When Completed ability before advancing the main scheme', async () => {
+    const {scheme: nextScheme} = createNextScheme();
+    const {currentScheme, currentSide, match, scenario} =
+        createScenario({nextScheme});
+    const resolvedAbilities = [];
+    const player = {name: 'Active player'};
+    const whenCompletedAbility = index => ({
+        isWhenCompleted: true,
+        isValidIdentity() {
+            return true;
+        },
+        async resolveAbility(params) {
+            assert.equal(params.card, currentScheme);
+            assert.equal(params.effect.selectedTarget, currentScheme);
+            resolvedAbilities.push(index);
+            match.sequence.push(`when completed ${index}`);
+        },
+    });
+    currentSide.abilities = [
+        whenCompletedAbility(1),
+        {isWhenCompleted: false},
+        whenCompletedAbility(2),
+    ];
+
+    await scenario.completeMainScheme(currentSide, {player});
+
+    assert.deepEqual(resolvedAbilities, [1, 2]);
+    assert.deepEqual(match.sequence.slice(0, 4), [
+        'Completed scheme (1B)',
+        'when completed 1',
+        'when completed 2',
+        'Mostrando el Plan principal',
+    ]);
+});
+
 test('transfers acceleration tokens to the next main scheme stage', async () => {
     const {bSide, scheme: nextScheme} = createNextScheme();
     const {currentSide, scenario} = createScenario({nextScheme});

@@ -43,6 +43,26 @@ export class McActivateDialog extends McDialog {
             },
         };
     }
+    renderCharacterCard(character) {
+        return html`
+            <mc-card
+                .name="${character.name}"
+                .image="${character.image}"
+                .isFacedownCard="${character.isFacedownCard}"
+                .life="${character.life}"
+                .hitPoints="${character.hitPoints}"
+                .attack="${character.attack}"
+                .thwart="${character.thwart}"
+                .defense="${character.defense}"
+                .recovery="${character.recovery}"
+                .scheme="${character.scheme}"
+                .unprintedStats="${character.unprintedStats ?? []}"
+                size="l"
+                show-basic-stats
+                ?horizontal="${isPlanCard(character)}"
+            ></mc-card>
+        `;
+    }
     renderContent() {
         const {data: {character, target, statusMessage, statusType}} = this;
 
@@ -66,21 +86,9 @@ export class McActivateDialog extends McDialog {
         }
 
         return html`
-            <mc-card
-                name="${character.name}"
-                image="${character.image}"
-                .isFacedownCard="${character.isFacedownCard}"
-                size="l"
-                ?horizontal="${isPlanCard(character)}"
-            ></mc-card>
+            ${this.renderCharacterCard(character)}
             <div class="vs">VS</div>
-            <mc-card
-                name="${target.name}"
-                image="${target.image}"
-                .isFacedownCard="${target.isFacedownCard}"
-                size="l"
-                ?horizontal="${isPlanCard(target)}"
-            ></mc-card>
+            ${this.renderCharacterCard(target)}
         `;
     }
 }

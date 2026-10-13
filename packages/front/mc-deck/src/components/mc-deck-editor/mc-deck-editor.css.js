@@ -75,6 +75,26 @@ export default css`
     gap: 24px;
   }
 
+  .deck-editor-middle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 0;
+    border-block: 1px solid #e0e0e0;
+  }
+
+  .deck-editor-middle-counts {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .deck-editor-middle-counts p {
+    margin: 0;
+  }
+
   .save-button {
     margin: 0;
   }

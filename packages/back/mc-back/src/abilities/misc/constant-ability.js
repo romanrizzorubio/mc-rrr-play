@@ -63,7 +63,16 @@ export class ConstantAbility extends MixinTriggeableAbility(Ability) {
         });
     }
     async resolveAbility(params) {
-        await super.resolveAbility(params);
+        const effect = this.effect &&
+            typeof this.effect.createInstance === 'function' ?
+            this.effect.createInstance({ability: this}) :
+            this.effect;
+
+        if (effect && effect !== this.effect) {
+            effect.ability = this;
+        }
+
+        await super.resolveAbility(params, effect);
 
         if (this.once && this.card) {
             this.card.endTriggers();

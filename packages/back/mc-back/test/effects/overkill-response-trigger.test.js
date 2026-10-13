@@ -5,7 +5,6 @@ import {
     DIALOG_PAY_COST,
     DIALOG_USE_CARD,
     PRIORITY_RESPONSE,
-    RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
 } from 'mc-shared';
@@ -73,7 +72,7 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
         if (dialog.dialogType === DIALOG_PAY_COST) {
             return {
                 paid: {hand: [], generators: []},
-                resources: [RESOURCE_MENTAL, RESOURCE_PHYSICAL],
+                resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
             };
         }
 
@@ -170,6 +169,10 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
     await playPromise;
 
     assert.equal(maxActiveDialogs, 1);
+    assert.deepEqual(
+        play.resourcesPaid,
+        [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL]
+    );
     assert.equal(minion.damage, 5);
     assert.equal(villain.damage, 3);
 });

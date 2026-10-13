@@ -41,6 +41,7 @@ export class Match extends Engine {
         this.facedownMinionSequence = 0;
         this.skipDiscardOrderDialog = false;
         this.skipBoostDealtNotification = false;
+        this.skipSurgeNotification = false;
         this.suppressedInformationalDialogIds = [];
 
         this.lasting = [];

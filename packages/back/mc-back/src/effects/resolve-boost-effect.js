@@ -39,24 +39,36 @@ export class ResolveBoostEffect extends Effect {
             triggeredCard: this.card,
         };
     }
-    async prepare(params) {
-        await super.prepare(params);
-
+    async showBoostDialog(params, {showUpdatedBoost = false} = {}) {
         const {card, cardIndex, enemyActivation} = this;
         const boostCards = enemyActivation.boostCards;
-        this.boostValue = (card.boost || 0) + this.match.amplificationIcons;
 
         if (boostCards.length > 1) {
             const cumulativeBoost = this.previousBoost + this.boostValue;
-            const cards = boostCards.map((boostCard, index) => index <= cardIndex ? {
-                card: boostCard.toObj(params),
-                horizontal: Boolean(boostCard.isMainScheme || boostCard.isSideScheme),
-                hasBoostAbility: Boolean(boostCard.boostAbility),
-            } : null);
+            const cards = boostCards.map((boostCard, index) => {
+                if (index > cardIndex) {
+                    return null;
+                }
+
+                const cardData = boostCard.toObj(params);
+
+                return {
+                    card: showUpdatedBoost && index === cardIndex ?
+                        {...cardData, boost: this.boostValue} :
+                        cardData,
+                    horizontal: Boolean(boostCard.isMainScheme || boostCard.isSideScheme),
+                    hasBoostAbility: Boolean(boostCard.boostAbility),
+                };
+            });
 
             await this.openDialog({
                 dialogType: DIALOG_BOOST_DEALT,
-                title: `${enemyActivation.enemy.name} resuelve carta de aumento ${cardIndex + 1} de ${boostCards.length}`,
+                title: showUpdatedBoost ?
+                    'Aumento actualizado' :
+                    `Aumento ${cardIndex + 1}/${boostCards.length}`,
+                subtitle: showUpdatedBoost ?
+                    'Se muestran los iconos de aumento actualizados.' :
+                    undefined,
                 data: {
                     cards,
                     cumulativeBoost,
@@ -66,27 +78,49 @@ export class ResolveBoostEffect extends Effect {
             return;
         }
 
+        const cardData = card.toObj(params);
+
         await this.openDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            title: 'Mostrando carta de Aumento',
+            title: showUpdatedBoost ? 'Aumento actualizado' : 'Aumento',
+            subtitle: showUpdatedBoost ?
+                'Se muestran los iconos de aumento actualizados.' :
+                undefined,
             data: {
-                card: card.toObj(params),
+                card: showUpdatedBoost ?
+                    {...cardData, boost: this.boostValue} :
+                    cardData,
                 horizontal: Boolean(card.isMainScheme || card.isSideScheme),
                 isBoost: true,
                 hasBoostAbility: Boolean(card.boostAbility),
             },
         });
     }
+    async prepare(params) {
+        await super.prepare(params);
+
+        const {card} = this;
+        this.boostValue = (card.boost || 0) + this.match.amplificationIcons;
+
+        await this.showBoostDialog(params);
+    }
     async execute(params) {
         const {card, enemyActivation} = this;
 
         if (card.boostAbility) {
+            const previousBoostValue = this.boostValue;
+
             await card.boostAbility.resolveAbility({
                 ...params,
                 activation: this.activation,
                 enemyActivation,
                 card,
+                effect: this,
             });
+
+            if (this.boostValue !== previousBoostValue) {
+                await this.showBoostDialog(params, {showUpdatedBoost: true});
+            }
         }
 
         this.value = this.boostValue;

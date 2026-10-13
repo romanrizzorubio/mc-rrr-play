@@ -9,12 +9,14 @@ export class EnemyActivationEffect extends Effect {
     constructor({
         enemy,
         enemyType,
+        giveBoost = true,
     }) {
         super(arguments[0]);
 
         this.enemy = enemy;
         this.configuredEnemy = enemy;
         this.enemyType = enemyType;
+        this.giveBoost = giveBoost;
 
         this.boostCards = [];
         this.canceled = false;
@@ -28,7 +30,7 @@ export class EnemyActivationEffect extends Effect {
     cancel() {
         this.canceled = true;
     }
-    getBoostTarget() {
+    getBoostTarget(_params) {
         return this.selectedTarget;
     }
     checkTrigger() {
@@ -46,12 +48,15 @@ export class EnemyActivationEffect extends Effect {
             await this.enemy.refresh();
         }
 
+        if (!this.giveBoost) {
+            return;
+        }
+
         const dealBoostEffect = new DealBoostEffect({
             ability: this.ability,
             enemyActivation: this,
             match: this.match,
         });
-
         return dealBoostEffect.runEffect(params);
     }
     async showBoostCards() {
@@ -126,20 +131,23 @@ export class EnemyActivationEffect extends Effect {
             await this.selectEnemy(params);
         }
 
-        const {character} = this;
         const target = this.getTargetDialog(params);
+        const characterData = await this.getActivationCharacterData(params);
 
         await this.openDialog({
             dialogType: DIALOG_ACTIVATE,
             title: this.getTitleDialog(params),
             data: {
-                character: character.toObj(arguments[0]),
+                character: characterData,
                 target: target.toObj(arguments[0]),
             },
         });
     }
+    async getActivationCharacterData(params) {
+        return this.character.toObj(params);
+    }
     async resolveBoostCards(params) {
-        const selectedTarget = this.getBoostTarget();
+        const selectedTarget = this.getBoostTarget(params);
         let totalBoost = 0;
 
         for (let cardIndex = 0; cardIndex < this.boostCards.length; cardIndex++) {

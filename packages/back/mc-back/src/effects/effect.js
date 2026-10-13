@@ -195,6 +195,7 @@ export class Effect extends Engine {
 
         return calc.calculate({
             ...params,
+            match: params.match ?? this.match,
             effect: this,
         });
     }
@@ -323,6 +324,18 @@ export class Effect extends Engine {
             target,
         };
 
+        if (params.fixedPreselectedTarget && selectedTarget) {
+            const selectedTargets = Array.isArray(selectedTarget) ?
+                selectedTarget :
+                [selectedTarget];
+            const validTargets = selectedTargets.filter(selected =>
+                this.validTarget.filter(selected, targetParams));
+
+            return validTargets.length === selectedTargets.length ?
+                [Array.isArray(selectedTarget) ? validTargets : validTargets[0]] :
+                [];
+        }
+
         if (!this.refreshTarget && Array.isArray(selectedTarget)) {
             const validTargets = selectedTarget.filter(selected =>
                 this.validTarget.filter(selected, targetParams));
@@ -363,6 +376,10 @@ export class Effect extends Engine {
     }
     selectTarget(params) {
         const {target, selectedTarget, ability} = this;
+
+        if (params.fixedPreselectedTarget) {
+            return this.getValidTarget(params).length ? selectedTarget : null;
+        }
 
         if (selectedTarget && !this.refreshTarget) {
             return selectedTarget;

@@ -423,6 +423,19 @@ class McApp extends router(navigator(outlet(LitElement))) {
             callback,
         });
     }
+    handleBasicActivationConfirmation(e) {
+        const {basicActivation, callback} = e.detail;
+
+        this.openDialog({
+            dialogType: 'confirm',
+            showCancel: true,
+            data: {
+                basicActivation,
+                cancelText: 'Cancelar',
+            },
+            callback,
+        });
+    }
     handleCloseDialog() {
         if (this.dialog) {
             this.shadowRoot.getElementById('dialog').show();
@@ -653,6 +666,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                           .match="${match}"
                           player="${player}"
                           @change-menu="${this.handleChangeMenu.bind(this)}"
+                          @basic-activation-confirmation="${this.handleBasicActivationConfirmation.bind(this)}"
                           @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
                           @change-match="${this.handleMatchChanged.bind(this)}"
                           @view-discard="${this.handleViewDiscard.bind(this)}"

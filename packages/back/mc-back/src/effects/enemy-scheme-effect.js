@@ -1,26 +1,50 @@
+import {TARGET_MAIN_SCHEME} from 'mc-shared';
+
+import {Calc} from '../engine/calc.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {GetSchemeEffect} from './get-scheme-effect.js';
 import {PlaceThreatEffect} from './place-threat-effect.js';
 
 export class EnemySchemeEffect extends EnemyActivationEffect {
-    constructor() {
+    constructor(params = {}) {
         super({
-            ...arguments[0],
+            ...params,
             isScheme: true,
+            target: params.target ?? TARGET_MAIN_SCHEME,
         });
 
+        this.schemeModifierCalc = params.schemeModifierCalc;
+        this.modifyScheme = 0;
+        this._schemeModifierResolved = false;
         this.preventThreat = 0;
         this.threatPlaced = 0;
     }
     resetForResolution() {
         super.resetForResolution();
+        this.modifyScheme = 0;
+        this._schemeModifierResolved = false;
         this.preventThreat = 0;
         this.threatPlaced = 0;
     }
-    getTargetDialog() {
-        const {selectedTarget} = this;
+    getTargetDialog({player} = {}) {
+        const target = player?.superhero?.currentSide;
 
-        return selectedTarget;
+        if (!target) {
+            throw new TypeError(
+                'EnemySchemeEffect requires a player with a superhero side for its activation dialog.'
+            );
+        }
+
+        return target;
+    }
+    getBoostTarget({player} = {}) {
+        if (!player) {
+            throw new TypeError(
+                'EnemySchemeEffect requires a player for boost resolution.'
+            );
+        }
+
+        return player;
     }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
@@ -33,6 +57,22 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
     async getSchemeValue(params) {
         const {character} = this;
 
+        if (this.schemeModifierCalc && !this._schemeModifierResolved) {
+            const modifier = await new Calc(this.schemeModifierCalc).calculate({
+                ...params,
+                match: params.match ?? this.match,
+                effect: this,
+            });
+            if (!Number.isFinite(modifier)) {
+                throw new TypeError(
+                    'EnemySchemeEffect requires a finite scheme modifier.'
+                );
+            }
+
+            this.modifyScheme += modifier;
+            this._schemeModifierResolved = true;
+        }
+
         const getSchemeEffect = new GetSchemeEffect({
             selectedTarget: character,
             match: this.match,
@@ -40,7 +80,15 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
 
         await getSchemeEffect.runEffect(params);
 
-        return getSchemeEffect.scheme;
+        return getSchemeEffect.scheme + this.modifyScheme;
+    }
+    async getActivationCharacterData(params) {
+        const scheme = await this.getSchemeValue(params);
+
+        return {
+            ...this.character.toObj(params),
+            scheme,
+        };
     }
     getTitleDialog() {
         const {character} = this;

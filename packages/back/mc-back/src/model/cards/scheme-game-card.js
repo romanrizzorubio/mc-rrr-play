@@ -14,6 +14,9 @@ export class SchemeGameCard extends GameCard {
     get accelerationValue() {
         return this.card.acceleration;
     }
+    get accelerationCalc() {
+        return this.card.accelerationCalc;
+    }
     get content() {
         return this.card.content;
     }

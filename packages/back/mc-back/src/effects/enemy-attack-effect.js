@@ -8,10 +8,12 @@ import {
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
 } from 'mc-shared';
 
+import {Calc} from '../engine/calc.js';
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
@@ -26,6 +28,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             isAttack: true,
         });
 
+        this.attackModifierCalc = params.attackModifierCalc;
+        this.modifyAttack = 0;
+        this._attackModifierResolved = false;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget = new Map();
@@ -36,6 +41,8 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     resetForResolution() {
         super.resetForResolution();
+        this.modifyAttack = 0;
+        this._attackModifierResolved = false;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget.clear();
@@ -47,6 +54,26 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
+    }
+    get attackedCharacters() {
+        const attacked = Array.isArray(this.attacked) ?
+            this.attacked :
+            [this.attacked];
+
+        return attacked.filter(Boolean).map(target => {
+            if (!target.isPlayer) {
+                return target;
+            }
+
+            const superhero = target.superhero?.currentSide;
+            if (!superhero) {
+                throw new TypeError(
+                    'EnemyAttackEffect requires a player target to have a current superhero side.'
+                );
+            }
+
+            return superhero;
+        });
     }
     async canRun(params) {
         if (!(await this.getValidTarget(params)).length) {
@@ -114,9 +141,33 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return super.resolveStatus(params);
     }
     async getAttackValue(params) {
-        const {character} = this;
+        if (this.attackModifierCalc && !this._attackModifierResolved) {
+            const modifier = await new Calc(this.attackModifierCalc).calculate({
+                ...params,
+                match: params.match ?? this.match,
+                effect: this,
+            });
+            if (!Number.isFinite(modifier)) {
+                throw new TypeError(
+                    'EnemyAttackEffect requires a finite attack modifier.'
+                );
+            }
 
-        return character.getAttackValue(params);
+            this.modifyAttack += modifier;
+            this._attackModifierResolved = true;
+        }
+
+        const attackValue = await this.character.getAttackValue(params);
+
+        return attackValue + this.modifyAttack;
+    }
+    async getActivationCharacterData(params) {
+        const attackValue = await this.getAttackValue(params);
+
+        return {
+            ...this.character.toObj(params),
+            attack: attackValue,
+        };
     }
     async getDefenseValue(params, defender = this.defender) {
         return await defender.getDefenseValue(params) + this.modifyDefense;
@@ -160,7 +211,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 this.getDefenders(attackTarget);
             if (defenders.length) {
                 const targetPlayer = this.getTargetPlayer(attackTarget);
+                const attackValue = await this.getAttackValue(params);
                 const attack = this.toObj(arguments[0]);
+                attack.character.attack = attackValue;
                 const defenderCards = await Promise.all(defenders.map(async defender => {
                     const {hitPoints, life} = await defender.getEffectiveStats();
 
@@ -296,6 +349,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
+                TRIGGER_VILLAIN_ACTIVATES,
                 TRIGGER_VILLAIN_ATTACKS,
                 TRIGGER_VILLAIN_ATTACKS_YOU,
                 TRIGGER_ENEMY_ATTACKS_YOU,

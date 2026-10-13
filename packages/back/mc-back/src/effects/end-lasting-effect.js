@@ -26,7 +26,7 @@ export class EndLastingEffect extends Effect {
             });
         }
 
-        lasting.card.removeLastingTriggers(lasting);
+        lasting.triggerCard.removeLastingTriggers(lasting);
         const lastingIndex = lasting.match.lasting.indexOf(lasting);
 
         if (lastingIndex > -1) {

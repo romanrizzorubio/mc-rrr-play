@@ -2,6 +2,58 @@ import {EFFECT_MAP} from './effects-map.js';
 import {EFFECT_PARSERS_MAP} from './effects-parsers.js';
 import {findPrePlayConfirmationEffect} from '../../utils/pre-play-confirmation.js';
 
+const EFFECT_DEPENDENCY_KEYS = [
+    'cost',
+    'effect',
+    'effectNot',
+    'effects',
+    'endEffect',
+    'ifNot',
+    'options',
+    'replacement',
+    'thenEffect',
+];
+
+function cloneEffectDependencies(value) {
+    if (Array.isArray(value)) {
+        const dependencies = value.map(cloneEffectDependencies);
+
+        return dependencies.some((dependency, index) =>
+            dependency !== value[index]) ?
+            dependencies :
+            value;
+    }
+
+    if (value && typeof value.createInstance === 'function') {
+        return value.createInstance();
+    }
+
+    if (value && typeof value === 'object') {
+        const prototype = Object.getPrototypeOf(value);
+        if (prototype !== Object.prototype && prototype !== null) {
+            return value;
+        }
+
+        let clonedValue = value;
+
+        EFFECT_DEPENDENCY_KEYS.forEach(key => {
+            if (Object.hasOwn(value, key)) {
+                const dependency = cloneEffectDependencies(value[key]);
+                if (dependency !== value[key]) {
+                    if (clonedValue === value) {
+                        clonedValue = {...value};
+                    }
+                    clonedValue[key] = dependency;
+                }
+            }
+        });
+
+        return clonedValue;
+    }
+
+    return value;
+}
+
 export class EffectsFactory {
     constructor(abilitiesFactory) {
         this.abilitiesFactory = abilitiesFactory;
@@ -22,10 +74,22 @@ export class EffectsFactory {
 
         const EffectClass = EFFECT_MAP[type];
         if (EffectClass) {
-            return new EffectClass({
+            const effectDefinition = cloneEffectDependencies(effectParams);
+            const effect = new EffectClass({
                 ...effectParams,
                 effectType: type,
             });
+            Object.defineProperty(effect, 'createInstance', {
+                value: (overrides = {}) => this.createEffect({
+                    type,
+                    params: {
+                        ...cloneEffectDependencies(effectDefinition),
+                        ...overrides,
+                    },
+                }),
+            });
+
+            return effect;
         }
     }
     _parseEffectGroup(params) {

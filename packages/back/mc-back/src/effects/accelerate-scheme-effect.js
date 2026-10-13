@@ -1,5 +1,6 @@
 import {DIALOG_ACCELERATE,TARGET_MAIN_SCHEME} from 'mc-shared';
 
+import {Calc} from '../engine/calc.js';
 import {Effect} from './effect.js';
 import {PlaceThreatEffect} from './place-threat-effect.js';
 
@@ -8,18 +9,33 @@ export class AccelerateSchemeEffect extends Effect {
         super(arguments[0]);
 
         this.target = TARGET_MAIN_SCHEME;
+        this.accelerationBase = undefined;
+    }
+    async getAccelerationBase(mainScheme, params) {
+        const value = mainScheme.accelerationCalc ?
+            await new Calc(mainScheme.accelerationCalc).calculate({
+                ...params,
+                match: this.match,
+                effect: mainScheme,
+            }) :
+            mainScheme.accelerationValue;
+        if (!Number.isFinite(value)) {
+            throw new TypeError('Main scheme acceleration calculation must be finite.');
+        }
+
+        return value;
     }
     async prepare(params) {
         const mainScheme = this.match.mainScheme;
-        const {accelerationValue} = mainScheme;
+        this.accelerationBase = await this.getAccelerationBase(mainScheme, params);
         const {accelerationIcons, accelerationTokens} = this.match;
-        const accelerate = accelerationValue + accelerationIcons + accelerationTokens;
+        const accelerate = this.accelerationBase + accelerationIcons + accelerationTokens;
         await this.openDialog({
             dialogType: DIALOG_ACCELERATE,
             data: {
                 cards: [mainScheme.toObj(arguments[0])],
                 accelerate: accelerate,
-                accelerateBase: accelerationValue,
+                accelerateBase: this.accelerationBase,
                 accelerateIcons: accelerationIcons,
                 accelerateTokens: accelerationTokens,
             },
@@ -27,9 +43,12 @@ export class AccelerateSchemeEffect extends Effect {
 
         return super.prepare(params);
     }
-    execute(params) {
+    async execute(params) {
         const {match, selectedTarget} = this;
-        const threat = selectedTarget.accelerationValue + match.accelerationPlus;
+        const accelerationBase = Number.isFinite(this.accelerationBase) ?
+            this.accelerationBase :
+            await this.getAccelerationBase(selectedTarget, params);
+        const threat = accelerationBase + match.accelerationPlus;
 
         const placeThreatEffect = new PlaceThreatEffect({
             isAccelerationThreat: true,

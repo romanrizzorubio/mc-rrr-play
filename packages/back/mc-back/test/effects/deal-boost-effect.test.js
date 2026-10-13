@@ -273,7 +273,7 @@ test('a boost dealt by a boost ability resolves in the same activation', async (
         'Aumento generado',
     ]);
     assert.equal(dialogs.length, 3);
-    assert.match(dialogs[1].title, /2 de 3$/);
+    assert.equal(dialogs[1].title, 'Aumento 2/3');
     assert.equal(dialogs[2].data.cumulativeBoost, 6);
 });
 

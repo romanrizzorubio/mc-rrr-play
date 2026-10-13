@@ -8,6 +8,12 @@ import {isPlanCard} from '../../../misc/utils.js';
 import {renderBoostIcons} from '../../../utils/boost-icons.js';
 
 export class McConfirmDialog extends McDialog {
+    static get properties() {
+        return {
+            ...super.properties,
+            _dontShowBasicActivationConfirmation: {type: Boolean},
+        };
+    }
     static get is() {
         return 'mc-confirm-dialog';
     }
@@ -16,6 +22,20 @@ export class McConfirmDialog extends McDialog {
     }
     get className() {
         return 'confirm';
+    }
+    getTitle() {
+        const {basicActivation} = this.data;
+
+        if (basicActivation) {
+            const titles = {
+                attack: '¿Quieres realizar este ataque?',
+                thwart: '¿Quieres realizar esta intervención?',
+            };
+
+            return titles[basicActivation.activationType] ?? super.getTitle();
+        }
+
+        return super.getTitle();
     }
     getSubtitle() {
         const {
@@ -31,6 +51,14 @@ export class McConfirmDialog extends McDialog {
                     '¿Continuar y pagar el coste del evento?' :
                     super.getSubtitle());
     }
+    renderSubtitle() {
+        return this.data.basicActivation ? '' : super.renderSubtitle();
+    }
+    constructor() {
+        super(arguments[0]);
+
+        this._dontShowBasicActivationConfirmation = false;
+    }
     renderContent() {
         const {
             data: {
@@ -42,8 +70,31 @@ export class McConfirmDialog extends McDialog {
                 preventedDamage,
                 preventedDamageLabel,
                 defenseBonus,
+                basicActivation,
             },
         } = this;
+
+        if (basicActivation) {
+            return html`
+                <div class="basic-activation-preview">
+                    ${this.renderBasicActivationCard(
+                        basicActivation.superhero
+                    )}
+                    ${this.renderBasicActivationCard(
+                        basicActivation.target
+                    )}
+                </div>
+                <label class="remember-choice">
+                    <input
+                        type="checkbox"
+                        .checked="${this._dontShowBasicActivationConfirmation}"
+                        @change="${this.handleDontShowBasicActivationConfirmationChange.bind(this)}"
+                    >
+                    <span>No volver a mostrar este diálogo durante esta partida</span>
+                </label>
+            `;
+        }
+
         const boostIcons = renderBoostIcons(boostIconCount);
         const isHorizontal = Boolean(card &&
             (horizontal || isPlanCard(card)));
@@ -105,6 +156,37 @@ export class McConfirmDialog extends McDialog {
             ` : ''}
         `;
     }
+    renderBasicActivationCard(card) {
+        const showThreat = Boolean(
+            card.isScheme || card.isSideScheme || card.isMainScheme
+        );
+
+        return html`
+            <div class="basic-activation-card">
+                <mc-card
+                    .name="${card.name}"
+                    .image="${card.image}"
+                    .isFacedownCard="${card.isFacedownCard}"
+                    .life="${card.life}"
+                    .hitPoints="${card.hitPoints}"
+                    .attack="${card.attack}"
+                    .thwart="${card.thwart}"
+                    .defense="${card.defense}"
+                    .recovery="${card.recovery}"
+                    .scheme="${card.scheme}"
+                    .unprintedStats="${card.unprintedStats ?? []}"
+                    .threat="${card.threat}"
+                    .showThreat="${showThreat}"
+                    size="l"
+                    show-basic-stats
+                    .horizontal="${isPlanCard(card)}"
+                ></mc-card>
+            </div>
+        `;
+    }
+    handleDontShowBasicActivationConfirmationChange(e) {
+        this._dontShowBasicActivationConfirmation = e.target.checked;
+    }
     renderButtonCancel() {
         const {
             data: {
@@ -112,6 +194,7 @@ export class McConfirmDialog extends McDialog {
                 preventedDamage,
                 defenseBonus,
                 boostIconCount,
+                basicActivation,
             },
         } = this;
         const isPrePlayConfirmation = preventedDamage !== undefined ||
@@ -123,7 +206,7 @@ export class McConfirmDialog extends McDialog {
                 ${cancelText ??
                     (isPrePlayConfirmation ?
                         'Cancelar' :
-                        'No, seguir jugando')}
+                        basicActivation ? 'Cancelar' : 'No, seguir jugando')}
             </md-text-button>
         `;
     }
@@ -134,6 +217,7 @@ export class McConfirmDialog extends McDialog {
                 preventedDamage,
                 defenseBonus,
                 boostIconCount,
+                basicActivation,
             },
         } = this;
         const isPrePlayConfirmation = preventedDamage !== undefined ||
@@ -145,15 +229,22 @@ export class McConfirmDialog extends McDialog {
                 ${okText ??
                     (isPrePlayConfirmation ?
                         'OK' :
-                        'Sí, finalizar el turno')}
+                        basicActivation ? 'Ok' : 'Sí, finalizar el turno')}
             </md-text-button>
         `;
     }
     sendResponse() {
+        const response = {confirmed: true};
+
+        if (this.data.basicActivation &&
+            this._dontShowBasicActivationConfirmation) {
+            response.skipBasicActivationConfirmation = true;
+        }
+
         this.dispatchEvent(new CustomEvent('dialog-ok', {
             bubbles: true,
             composed: true,
-            detail: {confirmed: true},
+            detail: response,
         }));
     }
 }

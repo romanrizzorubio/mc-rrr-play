@@ -10,6 +10,7 @@ export class MainSchemeBCard extends MainScenarioCard {
         value,
         startingThreat,
         acceleration,
+        accelerationCalc,
         final = false
     }) {
         super(arguments[0]);
@@ -17,6 +18,7 @@ export class MainSchemeBCard extends MainScenarioCard {
         this.startingThreat = startingThreat;
         this.final = final;
         this._acceleration = acceleration;
+        this.accelerationCalc = accelerationCalc;
         this._value = value;
 
         this.isMainScheme = true;

@@ -3,7 +3,12 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-card-list.css.js';
 import '../mc-card/mc-card.js';
 import {ABILITY_ID, isPlanCard} from '../../../misc/utils.js';
-import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
+import {
+    getBasicActivationOption,
+    getCardAbilityOptions,
+    isTargetClickDisabled,
+    getTargetMenuOptions,
+} from '../../../utils/basic-activation.js';
 
 export class HandComponent extends LitElement {
     static get is() {
@@ -28,6 +33,8 @@ export class HandComponent extends LitElement {
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
             highlightPlayable: {type: Boolean, attribute: 'highlight-playable'},
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
+            player: {type: Object},
+            basicActivationType: {type: String, attribute: 'basic-activation-type'},
         };
     }
     constructor() {
@@ -47,40 +54,37 @@ export class HandComponent extends LitElement {
         this.showExhausted = false;
         this.highlightPlayable = false;
         this.rotatePlanCards = false;
+        this.player = null;
+        this.basicActivationType = '';
     }
     getMenuOptions(card) {
-        const tuckedCards = card.tuckedCards || [];
         const abilities = this.showMenuAbilities ?
-            (card.abilities || []).reduce((ret, ability, index) => {
-                if (ability.isAction || ability.isBasic) {
-                    ret.push({
-                        id: `${ABILITY_ID}${index}`,
-                        text: ability.name,
-                        disable: ability.disable,
-                    });
-                }
-
-                return ret;
-            }, []) :
+            getCardAbilityOptions(card) :
             [];
+        const basicActivation = this.getBasicActivationOption(card);
 
-        if (tuckedCards.length && abilities.length) {
-            return [
-                ...abilities,
-                {
-                    id: MENU_OPTION_VIEW_TUCKED_CARDS,
-                    text: 'Ver cartas metidas debajo',
-                },
-            ];
-        }
-
-        if (this.showMenuAbilities) {
-            if (abilities.length > 1) {
-                return abilities;
-            }
-        }
-
-        return [];
+        return getTargetMenuOptions(
+            card,
+            basicActivation,
+            abilities,
+            Boolean(this.basicActivationType)
+        );
+    }
+    getBasicActivationOption(card) {
+        return this.basicActivationType ?
+            getBasicActivationOption(
+                this.player,
+                card,
+                this.basicActivationType
+            ) :
+            undefined;
+    }
+    isCardClickDisabled(card) {
+        return isTargetClickDisabled(
+            card,
+            this.player,
+            this.basicActivationType
+        );
     }
     handleViewTuckedCards(index) {
         return e => {
@@ -216,6 +220,9 @@ export class HandComponent extends LitElement {
                 class="${classes.join(' ')}"
                 name="${name}"
                 image="${image}"
+                .card="${card}"
+                .basicActivation="${this.getBasicActivationOption(card)}"
+                .clickDisabled="${this.isCardClickDisabled(card)}"
                 .attack="${attack}"
                 .thwart="${thwart}"
                 .defense="${defense}"

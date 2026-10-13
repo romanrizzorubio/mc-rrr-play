@@ -18,6 +18,7 @@ import {
     ABILITY_RESPONSE,
     ABILITY_SETUP,
     ABILITY_SPECIAL,
+    ABILITY_WHEN_COMPLETED,
     ABILITY_WHEN_DEFEATED,
     ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_REVEALED_ALTEREGO,
@@ -43,6 +44,7 @@ import {HeroResponseAbility} from '../../abilities/response/hero-response-abilit
 import {ResponseAbility} from '../../abilities/response/response-ability.js';
 import {AlteregoResponseAbility} from '../../abilities/response/alterego-response-ability.js';
 import {WhenDefeatedAbility} from '../../abilities/when/when-defeated-ability.js';
+import {WhenCompletedAbility} from '../../abilities/when/when-completed-ability.js';
 import {WhenRevealedAbility} from '../../abilities/when/when-revealed-ability.js';
 import {
     WhenRevealedAlteregoAbility
@@ -69,6 +71,7 @@ export const ABILITY_MAP = {
     [ABILITY_RESPONSE]: ResponseAbility,
     [ABILITY_SETUP]: SetupAbility,
     [ABILITY_SPECIAL]: SpecialAbility,
+    [ABILITY_WHEN_COMPLETED]: WhenCompletedAbility,
     [ABILITY_WHEN_DEFEATED]: WhenDefeatedAbility,
     [ABILITY_WHEN_REVEALED]: WhenRevealedAbility,
     [ABILITY_WHEN_REVEALED_ALTEREGO]: WhenRevealedAlteregoAbility,

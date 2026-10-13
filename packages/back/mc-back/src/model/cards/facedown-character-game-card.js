@@ -50,6 +50,7 @@ const CHARACTER_STATE_FIELDS = [
     '_tough',
     'modifyHitPoints',
     'modifyAttack',
+    'modifyScheme',
     'modifyThwart',
     'extraTraits',
     'engaged',
@@ -104,6 +105,7 @@ export class FacedownCharacterGameCard extends CharacterGameCard {
         gameCard._tough = 0;
         gameCard.modifyHitPoints = 0;
         gameCard.modifyAttack = 0;
+        gameCard.modifyScheme = 0;
         gameCard.modifyThwart = 0;
         gameCard.extraTraits = [];
         gameCard.engaged = null;

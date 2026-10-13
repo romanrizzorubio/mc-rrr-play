@@ -748,6 +748,7 @@ export class GameCard extends Engine {
                     this.tough = 0;
                     this.modifyHitPoints = 0;
                     this.modifyAttack = 0;
+                    this.modifyScheme = 0;
                     this.modifyThwart = 0;
                 }
                 this.accelerationTokens = 0;

@@ -17,12 +17,33 @@ export class McScenario extends LitElement {
     static get properties() {
         return {
             scenario: {type: Object},
+            player: {type: Object},
         };
     }
     constructor() {
         super();
 
         this.scenario = null;
+        this.player = null;
+    }
+    handleCardSelect(e) {
+        const {card} = e.detail;
+        const ability = (card.abilities || []).find((candidate, index) =>
+            (candidate.isAction || candidate.isBasic) &&
+            !candidate.disable &&
+            (candidate.index ?? index) >= 0
+        );
+
+        if (ability) {
+            this.dispatchEvent(new CustomEvent('ability', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card,
+                    ability: ability.index ?? card.abilities.indexOf(ability),
+                },
+            }));
+        }
     }
     renderVillain() {
         const villain = path(this, 'scenario.villain');
@@ -50,6 +71,8 @@ export class McScenario extends LitElement {
 
             return html`
                 <mc-villain-card
+                    .card="${villain}"
+                    .player="${this.player}"
                     name="${name}"
                     image="${image}"
                     life="${life}"
@@ -88,6 +111,8 @@ export class McScenario extends LitElement {
 
             return html`
                 <mc-main-scheme-card
+                    .card="${scheme}"
+                    .player="${this.player}"
                     name="${name}"
                     image="${image}"
                     .acceleration="${accelerationTokens}"
@@ -110,9 +135,12 @@ export class McScenario extends LitElement {
                 <mc-card-list
                     .cards="${cards.filter(card =>
                         card.isSideScheme)}"
+                    .player="${this.player}"
+                    basic-activation-type="thwart"
                     show-basic-stats
                     show-threat
                     show-menu-abilities
+                    @card-list-select="${this.handleCardSelect.bind(this)}"
                 ></mc-card-list>
             </div>
         `;

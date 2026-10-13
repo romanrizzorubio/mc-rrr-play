@@ -10,6 +10,7 @@ export class LastingEffect extends Effect {
         endEffect,
         until,
         triggerType,
+        triggerTarget,
         hideDialog,
         condition,
         limit,
@@ -19,18 +20,44 @@ export class LastingEffect extends Effect {
         this.effect = effect;
         this.endEffect = endEffect;
         this.triggerType = triggerType;
+        this.triggerTarget = triggerTarget;
         this.until = until;
         this.hideDialog = hideDialog;
         this.condition = condition;
         this.limit = limit;
     }
     async execute(params) {
-        const {effect, endEffect, ability, triggerType} = this;
+        const {effect, endEffect, ability, triggerType, triggerTarget} = this;
         const until = this.until ?? TIME_PHASE;
         const {player} = params;
 
         if (!effect && !endEffect) {
             throw new Error('Un efecto lasting requiere un efecto o una limpieza al expirar.');
+        }
+
+        let lastingTriggerCard = ability.card;
+        if (triggerTarget) {
+            const triggerCards = this.validTarget.getValidTarget({
+                ...params,
+                ability,
+                effect: this,
+                target: triggerTarget,
+            });
+            if (triggerCards.length !== 1) {
+                throw new Error(
+                    'El objetivo de expiración de un efecto lasting debe resolver a una sola carta.'
+                );
+            }
+
+            const [triggerCard] = triggerCards;
+            if (typeof triggerCard.initTriggers !== 'function' ||
+                typeof triggerCard.removeLastingTriggers !== 'function') {
+                throw new TypeError(
+                    'El objetivo de expiración de un efecto lasting debe ser una carta de juego.'
+                );
+            }
+
+            lastingTriggerCard = triggerCard;
         }
 
         const lasting = new Lasting({
@@ -40,6 +67,7 @@ export class LastingEffect extends Effect {
             endEffect,
             player,
             card: ability.card,
+            triggerCard: lastingTriggerCard,
             selectedTarget: this.selectedTarget,
         });
 

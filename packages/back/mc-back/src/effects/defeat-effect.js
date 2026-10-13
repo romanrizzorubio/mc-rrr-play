@@ -1,7 +1,9 @@
 import {
     PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_FORCED_RESPONSE,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
+    TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
@@ -40,16 +42,16 @@ export class DefeatEffect extends Effect {
     defeat(params) {
         const {selectedTarget} = this;
 
-        if (selectedTarget.abilities) {
-            const ability = selectedTarget.abilities.find(_ability => _ability.isWhenDefeated && _ability.isValidIdentity(params));
-
-            if (ability) {
-                return ability.resolveAbility({
-                    ...params,
-                    card: selectedTarget,
-                });
+        return this.trigger(
+            PRIORITY_FORCED_RESPONSE,
+            [TRIGGER_THIS_DEFEAT],
+            {
+                ...params,
+                match: this.match,
+                effect: this,
+                card: selectedTarget,
             }
-        }
+        );
     }
     async execute(params) {
         if (this.prevented) {
@@ -64,9 +66,10 @@ export class DefeatEffect extends Effect {
 
         await this.trigger(
             PRIORITY_FORCED_INTERRUPT,
-            [TRIGGER_THIS_DEFEAT_MINION],
+            [TRIGGER_THIS_DEFEAT],
             {
                 ...params,
+                match: this.match,
                 effect: this,
                 card: selectedTarget,
             }

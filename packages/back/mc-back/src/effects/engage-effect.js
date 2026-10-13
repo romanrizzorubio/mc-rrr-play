@@ -64,9 +64,13 @@ export class EngageEffect extends PutPlayEffect {
         }
 
         const {selectedTarget} = this;
-        const isFromScenarioDiscard = Boolean(
-            card.owner?.deck?.isScenarioDeck &&
-            card.owner.deck.discardPile.includes(card)
+        const scenarioDeck = card.owner?.deck;
+        const isFromScenarioDeck = Boolean(
+            scenarioDeck?.isScenarioDeck &&
+            (
+                scenarioDeck.cards.includes(card) ||
+                scenarioDeck.discardPile.includes(card)
+            )
         );
         if (!selectedTarget || typeof selectedTarget.engage !== 'function') {
             throw new Error('EngageEffect requires a player target.');
@@ -79,7 +83,7 @@ export class EngageEffect extends PutPlayEffect {
 
         await selectedTarget.refresh();
 
-        if (isFromScenarioDiscard) {
+        if (isFromScenarioDeck) {
             await this.openDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 title: 'Esbirro puesto en juego',

@@ -12,13 +12,15 @@ export class ModifyAttackValueEffect extends Effect {
         this.characterTarget = characterTarget;
         this.count = count;
         this.isCleanup = isCleanup;
+        this.modifiedAttack = undefined;
     }
     async execute(params) {
         const {selectedTarget, count, isCleanup} = this;
         const {lasting} = params;
         const modifyAttack = this.paramsCalc ?
-            this.calculate(params) :
+            await this.calculate(params) :
             count;
+        this.modifiedAttack = modifyAttack;
 
         const targets = getCurrentSideTargets(selectedTarget);
 

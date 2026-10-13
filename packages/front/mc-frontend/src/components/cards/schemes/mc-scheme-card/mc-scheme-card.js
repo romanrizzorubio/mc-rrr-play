@@ -15,6 +15,10 @@ export class SchemeCardComponent extends LitElement {
     static get properties() {
         return {
             name: { type: String},
+            card: {type: Object},
+            basicActivation: {type: Object},
+            clickDisabled: {type: Boolean},
+            menuOptions: {type: Array},
             image: { type: String},
             acceleration: { type: Number},
             threat: { type: Number},
@@ -28,6 +32,10 @@ export class SchemeCardComponent extends LitElement {
         super();
 
         this.name = '';
+        this.card = null;
+        this.basicActivation = null;
+        this.clickDisabled = false;
+        this.menuOptions = [];
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
@@ -36,10 +44,25 @@ export class SchemeCardComponent extends LitElement {
     }
 
     render() {
-        const {name, image, threat, acceleration, headerLeft, headerRight} = this;
+        const {
+            card,
+            basicActivation,
+            clickDisabled,
+            menuOptions,
+            name,
+            image,
+            threat,
+            acceleration,
+            headerLeft,
+            headerRight,
+        } = this;
 
         return html`
             <mc-card
+                .card="${card}"
+                .basicActivation="${basicActivation}"
+                .clickDisabled="${clickDisabled}"
+                .menuOptions="${menuOptions}"
                 horizontal
                 size="m"
                 name="${name}"

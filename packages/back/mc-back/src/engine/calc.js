@@ -11,6 +11,9 @@ import {
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_IF,
     CALC_ALL,
+    CALC_STAGE,
+    TARGET_MAIN_SCHEME,
+    TARGET_VILLAIN,
 RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-shared';
 
 import {checkCondition, path} from './utils.js';
@@ -39,13 +42,27 @@ const CALCULATION_MAP = {
     },
     [CALC_HALF_ROUNDED_DOWN]: source =>
         Math.floor((Array.isArray(source) ? source.length : source) / 2),
-    [CALC_TRAITS_COUNT]: (source, {trait}) =>
-        source.filter(card => (card.traits || []).includes(trait)).length,
+    [CALC_TRAITS_COUNT]: (source, {target, trait}) => {
+        if (!Array.isArray(source)) {
+            throw new Error(
+                `CALC_TRAITS_COUNT requiere que "${target}" resuelva a una lista.`
+            );
+        }
+
+        return source.filter(card => (card.traits || []).includes(trait)).length;
+    },
     [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>
         calc.differentResourceType(source),
     [CALC_IF]: (source, {ifTrue, ifFalse}) => source ? ifTrue : ifFalse,
     [CALC_MULTIPLY_2]: source => source * 2,
     [CALC_THREAT]: source => source.threat,
+    [CALC_STAGE]: (source, {target}) => {
+        if (!Number.isFinite(source?.stage)) {
+            throw new Error(`CALC_STAGE requiere una etapa numérica en "${target}".`);
+        }
+
+        return source.stage;
+    },
     [CALC_DAMAGE]: (source, {invert}) => {
         if (!invert) {
             return source.damage;
@@ -128,7 +145,24 @@ export class Calc {
     calculateFormula(params) {
         const {target, formula} = this;
 
-        const source = path(params, target);
+        let source;
+        if (formula === CALC_STAGE) {
+            switch (target) {
+                case TARGET_VILLAIN:
+                    source = path(params, 'match.villain');
+                    break;
+                case TARGET_MAIN_SCHEME:
+                    source = path(params, 'match.mainScheme');
+                    break;
+                default:
+                    throw new Error(
+                        `CALC_STAGE requiere TARGET_VILLAIN o TARGET_MAIN_SCHEME; se recibió "${target}".`
+                    );
+            }
+        } else {
+            source = path(params, target);
+        }
+
         if (Object.hasOwn(CALCULATION_MAP, formula)) {
             return CALCULATION_MAP[formula](source, this, params);
         }

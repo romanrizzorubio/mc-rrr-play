@@ -78,7 +78,7 @@ export class ChooseEffect extends Effect {
             option.canRun(optionParams));
     }
     async execute(params) {
-        const card = this.ability.card || params.card;
+        const card = params.forEachTarget || this.ability.card || params.card;
 
         for (const player of this.getPlayers(params)) {
             let returnToChoice = false;

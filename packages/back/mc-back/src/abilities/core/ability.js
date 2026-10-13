@@ -71,6 +71,7 @@ export class Ability extends Engine {
         this.isSetup = false;
         this.isWhenRevealed = false;
         this.isWhenDefeated = false;
+        this.isWhenCompleted = false;
         this.isEndLasting = false;
         this.isOptionAbility = false;
         this.paymentCancelled = false;
@@ -126,7 +127,7 @@ export class Ability extends Engine {
     isValidIdentity() {
         return true;
     }
-    async canRun(params) {
+    async canRun(params, effect = this.effect) {
         const {player} = params;
 
         if (this.card?.printedTextBlank) {
@@ -165,8 +166,8 @@ export class Ability extends Engine {
                return false;
            }
         }
-        if (this.effect) {
-            if (! await this.effect.canRun(params)) {
+        if (effect) {
+            if (! await effect.canRun(params)) {
                 return false;
             }
         }
@@ -196,16 +197,16 @@ export class Ability extends Engine {
 
         return true;
     }
-    prepareEffect({preselectedTarget = false} = {}) {
-        if (this.effect) {
+    prepareEffect({preselectedTarget = false, effect = this.effect} = {}) {
+        if (effect) {
             if (!preselectedTarget) {
-                this.effect.selectedTarget = undefined;
+                effect.selectedTarget = undefined;
             }
 
-            this.effect.isAttack = this.effect.isAttack || this.isAttack;
-            this.effect.isDefense = this.effect.isDefense || this.isDefense;
-            this.effect.isScheme = this.effect.isScheme || this.isScheme;
-            this.effect.isThwart = this.effect.isThwart || this.isThwart;
+            effect.isAttack = effect.isAttack || this.isAttack;
+            effect.isDefense = effect.isDefense || this.isDefense;
+            effect.isScheme = effect.isScheme || this.isScheme;
+            effect.isThwart = effect.isThwart || this.isThwart;
         }
     }
     async prepareToResolve(params) {
@@ -246,7 +247,7 @@ export class Ability extends Engine {
             this.limit.use();
         }
     }
-    async resolveAbility(params) {
+    async resolveAbility(params, effect = this.effect) {
         const {player, preselectedTarget = false, arrowPaid = false} = params;
         const previousResolutionContext = this._resolutionContext;
         this._resolutionContext = {
@@ -256,12 +257,11 @@ export class Ability extends Engine {
         try {
             this.resolved = false;
             this.paymentCancelled = false;
-            this.prepareEffect({preselectedTarget});
+            this.prepareEffect({preselectedTarget, effect});
 
-            const canRun = await this.canRun(params);
+            const canRun = await this.canRun(params, effect);
 
             if (canRun) {
-                const effect = this.effect;
                 const canConfirmBeforeResolve =
                     typeof effect?.confirmBeforeResolve === 'function';
                 const confirmationAccepted =
@@ -279,18 +279,21 @@ export class Ability extends Engine {
                 if (costsPaid) {
                     this.maximum?.use();
 
-                    if (this.effect) {
-                        await this.effect.runEffect({
-                            ...params,
+                    if (effect) {
+                        const effectParams = {...params};
+                        delete effectParams.arrowPaid;
+
+                        await effect.runEffect({
+                            ...effectParams,
                             player,
                         });
 
-                        if (this.effect.paymentCancelled) {
+                        if (effect.paymentCancelled) {
                             this.paymentCancelled = true;
                             return;
                         }
 
-                        this.resolved = this.effect.resolved;
+                        this.resolved = effect.resolved;
                     } else {
                         this.resolved = true;
                     }

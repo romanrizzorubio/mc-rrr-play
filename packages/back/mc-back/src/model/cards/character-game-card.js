@@ -32,6 +32,7 @@ export class CharacterGameCard extends GameCard {
         this.modifyHitPoints = 0;
         this.modifyAttack = 0;
         this.modifyDefense = 0;
+        this.modifyScheme = 0;
         this.modifyThwart = 0;
         this.extraTraits = [];
 
@@ -305,6 +306,11 @@ export class CharacterGameCard extends GameCard {
         }
 
         if (Number.isFinite(scheme)) {
+            const modifyScheme = this.sides.length ?
+                this.currentSide.modifyScheme :
+                this.modifyScheme;
+            scheme += modifyScheme ?? 0;
+
             this.attached.forEach(attachment => {
                 let attachedScheme = attachment.card.scheme;
                 if (attachedScheme instanceof Object) {

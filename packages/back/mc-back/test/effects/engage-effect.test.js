@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {DIALOG_ENCOUNTERS_REVEAL} from 'mc-shared';
 
 import {EngageEffect} from '../../src/effects/engage-effect.js';
 
 const createScenarioDeck = (location, card) => {
     const deck = {
+        isScenarioDeck: true,
         cards: location === 'deck' ? [card] : [],
         discardPile: location === 'discardPile' ? [card] : [],
         removeCardFromDeck(cardToRemove) {
@@ -26,10 +28,15 @@ for (const location of ['deck', 'discardPile']) {
             isMinion: true,
             isInPlay: false,
             isPlayerCard: false,
+            name: 'Esclavo duende',
             async initTriggers() {},
+            toObj() {
+                return {name: this.name};
+            },
         };
         const scenario = {deck: createScenarioDeck(location, card)};
         card.owner = scenario;
+        const dialogs = [];
 
         const player = {
             gameZone: {
@@ -44,7 +51,12 @@ for (const location of ['deck', 'discardPile']) {
             async refresh() {},
         };
         const effect = new EngageEffect({
-            match: {scenario},
+            match: {
+                scenario,
+                async openDialog(dialog) {
+                    dialogs.push(dialog);
+                },
+            },
         });
         effect.selectedTarget = player;
 
@@ -56,5 +68,12 @@ for (const location of ['deck', 'discardPile']) {
         assert.equal(card.controller, player);
         assert.equal(card.engaged, player);
         assert.equal(card.damage, 0);
+        assert.deepEqual(dialogs, [{
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Esbirro puesto en juego',
+            data: {
+                card: {name: 'Esclavo duende'},
+            },
+        }]);
     });
 }

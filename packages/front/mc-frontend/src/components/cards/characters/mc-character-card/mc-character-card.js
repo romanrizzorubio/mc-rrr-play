@@ -14,6 +14,10 @@ export class McCharacterCard extends LitElement {
 
     static get properties() {
         return {
+            card: {type: Object},
+            basicActivation: {type: Object},
+            clickDisabled: {type: Boolean},
+            menuOptions: {type: Array},
             name: {type: String},
             image: {type: String},
             isFacedownCard: {type: Boolean},
@@ -42,6 +46,10 @@ export class McCharacterCard extends LitElement {
         super();
 
         this.name = '';
+        this.card = null;
+        this.basicActivation = null;
+        this.clickDisabled = false;
+        this.menuOptions = [];
         this.image = '';
         this.isFacedownCard = false;
         this.life = 0;
@@ -66,6 +74,10 @@ export class McCharacterCard extends LitElement {
 
     render() {
         const {
+            card,
+            basicActivation,
+            clickDisabled,
+            menuOptions,
             name,
             image,
             isFacedownCard,
@@ -91,6 +103,10 @@ export class McCharacterCard extends LitElement {
 
         return html`
             <mc-card
+                .card="${card}"
+                .basicActivation="${basicActivation}"
+                .clickDisabled="${clickDisabled}"
+                .menuOptions="${menuOptions}"
                 name="${name}"
                 image="${image}"
                 .isFacedownCard="${isFacedownCard}"

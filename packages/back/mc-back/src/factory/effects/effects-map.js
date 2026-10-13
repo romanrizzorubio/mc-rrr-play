@@ -58,6 +58,7 @@ import {
     EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_BOOST_ICONS,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_EFFECT_VALUE,
@@ -66,6 +67,7 @@ import {
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_MAX_ALLIES,
     EFFECT_MODIFY_RECOVERY_VALUE,
+    EFFECT_MODIFY_SCHEME_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MOVE_DAMAGE,
@@ -169,6 +171,7 @@ import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
+import {ModifyBoostIconsEffect} from '../../effects/modify-boost-icons-effect.js';
 import {
     ModifyattackConsequentialEffect
 } from '../../effects/modify-attack-consequencial-effect.js';
@@ -179,6 +182,7 @@ import {ModifyHandSizeEffect} from '../../effects/modify-hand-size-effect.js';
 import {ModifyHitPointsEffect} from '../../effects/modify-hit-points-effect.js';
 import {ModifyMaxAlliesEffect} from '../../effects/modify-max-allies-effect.js';
 import {ModifyRecoveryEffect} from '../../effects/modify-recovery-effect.js';
+import {ModifySchemeValueEffect} from '../../effects/modify-scheme-value-effect.js';
 import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
@@ -284,9 +288,11 @@ export const EFFECT_MAP = {
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
+    [EFFECT_MODIFY_BOOST_ICONS]: ModifyBoostIconsEffect,
     [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyattackConsequentialEffect,
     [EFFECT_MODIFY_MAX_ALLIES]: ModifyMaxAlliesEffect,
     [EFFECT_MODIFY_RECOVERY_VALUE]: ModifyRecoveryEffect,
+    [EFFECT_MODIFY_SCHEME_VALUE]: ModifySchemeValueEffect,
     [EFFECT_MODIFY_COST]: ModifyCostEffect,
     [EFFECT_MODIFY_EFFECT_VALUE]: ModifyEffectValueEffect,
     [EFFECT_MODIFY_DEFENSE_VALUE]: ModifyDefenseValueEffect,

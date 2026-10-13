@@ -466,16 +466,60 @@ export class Player extends Engine {
     removeStunned(count = 0) {
         return this.superhero.removeStunned(count);
     }
-    async resolveAbility(cardId, abilityIndex) {
+    async resolveAbility(cardId, abilityIndex, targetId) {
         let card = this.getCard(cardId);
         if (!card) {
             card = this.match.scenario.getCard(cardId);
         }
 
-        await card.resolveAbility({
+        const params = {
             player: this,
             abilityIndex,
-        });
+        };
+
+        if (targetId !== undefined) {
+            const abilities = card?.currentSide?.abilities ?? card?.abilities;
+            const ability = abilities?.[abilityIndex];
+
+            if (!ability?.isBasic ||
+                (!ability.isAttack && !ability.isThwart) ||
+                !ability.effect) {
+                throw new Error('La capacidad no admite una activación con objetivo preseleccionado.');
+            }
+
+            ability.prepareEffect();
+            const abilityParams = {
+                ...params,
+                card,
+                match: this.match,
+            };
+            const validTargets = await ability.effect.getValidTarget(abilityParams);
+            const selectedTarget = validTargets.find(target =>
+                target.id === targetId || target.parentId === targetId);
+
+            if (!selectedTarget) {
+                throw new Error('El objetivo de la activación ya no es válido.');
+            }
+
+            ability.effect.selectedTarget = selectedTarget;
+            const preselectedParams = {
+                ...abilityParams,
+                preselectedTarget: true,
+                fixedPreselectedTarget: true,
+                selectedTarget,
+            };
+            if (!await ability.canRun(preselectedParams)) {
+                throw new Error('La activación básica ya no está disponible.');
+            }
+
+            await card.resolveAbility({
+                ...preselectedParams,
+                abilityIndex,
+            });
+            return;
+        }
+
+        await card.resolveAbility(params);
     }
     revealEncounterCard(card) {
         const revealEncounterEffect = new RevealEncounterEffect({
@@ -665,6 +709,10 @@ export class Player extends Engine {
                 const serializedAbility = {
                     ...ability.toObj(),
                     index,
+                    ...(ability.isBasic ? {
+                        isAttack: ability.isAttack,
+                        isThwart: ability.isThwart,
+                    } : {}),
                 };
 
                 if (!ability.isAction && !ability.isBasic) {
@@ -672,13 +720,25 @@ export class Player extends Engine {
                 }
 
                 ability.prepareEffect();
+                const availabilityParams = {
+                    player: this,
+                    card: superhero,
+                };
+                const canRun = await ability.canRun(availabilityParams);
+                const availableTargetIds = ability.isBasic &&
+                    (ability.isAttack || ability.isThwart) &&
+                    canRun &&
+                    ability.effect ?
+                    (await ability.effect.getValidTarget(availabilityParams))
+                        .map(target => target.id) :
+                    undefined;
 
                 return {
                     ...serializedAbility,
-                    disable: !(await ability.canRun({
-                        player: this,
-                        card: superhero,
-                    })),
+                    disable: !canRun,
+                    ...(availableTargetIds ?
+                        {availableTargetIds} :
+                        {}),
                 };
             })
         );

@@ -12,7 +12,7 @@ export default [
         'card': {
             'type': CARD_TYPE_RESOURCE,
             'params': {
-                'name': 'The Power of Aggression',
+                'name': 'El poder de la agresividad',
                 'set': 'aggression',
                 'image': 'aspect/aggression/resources/a55-copy.webp',
                 'resources': [

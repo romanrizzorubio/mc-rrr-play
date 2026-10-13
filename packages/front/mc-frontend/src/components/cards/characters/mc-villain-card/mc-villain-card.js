@@ -2,6 +2,12 @@ import {LitElement, html} from 'lit-element';
 
 import styles from './mc-villain-card.css.js';
 import '../mc-character-card/mc-character-card.js';
+import {
+    getBasicActivationOption,
+    getCardAbilityOptions,
+    isTargetClickDisabled,
+    getTargetMenuOptions,
+} from '../../../../utils/basic-activation.js';
 
 export class VillainCardComponent extends LitElement {
     static get is() {
@@ -13,6 +19,8 @@ export class VillainCardComponent extends LitElement {
 
     static get properties() {
         return {
+            card: {type: Object},
+            player: {type: Object},
             name: {type: String},
             image: {type: String},
             life: {type: Number},
@@ -37,6 +45,8 @@ export class VillainCardComponent extends LitElement {
         super(arguments[0]);
 
         this.name = '';
+        this.card = null;
+        this.player = null;
         this.image = '';
         this.life = 0;
         this.hitPoints = undefined;
@@ -54,9 +64,40 @@ export class VillainCardComponent extends LitElement {
         this.extraTraits = [];
         this.extraKeywords = [];
     }
+    get basicActivation() {
+        return getBasicActivationOption(this.player, this.card, 'attack');
+    }
+    get menuOptions() {
+        return getTargetMenuOptions(
+            this.card,
+            this.basicActivation,
+            getCardAbilityOptions(this.card),
+            true
+        );
+    }
+    get clickDisabled() {
+        return isTargetClickDisabled(this.card, this.player, 'attack');
+    }
+    handleCardClick() {
+        const abilityIndex = (this.card?.abilities || []).findIndex(ability =>
+            (ability.isAction || ability.isBasic) && !ability.disable
+        );
+
+        if (abilityIndex >= 0) {
+            this.dispatchEvent(new CustomEvent('ability', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    ability: abilityIndex,
+                },
+            }));
+        }
+    }
 
     render() {
         const {
+            card,
             name,
             image,
             life,
@@ -78,6 +119,10 @@ export class VillainCardComponent extends LitElement {
 
         return html`
             <mc-character-card
+                .card="${card}"
+                .basicActivation="${this.basicActivation}"
+                .clickDisabled="${this.clickDisabled}"
+                .menuOptions="${this.menuOptions}"
                 name="${name}"
                 image="${image}"
                 life="${life}"
@@ -96,6 +141,7 @@ export class VillainCardComponent extends LitElement {
                 .tuckedCards="${tuckedCards}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"
+                @card-click="${this.handleCardClick.bind(this)}"
             >
             </mc-character-card>
         `;

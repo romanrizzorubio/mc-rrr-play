@@ -81,7 +81,7 @@ export class PlayerRest {
         return this.refreshPlayer(match, player);
     }
     async resolveAbility(params) {
-        const {match, card, ability} = params;
+        const {match, card, ability, targetId} = params;
         const player = match.getPlayer(params.player);
         const traceId = `ability-${++abilityTraceSequence}`;
 
@@ -97,7 +97,11 @@ export class PlayerRest {
 
         let outcome = 'failed';
         try {
-            await player.resolveAbility(card, ability);
+            if (targetId === undefined) {
+                await player.resolveAbility(card, ability);
+            } else {
+                await player.resolveAbility(card, ability, targetId);
+            }
             const result = await this.refreshPlayer(match, player);
             outcome = 'completed';
             return result;

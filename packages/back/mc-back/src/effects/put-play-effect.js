@@ -39,22 +39,48 @@ export class PutPlayEffect extends Effect {
         this.playabilityFailed = false;
     }
     getCard(params = {}) {
-        if (this.card || params.selectedCard) {
-            return this.card || params.selectedCard;
+        if (this.card) {
+            return this.card;
         }
 
         if (this.cardSource) {
             const sourceCards = path(params, this.cardSource);
-            if (!Array.isArray(sourceCards)) {
-                throw new TypeError('PutPlayEffect cardSource must resolve to a card list.');
+            if (Array.isArray(sourceCards)) {
+                return sourceCards.find(card =>
+                    !this.cardCondition || checkCondition(card, this.cardCondition));
             }
 
-            return sourceCards.find(card =>
-                !this.cardCondition || checkCondition(card, this.cardCondition));
+            if (sourceCards && typeof sourceCards === 'object') {
+                return !this.cardCondition ||
+                    checkCondition(sourceCards, this.cardCondition) ?
+                    sourceCards :
+                    undefined;
+            }
+
+            throw new TypeError(
+                'PutPlayEffect cardSource must resolve to a card or card list.'
+            );
         }
+
+        return params.selectedCard;
     }
     getController(params) {
-        return this.controller || params.player;
+        if (!this.controller) {
+            return params.player;
+        }
+
+        if (typeof this.controller === 'string') {
+            const controller = path(params, this.controller);
+            if (!controller) {
+                throw new TypeError(
+                    `PutPlayEffect controller path "${this.controller}" did not resolve.`
+                );
+            }
+
+            return controller;
+        }
+
+        return this.controller;
     }
     async canRun(params) {
         const card = this.getCard(params);

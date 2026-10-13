@@ -49,11 +49,13 @@ export class MatchComponent extends LitElement {
         }));
     }
     renderScenario() {
-        const {match} = this;
+        const {match, player} = this;
 
         return match ? html`
             <mc-scenario
                 .scenario="${match.scenario}"
+                .player="${player}"
+                @ability="${this.handleAbility.bind(this)}"
                 @attached-card-click="${this.handleAbility.bind(this)}"
             ></mc-scenario>
         ` : '';

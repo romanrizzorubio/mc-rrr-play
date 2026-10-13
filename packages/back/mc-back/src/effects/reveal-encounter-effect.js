@@ -1,5 +1,6 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
+    DIALOG_SURGE,
     PRIORITY_CONSTANT,
     PLACE_ENCOUNTER_DECK,
     PLACE_PLAYER_ENCOUNTERS,
@@ -48,6 +49,21 @@ export class RevealEncounterEffect extends Effect {
     }
     async applySurge(params) {
         const {player} = params;
+
+        if (!this.match.skipSurgeNotification) {
+            const response = await this.openDialog({
+                dialogType: DIALOG_SURGE,
+                title: 'Oleada',
+                subtitle: 'Se resuelve una Oleada: se revela y resuelve una carta adicional del mazo de Encuentros.',
+                data: {
+                    allowHideFuture: true,
+                },
+            });
+
+            if (response?.skipSurgeNotification) {
+                this.match.skipSurgeNotification = true;
+            }
+        }
 
         const cards = await this.match.drawEncounterCards();
         const card = cards.shift();
