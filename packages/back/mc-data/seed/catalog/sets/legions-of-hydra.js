@@ -27,6 +27,7 @@ import {
 } from 'mc-shared';
 
 import {hydraSoldier} from '../encounters/minions.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     '_id': 'legions-of-hydra',
@@ -188,7 +189,7 @@ export default {
             },
             {
                 'count': 3,
-                'card': hydraSoldier
+                'card': withCardSet(hydraSoldier, 'legions-of-hydra')
             }
         ]
     }

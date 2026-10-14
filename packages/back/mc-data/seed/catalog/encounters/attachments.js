@@ -37,7 +37,6 @@ export const goblinGlider = {
     type: CARD_TYPE_ATTACHMENT,
     params: {
         name: 'Planeador duende',
-        set: 'goblin-gimmicks',
         image: 'sets/goblin-gimmicks/02033.png',
         traits: [TRAIT_VEHICLE],
         boost: 3,
@@ -65,7 +64,6 @@ export const pumpkinBombs = {
     type: CARD_TYPE_ATTACHMENT,
     params: {
         name: 'Bombas calabaza',
-        set: 'goblin-gimmicks',
         image: 'sets/goblin-gimmicks/02034.png',
         traits: [TRAIT_WEAPON],
         boost: 2,

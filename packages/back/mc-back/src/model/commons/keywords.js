@@ -13,6 +13,7 @@ export class Keywords extends Engine {
         piercing = false,
         ranged = false,
         restricted = false,
+        incite = 0,
         retaliate = 0,
         uses,
         hint
@@ -29,6 +30,7 @@ export class Keywords extends Engine {
         this.piercing = piercing;
         this.ranged = ranged;
         this.restricted = restricted;
+        this.incite = incite;
         this.retaliate = retaliate;
         this._uses = uses;
         this._hint = hint;

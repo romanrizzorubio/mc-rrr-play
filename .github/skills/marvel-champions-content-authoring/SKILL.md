@@ -22,7 +22,7 @@ Use this skill when a user provides card text or structured card data and asks t
 1. Identify whether each supplied card belongs to a hero, a scenario, a modular encounter set, or a shared encounter-card definition. Inspect nearby catalog modules and tests before adding a new pattern.
 2. Map the supplied facts into the existing card types, `params`, ability types, triggers, and effect types. Use domain constants imported from `mc-shared`; use `TARGET_*` constants for every field named `target`.
 3. Prefer existing generic effects and compose them according to the card text. Do not create card-specific effect classes or branches in general abilities, effects, or factories. If required behavior is missing, implement a reusable effect and test it.
-4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `catalog/encounters/` when the same printed card belongs to multiple sets; keep its printed set and image, and configure its count in each owning catalog.
+4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `catalog/encounters/` when needed, but omit `params.set` there; use `withCardSet(card, set)` in each consuming catalog to assign its set, and configure its count in each owning catalog.
 5. Add or update catalog/runtime tests for the content. Compile every configured ability and verify its `effect` is one runnable effect instance with a callable `canRun`; exercise runtime-dependent paths through the real ability or effect.
 
 For repository-wide workflow and architectural requirements, also follow `.github/skills/repo-working-guidelines/SKILL.md`.
@@ -53,6 +53,7 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 - Put a "Then" clause in `thenEffect`; do not use it for ordinary ordered sentences. Model "if no effect occurred" fallbacks by attempting the effect and then checking its runtime result, not by prechecking whether a target exists.
 - Use the correct ability timing and trigger for the printed text. Do not replace a forced ability with an optional one, or implement ongoing prohibitions as forced interrupts.
 - Keep all effect configuration generic and target-driven. Preserve the selected target identified by the text; do not ask for an unrelated second selection.
+- When an attachment continuously grants a keyword to each Villain attack, register an `ABILITY_CONSTANT` on `TRIGGER_VILLAIN_ATTACKS` and use `EFFECT_MODIFY_ATTACK` against `TARGET_EFFECT` with `modify: {keywords: {ranged: true}}`; do not model the keyword gain itself as a forced interrupt. Keyword modifiers merge so separate attachments preserve each other's keywords.
 - When behavior depends on runtime paths such as `paramsCalc`, `targetCountCalc`, `condition`, `effectCondition`, `condition.exclude`, or `sourceIn`, add a regression test with the actual runtime context shape.
 - Test changes to persistent scenario modifiers while their source is in play and after it leaves play.
 

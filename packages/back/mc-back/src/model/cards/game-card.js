@@ -438,6 +438,9 @@ export class GameCard extends Engine {
     get quickStrike() {
         return this.getKeyword('quickStrike');
     }
+    get incite() {
+        return this.getKeyword('incite');
+    }
     get retaliate() {
         return this.getKeyword('retaliate');
     }

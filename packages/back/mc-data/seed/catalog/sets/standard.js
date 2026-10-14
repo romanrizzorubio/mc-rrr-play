@@ -31,6 +31,7 @@ import {
 } from 'mc-shared';
 
 import {gangUp} from '../encounters/treacheries.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     '_id': 'standard',
@@ -133,7 +134,7 @@ export default {
             },
             {
                 'count': 1,
-                'card': gangUp
+                'card': withCardSet(gangUp, 'standard')
             },
             {
                 'count': 1,

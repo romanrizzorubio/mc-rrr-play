@@ -11,6 +11,7 @@ import {
     TRIGGER_TREACHERY_REVEAL,
 } from 'mc-shared';
 
+import {InciteAbility} from '../abilities/misc/incite-ability.js';
 import {
     CANCEL_ENCOUNTER_FULL,
     CANCEL_ENCOUNTER_NOT,
@@ -162,10 +163,14 @@ export class RevealEncounterEffect extends Effect {
     }
     async reveal(params) {
         const {selectedTarget} = this;
-        const abilities = selectedTarget.currentSide?.abilities || selectedTarget.abilities;
-
-        if (!abilities) {
-            return;
+        const abilities = [
+            ...(selectedTarget.currentSide?.abilities || selectedTarget.abilities || []),
+        ];
+        if (selectedTarget.incite > 0) {
+            abilities.push(new InciteAbility({
+                card: selectedTarget,
+                match: this.match,
+            }));
         }
 
         const whenRevealedAbilities = abilities.filter(ability =>

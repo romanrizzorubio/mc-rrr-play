@@ -10,7 +10,9 @@ const TRAIT_LABELS = {
     defender: 'Defensor',
     defense: 'Defensa',
     droid: 'Androide',
+    experimental: 'Experimental',
     goblin: 'Duende',
+    hydra: 'Hydra',
     inhuman: 'Inhumano',
     location: 'Lugar',
     persona: 'Individuo',
@@ -21,6 +23,7 @@ const TRAIT_LABELS = {
     title: 'Título',
     vehicle: 'Vehículo',
     robot: 'Robot',
+    weapon: 'Arma',
 };
 
 export function translateTrait(trait) {

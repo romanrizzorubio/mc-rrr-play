@@ -24,7 +24,7 @@ import {
     TRAIT_TECH,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
-    TRIGGER_VILLAIN_ATTACKS_YOU
+    TRIGGER_ENEMY_ATTACKS_YOU
 } from 'mc-shared';
 
 export default [
@@ -92,7 +92,7 @@ export default [
                         'type': ABILITY_RESPONSE,
                         'params': {
                             'name': 'Indómito',
-                            'trigger': TRIGGER_VILLAIN_ATTACKS_YOU,
+                            'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
                             'condition': {
                                 'effect.isDefended': true,
                                 'effect.defender.isHero': true

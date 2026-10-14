@@ -137,7 +137,7 @@ export class DoIfEffect extends Effect {
         const checked = await this.checkCondition(params);
         const effect = checked ? this.effect : this.effectNot;
 
-        if (effect) {
+        if (effect && await effect.canRun(params)) {
             return effect.runEffect(params);
         }
     }

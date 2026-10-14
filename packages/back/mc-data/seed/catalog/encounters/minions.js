@@ -10,7 +10,6 @@ export const hydraSoldier = {
     'type': CARD_TYPE_MINION,
     'params': {
         'name': 'Soldado de Hydra',
-        'set': 'legions-of-hydra',
         'image': 'sets/legions-of-hydra/01182.png',
         'traits': [
             TRAIT_HYDRA

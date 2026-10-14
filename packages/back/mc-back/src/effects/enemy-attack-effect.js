@@ -357,7 +357,10 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     getTriggersEnds(params) {
         return this.activation.getTriggersEnds(params)
-            .concat([TRIGGER_VILLAIN_ATTACKS_YOU]);
+            .concat([
+                TRIGGER_VILLAIN_ATTACKS_YOU,
+                TRIGGER_ENEMY_ATTACKS_YOU,
+            ]);
     }
     async setDefender(defender, attackTarget = this.selectedTarget, params = {}) {
         if (defender) {

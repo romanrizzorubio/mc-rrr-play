@@ -16,6 +16,7 @@ import {
     goblinGlider,
     pumpkinBombs,
 } from '../encounters/attachments.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     _id: 'goblin-gimmicks',
@@ -25,11 +26,11 @@ export default {
         cards: [
             {
                 count: 2,
-                card: goblinGlider,
+                card: withCardSet(goblinGlider, 'goblin-gimmicks'),
             },
             {
                 count: 2,
-                card: pumpkinBombs,
+                card: withCardSet(pumpkinBombs, 'goblin-gimmicks'),
             },
             {
                 count: 2,

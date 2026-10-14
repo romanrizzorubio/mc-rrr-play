@@ -21,6 +21,7 @@ import {
 } from 'mc-shared';
 
 import {gangUp} from '../encounters/treacheries.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     _id: 'a-mess-of-things',
@@ -99,7 +100,7 @@ export default {
             },
             {
                 count: 1,
-                card: gangUp,
+                card: withCardSet(gangUp, 'a-mess-of-things'),
             },
             {
                 count: 2,

@@ -19,7 +19,6 @@ import {
     CARD_TYPE_OBLIGATION,
     CARD_TYPE_SIDE_SCHEME_SCENARIO,
     CARD_TYPE_SUPPORT,
-    CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
     CLASSIFICATION_HERO,
     EFFECT_ADD_KEYWORD,
@@ -29,10 +28,8 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DISCARD_GAME,
-    EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_DRAW_CARD,
-    EFFECT_ENGAGE,
     EFFECT_EXHAUST,
     EFFECT_FLIP,
     EFFECT_FOR_EACH,
@@ -52,7 +49,6 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_SET_LIFE,
     EFFECT_SELECT_DISCARD_CARD,
-    EFFECT_SEVERAL_ATTACKS,
     EFFECT_SHUFFLE_DECK,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
@@ -61,8 +57,6 @@ import {
     LABEL_DEFENSE,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
-    PLACE_ENCOUNTER_DECK_CARDS,
-    PLACE_ENCOUNTER_DISCARD,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -70,15 +64,12 @@ import {
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
     TARGET_ALL_CHARACTERS,
-    TARGET_ALL_ENEMIES,
     TARGET_ALL_PLAYERS,
     TARGET_CARD,
     TARGET_EFFECT,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
-    TARGET_ENGAGED_HERO,
     TARGET_SCHEME,
-    TARGET_SCENARIO,
     TARGET_SOURCE,
     TARGET_THIS,
     TARGET_UPGRADE_YOU_CONTROL,
@@ -108,6 +99,8 @@ import {
 } from 'mc-shared';
 
 import {hydraSoldier} from '../encounters/minions.js';
+import {hailHydra} from '../encounters/treacheries.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     '_id': 'captain-america',
@@ -947,97 +940,11 @@ export default {
             },
             {
                 'count': 2,
-                'card': hydraSoldier
+                'card': withCardSet(hydraSoldier, 'Captain America')
             },
             {
                 'count': 1,
-                'card': {
-                    'type': CARD_TYPE_TREACHERY,
-                    'params': {
-                        'name': '¡Hail Hydra!',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03030.png',
-                        'boost': 2,
-                        'abilities': [
-                            {
-                                'type': ABILITY_WHEN_REVEALED,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SEVERAL_ATTACKS,
-                                                    'params': {
-                                                        'enemiesType': TARGET_ALL_ENEMIES,
-                                                        'enemiesCondition': {
-                                                            'isMinion': true,
-                                                            'traits': TRAIT_HYDRA
-                                                        },
-                                                        'attackTarget': TARGET_ENGAGED_HERO
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_FOR_EACH,
-                                                    'params': {
-                                                        'target': TARGET_ALL_PLAYERS,
-                                                        'condition': {
-                                                            'exclude': [
-                                                                'effects.0.attacks.*.selectedTarget',
-                                                                'effects.0.attacks.*.defender.owner'
-                                                            ]
-                                                        },
-                                                        'effect': {
-                                                            'type': EFFECT_CHAINED,
-                                                            'params': {
-                                                                'effects': [
-                                                                    {
-                                                                        'type': EFFECT_SEARCH_CARDS,
-                                                                        'params': {
-                                                                            'locations': [
-                                                                                PLACE_ENCOUNTER_DECK_CARDS,
-                                                                                PLACE_ENCOUNTER_DISCARD
-                                                                            ],
-                                                                            'filter': {
-                                                                                'type': CARD_TYPE_MINION,
-                                                                                'traits': TRAIT_HYDRA
-                                                                            },
-                                                                            'title': 'Busca un Esbirro Hydra'
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        'type': EFFECT_ENGAGE,
-                                                                        'params': {
-                                                                            'target': TARGET_YOU
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        'type': EFFECT_DO_IF,
-                                                                        'params': {
-                                                                            'condition': {
-                                                                                'effects.0.locations': PLACE_ENCOUNTER_DECK_CARDS
-                                                                            },
-                                                                            'effect': {
-                                                                                'type': EFFECT_SHUFFLE_DECK,
-                                                                                'params': {
-                                                                                    'target': TARGET_SCENARIO
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': withCardSet(hailHydra, 'Captain America')
             }
         ]
     }

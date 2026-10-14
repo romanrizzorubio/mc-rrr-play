@@ -37,7 +37,16 @@ test('Captain America cards compile and all precon references resolve', async ()
 
     assert.equal(captainHydraSoldier.count, 2);
     assert.equal(legionsHydraSoldier.count, 3);
-    assert.deepEqual(captainHydraSoldier.card, legionsHydraSoldier.card);
+    assert.equal(captainHydraSoldier.card.params.set, 'Captain America');
+    assert.equal(legionsHydraSoldier.card.params.set, 'legions-of-hydra');
+    assert.notStrictEqual(captainHydraSoldier.card, legionsHydraSoldier.card);
+    assert.deepEqual({
+        ...captainHydraSoldier.card,
+        params: {
+            ...captainHydraSoldier.card.params,
+            set: legionsHydraSoldier.card.params.set,
+        },
+    }, legionsHydraSoldier.card);
 
     const matchFactory = new MatchFactory({
         triggerCards: {},
