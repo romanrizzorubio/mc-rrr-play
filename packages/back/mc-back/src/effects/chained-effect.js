@@ -1,3 +1,5 @@
+import {getCurrentVillainStage} from '../utils/target-utils.js';
+
 import {Effect} from './effect.js';
 
 export class ChainedEffect extends Effect {
@@ -131,6 +133,14 @@ export class ChainedEffect extends Effect {
             this.getEffectParams(params);
 
         await this.promisesSequential(this.effects, async effect => {
+            this.selectedTarget = getCurrentVillainStage(
+                this.selectedTarget,
+                this.match
+            );
+            if (effect.target === this.target) {
+                effect.selectedTarget = this.selectedTarget;
+            }
+
             if (newParams.costPaymentSession?.isPrepared(effect) ||
                 await effect.canRun(newParams)) {
                 await effect.runEffect(newParams);

@@ -52,8 +52,6 @@ export class AbilitiesFactory {
         return new AbilityClass(params);
     }
     _createArrow(arrow) {
-        arrow.isArrow = true;
-
         return new Arrow({
             cost: arrow,
         });

@@ -12,6 +12,10 @@ import {Engine} from '../engine/engine.js';
 import {targetMap} from './index.js';
 
 const findSelectedTarget = (targets, selected) => {
+    if (!selected) {
+        return undefined;
+    }
+
     const directMatch = targets.find(target => target.id === selected.id);
     if (directMatch) {
         return directMatch;
@@ -149,7 +153,11 @@ export class ValidTarget extends Engine {
     }
     async selectTarget(params) {
         const validTarget = this.getValidTarget(params);
-        const {selectCount, selectUpTo} = params;
+        const {
+            selectCount,
+            selectUpTo,
+            showCancel = false,
+        } = params;
 
         if (selectCount !== undefined || selectUpTo) {
             if (selectUpTo && validTarget.length === 0) {
@@ -171,8 +179,9 @@ export class ValidTarget extends Engine {
                 Math.min(validTarget.length, selectCount ?? validTarget.length) :
                 selectCount;
             const minCount = selectUpTo ? 0 : count;
-            const {selected} = await this.openDialog({
+            const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,
+                ...(showCancel ? {showCancel: true} : {}),
                 title: params.dialogTitle || 'Elige tus objetivos',
                 data: {
                     cards: validTarget.map(card => card.toObj(params)),
@@ -182,6 +191,14 @@ export class ValidTarget extends Engine {
                     multiSelect: true,
                 },
             });
+            if (showCancel && (
+                response?.selected === undefined ||
+                response.selected === null
+            )) {
+                return null;
+            }
+
+            const {selected} = response || {};
             const selectedTargets = Array.isArray(selected) ?
                 selected :
                 selected ? [selected] : [];
@@ -213,15 +230,25 @@ export class ValidTarget extends Engine {
             case 1:
                 return validTarget.pop();
             default:
-                const {selected} = await this.openDialog({
+                const response = await this.openDialog({
                     dialogType: DIALOG_SELECT_TARGET,
+                    ...(params.showCancel ? {showCancel: true} : {}),
                     title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
                         cards: validTarget.map(card => card.toObj(params)),
                     },
                 });
+                if (params.showCancel && (
+                    response?.selected === undefined ||
+                    response.selected === null
+                )) {
+                    return null;
+                }
 
-                const selectedTarget = findSelectedTarget(validTarget, selected);
+                const selectedTarget = findSelectedTarget(
+                    validTarget,
+                    response?.selected
+                );
                 if (!selectedTarget) {
                     throw new Error('La selección del objetivo no es válida.');
                 }

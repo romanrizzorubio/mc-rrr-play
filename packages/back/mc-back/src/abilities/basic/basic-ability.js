@@ -1,20 +1,13 @@
-import {TARGET_CARD} from 'mc-shared';
 import {DealConsequencialDamageEffect} from '../../effects/deal-consequencial-damage-effect.js';
-import {ExhaustEffect} from '../../effects/exhaust-effect.js';
+import {BasicActivationCost} from '../../model/costs/basic-activation-cost.js';
 import {Ability} from '../core/ability.js';
-import {Arrow} from '../core/arrow.js';
 
 export class BasicAbility extends Ability {
     constructor() {
         super(arguments[0]);
 
-        this.arrow = new Arrow({
-            cost: new ExhaustEffect({
-                target: TARGET_CARD,
-                match: this.match,
-                isArrow: true,
-            }),
-        });
+        this.basicCost = new BasicActivationCost({match: this.match});
+        this.costs.add(this.basicCost);
 
         this.isBasic = true;
     }
@@ -29,8 +22,32 @@ export class BasicAbility extends Ability {
     }
     async resolveAbility(params) {
         const {card} = params;
+        this.basicCost.effect.selectedTarget = card;
 
-        await super.resolveAbility(params);
+        this.resolved = false;
+        this.paymentCancelled = false;
+
+        let resolveParams = params;
+        if ((this.isAttack || this.isThwart) &&
+            !params.preselectedTarget &&
+            !params.fixedPreselectedTarget) {
+            const targetState = await this.prepareToResolve(params);
+            if (!targetState.canRun) {
+                this.paymentCancelled = true;
+                return;
+            }
+
+            resolveParams = {
+                ...params,
+                preselectedTarget: targetState.preselectedTarget,
+                ...(targetState.preselectedTarget ? {
+                    fixedPreselectedTarget: true,
+                    selectedTarget: this.effect.selectedTarget,
+                } : {}),
+            };
+        }
+
+        await super.resolveAbility(resolveParams);
 
         if (this.resolved && card.isAlly) {
             await this.applyConsequencial(params);

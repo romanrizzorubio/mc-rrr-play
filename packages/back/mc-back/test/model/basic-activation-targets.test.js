@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {
+    LABEL_ATTACK,
+    LABEL_THWART,
+    TARGET_ENEMY,
+    TARGET_SCHEME,
+} from 'mc-shared';
+import {BasicAbility} from '../../src/abilities/basic/basic-ability.js';
 import {Effect} from '../../src/effects/effect.js';
 import {Player} from '../../src/model/match/player.js';
 
@@ -148,4 +155,211 @@ test('fixed preselected targets are revalidated without opening a second target 
 
     effect.validTarget.filter = () => false;
     assert.equal(effect.selectTarget({fixedPreselectedTarget: true}), null);
+});
+
+test('basic activation payment uses the current superhero card, not the selected target', async () => {
+    const originallyConfiguredCard = {id: 'hero-parent'};
+    const currentSuperhero = {
+        id: 'hero-current-side',
+        exhausted: false,
+        async refresh() {},
+        exhaust() {
+            this.exhausted = true;
+        },
+    };
+    const selectedTarget = {id: 'scheme-1'};
+    const ability = new BasicAbility({
+        card: originallyConfiguredCard,
+        match: {triggerCards: {}},
+    });
+    const payment = ability.basicCost.effect;
+    let targetAtPayment;
+    ability.costs.canPay = async params => {
+        targetAtPayment = payment.selectedTarget;
+
+        assert.deepEqual(
+            await payment.getValidTarget({
+                ...params,
+                card: currentSuperhero,
+                fixedPreselectedTarget: true,
+                selectedTarget,
+            }),
+            [currentSuperhero]
+        );
+
+        return true;
+    };
+    ability.costs.pay = async () => {
+        await payment.execute();
+
+        return {cancelled: false, resolved: true};
+    };
+
+    await ability.resolveAbility({
+        card: currentSuperhero,
+        player: {},
+        fixedPreselectedTarget: true,
+        selectedTarget,
+    });
+
+    assert.equal(targetAtPayment, currentSuperhero);
+    assert.equal(payment.selectedTarget, currentSuperhero);
+    assert.equal(currentSuperhero.exhausted, true);
+    assert.equal(selectedTarget.exhausted, undefined);
+});
+
+test('fixed activation target is restored after paying a cost refreshes the ability', async () => {
+    const selectedTarget = {id: 'scheme-1'};
+    const originallyConfiguredCard = {id: 'hero-parent'};
+    const currentSuperhero = {id: 'hero-current-side'};
+    const ability = new BasicAbility({
+        card: originallyConfiguredCard,
+        match: {triggerCards: {}},
+    });
+    let targetAtResolution;
+    ability.effect = {
+        selectedTarget,
+        async canRun() {
+            return true;
+        },
+        async runEffect() {
+            targetAtResolution = this.selectedTarget;
+            this.resolved = true;
+        },
+    };
+    ability.costs.canPay = async () => true;
+    ability.costs.pay = async () => {
+        ability.effect.selectedTarget = undefined;
+
+        return {cancelled: false, resolved: true};
+    };
+
+    await ability.resolveAbility({
+        card: currentSuperhero,
+        fixedPreselectedTarget: true,
+        player: {},
+        preselectedTarget: true,
+        selectedTarget,
+    });
+
+    assert.equal(targetAtResolution, selectedTarget);
+    assert.equal(ability.effect.selectedTarget, selectedTarget);
+});
+
+async function resolveCancelledBasicActivation({
+    dialogResponse,
+    label,
+    target,
+    targetCollection,
+    clearTargetDuringPayment = false,
+}) {
+    const hero = {
+        id: 'hero-1',
+        exhausted: false,
+    };
+    const enemies = [
+        {id: 'enemy-1', toObj: () => ({id: 'enemy-1'})},
+        {id: 'enemy-2', toObj: () => ({id: 'enemy-2'})},
+    ];
+    let selectionDialog;
+    let selectionDialogCount = 0;
+    let paymentAttempted = false;
+    let targetAtResolution;
+    const match = {
+        triggerCards: {},
+        activationsFactory: {
+            createActivation: () => ({
+                filterTarget: () => true,
+            }),
+        },
+        async openDialog(dialog) {
+            selectionDialog = dialog;
+            selectionDialogCount++;
+
+            return dialogResponse;
+        },
+    };
+    match[targetCollection] = enemies;
+    const ability = new BasicAbility({
+        card: hero,
+        match,
+    });
+    ability.labels = [label];
+    ability.effect = new Effect({
+        match,
+        target,
+    });
+    ability.effect.ability = ability;
+    ability.canRun = async () => true;
+    ability.costs.pay = async () => {
+        paymentAttempted = true;
+        if (clearTargetDuringPayment) {
+            ability.effect.selectedTarget = undefined;
+        }
+
+        return {cancelled: false, resolved: true};
+    };
+    ability.effect.runEffect = async function (params) {
+        await this.prepare(params);
+        targetAtResolution = this.selectedTarget;
+        this.resolved = true;
+    };
+
+    await ability.resolveAbility({
+        card: hero,
+        player: {},
+    });
+
+    return {
+        ability,
+        hero,
+        paymentAttempted,
+        selectionDialog,
+        selectionDialogCount,
+        targetAtResolution,
+    };
+}
+
+test('cancelling basic attack target selection does not pay the activation cost', async () => {
+    const {ability, hero, paymentAttempted, selectionDialog} =
+        await resolveCancelledBasicActivation({
+            label: LABEL_ATTACK,
+            target: TARGET_ENEMY,
+            targetCollection: 'enemies',
+        });
+
+    assert.equal(selectionDialog.showCancel, true);
+    assert.equal(paymentAttempted, false);
+    assert.equal(hero.exhausted, false);
+    assert.equal(ability.resolved, false);
+    assert.equal(ability.paymentCancelled, true);
+});
+
+test('cancelling basic thwart target selection does not pay the activation cost', async () => {
+    const {ability, hero, paymentAttempted, selectionDialog} =
+        await resolveCancelledBasicActivation({
+            label: LABEL_THWART,
+            target: TARGET_SCHEME,
+            targetCollection: 'schemes',
+        });
+
+    assert.equal(selectionDialog.showCancel, true);
+    assert.equal(paymentAttempted, false);
+    assert.equal(hero.exhausted, false);
+    assert.equal(ability.resolved, false);
+    assert.equal(ability.paymentCancelled, true);
+});
+
+test('basic activation reuses its selected target after paying the cost', async () => {
+    const {selectionDialogCount, targetAtResolution} =
+        await resolveCancelledBasicActivation({
+            dialogResponse: {selected: {id: 'enemy-1'}},
+            label: LABEL_ATTACK,
+            target: TARGET_ENEMY,
+            targetCollection: 'enemies',
+            clearTargetDuringPayment: true,
+        });
+
+    assert.equal(selectionDialogCount, 1);
+    assert.equal(targetAtResolution.id, 'enemy-1');
 });

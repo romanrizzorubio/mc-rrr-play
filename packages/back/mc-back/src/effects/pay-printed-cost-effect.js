@@ -1,7 +1,6 @@
-import {RESOURCE_ANY} from 'mc-shared';
-
 import {Effect} from './effect.js';
 import {PayCostEffect} from './pay-cost-effect.js';
+import {ResourceCost} from '../model/costs/resource-cost.js';
 
 
 export class PayPrintedCostEffect extends Effect {
@@ -22,8 +21,13 @@ export class PayPrintedCostEffect extends Effect {
     }
     getCostPaymentEffects(params) {
         const card = this.getCard(params);
+        if (!card || !(card.cost > 0)) {
+            return [];
+        }
 
-        return card && card.cost > 0 ? [this] : [];
+        const cost = new ResourceCost({amount: card.cost});
+
+        return cost.requiresPayment ? [this] : [];
     }
     getCostPaymentTitle(params) {
         const card = this.getCard(params);
@@ -33,10 +37,10 @@ export class PayPrintedCostEffect extends Effect {
     async preparePayment(params, session) {
         const {player} = params;
         const card = this.getCard(params);
-        const requiredResources = Array(card.cost).fill(RESOURCE_ANY);
+        const cost = new ResourceCost({amount: card.cost});
 
         return player.spendResources(
-            requiredResources,
+            cost.getRequiredResources(),
             card,
             session.getExcludedCardIds(),
             {showCancel: true}
@@ -54,18 +58,18 @@ export class PayPrintedCostEffect extends Effect {
             return;
         }
 
-        const cost = card.cost;
-        if (cost === 0) {
+        const resourceCost = new ResourceCost({amount: card.cost});
+        if (!resourceCost.requiresPayment) {
             this.isPaid = true;
             return;
         }
 
-        // Generamos un array de recursos universales para representar el coste impreso
-        const requiredResources = Array(cost).fill(RESOURCE_ANY);
-        
         const paid = params.costPaymentSession ?
             params.costPaymentSession.getPayment(this) :
-            await player.spendResources(requiredResources, card);
+            await player.spendResources(
+                resourceCost.getRequiredResources(),
+                card
+            );
 
         if (paid) {
             const payCostEffect = new PayCostEffect({

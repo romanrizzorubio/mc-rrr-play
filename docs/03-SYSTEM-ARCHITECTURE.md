@@ -176,6 +176,8 @@ class Ability {
 }
 ```
 
+**Modelo de costes:** `Cost` distingue los costes de recursos al jugar cartas, los costes de flecha de las capacidades, el agotamiento obligatorio de las capacidades básicas y los costes adicionales aportados por constantes. `AbilityCosts` agrupa los costes de una capacidad; la sesión prepara y reserva todos los pagos antes de aplicarlos, y si uno no puede pagarse o se cancela durante esa preparación, no se aplica ninguno ni se resuelve la capacidad.
+
 ### 4. Triggers (Disparadores)
 
 **Ubicación:** `src/triggers/`

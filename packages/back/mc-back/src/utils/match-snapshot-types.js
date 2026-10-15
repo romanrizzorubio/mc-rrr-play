@@ -173,6 +173,7 @@ async function registerSubclassesFromDirectory(directory, BaseType) {
 
 await registerSubclassesFromDirectory(new URL('../effects/', import.meta.url), Effect);
 await registerSubclassesFromDirectory(new URL('../engine/', import.meta.url), Engine);
+await registerSubclassesFromDirectory(new URL('../model/costs/', import.meta.url), Engine);
 
 export const getSnapshotType = value => {
     const constructor = Object.getPrototypeOf(value)?.constructor;

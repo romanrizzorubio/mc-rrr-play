@@ -3,6 +3,7 @@ import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
 import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';
+import {AbilityCosts} from '../../model/costs/ability-costs.js';
 
 export class Ability extends Engine {
     constructor({
@@ -32,6 +33,10 @@ export class Ability extends Engine {
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
         this.match = match;
+        this.costs = new AbilityCosts({
+            ability: this,
+            match,
+        });
         if (!match) {
             console.log('Falta Match');
         }
@@ -50,6 +55,8 @@ export class Ability extends Engine {
         }
         if (arrow) {
             this.arrow = arrow;
+            this.costs.add(arrow);
+            arrow.ability = this;
             arrow.cost.ability = this;
         }
         if (ifNot) {
@@ -161,10 +168,11 @@ export class Ability extends Engine {
         if (this.maximum && !this.maximum.canUse()) {
             return false;
         }
-        if (this.arrow && !params.arrowPaid) {
-           if (!await this.arrow.canPay({...params, ability: this})) {
-               return false;
-           }
+        if (!params.arrowPaid && !await this.costs.canPay({
+            ...params,
+            ability: this,
+        })) {
+            return false;
         }
         if (effect) {
             if (! await effect.canRun(params)) {
@@ -184,18 +192,22 @@ export class Ability extends Engine {
         return this.effect.getValidTarget(match, player);
     }
     initTriggers() {}
+    async payCosts(params) {
+        const paymentParams = {...params};
+        delete paymentParams.preselectedTarget;
+        delete paymentParams.fixedPreselectedTarget;
+
+        const result = await this.costs.pay({
+            ...paymentParams,
+            ability: this,
+        }, params);
+
+        this.paymentCancelled = result.cancelled;
+
+        return result.resolved;
+    }
     async payArrow(params) {
-        if (this.arrow) {
-            const paid = await this.arrow.pay(
-                {...params, ability: this},
-                params
-            );
-            this.paymentCancelled = this.arrow.paymentCancelled;
-
-            return paid;
-        }
-
-        return true;
+        return this.payCosts(params);
     }
     prepareEffect({preselectedTarget = false, effect = this.effect} = {}) {
         if (effect) {
@@ -226,7 +238,12 @@ export class Ability extends Engine {
             };
         }
 
-        const selectedTarget = await this.effect.selectTarget(params);
+        const selectedTarget = await this.effect.selectTarget({
+            ...params,
+            ...(this.isBasic && (this.isAttack || this.isThwart) ?
+                {showCancel: true} :
+                {}),
+        });
 
         if (selectedTarget === null || selectedTarget === undefined) {
             return {
@@ -274,14 +291,22 @@ export class Ability extends Engine {
                     return;
                 }
 
-                const costsPaid = arrowPaid || await this.payArrow(params);
+                const costsPaid = arrowPaid || await this.payCosts(params);
 
                 if (costsPaid) {
                     this.maximum?.use();
 
                     if (effect) {
+                        if (params.fixedPreselectedTarget) {
+                            effect.selectedTarget = params.selectedTarget;
+                        }
                         const effectParams = {...params};
                         delete effectParams.arrowPaid;
+                        delete effectParams.preselectedTarget;
+                        delete effectParams.fixedPreselectedTarget;
+                        if (params.fixedPreselectedTarget) {
+                            delete effectParams.selectedTarget;
+                        }
 
                         await effect.runEffect({
                             ...effectParams,

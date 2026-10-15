@@ -3,6 +3,7 @@ import {test} from 'node:test';
 
 import {
     CARD_TYPE_ALLY,
+    DIALOG_LIST,
     DIALOG_PAY_COST,
     DIALOG_SELECT_CARD,
     PLACE_DISCARD_PILE,
@@ -20,6 +21,20 @@ import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
+import {BasicActivationCost} from '../../src/model/costs/basic-activation-cost.js';
+import {CostGroup} from '../../src/model/costs/cost-group.js';
+
+class CancelledPaymentEffect extends Effect {
+    getCostPaymentEffects() {
+        return [this];
+    }
+    getCostPaymentTitle() {
+        return 'Pagar el coste de prueba';
+    }
+    async preparePayment() {
+        return undefined;
+    }
+}
 
 function createPlayCardEffect({calculatedCost, requirement = [], ability}) {
     const card = {
@@ -168,22 +183,25 @@ test('returns an event to hand when its arrow cost is cancelled', async () => {
             async refresh() {},
         },
     };
+    const match = {triggerCards: {}};
+    const arrow = new Arrow({
+        cost: new CancelledPaymentEffect({match}),
+        match,
+    });
     const ability = {
-        arrow: {},
+        costs: new CostGroup({
+            costs: [arrow],
+            match,
+        }),
         paymentCancelled: false,
         async prepareToResolve() {
             return {canRun: true, preselectedTarget: false};
-        },
-        async payArrow() {
-            this.paymentCancelled = true;
-
-            return false;
         },
     };
     const effect = new PlayCardEffect({
         ability,
         card,
-        match: {triggerCards: {}},
+        match,
     });
 
     effect.getCost = async () => 0;
@@ -195,6 +213,111 @@ test('returns an event to hand when its arrow cost is cancelled', async () => {
     assert.equal(effect.canceled, true);
     assert.deepEqual(player.hand.cards, [card]);
     assert.equal(card.isPlaying, false);
+});
+
+test('resource, basic-action, and arrow costs are staged together and all abort on cancellation', async () => {
+    const eventCard = {
+        cost: 1,
+        exhausted: false,
+        id: 'event-with-costs',
+        isEvent: true,
+        isPlayerCard: true,
+        isUpgrade: false,
+        name: 'Test Event',
+        requirement: [],
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
+        exhaust() {
+            this.exhausted = true;
+        },
+        async refresh() {},
+    };
+    const resourceCard = {
+        id: 'resource-card',
+        toObj() {
+            return {id: this.id};
+        },
+    };
+    const hand = {
+        cards: [eventCard, resourceCard],
+        addCard(card) {
+            this.cards.push(card);
+        },
+        async discardHand(card) {
+            this.cards.splice(this.cards.indexOf(card), 1);
+        },
+        getCard(cardId) {
+            return this.cards.find(card => card.id === cardId);
+        },
+        async refresh() {},
+    };
+    const player = {
+        getCard(cardId) {
+            return hand.getCard(cardId);
+        },
+        async getCardsToPay(_card, _resourceType, excludedCardIds) {
+            return {
+                generators: [],
+                hand: excludedCardIds.has(resourceCard.id) ? [] : [resourceCard],
+            };
+        },
+        hand,
+        isPlayer: true,
+    };
+    const match = {
+        openDialog: async ({dialogType, data}) => {
+            if (dialogType === DIALOG_LIST) {
+                return {selected: data.options[0]};
+            }
+            if (dialogType === DIALOG_PAY_COST) {
+                return {
+                    paid: {
+                        generators: [],
+                        hand: [{id: resourceCard.id}],
+                    },
+                    resources: [RESOURCE_MENTAL],
+                };
+            }
+
+            throw new Error(`Unexpected dialog: ${dialogType}`);
+        },
+        triggerCards: {},
+    };
+    const basicCost = new BasicActivationCost({
+        match,
+    });
+    const arrow = new Arrow({
+        cost: new CancelledPaymentEffect({match}),
+        match,
+    });
+    const ability = {
+        costs: new CostGroup({
+            costs: [basicCost, arrow],
+            match,
+        }),
+        async prepareToResolve() {
+            return {canRun: true, preselectedTarget: false};
+        },
+        async resolveAbility() {
+            assert.fail('The ability must not resolve after a cost is cancelled.');
+        },
+    };
+    const effect = new PlayCardEffect({
+        ability,
+        card: eventCard,
+        match,
+    });
+    effect.getCost = async () => 1;
+
+    await effect.runEffect({match, player});
+
+    assert.equal(effect.paymentCancelled, true);
+    assert.equal(effect.played, false);
+    assert.equal(eventCard.exhausted, false);
+    assert.ok(hand.cards.includes(eventCard));
+    assert.ok(hand.cards.includes(resourceCard));
+    assert.deepEqual(effect.resourcesPaid, []);
 });
 
 test('cancelling an ally printed-cost payment returns the event and leaves the ally in the discard pile', async () => {
@@ -282,15 +405,17 @@ test('cancelling an ally printed-cost payment returns the event and leaves the a
     });
     const ability = {
         arrow,
+        costs: new CostGroup({
+            costs: [arrow],
+            match,
+        }),
+        costs: new CostGroup({
+            costs: [arrow],
+            match,
+        }),
         paymentCancelled: false,
         async prepareToResolve() {
             return {canRun: true, preselectedTarget: false};
-        },
-        async payArrow(params) {
-            const paid = await arrow.pay(params, params);
-            this.paymentCancelled = arrow.paymentCancelled;
-
-            return paid;
         },
         async resolveAbility() {
             abilityResolved = true;

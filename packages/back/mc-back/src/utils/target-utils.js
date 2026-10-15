@@ -9,6 +9,20 @@ export function getCurrentSideTargets(target) {
 }
 
 export function getCurrentVillainStage(target, match) {
+    if (Array.isArray(target)) {
+        let changed = false;
+        const currentStages = target.map(selectedTarget => {
+            const currentStage = getCurrentVillainStage(selectedTarget, match);
+            if (currentStage !== selectedTarget) {
+                changed = true;
+            }
+
+            return currentStage;
+        });
+
+        return changed ? currentStages : target;
+    }
+
     if (target?.isVillain &&
         !target.isInPlay &&
         match?.villain?.name === target.name) {

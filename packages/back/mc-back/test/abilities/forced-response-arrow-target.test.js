@@ -3,6 +3,8 @@ import {test} from 'node:test';
 
 import {TARGET_ATTACKED, TRIGGER_YOU_ANY_ATTACK} from 'mc-shared';
 import {ForcedResponseAbility} from '../../src/abilities/response/forced-response-ability.js';
+import {Arrow} from '../../src/abilities/core/arrow.js';
+import {Effect} from '../../src/effects/effect.js';
 import {StunEffect} from '../../src/effects/stun-effect.js';
 
 test('forced response does not pay its arrow cost when its attacked target is defeated', async () => {
@@ -28,18 +30,18 @@ test('forced response does not pay its arrow cost when its attacked target is de
         selectedTarget: minion,
     };
     const match = {triggerCards: {}};
+    const arrow = new Arrow({
+        cost: new Effect({match}),
+        match,
+    });
+    arrow.canPay = async () => true;
+    arrow.pay = async () => {
+        paidCosts++;
+
+        return true;
+    };
     const ability = new ForcedResponseAbility({
-        arrow: {
-            cost: {},
-            paymentCancelled: false,
-            async canPay() {
-                return true;
-            },
-            async pay() {
-                paidCosts++;
-                return true;
-            },
-        },
+        arrow,
         effect: new StunEffect({
             match,
             target: TARGET_ATTACKED,

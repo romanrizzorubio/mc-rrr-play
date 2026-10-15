@@ -9,11 +9,12 @@ import {
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
-import {GetCostEffect} from './get-cost-effect.js';
-import {PayCostEffect} from './pay-cost-effect.js';
 import {PutPlayEffect} from './put-play-effect.js';
+import {GetCostEffect} from './get-cost-effect.js';
 import {getRestrictedCards} from '../utils/enforce-restricted-limit.js';
 import {getPlayerCardPlayFromLocation} from '../utils/player-card-play-from.js';
+import {CostGroup} from '../model/costs/cost-group.js';
+import {ResourceCost} from '../model/costs/resource-cost.js';
 
 export class PlayCardEffect extends Effect {
     constructor({
@@ -28,6 +29,7 @@ export class PlayCardEffect extends Effect {
         this.abilityType = abilityType;
 
         this.resourcesPaid = [];
+        this.cardsPaid = undefined;
         this.canceled = false;
         this.paymentCancelled = false;
         this.prePlayConfirmationAcceptedFor = undefined;
@@ -151,21 +153,10 @@ export class PlayCardEffect extends Effect {
         };
     }
     async doPlay(params) {
-        const {card, cardsPaid, ability, selectedTarget} = this;
+        const {card, ability, selectedTarget} = this;
         const {player} = params;
 
         this.played = true;
-
-        if (cardsPaid) {
-            const payCostEffect = new PayCostEffect({
-                hand: cardsPaid.hand,
-                generators: cardsPaid.generators,
-                selectedTarget: card,
-                match: this.match,
-            });
-
-            await payCostEffect.runEffect({player});
-        }
 
         if (card.isEvent) {
             await ability.resolveAbility({
@@ -214,47 +205,50 @@ export class PlayCardEffect extends Effect {
 
         return getCostEffect.cost;
     }
+    async getResourceCost(params) {
+        const amount = await this.getCost({
+            ...params,
+            card: this.card,
+        }) + this.modifyCost;
+
+        return new ResourceCost({
+            amount: Math.max(0, amount),
+            card: this.card,
+            match: this.match,
+            playCardEffect: this,
+        });
+    }
     isResolved() {
         return !this.canceled;
     }
     isFullResolved() {
         return !this.canceled;
     }
-    async payArrow(params) {
-        const {ability} = this;
-
-        if (ability && ability.arrow) {
-            const paid = await ability.payArrow(params);
-            this.paymentCancelled = ability.paymentCancelled;
-
-            return paid;
-        }
-
-        return true;
-    }
-    async payCost(params) {
+    async payCost(params, session, resourceCost) {
         const {card} = this;
         const {player} = params;
 
-        const cost = await this.getCost({
-            ...params,
-            card,
-        }) + this.modifyCost;
-        const normalizedCost = Math.max(0, cost);
-
-        if (normalizedCost === 0 && !card.requirement?.length) {
+        const cost = resourceCost || await this.getResourceCost(params);
+        if (!cost.requiresPayment) {
             return;
         }
 
         const resourcePreferences = this.ability?.effect ?
             this.ability.effect.getPaymentResourcePreferences() :
             [];
-        const cardsToPay = await player.getCardsToPay(card);
+        const excludedCardIds = session ?
+            session.getExcludedCardIds() :
+            new Set();
+        const cardsToPay = await player.getCardsToPay(
+            card,
+            undefined,
+            excludedCardIds
+        );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
             data: {
-                cost: normalizedCost,
+                cost: cost.amount,
                 requirement: card.requirement,
                 resourcePreferences,
                 card: card.toObj(),
@@ -276,6 +270,11 @@ export class PlayCardEffect extends Effect {
                     .map(card => player.hand.getCard(card.id)),
                 generators: paid.generators
                     .map(card => player.getCard(card.id)),
+            };
+
+            return {
+                ...this.cardsPaid,
+                resources,
             };
         } else {
             this.canceled = true;
@@ -391,24 +390,37 @@ export class PlayCardEffect extends Effect {
             return;
         }
 
-        await this.payCost(params);
+        const resourceCost = await this.getResourceCost(params);
+        const costs = [
+            resourceCost,
+            this.ability?.costs,
+        ].filter(Boolean);
+        const paymentCost = new CostGroup({
+            ability: this.ability,
+            costs,
+            match: this.match,
+        });
+        const paymentParams = {
+            ...params,
+            ability: this.ability,
+            card,
+            playCardEffect: this,
+        };
+        const payment = await paymentCost.pay(paymentParams, paymentParams);
 
-        if (this.canceled) {
+        if (!payment.resolved) {
+            this.paymentCancelled = payment.cancelled;
+            this.resourcesPaid = [];
+            this.cardsPaid = undefined;
+            this.canceled = true;
             card.isPlaying = false;
         } else {
-            if (await this.payArrow(params)) {
-                await this.doPlay({
-                    ...params,
-                    card,
-                    preselectedTarget: abilityState.preselectedTarget,
-                    arrowPaid: true,
-                });
-            } else {
-                this.canceled = true;
-                this.paymentCancelled = this.paymentCancelled ||
-                    Boolean(this.ability?.paymentCancelled);
-                card.isPlaying = false;
-            }
+            await this.doPlay({
+                ...paymentParams,
+                card,
+                preselectedTarget: abilityState.preselectedTarget,
+                arrowPaid: true,
+            });
         }
     }
 }

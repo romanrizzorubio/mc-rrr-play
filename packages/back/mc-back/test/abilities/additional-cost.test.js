@@ -4,9 +4,9 @@ import test from 'node:test';
 import {DIALOG_DISCARD_HAND} from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import {AttackBasicAbility} from '../../src/abilities/basic/attack-basic-ability.js';
-import {ExhaustEffect} from '../../src/effects/exhaust-effect.js';
 import {SelectDiscardCardEffect} from '../../src/effects/select-discard-card-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
+import {BasicActivationCost} from '../../src/model/costs/basic-activation-cost.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 
@@ -64,7 +64,8 @@ test('Wonder Man adds a discard cost to his basic attack, not his play cost', as
     const attack = gameCard.abilities.find(ability =>
         ability instanceof AttackBasicAbility);
     assert.ok(attack);
-    assert.ok(attack.arrow.cost instanceof ExhaustEffect);
+    assert.equal(attack.arrow, undefined);
+    assert.ok(attack.basicCost instanceof BasicActivationCost);
 
     const params = {
         ability: attack,
@@ -72,7 +73,10 @@ test('Wonder Man adds a discard cost to his basic attack, not his play cost', as
         match: matchFactory.match,
         player,
     };
-    assert.equal(await attack.arrow.getCost(params), attack.arrow.cost);
+    assert.equal(
+        await attack.costs.getEffect(params),
+        attack.basicCost.effect
+    );
 
     const playCardEffect = new PlayCardEffect({
         card: gameCard,
@@ -81,22 +85,28 @@ test('Wonder Man adds a discard cost to his basic attack, not his play cost', as
     assert.equal(await playCardEffect.getCost(params), 2);
 
     await gameCard.initTriggers();
-    const cost = await attack.arrow.getCost(params);
+    const cost = await attack.costs.getEffect(params);
 
     assert.ok(cost instanceof SimultaneousEffect);
-    assert.equal(cost.effects[0], attack.arrow.cost);
+    assert.equal(cost.effects[0], attack.basicCost.effect);
     assert.ok(cost.effects[1] instanceof SelectDiscardCardEffect);
-    assert.equal(await attack.arrow.canPay(params), false);
+    assert.equal(await attack.costs.canPay(params), false);
 
     player.hand.cards.push(discardableCard);
-    assert.equal(await attack.arrow.canPay(params), true);
+    assert.equal(await attack.costs.canPay(params), true);
 
-    assert.equal(await attack.arrow.pay(params), false);
+    assert.equal(await attack.payCosts(params), false);
     assert.equal(gameCard.exhausted, false);
     assert.equal(player.hand.cards.length, 1);
 
     confirmDiscard = true;
-    assert.equal(await attack.arrow.pay(params), true);
+    const selectedAttackTarget = {id: 'selected-enemy'};
+    assert.equal(await attack.payCosts({
+        ...params,
+        fixedPreselectedTarget: true,
+        preselectedTarget: true,
+        selectedTarget: selectedAttackTarget,
+    }), true);
     assert.equal(gameCard.exhausted, true);
     assert.equal(player.hand.cards.length, 0);
     assert.deepEqual(discarded, [discardableCard]);
@@ -107,8 +117,8 @@ test('Wonder Man adds a discard cost to his basic attack, not his play cost', as
         isBasic: true,
     };
     assert.equal(
-        await attack.arrow.getCost({...params, ability: otherAbility}),
-        attack.arrow.cost
+        await attack.costs.getEffect({...params, ability: otherAbility}),
+        attack.basicCost.effect
     );
 
     const nonBasicAttack = {
@@ -117,7 +127,7 @@ test('Wonder Man adds a discard cost to his basic attack, not his play cost', as
         isBasic: false,
     };
     assert.equal(
-        await attack.arrow.getCost({...params, ability: nonBasicAttack}),
-        attack.arrow.cost
+        await attack.costs.getEffect({...params, ability: nonBasicAttack}),
+        attack.basicCost.effect
     );
 });

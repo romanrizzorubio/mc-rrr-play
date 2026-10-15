@@ -1,4 +1,5 @@
 import {checkCondition} from '../engine/utils.js';
+import {AdditionalCost} from '../model/costs/additional-cost.js';
 import {Effect} from './effect.js';
 
 export class AddAdditionalCostEffect extends Effect {
@@ -13,8 +14,7 @@ export class AddAdditionalCostEffect extends Effect {
             throw new TypeError('Additional cost must be a single effect.');
         }
 
-        this.cost = cost;
-        this.cost.isArrow = true;
+        this.cost = new AdditionalCost({effect: cost});
         this.abilityCondition = abilityCondition;
         this.sourceCardOnly = sourceCardOnly;
     }

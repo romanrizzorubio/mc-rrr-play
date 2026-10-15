@@ -63,7 +63,7 @@ export class SpendEffect extends Effect {
         return false;
     }
     allowPartialPayment(params) {
-        return !this.isArrow &&
+        return !this.isCost &&
             !params.isCost &&
             !params.costPaymentSession?.requireAllCosts;
     }

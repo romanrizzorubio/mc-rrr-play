@@ -32,6 +32,7 @@ export class Effect extends Engine {
             condition,
             activation,
             keywords = {},
+            isCost = false,
             isArrow = false,
             isAttack,
             isDefense = false,
@@ -64,6 +65,7 @@ export class Effect extends Engine {
         this.excludeTarget = excludeTarget;
         this.condition = condition;
         this.activation = activation;
+        this.isCost = isCost || isArrow;
         this.isArrow = isArrow;
         this._isAttack = isAttack;
         this._isDefense = isDefense;
@@ -153,13 +155,13 @@ export class Effect extends Engine {
         return (isAttack || isDefense || isScheme || isThwart);
     }
     get isAttack() {
-        return this._isAttack ?? (!this.isArrow && this.ability && this.ability.isAttack);
+        return this._isAttack ?? (!this.isCost && this.ability && this.ability.isAttack);
     }
     set isAttack(isAttack) {
         this._isAttack = isAttack;
     }
     get isDefense() {
-        return this._isDefense || (!this.isArrow && this.ability && this.ability.isDefense);
+        return this._isDefense || (!this.isCost && this.ability && this.ability.isDefense);
     }
     set isDefense(isDefense) {
         this._isDefense = isDefense;
@@ -171,7 +173,7 @@ export class Effect extends Engine {
         this._isScheme = isScheme;
     }
     get isThwart() {
-        return this._isThwart || (!this.isArrow && this.ability && this.ability.isThwart);
+        return this._isThwart || (!this.isCost && this.ability && this.ability.isThwart);
     }
     set isThwart(isThwart) {
         this._isThwart = isThwart;
@@ -254,9 +256,9 @@ export class Effect extends Engine {
         return false;
     }
     filterTarget(card, params) {
-        const {excludeTarget, activation, isArrow} = this;
+        const {excludeTarget, activation, isCost} = this;
 
-        if (activation && !isArrow) {
+        if (activation && !isCost && !params.isCost) {
             if (!activation.filterTarget(card, params)) {
                 return false;
             }
