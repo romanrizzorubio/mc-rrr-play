@@ -22,6 +22,7 @@ import {findPlayerCardToPlayFrom} from '../../utils/player-card-play-from.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
+import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
 
 import {Deck} from './deck.js';
 import {Hand} from './hand.js';
@@ -321,14 +322,24 @@ export class Player extends Engine {
         return this.gameZone.getCard(cardId) ||
             this.gameZone.minions.find(minion => minion.id === cardId);
     }
-    async getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
+    async getCardsToPay(
+        cardToPlay,
+        resourceType,
+        excludedCardIds = new Set(),
+        resourceUsage
+    ) {
         return {
             generators: await this.getResourceGenerators(
                 cardToPlay,
                 resourceType,
                 excludedCardIds
             ),
-            hand: this.hand.getCardsToPay(cardToPlay, resourceType, excludedCardIds),
+            hand: this.hand.getCardsToPay(
+                cardToPlay,
+                resourceType,
+                excludedCardIds,
+                resourceUsage
+            ),
         };
     }
     getPrintedCard(cardId) {
@@ -584,12 +595,14 @@ export class Player extends Engine {
             allowPartial = false,
             showCancel = !allowPartial,
             differentTypes = false,
+            resourceUsage,
         } = {}
     ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
             resources,
-            excludedCardIds
+            excludedCardIds,
+            resourceUsage
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
@@ -598,6 +611,7 @@ export class Player extends Engine {
             data: {
                 allowPartial,
                 differentTypes,
+                resourceSelectionMode: resourceUsage !== undefined,
                 cost: resources.length,
                 requirement: resources,
                 card: cardToPay ? cardToPay.toObj() : undefined,
@@ -625,17 +639,25 @@ export class Player extends Engine {
             };
         }
     }
-    async spendResourcesX(resources, cardToPay, resourceType, excludedCardIds = new Set()) {
+    async spendResourcesX(
+        resources,
+        cardToPay,
+        resourceType,
+        excludedCardIds = new Set(),
+        resourceUsage
+    ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
             resourceType,
-            excludedCardIds
+            excludedCardIds,
+            resourceUsage
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
             data: {
                 resourceType,
+                resourceSelectionMode: resourceUsage !== undefined,
                 cost: RESOURCES_X,
                 requirement: resources,
                 card: cardToPay ? cardToPay.toObj() : undefined,
@@ -704,44 +726,7 @@ export class Player extends Engine {
         const stats = await superhero.getEffectiveStats();
         const canFlip = await this.canFlip({card: superhero});
         const handSize = await this.getHandSize();
-        const abilities = await Promise.all(
-            superhero.currentSide.abilities.map(async (ability, index) => {
-                const serializedAbility = {
-                    ...ability.toObj(),
-                    index,
-                    ...(ability.isBasic ? {
-                        isAttack: ability.isAttack,
-                        isThwart: ability.isThwart,
-                    } : {}),
-                };
-
-                if (!ability.isAction && !ability.isBasic) {
-                    return serializedAbility;
-                }
-
-                ability.prepareEffect();
-                const availabilityParams = {
-                    player: this,
-                    card: superhero,
-                };
-                const canRun = await ability.canRun(availabilityParams);
-                const availableTargetIds = ability.isBasic &&
-                    (ability.isAttack || ability.isThwart) &&
-                    canRun &&
-                    ability.effect ?
-                    (await ability.effect.getValidTarget(availabilityParams))
-                        .map(target => target.id) :
-                    undefined;
-
-                return {
-                    ...serializedAbility,
-                    disable: !canRun,
-                    ...(availableTargetIds ?
-                        {availableTargetIds} :
-                        {}),
-                };
-            })
-        );
+        const abilities = await getAbilitiesWithAvailability(superhero, this);
         const attached = await Promise.all(superhero.attached.map(card =>
             card.toObjWithAbilityAvailability(this)));
         const hand = await this.hand.toObjWithPlayability();

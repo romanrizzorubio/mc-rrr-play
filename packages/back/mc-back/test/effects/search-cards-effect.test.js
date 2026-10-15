@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    PLACE_DECK,
     PLACE_DISCARD_PILE,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
@@ -115,6 +116,15 @@ test('SearchCardsEffect offers every matching encounter minion for selection', a
         isMinion: true,
         traits: [],
     };
+    const encounterDeck = {
+        cards: [deckMinion, otherMinion],
+        discardPile: [discardedMinion],
+        knownCards: [],
+        markKnown(cards) {
+            this.knownCards.push(...cards);
+        },
+        async refresh() {},
+    };
     const effect = new SearchCardsEffect({
         locations: [PLACE_ENCOUNTER_DECK_CARDS, PLACE_ENCOUNTER_DISCARD],
         filter: {
@@ -123,10 +133,7 @@ test('SearchCardsEffect offers every matching encounter minion for selection', a
         },
         match: {
             scenario: {
-                deck: {
-                    cards: [deckMinion, otherMinion],
-                    discardPile: [discardedMinion],
-                },
+                deck: encounterDeck,
             },
         },
     });
@@ -145,5 +152,91 @@ test('SearchCardsEffect offers every matching encounter minion for selection', a
         deckMinion.id,
         discardedMinion.id,
     ]);
+    assert.deepEqual(encounterDeck.knownCards, [deckMinion]);
     assert.equal(params.selectedCard, discardedMinion);
 });
+
+test('SearchCardsEffect automatically selects its only mandatory match', async () => {
+    const card = createCard('mjolnir', 'Mjolnir');
+    let dialogCalls = 0;
+    const effect = new SearchCardsEffect({
+        locations: [PLACE_DECK, PLACE_DISCARD_PILE],
+        filter: {name: 'Mjolnir'},
+        requireMatch: true,
+        match: {
+            async openDialog() {
+                dialogCalls++;
+            },
+        },
+    });
+    const player = {
+        deck: {cards: [], discardPile: [card]},
+        hand: {cards: []},
+    };
+    const params = {player};
+
+    await effect.execute(params);
+
+    assert.equal(dialogCalls, 0);
+    assert.deepEqual(params.selectedCards, [card]);
+    assert.equal(params.selectedCard, card);
+    assert.equal(params.card, card);
+});
+
+test('SearchCardsEffect automatically selects its only mandatory payment match', async () => {
+    const card = createCard('mjolnir', 'Mjolnir');
+    let dialogCalls = 0;
+    const effect = new SearchCardsEffect({
+        locations: [PLACE_DISCARD_PILE],
+        filter: {name: 'Mjolnir'},
+        match: {
+            async openDialog() {
+                dialogCalls++;
+            },
+        },
+    });
+    const player = {
+        deck: {discardPile: [card]},
+        hand: {cards: []},
+    };
+    const params = {player};
+    const session = {
+        getExcludedCardIds: () => new Set(),
+    };
+
+    const payment = await effect.preparePayment(params, session);
+
+    assert.equal(dialogCalls, 0);
+    assert.deepEqual(payment.cards, [card]);
+    assert.deepEqual(params.selectedCards, [card]);
+});
+
+for (const [choice, optionalSelection] of [
+    ['cancelling', {showCancel: true}],
+    ['selecting up to the limit', {upTo: true}],
+]) {
+    test(`SearchCardsEffect keeps a dialog for ${choice} with one match`, async () => {
+        const card = createCard('mjolnir', 'Mjolnir');
+        let dialogCalls = 0;
+        const effect = new SearchCardsEffect({
+            locations: [PLACE_DISCARD_PILE],
+            ...optionalSelection,
+            match: {
+                async openDialog() {
+                    dialogCalls++;
+
+                    return {selected: []};
+                },
+            },
+        });
+
+        await effect.execute({
+            player: {
+                deck: {discardPile: [card]},
+                hand: {cards: []},
+            },
+        });
+
+        assert.equal(dialogCalls, 1);
+    });
+}

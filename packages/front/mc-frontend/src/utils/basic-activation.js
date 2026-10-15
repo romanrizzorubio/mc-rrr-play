@@ -8,37 +8,69 @@ const ACTIVATION_NAMES = {
     thwart: 'Intervención básica',
 };
 
-export function getBasicActivationOption(player, card, type) {
-    if (!card?.id || !ACTIVATION_NAMES[type]) {
+export function getBasicActivationOptionsForActor(actor) {
+    return (actor?.abilities || []).reduce((options, ability, index) => {
+        const activationType = ability.isAttack ?
+            'attack' :
+            ability.isThwart ? 'thwart' : undefined;
+        const availableTargetIds = ability.availableTargetIds;
+
+        if (
+            !ability.isBasic ||
+            ability.disable ||
+            !activationType ||
+            !Array.isArray(availableTargetIds) ||
+            !availableTargetIds.length
+        ) {
+            return options;
+        }
+
+        const abilityIndex = ability.index ?? index;
+
+        options.push({
+            id: `${BASIC_ACTIVATION_OPTION_PREFIX}${abilityIndex}`,
+            text: ACTIVATION_NAMES[activationType],
+            basicActivation: true,
+            abilityIndex,
+            activationType,
+            availableTargetIds,
+        });
+
+        return options;
+    }, []);
+}
+
+export function getBasicActivationOptionForActor(actor, card, type) {
+    if (!card?.id || (type && !ACTIVATION_NAMES[type])) {
         return undefined;
     }
 
     const targetIds = [card.id, card.parentId].filter(Boolean);
-    const abilities = player?.superhero?.abilities || [];
-    const ability = abilities.find(candidate =>
-        candidate.isBasic &&
-        candidate[type === 'attack' ? 'isAttack' : 'isThwart'] &&
-        !candidate.disable &&
-        (candidate.availableTargetIds || []).some(id => targetIds.includes(id))
+    const option = getBasicActivationOptionsForActor(actor).find(candidate =>
+        (!type || candidate.activationType === type) &&
+        candidate.availableTargetIds.some(id => targetIds.includes(id))
     );
 
-    if (!ability) {
+    if (!option) {
         return undefined;
     }
 
-    const abilityIndex = abilities.indexOf(ability);
-    const targetId = ability.availableTargetIds.find(id =>
+    const targetId = option.availableTargetIds.find(id =>
         targetIds.includes(id)
     );
 
     return {
-        id: `${BASIC_ACTIVATION_OPTION_PREFIX}${ability.index ?? abilityIndex}`,
-        text: ACTIVATION_NAMES[type],
-        basicActivation: true,
-        abilityIndex: ability.index ?? abilityIndex,
+        id: option.id,
+        text: option.text,
+        basicActivation: option.basicActivation,
+        abilityIndex: option.abilityIndex,
         targetId,
-        activationType: type,
+        activationType: option.activationType,
     };
+}
+
+export function getBasicActivationOption(player, card, type) {
+    return getBasicActivationOptionForActor(player?.superhero, card, type);
 }
 
 export function getCardAbilityOptions(card) {

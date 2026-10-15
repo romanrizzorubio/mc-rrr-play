@@ -63,15 +63,45 @@ class InterruptibleCostEffect extends Effect {
     }
 }
 
+const createResourceGenerator = (id, resources, onResolve = () => {}) => ({
+    abilities: [{
+        isResource: true,
+        resources,
+    }],
+    id,
+    async resolveResourceAbility() {
+        onResolve();
+    },
+    toObj() {
+        return {
+            id: this.id,
+            abilities: this.abilities,
+        };
+    },
+});
+
 test('stages costs in the chosen order and resolves their responses after all costs', async () => {
     const commits = [];
     const paymentOrder = [];
     const reservedCardIds = [];
     const selectedIndexes = [2, 0];
+    const costCard = {
+        id: 'cost-card',
+        image: 'heroes/test/00001.png',
+        name: 'Carta con coste',
+        toObj() {
+            return {
+                id: this.id,
+                image: this.image,
+                name: this.name,
+            };
+        },
+    };
     const match = {
         openDialog: async ({dialogType, title, data}) => {
             if (dialogType === DIALOG_LIST) {
                 assert.equal(title, '¿Qué coste quieres pagar ahora?');
+                assert.deepEqual(data.card, costCard.toObj());
                 const selectedIndex = selectedIndexes.shift();
 
                 return {selected: data.options[selectedIndex]};
@@ -92,12 +122,13 @@ test('stages costs in the chosen order and resolves their responses after all co
             assert.deepEqual(commits.filter(value => value.startsWith('generator-')), []);
 
             return {
-                generators: [{
-                    id: `generator-${resource}`,
-                    async resolveResourceAbility() {
+                generators: [createResourceGenerator(
+                    `generator-${resource}`,
+                    [resource],
+                    () => {
                         commits.push(`generator-${resource}`);
-                    },
-                }],
+                    }
+                )],
                 hand: [],
                 resources,
             };
@@ -189,7 +220,7 @@ test('stages costs in the chosen order and resolves their responses after all co
         effect: abilityEffect,
         match,
     });
-    ability.card = {id: 'cost-card'};
+    ability.card = costCard;
 
     await ability.resolveAbility({
         card: ability.card,
@@ -221,10 +252,14 @@ test('stages discard selections and reserves those cards for the remaining costs
         },
     };
     const resourceCard = {
+        card: {
+            getResources: () => [RESOURCE_MENTAL],
+        },
         id: 'selected-as-resource',
+        resources: [RESOURCE_MENTAL],
         isEvent: false,
         toObj() {
-            return {id: this.id};
+            return {id: this.id, resources: this.resources};
         },
     };
     const player = {
@@ -371,7 +406,10 @@ test('staged search choices are passed through Arrow outputParams', async () => 
         isPlayer: true,
         async spendResources(resources) {
             return {
-                generators: [],
+                generators: [createResourceGenerator(
+                    'mental-generator',
+                    [RESOURCE_MENTAL]
+                )],
                 hand: [],
                 resources,
             };
@@ -419,7 +457,7 @@ test('staged search choices are passed through Arrow outputParams', async () => 
     assert.equal(params.selectedCard, selectedCard);
 });
 
-test('stages the selected card printed cost after preparing a search choice', async () => {
+test('auto-selects the sole search result before staging its printed cost', async () => {
     const selectedCard = {
         id: 'maria-hill',
         name: 'Maria Hill',
@@ -439,9 +477,12 @@ test('stages the selected card printed cost after preparing a search choice', as
             assert.deepEqual(resources, Array(selectedCard.cost).fill(RESOURCE_ANY));
 
             return {
-                generators: [],
+                generators: [createResourceGenerator(
+                    'printed-cost-generator',
+                    Array(selectedCard.cost).fill(RESOURCE_ENERGY)
+                )],
                 hand: [],
-                resources,
+                resources: Array(selectedCard.cost).fill(RESOURCE_ENERGY),
             };
         },
     };
@@ -478,7 +519,7 @@ test('stages the selected card printed cost after preparing a search choice', as
     const params = {card: cardToPlay, player};
 
     assert.equal(await new Arrow({cost}).pay(params), true);
-    assert.deepEqual(paymentOrder, ['select-card', 'printed-cost']);
+    assert.deepEqual(paymentOrder, ['printed-cost']);
     assert.equal(params.selectedCard, selectedCard);
     assert.equal(params.card, cardToPlay);
 });
@@ -502,9 +543,12 @@ test('passes arrow output params to the resolving ability', async () => {
             assert.deepEqual(resources, Array(selectedCard.cost).fill(RESOURCE_ANY));
 
             return {
-                generators: [],
+                generators: [createResourceGenerator(
+                    'printed-cost-generator',
+                    Array(selectedCard.cost).fill(RESOURCE_ENERGY)
+                )],
                 hand: [],
-                resources,
+                resources: Array(selectedCard.cost).fill(RESOURCE_ENERGY),
             };
         },
     };

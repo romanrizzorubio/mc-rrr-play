@@ -27,7 +27,7 @@ Rutas REST públicas disponibles en `mc-match-creation-service`:
 | `GET` | `/get-scenarios-list` | Obtener la lista de escenarios |
 | `POST` | `/create-match` | Crear y guardar una partida |
 | `POST` | `/reset-match` | Reiniciar una partida con la configuración de creación conservada |
-| `DELETE` | `/delete-match` | Eliminar una partida activa y su instantánea persistida (JSON `{name}`) |
+| `DELETE` | `/delete-match` | Eliminar por nombre una partida activa o su instantánea persistida aunque no esté cargada (JSON `{name}`); la operación es idempotente si ya no existe |
 | `POST` | `/create-player` | Añadir un jugador |
 | `POST` | `/create-scenario` | Añadir un escenario |
 | `POST` | `/init-match` | Inicializar el motor y la partida |

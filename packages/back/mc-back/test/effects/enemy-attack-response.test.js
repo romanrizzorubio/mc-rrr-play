@@ -40,8 +40,18 @@ import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
 test('enemy attacks show a directly selected hero in the activation dialog', async () => {
     const hero = {
         name: 'Spider-Man',
+        async getEffectiveStats() {
+            return {
+                attack: 3,
+                defense: 2,
+                hitPoints: 10,
+                life: 8,
+                recovery: 3,
+                thwart: 2,
+            };
+        },
         toObj() {
-            return {name: this.name};
+            return {name: this.name, attack: 2};
         },
     };
     const scorpion = {
@@ -49,8 +59,18 @@ test('enemy attacks show a directly selected hero in the activation dialog', asy
         async getAttackValue() {
             return 2;
         },
+        async getEffectiveStats({attack} = {}) {
+            return {
+                attack,
+                defense: 1,
+                hitPoints: 5,
+                life: 5,
+                recovery: 0,
+                thwart: 0,
+            };
+        },
         toObj() {
-            return {name: this.name};
+            return {name: this.name, attack: 1};
         },
     };
     const attack = new EnemyAttackEffect({
@@ -67,8 +87,11 @@ test('enemy attacks show a directly selected hero in the activation dialog', asy
 
     assert.equal(dialog.dialogType, DIALOG_ACTIVATE);
     assert.equal(dialog.title, 'Escorpión ataca a Spider-Man');
-    assert.deepEqual(dialog.data.target, {name: 'Spider-Man'});
+    assert.equal(dialog.data.target.name, 'Spider-Man');
+    assert.equal(dialog.data.target.attack, 3);
+    assert.equal(dialog.data.target.defense, 2);
     assert.equal(dialog.data.character.attack, 2);
+    assert.equal(dialog.data.character.defense, 1);
 });
 
 test('Backflip is offered before attack damage is applied', async () => {
@@ -321,12 +344,18 @@ test('Poneos detras de mi resolves its attack against the villain', async () => 
         async getAttackValue() {
             return 2;
         },
+        async getEffectiveStats() {
+            return {};
+        },
         toObj() {
             return {name: this.name};
         },
     };
     const hero = {
         name: 'Spider-Man',
+        async getEffectiveStats() {
+            return {};
+        },
         toObj() {
             return {name: this.name};
         },

@@ -1,6 +1,7 @@
 import {LitElement, html} from 'lit-element';
 import {PLACE_DISCARD_PILE} from 'mc-shared';
 
+import {ICON_EYE} from '../../common/mc-icon/mc-icon.js';
 import styles from './mc-deck.css.js';
 import '../../cards/mc-card-image/mc-card-image.js';
 import {
@@ -29,9 +30,12 @@ export class DeckComponent extends LitElement {
         return {
             cards: {type: Array},
             discard: {type: Array},
+            knownCards: {type: Array, attribute: 'known-cards'},
+            deckName: {type: String, attribute: 'deck-name'},
             discardLabel: {type: String, attribute: 'discard-label'},
             highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
             showDeck: {type: Boolean, attribute: 'show-deck'},
+            dragActivation: {type: Object},
             type: {type: Number}
         };
     }
@@ -40,9 +44,12 @@ export class DeckComponent extends LitElement {
 
         this.cards = [];
         this.discard = [];
+        this.knownCards = [];
+        this.deckName = '';
         this.discardLabel = '';
         this.highlightPlayableDiscard = false;
         this.showDeck = true;
+        this.dragActivation = null;
         this.type = DECK_TYPES.ENCOUNTER;
     }
     getDiscardTop() {
@@ -93,6 +100,24 @@ export class DeckComponent extends LitElement {
             },
         }));
     }
+    handleViewKnownCards() {
+        if (!this.knownCards.length) {
+            return;
+        }
+
+        const title = this.type === DECK_TYPES.PLAYER ?
+            `Cartas vistas del mazo de ${this.deckName || 'jugador'}` :
+            'Cartas vistas del mazo de encuentros';
+
+        this.dispatchEvent(new CustomEvent('view-known-cards', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                cards: this.knownCards.slice(),
+                title,
+            },
+        }));
+    }
     renderCardStack(src, count, isEmptyDiscard = false, card) {
         const horizontal = isPlanCard(card);
 
@@ -100,6 +125,7 @@ export class DeckComponent extends LitElement {
             <mc-card-image
                 class="${isEmptyDiscard ? 'empty-discard' : ''}"
                 src="${src}"
+                .activationBlocked="${Boolean(this.dragActivation)}"
                 .horizontal="${horizontal}"
                 .rotated="${horizontal}"
             >
@@ -109,17 +135,33 @@ export class DeckComponent extends LitElement {
             </span>
         `;
     }
-    renderCards(src, count, isEmptyDiscard = false) {
+    renderCards(src, count, isEmptyDiscard = false, knownCards = []) {
         return html`
-            <div class="panel">
+            <div class="panel deck-panel">
                 ${this.renderCardStack(src, count, isEmptyDiscard)}
+                ${knownCards.length ? html`
+                    <button
+                        class="known-cards-button"
+                        type="button"
+                        aria-label="Ver las ${knownCards.length} cartas vistas de este mazo"
+                        title="Ver cartas vistas"
+                        @click="${this.handleViewKnownCards.bind(this)}"
+                    >
+                        <mc-icon icon="${ICON_EYE}" aria-hidden="true"></mc-icon>
+                    </button>
+                ` : ''}
             </div>
         `;
     }
     renderDeck() {
-        const {cards} = this;
+        const {cards, knownCards} = this;
 
-        return this.renderCards(this.getImageBack(), cards.length);
+        return this.renderCards(
+            this.getImageBack(),
+            cards.length,
+            false,
+            knownCards
+        );
     }
     renderDiscard() {
         const card = this.getDiscardTop();
@@ -133,7 +175,7 @@ export class DeckComponent extends LitElement {
 
         return html`
             <button
-                class="panel discard-button ${playable ? 'playable' : ''}"
+                class="panel discard-button ${playable ? 'playable' : ''} ${this.dragActivation ? 'activation-blocked' : ''}"
                 type="button"
                 aria-label="Ver ${title} (${this.discard.length} cartas)"
                 ?disabled="${!card}"

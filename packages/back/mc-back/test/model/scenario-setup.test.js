@@ -59,7 +59,7 @@ function createScenarioForDifficulty() {
     return scenario;
 }
 
-test('scenario setup shows stage 1A and 1B before resolving their effects', async () => {
+test('scenario setup shows stage 1A and 1B before deferring its When Revealed effect', async () => {
     const player = {name: 'Initial player'};
     const events = [];
     const dialogs = [];
@@ -133,7 +133,6 @@ test('scenario setup shows stage 1A and 1B before resolving their effects', asyn
         'flip',
         'init-scheme',
         'Mostrando el Plan principal',
-        'reveal',
     ]);
     assert.deepEqual(dialogs.map(({dialogType, title, data}) => ({
         dialogType,
@@ -154,8 +153,8 @@ test('scenario setup shows stage 1A and 1B before resolving their effects', asyn
             horizontal: true,
         },
     ]);
-    assert.equal(revealedSide, sideB);
-    assert.equal(revealedPlayer, player);
+    assert.equal(revealedSide, undefined);
+    assert.equal(revealedPlayer, undefined);
 });
 
 test('standard setup keeps standard cards and villains', async () => {

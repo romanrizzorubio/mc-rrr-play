@@ -32,6 +32,38 @@ test('every conditions require every array item to match', () => {
     }, condition), false);
 });
 
+test('condition alternatives match when any alternative is true', () => {
+    const condition = [
+        {'player.deck.cards.*.name': 'Mjolnir'},
+        {'player.deck.discardPile.*.name': 'Mjolnir'},
+    ];
+
+    assert.equal(checkCondition({
+        player: {
+            deck: {
+                cards: [],
+                discardPile: [],
+            },
+        },
+    }, condition), false);
+    assert.equal(checkCondition({
+        player: {
+            deck: {
+                cards: [{name: 'Mjolnir'}],
+                discardPile: [],
+            },
+        },
+    }, condition), true);
+    assert.equal(checkCondition({
+        player: {
+            deck: {
+                cards: [],
+                discardPile: [{name: 'Mjolnir'}],
+            },
+        },
+    }, condition), true);
+});
+
 test('paths expand wildcards over arrays and keep defined values', () => {
     const firstPlayer = {id: 'first'};
     const secondPlayer = {id: 'second'};

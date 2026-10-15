@@ -49,6 +49,7 @@ export class McActivateDialog extends McDialog {
                 .name="${character.name}"
                 .image="${character.image}"
                 .isFacedownCard="${character.isFacedownCard}"
+                .canPeekFacedown="${Boolean(character.isFacedownCard && character.image)}"
                 .life="${character.life}"
                 .hitPoints="${character.hitPoints}"
                 .attack="${character.attack}"

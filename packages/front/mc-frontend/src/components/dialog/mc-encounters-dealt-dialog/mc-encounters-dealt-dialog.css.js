@@ -29,4 +29,12 @@ export default css`
     font-size: 36px;
     line-height: 1;
   }
+
+  .encounter-cards {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
 `;

@@ -20,6 +20,7 @@ export class McPlayer extends LitElement {
             player: {type: Object},
             canEndTurn: {type: Boolean},
             playCardPending: {type: Boolean},
+            dragActivation: {type: Object},
         };
     }
     constructor() {
@@ -28,6 +29,7 @@ export class McPlayer extends LitElement {
         this.player = null;
         this.canEndTurn = false;
         this.playCardPending = false;
+        this.dragActivation = null;
     }
     handleChangeMenu(e) {
         e.stopPropagation();
@@ -76,6 +78,7 @@ export class McPlayer extends LitElement {
             <mc-hand
                 .cards="${hand}"
                 .playCardPending="${this.playCardPending}"
+                .dragActivation="${this.dragActivation}"
             ></mc-hand>
         `;
     }
@@ -83,13 +86,14 @@ export class McPlayer extends LitElement {
         const {
             player: {
                 handSize,
-                superhero: {
-                    name, image, life, hitPoints, attack, thwart, defense, recovery,
-                    flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
-                    extraKeywords = [], attached = [], tuckedCards = []
-                }
-            }
+                superhero,
+            },
         } = this;
+        const {
+            name, image, life, hitPoints, attack, thwart, defense, recovery,
+            flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
+            extraKeywords = [], attached = [], tuckedCards = []
+        } = superhero;
         const attachedCards = attached.filter(card => !card.isUpgrade);
 
         return html`
@@ -97,6 +101,8 @@ export class McPlayer extends LitElement {
                 class="panel"
                 name="${name}"
                 image="${image}"
+                .activationActor="${superhero}"
+                .dragActivation="${this.dragActivation}"
                 .canEndTurn="${this.canEndTurn}"
                 .life="${life}"
                 .hitPoints="${hitPoints}"
@@ -131,6 +137,7 @@ export class McPlayer extends LitElement {
                 .cards="${gameZone.cards}"
                 .attachedUpgrades="${attachedUpgrades}"
                 .minions="${gameZone.minions}"
+                .dragActivation="${this.dragActivation}"
             ></mc-game-zone>
         `;
     }
@@ -138,14 +145,18 @@ export class McPlayer extends LitElement {
         const {name} = this.player;
         const cards = path(this, 'player.deck.cards');
         const discard = path(this, 'player.deck.discard');
+        const knownCards = path(this, 'player.deck.knownCards') || [];
 
         return cards && discard ? html`
             <mc-deck
                 class="panel"
                 .cards="${cards}"
                 .discard="${discard}"
+                .knownCards="${knownCards}"
+                .deckName="${name}"
                 discard-label="Descarte de ${name}"
                 .highlightPlayableDiscard="${true}"
+                .dragActivation="${this.dragActivation}"
                 type="${DECK_TYPES.PLAYER}"
             ></mc-deck>
         ` : '';

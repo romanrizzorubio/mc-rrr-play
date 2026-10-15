@@ -18,6 +18,7 @@ export class McScenario extends LitElement {
         return {
             scenario: {type: Object},
             player: {type: Object},
+            dragActivation: {type: Object},
         };
     }
     constructor() {
@@ -25,6 +26,7 @@ export class McScenario extends LitElement {
 
         this.scenario = null;
         this.player = null;
+        this.dragActivation = null;
     }
     handleCardSelect(e) {
         const {card} = e.detail;
@@ -73,6 +75,7 @@ export class McScenario extends LitElement {
                 <mc-villain-card
                     .card="${villain}"
                     .player="${this.player}"
+                    .dragActivation="${this.dragActivation}"
                     name="${name}"
                     image="${image}"
                     life="${life}"
@@ -113,6 +116,7 @@ export class McScenario extends LitElement {
                 <mc-main-scheme-card
                     .card="${scheme}"
                     .player="${this.player}"
+                    .dragActivation="${this.dragActivation}"
                     name="${name}"
                     image="${image}"
                     .acceleration="${accelerationTokens}"
@@ -136,6 +140,7 @@ export class McScenario extends LitElement {
                     .cards="${cards.filter(card =>
                         card.isSideScheme)}"
                     .player="${this.player}"
+                    .dragActivation="${this.dragActivation}"
                     basic-activation-type="thwart"
                     show-basic-stats
                     show-threat
@@ -151,6 +156,7 @@ export class McScenario extends LitElement {
         return html`
             <mc-card-list
                 .cards="${cards.filter(card => card.isEnvironment)}"
+                .dragActivation="${this.dragActivation}"
                 show-basic-stats
                 show-generic
                 show-menu-abilities
@@ -158,12 +164,14 @@ export class McScenario extends LitElement {
         `;
     }
     renderDeck() {
-        const {scenario: {deck: {cards, discard}}} = this;
+        const {scenario: {deck: {cards, discard, knownCards = []}}} = this;
 
         return html`
             <mc-deck
                 .cards="${cards}"
                 .discard="${discard}"
+                .knownCards="${knownCards}"
+                .dragActivation="${this.dragActivation}"
                 discard-label="Descarte del mazo de encuentros"
             ></mc-deck>
         `;

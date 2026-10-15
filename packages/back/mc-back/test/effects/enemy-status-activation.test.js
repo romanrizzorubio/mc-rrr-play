@@ -18,6 +18,9 @@ import {Match} from '../../src/model/match/match.js';
 function createCharacter() {
     return {
         confused: 0,
+        async getEffectiveStats() {
+            return {};
+        },
         isConfused: false,
         isStunned: false,
         name: 'Klaw',
@@ -182,6 +185,9 @@ describe('enemy activation effects', () => {
         let enemySelections = 0;
         const targetCharacter = {
             name: 'Alter ego',
+            async getEffectiveStats() {
+                return {};
+            },
             toObj() {
                 return {name: this.name};
             },
@@ -221,6 +227,9 @@ describe('enemy activation effects', () => {
             isVillain: true,
             name: 'Villano',
             scheme: 2,
+            async getEffectiveStats() {
+                return {};
+            },
             toObj() {
                 return {name: this.name};
             },

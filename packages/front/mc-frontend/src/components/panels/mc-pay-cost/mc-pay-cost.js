@@ -27,6 +27,8 @@ export class McPayCost extends LitElement {
             allowPartial: {type: Boolean},
             validationError: {type: String},
             cards: {type: Object},
+            resourceSelectionMode: {type: Boolean},
+            selectedResources: {type: Array},
             _wilds: {type: Array},
         };
     }
@@ -44,6 +46,8 @@ export class McPayCost extends LitElement {
             generators: [],
             hand: []
         };
+        this.resourceSelectionMode = false;
+        this.selectedResources = undefined;
         this._wilds = [];
     }
     willUpdate(_changedProperties) {
@@ -62,20 +66,25 @@ export class McPayCost extends LitElement {
     }
     getResources(hand, generators) {
         const _wilds = this._wilds.slice();
+        let wildIndex = 0;
 
         const resources = [];
         hand.forEach(card => {
             if (card.selected) {
-                card.resources.forEach(resource => {
+                card.resources.forEach((resource, resourceIndex) => {
                     resources.push({
                         resource,
                         used: false,
+                        cardId: card.id,
+                        resourceIndex,
+                        source: 'hand',
                     });
                 });
             }
         });
         generators.forEach(card => {
             if (card.selected) {
+                let resourceIndex = 0;
                 card.abilities.forEach(ability => {
                     if (ability.isResource) {
                         const generatedResources = ability.resources || [ability.resource];
@@ -83,6 +92,9 @@ export class McPayCost extends LitElement {
                             resources.push({
                                 resource,
                                 used: false,
+                                cardId: card.id,
+                                resourceIndex: resourceIndex++,
+                                source: 'generators',
                             });
                         });
                     }
@@ -97,18 +109,21 @@ export class McPayCost extends LitElement {
                     ...r,
                     resource: _wilds.shift(),
                     wild: true,
+                    wildIndex: wildIndex++,
                 };
             } else {
                 return r;
             }
         });
     }
-    handleResourceClick(e) {
+    handleResourceClick(e, unit) {
         const {resource, change} = e.detail;
         const {_wilds} = this;
 
         if (change) {
-            const index = _wilds.indexOf(change);
+            const index = Number.isInteger(unit?.wildIndex) ?
+                unit.wildIndex :
+                _wilds.indexOf(change);
             if (index > -1) {
                 _wilds.splice(index, 1, resource);
             }
@@ -124,6 +139,13 @@ export class McPayCost extends LitElement {
             detail: {
                 wilds: this._wilds,
             }
+        }));
+    }
+    handleResourceUnitToggle(key) {
+        this.dispatchEvent(new CustomEvent('resource-unit-toggle', {
+            bubbles: true,
+            composed: true,
+            detail: {key},
         }));
     }
     handleSelectGenerator(e) {
@@ -144,13 +166,40 @@ export class McPayCost extends LitElement {
             detail: {card, type: PAY_COST_TYPE_HAND}
         }));
     }
-    renderResourceIcon(resource, disabled, wild = false) {
+    renderResourceIcon(resource, disabled, wild = false, unit, selectable = true) {
+        if (unit && this.resourceSelectionMode && selectable && !wild) {
+            const key = JSON.stringify([
+                unit.source,
+                unit.cardId,
+                unit.resourceIndex,
+            ]);
+            const selected = !Array.isArray(this.selectedResources) ||
+                this.selectedResources.includes(key);
+
+            return html`
+                <button
+                    class="resource-unit"
+                    type="button"
+                    aria-label="${selected ?
+                        'Usar' :
+                        'No usar'} recurso ${resource}"
+                    aria-pressed="${selected}"
+                    @click="${() => this.handleResourceUnitToggle(key)}"
+                >
+                    <mc-icon
+                        icon="${resource}"
+                        class="${wild ? 'wild' : ''}"
+                    ></mc-icon>
+                </button>
+            `;
+        }
+
         return html`
             <mc-resource
                 resource="${resource}"
                 .disabled="${disabled}"
                 .wild="${wild}"
-                @resource-change="${this.handleResourceClick.bind(this)}"
+                @resource-change="${e => this.handleResourceClick(e, unit)}"
             ></mc-resource>
         `;
     }
@@ -181,7 +230,9 @@ export class McPayCost extends LitElement {
                     render.push(this.renderResourceIcon(
                         paid.resource,
                         false,
-                        paid.wild
+                        paid.wild,
+                        paid,
+                        false
                     ));
                 } else {
                     render.push(this.renderResourceIcon(req, true));
@@ -194,7 +245,8 @@ export class McPayCost extends LitElement {
                 render.push(this.renderResourceIcon(
                     resource.resource,
                     false,
-                    resource.wild
+                    resource.wild,
+                    resource
                 ));
             }
         });
@@ -251,6 +303,11 @@ export class McPayCost extends LitElement {
                         <span>${this.renderResourceIcons(hand, generators)}</span>
                         <span>${costLabel}</span>
                     </h2>
+                    ${this.resourceSelectionMode ? html`
+                        <p class="resource-selection-hint">
+                            Marca las unidades concretas que quieres gastar. Pulsa el comodín para cambiar el tipo que representa.
+                        </p>
+                    ` : ''}
                     ${validationError ? html`
                         <p class="payment-error" role="alert">${validationError}</p>
                     ` : ''}

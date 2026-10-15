@@ -514,7 +514,7 @@ export class CharacterGameCard extends GameCard {
 
         return 0;
     }
-    async getEffectiveStats() {
+    async getEffectiveStats({attack: attackOverride} = {}) {
         const {controller, match} = this;
         const player = controller?.isPlayer ?
             controller :
@@ -529,7 +529,9 @@ export class CharacterGameCard extends GameCard {
             card: this,
         };
         const attack = Number.isFinite(this.attack) ?
-            await this.getAttackValue(params) :
+            (Number.isFinite(attackOverride) ?
+                attackOverride :
+                await this.getAttackValue(params)) :
             this.attack;
         const thwart = Number.isFinite(this.thwart) ?
             await this.getThwartValue(params) :

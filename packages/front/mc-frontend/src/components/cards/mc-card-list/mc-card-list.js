@@ -35,6 +35,7 @@ export class HandComponent extends LitElement {
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
             player: {type: Object},
             basicActivationType: {type: String, attribute: 'basic-activation-type'},
+            dragActivation: {type: Object},
         };
     }
     constructor() {
@@ -56,6 +57,7 @@ export class HandComponent extends LitElement {
         this.rotatePlanCards = false;
         this.player = null;
         this.basicActivationType = '';
+        this.dragActivation = null;
     }
     getMenuOptions(card) {
         const abilities = this.showMenuAbilities ?
@@ -222,6 +224,8 @@ export class HandComponent extends LitElement {
                 image="${image}"
                 .card="${card}"
                 .basicActivation="${this.getBasicActivationOption(card)}"
+                .activationActor="${card.isAlly ? card : null}"
+                .dragActivation="${this.dragActivation}"
                 .clickDisabled="${this.isCardClickDisabled(card)}"
                 .attack="${attack}"
                 .thwart="${thwart}"
@@ -250,6 +254,8 @@ export class HandComponent extends LitElement {
                 .faceDown="${faceDown}"
                 .tuckedCards="${tuckedCards}"
                 .isFacedownCard="${isFacedownCard}"
+                .canPeekFacedown="${Boolean(isFacedownCard && image)}"
+                .facedownImage="${card.facedownImage || ''}"
                 .statusCards="${statusCards}"
                 .menuOptions="${this.getMenuOptions(card)}"
                 @change-menu="${this.handleChangeMenu(index)}"

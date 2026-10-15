@@ -133,18 +133,28 @@ export class EnemyActivationEffect extends Effect {
 
         const target = this.getTargetDialog(params);
         const characterData = await this.getActivationCharacterData(params);
+        const targetData = await this.getCharacterDialogData(target, params);
 
         await this.openDialog({
             dialogType: DIALOG_ACTIVATE,
             title: this.getTitleDialog(params),
             data: {
                 character: characterData,
-                target: target.toObj(arguments[0]),
+                target: targetData,
             },
         });
     }
     async getActivationCharacterData(params) {
-        return this.character.toObj(params);
+        return this.getCharacterDialogData(this.character, params);
+    }
+    async getCharacterDialogData(character, params, statOverrides = {}) {
+        const stats = await character.getEffectiveStats(statOverrides);
+
+        return {
+            ...character.toObj(params),
+            ...stats,
+            ...statOverrides,
+        };
     }
     async resolveBoostCards(params) {
         const selectedTarget = this.getBoostTarget(params);

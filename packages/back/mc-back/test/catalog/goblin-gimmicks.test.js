@@ -352,19 +352,27 @@ test('Planeador duende resolves its discard effect after paying the self-discard
     card.discard = async () => {
         discarded = true;
     };
+    const energyGenerator = {
+        abilities: [{
+            isResource: true,
+            resources: [RESOURCE_ENERGY, RESOURCE_ENERGY],
+        }],
+        id: 'energy-generator',
+        async resolveResourceAbility() {},
+    };
     const player = {
         isHero: true,
         isPlayer: true,
         hand: {cards: []},
         async getCardsToPay() {
-            return {generators: [], hand: [{id: 'energy-resource'}]};
+            return {generators: [energyGenerator], hand: []};
         },
         async spendResources() {
             return {
                 resources: [RESOURCE_ENERGY, RESOURCE_ENERGY],
                 fullyPaid: true,
                 hand: [],
-                generators: [],
+                generators: [energyGenerator],
             };
         },
     };

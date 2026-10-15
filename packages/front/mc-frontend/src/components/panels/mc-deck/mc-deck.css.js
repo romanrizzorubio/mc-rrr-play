@@ -27,6 +27,37 @@ export default css`
     text-align: center;
   }
 
+  .deck-panel {
+    position: relative;
+  }
+
+  .known-cards-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.94);
+    color: #212121;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  .known-cards-button:focus-visible {
+    outline: 2px solid #212121;
+    outline-offset: 2px;
+  }
+
+  .known-cards-button mc-icon {
+    display: inline-flex;
+  }
+
   .discard-button {
     display: block;
     padding: 0;
@@ -46,6 +77,10 @@ export default css`
     filter:
       drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
       drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
+  }
+
+  .discard-button.activation-blocked.playable mc-card-image {
+    filter: none;
   }
 
   .discard-button:focus-visible {

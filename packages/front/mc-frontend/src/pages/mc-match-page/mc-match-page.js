@@ -10,6 +10,7 @@ import '../../components/views/mc-match/mc-match.js';
 import {ABILITY_ID, path} from '../../misc/utils.js';
 import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../misc/card-menu.js';
 import {getEndTurnConfirmationReasons} from '../../utils/end-turn.js';
+import {getBasicActivationOptionForActor} from '../../utils/basic-activation.js';
 
 import styles from './mc-match-page.css.js';
 
@@ -26,6 +27,7 @@ export class McMatchPage extends LitElement {
             player: {type: String},
             api: {type: Api},
             playCardPending: {type: Boolean},
+            dragActivation: {type: Object},
         };
     }
     constructor() {
@@ -38,6 +40,7 @@ export class McMatchPage extends LitElement {
 
         this.apiPlayer = null;
         this.playCardPending = false;
+        this.dragActivation = null;
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -51,6 +54,18 @@ export class McMatchPage extends LitElement {
         this.api.listenPlayerZone(this.updatePlayerZone.bind(this));
         this.api.listenScenarioZone(this.updateScenarioZone.bind(this));
         this.api.joinMatch(true);
+    }
+    handleActivationDragStart(e) {
+        const {actor, options} = e.detail;
+
+        if (!actor || !options?.length) {
+            return;
+        }
+
+        this.dragActivation = {actor, options};
+    }
+    handleActivationDragEnd() {
+        this.dragActivation = null;
     }
     getBasicActivationPreferenceKey() {
         const matchId = this.match?.id ?? this.match?.name;
@@ -330,11 +345,11 @@ export class McMatchPage extends LitElement {
     handleBasicActivation(e) {
         e.stopPropagation();
 
-        const {card, option} = e.detail;
+        const {actor, card, option} = e.detail;
 
-        return this.handleBasicActivationSelection(card, option);
+        return this.handleBasicActivationSelection(card, option, actor);
     }
-    handleBasicActivationSelection(card, option) {
+    handleBasicActivationSelection(card, option, actor) {
         const player = this.match?.players.find(_player =>
             _player.name === this.player
         );
@@ -343,8 +358,34 @@ export class McMatchPage extends LitElement {
             return;
         }
 
+        const availableActors = [
+            player.superhero,
+            ...(player.gameZone?.cards || []).filter(candidate =>
+                candidate.isAlly
+            ),
+        ];
+        const activator = actor ?
+            availableActors.find(candidate => candidate.id === actor.id) :
+            player.superhero;
+        const validOption = activator ?
+            getBasicActivationOptionForActor(
+                activator,
+                card,
+                option.activationType
+            ) :
+            undefined;
+
+        if (
+            !activator ||
+            !validOption ||
+            validOption.abilityIndex !== option.abilityIndex ||
+            validOption.targetId !== option.targetId
+        ) {
+            return;
+        }
+
         if (this.shouldSkipBasicActivationConfirmation()) {
-            return this.resolveBasicActivation(card, option);
+            return this.resolveBasicActivation(card, option, activator);
         }
 
         this.dispatchEvent(new CustomEvent('basic-activation-confirmation', {
@@ -352,7 +393,7 @@ export class McMatchPage extends LitElement {
             composed: true,
             detail: {
                 basicActivation: {
-                    superhero: player.superhero,
+                    activator,
                     target: card,
                     activationType: option.activationType,
                 },
@@ -364,7 +405,7 @@ export class McMatchPage extends LitElement {
                         this.rememberBasicActivationConfirmationChoice();
                     }
 
-                    return this.resolveBasicActivation(card, option);
+                    return this.resolveBasicActivation(card, option, activator);
                 },
             },
         }));
@@ -510,8 +551,11 @@ export class McMatchPage extends LitElement {
                 .match="${match}"
                 .player="${_player}"
                 .playCardPending="${this.playCardPending}"
+                .dragActivation="${this.dragActivation}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @basic-activation="${this.handleBasicActivation.bind(this)}"
+                @activation-drag-start="${this.handleActivationDragStart.bind(this)}"
+                @activation-drag-end="${this.handleActivationDragEnd.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"
@@ -519,20 +563,16 @@ export class McMatchPage extends LitElement {
             ></mc-match>
         `;
     }
-    async resolveBasicActivation(card, option) {
+    async resolveBasicActivation(card, option, activator) {
         try {
-            const player = this.match?.players.find(_player =>
-                _player.name === this.player
-            );
-
-            if (!player || !Number.isSafeInteger(option.abilityIndex) ||
+            if (!activator || !Number.isSafeInteger(option.abilityIndex) ||
                 !option.targetId) {
                 throw new Error('No se pudo iniciar la activación básica seleccionada.');
             }
 
             await this.apiPlayer.resolveAbility(
                 this.player,
-                player.superhero.id,
+                activator.id,
                 option.abilityIndex,
                 option.targetId
             );

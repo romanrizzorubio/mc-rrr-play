@@ -100,6 +100,7 @@ export const EFFECT_SEARCH_CARDS = 'search-cards';
 export const EFFECT_SET_LIFE = 'set-life';
 export const EFFECT_SELECT_DISCARD_CARD = 'select-discard-card';
 export const EFFECT_SELECT_DISCARD_TO_FIND_CARD = 'select-discard-to-find-card';
+export const EFFECT_SELECT_AND_ORDER_TOP_CARDS = 'select-and-order-top-cards';
 export const EFFECT_SELECT_FROM_TOP_DECK = 'select-from-top-deck';
 export const EFFECT_SEVERAL_ATTACKS = 'several-attacks';
 export const EFFECT_SHUFFLE_DECK = 'shuffle-deck';

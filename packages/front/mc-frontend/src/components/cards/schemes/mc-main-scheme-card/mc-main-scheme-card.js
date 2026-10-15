@@ -21,6 +21,7 @@ export class MainSchemeCardComponent extends LitElement {
         return {
             card: {type: Object},
             player: {type: Object},
+            dragActivation: {type: Object},
             name: { type: String},
             image: { type: String},
             acceleration: { type: Number},
@@ -36,6 +37,7 @@ export class MainSchemeCardComponent extends LitElement {
         this.name = '';
         this.card = null;
         this.player = null;
+        this.dragActivation = null;
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
@@ -88,6 +90,7 @@ export class MainSchemeCardComponent extends LitElement {
             <mc-scheme-card
                 .card="${card}"
                 .basicActivation="${this.basicActivation}"
+                .dragActivation="${this.dragActivation}"
                 .clickDisabled="${this.clickDisabled}"
                 .menuOptions="${this.menuOptions}"
                 name="${name}"

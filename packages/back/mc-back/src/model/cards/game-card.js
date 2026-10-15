@@ -2,6 +2,7 @@ import {ABILITY_ACTION, TARGET_SIDE} from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {FaceDown} from '../match/facedown.js';
+import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
 
 export class GameCard extends Engine {
     constructor({
@@ -785,8 +786,19 @@ export class GameCard extends Engine {
             boostAbility.card = this;
         }
     }
-    initTriggers(params) {
-        return this.promisesSequential(this.currentSide.abilities, async ability => {
+    hasAbilityTrigger(ability) {
+        return Object.values(this.triggers).some(triggersByPriority =>
+            Object.values(triggersByPriority).some(triggers =>
+                triggers.some(trigger => trigger.ability === ability)
+            )
+        );
+    }
+    initTriggers(params, {workInHandOnly = false} = {}) {
+        const abilities = this.currentSide.abilities.filter(ability =>
+            (!workInHandOnly || ability.workInHand) &&
+            !this.hasAbilityTrigger(ability));
+
+        return this.promisesSequential(abilities, async ability => {
             await ability.initTriggers(this, params);
         });
     }
@@ -997,26 +1009,7 @@ export class GameCard extends Engine {
     async getAbilityAvailability(player) {
         const attached = await Promise.all(this.attached.map(card =>
             card.toObjWithAbilityAvailability(player)));
-        const abilities = await Promise.all(this.currentSide.abilities.map(async (ability, index) => {
-            const serializedAbility = {
-                ...ability.toObj(),
-                index,
-            };
-
-            if (!ability.isAction && !ability.isBasic) {
-                return serializedAbility;
-            }
-
-            ability.prepareEffect();
-
-            return {
-                ...serializedAbility,
-                disable: !(await ability.canRun({
-                    player,
-                    card: this,
-                })),
-            };
-        }));
+        const abilities = await getAbilitiesWithAvailability(this, player);
 
         return {
             attached,

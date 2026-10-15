@@ -15,6 +15,11 @@ export class McCardImage extends LitElement {
             size: {type: String},
             horizontal: {type: Boolean},
             rotated: {type: Boolean, reflect: true},
+            activationBlocked: {
+                type: Boolean,
+                attribute: 'activation-blocked',
+                reflect: true,
+            },
         };
     }
     constructor() {
@@ -24,6 +29,7 @@ export class McCardImage extends LitElement {
         this.size = 'm';
         this.horizontal = false;
         this.rotated = false;
+        this.activationBlocked = false;
     }
     getOrientationClass() {
         return this.horizontal ? 'horizontal' : 'vertical';

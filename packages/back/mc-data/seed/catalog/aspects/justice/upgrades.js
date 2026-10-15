@@ -7,8 +7,10 @@ import {
     RESOURCE_ENERGY,
     TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_MAIN_SCHEME,
     TARGET_PLAYER,
     TARGET_SIDE_SCHEME,
+    TRAIT_CONDITION,
     TRAIT_SKILL,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_YOUR_HERO_GET_THWART
@@ -90,5 +92,30 @@ export default [
                 ]
             }
         }
-    }
+    },
+{
+        '_id': 'justice-bajo-vigilancia',
+        'aspect': 'justice',
+        'order': 60,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Bajo vigilancia',
+                'set': 'justice',
+                'image': 'aspect/justice/upgrades/06031.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'justice',
+                'attach': TARGET_MAIN_SCHEME,
+                'maxAttach': 1,
+                'threatThresholdModifier': 4
+            }
+        }
+    },
+
 ];

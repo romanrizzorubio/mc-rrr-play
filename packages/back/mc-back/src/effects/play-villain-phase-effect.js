@@ -57,6 +57,9 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         const players = this.match.orderedPlayers;
         const hazardIcons = this.match.hazardIcons;
         const encountersCount = players.length + hazardIcons;
+        const knownEncounterCards = new Set(
+            this.match.scenario.deck.knownCards
+        );
         const hazardIconsByPlayer = new Map(
             players.map(player => [player, 0])
         );
@@ -97,6 +100,11 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
                     name: player.superhero.name,
                     count: player.encounters.length,
                     hazardIcons: hazardIconsByPlayer.get(player),
+                    cards: player.encounters.map(card => ({
+                        ...card.toObj({player}),
+                        isFacedownCard: true,
+                        canPeekFacedown: knownEncounterCards.has(card),
+                    })),
                 })),
             },
         });

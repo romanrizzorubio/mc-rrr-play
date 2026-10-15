@@ -33,8 +33,10 @@ export class SpendEffect extends Effect {
         }
 
         const excludedCardIds = params.costPaymentSession ?
-            params.costPaymentSession.getExcludedCardIds() :
+            params.costPaymentSession.getResourcePaymentExcludedCardIds() :
             new Set();
+        const resourceUsage =
+            params.costPaymentSession?.getRemainingResources();
         const targets = (await this.getValidTarget(params)).flat(Infinity);
 
         for (const target of targets) {
@@ -50,7 +52,8 @@ export class SpendEffect extends Effect {
                     const {generators, hand} = await target.getCardsToPay(
                         params.card,
                         resourceType,
-                        excludedCardIds
+                        excludedCardIds,
+                        resourceUsage
                     );
 
                     if (generators.length || hand.length) {
@@ -88,10 +91,11 @@ export class SpendEffect extends Effect {
         return this.selectedTarget.spendResources(
             this.resources,
             params.card,
-            session.getExcludedCardIds(),
+            session.getResourcePaymentExcludedCardIds(),
             {
                 allowPartial: this.allowPartialPayment(params),
                 differentTypes: this.differentTypes,
+                resourceUsage: session.getRemainingResources(),
             }
         );
     }

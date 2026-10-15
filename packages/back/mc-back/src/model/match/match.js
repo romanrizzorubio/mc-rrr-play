@@ -128,6 +128,30 @@ export class Match extends Engine {
     get initialPlayer() {
         return this.players.find(player => player.initial);
     }
+    get inPlayCards() {
+        const cards = [];
+        const seen = new Set();
+        const addCard = card => {
+            if (!card || seen.has(card)) {
+                return;
+            }
+
+            seen.add(card);
+            cards.push(card);
+            card.attached?.forEach(addCard);
+        };
+
+        addCard(this.scenario?.villain);
+        addCard(this.mainScheme);
+        (this.scenario?.gameZone?.inPlayCards ?? []).forEach(addCard);
+        this.players.forEach(player => {
+            addCard(player.superhero);
+            (player.gameZone?.inPlayCards ?? []).forEach(addCard);
+            (player.minions ?? []).forEach(addCard);
+        });
+
+        return cards;
+    }
     get mainScheme() {
         return path(this, 'scenario.mainScheme');
     }

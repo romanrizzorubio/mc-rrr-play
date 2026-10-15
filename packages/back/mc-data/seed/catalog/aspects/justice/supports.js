@@ -5,7 +5,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_EXHAUST,
     EFFECT_REMOVE_THREAT,
-    EFFECT_REMOVE_USE,
+    EFFECT_REMOVE_COUNTER,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     TARGET_PLAYER,
@@ -100,7 +100,7 @@ export default [
                                             }
                                         },
                                         {
-                                            'type': EFFECT_REMOVE_USE,
+                                            'type': EFFECT_REMOVE_COUNTER,
                                             'params': {
                                                 'target': TARGET_THIS,
                                                 'count': 1

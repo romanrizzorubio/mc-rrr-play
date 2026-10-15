@@ -21,6 +21,9 @@ const {McPayCostDialog} = await import(
 const {McPayCost} = await import(
     '../src/components/panels/mc-pay-cost/mc-pay-cost.js'
 );
+const {McResource} = await import(
+    '../src/components/common/mc-resource/mc-resource.js'
+);
 
 function createDialog(hand, wilds, overrides = {}) {
     const dialog = Object.create(McPayCostDialog.prototype);
@@ -33,6 +36,7 @@ function createDialog(hand, wilds, overrides = {}) {
             RESOURCE_PHYSICAL,
         ],
         resourcePreferences: [],
+        resourceSelectionMode: false,
         wilds,
         cards: {
             generators: [],
@@ -80,6 +84,94 @@ test('automatically assigns wild resources to outstanding mandatory requirements
     assert.equal(dialog.validate(), false);
 });
 
+test('keeps a wild resource changeable without a separate unit selector', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const dialog = createDialog([wildCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [],
+        resourcePreferences: [RESOURCE_ENERGY],
+        resourceSelectionMode: true,
+    });
+
+    dialog._handlePaySelect({
+        detail: {card: wildCard, type: 'hand'},
+    });
+    const key = dialog.getPaymentResourceUnits(
+        dialog._response.paid,
+        true,
+        []
+    ).map(unit => dialog.getResourceUnitKey(unit))[0];
+    dialog._selectedResourceKeys = [key];
+
+    dialog._handleChangeWildResource({
+        detail: {wilds: [RESOURCE_MENTAL]},
+    });
+
+    assert.deepEqual(dialog.data.wilds, [RESOURCE_MENTAL]);
+    assert.deepEqual(dialog._selectedResourceKeys, [key]);
+    assert.deepEqual(dialog.resourcesConverted, [RESOURCE_MENTAL]);
+
+    const panel = Object.create(McPayCost.prototype);
+    panel.resourceSelectionMode = true;
+    panel.selectedResources = [key];
+    const wildUnit = {
+        source: 'hand',
+        cardId: wildCard.id,
+        resourceIndex: 0,
+        wildIndex: 0,
+    };
+    const rendered = panel.renderResourceIcon(
+        RESOURCE_ENERGY,
+        false,
+        true,
+        wildUnit
+    );
+
+    assert.match(rendered.strings.join(''), /<mc-resource/);
+    assert.doesNotMatch(rendered.strings.join(''), /resource-unit/);
+    assert.equal(rendered.values.includes('✓'), false);
+});
+
+test('changeable wild resource icons show an interactive cursor', () => {
+    const resource = Object.create(McResource.prototype);
+    resource.resource = RESOURCE_ENERGY;
+    resource.disabled = false;
+    resource.notChange = false;
+
+    const rendered = resource.renderWild();
+
+    assert.ok(rendered.values.includes('changeable'));
+});
+
+test('changing one of multiple assigned wilds preserves the other assignment', () => {
+    const panel = Object.create(McPayCost.prototype);
+    panel._wilds = [RESOURCE_ENERGY, RESOURCE_ENERGY];
+    const changes = [];
+    panel.dispatchEvent = event => changes.push(event.detail.wilds);
+    const [firstWild, secondWild] = panel.getResources([{
+        id: 'double-wild',
+        resources: [RESOURCE_WILD, RESOURCE_WILD],
+        selected: true,
+    }], []);
+
+    panel.handleResourceClick({
+        detail: {
+            resource: RESOURCE_MENTAL,
+            change: RESOURCE_ENERGY,
+        },
+    }, secondWild);
+
+    assert.deepEqual(panel._wilds, [RESOURCE_ENERGY, RESOURCE_MENTAL]);
+    assert.deepEqual(changes, [[RESOURCE_ENERGY, RESOURCE_MENTAL]]);
+    assert.equal(firstWild.wildIndex, 0);
+    assert.equal(secondWild.wildIndex, 1);
+});
+
 test('automatically assigns every wild to the selected resource type for an X cost', () => {
     const wildCard = {
         id: 'wild',
@@ -96,6 +188,76 @@ test('automatically assigns every wild to the selected resource type for an X co
         dialog.getAutomaticWilds(dialog.data.cards),
         [RESOURCE_PHYSICAL]
     );
+});
+
+test('an X payment can spend one icon from a double-resource card', () => {
+    const doubleEnergyCard = {
+        id: 'double-energy',
+        resources: [RESOURCE_ENERGY, RESOURCE_ENERGY],
+        selected: true,
+    };
+    const dialog = createDialog([doubleEnergyCard], [], {
+        cost: 'X',
+        requirement: [],
+        resourceType: RESOURCE_ENERGY,
+    });
+    dialog._response.paid.hand = [doubleEnergyCard];
+
+    assert.equal(dialog.renderContent().values[4], true);
+    const keys = dialog.getPaymentResourceUnits(
+        dialog._response.paid,
+        true,
+        []
+    ).map(unit => dialog.getResourceUnitKey(unit));
+
+    assert.equal(dialog.resourcesType.length, 2);
+
+    dialog._handleResourceUnitToggle({
+        detail: {key: keys[0]},
+    });
+
+    assert.deepEqual(dialog.resourcesType, [RESOURCE_ENERGY]);
+    assert.deepEqual(dialog.resourcesConverted, [RESOURCE_ENERGY]);
+    assert.equal(dialog.validate(), true);
+});
+
+test('a simultaneous fixed cost can choose which icon of a card to spend', () => {
+    const mixedResourceCard = {
+        id: 'energy-and-mental',
+        resources: [RESOURCE_ENERGY, RESOURCE_MENTAL],
+        selected: true,
+    };
+    const dialog = createDialog([mixedResourceCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [RESOURCE_ENERGY],
+        resourceSelectionMode: true,
+    });
+    dialog._response.paid.hand = [mixedResourceCard];
+
+    const keys = dialog.getPaymentResourceUnits(
+        dialog._response.paid,
+        true,
+        []
+    ).map(unit => dialog.getResourceUnitKey(unit));
+    assert.equal(dialog.renderContent().values[4], true);
+
+    dialog._handleResourceUnitToggle({
+        detail: {key: keys[0]},
+    });
+
+    assert.deepEqual(dialog.resourcesConverted, [RESOURCE_MENTAL]);
+    assert.equal(dialog.validate(), false);
+
+    dialog._handleResourceUnitToggle({
+        detail: {key: keys[0]},
+    });
+    dialog._handleResourceUnitToggle({
+        detail: {key: keys[1]},
+    });
+
+    assert.deepEqual(dialog.resourcesConverted, [RESOURCE_ENERGY]);
+    assert.equal(dialog.validate(), true);
 });
 
 test('preserves matching specific resources when assigning wilds to other requirements', () => {

@@ -330,5 +330,59 @@ export default [
                 ]
             }
         }
-    }
+    },
+{
+        '_id': 'basic-vigor-mejorado',
+        'aspect': 'basic',
+        'order': 62,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Vigor mejorado',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/06034.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'keywords': {
+                    'uses': 3
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_PHYSICAL,
+                            'arrow': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_COUNTER,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                                'count': 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

@@ -4,7 +4,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_EXHAUST,
     EFFECT_HEAL,
-    EFFECT_REMOVE_USE,
+    EFFECT_REMOVE_COUNTER,
     RESOURCE_ENERGY,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_THIS,
@@ -50,7 +50,7 @@ export default [
                                             }
                                         },
                                         {
-                                            'type': EFFECT_REMOVE_USE,
+                                            'type': EFFECT_REMOVE_COUNTER,
                                             'params': {
                                                 'target': TARGET_THIS,
                                                 'count': 1

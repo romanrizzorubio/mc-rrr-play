@@ -9,6 +9,10 @@ export default css`
     position: relative;
   }
 
+  :host([wrap-name]) {
+    width: var(--card-size);
+  }
+
   :host([size="xs"]) {
     --card-size: 25px;
   }
@@ -46,10 +50,33 @@ export default css`
     filter: brightness(var(--disabled-card-brightness, 0.35));
   }
 
+  .card-front > mc-card-image[draggable="true"] {
+    cursor: grab;
+  }
+
+  .card-front.activation-drag-source > mc-card-image {
+    cursor: grabbing;
+  }
+
+  .card-front.activation-drop-target > mc-card-image,
+  :host(.playable) .card-front.activation-drop-target > mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
+      drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
+  }
+
   :host(.playable) .card-front > mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
       drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
+  }
+
+  :host(.playable) .card-front.activation-drag-source > mc-card-image {
+    filter: none;
+  }
+
+  :host(.playable) .card-front > mc-card-image[activation-blocked] {
+    filter: none;
   }
   
   .cards-facedown {
@@ -82,6 +109,31 @@ export default css`
   .card-front {
     position: relative;
     z-index: 1;
+  }
+
+  .facedown-peek-button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #212121;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .facedown-peek-button:focus-visible {
+    box-shadow: 0 0 0 2px #212121;
+  }
+
+  .facedown-peek-button mc-icon {
+    display: inline-flex;
   }
 
   .tucked {
@@ -316,6 +368,11 @@ export default css`
     font-size: 0.85rem;
     font-weight: 700;
     line-height: 1.1;
+  }
+
+  :host([wrap-name]) .name {
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   :host([horizontal]) .name {

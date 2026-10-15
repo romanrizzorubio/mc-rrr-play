@@ -50,6 +50,29 @@ export default css`
     text-align: left;
   }
 
+  .resource-unit {
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    padding: 2px;
+  }
+
+  .resource-unit[aria-pressed="false"] {
+    opacity: .4;
+  }
+
+  .resource-unit:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .resource-selection-hint {
+    margin: 8px 0 0;
+    text-align: left;
+  }
+
   .panel {
   }
 

@@ -136,6 +136,66 @@ test('Player.spendResources only offers cards that can pay its resource requirem
     );
 });
 
+test('resource-session dialogs show only remaining hand icons and enable icon selection', async () => {
+    const doubleResourceCard = {
+        card: {
+            getResources: () => [RESOURCE_ENERGY, RESOURCE_MENTAL],
+        },
+        id: 'double-resource',
+        isPlaying: false,
+        toObj() {
+            return {
+                id: this.id,
+                resources: this.card.getResources(),
+            };
+        },
+    };
+    const hand = Object.create(Hand.prototype);
+    hand.cards = [doubleResourceCard];
+    const player = Object.create(Player.prototype);
+    const dialogs = [];
+    player.hand = hand;
+    player.getResourceGenerators = async () => [];
+    player.openDialog = async options => {
+        dialogs.push(options);
+    };
+    const cardToPay = {
+        id: 'event',
+        toObj: () => ({id: 'event'}),
+    };
+
+    await player.spendResources(
+        [RESOURCE_MENTAL],
+        cardToPay,
+        new Set(),
+        {
+            resourceUsage: new Map([
+                [doubleResourceCard.id, [RESOURCE_MENTAL]],
+            ]),
+        }
+    );
+    await player.spendResourcesX(
+        0,
+        cardToPay,
+        RESOURCE_ENERGY,
+        new Set(),
+        new Map([
+            [doubleResourceCard.id, [RESOURCE_ENERGY]],
+        ])
+    );
+
+    assert.equal(dialogs[0].data.resourceSelectionMode, true);
+    assert.deepEqual(
+        dialogs[0].data.cards.hand[0].resources,
+        [RESOURCE_MENTAL]
+    );
+    assert.equal(dialogs[1].data.resourceSelectionMode, true);
+    assert.deepEqual(
+        dialogs[1].data.cards.hand[0].resources,
+        [RESOURCE_ENERGY]
+    );
+});
+
 test('Player.getResourceGenerators filters abilities by every required resource type', async () => {
     const resourceTypes = [];
     const makeGenerator = (id, generatedResource) => ({

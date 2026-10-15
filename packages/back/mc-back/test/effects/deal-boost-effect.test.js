@@ -189,10 +189,12 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     ]);
     assert.deepEqual(dialogs[0].data.cards.map(card => card?.card.name || null), [
         'Aumento 1',
-        null,
+        'Aumento 2',
     ]);
     assert.equal(dialogs[0].data.cards[0].card.boost, 1);
     assert.equal(dialogs[0].data.cards[0].hasBoostAbility, true);
+    assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
+    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, true);
     assert.equal(dialogs[0].data.cumulativeBoost, 1);
     assert.deepEqual(dialogs[1].data.cards.map(card => card?.card.name || null), [
         'Aumento 1',

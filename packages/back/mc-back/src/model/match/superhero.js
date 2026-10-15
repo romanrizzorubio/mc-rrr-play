@@ -8,13 +8,6 @@ import {
 import {CharacterGameCard} from '../cards/character-game-card.js';
 
 export class Superhero extends CharacterGameCard {
-    static hasAbilityTrigger(card, ability) {
-        return Object.values(card.triggers).some(triggersByPriority =>
-            Object.values(triggersByPriority).some(triggers =>
-                triggers.some(trigger => trigger.ability === ability)
-            )
-        );
-    }
     static targetsIdentity(target, isHero, isAlterEgo) {
         const targets = Array.isArray(target) ? target : [target];
 
@@ -132,7 +125,7 @@ export class Superhero extends CharacterGameCard {
 
         await this.promisesSequential(this.sides, async side => {
             await this.promisesSequential(side.abilities, async ability => {
-                if (Superhero.hasAbilityTrigger(side, ability)) {
+                if (side.hasAbilityTrigger(ability)) {
                     return;
                 }
 

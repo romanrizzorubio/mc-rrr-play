@@ -8,6 +8,7 @@ import {
     CALC_DAMAGE,
     CALC_ATTACK,
     CALC_COUNT,
+    CALC_DIFFERENT_CARD_TYPES,
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_IF,
     CALC_ALL,
@@ -53,6 +54,20 @@ const CALCULATION_MAP = {
     },
     [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>
         calc.differentResourceType(source),
+    [CALC_DIFFERENT_CARD_TYPES]: (source, {target}) => {
+        if (!Array.isArray(source)) {
+            throw new Error(
+                `CALC_DIFFERENT_CARD_TYPES requiere que "${target}" resuelva a una lista.`
+            );
+        }
+        if (source.some(card => !card || typeof card.type !== 'string')) {
+            throw new TypeError(
+                `CALC_DIFFERENT_CARD_TYPES requiere cartas con tipo en "${target}".`
+            );
+        }
+
+        return new Set(source.map(card => card.type)).size;
+    },
     [CALC_IF]: (source, {ifTrue, ifFalse}) => source ? ifTrue : ifFalse,
     [CALC_MULTIPLY_2]: source => source * 2,
     [CALC_THREAT]: source => source.threat,

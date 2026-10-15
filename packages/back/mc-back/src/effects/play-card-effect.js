@@ -4,6 +4,7 @@ import {
     PLACE_HAND,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PLAY_CARD,
+    TRIGGER_THIS_ENTER_PLAY,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
@@ -36,6 +37,7 @@ export class PlayCardEffect extends Effect {
         this.modifyCost = 0;
         this.removedFromHand = false;
         this.removedFromPlace = undefined;
+        this.workInHandTriggersInitializedForPlay = false;
         this.played = false;
         this.maxAlliesDialogAccepted = false;
         this.maxAllyToDiscardId = undefined;
@@ -47,6 +49,9 @@ export class PlayCardEffect extends Effect {
         }
     }
     get isAttack() {
+        return false;
+    }
+    get isThwart() {
         return false;
     }
     async canRun(params) {
@@ -189,6 +194,10 @@ export class PlayCardEffect extends Effect {
         if (player.hand.cards.includes(card)) {
             player.hand.discardHand(card);
         }
+        if (this.workInHandTriggersInitializedForPlay && !card.isInPlay) {
+            card.endTriggers();
+        }
+        this.workInHandTriggersInitializedForPlay = false;
         this.removedFromHand = false;
         this.removedFromPlace = undefined;
         await player.hand.refresh();
@@ -218,6 +227,21 @@ export class PlayCardEffect extends Effect {
             playCardEffect: this,
         });
     }
+    getPaymentResourcePreferences() {
+        const effects = [
+            this.ability?.effect,
+            ...this.card.currentSide.abilities
+                .filter(ability => ability.trigger === TRIGGER_THIS_ENTER_PLAY)
+                .map(ability => ability.effect),
+        ].filter(Boolean);
+        const preferences = [
+            ...super.getPaymentResourcePreferences(),
+            ...effects.flatMap(effect =>
+                effect.getPaymentResourcePreferences()),
+        ];
+
+        return [...new Set(preferences)];
+    }
     isResolved() {
         return !this.canceled;
     }
@@ -233,16 +257,16 @@ export class PlayCardEffect extends Effect {
             return;
         }
 
-        const resourcePreferences = this.ability?.effect ?
-            this.ability.effect.getPaymentResourcePreferences() :
-            [];
+        const resourcePreferences = this.getPaymentResourcePreferences();
         const excludedCardIds = session ?
-            session.getExcludedCardIds() :
+            session.getResourcePaymentExcludedCardIds() :
             new Set();
+        const resourceUsage = session?.getRemainingResources();
         const cardsToPay = await player.getCardsToPay(
             card,
             undefined,
-            excludedCardIds
+            excludedCardIds,
+            resourceUsage
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
@@ -251,6 +275,7 @@ export class PlayCardEffect extends Effect {
                 cost: cost.amount,
                 requirement: card.requirement,
                 resourcePreferences,
+                resourceSelectionMode: Boolean(session),
                 card: card.toObj(),
                 cards: {
                     generators: cardsToPay.generators
@@ -286,6 +311,14 @@ export class PlayCardEffect extends Effect {
         const {player} = params;
 
         card.isPlaying = true;
+        const hasUnregisteredWorkInHandAbility = card.abilities?.some(ability =>
+            ability.workInHand &&
+            !card.hasAbilityTrigger(ability)) ?? false;
+        if (hasUnregisteredWorkInHandAbility) {
+            await card.initTriggers(params, {workInHandOnly: true});
+            this.workInHandTriggersInitializedForPlay = true;
+        }
+
         this.removedFromHand = player.hand.cards.includes(card);
         if (this.removedFromHand) {
             player.hand.discardHand(card);
@@ -310,6 +343,8 @@ export class PlayCardEffect extends Effect {
     }
     async returnToSource(player) {
         const {card} = this;
+        const returnedToHand = this.removedFromHand ||
+            this.removedFromPlace?.place === PLACE_HAND;
 
         card.isPlaying = false;
         if (this.removedFromHand) {
@@ -330,6 +365,13 @@ export class PlayCardEffect extends Effect {
                 sourcePlayer.hand :
                 sourcePlayer.deck).refresh();
         }
+
+        if (this.workInHandTriggersInitializedForPlay &&
+            !returnedToHand &&
+            !card.isInPlay) {
+            card.endTriggers();
+        }
+        this.workInHandTriggersInitializedForPlay = false;
     }
     async runEffect(params) {
         try {

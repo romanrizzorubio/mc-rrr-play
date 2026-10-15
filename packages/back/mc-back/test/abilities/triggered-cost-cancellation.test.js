@@ -61,6 +61,10 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
                 if (calls.costPrompts === 1) {
                     return {
                         generators: [{
+                            abilities: [{
+                                isResource: true,
+                                resource: RESOURCE_MENTAL,
+                            }],
                             id: `generator-${calls.costPrompts}`,
                             async resolveResourceAbility() {
                                 calls.generatorUses++;
@@ -74,17 +78,23 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
                     return undefined;
                 }
 
+                const resource = calls.costPrompts === 3 ?
+                    RESOURCE_MENTAL :
+                    RESOURCE_PHYSICAL;
+
                 return {
                     generators: [{
+                        abilities: [{
+                            isResource: true,
+                            resource,
+                        }],
                         id: `generator-${calls.costPrompts}`,
                         async resolveResourceAbility() {
                             calls.generatorUses++;
                         },
                     }],
                     hand: [],
-                    resources: [calls.costPrompts === 3 ?
-                        RESOURCE_MENTAL :
-                        RESOURCE_PHYSICAL],
+                    resources: [resource],
                 };
             },
         };

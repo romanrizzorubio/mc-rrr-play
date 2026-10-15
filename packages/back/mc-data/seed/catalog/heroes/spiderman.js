@@ -46,7 +46,7 @@ import {
     EFFECT_RANDOM_CARD,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_THREAT,
-    EFFECT_REMOVE_USE,
+    EFFECT_REMOVE_COUNTER,
     EFFECT_RETURN_FACEDOWN,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
@@ -446,7 +446,7 @@ export default {
                                                     }
                                                 },
                                                 {
-                                                    'type': EFFECT_REMOVE_USE,
+                                                    'type': EFFECT_REMOVE_COUNTER,
                                                     'params': {
                                                         'target': TARGET_CARD,
                                                         'count': 1

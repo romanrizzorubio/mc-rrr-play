@@ -8,9 +8,16 @@ export class ModifyCostEffect extends Effect {
 
         this.count = count;
     }
-    execute(_params) {
+    async execute(params) {
         const {selectedTarget, count} = this;
+        const modifier = this.paramsCalc ?
+            await this.calculate(params) :
+            count;
 
-        selectedTarget.modifyCost = (selectedTarget.modifyCost ?? 0) + count;
+        if (!Number.isFinite(modifier)) {
+            throw new Error('ModifyCostEffect requires a finite cost modifier.');
+        }
+
+        selectedTarget.modifyCost = (selectedTarget.modifyCost ?? 0) + modifier;
     }
 }

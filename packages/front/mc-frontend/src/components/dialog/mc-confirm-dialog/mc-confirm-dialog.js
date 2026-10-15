@@ -78,7 +78,7 @@ export class McConfirmDialog extends McDialog {
             return html`
                 <div class="basic-activation-preview">
                     ${this.renderBasicActivationCard(
-                        basicActivation.superhero
+                        basicActivation.activator || basicActivation.superhero
                     )}
                     ${this.renderBasicActivationCard(
                         basicActivation.target
@@ -106,6 +106,7 @@ export class McConfirmDialog extends McDialog {
                         name="${card.name}"
                         image="${card.image}"
                         .isFacedownCard="${card.isFacedownCard}"
+                        .canPeekFacedown="${Boolean(card.isFacedownCard && card.image)}"
                         size="l"
                         ?horizontal="${isHorizontal}"
                     ></mc-card>
@@ -167,6 +168,7 @@ export class McConfirmDialog extends McDialog {
                     .name="${card.name}"
                     .image="${card.image}"
                     .isFacedownCard="${card.isFacedownCard}"
+                    .canPeekFacedown="${Boolean(card.isFacedownCard && card.image)}"
                     .life="${card.life}"
                     .hitPoints="${card.hitPoints}"
                     .attack="${card.attack}"

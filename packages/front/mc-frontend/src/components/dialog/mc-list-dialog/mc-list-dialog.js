@@ -86,16 +86,19 @@ export class McListDialog extends McDialog {
         const {name, image, counters} = card;
 
         return html`
-            <mc-card
-                name="${name}"
-                image="${image}"
-                .isFacedownCard="${card.isFacedownCard}"
-                .generic="${showCounters ? counters : undefined}"
-                size="m"
-                ?horizontal="${isPlanCard(card)}"
-                .showGeneric="${showCounters}"
-                hide-name
-            ></mc-card>
+            ${image || card.isFacedownCard ? html`
+                <mc-card
+                    name="${name}"
+                    image="${image}"
+                    .isFacedownCard="${card.isFacedownCard}"
+                    .canPeekFacedown="${Boolean(card.isFacedownCard && image)}"
+                    .generic="${showCounters ? counters : undefined}"
+                    size="m"
+                    ?horizontal="${isPlanCard(card)}"
+                    .showGeneric="${showCounters}"
+                    hide-name
+                ></mc-card>
+            ` : ''}
             <md-list class="list">
                 ${options.map(this.renderItem.bind(this))}
             </md-list>

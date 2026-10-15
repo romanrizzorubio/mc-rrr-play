@@ -29,6 +29,7 @@ export class McPayCostDialog extends McDialog {
         super(arguments[0]);
 
         this.showValidationError = false;
+        this._selectedResourceKeys = undefined;
     }
     get className() {
         return 'large pay-cost';
@@ -49,6 +50,7 @@ export class McPayCostDialog extends McDialog {
                 cost: 0,
                 allowPartial: false,
                 differentTypes: false,
+                resourceSelectionMode: false,
                 resourceType: undefined,
                 requirement: [],
                 resourcePreferences: [],
@@ -69,44 +71,34 @@ export class McPayCostDialog extends McDialog {
             }
         };
     }
+    initProperties() {
+        this._selectedResourceKeys = undefined;
+        super.initProperties();
+    }
     get resources() {
         const {_response: {paid}} = this;
 
-        const resources = [];
-        if (paid) {
-            const {hand, generators} = paid;
-
-            if (hand) {
-                hand.forEach(card => {
-                    Array.prototype.push.apply(resources, card.resources);
-                });
-            }
-
-            if (generators) {
-                generators.forEach(card => {
-                    card.abilities.forEach(ability => {
-                        if (ability.isResource) {
-                            const generatedResources = ability.resources || [ability.resource];
-                            Array.prototype.push.apply(resources, generatedResources);
-                        }
-                    });
-                });
-            }
+        if (!paid) {
+            return [];
         }
 
-        return resources;
+        return this.getPaymentResourceUnits(paid, true)
+            .map(unit => unit.originalResource);
+    }
+    get allowsResourceSelection() {
+        return this.data.resourceSelectionMode ||
+            this.data.cost === COST_X;
     }
     get resourcesConverted() {
         const {resources, data: {wilds}} = this;
         const _resources = [];
-
         const _wilds = wilds ? wilds.slice() : [];
 
-        resources.forEach(_resource => {
-            if (_resource === RESOURCE_WILD && _wilds.length) {
+        resources.forEach(resource => {
+            if (resource === RESOURCE_WILD && _wilds.length) {
                 _resources.push(_wilds.shift());
             } else {
-                _resources.push(_resource);
+                _resources.push(resource);
             }
         });
 
@@ -117,7 +109,7 @@ export class McPayCostDialog extends McDialog {
         const resources = this.resourcesConverted;
 
         if (cost === COST_X && resourceType) {
-            return resources.filter(r => r === resourceType);
+            return resources.filter(resource => resource === resourceType);
         }
 
         return resources;
@@ -132,6 +124,23 @@ export class McPayCostDialog extends McDialog {
             `${action} ${card.name}` :
             allowPartial ? 'Pagar los recursos posibles' : 'Pagar el coste';
     }
+    getResourceUnitKey({source, cardId, resourceIndex}) {
+        return JSON.stringify([source, cardId, resourceIndex]);
+    }
+    getResourceUnitKeysForCard(card, source) {
+        const resources = source === 'hand' ?
+            card.resources :
+            (card.abilities || [])
+                .filter(ability => ability.isResource)
+                .flatMap(ability => ability.resources || [ability.resource]);
+
+        return resources.map((_resource, index) =>
+            this.getResourceUnitKey({
+                source,
+                cardId: card.id,
+                resourceIndex: index,
+            }));
+    }
     getPaymentResourceUnits(
         cards,
         selectedOnly = false,
@@ -141,35 +150,61 @@ export class McPayCostDialog extends McDialog {
         const selected = selectedOnly ?
             card => card.selected :
             () => true;
-        const addResourceUnits = (card, resources, units) => {
-            resources.forEach(resource => {
+        const addResourceUnits = (
+            card,
+            resources,
+            units,
+            source,
+            resourceIndex = 0
+        ) => {
+            resources.forEach((resource, index) => {
                 const selectedResource = resource === RESOURCE_WILD && selectedWilds.length ?
                     selectedWilds.shift() :
                     resource;
                 units.push({
                     resource: selectedResource,
+                    originalResource: resource,
                     cardId: card.id,
+                    resourceIndex: resourceIndex + index,
+                    source,
                 });
             });
         };
         const units = hand
             .filter(selected)
             .reduce((ret, card) => {
-                addResourceUnits(card, card.resources, ret);
+                addResourceUnits(card, card.resources, ret, 'hand');
 
                 return ret;
             }, []);
 
         generators.filter(selected).forEach(card => {
+            let resourceIndex = 0;
             card.abilities.forEach(ability => {
                 if (!ability.isResource) {
                     return;
                 }
 
                 const resources = ability.resources || [ability.resource];
-                addResourceUnits(card, resources, units);
+                addResourceUnits(
+                    card,
+                    resources,
+                    units,
+                    'generators',
+                    resourceIndex
+                );
+                resourceIndex += resources.length;
             });
         });
+
+        if (selectedOnly &&
+            this.allowsResourceSelection &&
+            Array.isArray(this._selectedResourceKeys)) {
+            const selectedKeys = new Set(this._selectedResourceKeys);
+
+            return units.filter(unit =>
+                selectedKeys.has(this.getResourceUnitKey(unit)));
+        }
 
         return units;
     }
@@ -182,7 +217,7 @@ export class McPayCostDialog extends McDialog {
         } = this.data;
         const resources = this.getPaymentResourceUnits(cards, true, []);
         const wilds = resources
-            .filter(unit => unit.resource === RESOURCE_WILD)
+            .filter(unit => unit.originalResource === RESOURCE_WILD)
             .map(() => RESOURCE_WILD);
 
         if (cost === COST_X && resourceType) {
@@ -190,15 +225,17 @@ export class McPayCostDialog extends McDialog {
         }
 
         const resourceCounts = new Map();
-        resources.forEach(({resource}) => {
+        resources.forEach(({originalResource: resource}) => {
             if (resource !== RESOURCE_WILD) {
                 resourceCounts.set(resource, (resourceCounts.get(resource) || 0) + 1);
             }
         });
+
         const paidResourceCounts = new Map(resourceCounts);
 
         let wildIndex = 0;
-        requirement.forEach(required => {
+        (Array.isArray(requirement) ? requirement : [])
+            .forEach(required => {
             if (required === RESOURCE_ANY || required === RESOURCE_WILD) {
                 return;
             }
@@ -213,7 +250,7 @@ export class McPayCostDialog extends McDialog {
                     (paidResourceCounts.get(required) || 0) + 1
                 );
             }
-        });
+            });
 
         new Set(resourcePreferences).forEach(resource => {
             if ((paidResourceCounts.get(resource) || 0) > 0 ||
@@ -296,7 +333,11 @@ export class McPayCostDialog extends McDialog {
         return this.getPartialPaymentStatus().canContinue;
     }
     isFullyPaid() {
-        const {data: {cards, requirement}} = this;
+        const {data: {cards, cost, requirement}} = this;
+
+        if (cost === COST_X) {
+            return this.resourcesType.length > 0;
+        }
 
         return this.getResourceMatches(
             this.getPaymentResourceUnits(cards, true),
@@ -431,6 +472,19 @@ export class McPayCostDialog extends McDialog {
 
         this.showValidationError = false;
         card.selected = !card.selected;
+        if (Array.isArray(this._selectedResourceKeys)) {
+            const selectedKeys = new Set(this._selectedResourceKeys);
+            const source = type === 'hand' ? 'hand' : 'generators';
+
+            this.getResourceUnitKeysForCard(card, source).forEach(key => {
+                if (card.selected) {
+                    selectedKeys.add(key);
+                } else {
+                    selectedKeys.delete(key);
+                }
+            });
+            this._selectedResourceKeys = [...selectedKeys];
+        }
 
         const updatedCards = {
             ...cards,
@@ -447,6 +501,25 @@ export class McPayCostDialog extends McDialog {
                 ...this._response.paid,
                 [type]: cards[type].filter(_card => _card.selected)
             },
+        };
+    }
+    _handleResourceUnitToggle(e) {
+        const {key} = e.detail;
+        const selectedKeys = new Set(this._selectedResourceKeys ||
+            this.getPaymentResourceUnits(this._response.paid, true, [])
+                .map(unit => this.getResourceUnitKey(unit)));
+
+        if (selectedKeys.has(key)) {
+            selectedKeys.delete(key);
+        } else {
+            selectedKeys.add(key);
+        }
+
+        this.showValidationError = false;
+        this._selectedResourceKeys = [...selectedKeys];
+        this.data = {
+            ...this.data,
+            wilds: this.getAutomaticWilds(this.data.cards),
         };
     }
     renderContent() {
@@ -466,12 +539,15 @@ export class McPayCostDialog extends McDialog {
                 resourceType="${resourceType}"
                 .requirement="${requirement}"
                 .wilds="${this.data.wilds}"
+                .resourceSelectionMode="${this.allowsResourceSelection}"
+                .selectedResources="${this._selectedResourceKeys}"
                 .cards="${cards}"
                 .paid="${paid}"
                 .allowPartial="${allowPartial}"
                 .validationError="${validationError}"
                 .isPaid="${isPaid}"
                 @pay-cost-select="${this._handlePaySelect.bind(this)}"
+                @resource-unit-toggle="${this._handleResourceUnitToggle.bind(this)}"
                 @change-wild-resource="${this._handleChangeWildResource.bind(this)}"
             ></mc-pay-cost>
         `;

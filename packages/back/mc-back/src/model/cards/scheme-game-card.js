@@ -35,7 +35,20 @@ export class SchemeGameCard extends GameCard {
         return this.card.isMain;
     }
     get value() {
-        return this.card.value;
+        if (this.sides.length) {
+            return this.currentSide.value;
+        }
+
+        const attached = new Set([
+            ...(this.attached ?? []),
+            ...(this.parent?.attached ?? []),
+        ]);
+        const modifier = this.isMainScheme ?
+            [...attached].reduce((sum, card) =>
+                sum + (card.card?.threatThresholdModifier ?? 0), 0) :
+            0;
+
+        return this.card.value + modifier;
     }
     acceleration(match) {
         let value = this.accelerationValue(match.numPlayers);
@@ -116,6 +129,7 @@ export class SchemeGameCard extends GameCard {
 
         return {
             ...super.toObj(arguments[0]),
+            ...(this.isMainScheme ? {value: this.value} : {}),
             threat
         };
     }

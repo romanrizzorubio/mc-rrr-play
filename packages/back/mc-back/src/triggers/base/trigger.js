@@ -71,6 +71,7 @@ export class Trigger {
     getAbilityParams(params) {
         return {
             ...params,
+            fixedPreselectedTarget: false,
             triggeredEffect: params.effect,
         };
     }
@@ -106,7 +107,7 @@ export class Trigger {
     }
     runTrigger(params) {
         const {ability, card} = this;
-        const isLastingAbility = Boolean(ability && ability.lasting);
+        const isLastingAbility = Boolean(ability?.lasting);
 
         if (card.isEvent && !isLastingAbility) {
             return this.runEvent(params);

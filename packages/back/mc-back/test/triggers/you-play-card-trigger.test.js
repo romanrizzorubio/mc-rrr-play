@@ -4,6 +4,7 @@ import {test} from 'node:test';
 import {
     DIALOG_PAY_COST,
     PRIORITY_CONSTANT,
+    RESOURCE_MENTAL,
     TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
@@ -29,11 +30,28 @@ test('YouPlayCardTrigger only matches plays by its card controller', () => {
 });
 
 test('playing a card emits the controller-scoped trigger before paying its cost', async () => {
+    const resourceGenerator = {
+        abilities: [{
+            isResource: true,
+            resource: RESOURCE_MENTAL,
+        }],
+        id: 'resource-generator',
+        async resolveResourceAbility() {},
+        toObj() {
+            return {
+                id: this.id,
+                abilities: this.abilities,
+            };
+        },
+    };
     const player = {
         isHero: true,
         isPlayer: true,
         hand: {
             cards: [],
+            addCard(card) {
+                this.cards.push(card);
+            },
             discardHand(card) {
                 this.cards = this.cards.filter(heldCard => heldCard !== card);
             },
@@ -41,6 +59,14 @@ test('playing a card emits the controller-scoped trigger before paying its cost'
         },
         deck: {
             async discard() {},
+        },
+        getCard(cardId) {
+            return cardId === resourceGenerator.id ?
+                resourceGenerator :
+                undefined;
+        },
+        async getCardsToPay() {
+            return {generators: [resourceGenerator], hand: []};
         },
     };
     const match = {
@@ -50,8 +76,11 @@ test('playing a card emits the controller-scoped trigger before paying its cost'
             if (dialogType === DIALOG_PAY_COST) {
                 this.playCost = data.cost;
                 return {
-                    paid: {generators: [], hand: []},
-                    resources: [],
+                    paid: {
+                        generators: [{id: resourceGenerator.id}],
+                        hand: [],
+                    },
+                    resources: [RESOURCE_MENTAL],
                 };
             }
         },
@@ -83,7 +112,9 @@ test('playing a card emits the controller-scoped trigger before paying its cost'
     match.triggerCards[nakia.id] = nakia;
 
     const playedCard = {
+        abilities: [],
         card: {cost: 2},
+        currentSide: {abilities: []},
         id: 'played-event',
         isEvent: true,
         isPlayerCard: true,
@@ -110,7 +141,6 @@ test('playing a card emits the controller-scoped trigger before paying its cost'
         match,
     });
     playEffect.getCost = async () => playedCard.card.cost;
-    player.getCardsToPay = async () => ({generators: [], hand: []});
 
     await playEffect.runEffect({player});
 

@@ -2,6 +2,11 @@ import {Effect} from './effect.js';
 import {HealEffect} from './heal-effect.js';
 
 export class RecoveryEffect extends Effect {
+    constructor() {
+        super(arguments[0]);
+
+        this.isRecovery = true;
+    }
     filterTarget(card) {
         return !!card.damage &&
             super.filterTarget.apply(this, arguments);

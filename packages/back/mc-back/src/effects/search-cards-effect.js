@@ -68,6 +68,27 @@ export class SearchCardsEffect extends Effect {
         return !this.firstMatch &&
             (await this.getOptions(params, excludedCardIds)).length > 0;
     }
+    async markKnownDeckOptions(cards, player) {
+        const decks = new Set([
+            player?.deck,
+            ...(this.match?.players || []).map(targetPlayer => targetPlayer.deck),
+            this.match?.scenario?.deck,
+        ].filter(Boolean));
+
+        await this.promisesSequential([...decks], async deck => {
+            const knownCards = cards.filter(card =>
+                Array.isArray(deck.cards) && deck.cards.includes(card));
+            if (!knownCards.length) {
+                return;
+            }
+            if (typeof deck.markKnown !== 'function') {
+                throw new TypeError('SearchCardsEffect requires decks to track known cards.');
+            }
+
+            deck.markKnown(knownCards);
+            await deck.refresh();
+        });
+    }
     getCostPaymentTitle() {
         return this.title;
     }
@@ -128,6 +149,7 @@ export class SearchCardsEffect extends Effect {
             };
         }
 
+        await this.markKnownDeckOptions(options, player);
         const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
                 showCancel: this.showCancel,
@@ -209,6 +231,9 @@ export class SearchCardsEffect extends Effect {
             return;
         }
 
+        if (!costPaymentSession) {
+            await this.markKnownDeckOptions(options, player);
+        }
         const response = costPaymentSession ?
             undefined :
             await this.openDialog({

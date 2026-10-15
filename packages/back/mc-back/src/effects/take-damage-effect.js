@@ -11,10 +11,12 @@ import {Effect} from './effect.js';
 export class TakeDamageEffect extends Effect {
     constructor({
         damage,
+        ignoreTough = false,
     }) {
         super(arguments[0]);
 
         this.damage = damage;
+        this.ignoreTough = ignoreTough;
 
         this.preventDamage = 0;
         this.excess = 0;
@@ -94,6 +96,10 @@ export class TakeDamageEffect extends Effect {
             target;
     }
     checkStatus() {
+        if (this.ignoreTough) {
+            return true;
+        }
+
         const {selectedTarget} = this;
 
         if (Array.isArray(selectedTarget)) {
@@ -123,7 +129,9 @@ export class TakeDamageEffect extends Effect {
             const statusTarget = this.getStatusTarget(target);
             const prevented = prevention[index] || 0;
 
-            if (statusTarget.isTough && damage[index] - prevented > 0) {
+            if (!this.ignoreTough &&
+                statusTarget.isTough &&
+                damage[index] - prevented > 0) {
                 statusTarget.removeTough();
                 await statusTarget.refresh();
                 damage[index] = prevented;
@@ -149,6 +157,10 @@ export class TakeDamageEffect extends Effect {
         return super.prepare(params);
     }
     resolveStatus() {
+        if (this.ignoreTough) {
+            return;
+        }
+
         const {selectedTarget} = this;
         const statusTarget = this.getStatusTarget(selectedTarget);
 

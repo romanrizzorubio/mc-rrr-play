@@ -16,6 +16,7 @@ export class Deck extends Engine {
 
         this.cards = [];
         this.discardPile = [];
+        this.knownCards = [];
     }
     get match() {
         return path(this, 'owner.match');
@@ -126,6 +127,19 @@ export class Deck extends Engine {
     isInDiscard(condition) {
         return this.discardPile.filter(condition);
     }
+    markKnown(cards) {
+        if (!Array.isArray(cards)) {
+            throw new TypeError('Deck.markKnown requires an array of cards.');
+        }
+
+        const knownCards = new Set(this.knownCards || []);
+        cards.forEach(card => {
+            if (this.cards.includes(card)) {
+                knownCards.add(card);
+            }
+        });
+        this.knownCards = [...knownCards];
+    }
     removeCardFromDeck(card) {
         const index = this.cards.indexOf(card);
         if (index > -1) {
@@ -151,9 +165,17 @@ export class Deck extends Engine {
         this.cards.sort(() => Math.random() - 0.5);
         this.cards.sort(() => Math.random() - 0.5);
         this.cards.sort(() => Math.random() - 0.5);
+        this.knownCards = [];
     }
     toObj() {
-        const {cards, discardPile, name, isPlayerDeck, isScenarioDeck} = this;
+        const {
+            cards,
+            discardPile,
+            name,
+            isPlayerDeck,
+            isScenarioDeck,
+        } = this;
+        const knownCards = new Set(this.knownCards || []);
 
         return {
             name,
@@ -161,6 +183,9 @@ export class Deck extends Engine {
             isScenarioDeck,
             cards: cards.map(card => card.toObj(arguments[0])),
             discard: discardPile.map(card => card.toObj(arguments[0])),
+            knownCards: cards
+                .filter(card => knownCards.has(card))
+                .map(card => card.toObj(arguments[0])),
         };
     }
 }

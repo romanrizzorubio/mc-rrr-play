@@ -1,6 +1,11 @@
 const PATH_ARRAY_WILDCARD = '*';
 
 export const checkCondition = (obj, condition) => {
+    if (Array.isArray(condition)) {
+        return condition.some(alternative =>
+            checkCondition(obj, alternative));
+    }
+
     return Object.keys(condition).every(key => {
         const value = condition[key];
         const param = path(obj, key);

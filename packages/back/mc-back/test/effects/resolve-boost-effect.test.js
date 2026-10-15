@@ -144,7 +144,16 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
         },
     };
     const enemyActivation = {
-        boostCards: [boostCard, {}],
+        boostCards: [
+            boostCard,
+            {
+                toObj() {
+                    return {name: 'Próxima carta de aumento', boost: 2};
+                },
+                isMainScheme: false,
+                isSideScheme: false,
+            },
+        ],
         enemy: {name: 'Klaw'},
     };
     const match = {
@@ -176,6 +185,8 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
         'Se muestran los iconos de aumento actualizados.'
     );
     assert.equal(dialogs[0].data.cards[0].card.boost, 1);
+    assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
+    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, true);
     assert.equal(dialogs[0].data.cumulativeBoost, 1);
     assert.equal(dialogs[1].data.cards[0].card.boost, 2);
     assert.equal(dialogs[1].data.cumulativeBoost, 2);

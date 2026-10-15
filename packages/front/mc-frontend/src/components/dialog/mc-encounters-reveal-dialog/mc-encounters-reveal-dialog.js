@@ -4,6 +4,7 @@ import styles from './mc-encounters-reveal-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
 import {isPlanCard} from '../../../misc/utils.js';
 import {renderBoostIcons} from '../../../utils/boost-icons.js';
 
@@ -44,6 +45,8 @@ export class McEncountersRevealDialog extends McDialog {
                 name="${card.name}"
                 image="${card.image}"
                 .isFacedownCard="${card.isFacedownCard}"
+                .canPeekFacedown="${Boolean(card.isFacedownCard && card.image)}"
+                .facedownImage="${BACK_CARD_ENCOUNTER}"
                 size="l"
                 ?horizontal="${isHorizontal}"
             ></mc-card>

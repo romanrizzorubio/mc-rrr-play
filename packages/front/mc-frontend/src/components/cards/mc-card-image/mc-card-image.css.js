@@ -13,6 +13,10 @@ export default css`
     display: block;
   }
 
+  :host([activation-blocked]) img {
+    filter: brightness(0.4);
+  }
+
   :host([size="xs"]) {
     --card-short: var(--card-size-xs);
   }

@@ -7,6 +7,7 @@ import {
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ALLY,
+    TARGET_ALLY_YOU_CONTROL,
 } from 'mc-shared';
 import {Match} from '../../src/model/match/match.js';
 import {ValidTarget} from '../../src/targets/valid-target.js';
@@ -88,6 +89,31 @@ test('TARGET_ALL_ALLIES_YOU_CONTROL selects only allies controlled by the curren
         true
     );
     assert.equal(validTarget.isMultipleTarget({target: TARGET_ALLY}), false);
+});
+
+test('TARGET_ALLY_YOU_CONTROL offers one ally controlled by the current player', async () => {
+    const ally = {id: 'ally-1'};
+    const player = {allies: [ally]};
+    const otherPlayer = {allies: [{id: 'other-player-ally'}]};
+    const validTarget = new ValidTarget({
+        match: {players: [player, otherPlayer]},
+    });
+
+    assert.deepEqual(
+        playerControlledTargets[TARGET_ALLY_YOU_CONTROL]({player}),
+        [ally]
+    );
+    assert.deepEqual(
+        await validTarget.selectTarget({
+            target: TARGET_ALLY_YOU_CONTROL,
+            player,
+        }),
+        ally
+    );
+    assert.equal(
+        validTarget.isMultipleTarget({target: TARGET_ALLY_YOU_CONTROL}),
+        false
+    );
 });
 
 test('TARGET_ALL_CHARACTERS_YOU_CONTROL selects the current player hero and allies', async () => {

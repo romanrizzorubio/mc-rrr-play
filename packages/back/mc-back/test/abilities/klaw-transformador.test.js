@@ -75,7 +75,18 @@ test('Transformador sónico can be discarded by spending energy, physical and me
         async spendResources(resources) {
             assert.deepEqual(resources, ['e', 'p', 'm']);
 
-            return {generators: [], hand: []};
+            return {
+                generators: [{
+                    abilities: [{
+                        isResource: true,
+                        resources,
+                    }],
+                    id: 'three-resource-generator',
+                    async resolveResourceAbility() {},
+                }],
+                hand: [],
+                resources,
+            };
         },
     };
     const match = {

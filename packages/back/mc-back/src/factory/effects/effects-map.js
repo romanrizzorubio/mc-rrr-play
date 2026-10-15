@@ -101,6 +101,7 @@ import {
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SELECT_DISCARD_TO_FIND_CARD,
+    EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_SELECT_FROM_TOP_DECK,
     EFFECT_SET_LIFE,
     EFFECT_SEVERAL_ATTACKS,
@@ -216,6 +217,7 @@ import {SetLifeEffect} from '../../effects/set-life-effect.js';
 import {SimultaneousEffect} from '../../effects/simultaneous-effect.js';
 import {ResolveSpecialAbilityEffect} from '../../effects/resolve-special-ability-effect.js';
 import {SelectDiscardCardEffect} from '../../effects/select-discard-card-effect.js';
+import {SelectAndOrderTopCardsEffect} from '../../effects/select-and-order-top-cards-effect.js';
 import {SelectFromTopDeckEffect} from '../../effects/select-from-top-deck-effect.js';
 import {SeveralAttacksEffect} from '../../effects/several-attacks-effect.js';
 import {ShuffleDeckEffect} from '../../effects/shuffle-deck-effect.js';
@@ -332,6 +334,7 @@ export const EFFECT_MAP = {
     [EFFECT_SEARCH_CARD_REVEAL]: SearchCardAndRevealEffect,
     [EFFECT_SELECT_DISCARD_CARD]: SelectDiscardCardEffect,
     [EFFECT_SELECT_DISCARD_TO_FIND_CARD]: SelectDiscardToFindCardEffect,
+    [EFFECT_SELECT_AND_ORDER_TOP_CARDS]: SelectAndOrderTopCardsEffect,
     [EFFECT_SELECT_FROM_TOP_DECK]: SelectFromTopDeckEffect,
     [EFFECT_SEVERAL_ATTACKS]: SeveralAttacksEffect,
     [EFFECT_SPEND]: SpendEffect,

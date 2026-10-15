@@ -39,12 +39,21 @@ export class PayPrintedCostEffect extends Effect {
         const card = this.getCard(params);
         const cost = new ResourceCost({amount: card.cost});
 
-        return player.spendResources(
+        const payment = await player.spendResources(
             cost.getRequiredResources(),
             card,
-            session.getExcludedCardIds(),
-            {showCancel: true}
+            session.getResourcePaymentExcludedCardIds(),
+            {
+                showCancel: true,
+                resourceUsage: session.getRemainingResources(),
+            }
         );
+
+        return payment && {
+            ...payment,
+            cardToPay: card,
+            resourceRequirements: cost.getRequiredResources(),
+        };
     }
 
     async execute(params) {

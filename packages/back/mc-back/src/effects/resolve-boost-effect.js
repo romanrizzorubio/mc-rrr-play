@@ -46,18 +46,21 @@ export class ResolveBoostEffect extends Effect {
         if (boostCards.length > 1) {
             const cumulativeBoost = this.previousBoost + this.boostValue;
             const cards = boostCards.map((boostCard, index) => {
-                if (index > cardIndex) {
-                    return null;
-                }
-
                 const cardData = boostCard.toObj(params);
+                const isFacedown = index > cardIndex;
 
                 return {
-                    card: showUpdatedBoost && index === cardIndex ?
-                        {...cardData, boost: this.boostValue} :
-                        cardData,
+                    card: isFacedown ?
+                        {
+                            ...cardData,
+                            isFacedownCard: true,
+                            canPeekFacedown: true,
+                        } :
+                        showUpdatedBoost && index === cardIndex ?
+                            {...cardData, boost: this.boostValue} :
+                            cardData,
                     horizontal: Boolean(boostCard.isMainScheme || boostCard.isSideScheme),
-                    hasBoostAbility: Boolean(boostCard.boostAbility),
+                    hasBoostAbility: !isFacedown && Boolean(boostCard.boostAbility),
                 };
             });
 

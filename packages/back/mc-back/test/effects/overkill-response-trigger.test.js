@@ -30,6 +30,20 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
     const dialogWaiters = new Map();
     let activeDialogs = 0;
     let maxActiveDialogs = 0;
+    const physicalGenerator = {
+        abilities: [{
+            isResource: true,
+            resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
+        }],
+        id: 'physical-generator',
+        async resolveResourceAbility() {},
+        toObj() {
+            return {
+                id: this.id,
+                abilities: this.abilities,
+            };
+        },
+    };
     const player = {
         match,
         isHero: true,
@@ -42,7 +56,12 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
             async discard() {},
         },
         async getCardsToPay() {
-            return {hand: [], generators: []};
+            return {hand: [], generators: [physicalGenerator]};
+        },
+        getCard(cardId) {
+            return cardId === physicalGenerator.id ?
+                physicalGenerator :
+                undefined;
         },
     };
     player.hand = new Hand(player);
@@ -71,7 +90,10 @@ test('overkill resolves defeat responses sequentially despite a stale A por ello
     match.openDialog = async dialog => {
         if (dialog.dialogType === DIALOG_PAY_COST) {
             return {
-                paid: {hand: [], generators: []},
+                paid: {
+                    hand: [],
+                    generators: [{id: physicalGenerator.id}],
+                },
                 resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
             };
         }

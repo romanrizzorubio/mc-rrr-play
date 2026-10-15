@@ -18,6 +18,7 @@ export class Card extends Engine {
         triggerInstant = false,
         icons = {},
         keywords = {},
+        threatThresholdModifier = 0,
         unprintedStats = [],
     }) {
         super(arguments[0]);
@@ -39,6 +40,7 @@ export class Card extends Engine {
         this.triggerInstant = triggerInstant;
         this.icons = new Icons(icons);
         this.keywords = new Keywords(keywords);
+        this.threatThresholdModifier = threatThresholdModifier;
         if (unprintedStats.length) {
             this.unprintedStats = [...unprintedStats];
         }

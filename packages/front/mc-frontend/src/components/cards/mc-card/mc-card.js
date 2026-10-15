@@ -3,7 +3,11 @@ import 'mc-components';
 
 import styles from './mc-card.css.js';
 import '../mc-card-image/mc-card-image.js';
-import {ICON_STAR} from '../../common/mc-icon/mc-icon.js';
+import {
+    ICON_EYE,
+    ICON_EYE_SLASH,
+    ICON_STAR,
+} from '../../common/mc-icon/mc-icon.js';
 import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
 
 import {
@@ -13,6 +17,10 @@ import {
     getCardAssetUrl,
 } from '../../../misc/cards.js';
 import {translateTrait} from '../../../utils/traits.js';
+import {
+    getBasicActivationOptionForActor,
+    getBasicActivationOptionsForActor,
+} from '../../../utils/basic-activation.js';
 
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
@@ -48,6 +56,7 @@ export class CardComponent extends LitElement {
                         <mc-card-image
                             src="${getCardAssetUrl(card.image)}"
                             size="${this._smallSize}"
+                            .activationBlocked="${Boolean(this.dragActivation)}"
                         ></mc-card-image>
                     </div>
                 `)}
@@ -60,11 +69,16 @@ export class CardComponent extends LitElement {
     static get properties() {
         return {
             name: {type: String},
+            wrapName: {type: Boolean, attribute: 'wrap-name', reflect: true},
             card: {type: Object},
             basicActivation: {type: Object},
+            activationActor: {type: Object},
+            dragActivation: {type: Object},
             clickDisabled: {type: Boolean},
             image: {type: String},
             isFacedownCard: {type: Boolean},
+            canPeekFacedown: {type: Boolean},
+            facedownImage: {type: String},
             size: {type: String},
             horizontal: {type: Boolean},
             rotated: {type: Boolean, reflect: true},
@@ -100,6 +114,7 @@ export class CardComponent extends LitElement {
             menuOptions: {type: Array},
             _menuOpen: {type: Boolean},
             _showBig: {type: Boolean},
+            _showFacedownPreview: {type: Boolean},
             stage: {type: Number},
         };
     }
@@ -107,11 +122,16 @@ export class CardComponent extends LitElement {
         super();
 
         this.name = '';
+        this.wrapName = false;
         this.card = null;
         this.basicActivation = null;
+        this.activationActor = null;
+        this.dragActivation = null;
         this.clickDisabled = false;
         this.image = '';
         this.isFacedownCard = false;
+        this.canPeekFacedown = false;
+        this.facedownImage = '';
         this.attached = [];
         this.faceDown = [];
         this.tuckedCards = [];
@@ -142,7 +162,18 @@ export class CardComponent extends LitElement {
         this.menuOptions = [];
         this._menuOpen = false;
         this._showBig = false;
+        this._showFacedownPreview = false;
         this.stage = undefined;
+    }
+    willUpdate(changedProperties) {
+        if (
+            changedProperties.has('card') ||
+            changedProperties.has('name') ||
+            changedProperties.has('image') ||
+            changedProperties.has('isFacedownCard')
+        ) {
+            this._showFacedownPreview = false;
+        }
     }
     get _card() {
         return this.renderRoot?.querySelector('#card') ?? null;
@@ -154,6 +185,30 @@ export class CardComponent extends LitElement {
         const {size} = this;
 
         return size === 's' ? 'xs' : 's';
+    }
+    get activationDropOption() {
+        return this.card && this.dragActivation ?
+            getBasicActivationOptionForActor(
+                this.dragActivation.actor,
+                this.card
+            ) :
+            undefined;
+    }
+    get isActivationDragSource() {
+        return Boolean(
+            this.activationActor?.id &&
+            this.activationActor.id === this.dragActivation?.actor?.id
+        );
+    }
+    get isActivationDropTarget() {
+        return Boolean(this.activationDropOption);
+    }
+    get isActivationVeiled() {
+        return Boolean(
+            this.dragActivation &&
+            !this.isActivationDragSource &&
+            !this.isActivationDropTarget
+        );
     }
     firstUpdated(properties) {
         super.firstUpdated(properties);
@@ -291,6 +346,65 @@ export class CardComponent extends LitElement {
             }));
         }
     }
+    handleActivationDragStart(event) {
+        const options = getBasicActivationOptionsForActor(this.activationActor);
+
+        if (!options.length) {
+            if (this.activationActor?.id) {
+                event.preventDefault();
+            }
+            return;
+        }
+
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', this.activationActor.id);
+        }
+
+        this.dispatchEvent(new CustomEvent('activation-drag-start', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                actor: this.activationActor,
+                options,
+            },
+        }));
+    }
+    handleActivationDragEnd() {
+        this.dispatchEvent(new CustomEvent('activation-drag-end', {
+            bubbles: true,
+            composed: true,
+        }));
+    }
+    handleActivationDragOver(event) {
+        if (!this.isActivationDropTarget) {
+            return;
+        }
+
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+    handleActivationDrop(event) {
+        const option = this.activationDropOption;
+
+        if (!option) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('basic-activation', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                actor: this.dragActivation.actor,
+                card: this.card,
+                option,
+            },
+        }));
+    }
     handleClickMenu(e) {
         this.dispatchEvent(new CustomEvent('card-menu-click', {
             bubbles: true,
@@ -335,6 +449,7 @@ export class CardComponent extends LitElement {
             <div class="attached" >
                 <mc-card-list
                     .cards="${attached}"
+                    .dragActivation="${this.dragActivation}"
                     show-life
                     show-damage
                     show-basic-stats
@@ -378,19 +493,19 @@ export class CardComponent extends LitElement {
         const {
             horizontal,
             image,
-            isFacedownCard,
             name,
             rotated,
             _showBig,
         } = this;
-        const imageSrc = isFacedownCard ?
-            getCardAssetUrl(BACK_CARD_PLAYER) :
+        const hiddenFacedown = this.isFacedownHidden();
+        const imageSrc = hiddenFacedown ?
+            getCardAssetUrl(this.facedownImage || BACK_CARD_PLAYER) :
             getCardAssetUrl(image);
 
         return _showBig ? html`
             <mc-card-image-dialog
                 .open="${_showBig}"
-                .title="${name}"
+                .title="${hiddenFacedown ? 'Carta boca abajo' : name}"
                 .large="${true}"
                 close-label="Ok"
                 @close-card-image-dialog="${this.handleCloseBigCard.bind(this)}"
@@ -411,48 +526,93 @@ export class CardComponent extends LitElement {
         const {
             horizontal,
             image,
-            isFacedownCard,
             size,
             exhausted,
             rotated,
         } = this;
-        const imageSrc = isFacedownCard ?
-            getCardAssetUrl(BACK_CARD_PLAYER) :
+        const hiddenFacedown = this.isFacedownHidden();
+        const imageSrc = hiddenFacedown ?
+            getCardAssetUrl(this.facedownImage || BACK_CARD_PLAYER) :
             getCardAssetUrl(image);
+        const cardFrontClasses = [
+            'card-front',
+            ...(this.isActivationDragSource ? ['activation-drag-source'] : []),
+            ...(this.isActivationDropTarget ? ['activation-drop-target'] : []),
+        ].join(' ');
+        const activationSourceOptions =
+            getBasicActivationOptionsForActor(this.activationActor);
 
         return html`
-            <div class="${exhausted ? 'exhausted' : ''}" >
+            <div class="${exhausted ? 'exhausted' : ''}">
                 ${this.renderHeader()}
                 <slot name="top"></slot>
                 <div class="cards-facedown">
-                    ${this.renderStats()}
+                    ${hiddenFacedown ? '' : this.renderStats()}
                     <div class="card ${this.tuckedCards?.length ? 'has-tucked-cards' : ''}">
                         <div class="card-face">
-                            ${this.renderTucked()}
-                            <div class="card-front">
-                                ${this.renderStage()}
+                            ${hiddenFacedown ? '' : this.renderTucked()}
+                            <div class="${cardFrontClasses}">
+                                ${hiddenFacedown ? '' : this.renderStage()}
                                 <mc-card-image
                                     id="card"
                                     src="${imageSrc}"
                                     size="${size}"
                                     .horizontal="${horizontal}"
                                     .rotated="${rotated}"
+                                    .activationBlocked="${this.isActivationVeiled}"
+                                    ?draggable="${activationSourceOptions.length > 0}"
                                     @click="${this.handleClick.bind(this)}"
                                     @contextmenu="${this.hableContextMenu.bind(this)}"
+                                    @dragstart="${this.handleActivationDragStart.bind(this)}"
+                                    @dragend="${this.handleActivationDragEnd.bind(this)}"
+                                    @dragover="${this.handleActivationDragOver.bind(this)}"
+                                    @drop="${this.handleActivationDrop.bind(this)}"
                                 ></mc-card-image>
-                                ${this.renderCounters()}
-                                ${this.renderBottomStats()}
+                                ${this.renderFacedownPeekButton()}
+                                ${hiddenFacedown ? '' : this.renderCounters()}
+                                ${hiddenFacedown ? '' : this.renderBottomStats()}
                             </div>
                         </div>
-                        ${this.renderAttached()}
+                        ${hiddenFacedown ? '' : this.renderAttached()}
                     </div>
-                    ${this.renderFaceDown()}
+                    ${hiddenFacedown ? '' : this.renderFaceDown()}
                 </div>
-                ${this.renderAcquiredTraits()}
-                ${this.renderAcquiredKeywords()}
+                ${hiddenFacedown ? '' : this.renderAcquiredTraits()}
+                ${hiddenFacedown ? '' : this.renderAcquiredKeywords()}
                 <slot name="bottom"></slot>
                 ${this.renderMenu()}
             </div>
+        `;
+    }
+    getDisplayName() {
+        return this.isFacedownHidden() ? 'Carta boca abajo' : this.name;
+    }
+    isFacedownHidden() {
+        return this.isFacedownCard && !this._showFacedownPreview;
+    }
+    handleFacedownPreviewClick(e) {
+        e.stopPropagation();
+        this._showFacedownPreview = !this._showFacedownPreview;
+    }
+    renderFacedownPeekButton() {
+        if (!this.isFacedownCard || !this.canPeekFacedown) {
+            return '';
+        }
+
+        const showingFace = this._showFacedownPreview;
+        const label = showingFace ? 'Ocultar carta' : 'Ver carta';
+        const icon = showingFace ? ICON_EYE_SLASH : ICON_EYE;
+
+        return html`
+            <button
+                class="facedown-peek-button"
+                type="button"
+                aria-label="${label}"
+                title="${label}"
+                @click="${this.handleFacedownPreviewClick.bind(this)}"
+            >
+                <mc-icon icon="${icon}" aria-hidden="true"></mc-icon>
+            </button>
         `;
     }
     renderStatValue(stat, value) {
@@ -573,6 +733,7 @@ export class CardComponent extends LitElement {
             <mc-card-image
                 src="${this.getImageBack(type)}"
                 size="${this._smallSize}"
+                .activationBlocked="${Boolean(this.dragActivation)}"
                 @click="${this.handleFaceDownClick(type, types[type])}"
             ></mc-card-image>
             ${types[type].length > 1 ? html`
@@ -590,13 +751,13 @@ export class CardComponent extends LitElement {
     renderHeader() {
         const {
             horizontal,
-            name,
             headerLeft,
             headerRight,
             hideName,
             nameWithStage,
             stage,
         } = this;
+        const name = this.getDisplayName();
 
         if (hideName || (nameWithStage && Number.isFinite(stage))) {
             return html``;
@@ -632,7 +793,8 @@ export class CardComponent extends LitElement {
         ` : '';
     }
     renderStage() {
-        const {name, hideName, nameWithStage, stage} = this;
+        const {hideName, nameWithStage, stage} = this;
+        const name = this.getDisplayName();
 
         return Number.isFinite(stage) ? html`
             <div class="stage-label">

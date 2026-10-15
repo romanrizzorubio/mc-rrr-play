@@ -19,6 +19,7 @@ export class McGameZone extends LitElement {
             attachedUpgrades: {type: Array},
             minions: {type: Array},
             encounters: {type: Number},
+            dragActivation: {type: Object},
         };
     }
 
@@ -30,6 +31,7 @@ export class McGameZone extends LitElement {
         this.attachedUpgrades = [];
         this.minions = [];
         this.encounters = 0;
+        this.dragActivation = null;
     }
 
     handleSelect(e) {
@@ -73,12 +75,14 @@ export class McGameZone extends LitElement {
         showThreat,
         showAcquiredTraits,
         basicActivationType,
+        dragActivation,
     }) {
         return html`
             <mc-card-list
                 class="${type}"
                 .cards="${cards}"
                 .player="${this.player}"
+                .dragActivation="${dragActivation}"
                 basic-activation-type="${basicActivationType || ''}"
                 size="s"
                 show-menu-abilities
@@ -103,6 +107,7 @@ export class McGameZone extends LitElement {
                 <mc-card-image
                     src="${getCardAssetUrl(BACK_CARD_ENCOUNTER)}"
                     size="xs"
+                    .activationBlocked="${Boolean(this.dragActivation)}"
                 ></mc-card-image>
                 <div class="count">
                     ${encounters}
@@ -119,6 +124,7 @@ export class McGameZone extends LitElement {
             type: 'allies',
             showLife: true,
             showAcquiredTraits: true,
+            dragActivation: this.dragActivation,
         });
     }
     renderMinions() {
@@ -130,6 +136,7 @@ export class McGameZone extends LitElement {
             showLife: true,
             showAcquiredTraits: true,
             basicActivationType: 'attack',
+            dragActivation: this.dragActivation,
         });
     }
 
@@ -139,6 +146,7 @@ export class McGameZone extends LitElement {
         return this.renderCards({
             cards: getUpgradesForDisplay(cards, attachedUpgrades),
             type: 'upgrades',
+            dragActivation: this.dragActivation,
         });
     }
 
@@ -150,6 +158,7 @@ export class McGameZone extends LitElement {
                 .filter(card => card.isSupport)
                 .sort((a, b) => a.id > b.id ? 1 : -1),
             type: 'supports',
+            dragActivation: this.dragActivation,
         });
     }
 

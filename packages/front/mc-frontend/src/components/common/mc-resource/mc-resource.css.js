@@ -15,4 +15,8 @@ export default css`
     bottom: -0.5em;
     right: 1em;
   }
+
+  .changeable {
+    cursor: pointer;
+  }
 `;

@@ -12,6 +12,7 @@ Use this skill when a user provides card text or structured card data and asks t
 - Treat the user's supplied text, values, icons, traits, card counts, and images as authoritative. Do not infer missing information from artwork or outside sources.
 - Consult `.junie/guidelines/translation-guide.md` for the input formats, official terminology, resource-icon notation, and code mapping.
 - Preserve rules-bearing punctuation and connectors. A period keeps sentence order but does not create a success gate; independent effects joined by "and" resolve simultaneously; "Then" gates on full resolution and uses `thenEffect`; "instead" replaces rather than adds an effect. A comma alone has no timing meaning.
+- Pay the printed resource cost of a played card and all resource costs in its `arrow` simultaneously. Track payment by resource icon, not by whole card: a double-resource card can contribute one icon to each cost, and fixed costs consume only the icons assigned to their requirements. In simultaneous cost dialogs, let the player select individual icons; for variable `X` costs, the chosen icon count must not depend on which dialog they answer first. Keep unused icons available to later simultaneous costs, show only those remaining icons in the next payment dialog, and discard the physical card only once after all costs are committed. Compose arrow costs with `EFFECT_SIMULTANEOUS` when needed, and add a regression test when implementing a card with both costs.
 - If an important value or rule interaction is missing or ambiguous, ask before choosing an interpretation. Do not invent card text, stats, traits, icons, keywords, or effects.
 - For encounter cards with no supplied printed boost value, configure `boost: 0`; this does not omit a separately supplied Boost ability.
 - Default booleans to `false`. Set them to `true` only when the text or rules explicitly require it. Do not infer that a later main-scheme stage is final.
@@ -19,13 +20,18 @@ Use this skill when a user provides card text or structured card data and asks t
 
 ## Authoring workflow
 
-1. Identify whether each supplied card belongs to a hero, a scenario, a modular encounter set, or a shared encounter-card definition. Inspect nearby catalog modules and tests before adding a new pattern.
+1. Identify whether each supplied card belongs to a hero, an aspect, a scenario, a modular encounter set, or a shared encounter-card definition. Inspect nearby catalog modules and tests before adding a new pattern.
 2. Map the supplied facts into the existing card types, `params`, ability types, triggers, and effect types. Use domain constants imported from `mc-shared`; use `TARGET_*` constants for every field named `target`.
 3. Prefer existing generic effects and compose them according to the card text. Do not create card-specific effect classes or branches in general abilities, effects, or factories. If required behavior is missing, implement a reusable effect and test it.
 4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `catalog/encounters/` when needed, but omit `params.set` there; use `withCardSet(card, set)` in each consuming catalog to assign its set, and configure its count in each owning catalog.
 5. Add or update catalog/runtime tests for the content. Compile every configured ability and verify its `effect` is one runnable effect instance with a callable `canRun`; exercise runtime-dependent paths through the real ability or effect.
 
 For repository-wide workflow and architectural requirements, also follow `.github/skills/repo-working-guidelines/SKILL.md`.
+
+## Aspect card definitions
+
+- Put aspect card definitions in the shared type module under `packages/back/mc-data/seed/catalog/aspects/<aspect>/`, such as `allies.js`, `events.js`, `supports.js`, or `upgrades.js`. Do not create hero-named aspect modules or define aspect cards in hero catalogs.
+- A hero's `config.precon` may reference shared aspect-card IDs, but the card definitions themselves must not be tied to that hero.
 
 ## Hero definitions
 
@@ -49,9 +55,15 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 ## Ability and effect composition
 
 - Consult `.junie/guidelines/translation-guide.md`, `.junie/guidelines/effects-guide.md`, `.junie/guidelines/targets-guide.md`, and `docs/02-06-ABILITIES-EFFECTS.md` when mapping or changing card abilities.
+- Add `LABEL_ATTACK` or `LABEL_THWART` only when the supplied card text explicitly labels the ability as `(attack)` or `(thwart)` (including localized equivalents such as `(ataque)` or `(intervención)`). Never infer these labels from damage, threat removal, targets, or effect types; without an explicit label in the text, leave them off.
 - Use `EFFECT_CHAINED` for ordered or data-dependent effects and `EFFECT_SIMULTANEOUS` for independent effects joined by "and". Do not assign an array directly to `ability.effect`.
+- For "look at the top N cards, discard one, and return the rest in any order," use the reusable `EFFECT_SELECT_AND_ORDER_TOP_CARDS` and explicitly select the deck with `target` (for example, `TARGET_ENCOUNTER_DECK`); do not discard the entire group or silently preserve its original order.
+- For damage that ignores a Tough status without discarding it, configure `ignoreTough: true` on `EFFECT_DEAL_DAMAGE`; do not use Piercing, which consumes the Tough status.
+- Use `CALC_DIFFERENT_CARD_TYPES` to count distinct printed types in a card list, and `match.inPlayCards` to count traits across all cards in play instead of rebuilding zone lists. A main-scheme attachment that raises its completion threshold uses `attach: TARGET_MAIN_SCHEME` and `threatThresholdModifier`.
 - Put a "Then" clause in `thenEffect`; do not use it for ordinary ordered sentences. Model "if no effect occurred" fallbacks by attempting the effect and then checking its runtime result, not by prechecking whether a target exists.
 - Use the correct ability timing and trigger for the printed text. Do not replace a forced ability with an optional one, or implement ongoing prohibitions as forced interrupts.
+- For a player-card ability that must apply while its source is in hand or while that card is being played from another supported location (for example, a printed reduction to its own play cost), set `workInHand: true` on that ability. `PlayCardEffect` ensures marked abilities are registered before calculating the cost; temporary triggers are removed if the play fails and the card returns outside the hand, while the trigger persists if the card enters play.
+- For "exhaust one Ally you control," use the singular `TARGET_ALLY_YOU_CONTROL`; `TARGET_ALL_ALLIES_YOU_CONTROL` exhausts a group and is not interchangeable.
 - Keep all effect configuration generic and target-driven. Preserve the selected target identified by the text; do not ask for an unrelated second selection.
 - When an attachment continuously grants a keyword to each Villain attack, register an `ABILITY_CONSTANT` on `TRIGGER_VILLAIN_ATTACKS` and use `EFFECT_MODIFY_ATTACK` against `TARGET_EFFECT` with `modify: {keywords: {ranged: true}}`; do not model the keyword gain itself as a forced interrupt. Keyword modifiers merge so separate attachments preserve each other's keywords.
 - When behavior depends on runtime paths such as `paramsCalc`, `targetCountCalc`, `condition`, `effectCondition`, `condition.exclude`, or `sourceIn`, add a regression test with the actual runtime context shape.

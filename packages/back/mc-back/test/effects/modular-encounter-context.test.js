@@ -191,6 +191,9 @@ describe('modular encounter context', () => {
             async getAttackValue() {
                 return 3;
             },
+            async getEffectiveStats() {
+                return {};
+            },
             toObj() {
                 return {name: this.name};
             },
@@ -198,6 +201,9 @@ describe('modular encounter context', () => {
         const hero = {
             name: 'Spider-Man',
             owner: undefined,
+            async getEffectiveStats() {
+                return {};
+            },
             toObj() {
                 return {name: this.name};
             },

@@ -13,6 +13,8 @@ export class EngageEffect extends PutPlayEffect {
         super(arguments[0]);
 
         this.deferEngageHeroTrigger = deferEngageHeroTrigger;
+        this.didEngage = false;
+        this.enteredPlay = false;
     }
     getCard(params = {}) {
         return super.getCard(params) ||
@@ -21,16 +23,33 @@ export class EngageEffect extends PutPlayEffect {
     getController(params) {
         return this.controller || this.selectedTarget || params.player;
     }
-    getTriggersEnds(params) {
-        if (!this.getCard(params)?.isMinion) {
-            return [];
+    async canRun(params) {
+        this.didEngage = false;
+        this.enteredPlay = false;
+
+        const card = this.getCard(params);
+        if (card?.isMinion &&
+            card.isInPlay &&
+            card.engaged === this.selectedTarget) {
+            return false;
         }
 
-        const triggerTypes = super.getTriggersEnds(params);
+        return super.canRun(params);
+    }
+    getTriggersEnds(params) {
+        const triggerTypes = this.enteredPlay ?
+            super.getTriggersEnds(params) :
+            [];
+        if (!this.didEngage || !this.getCard(params)?.isMinion) {
+            return triggerTypes;
+        }
 
         return this.deferEngageHeroTrigger ?
             triggerTypes :
             triggerTypes.concat([TRIGGER_ENGAGE_HERO]);
+    }
+    isResolved() {
+        return this.didEngage && super.isResolved();
     }
     getTriggersParams(params) {
         return {
@@ -39,7 +58,9 @@ export class EngageEffect extends PutPlayEffect {
         };
     }
     async resolveDeferredEngageHeroTrigger(params) {
-        if (!this.deferEngageHeroTrigger || !this.resolved) {
+        if (!this.deferEngageHeroTrigger ||
+            !this.didEngage ||
+            !this.resolved) {
             return;
         }
 
@@ -55,6 +76,9 @@ export class EngageEffect extends PutPlayEffect {
         );
     }
     async execute(params) {
+        this.didEngage = false;
+        this.enteredPlay = false;
+
         const card = this.getCard(params);
         if (!card) {
             return;
@@ -64,6 +88,8 @@ export class EngageEffect extends PutPlayEffect {
         }
 
         const {selectedTarget} = this;
+        const wasInPlay = card.isInPlay;
+        const controller = this.getController(params);
         const scenarioDeck = card.owner?.deck;
         const isFromScenarioDeck = Boolean(
             scenarioDeck?.isScenarioDeck &&
@@ -75,11 +101,24 @@ export class EngageEffect extends PutPlayEffect {
         if (!selectedTarget || typeof selectedTarget.engage !== 'function') {
             throw new Error('EngageEffect requires a player target.');
         }
+        if (wasInPlay && card.engaged === selectedTarget) {
+            return;
+        }
 
         await super.execute(params);
+        if (!wasInPlay && !card.controller) {
+            return;
+        }
 
+        const previousPlayer = card.engaged;
+        if (previousPlayer) {
+            previousPlayer.removeEngaged(card);
+        }
+        card.controller = controller;
         selectedTarget.engage(card);
         card.engaged = selectedTarget;
+        this.didEngage = true;
+        this.enteredPlay = !wasInPlay;
 
         await selectedTarget.refresh();
 

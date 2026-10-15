@@ -21,6 +21,7 @@ export class VillainCardComponent extends LitElement {
         return {
             card: {type: Object},
             player: {type: Object},
+            dragActivation: {type: Object},
             name: {type: String},
             image: {type: String},
             life: {type: Number},
@@ -47,6 +48,7 @@ export class VillainCardComponent extends LitElement {
         this.name = '';
         this.card = null;
         this.player = null;
+        this.dragActivation = null;
         this.image = '';
         this.life = 0;
         this.hitPoints = undefined;
@@ -120,6 +122,7 @@ export class VillainCardComponent extends LitElement {
         return html`
             <mc-character-card
                 .card="${card}"
+                .dragActivation="${this.dragActivation}"
                 .basicActivation="${this.basicActivation}"
                 .clickDisabled="${this.clickDisabled}"
                 .menuOptions="${this.menuOptions}"

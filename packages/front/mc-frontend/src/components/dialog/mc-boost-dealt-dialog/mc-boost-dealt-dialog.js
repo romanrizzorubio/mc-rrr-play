@@ -60,10 +60,11 @@ export class McBoostDealtDialog extends McDialog {
                     }
 
                     const boostIcons = renderBoostIcons(boostCard.card.boost);
+                    const isFacedown = Boolean(boostCard.card.isFacedownCard);
 
                     return html`
                         <div class="boost-card">
-                            ${boostIcons.length ? html`
+                            ${!isFacedown && boostIcons.length ? html`
                                 <div class="boost-icons">
                                     <strong>Iconos de aumento:</strong>
                                     <span class="boost-icon-list">${boostIcons}</span>
@@ -73,12 +74,14 @@ export class McBoostDealtDialog extends McDialog {
                                 name="${boostCard.card.name}"
                                 image="${boostCard.card.image}"
                                 .isFacedownCard="${boostCard.card.isFacedownCard}"
+                                .canPeekFacedown="${Boolean(boostCard.card.canPeekFacedown)}"
+                                .facedownImage="${BACK_CARD_ENCOUNTER}"
                                 size="${size}"
                                 ?horizontal="${boostCard.horizontal}"
                                 .generic="${boostCard.card.counters}"
                                 .showGeneric="${Boolean(boostCard.card.counters)}"
                             ></mc-card>
-                            ${boostCard.hasBoostAbility ? html`
+                            ${!isFacedown && boostCard.hasBoostAbility ? html`
                                 <div class="boost-ability">
                                     <strong>Capacidad de aumento:</strong> Sí
                                 </div>

@@ -65,9 +65,6 @@ export class Mc {
     }
     async deleteMatch(name) {
         const match = this.getMatch(name);
-        if (!match) {
-            throw new Error(`No existe la partida "${name}".`);
-        }
         if (this.deletingMatches.has(name)) {
             throw new Error(`La partida "${name}" ya se está eliminando.`);
         }
@@ -82,9 +79,11 @@ export class Mc {
 
         try {
             await pending;
-            match.playing = false;
-            if (this.matches[name] === match) {
-                delete this.matches[name];
+            if (match) {
+                match.playing = false;
+                if (this.matches[name] === match) {
+                    delete this.matches[name];
+                }
             }
             this.mcSocket.dialogSocket.clearPending(name);
         } finally {

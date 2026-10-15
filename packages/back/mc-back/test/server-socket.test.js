@@ -134,3 +134,27 @@ test('deleting a match clears its pending dialogs after deleting the snapshot', 
     assert.equal(match.playing, false);
     assert.equal(mc.getMatch('same-name'), undefined);
 });
+
+test('deleting a listed match removes its snapshot even when it is not loaded', async () => {
+    const calls = [];
+    const mc = Object.assign(Object.create(Mc.prototype), {
+        matches: {},
+        deletingMatches: new Set(),
+        persistenceQueues: new Map(),
+        data: {
+            deleteMatchSnapshot: async name => calls.push(`snapshot:${name}`),
+        },
+        mcSocket: {
+            dialogSocket: {
+                clearPending: name => calls.push(`dialogs:${name}`),
+            },
+        },
+    });
+
+    await mc.deleteMatch('RRR');
+
+    assert.deepEqual(calls, ['snapshot:RRR', 'dialogs:RRR']);
+    assert.equal(mc.getMatch('RRR'), undefined);
+    assert.equal(mc.deletingMatches.has('RRR'), false);
+    assert.equal(mc.persistenceQueues.has('RRR'), false);
+});

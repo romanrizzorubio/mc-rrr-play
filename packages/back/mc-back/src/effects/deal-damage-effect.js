@@ -10,9 +10,10 @@ import {Calc} from '../engine/calc.js';
 export class DealDamageEffect extends Effect {
     constructor(params) {
         super(params);
-        const {character, damage} = params;
+        const {character, damage, ignoreTough = false} = params;
 
         this._character = character;
+        this.ignoreTough = ignoreTough;
         this.baseDamage = damage;
         this.damageModifier = 0;
         this.targetCountCalc = params.targetCountCalc;
@@ -116,25 +117,34 @@ export class DealDamageEffect extends Effect {
             throw new TypeError('DealDamageEffect requires a numeric damage value to modify.');
         }
 
-        const {isAttack, activation} = this;
-
-        if (isAttack && activation) {
-            if (activation.getOverkill(params)) {
-                await activation.applyOverkill(params);
-            }
-        }
     }
     /** @returns {Promise<void>} */
     async execute(params) {
-        const {selectedTarget, damage} = this;
-        if (Array.isArray(selectedTarget) && selectedTarget.length === 0) {
+        if (Array.isArray(this.selectedTarget) &&
+            this.selectedTarget.length === 0) {
             return;
         }
 
+        const {ability} = this;
+        if (this.isAttack && ability?.isBasic &&
+            typeof ability.getAttackValue === 'function') {
+            const attackValue = await ability.getAttackValue(params);
+            this.damage = attackValue +
+                (this.modifyAttack ?? 0) +
+                this.damageModifier;
+        }
+
+        const {activation} = this;
+        if (this.isAttack && activation?.getOverkill?.(params)) {
+            await activation.applyOverkill(params);
+        }
+
+        const {selectedTarget, damage} = this;
         const takeDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_TAKE_DAMAGE,
             selectedTarget,
             damage,
+            ignoreTough: this.ignoreTough,
             ability: this.ability,
             activation: this.activation,
             isAttack: this.isAttack,

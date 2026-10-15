@@ -218,8 +218,11 @@ Tipos de activaciones que los jugadores pueden ejecutar:
 
 - **Attack** - Ataque a un enemigo
 - **Defense** - Defensa contra daño
+- **Recovery** - Recuperar vida
 - **Thwart** - Reducción de amenaza
 - **Scheme** - Plan especial
+
+Cada nueva resolución crea una activación independiente; los efectos de la misma resolución comparten su activación.
 
 Cada activación:
 - Requiere recursos específicos
@@ -267,7 +270,7 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 | `GET` | `/get-modular-sets-list` | Obtener conjuntos modulares (servicio de creación) |
 | `POST` | `/create-match` | Crear partida vía servicio de creación |
 | `POST` | `/reset-match` | Reiniciar una partida con su configuración original |
-| `DELETE` | `/delete-match` | Eliminar partida vía servicio de creación |
+| `DELETE` | `/delete-match` | Eliminar por nombre la partida y su instantánea, aunque no esté cargada en memoria |
 | `POST` | `/create-player` | Añadir jugador vía servicio de creación |
 | `POST` | `/create-scenario` | Añadir escenario vía servicio de creación |
 | `POST` | `/init-match` | Inicializar vía servicio de creación |

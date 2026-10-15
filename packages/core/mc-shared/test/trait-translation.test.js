@@ -3,6 +3,7 @@ import {test} from 'node:test';
 
 import {
     TRAIT_AERIAL,
+    TRAIT_ASGARD,
     TRAIT_ARMOR,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
@@ -12,7 +13,9 @@ import {
     TRAIT_DEFENSE,
     TRAIT_DROID,
     TRAIT_GOBLIN,
+    TRAIT_GIANT,
     TRAIT_LOCATION,
+    TRAIT_OLYMPUS,
     TRAIT_PERSONA,
     TRAIT_SKILL,
     TRAIT_SPY,
@@ -36,13 +39,16 @@ test('translates supported traits to Spanish labels', () => {
         [TRAIT_LOCATION, 'Lugar'],
         [TRAIT_SKILL, 'Habilidad'],
         [TRAIT_AERIAL, 'Aéreo'],
+        [TRAIT_ASGARD, 'Asgard'],
         [TRAIT_TACTIC, 'Táctica'],
         [TRAIT_SPY, 'Espía'],
         [TRAIT_VEHICLE, 'Vehículo'],
         [TRAIT_TITLE, 'Título'],
         [TRAIT_DROID, 'Androide'],
         [TRAIT_GOBLIN, 'Duende'],
+        [TRAIT_GIANT, 'Gigante'],
         [TRAIT_PERSONA, 'Individuo'],
+        [TRAIT_OLYMPUS, 'Olimpo'],
     ]);
 
     translations.forEach((label, trait) => {

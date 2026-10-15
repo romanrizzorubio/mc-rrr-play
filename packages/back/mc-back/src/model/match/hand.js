@@ -26,6 +26,8 @@ export class Hand extends Engine {
     addCard(card) {
         if (card.isEvent) {
             card.initTriggers();
+        } else if (card.abilities?.some(ability => ability.workInHand)) {
+            card.initTriggers(undefined, {workInHandOnly: true});
         }
 
         this.cards.push(card);
@@ -34,7 +36,10 @@ export class Hand extends Engine {
         cards.forEach(this.addCard.bind(this));
     }
     discardHand(card) {
-        if (card.isEvent) {
+        if (card.isEvent ||
+            (card.abilities?.some(ability => ability.workInHand) &&
+                !card.isPlaying &&
+                !card.isInPlay)) {
             card.endTriggers();
         }
         const index = this.cards.indexOf(card);
@@ -70,17 +75,46 @@ export class Hand extends Engine {
     getCard(cardId) {
         return this.cards.find(card => card.id === cardId);
     }
-    getCardsToPay(cardToPlay, resourceType, excludedCardIds = new Set()) {
+    getCardsToPay(
+        cardToPlay,
+        resourceType,
+        excludedCardIds = new Set(),
+        resourceUsage
+    ) {
         const resourceTypes = normalizeResourceTypes(resourceType);
         const unrestricted = !resourceTypes.length ||
             resourceTypes.includes(RESOURCE_ANY);
 
         return this.cards.filter(card => {
+            const availableResources = resourceUsage?.get(card.id) ??
+                card.card.getResources(cardToPlay);
+
             return !excludedCardIds.has(card.id) &&
                 !card.isPlaying &&
                 (!cardToPlay || card !== cardToPlay) &&
-                (unrestricted || card.card.getResources(cardToPlay).some(resource =>
+                (unrestricted || availableResources.some(resource =>
                     resourceTypes.includes(resource) || resource === RESOURCE_WILD));
+        }).map(card => {
+            if (!resourceUsage?.has(card.id)) {
+                return card;
+            }
+
+            const payableCard = Object.create(card);
+            const resources = resourceUsage.get(card.id).slice();
+            Object.defineProperties(payableCard, {
+                resources: {
+                    value: resources,
+                    enumerable: true,
+                },
+                toObj: {
+                    value: (...args) => ({
+                        ...card.toObj(...args),
+                        resources,
+                    }),
+                },
+            });
+
+            return payableCard;
         });
     }
     searchCards(condition) {

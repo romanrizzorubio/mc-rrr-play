@@ -85,10 +85,11 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
     async getActivationCharacterData(params) {
         const scheme = await this.getSchemeValue(params);
 
-        return {
-            ...this.character.toObj(params),
-            scheme,
-        };
+        return this.getCharacterDialogData(
+            this.character,
+            params,
+            {scheme}
+        );
     }
     getTitleDialog() {
         const {character} = this;

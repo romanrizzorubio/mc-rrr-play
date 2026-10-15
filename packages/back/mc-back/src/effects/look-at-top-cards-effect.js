@@ -31,6 +31,8 @@ export class LookAtTopCardsEffect extends Effect {
             checkCondition(card, this.filter));
 
         if (this.cards.length) {
+            deck.markKnown(this.cards);
+            await deck.refresh();
             await this.openDialog({
                 dialogType: DIALOG_REVEAL_CARDS,
                 title: this.title,

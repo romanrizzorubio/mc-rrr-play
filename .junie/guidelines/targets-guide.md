@@ -76,14 +76,18 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | Constante | Candidatos |
 | :--- | :--- |
 | `TARGET_ALLY` | Los aliados del jugador actual. |
+| `TARGET_ALLY_YOU_CONTROL` | Un aliado elegido entre los que controla el jugador actual. |
 | `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
 | `TARGET_ALL_ALLIES_YOU_CONTROL` | Todos los aliados controlados por el jugador actual. |
 | `TARGET_ALL_CHARACTERS_YOU_CONTROL` | El superhéroe y los aliados controlados por el jugador actual. |
 | `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
+| `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO` | Las mejoras que controla el jugador actual y que están vinculadas a su superhéroe. Incluye las mejoras de su zona de juego sin vínculo físico y las vinculadas a cualquiera de sus identidades; excluye las vinculadas a aliados u otras cartas. |
 
 `TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL` y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. En los dos selectores globales de personajes, `condition.name` coincide con el nombre actual o el `mainName` estable del superhéroe. Si coincide por `mainName`, el objetivo resuelto es la cara cuyo nombre coincide con `condition.name` y el modificador solo aplica a esa cara; para afectar ambas caras, usa `TARGET_YOUR_SUPERHERO` cuando el texto se refiera a «tu superhéroe».
+
+`TARGET_UPGRADE_YOU_CONTROL` no implica que una mejora esté vinculada al superhéroe. Para cartas que exigen una mejora vinculada al superhéroe propio, usa `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO`; las mejoras vinculadas a aliados u otras cartas no son candidatas. Las mejoras de la zona de juego sin un vínculo físico se consideran una extensión del superhéroe en cualquiera de sus identidades.
 
 ### Personajes mencionados por nombre
 

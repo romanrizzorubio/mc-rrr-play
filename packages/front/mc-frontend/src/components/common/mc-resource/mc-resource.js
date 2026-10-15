@@ -109,11 +109,15 @@ export class McResource extends LitElement {
 
     renderIcon() {
         const {resource, disabled} = this;
+        const changeable = !disabled &&
+            !this.notChange &&
+            resource === RESOURCE_WILD;
 
         return html`
             <mc-icon
                 id="icon"
                 icon="${resource}"
+                class="${changeable ? 'changeable' : ''}"
                 .disabled="${disabled}"
                 @click="${this.handleClick.bind(this)}"
             ></mc-icon>
@@ -122,11 +126,12 @@ export class McResource extends LitElement {
 
     renderWild() {
         const {resource, disabled} = this;
+        const changeable = !disabled && !this.notChange;
 
         return html`
             <mc-icon
                 id="icon"
-                class="wild"
+                class="wild ${changeable ? 'changeable' : ''}"
                 icon="${resource}"
                 .disabled="${disabled}"
                 @click="${this.handleClick.bind(this)}"

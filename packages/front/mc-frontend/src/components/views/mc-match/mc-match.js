@@ -17,6 +17,7 @@ export class MatchComponent extends LitElement {
             match: {type: Object},
             player: {type: Object},
             playCardPending: {type: Boolean},
+            dragActivation: {type: Object},
         };
     }
     constructor() {
@@ -25,6 +26,7 @@ export class MatchComponent extends LitElement {
         this.match = null;
         this.player = null;
         this.playCardPending = false;
+        this.dragActivation = null;
     }
     showAlert(msg) {
         this.dispatchEvent(new CustomEvent('show-alert', {
@@ -55,6 +57,7 @@ export class MatchComponent extends LitElement {
             <mc-scenario
                 .scenario="${match.scenario}"
                 .player="${player}"
+                .dragActivation="${this.dragActivation}"
                 @ability="${this.handleAbility.bind(this)}"
                 @attached-card-click="${this.handleAbility.bind(this)}"
             ></mc-scenario>
@@ -70,6 +73,7 @@ export class MatchComponent extends LitElement {
                 .player="${player}"
                 .canEndTurn="${canEndTurn}"
                 .playCardPending="${this.playCardPending}"
+                .dragActivation="${this.dragActivation}"
                 @superhero-ability="${this.handleAbility.bind(this)}"
                 @attached-card-click="${this.handleAbility.bind(this)}"
                 @game-zone-card-click="${this.handleAbility.bind(this)}"
@@ -104,6 +108,7 @@ export class MatchComponent extends LitElement {
                             .discard="${otherPlayer.deck.discard}"
                             .showDeck="${false}"
                             .type="${DECK_TYPES.PLAYER}"
+                            .dragActivation="${this.dragActivation}"
                             discard-label="Descarte de ${otherPlayer.name}"
                         ></mc-deck>
                     </div>

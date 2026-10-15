@@ -76,13 +76,31 @@ test('list dialog displays counters when requested for an interrupt card', () =>
     dialog.initProperties();
 
     const template = dialog.renderContent();
-    const genericBinding = template.strings.findIndex(part =>
+    const cardTemplate = template.values.find(value =>
+        Array.isArray(value?.strings) &&
+        value.strings.some(part => part.includes('.generic=')));
+    const genericBinding = cardTemplate?.strings.findIndex(part =>
         part.includes('.generic='));
-    const showGenericBinding = template.strings.findIndex(part =>
+    const showGenericBinding = cardTemplate?.strings.findIndex(part =>
         part.includes('.showGeneric='));
 
+    assert.notEqual(genericBinding, undefined);
     assert.notEqual(genericBinding, -1);
+    assert.notEqual(showGenericBinding, undefined);
     assert.notEqual(showGenericBinding, -1);
-    assert.equal(template.values[genericBinding], 2);
-    assert.equal(template.values[showGenericBinding], true);
+    assert.equal(cardTemplate.values[genericBinding], 2);
+    assert.equal(cardTemplate.values[showGenericBinding], true);
+});
+
+test('list dialog does not render a card when the context has no image', () => {
+    const dialog = Object.create(McListDialog.prototype);
+    dialog.data = {
+        options: [],
+        card: {},
+        showCounters: false,
+    };
+
+    const template = dialog.renderContent();
+
+    assert.equal(template.values[0], '');
 });

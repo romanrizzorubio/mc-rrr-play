@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     CALC_COUNT,
+    CALC_DIFFERENT_CARD_TYPES,
     CALC_STAGE,
     CALC_TRAITS_COUNT,
     TARGET_MAIN_SCHEME,
@@ -31,6 +32,34 @@ test('CALC_TRAITS_COUNT reports the runtime path when it does not resolve to a l
 
     assert.throws(() => calc.calculate({match: {}}), {
         message: 'CALC_TRAITS_COUNT requiere que "match.minions" resuelva a una lista.',
+    });
+});
+
+test('CALC_DIFFERENT_CARD_TYPES counts unique printed card types', () => {
+    const calc = new Calc({
+        formula: CALC_DIFFERENT_CARD_TYPES,
+        target: 'effects.0.cards',
+    });
+
+    assert.equal(calc.calculate({
+        effects: [{
+            cards: [
+                {type: 'ally'},
+                {type: 'treachery'},
+                {type: 'ally'},
+            ],
+        }],
+    }), 2);
+});
+
+test('CALC_DIFFERENT_CARD_TYPES rejects malformed card entries', () => {
+    const calc = new Calc({
+        formula: CALC_DIFFERENT_CARD_TYPES,
+        target: 'cards',
+    });
+
+    assert.throws(() => calc.calculate({cards: [{}]}), {
+        message: 'CALC_DIFFERENT_CARD_TYPES requiere cartas con tipo en "cards".',
     });
 });
 

@@ -9,6 +9,13 @@ export default css`
     font-family: 'champions_iconsregular';
   }
 
+  .mc-icon-svg {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+  }
+
   .mc-icon.disabled {
     color: #858585;
   }

@@ -14,6 +14,9 @@ const {McBoostDealtDialog} = await import(
 const {McEncountersRevealDialog} = await import(
     '../src/components/dialog/mc-encounters-reveal-dialog/mc-encounters-reveal-dialog.js'
 );
+const {McEncountersDealtDialog} = await import(
+    '../src/components/dialog/mc-encounters-dealt-dialog/mc-encounters-dealt-dialog.js'
+);
 
 const renderTemplate = value => {
     if (Array.isArray(value)) {
@@ -29,6 +32,20 @@ const renderTemplate = value => {
     }
 
     return String(value);
+};
+
+const collectTemplates = value => {
+    if (Array.isArray(value)) {
+        return value.flatMap(collectTemplates);
+    }
+    if (value && Array.isArray(value.strings) && Array.isArray(value.values)) {
+        return [
+            value,
+            ...value.values.flatMap(collectTemplates),
+        ];
+    }
+
+    return [];
 };
 
 const getBoostIconCount = markup =>
@@ -79,6 +96,79 @@ test('boost dealt dialog omits icon labels when the card and total have no icons
 
     assert.doesNotMatch(markup, /Iconos de aumento/);
     assert.equal(getBoostIconCount(markup), 0);
+});
+
+test('boost dealt dialog lets players peek at future facedown boost cards', () => {
+    const dialog = Object.create(McBoostDealtDialog.prototype);
+    dialog.data = {
+        cardCount: 2,
+        cards: [
+            {
+                card: {
+                    name: 'Carta actual',
+                    image: 'current.png',
+                    boost: 0,
+                },
+                hasBoostAbility: false,
+            },
+            {
+                card: {
+                    name: 'Carta futura',
+                    image: 'future.png',
+                    boost: 2,
+                    isFacedownCard: true,
+                    canPeekFacedown: true,
+                },
+                hasBoostAbility: true,
+            },
+        ],
+        cumulativeBoost: 0,
+    };
+    const template = dialog.renderContent();
+    const markup = renderTemplate(template);
+    const futureCard = template.values[0][1];
+
+    assert.equal(futureCard.values[3], true);
+    assert.equal(futureCard.values[4], true);
+    assert.doesNotMatch(markup, /Iconos de aumento:/);
+    assert.doesNotMatch(markup, /Capacidad de aumento:/);
+});
+
+test('encounter dealt dialog only enables peeking at previously seen cards', () => {
+    const dialog = Object.create(McEncountersDealtDialog.prototype);
+    dialog.data = {
+        encounters: [{
+            name: 'Hulka',
+            count: 2,
+            cards: [
+                {
+                    id: 'seen-encounter',
+                    name: 'Carta vista',
+                    image: 'seen.png',
+                    canPeekFacedown: true,
+                },
+                {
+                    id: 'unseen-encounter',
+                    name: 'Carta no vista',
+                    image: 'unseen.png',
+                    canPeekFacedown: false,
+                },
+            ],
+        }],
+        hazardIcons: 0,
+    };
+    const template = dialog.renderContent();
+    const cardTemplates = collectTemplates(template).filter(cardTemplate =>
+        cardTemplate.strings.join('').includes('<mc-card'));
+    const seenCard = cardTemplates.find(cardTemplate =>
+        cardTemplate.values[0] === 'Carta vista');
+    const unseenCard = cardTemplates.find(cardTemplate =>
+        cardTemplate.values[0] === 'Carta no vista');
+
+    assert.equal(seenCard.values[3], true);
+    assert.equal(seenCard.values[4], true);
+    assert.equal(unseenCard.values[3], true);
+    assert.equal(unseenCard.values[4], false);
 });
 
 test('encounter reveal dialog renders boost icons and omits the label at zero', () => {

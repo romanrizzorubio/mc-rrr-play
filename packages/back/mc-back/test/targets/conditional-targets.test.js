@@ -5,8 +5,10 @@ import {
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_FRIENDLY_CHARACTERS,
+    TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_UPGRADE_YOU_CONTROL,
     TRAIT_AVENGER,
+    TRAIT_WEAPON,
 } from 'mc-shared';
 import {groupTargets} from '../../src/targets/groups.js';
 import {playerControlledTargets} from '../../src/targets/player-controlled.js';
@@ -103,5 +105,51 @@ test('player upgrade targets apply name conditions', () => {
             condition: {name: 'Escudo del Capitán América'},
         }),
         [captainShield]
+    );
+});
+
+test('your superhero upgrade targets include unlinked and both identity-side upgrades only', () => {
+    const hero = {id: 'hero'};
+    const alterEgo = {id: 'alter-ego'};
+    const ally = {id: 'ally'};
+    const unlinkedWeapon = {
+        id: 'unlinked-weapon',
+        traits: [TRAIT_WEAPON],
+    };
+    const heroWeapon = {
+        attachedTo: hero,
+        id: 'hero-weapon',
+        traits: [TRAIT_WEAPON],
+    };
+    const alterEgoWeapon = {
+        attachedTo: alterEgo,
+        id: 'alter-ego-weapon',
+        traits: [TRAIT_WEAPON],
+    };
+    const allyWeapon = {
+        attachedTo: ally,
+        id: 'ally-weapon',
+        traits: [TRAIT_WEAPON],
+    };
+    const player = {
+        isHero: false,
+        superhero: {
+            currentSide: alterEgo,
+            sides: [alterEgo, hero],
+        },
+        upgrades: [
+            unlinkedWeapon,
+            heroWeapon,
+            alterEgoWeapon,
+            allyWeapon,
+        ],
+    };
+
+    assert.deepEqual(
+        playerControlledTargets[TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO]({
+            player,
+            condition: {traits: TRAIT_WEAPON},
+        }),
+        [unlinkedWeapon, heroWeapon, alterEgoWeapon]
     );
 });

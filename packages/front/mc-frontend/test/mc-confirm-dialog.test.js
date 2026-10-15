@@ -202,6 +202,31 @@ test('basic activation confirmation titles the action and shows unlabeled cards 
     assert.equal(targetPreview.values.at(-1), true);
 });
 
+test('basic activation confirmation shows the ally that will perform the activation', () => {
+    const ally = {
+        image: 'allies/ally-card.webp',
+        name: 'Hawkeye',
+    };
+    const dialog = Object.assign(Object.create(McConfirmDialog.prototype), {
+        data: {
+            basicActivation: {
+                activationType: 'attack',
+                activator: ally,
+                target: {image: 'enemies/enemy.webp', name: 'Rhino'},
+            },
+        },
+        _dontShowBasicActivationConfirmation: false,
+    });
+
+    const content = dialog.renderContent();
+    const previews = content.values.filter(value =>
+        value?.strings?.join('').includes('basic-activation-card')
+    );
+
+    assert.equal(previews.length, 2);
+    assert.ok(previews[0].values.includes(ally.image));
+});
+
 test('basic activation confirmation returns the selected hide-dialog preference', () => {
     const dialog = Object.assign(Object.create(McConfirmDialog.prototype), {
         data: {basicActivation: {}},

@@ -75,8 +75,9 @@ test('Klaw adds both boost cards to the attack damage total', async () => {
     assert.equal(attackDamage, 5);
     assert.deepEqual(
         boostDialogs.map(({data}) => data.cards.map(card => card?.card.boost ?? null)),
-        [[2, null], [2, 3]]
+        [[2, 3], [2, 3]]
     );
+    assert.equal(boostDialogs[0].data.cards[1].card.isFacedownCard, true);
     assert.deepEqual(
         boostDialogs.map(({data}) => data.cumulativeBoost),
         [2, 5]

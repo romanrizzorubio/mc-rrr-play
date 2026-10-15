@@ -115,6 +115,9 @@ const createRuntime = async (scenarioData, playerCount = 2) => {
         match,
         minions: [],
         name: `player-${index + 1}`,
+        async getEffectiveStats() {
+            return {};
+        },
         toObj() {
             return {name: this.name};
         },
@@ -586,6 +589,16 @@ test('Muerte desde el cielo keeps its scheme modifier on the scheme activation',
         thwart: 2,
         defense: 3,
         recovery: 3,
+        async getEffectiveStats() {
+            return {
+                attack: this.attack,
+                defense: this.defense,
+                hitPoints: 10,
+                life: 10,
+                recovery: this.recovery,
+                thwart: this.thwart,
+            };
+        },
         toObj() {
             return {
                 name: this.name,

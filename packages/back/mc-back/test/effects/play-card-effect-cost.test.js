@@ -8,12 +8,15 @@ import {
     DIALOG_SELECT_CARD,
     PLACE_DISCARD_PILE,
     RESOURCE_ANY,
+    RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
+    TRIGGER_THIS_ENTER_PLAY,
 } from 'mc-shared';
 import {Arrow} from '../../src/abilities/core/arrow.js';
+import {ResponseAbility} from '../../src/abilities/response/response-ability.js';
 import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {DoIfHasPaidEffect} from '../../src/effects/do-if-has-paid-effect.js';
 import {Effect} from '../../src/effects/effect.js';
@@ -36,11 +39,18 @@ class CancelledPaymentEffect extends Effect {
     }
 }
 
-function createPlayCardEffect({calculatedCost, requirement = [], ability}) {
+function createPlayCardEffect({
+    calculatedCost,
+    requirement = [],
+    ability,
+    cardAbilities = [],
+}) {
     const card = {
+        abilities: cardAbilities,
         cost: 3,
         isUpgrade: false,
         requirement,
+        currentSide: {abilities: cardAbilities},
         toObj: () => ({name: 'Test card'}),
     };
     const calls = {
@@ -146,6 +156,28 @@ test('passes conditional paid-resource preferences to the payment dialog', async
     );
 });
 
+test('passes enter-play paid-resource preferences when paying to play a card', async () => {
+    const enterPlayAbility = new ResponseAbility({
+        effect: new DoIfHasPaidEffect({
+            match: {},
+            resources: [RESOURCE_ENERGY],
+        }),
+        match: {},
+        trigger: TRIGGER_THIS_ENTER_PLAY,
+    });
+    const {calls, effect, player} = createPlayCardEffect({
+        cardAbilities: [enterPlayAbility],
+        calculatedCost: 1,
+    });
+
+    await effect.payCost({player});
+
+    assert.deepEqual(
+        calls.dialogs[0].data.resourcePreferences,
+        [RESOURCE_ENERGY]
+    );
+});
+
 test('passes the play effect to card play validation', async () => {
     let validationParams;
     const card = {
@@ -217,6 +249,8 @@ test('returns an event to hand when its arrow cost is cancelled', async () => {
 
 test('resource, basic-action, and arrow costs are staged together and all abort on cancellation', async () => {
     const eventCard = {
+        abilities: [],
+        currentSide: {abilities: []},
         cost: 1,
         exhausted: false,
         id: 'event-with-costs',
@@ -234,9 +268,12 @@ test('resource, basic-action, and arrow costs are staged together and all abort 
         async refresh() {},
     };
     const resourceCard = {
+        card: {
+            getResources: () => [RESOURCE_MENTAL],
+        },
         id: 'resource-card',
         toObj() {
-            return {id: this.id};
+            return {id: this.id, resources: [RESOURCE_MENTAL]};
         },
     };
     const hand = {

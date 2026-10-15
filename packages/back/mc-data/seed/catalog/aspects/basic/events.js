@@ -6,14 +6,18 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_HEAL,
     EFFECT_PREVENT_PLACE_THREAT,
+    EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_THWART,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
     TARGET_CHARACTER,
     TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
+    TRAIT_SUPERPOWER,
     TRAIT_THWART,
     TRIGGER_VILLAIN_SCHEMES,
 } from 'mc-shared';
@@ -129,4 +133,39 @@ export default [
             }
         }
     },
+{
+        '_id': 'basic-invulnerabilidad',
+        'aspect': 'basic',
+        'order': 61,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Invulnerabilidad',
+                'set': 'basic',
+                'image': 'aspect/basic/events/06021.png',
+                'traits': [
+                    TRAIT_SUPERPOWER
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_TOUGH,
+                                'params': {
+                                    'target': TARGET_YOUR_SUPERHERO
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

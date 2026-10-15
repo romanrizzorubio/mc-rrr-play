@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    getBasicActivationOptionForActor,
     getBasicActivationOption,
+    getBasicActivationOptionsForActor,
     isTargetClickDisabled,
     getTargetMenuOptions,
 } from '../src/utils/basic-activation.js';
@@ -60,6 +62,70 @@ test('basic activation options require a matching legal target and ability type'
             'attack'
         ).targetId,
         'scheme-parent'
+    );
+});
+
+test('hero and ally drag options expose only their enabled basic activations with legal targets', () => {
+    const ally = {
+        abilities: [
+            attackAbility(['villain-1']),
+            {
+                availableTargetIds: ['main-scheme'],
+                disable: false,
+                index: 1,
+                isAttack: false,
+                isBasic: true,
+                isThwart: true,
+            },
+            attackAbility(['villain-2'], {disable: true, index: 2}),
+            {
+                disable: false,
+                index: 3,
+                isAction: true,
+                isBasic: false,
+            },
+        ],
+        id: 'ally-1',
+        isAlly: true,
+    };
+
+    assert.deepEqual(
+        getBasicActivationOptionsForActor(ally).map(option => ({
+            abilityIndex: option.abilityIndex,
+            activationType: option.activationType,
+            availableTargetIds: option.availableTargetIds,
+        })),
+        [
+            {
+                abilityIndex: 0,
+                activationType: 'attack',
+                availableTargetIds: ['villain-1'],
+            },
+            {
+                abilityIndex: 1,
+                activationType: 'thwart',
+                availableTargetIds: ['main-scheme'],
+            },
+        ]
+    );
+    assert.deepEqual(
+        getBasicActivationOptionForActor(ally, {id: 'villain-1'}),
+        {
+            id: 'basic-activation-0',
+            text: 'Ataque básico',
+            basicActivation: true,
+            abilityIndex: 0,
+            targetId: 'villain-1',
+            activationType: 'attack',
+        }
+    );
+    assert.equal(
+        getBasicActivationOptionForActor(ally, {id: 'main-scheme'}).activationType,
+        'thwart'
+    );
+    assert.equal(
+        getBasicActivationOptionForActor(ally, {id: 'villain-2'}),
+        undefined
     );
 });
 

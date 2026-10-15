@@ -43,7 +43,10 @@ export class McEncountersDealtDialog extends McDialog {
         return `Se reparten ${hazardIcons} cartas de encuentro adicionales por los iconos de riesgo.`;
     }
     _renderEncountersPlayer(player) {
-        const {name, count, hazardIcons = 0} = player;
+        const {name, count, hazardIcons = 0, cards = []} = player;
+        const displayedCards = cards.length ?
+            cards :
+            [null];
 
         return html`
             <div class="player-encounters">
@@ -58,10 +61,24 @@ export class McEncountersDealtDialog extends McDialog {
                         `)}
                     </div>
                 ` : ''}
-                <mc-card
-                    name="${name}"
-                    image="${BACK_CARD_ENCOUNTER}"
-                ></mc-card>
+                <div class="encounter-cards">
+                    ${displayedCards.map(card => card ? html`
+                        <mc-card
+                            name="${card.name}"
+                            image="${card.image}"
+                            .card="${card}"
+                            .isFacedownCard="${true}"
+                            .canPeekFacedown="${Boolean(card.canPeekFacedown)}"
+                            .facedownImage="${BACK_CARD_ENCOUNTER}"
+                            size="s"
+                        ></mc-card>
+                    ` : html`
+                        <mc-card
+                            name="${name}"
+                            image="${BACK_CARD_ENCOUNTER}"
+                        ></mc-card>
+                    `)}
+                </div>
                 <div class="encounter-count">${count}</div>
             </div>
         `;

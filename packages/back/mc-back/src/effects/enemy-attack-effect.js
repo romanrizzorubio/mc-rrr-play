@@ -164,10 +164,11 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     async getActivationCharacterData(params) {
         const attackValue = await this.getAttackValue(params);
 
-        return {
-            ...this.character.toObj(params),
-            attack: attackValue,
-        };
+        return this.getCharacterDialogData(
+            this.character,
+            params,
+            {attack: attackValue}
+        );
     }
     async getDefenseValue(params, defender = this.defender) {
         return await defender.getDefenseValue(params) + this.modifyDefense;

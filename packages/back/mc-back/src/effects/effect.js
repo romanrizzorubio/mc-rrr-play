@@ -1,6 +1,7 @@
 import {
     ACTIVATION_ATTACK,
     ACTIVATION_DEFENSE,
+    ACTIVATION_RECOVERY,
     ACTIVATION_SCHEME,
     ACTIVATION_THWART,
 
@@ -36,6 +37,7 @@ export class Effect extends Engine {
             isArrow = false,
             isAttack,
             isDefense = false,
+            isRecovery = false,
             isScheme = false,
             isThwart = false,
             saveData = [],
@@ -69,6 +71,7 @@ export class Effect extends Engine {
         this.isArrow = isArrow;
         this._isAttack = isAttack;
         this._isDefense = isDefense;
+        this._isRecovery = isRecovery;
         this._isScheme = isScheme;
         this._isThwart = isThwart;
         this._selectedTarget = selectedTarget;
@@ -139,6 +142,11 @@ export class Effect extends Engine {
                     type: ACTIVATION_THWART,
                     effect: this,
                 });
+            } else if (this.isRecovery) {
+                this._activation = this.match.activationsFactory.createActivation({
+                    type: ACTIVATION_RECOVERY,
+                    effect: this,
+                });
             }
         }
         return this._activation;
@@ -146,13 +154,18 @@ export class Effect extends Engine {
     set activation(activation) {
         this._activation = activation;
     }
+    resetActivation() {
+        if (this.isActivation) {
+            this._activation = undefined;
+        }
+    }
     get activationEnd() {
         return this.resolved;
     }
     get isActivation() {
-        const {isAttack, isDefense, isScheme, isThwart} = this;
+        const {isAttack, isDefense, isRecovery, isScheme, isThwart} = this;
 
-        return (isAttack || isDefense || isScheme || isThwart);
+        return (isAttack || isDefense || isRecovery || isScheme || isThwart);
     }
     get isAttack() {
         return this._isAttack ?? (!this.isCost && this.ability && this.ability.isAttack);
@@ -165,6 +178,12 @@ export class Effect extends Engine {
     }
     set isDefense(isDefense) {
         this._isDefense = isDefense;
+    }
+    get isRecovery() {
+        return this._isRecovery;
+    }
+    set isRecovery(isRecovery) {
+        this._isRecovery = isRecovery;
     }
     get isScheme() {
         return this._isScheme;
@@ -541,7 +560,10 @@ export class Effect extends Engine {
             }
         }
 
-        await this.triggerEnds(triggersParams);
+        await this.triggerEnds({
+            ...triggersParams,
+            ...this.getTriggersParams(effectParams),
+        });
     }
     async runEffect(params) {
         this.resolved = false;

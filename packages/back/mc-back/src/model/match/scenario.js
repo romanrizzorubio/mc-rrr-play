@@ -160,7 +160,6 @@ export class Scenario extends Engine {
                 horizontal: true,
             },
         });
-        await this.revealMainSchemeSide(currentScheme.currentSide, player);
     }
     async completeMainScheme(completedScheme, params) {
         const currentScheme = this.gameZone.currentScheme;

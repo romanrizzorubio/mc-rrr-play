@@ -17,6 +17,7 @@ export class SchemeCardComponent extends LitElement {
             name: { type: String},
             card: {type: Object},
             basicActivation: {type: Object},
+            dragActivation: {type: Object},
             clickDisabled: {type: Boolean},
             menuOptions: {type: Array},
             image: { type: String},
@@ -34,6 +35,7 @@ export class SchemeCardComponent extends LitElement {
         this.name = '';
         this.card = null;
         this.basicActivation = null;
+        this.dragActivation = null;
         this.clickDisabled = false;
         this.menuOptions = [];
         this.image = '';
@@ -47,6 +49,7 @@ export class SchemeCardComponent extends LitElement {
         const {
             card,
             basicActivation,
+            dragActivation,
             clickDisabled,
             menuOptions,
             name,
@@ -61,6 +64,7 @@ export class SchemeCardComponent extends LitElement {
             <mc-card
                 .card="${card}"
                 .basicActivation="${basicActivation}"
+                .dragActivation="${dragActivation}"
                 .clickDisabled="${clickDisabled}"
                 .menuOptions="${menuOptions}"
                 horizontal

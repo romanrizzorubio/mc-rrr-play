@@ -1,4 +1,5 @@
 import {
+    ABILITY_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_ACTION,
     ABILITY_RESPONSE,
@@ -11,6 +12,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DO_IF_HAS_PAID,
+    EFFECT_HEAL,
     EFFECT_ENEMY_ATTACK,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_STUN,
@@ -22,6 +24,7 @@ import {
     TARGET_EFFECT,
     TARGET_ATTACKER,
     TARGET_ENEMY,
+    TARGET_HERO,
     TARGET_PLAYER,
     TARGET_YOU,
     TARGET_VILLAIN,
@@ -282,5 +285,54 @@ export default [
                 ]
             }
         }
-    }
+    },
+{
+        '_id': 'protection-fuerzas-de-flaqueza',
+        'aspect': 'protection',
+        'order': 60,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Fuerzas de flaqueza',
+                'set': 'protection',
+                'image': 'aspect/protection/events/06033.png',
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'protection',
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_DO_IF_HAS_PAID,
+                                'params': {
+                                    'resources': [
+                                        RESOURCE_MENTAL
+                                    ],
+                                    'target': TARGET_HERO,
+                                    'effect': {
+                                        'type': EFFECT_HEAL,
+                                        'params': {
+                                            'target': TARGET_HERO,
+                                            'damage': 5
+                                        }
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_HEAL,
+                                        'params': {
+                                            'target': TARGET_HERO,
+                                            'damage': 4
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

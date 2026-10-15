@@ -24,6 +24,9 @@ const {HandComponent: McCardList} = await import(
 const {CardComponent} = await import(
     '../src/components/cards/mc-card/mc-card.js'
 );
+const {ICON_EYE} = await import(
+    '../src/components/common/mc-icon/mc-icon.js'
+);
 const {DECK_TYPES, DeckComponent} = await import(
     '../src/components/panels/mc-deck/mc-deck.js'
 );
@@ -98,6 +101,43 @@ test('does not highlight other players or cards that cannot be played from disca
 
     assert.equal(otherPlayersDeck.renderDiscard().values[0], '');
     assert.equal(ineligibleCardDeck.renderDiscard().values[0], '');
+});
+
+test('shows an eye on a deck with known cards and opens their list', () => {
+    const knownCards = [{id: 'known-card', name: 'Carta conocida'}];
+    const deck = Object.assign(Object.create(DeckComponent.prototype), {
+        cards: [{id: 'top-card'}],
+        knownCards,
+        type: DECK_TYPES.PLAYER,
+        deckName: 'Bruno',
+    });
+    const template = deck.renderDeck();
+
+    assert.ok(template.values.some(value =>
+        value?.strings?.join('').includes('known-cards-button')
+    ));
+
+    deck.dispatchEvent = event => {
+        deck.dispatchedEvent = event;
+    };
+    deck.handleViewKnownCards();
+
+    assert.equal(deck.dispatchedEvent.type, 'view-known-cards');
+    assert.ok(template.values.some(value => value?.values?.includes(ICON_EYE)));
+    assert.equal(deck.dispatchedEvent.detail.title, 'Cartas vistas del mazo de Bruno');
+    assert.deepEqual(deck.dispatchedEvent.detail.cards, knownCards);
+});
+
+test('does not show the known-cards eye when the deck has no viewed cards', () => {
+    const deck = Object.assign(Object.create(DeckComponent.prototype), {
+        cards: [{id: 'top-card'}],
+        knownCards: [],
+        type: DECK_TYPES.ENCOUNTER,
+    });
+
+    assert.ok(!deck.renderDeck().values.some(value =>
+        value?.strings?.join('').includes('known-cards-button')
+    ));
 });
 
 test('highlights discard cards that can be played from that discard', () => {

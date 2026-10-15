@@ -29,7 +29,9 @@ import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import {ChainedEffect} from '../../src/effects/chained-effect.js';
 import {DealBoostEffect} from '../../src/effects/deal-boost-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
+import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
+import {PlayerZone} from '../../src/model/match/player-zone.js';
 import {Scenario} from '../../src/model/match/scenario.js';
 import {ScenarioZone} from '../../src/model/match/scenario-zone.js';
 
@@ -135,6 +137,69 @@ test('Klaw Sonic Boom displays text for both When Revealed options', async () =>
         'Gasta un recurso de cada tipo (Energía, Mental y Físico)',
         'Agota todos los personajes que controlas',
     ]);
+});
+
+test('Klaw setup engages only one minion from the first main scheme', async () => {
+    const {heroes, scenarios} = await loadCatalog();
+    const klaw = scenarios.find(({_id}) => _id === 'klaw');
+    const thor = heroes.find(({_id}) => _id === 'thor');
+    const match = new Match({
+        mc: {
+            mcSocket: {
+                send() {},
+            },
+        },
+        name: 'klaw-setup-minion-count',
+    });
+    const matchFactory = new MatchFactory(match);
+    match.openDialog = async () => {};
+    match.refresh = async () => {};
+
+    const superhero = matchFactory.createSuperhero(thor.config);
+    superhero.selectedSide = 1;
+    const player = match.createPlayer({
+        initial: true,
+        name: 'Thor',
+        superhero,
+    });
+    player.gameZone = new PlayerZone({owner: player});
+    player.gameZone.refresh = async () => {};
+    player.refresh = async () => {};
+    superhero.refresh = async () => {};
+    superhero.sides.forEach(side => {
+        side.refresh = async () => {};
+    });
+
+    const cardsFactory = matchFactory.cardsFactory;
+    const villains = klaw.config.villains.map(card =>
+        cardsFactory.createGameCardFromConfig(card));
+    const mainSchemes = klaw.config.mainSchemes.map(sides =>
+        cardsFactory.createCardSides(cardsFactory.createSides(sides)));
+    mainSchemes[0].setup = async () => {};
+    const minionConfig = klaw.config.cards.find(({card}) =>
+        card.params.name === 'Guardia acorazado').card;
+    const scenarioCards = [1, 2].map(index =>
+        cardsFactory.createGameCardFromConfig(minionConfig, {index}));
+    const scenario = new Scenario({
+        mainSchemes,
+        match,
+        name: klaw.name,
+        scenarioCards,
+        sets: [],
+        villains,
+    });
+    match.scenario = scenario;
+    scenario.selectVillain = async function() {
+        this.gameZone.currentVillain = this.villains[0];
+    };
+
+    await scenario.initScenario([], false);
+    assert.equal(player.minions.length, 0);
+
+    await scenario.gameZone.resolveWhenReveal(player);
+
+    assert.equal(player.minions.length, 1);
+    assert.equal(player.minions[0].name, 'Guardia acorazado');
 });
 
 test('all Klaw card abilities create one effect instance with canRun', async () => {

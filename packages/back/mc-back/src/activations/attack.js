@@ -98,6 +98,14 @@ export class Attack extends Activation {
             .map(target => target.isPlayer ? target.superhero.currentSide : target)
             .map(target => new RetaliateTrigger(this, target));
     }
+    getTriggersInit(params) {
+        const {triggersInitLaunched, effect} = this;
+        const triggers = super.getTriggersInit(params);
+
+        return !triggersInitLaunched && effect?.ability?.isBasic ?
+            triggers.concat(TRIGGER_YOU_BASIC_ATTACK) :
+            triggers;
+    }
     checkStatus() {
         const {character} = this;
 

@@ -114,7 +114,7 @@ const createEffect = (cards, {resolveAll = false, choose, playerDamage = 0} = {}
     };
 };
 
-test('shows and resolves the only special ability with a valid target', async () => {
+test('automatically resolves the only runnable special ability', async () => {
     const resolved = [];
     const runnable = createSpecialCard({
         id: 'runnable',
@@ -127,19 +127,28 @@ test('shows and resolves the only special ability with a valid target', async ()
         id: 'blocked',
         hasEnemy: false,
     });
-    const {dialogs, effect, params} = createEffect([runnable, blocked], {
-        choose: dialog => {
-            assert.equal(dialog.dialogType, DIALOG_SELECT_CARD);
-            assert.deepEqual(dialog.data.cards.map(card => card.id), ['runnable']);
-            return {selected: [{id: 'runnable'}]};
+    const effect = new ResolveSpecialAbilityEffect({
+        filter: {
+            traits: [TRAIT_BLACK_PANTHER],
+            type: CARD_TYPE_UPGRADE,
+        },
+        locations: [PLACE_IN_PLAY],
+        match: {
+            async openDialog() {
+                throw new Error('A single option must not open a dialog.');
+            },
         },
     });
 
-    await effect.execute(params);
+    await effect.execute({
+        player: {
+            gameZone: {
+                cards: [runnable.gameCard, blocked.gameCard],
+            },
+        },
+    });
 
     assert.deepEqual(resolved, [{id: 'runnable', isLastStep: true}]);
-    assert.equal(dialogs.length, 1);
-    assert.equal(dialogs[0].closeOnResponse, true);
 });
 
 test('offers multiple abilities and resolves only the chosen one by default', async () => {

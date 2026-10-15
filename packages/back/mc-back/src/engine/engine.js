@@ -1,5 +1,10 @@
-import {DIALOG_DISCARD_ORDER, DIALOG_LIST, DIALOG_USE_CARD,
-    MANDATORY_PRIORITIES, PRIORITY_CONSTANT,
+import {
+    DIALOG_DISCARD_ORDER,
+    DIALOG_LIST,
+    DIALOG_SELECT_CARD,
+    DIALOG_USE_CARD,
+    MANDATORY_PRIORITIES,
+    PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
@@ -415,54 +420,60 @@ export class Engine {
         if (!this.match) {
             console.log('Falta Match');
         }
+
+        const cards = params.data?.cards;
+        if (params.dialogType === DIALOG_SELECT_CARD &&
+            cards?.length === 1 &&
+            !params.showCancel &&
+            !params.data?.upTo) {
+            return Promise.resolve({selected: cards});
+        }
+
         return this.match.openDialog(params);
     }
-    async selectDiscardOrder(cards, title = 'Elige qué carta descartar primero') {
-        const remainingCards = cards.slice();
-        const orderedCards = [];
+    async selectDiscardOrder(
+        cards,
+        title = 'Elige el orden de las cartas que se descartan',
+        {subtitle} = {}
+    ) {
+        if (cards.length < 2 || this.match.skipDiscardOrderDialog) {
+            return cards.slice();
+        }
 
-        while (remainingCards.length > 0) {
-            if (this.match.skipDiscardOrderDialog) {
-                orderedCards.push(...remainingCards);
-                break;
-            }
+        const response = await this.openDialog({
+            dialogType: DIALOG_DISCARD_ORDER,
+            title,
+            ...(subtitle ? {subtitle} : {}),
+            data: {
+                cards: cards.map(card => ({
+                    ...card.toObj(),
+                    id: card.id,
+                })),
+            },
+        });
 
-            if (remainingCards.length === 1) {
-                orderedCards.push(remainingCards[0]);
-                break;
-            }
+        if (response?.skipDiscardOrderDialog === true) {
+            this.match.skipDiscardOrderDialog = true;
+        }
 
-            const response = await this.openDialog({
-                dialogType: DIALOG_DISCARD_ORDER,
-                hideOk: true,
-                title,
-                data: {
-                    cards: remainingCards.map(card => ({
-                        ...card.toObj(),
-                        id: card.id,
-                    })),
-                },
-            });
+        const selected = response?.selected;
+        if (!Array.isArray(selected) || selected.length !== cards.length) {
+            throw new Error('La selección del orden de descarte no es válida.');
+        }
 
-            if (response?.skipDiscardOrderDialog === true) {
-                this.match.skipDiscardOrderDialog = true;
-            }
-
-            if (response?.discardAll === true) {
-                orderedCards.push(...remainingCards);
-                break;
-            }
-
-            const selectedIndex = remainingCards.findIndex(card =>
-                card.id === response?.selected?.id);
-            if (selectedIndex < 0) {
+        const selectedIds = new Set();
+        const orderedCards = selected.map(selectedCard => {
+            const id = selectedCard?.id;
+            const card = cards.find(candidate => candidate.id === id);
+            if (!card || selectedIds.has(id)) {
                 throw new Error('La selección del orden de descarte no es válida.');
             }
 
-            orderedCards.push(remainingCards.splice(selectedIndex, 1)[0]);
-        }
+            selectedIds.add(id);
+            return card;
+        });
 
-        return orderedCards;
+        return orderedCards.reverse();
     }
     refresh() {
         const {match, objectToRefresh} = this;

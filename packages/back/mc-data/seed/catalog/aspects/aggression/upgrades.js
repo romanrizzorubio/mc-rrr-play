@@ -1,16 +1,32 @@
 import {
     ABILITY_CONSTANT,
+    ABILITY_RESPONSE,
     CARD_TYPE_UPGRADE,
-    EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
+    EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_READY,
+    EFFECT_SIMULTANEOUS,
+    EFFECT_SPEND,
+    EFFECT_TAKE_DAMAGE,
+    EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
+    RESOURCE_ENERGY,
     RESOURCE_PHYSICAL,
+    TARGET_ANY_PLAYER,
     TARGET_ALLY,
+    TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_PLAYER,
+    TARGET_THIS,
+    TARGET_YOUR_HERO,
+    TRAIT_ASGARD,
     TRAIT_CONDITION,
     TRAIT_SKILL,
+    TRAIT_WEAPON,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
+    TRIGGER_YOU_ATTACK,
+    TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK
 } from 'mc-shared';
 
@@ -108,5 +124,118 @@ export default [
                 ]
             }
         }
-    }
+    },
+{
+        '_id': 'aggression-furia-de-combate',
+        'aspect': 'aggression',
+        'order': 65,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Furia de combate',
+                'set': 'aggression',
+                'image': 'aspect/aggression/upgrades/06018.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'aggression',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
+                            'condition': {
+                                'effect.selectedTarget.isMinion': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_TAKE_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_YOUR_HERO,
+                                                'damage': 1
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DISCARD_GAME,
+                                            'params': {
+                                                'target': TARGET_THIS
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_READY,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+{
+        '_id': 'aggression-jarnbjorn',
+        'aspect': 'aggression',
+        'order': 66,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Jarnbjorn',
+                'set': 'aggression',
+                'image': 'aspect/aggression/upgrades/06019.png',
+                'traits': [
+                    TRAIT_ASGARD,
+                    TRAIT_WEAPON
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'restricted': true,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_ATTACK,
+                            'condition': {
+                                'effect.activation.character.isHero': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_SPEND,
+                                'params': {
+                                    'resources': [
+                                        RESOURCE_PHYSICAL
+                                    ]
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

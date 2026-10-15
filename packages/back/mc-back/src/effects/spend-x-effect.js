@@ -34,7 +34,8 @@ export class SpendXEffect extends Effect {
             this.resources,
             params.card,
             this.resourceType,
-            session.getExcludedCardIds()
+            session.getResourcePaymentExcludedCardIds(),
+            session.getRemainingResources()
         );
     }
     async execute(params) {

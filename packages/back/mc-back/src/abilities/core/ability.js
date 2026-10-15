@@ -275,6 +275,9 @@ export class Ability extends Engine {
             this.resolved = false;
             this.paymentCancelled = false;
             this.prepareEffect({preselectedTarget, effect});
+            if (effect?.isActivation) {
+                effect.resetActivation();
+            }
 
             const canRun = await this.canRun(params, effect);
 

@@ -9,16 +9,19 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_STUN,
     PLACE_DISCARD_PILE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_CARD,
+    TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
     TARGET_SCHEME,
     TARGET_YOU,
     TIME_ROUND,
     TRAIT_SHIELD,
+    TRAIT_ASGARD,
     TRAIT_SPY,
     TRAIT_INHUMAN,
     TRIGGER_THIS_ENTER_PLAY,
@@ -186,4 +189,47 @@ export default [
             }
         }
     },
+{
+        '_id': 'basic-heimdall',
+        'aspect': 'basic',
+        'order': 60,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Heimdall',
+                'set': 'basic',
+                'image': 'aspect/basic/allies/06020.png',
+                'traits': [
+                    TRAIT_ASGARD
+                ],
+                'unique': true,
+                'cost': 5,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'basic',
+                'thwart': 2,
+                'attack': 3,
+                'thwartConsequential': 1,
+                'attackConsequential': 2,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'effect': {
+                                'type': EFFECT_SELECT_AND_ORDER_TOP_CARDS,
+                                'params': {
+                                    'target': TARGET_ENCOUNTER_DECK,
+                                    'count': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

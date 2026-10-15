@@ -1,6 +1,9 @@
 import {
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
+    ABILITY_HERO_INTERRUPT,
+    CALC_ALL,
+    CALC_ATTACK,
     CALC_COUNT,
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
@@ -21,6 +24,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
+    TARGET_ALLY_YOU_CONTROL,
     TARGET_HERO,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_ALLIES_YOU_CONTROL,
@@ -28,11 +32,14 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ROUND,
+    TARGET_EFFECT,
     TARGET_YOU,
     TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
-    TRAIT_TACTIC
+    TRAIT_TACTIC,
+    TRIGGER_YOU_BASIC_ATTACK,
+    TRIGGER_YOU_BASIC_THWART
 } from 'mc-shared';
 
 export default [
@@ -361,5 +368,75 @@ export default [
                 ]
             }
         }
-    }
+    },
+{
+        '_id': 'leadership-trabajo-en-equipo',
+        'aspect': 'leadership',
+        'order': 60,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Trabajo en equipo',
+                'set': 'leadership',
+                'image': 'aspect/leadership/events/06032.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'leadership',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_THWART,
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_ALLY_YOU_CONTROL
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 0,
+                                    'paramsCalc': {
+                                        'target': 'effect.ability.arrow.cost.selectedTarget.thwart',
+                                        'formula': CALC_ALL
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_ATTACK,
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_ALLY_YOU_CONTROL
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 0,
+                                    'paramsCalc': {
+                                        'target': 'effect.ability.arrow.cost.selectedTarget',
+                                        'formula': CALC_ATTACK
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
 ];

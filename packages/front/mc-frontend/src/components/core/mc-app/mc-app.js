@@ -372,6 +372,20 @@ class McApp extends router(navigator(outlet(LitElement))) {
             callback: () => {},
         });
     }
+    handleViewKnownCards(e) {
+        const {cards, title} = e.detail;
+        if (!cards?.length) {
+            return;
+        }
+
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title,
+            subtitle: 'Estas son las cartas del mazo que has visto.',
+            data: {cards},
+            callback: () => {},
+        });
+    }
     showAlert(msg) {
         this.alert = {
             msg,
@@ -670,6 +684,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                           @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
                           @change-match="${this.handleMatchChanged.bind(this)}"
                           @view-discard="${this.handleViewDiscard.bind(this)}"
+                          @view-known-cards="${this.handleViewKnownCards.bind(this)}"
                           @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
                           @communication-error="${this.handleCommunicationError.bind(this)}"
                       ></mc-match-page>
