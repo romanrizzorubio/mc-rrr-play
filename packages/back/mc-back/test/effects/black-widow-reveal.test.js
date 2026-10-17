@@ -4,7 +4,9 @@ import {test} from 'node:test';
 import {
     CARD_TYPE_ANY,
     EFFECT_CANCEL_ENCOUNTER,
+    EFFECT_CHAINED,
     EFFECT_EXHAUST,
+    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_REVEAL_ENCOUNTER,
     PLACE_ENCOUNTER_DECK,
     TARGET_THIS,
@@ -45,8 +47,15 @@ test('Black Widow cancels any revealed encounter card and reveals the next one',
         EFFECT_CANCEL_ENCOUNTER,
     ]);
     assert.equal(effects[0].params.type, CARD_TYPE_ANY);
-    assert.equal(replacementRevealConfig.type, EFFECT_REVEAL_ENCOUNTER);
-    assert.equal(replacementRevealConfig.params.from, PLACE_ENCOUNTER_DECK);
+    assert.equal(replacementRevealConfig.type, EFFECT_CHAINED);
+    assert.deepEqual(
+        replacementRevealConfig.params.effects.map(({type}) => type),
+        [EFFECT_GET_ENCOUNTER_CARD, EFFECT_REVEAL_ENCOUNTER]
+    );
+    assert.equal(
+        replacementRevealConfig.params.effects[0].params.from,
+        PLACE_ENCOUNTER_DECK
+    );
 });
 
 test('Black Widow is not offered again while exhausted during the replacement reveal', async () => {

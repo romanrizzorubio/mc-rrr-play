@@ -15,9 +15,17 @@ export class TakeDamageEffect extends Effect {
     }) {
         super(arguments[0]);
 
+        this.initialDamage = damage;
         this.damage = damage;
         this.ignoreTough = ignoreTough;
 
+        this.preventDamage = 0;
+        this.excess = 0;
+        this.canceled = false;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.damage = this.initialDamage;
         this.preventDamage = 0;
         this.excess = 0;
         this.canceled = false;
@@ -78,7 +86,11 @@ export class TakeDamageEffect extends Effect {
 
         return super.canRun(params);
     }
-    checkTrigger() {
+    checkTrigger(params) {
+        if (!this.isActivationActive(params)) {
+            return false;
+        }
+
         if (this.canceled) {
             return false;
         }

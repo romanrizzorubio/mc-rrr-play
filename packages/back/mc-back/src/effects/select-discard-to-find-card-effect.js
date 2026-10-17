@@ -25,6 +25,10 @@ export class SelectDiscardToFindCardEffect extends Effect {
 
         this.cards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+    }
     getEligibleCards(player) {
         return player.hand.cards.filter(card =>
             !this.cardCondition || checkCondition(card, this.cardCondition));

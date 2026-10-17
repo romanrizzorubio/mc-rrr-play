@@ -128,6 +128,7 @@ test('Backflip is offered before attack damage is applied', async () => {
         },
         triggers: {},
     };
+    player.hand.cards.push(card);
     let eventPlayed = false;
     player.triggerEvent = async trigger => {
         eventPlayed = trigger.ability === ability;

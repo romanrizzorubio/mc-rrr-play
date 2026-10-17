@@ -200,6 +200,7 @@ test('cancelling an event interrupt cost offers the event again', async () => {
         triggerCards: {},
     };
     const player = {
+        hand: {cards: []},
         async triggerEvent() {
             calls.plays++;
 
@@ -215,6 +216,7 @@ test('cancelling an event interrupt cost offers the event again', async () => {
         owner: player,
         triggers: {},
     };
+    player.hand.cards.push(card);
     const trigger = new Trigger({
         ability: {
             canTrigger: async () => true,

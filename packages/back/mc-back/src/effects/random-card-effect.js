@@ -12,8 +12,13 @@ export class RandomCardEffect extends Effect {
 
         this.cards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+    }
     async execute() {
         const {selectedTarget, count, showDialog} = this;
+        this.cards = [];
 
         for (let i = 0 ; i < count ; i++) {
             this.cards.push(await selectedTarget.hand.discardRandom(showDialog));

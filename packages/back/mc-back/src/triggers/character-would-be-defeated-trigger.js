@@ -8,13 +8,16 @@ export class CharacterWouldBeDefeatedTrigger extends Trigger {
         this.target = target;
     }
     canTrigger(params) {
+        const owner = this.card.isEvent ?
+            params.player :
+            this.card.controller || this.card.owner;
+
         if (this.target) {
             const resolveTarget = targetMap[this.target];
             if (!resolveTarget) {
                 throw new Error(`Unknown defeat trigger target "${this.target}".`);
             }
 
-            const owner = this.card.controller || this.card.owner;
             const targets = resolveTarget({
                 ...params,
                 ability: this.ability,
@@ -32,7 +35,6 @@ export class CharacterWouldBeDefeatedTrigger extends Trigger {
                 super.canTrigger(params);
         }
 
-        const owner = this.card.controller || this.card.owner;
         const superhero = owner?.superhero;
         const target = params.effect?.selectedTarget;
 

@@ -7,12 +7,22 @@ export class Deck extends Engine {
         owner,
         isPlayerDeck = false,
         isScenarioDeck = false,
+        isScenarioExtraDeck = false,
+        id,
+        name,
+        hasDiscard = true,
+        discardTarget,
     }) {
         super();
 
         this.owner = owner;
         this.isPlayerDeck = isPlayerDeck;
         this.isScenarioDeck = isScenarioDeck;
+        this.isScenarioExtraDeck = isScenarioExtraDeck;
+        this.id = id;
+        this.deckName = name;
+        this.hasDiscard = hasDiscard;
+        this.discardTarget = discardTarget;
 
         this.cards = [];
         this.discardPile = [];
@@ -22,9 +32,9 @@ export class Deck extends Engine {
         return path(this, 'owner.match');
     }
     get name() {
-        const {owner} = this;
+        const {deckName, owner} = this;
 
-        return owner.name;
+        return deckName || owner.name;
     }
     get objectToRefresh() {
         return 'deck';
@@ -48,6 +58,11 @@ export class Deck extends Engine {
         this.shuffle();
     }
     async discard(card) {
+        if (this.discardTarget) {
+            await this.discardTarget.discard(card);
+            return;
+        }
+
         if (card instanceof Array) {
             this.discardPile = this.discardPile.concat(card);
         } else {
@@ -172,17 +187,25 @@ export class Deck extends Engine {
             cards,
             discardPile,
             name,
+            id,
+            hasDiscard,
             isPlayerDeck,
             isScenarioDeck,
+            isScenarioExtraDeck,
         } = this;
         const knownCards = new Set(this.knownCards || []);
 
         return {
             name,
+            ...(id ? {id} : {}),
+            hasDiscard,
             isPlayerDeck,
             isScenarioDeck,
+            isScenarioExtraDeck,
             cards: cards.map(card => card.toObj(arguments[0])),
-            discard: discardPile.map(card => card.toObj(arguments[0])),
+            ...(hasDiscard ? {
+                discard: discardPile.map(card => card.toObj(arguments[0])),
+            } : {}),
             knownCards: cards
                 .filter(card => knownCards.has(card))
                 .map(card => card.toObj(arguments[0])),

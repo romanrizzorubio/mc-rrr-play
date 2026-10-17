@@ -1,9 +1,6 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
-    DIALOG_SURGE,
     PRIORITY_CONSTANT,
-    PLACE_ENCOUNTER_DECK,
-    PLACE_PLAYER_ENCOUNTERS,
     TARGET_PLAYER,
     TARGET_SCENARIO,
     TRIGGER_ENCOUNTER_REVEAL,
@@ -17,72 +14,74 @@ import {
     CANCEL_ENCOUNTER_NOT,
     CANCEL_ENCOUNTER_REVEAL,
 } from './cancel-encounter-constants.js';
-import {checkCondition} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 import {DelayedEffect} from './delayed-effect.js';
 import {DealEncounterEffect} from './deal-encounter-effect.js';
 import {Effect} from './effect.js';
 import {EngageEffect} from './engage-effect.js';
 import {GetSurgeEffect} from './get-surge-effect.js';
 import {PutPlayEffect} from './put-play-effect.js';
+import {ResolveSurgeEffect} from './resolve-surge-effect.js';
 
 export class RevealEncounterEffect extends Effect {
-    constructor({
-        card,
-        player,
-        from = PLACE_PLAYER_ENCOUNTERS,
-        selectedTarget,
-        putInPlay = false,
-    }) {
-        super(arguments[0]);
+    constructor(params = {}) {
+        const {
+            card,
+            player,
+            putInPlay = false,
+        } = params;
+        super({
+            ...params,
+            selectedTarget: params.selectedTarget ??
+                (card?.isEncounterCard ? card : undefined),
+        });
 
-        if (from !== PLACE_PLAYER_ENCOUNTERS && from !== PLACE_ENCOUNTER_DECK) {
-            throw new Error(`Unsupported encounter reveal source: ${from}`);
-        }
-
-        this.card = card;
+        this.card = card ?? params.selectedTarget;
         this.player = player;
-        this.from = from;
-        this.hasPreselectedCard = Boolean(selectedTarget?.isEncounterCard);
         this.putInPlay = putInPlay;
 
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
     }
-    async applySurge(params) {
-        const {player} = params;
-
-        if (!this.match.skipSurgeNotification) {
-            const response = await this.openDialog({
-                dialogType: DIALOG_SURGE,
-                title: 'Oleada',
-                subtitle: 'Se resuelve una Oleada: se revela y resuelve una carta adicional del mazo de Encuentros.',
-                data: {
-                    allowHideFuture: true,
-                },
-            });
-
-            if (response?.skipSurgeNotification) {
-                this.match.skipSurgeNotification = true;
-            }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.surge = false;
+        this.canceled = CANCEL_ENCOUNTER_NOT;
+    }
+    getCard(params) {
+        const source = typeof this.card === 'string' ?
+            path(params, this.card) :
+            this.selectedTarget ?? this.card;
+        if (Array.isArray(source)) {
+            return source.find(card => card?.isEncounterCard);
         }
 
-        const cards = await this.match.drawEncounterCards();
-        const card = cards.shift();
-        const surge = new RevealEncounterEffect({
-            selectedTarget: card,
-            player,
+        return source?.isEncounterCard ? source : undefined;
+    }
+    async applySurge(params) {
+        const {player} = params;
+        const resolveSurgeEffect = new ResolveSurgeEffect({
             match: this.match,
         });
-        const delayed = new DelayedEffect({
-            selectedTarget: this,
-            effect: surge,
-            match: this.match,
-        });
+        await resolveSurgeEffect.runEffect(params);
 
-        await delayed.runEffect({
-            ...params,
-            card: card,
-        });
+        if (resolveSurgeEffect.card) {
+            const surgeReveal = new RevealEncounterEffect({
+                selectedTarget: resolveSurgeEffect.card,
+                player,
+                match: this.match,
+            });
+            const delayed = new DelayedEffect({
+                selectedTarget: this,
+                effect: surgeReveal,
+                match: this.match,
+            });
+
+            await delayed.runEffect({
+                ...params,
+                card: resolveSurgeEffect.card,
+            });
+        }
 
         this.selectedTarget.endTriggers(true);
     }
@@ -92,20 +91,7 @@ export class RevealEncounterEffect extends Effect {
         return canceled !== CANCEL_ENCOUNTER_FULL;
     }
     async canRun(params) {
-        if (!await super.canRun(params)) {
-            return false;
-        }
-
-        if (this.hasPreselectedCard) {
-            return true;
-        }
-
-        if (this.from === PLACE_PLAYER_ENCOUNTERS) {
-            return Boolean(params.player?.encounters.length);
-        }
-
-        const {cards, discardPile} = this.match.scenario.deck;
-        return cards.length > 0 || discardPile.length > 0;
+        return Boolean(this.getCard(params));
     }
     getTriggersInit() {
         return super.getTriggersInit()
@@ -124,24 +110,12 @@ export class RevealEncounterEffect extends Effect {
         return shouldResolve;
     }
     async prepare(params) {
-        if (!this.hasPreselectedCard) {
-            if (this.from === PLACE_PLAYER_ENCOUNTERS) {
-                const {player} = params;
-                if (!player) {
-                    throw new Error('A player is required to reveal a dealt encounter card');
-                }
-
-                this.selectedTarget = player.encounters.shift();
-            } else if (this.from === PLACE_ENCOUNTER_DECK) {
-                const [card] = await this.match.drawEncounterCards();
-                this.selectedTarget = card;
-            }
+        const card = this.getCard(params);
+        if (!card) {
+            throw new Error('RevealEncounterEffect requires an encounter card.');
         }
 
-        if (!this.selectedTarget?.isEncounterCard) {
-            throw new Error(`No encounter card is available from ${this.from}`);
-        }
-
+        this.selectedTarget = card;
         await super.prepare(params);
 
         const {selectedTarget} = this;

@@ -49,10 +49,19 @@ export default css`
     gap: 16px;
   }
 
-  .modular-sets h3 {
+  .modular-sets h3,
+  .required-modular-sets h3 {
     font-family: var(--mc-font-title, sans-serif);
     margin: 0 0 8px;
     font-size: 1rem;
+  }
+
+  .required-modular-sets {
+    margin-bottom: 16px;
+  }
+
+  .required-modular-set-names {
+    margin: 0;
   }
 
   .modular-set-list {

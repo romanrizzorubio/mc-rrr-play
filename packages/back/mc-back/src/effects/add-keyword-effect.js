@@ -1,5 +1,6 @@
 import {Effect} from './effect.js';
 import {getSelectedTargets} from '../utils/target-utils.js';
+import {resolveNumericKeyword} from '../model/commons/keywords.js';
 
 const booleanKeywords = new Set([
     'guard',
@@ -13,7 +14,7 @@ const booleanKeywords = new Set([
     'ranged',
     'restricted',
 ]);
-const numericKeywords = new Set(['retaliate']);
+const numericKeywords = new Set(['incite', 'retaliate']);
 
 export class AddKeywordEffect extends Effect {
     constructor({
@@ -35,7 +36,16 @@ export class AddKeywordEffect extends Effect {
             throw new TypeError('EFFECT_ADD_KEYWORD requires a non-empty keyword object.');
         }
 
-        Object.entries(keyword).forEach(([name, value]) => {
+        const resolvedKeyword = Object.fromEntries(
+            Object.entries(keyword).map(([name, value]) => [
+                name,
+                numericKeywords.has(name) ?
+                    resolveNumericKeyword(value, this.match) :
+                    value,
+            ])
+        );
+
+        Object.entries(resolvedKeyword).forEach(([name, value]) => {
             const isBooleanKeyword = booleanKeywords.has(name) && value === true;
             const isNumericKeyword = numericKeywords.has(name) &&
                 Number.isFinite(value) && value > 0;
@@ -53,7 +63,7 @@ export class AddKeywordEffect extends Effect {
             target.addKeywordModifier(
                 source,
                 ability,
-                keyword,
+                resolvedKeyword,
                 Boolean(params.lasting)
             );
             if (typeof target.refresh === 'function') {

@@ -16,6 +16,10 @@ export class SeveralAttacksEffect extends SeveralActivationsEffect {
         this.attackTarget = attackTarget;
         this.attacks = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.attacks = [];
+    }
     async prepare(params) {
         this.attacks = [];
 

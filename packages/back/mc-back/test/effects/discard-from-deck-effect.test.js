@@ -52,6 +52,28 @@ test('DiscardFromDeckEffect leaves cards in the discard pile until the deck cycl
     assert.equal(getCycleCount(), 0);
 });
 
+test('DiscardFromDeckEffect keeps only the current resolution cards when reused', async () => {
+    const first = {...createCard('first', []), boost: 2};
+    const second = {...createCard('second', []), boost: 1};
+    const deck = createDeck({cards: [first, second]}).deck;
+    const match = {
+        openDialog: async () => ({}),
+        triggerCards: {},
+    };
+    const player = {deck};
+    const effect = new DiscardFromDeckEffect({
+        count: 1,
+        match,
+    });
+    effect.selectedTarget = deck;
+
+    await effect.runEffect({match, player});
+    assert.deepEqual(effect.cards, [first]);
+
+    await effect.runEffect({match, player});
+    assert.deepEqual(effect.cards, [second]);
+});
+
 test('DiscardFromDeckEffect stops after reshuffling a deck shorter than the requested count', async () => {
     const first = createCard('first', [RESOURCE_ENERGY]);
     const second = createCard('second', []);

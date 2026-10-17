@@ -134,12 +134,44 @@ export class MongoDataStore {
             })
             .toArray();
 
+        const requiredSetIds = new Set(scenarios.flatMap(({config}) =>
+            config?.sets || []
+        ));
+        const requiredSetRecords = requiredSetIds.size ?
+            await this._collection(collectionNames.sets)
+                .find({_id: {$in: [...requiredSetIds]}}, {
+                    projection: {
+                        _id: 1,
+                        'config.name': 1,
+                    },
+                })
+                .toArray() :
+            [];
+        const requiredSetNames = new Map(requiredSetRecords.map(({_id, config}) => [
+            _id,
+            config?.name,
+        ]));
+
         return scenarios
-            .map(({name, folder, config}) => ({
-                name,
-                folder,
-                configuredSets: [...(config.sets || []), ...(config.defaultSets || [])],
-            }))
+            .map(({name, folder, config}) => {
+                const requiredSets = (config?.sets || []).map(id => {
+                    const setName = requiredSetNames.get(id);
+                    if (!setName) {
+                        throw new Error(
+                            `No name found for required encounter set "${id}" in scenario "${folder}".`
+                        );
+                    }
+
+                    return {id, name: setName};
+                });
+
+                return {
+                    name,
+                    folder,
+                    requiredSets,
+                    defaultModularSets: [...(config?.defaultSets || [])],
+                };
+            })
             .sort((left, right) =>
                 left.name.localeCompare(right.name, 'es', {sensitivity: 'base'}) ||
                 left.folder.localeCompare(right.folder, 'es')

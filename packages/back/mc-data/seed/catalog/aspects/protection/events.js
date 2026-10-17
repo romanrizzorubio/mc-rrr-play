@@ -31,9 +31,9 @@ import {
     TRAIT_ATTACK,
     TRAIT_DEFENSE,
     TRIGGER_BOOST_REVEALED,
+    TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
-    TRIGGER_VILLAIN_ATTACKS_YOU
 } from 'mc-shared';
 
 export default [
@@ -63,7 +63,7 @@ export default [
                             'labels': [
                                 LABEL_ATTACK
                             ],
-                            'trigger': TRIGGER_VILLAIN_ATTACKS_YOU,
+                            'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
                             'condition': {
                                 'effect.isDefended': true,
                                 'effect.defender.isHero': true

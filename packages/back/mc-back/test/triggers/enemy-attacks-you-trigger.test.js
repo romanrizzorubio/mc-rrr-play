@@ -3,28 +3,56 @@ import {test} from 'node:test';
 
 import {EnemyAttacksYouTrigger} from '../../src/triggers/enemy-attacks-you-trigger.js';
 
-test('EnemyAttacksYouTrigger is limited to its controller and matches group targets', () => {
+test('EnemyAttacksYouTrigger uses the event hand-holder and otherwise the controller', async () => {
     const controller = {
         superhero: {
             currentSide: {},
         },
+        hand: {cards: []},
     };
     const otherPlayer = {
         superhero: {
             currentSide: {},
         },
+        hand: {cards: []},
     };
-    const trigger = new EnemyAttacksYouTrigger({
+    const eventOwner = {
+        superhero: {
+            currentSide: {},
+        },
+        hand: {cards: []},
+    };
+    const event = {
+        isEvent: true,
+        owner: eventOwner,
+    };
+    controller.hand.cards.push(event);
+
+    const eventTrigger = new EnemyAttacksYouTrigger({
         ability: {canTrigger: () => true},
-        card: {controller},
+        card: event,
     });
 
-    assert.equal(trigger.canTrigger({
-        effect: {selectedTarget: otherPlayer},
-        player: otherPlayer,
-    }), undefined);
+    assert.equal(await eventTrigger.canTrigger({
+        effect: {selectedTarget: controller},
+        player: controller,
+    }), true);
+    assert.equal(await eventTrigger.canTrigger({
+        effect: {selectedTarget: eventOwner},
+        player: eventOwner,
+    }), false);
 
-    assert.equal(trigger.canTrigger({
+    const otherCard = {
+        controller,
+        isEvent: false,
+        owner: otherPlayer,
+    };
+    const otherCardTrigger = new EnemyAttacksYouTrigger({
+        ability: {canTrigger: () => true},
+        card: otherCard,
+    });
+
+    assert.equal(await otherCardTrigger.canTrigger({
         effect: {
             selectedTarget: [
                 otherPlayer.superhero.currentSide,
@@ -34,8 +62,8 @@ test('EnemyAttacksYouTrigger is limited to its controller and matches group targ
         player: controller,
     }), true);
 
-    assert.equal(trigger.canTrigger({
-        effect: {selectedTarget: [otherPlayer.superhero.currentSide]},
-        player: controller,
-    }), undefined);
+    assert.equal(await otherCardTrigger.canTrigger({
+        effect: {selectedTarget: otherPlayer},
+        player: otherPlayer,
+    }), false);
 });

@@ -452,6 +452,7 @@ export class CardComponent extends LitElement {
                     .dragActivation="${this.dragActivation}"
                     show-life
                     show-damage
+                    show-generic
                     show-basic-stats
                     show-menu-abilities
                     highlight-playable
@@ -572,13 +573,13 @@ export class CardComponent extends LitElement {
                                 ${hiddenFacedown ? '' : this.renderCounters()}
                                 ${hiddenFacedown ? '' : this.renderBottomStats()}
                             </div>
+                            ${hiddenFacedown ? '' : this.renderAcquiredTraits()}
+                            ${hiddenFacedown ? '' : this.renderAcquiredKeywords()}
                         </div>
                         ${hiddenFacedown ? '' : this.renderAttached()}
                     </div>
                     ${hiddenFacedown ? '' : this.renderFaceDown()}
                 </div>
-                ${hiddenFacedown ? '' : this.renderAcquiredTraits()}
-                ${hiddenFacedown ? '' : this.renderAcquiredKeywords()}
                 <slot name="bottom"></slot>
                 ${this.renderMenu()}
             </div>

@@ -10,6 +10,7 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_FILL_HAND,
+    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_DEFENSE_VALUE,
@@ -632,7 +633,12 @@ test('Black Widow reveals a replacement encounter card only after cancellation',
 
     assert.ok(effect instanceof ChainedEffect);
     assert.equal(effect.effects.length, 1);
-    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_REVEAL_ENCOUNTER);
+    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHAINED);
+    assert.deepEqual(effect.effects[0].thenEffect.effects.map(({effectType}) =>
+        effectType), [
+        EFFECT_GET_ENCOUNTER_CARD,
+        EFFECT_REVEAL_ENCOUNTER,
+    ]);
 });
 
 test('chained effects inside an ability cost are parsed as simultaneous', () => {

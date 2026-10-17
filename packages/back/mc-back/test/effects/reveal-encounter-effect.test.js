@@ -5,6 +5,9 @@ import {
     CARD_TYPE_ATTACHMENT,
     DIALOG_SURGE,
     PLACE_ENCOUNTER_DECK,
+    PLACE_ENCOUNTER_DISCARD,
+    PLACE_PLAYER_ENCOUNTERS,
+    PLACE_SCENARIO_EXTRA_DECK,
     TARGET_MINION_HIGHEST_PRINTED_HP,
     TARGET_YOU,
     PRIORITY_FORCED_RESPONSE,
@@ -12,6 +15,7 @@ import {
 } from 'mc-shared';
 import {CANCEL_ENCOUNTER_FULL} from '../../src/effects/cancel-encounter-effect.js';
 import {AttachEffect} from '../../src/effects/attach-effect.js';
+import {GetEncounterCardEffect} from '../../src/effects/get-encounter-card-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
@@ -31,42 +35,30 @@ const createEncounterCard = id => ({
     },
 });
 
-test('RevealEncounterEffect defaults to the first dealt encounter card', async () => {
+test('GetEncounterCardEffect retrieves a dealt card without revealing it', async () => {
     const first = createEncounterCard('first');
     const second = createEncounterCard('second');
     const player = {encounters: [first, second]};
-    const effect = new RevealEncounterEffect({match: {}});
-    effect.selectedTarget = createEncounterCard('inherited-target');
-    let revealedCard;
-    effect.openDialog = async ({data}) => {
-        revealedCard = data.card;
-    };
+    const effect = new GetEncounterCardEffect({
+        from: PLACE_PLAYER_ENCOUNTERS,
+        match: {},
+    });
 
     assert.equal(await effect.canRun({player}), true);
-    await effect.prepare({player});
+    await effect.execute({player});
 
-    assert.deepEqual(revealedCard, {id: 'first'});
+    assert.strictEqual(effect.card, first);
     assert.deepEqual(player.encounters, [second]);
 });
 
-test('RevealEncounterEffect can draw from the encounter deck', async () => {
+test('RevealEncounterEffect only shows the supplied encounter card', async () => {
     const topCard = createEncounterCard('top');
     const pendingCard = createEncounterCard('pending');
     const player = {encounters: [pendingCard]};
-    const match = {
-        drawEncounterCards: async () => [topCard],
-        scenario: {
-            deck: {
-                cards: [topCard],
-                discardPile: [],
-            },
-        },
-    };
     const effect = new RevealEncounterEffect({
-        from: PLACE_ENCOUNTER_DECK,
-        match,
+        selectedTarget: topCard,
+        match: {},
     });
-    effect.selectedTarget = createEncounterCard('inherited-target');
     let revealedCard;
     effect.openDialog = async ({data}) => {
         revealedCard = data.card;
@@ -77,14 +69,141 @@ test('RevealEncounterEffect can draw from the encounter deck', async () => {
 
     assert.deepEqual(revealedCard, {id: 'top'});
     assert.deepEqual(player.encounters, [pendingCard]);
+    assert.strictEqual(effect.selectedTarget, topCard);
+});
+
+test('GetEncounterCardEffect can remove a chosen card from the encounter deck', async () => {
+    const topCard = createEncounterCard('top');
+    const movedCard = createEncounterCard('moved');
+    const chosenCard = createEncounterCard('chosen');
+    const deck = {
+        cards: [topCard, chosenCard],
+        discardPile: [],
+        async searchDeck(card) {
+            const index = this.cards.indexOf(card);
+            if (index >= 0) {
+                this.cards.splice(index, 1);
+            }
+        },
+    };
+    const effect = new GetEncounterCardEffect({
+        from: PLACE_ENCOUNTER_DECK,
+        cardSource: 'selectedCards',
+        match: {scenario: {deck}},
+    });
+
+    assert.equal(await effect.canRun({
+        selectedCards: [movedCard, chosenCard],
+    }), true);
+    await effect.execute({
+        selectedCards: [movedCard, chosenCard],
+    });
+
+    assert.strictEqual(effect.card, chosenCard);
+    assert.deepEqual(deck.cards, [topCard]);
+});
+
+test('GetEncounterCardEffect gets from an auxiliary deck before RevealEncounterEffect displays it', async () => {
+    const topCard = createEncounterCard('experimental-weapon');
+    const extraDeck = {
+        cards: [topCard],
+        async refresh() {},
+    };
+    const match = {
+        scenario: {
+            getExtraDeck(id) {
+                assert.equal(id, 'experimental-weapons');
+                return extraDeck;
+            },
+        },
+    };
+    const getEffect = new GetEncounterCardEffect({
+        from: PLACE_SCENARIO_EXTRA_DECK,
+        deckId: 'experimental-weapons',
+        match,
+    });
+    const effect = new RevealEncounterEffect({
+        selectedTarget: topCard,
+        match,
+    });
+    let revealedCard;
+    effect.openDialog = async ({data}) => {
+        revealedCard = data.card;
+    };
+
+    assert.equal(await getEffect.canRun({player: {}}), true);
+    await getEffect.execute({player: {}});
+    assert.strictEqual(getEffect.card, topCard);
+    assert.deepEqual(extraDeck.cards, []);
+
+    assert.equal(await effect.canRun({player: {}}), true);
+    await effect.prepare({player: {}});
+
+    assert.deepEqual(revealedCard, {id: 'experimental-weapon'});
+    assert.strictEqual(effect.selectedTarget, topCard);
+});
+
+test('GetEncounterCardEffect removes a chained discard-until card before it is revealed', async () => {
+    const discardedCard = createEncounterCard('weapon');
+    const encounterDiscard = [discardedCard];
+    const encounterDeck = {
+        discardPile: encounterDiscard,
+        searchDiscard(card) {
+            const index = this.discardPile.indexOf(card);
+            if (index >= 0) {
+                this.discardPile.splice(index, 1);
+            }
+        },
+        async refresh() {},
+    };
+    const getEffect = new GetEncounterCardEffect({
+        from: PLACE_ENCOUNTER_DISCARD,
+        cardSource: 'selectedCard',
+        match: {scenario: {deck: encounterDeck}},
+    });
+    const effect = new RevealEncounterEffect({
+        card: 'effects.0.card',
+        match: {scenario: {deck: encounterDeck}},
+    });
+    let revealedCard;
+    effect.openDialog = async ({data}) => {
+        revealedCard = data.card;
+    };
+
+    assert.equal(await getEffect.canRun({
+        selectedCard: discardedCard,
+    }), true);
+    await getEffect.execute({
+        player: {},
+        selectedCard: discardedCard,
+    });
+    assert.deepEqual(encounterDiscard, []);
+    assert.equal(await effect.canRun({
+        effects: [getEffect],
+    }), true);
+    await effect.prepare({
+        effects: [getEffect],
+        player: {},
+    });
+
+    assert.deepEqual(revealedCard, {id: 'weapon'});
+    assert.deepEqual(encounterDiscard, []);
+    assert.strictEqual(effect.selectedTarget, discardedCard);
 });
 
 test('surge shows an encounter-back dialog before drawing and can hide future notices', async () => {
     const dialogs = [];
     const steps = [];
+    const extraEncounter = createEncounterCard('surge');
     const match = {
         skipSurgeNotification: false,
         triggerCards: {},
+        scenario: {
+            deck: {
+                cards: [extraEncounter],
+                discardPile: [],
+            },
+        },
         async openDialog(dialog) {
             dialogs.push(dialog);
             steps.push('dialog');
@@ -94,7 +213,7 @@ test('surge shows an encounter-back dialog before drawing and can hide future no
         async drawEncounterCards() {
             steps.push('draw');
 
-            return [{isEncounterCard: true}];
+            return [extraEncounter];
         },
     };
     const selectedTarget = {

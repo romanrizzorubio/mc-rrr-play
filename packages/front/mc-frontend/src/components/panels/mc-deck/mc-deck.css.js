@@ -5,6 +5,41 @@ export default css`
     display: flex;
     align-items: flex-start;
   }
+
+  .deck-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .deck-piles {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .deck-name {
+    max-width: 120px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .deck-name-top {
+    margin: 0 0 4px;
+    font-family: var(--mc-font-title, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+    width: 100px;
+  }
+
+  .deck-panel-titled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   
   .panel:first-child {
     margin-right: 16px;

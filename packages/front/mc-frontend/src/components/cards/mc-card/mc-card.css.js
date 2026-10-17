@@ -3,7 +3,7 @@ import { css } from 'lit-element';
 export default css`
   :host {
     --card-size: 100px;
-    --stage-label-height: calc(0.8rem + 6px);
+    --stage-label-height: calc(0.85rem + 6px);
 
     display: block;
     position: relative;
@@ -104,6 +104,7 @@ export default css`
 
   .card-face {
     position: relative;
+    width: var(--card-size);
   }
 
   .card-front {
@@ -237,11 +238,13 @@ export default css`
   }
 
   .acquired-traits {
+    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 2px;
     margin-top: 0;
+    width: 100%;
   }
 
   .acquired-trait {
@@ -258,11 +261,13 @@ export default css`
   }
 
   .acquired-keywords {
+    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 2px;
     margin-top: 0;
+    width: 100%;
   }
 
   .acquired-keyword {
@@ -399,7 +404,7 @@ export default css`
 
   .stage-name {
     overflow: hidden;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;

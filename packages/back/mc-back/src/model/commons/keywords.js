@@ -1,25 +1,51 @@
 import {Engine} from '../../engine/engine.js';
 
-export class Keywords extends Engine {
-    constructor({
-// Keywords
-        guard = false,
-        permanent = false,
-        toughness = false,
-        quickStrike = false,
-        surge = false,
-        villainous = false,
-        overkill = false,
-        piercing = false,
-        ranged = false,
-        restricted = false,
-        incite = 0,
-        retaliate = 0,
-        uses,
-        hint
-    }) {
-        super(arguments[0]);
+export const resolveNumericKeyword = (value, match) => {
+    if (!Array.isArray(value)) {
+        return value;
+    }
 
+    const [amount, perPlayer] = value;
+    if (value.length !== 2 ||
+        !Number.isFinite(amount) ||
+        typeof perPlayer !== 'boolean') {
+        throw new TypeError('Numeric keywords must use [value, perPlayer].');
+    }
+    if (!perPlayer) {
+        return amount;
+    }
+
+    if (!Number.isFinite(match?.numPlayers)) {
+        throw new TypeError(
+            'Per-player numeric keywords require a match with a valid player count.'
+        );
+    }
+
+    return amount * match.numPlayers;
+};
+
+export class Keywords extends Engine {
+    constructor(params = {}) {
+        const {
+            guard = false,
+            permanent = false,
+            toughness = false,
+            quickStrike = false,
+            surge = false,
+            villainous = false,
+            overkill = false,
+            piercing = false,
+            ranged = false,
+            restricted = false,
+            incite = 0,
+            retaliate = 0,
+            uses,
+            hint,
+            match,
+        } = params;
+        super(params);
+
+        this.match = match;
         this.guard = guard;
         this.permanent = permanent;
         this.toughness = toughness;
@@ -30,31 +56,24 @@ export class Keywords extends Engine {
         this.piercing = piercing;
         this.ranged = ranged;
         this.restricted = restricted;
-        this.incite = incite;
-        this.retaliate = retaliate;
+        this._incite = incite;
+        this._retaliate = retaliate;
         this._uses = uses;
         this._hint = hint;
     }
-
+    getNumericValue(value) {
+        return resolveNumericKeyword(value, this.match);
+    }
+    get incite() {
+        return this.getNumericValue(this._incite);
+    }
+    get retaliate() {
+        return this.getNumericValue(this._retaliate);
+    }
     get uses() {
-        if (this._uses instanceof Array) {
-            const [_uses, _perPlayer] = this._uses;
-
-            if (_perPlayer) {
-                return _uses * this.match.numPlayers;
-            }
-        }
-        return this._uses;
+        return this.getNumericValue(this._uses);
     }
     get hint() {
-        if (this._hint instanceof Array) {
-            const [_hint, _perPlayer] = this._hint;
-
-            if (_perPlayer) {
-                return _hint * this.match.numPlayers;
-            }
-        }
-        return this._hint;
+        return this.getNumericValue(this._hint);
     }
-
 }

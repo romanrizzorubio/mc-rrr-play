@@ -31,7 +31,7 @@ export class ScenarioRest {
                 id,
                 await this.mc.data.getSetConfig(id),
             ])));
-            const configuredModularSets = configuredSetIds.filter(id =>
+            const configuredModularSets = scenarioDefaultSets.filter(id =>
                 setConfigs.get(id).standard === false
             );
             const selectedModularSets = modularSets === undefined ?
@@ -54,13 +54,13 @@ export class ScenarioRest {
             }
 
             const selectedSetIds = new Set(selectedModularSets);
-            const isSelectedSet = id =>
+            const isSelectedDefaultSet = id =>
                 setConfigs.get(id).standard !== false || selectedSetIds.has(id);
             const configuredSetIdSet = new Set(configuredSetIds);
 
-            scenarioConfig.sets = scenarioSets.filter(isSelectedSet);
+            scenarioConfig.sets = scenarioSets;
             scenarioConfig.defaultSets = [
-                ...scenarioDefaultSets.filter(isSelectedSet),
+                ...scenarioDefaultSets.filter(isSelectedDefaultSet),
                 ...selectedModularSets.filter(id => !configuredSetIdSet.has(id)),
             ];
             match.creationConfig ??= {players: [], scenario: null, expert: false};

@@ -139,3 +139,49 @@ test('going back preserves selections and creation emits only from the valid sec
         },
     });
 });
+
+test('required scenario sets are displayed but cannot be removed as modular sets', () => {
+    const component = createComponent({
+        scenario: {},
+        scenariosList: [{
+            folder: 'crossbones',
+            requiredSets: [
+                {id: 'standard', name: 'standard'},
+                {id: 'experimental-weapons', name: 'Armas experimentales'},
+            ],
+            defaultModularSets: ['hydra-assault'],
+        }],
+        modularSetsList: [
+            {id: 'experimental-weapons', name: 'Armas experimentales'},
+            {id: 'hydra-assault', name: 'Asalto de Hydra'},
+            {id: 'goblin-gimmicks', name: 'Artilugios de Duende'},
+        ],
+        selectedModularSets: [],
+    });
+
+    component.handleScenarioChanged({detail: {scenario: 'crossbones'}});
+
+    assert.deepEqual(component.selectedModularSets, ['hydra-assault']);
+    assert.deepEqual(
+        component.requiredSets.map(({id}) => id),
+        ['standard', 'experimental-weapons']
+    );
+    assert.deepEqual(component.requiredSetNames, [
+        'Normal',
+        'Armas experimentales',
+    ]);
+    assert.deepEqual(
+        component.availableModularSets.map(({id}) => id),
+        ['goblin-gimmicks']
+    );
+
+    component.removeModularSet('experimental-weapons');
+    component.addModularSet('experimental-weapons');
+    assert.deepEqual(component.selectedModularSets, ['hydra-assault']);
+
+    const markup = flattenTemplate(component.renderModularSets());
+    assert.match(markup, /Normal, Armas experimentales/);
+    assert.doesNotMatch(markup, /Obligatorio<\/span>/);
+    assert.doesNotMatch(markup, /aria-label="Quitar Armas experimentales"/);
+    assert.match(markup, /aria-label="Quitar Asalto de Hydra"/);
+});

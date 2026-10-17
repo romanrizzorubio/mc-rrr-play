@@ -209,6 +209,7 @@ export class Ability extends Engine {
     async payArrow(params) {
         return this.payCosts(params);
     }
+    async onResolutionStart(_params) {}
     prepareEffect({preselectedTarget = false, effect = this.effect} = {}) {
         if (effect) {
             if (!preselectedTarget) {
@@ -274,6 +275,11 @@ export class Ability extends Engine {
         try {
             this.resolved = false;
             this.paymentCancelled = false;
+            if (typeof effect?.resetResolutionState === 'function') {
+                effect.resetResolutionState({
+                    preserveSelectedTarget: preselectedTarget,
+                });
+            }
             this.prepareEffect({preselectedTarget, effect});
             if (effect?.isActivation) {
                 effect.resetActivation();
@@ -298,6 +304,7 @@ export class Ability extends Engine {
 
                 if (costsPaid) {
                     this.maximum?.use();
+                    await this.onResolutionStart(params);
 
                     if (effect) {
                         if (params.fixedPreselectedTarget) {

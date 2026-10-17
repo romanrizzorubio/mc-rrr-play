@@ -534,6 +534,10 @@ export class Engine {
         let triggers = await getTriggers([]);
 
         while (triggers.length) {
+            if (!isEffectActive()) {
+                return false;
+            }
+
             const automaticTrigger = triggers.find(_trigger => _trigger.ability.hideDialog);
             let trigger;
             if (automaticTrigger) {

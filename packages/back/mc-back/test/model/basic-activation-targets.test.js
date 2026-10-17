@@ -2,14 +2,19 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    ACTIVATION_ATTACK,
+    ACTIVATION_THWART,
     LABEL_ATTACK,
     LABEL_THWART,
     TARGET_ENEMY,
     TARGET_SCHEME,
 } from 'mc-shared';
+import {Attack} from '../../src/activations/attack.js';
+import {Thwart} from '../../src/activations/thwart.js';
 import {BasicAbility} from '../../src/abilities/basic/basic-ability.js';
 import {Effect} from '../../src/effects/effect.js';
 import {Player} from '../../src/model/match/player.js';
+import {getAbilitiesWithAvailability} from '../../src/utils/ability-availability.js';
 
 function createAbility({
     isAttack = false,
@@ -362,4 +367,142 @@ test('basic activation reuses its selected target after paying the cost', async 
 
     assert.equal(selectionDialogCount, 1);
     assert.equal(targetAtResolution.id, 'enemy-1');
+});
+
+async function resolveStatusBasicAction({
+    label,
+    target,
+    activationType,
+    status,
+}) {
+    const actor = {
+        id: 'actor-1',
+        isAlly: false,
+        isStunned: status === 'stunned',
+        isConfused: status === 'confused',
+        removeStunned() {
+            this.isStunned = false;
+        },
+        removeConfused() {
+            this.isConfused = false;
+        },
+        refresh() {},
+    };
+    let costPayments = 0;
+    let targetPreparationAttempts = 0;
+    const match = {
+        triggerCards: {},
+        enemies: [],
+        schemes: [],
+        activationsFactory: {
+            createActivation({type, effect}) {
+                if (type !== activationType) {
+                    throw new Error(`Unexpected activation type: ${type}`);
+                }
+
+                return type === ACTIVATION_ATTACK ?
+                    new Attack({effect}) :
+                    new Thwart({effect});
+            },
+        },
+    };
+    const player = {
+        canAttack: () => true,
+        canThwart: async () => true,
+    };
+    const ability = new BasicAbility({card: actor, match});
+    ability.labels = [label];
+    ability.effect = new Effect({match, target});
+    ability.effect.ability = ability;
+    ability.effect.trigger = async () => true;
+    ability.costs.canPay = async () => true;
+    ability.costs.pay = async () => {
+        costPayments++;
+
+        return {cancelled: false, resolved: true};
+    };
+    actor.currentSide = {abilities: [ability]};
+
+    const prepareToResolve = ability.prepareToResolve.bind(ability);
+    ability.prepareToResolve = async params => {
+        targetPreparationAttempts++;
+
+        return prepareToResolve(params);
+    };
+
+    const [availableAbility] = await getAbilitiesWithAvailability(actor, player);
+    await ability.resolveAbility({card: actor, player});
+
+    return {
+        ability,
+        actor,
+        availableAbility,
+        costPayments,
+        targetPreparationAttempts,
+    };
+}
+
+test('a stunned character can attempt a basic attack without an enemy target', async () => {
+    const {
+        ability,
+        actor,
+        availableAbility,
+        costPayments,
+        targetPreparationAttempts,
+    } = await resolveStatusBasicAction({
+        label: LABEL_ATTACK,
+        target: TARGET_ENEMY,
+        activationType: ACTIVATION_ATTACK,
+        status: 'stunned',
+    });
+
+    assert.equal(availableAbility.disable, false);
+    assert.deepEqual(availableAbility.availableTargetIds, []);
+    assert.equal(targetPreparationAttempts, 0);
+    assert.equal(costPayments, 1);
+    assert.equal(actor.isStunned, false);
+    assert.equal(ability.resolved, false);
+});
+
+test('a confused character can attempt a basic thwart without a scheme target', async () => {
+    const {
+        ability,
+        actor,
+        availableAbility,
+        costPayments,
+        targetPreparationAttempts,
+    } = await resolveStatusBasicAction({
+        label: LABEL_THWART,
+        target: TARGET_SCHEME,
+        activationType: ACTIVATION_THWART,
+        status: 'confused',
+    });
+
+    assert.equal(availableAbility.disable, false);
+    assert.deepEqual(availableAbility.availableTargetIds, []);
+    assert.equal(targetPreparationAttempts, 0);
+    assert.equal(costPayments, 1);
+    assert.equal(actor.isConfused, false);
+    assert.equal(ability.resolved, false);
+});
+
+test('a basic attack without a target still requires its matching status', async () => {
+    const {
+        ability,
+        actor,
+        availableAbility,
+        costPayments,
+        targetPreparationAttempts,
+    } = await resolveStatusBasicAction({
+        label: LABEL_ATTACK,
+        target: TARGET_ENEMY,
+        activationType: ACTIVATION_ATTACK,
+    });
+
+    assert.equal(availableAbility.disable, true);
+    assert.equal(availableAbility.availableTargetIds, undefined);
+    assert.equal(targetPreparationAttempts, 1);
+    assert.equal(costPayments, 0);
+    assert.equal(actor.isStunned, false);
+    assert.equal(ability.resolved, false);
 });

@@ -3,6 +3,7 @@ import {
     EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_BLANK_TEXT,
     EFFECT_ADD_KEYWORD,
+    EFFECT_ACTIVATE,
     EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
@@ -13,6 +14,7 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CHAINED,
+    EFFECT_CREATE_EXTRA_DECK,
     EFFECT_CANNOT,
     EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
@@ -51,6 +53,7 @@ import {
     EFFECT_FILL_HAND,
     EFFECT_FLIP,
     EFFECT_GENERATE_RESOURCES_FROM_CARD,
+    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_HEAL,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_LASTING,
@@ -119,6 +122,7 @@ import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-e
 import {AddAdditionalCostEffect} from '../../effects/add-additional-cost-effect.js';
 import {BlankTextEffect} from '../../effects/blank-text-effect.js';
 import {AddKeywordEffect} from '../../effects/add-keyword-effect.js';
+import {ActivateEffect} from '../../effects/activate-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
@@ -126,6 +130,7 @@ import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js'
 import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {CancelBoostIconsEffect} from '../../effects/cancel-boost-icons-effect.js';
+import {CreateExtraDeckEffect} from '../../effects/create-extra-deck-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
 import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
@@ -165,6 +170,7 @@ import {ConvertFacedownCardEffect} from '../../effects/convert-facedown-card-eff
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {GenerateResourcesFromCardEffect} from '../../effects/generate-resources-from-card-effect.js';
+import {GetEncounterCardEffect} from '../../effects/get-encounter-card-effect.js';
 import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
@@ -232,6 +238,7 @@ import {SelectDiscardToFindCardEffect} from '../../effects/select-discard-to-fin
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
     [EFFECT_ADD_ADDITIONAL_COST]: AddAdditionalCostEffect,
+    [EFFECT_ACTIVATE]: ActivateEffect,
     [EFFECT_BLANK_TEXT]: BlankTextEffect,
     [EFFECT_ADD_KEYWORD]: AddKeywordEffect,
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
@@ -247,6 +254,7 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CANCEL_BOOST_ICONS]: CancelBoostIconsEffect,
     [EFFECT_CHAINED]: ChainedEffect,
+    [EFFECT_CREATE_EXTRA_DECK]: CreateExtraDeckEffect,
     [EFFECT_CANNOT]: CannotEffect,
     [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
     [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
@@ -282,6 +290,7 @@ export const EFFECT_MAP = {
     [EFFECT_PUT_FACEDOWN_CARD_IN_PLAY]: PutFacedownCardInPlayEffect,
     [EFFECT_CONVERT_FACEDOWN_CARD]: ConvertFacedownCardEffect,
     [EFFECT_FLIP]: FlipEffect,
+    [EFFECT_GET_ENCOUNTER_CARD]: GetEncounterCardEffect,
     [EFFECT_HEAL]: HealEffect,
     [EFFECT_INCLUDE_ASIDE_CARDS]: IncludeAsideCardsEffect,
     [EFFECT_DELAYED]: DelayedEffect,

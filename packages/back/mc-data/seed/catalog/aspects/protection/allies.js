@@ -7,7 +7,6 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_EXHAUST,
     EFFECT_SPEND,
-    EFFECT_REVEAL_ENCOUNTER,
     PLACE_ENCOUNTER_DECK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -22,6 +21,8 @@ import {
     TRAIT_SHIELD,
     TRAIT_SPY
 } from 'mc-shared';
+
+import {revealEncounterFrom} from '../../utils/reveal-encounter.js';
 
 export default [
     {
@@ -86,12 +87,9 @@ export default [
                                                 'target': TARGET_EFFECT,
                                                 'type': CARD_TYPE_ANY,
                                                 'full': true,
-                                                'thenEffect': {
-                                                    'type': EFFECT_REVEAL_ENCOUNTER,
-                                                    'params': {
-                                                        'from': PLACE_ENCOUNTER_DECK
-                                                    }
-                                                }
+                                                'thenEffect': revealEncounterFrom({
+                                                    from: PLACE_ENCOUNTER_DECK,
+                                                })
                                             }
                                         }
                                     ]

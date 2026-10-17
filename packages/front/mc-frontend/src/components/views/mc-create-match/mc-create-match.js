@@ -104,22 +104,41 @@ export class McCreateMatch extends LitElement {
         const {scenario} = e.detail;
         const configuredScenario = this.scenariosList.find(item => item.folder === scenario);
         const availableSetIds = new Set(this.modularSetsList.map(({id}) => id));
+        const requiredSetIds = new Set(
+            configuredScenario.requiredSets.map(({id}) => id)
+        );
 
-        this.selectedModularSets = [...new Set(configuredScenario.configuredSets)]
-            .filter(id => availableSetIds.has(id));
+        this.selectedModularSets = [...new Set(configuredScenario.defaultModularSets || [])]
+            .filter(id => availableSetIds.has(id) && !requiredSetIds.has(id));
 
         this.scenario = {
             scenario,
             modularSets: this.selectedModularSets,
         };
     }
+    get requiredSets() {
+        const configuredScenario = this.scenariosList.find(
+            item => item.folder === this.scenario.scenario
+        );
+
+        return configuredScenario?.requiredSets || [];
+    }
+    get requiredSetIds() {
+        return new Set(this.requiredSets.map(({id}) => id));
+    }
+    get requiredSetNames() {
+        return this.requiredSets.map(({id, name}) =>
+            id === 'standard' ? 'Normal' : name);
+    }
     get sortedModularSets() {
         return [...this.modularSetsList].sort(compareSetNames);
     }
     get availableModularSets() {
         const selected = new Set(this.selectedModularSets);
+        const required = this.requiredSetIds;
 
-        return this.sortedModularSets.filter(({id}) => !selected.has(id));
+        return this.sortedModularSets.filter(({id}) =>
+            !selected.has(id) && !required.has(id));
     }
     get chosenModularSets() {
         const selected = new Set(this.selectedModularSets);
@@ -127,7 +146,8 @@ export class McCreateMatch extends LitElement {
         return this.sortedModularSets.filter(({id}) => selected.has(id));
     }
     addModularSet(id) {
-        if (this.selectedModularSets.includes(id)) {
+        if (this.selectedModularSets.includes(id) ||
+            this.requiredSetIds.has(id)) {
             return;
         }
 
@@ -138,6 +158,10 @@ export class McCreateMatch extends LitElement {
         };
     }
     removeModularSet(id) {
+        if (this.requiredSetIds.has(id)) {
+            return;
+        }
+
         this.selectedModularSets = this.selectedModularSets.filter(setId => setId !== id);
         this.scenario = {
             ...this.scenario,
@@ -289,6 +313,14 @@ export class McCreateMatch extends LitElement {
 
         return html`
             <mc-panel title="Conjuntos modulares">
+                ${this.requiredSets.length ? html`
+                    <section class="required-modular-sets" aria-labelledby="required-sets-title">
+                        <h3 id="required-sets-title">Obligatorios</h3>
+                        <p class="required-modular-set-names">
+                            ${this.requiredSetNames.join(', ')}
+                        </p>
+                    </section>
+                ` : ''}
                 <div class="modular-sets">
                     <section aria-labelledby="available-sets-title">
                         <h3 id="available-sets-title">Disponibles</h3>

@@ -14,6 +14,10 @@ export class DiscardRandomEffect extends Effect {
 
         this.cards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+    }
     async execute(params) {
         const {selectedTarget, count, showDialog} = this;
 

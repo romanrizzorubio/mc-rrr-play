@@ -21,6 +21,27 @@ const {McPlayer} = await import(
     '../src/components/match/mc-player/mc-player.js'
 );
 
+test('hides the player name below their deck while keeping the deck name available', () => {
+    const player = Object.assign(Object.create(McPlayer.prototype), {
+        player: {
+            name: 'Peter Parker',
+            deck: {
+                cards: [],
+                discard: [],
+            },
+        },
+        dragActivation: null,
+    });
+    const template = player.renderDeck();
+    const deckNameBinding = template.strings.findIndex(part =>
+        part.includes('.deckName='));
+    const showDeckNameBinding = template.strings.findIndex(part =>
+        part.includes('.showDeckName='));
+
+    assert.equal(template.values[deckNameBinding], 'Peter Parker');
+    assert.equal(template.values[showDeckNameBinding], false);
+});
+
 const attachment = {
     id: 'attached-accessory',
     name: 'Attached accessory',

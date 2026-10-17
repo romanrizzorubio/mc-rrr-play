@@ -25,6 +25,12 @@ export class SearchCardAndRevealEffect extends Effect {
         this.hasEnteredGame = false;
         this.hasResolvedCard = false;
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+        this.hasEnteredGame = false;
+        this.hasResolvedCard = false;
+    }
     checkCondition(card, _player) {
         const {condition} = this;
 

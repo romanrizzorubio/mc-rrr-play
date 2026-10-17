@@ -1,8 +1,9 @@
 import {Trigger} from './base/trigger.js';
+import {getTriggerCardPlayer} from '../utils/trigger-card-player.js';
 
 export class PlayerTurnStartTrigger extends Trigger {
     canTrigger(params) {
-        if (this.card.controller === params.player) {
+        if (getTriggerCardPlayer(this.card, params.player) === params.player) {
             return super.canTrigger(params);
         }
     }

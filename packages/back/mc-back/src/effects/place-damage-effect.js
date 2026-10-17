@@ -11,7 +11,9 @@ export class PlaceDamageEffect extends Effect {
     async execute(params) {
         const {selectedTarget} = this;
 
-        const damage = this.damage || params.damage;
+        const damage = this.paramsCalc ?
+            await this.calculate(params) :
+            this.damage || params.damage;
 
         selectedTarget.placeDamage(damage);
 

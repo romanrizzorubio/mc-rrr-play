@@ -15,7 +15,9 @@ export class AssignDamageEffect extends Effect {
         return [EFFECT_CATEGORY_DAMAGE];
     }
     async execute(params) {
-        const {selectedTarget} = this;
+        const selectedTarget = [...this.selectedTarget].sort((first, second) =>
+            Number(second.isSuperhero) - Number(first.isSuperhero)
+        );
         const {player} = params;
         const damage = this.paramsCalc ?
             await this.calculate(params) :
@@ -52,6 +54,7 @@ export class AssignDamageEffect extends Effect {
 
         const cards = cardStats.map(({card, stats: {hitPoints, life}}) => ({
             ...card.toObj(params),
+            isSuperhero: card.isSuperhero,
             hitPoints,
             life,
         }));

@@ -39,7 +39,7 @@ export class Card extends Engine {
         this.match = match;
         this.triggerInstant = triggerInstant;
         this.icons = new Icons(icons);
-        this.keywords = new Keywords(keywords);
+        this.keywords = new Keywords({...keywords, match});
         this.threatThresholdModifier = threatThresholdModifier;
         if (unprintedStats.length) {
             this.unprintedStats = [...unprintedStats];

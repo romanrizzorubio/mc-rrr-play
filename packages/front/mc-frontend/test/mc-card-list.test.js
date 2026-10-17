@@ -64,6 +64,41 @@ test('highlights only explicitly playable cards', () => {
     assert.equal(renderCardClass(undefined), '');
 });
 
+test('passes generic counters to cards when generic counters are displayed', () => {
+    const counters = 3;
+    const list = Object.assign(Object.create(McCardList.prototype), {
+        size: 's',
+        marked: [],
+        disabledCards: [],
+        showBasicStats: true,
+        showAcquiredTraits: false,
+        showLife: false,
+        showDamage: false,
+        showThreat: false,
+        showGeneric: true,
+        highlightPlayable: false,
+        rotatePlanCards: false,
+        showExhausted: false,
+        player: null,
+        basicActivationType: '',
+        dragActivation: null,
+    });
+    const template = list.renderCard({
+        name: 'Countered accessory',
+        image: 'countered-accessory.png',
+        counters,
+    }, 0);
+    const genericBinding = template.strings.findIndex(part =>
+        part.includes('.generic=')
+    );
+    const showGenericBinding = template.strings.findIndex(part =>
+        part.includes('.showGeneric=')
+    );
+
+    assert.equal(template.values[genericBinding], counters);
+    assert.equal(template.values[showGenericBinding], true);
+});
+
 test('does not highlight a card while it is temporarily disabled', () => {
     assert.equal(renderCardClass(true, [0]), 'disabled');
 });
@@ -140,6 +175,51 @@ test('does not show the known-cards eye when the deck has no viewed cards', () =
     ));
 });
 
+test('renders an auxiliary scenario deck without its own discard pile', () => {
+    const deck = Object.assign(Object.create(DeckComponent.prototype), {
+        cards: [],
+        deckName: 'Armas experimentales',
+        knownCards: [],
+        showDeck: true,
+        showDiscard: false,
+        deckNamePosition: 'top',
+    });
+    const template = deck.render();
+
+    let renderedDiscardPile = false;
+    deck.renderDiscard = () => {
+        renderedDiscardPile = true;
+    };
+    deck.render();
+
+    assert.equal(renderedDiscardPile, false);
+    assert.equal(template.values[1], '');
+    const deckPanelTemplate = template.values[3];
+    const deckTitleTemplate = deckPanelTemplate.values.find(value =>
+        value?.strings?.join('').includes('deck-name-top')
+    );
+    assert.ok(deckTitleTemplate);
+    assert.equal(deckTitleTemplate.values[0], 'Armas experimentales');
+    assert.equal(deckPanelTemplate.values[0], 'deck-panel-titled');
+    assert.equal(template.values[4], '');
+});
+
+test('hides a player deck name without removing its accessible deck label', () => {
+    const deck = Object.assign(Object.create(DeckComponent.prototype), {
+        deckName: 'Peter Parker',
+        deckNamePosition: 'bottom',
+        showDeckName: false,
+        showDeck: true,
+        showDiscard: false,
+        cards: [],
+        knownCards: [],
+    });
+    const template = deck.render();
+
+    assert.equal(template.values[0], 'Peter Parker');
+    assert.equal(template.values[4], '');
+});
+
 test('highlights discard cards that can be played from that discard', () => {
     const dialog = Object.assign(Object.create(McRevealCardsDialog.prototype), {
         data: {
@@ -177,6 +257,26 @@ test('uses the same diffuse yellow highlight for a playable discard pile', () =>
     assert.match(styles, /\.discard-button\.playable mc-card-image/);
     assert.match(styles, /drop-shadow\(0 0 4px rgba\(255, 235, 59, 0\.95\)\)/);
     assert.doesNotMatch(styles, /\.discard-button\.playable[^}]*brightness/);
+});
+
+test('matches the auxiliary deck title size to scheme and villain titles', () => {
+    const cardTitleSize = CardComponent.styles.cssText
+        .match(/\.name\s*\{[^}]*font-size:\s*([^;]+);/s)?.[1];
+    const villainTitleSize = CardComponent.styles.cssText
+        .match(/\.stage-name\s*\{[^}]*font-size:\s*([^;]+);/s)?.[1];
+    const deckTitleSize = DeckComponent.styles.cssText
+        .match(/\.deck-name-top\s*\{[^}]*font-size:\s*([^;]+);/s)?.[1];
+
+    assert.equal(deckTitleSize, cardTitleSize);
+    assert.equal(deckTitleSize, villainTitleSize);
+    assert.match(
+        DeckComponent.styles.cssText,
+        /\.deck-panel-titled\s*\{[^}]*align-items:\s*center/s
+    );
+    assert.match(
+        DeckComponent.styles.cssText,
+        /\.deck-name-top\s*\{[^}]*width:\s*100px/s
+    );
 });
 
 test('adds a tucked-card viewer option alongside available card actions', () => {

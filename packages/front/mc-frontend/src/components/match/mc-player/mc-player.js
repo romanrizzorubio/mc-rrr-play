@@ -154,6 +154,7 @@ export class McPlayer extends LitElement {
                 .discard="${discard}"
                 .knownCards="${knownCards}"
                 .deckName="${name}"
+                .showDeckName="${false}"
                 discard-label="Descarte de ${name}"
                 .highlightPlayableDiscard="${true}"
                 .dragActivation="${this.dragActivation}"

@@ -14,8 +14,14 @@ export class DiscardFromDeckEffect extends Effect {
         this.cards = [];
     }
 
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+    }
+
     async execute(params) {
         const {count, playersTarget} = this;
+        this.cards = [];
         const players = playersTarget === TARGET_ALL_PLAYERS ?
             this.getAllPlayers() :
             [params.player];

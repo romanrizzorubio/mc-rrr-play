@@ -11,6 +11,10 @@ export class DiscardConditionHandEffect extends Effect {
 
         this.cards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+    }
     async prepare(params) {
         await super.prepare(params);
 

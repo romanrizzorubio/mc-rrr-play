@@ -31,7 +31,11 @@ export class DealDamageEffect extends Effect {
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
     }
-    checkTrigger() {
+    checkTrigger(params) {
+        if (!this.isActivationActive(params)) {
+            return false;
+        }
+
         if (Array.isArray(this.damage)) {
             if (Array.isArray(this.preventDamage)) {
                 return this.damage.some((d, index) => d > this.preventDamage[index]);

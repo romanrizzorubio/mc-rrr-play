@@ -109,12 +109,14 @@ export class McScenario extends LitElement {
                 threat,
                 accelerationTokens,
                 value,
-                stage
+                stage,
+                attached = [],
             } = scheme;
 
             return html`
                 <mc-main-scheme-card
                     .card="${scheme}"
+                    .attached="${attached}"
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
                     name="${name}"
@@ -130,12 +132,33 @@ export class McScenario extends LitElement {
             return '';
         }
     }
+    renderExtraDecks() {
+        const extraDecks = Object.values(this.scenario.extraDecks || {});
+
+        return html`
+            <div class="extra-decks">
+                ${extraDecks.map(deck => html`
+                    <mc-deck
+                        .cards="${deck.cards}"
+                        .discard="${deck.discard || []}"
+                        .knownCards="${deck.knownCards || []}"
+                        .deckName="${deck.name}"
+                        .showDiscard="${deck.hasDiscard !== false}"
+                        .dragActivation="${this.dragActivation}"
+                        deck-name-position="top"
+                    ></mc-deck>
+                `)}
+            </div>
+        `;
+    }
     renderSchemes() {
         const {scenario: {gameZone: {cards}}} = this;
 
         return html`
             <div class="schemes">
-                ${this.renderMainScheme()}
+                <div class="main-scheme-decks">
+                    ${this.renderMainScheme()}
+                </div>
                 <mc-card-list
                     .cards="${cards.filter(card =>
                         card.isSideScheme)}"
@@ -154,13 +177,16 @@ export class McScenario extends LitElement {
         const {scenario: {gameZone: {cards}}} = this;
 
         return html`
-            <mc-card-list
-                .cards="${cards.filter(card => card.isEnvironment)}"
-                .dragActivation="${this.dragActivation}"
-                show-basic-stats
-                show-generic
-                show-menu-abilities
-            ></mc-card-list>
+            <div class="environments">
+                <mc-card-list
+                    .cards="${cards.filter(card => card.isEnvironment)}"
+                    .dragActivation="${this.dragActivation}"
+                    show-basic-stats
+                    show-generic
+                    show-menu-abilities
+                ></mc-card-list>
+                ${this.renderExtraDecks()}
+            </div>
         `;
     }
     renderDeck() {

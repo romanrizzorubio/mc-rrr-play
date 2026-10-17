@@ -19,6 +19,17 @@ export class McAssignDialog extends McDialog {
         super(arguments[0]);
     }
     get defaultProperties() {
+        const {count = 0, field, cards = []} = this.data || {};
+        let remaining = Math.max(0, Number(count) || 0);
+        const assigned = cards.reduce((result, card) => {
+            const capacity = Math.max(0, Number(card[field]) || 0);
+            const amount = Math.min(remaining, capacity);
+            result[card.id] = amount;
+            remaining -= amount;
+
+            return result;
+        }, {});
+
         return {
             data: {
                 count: 0,
@@ -26,22 +37,29 @@ export class McAssignDialog extends McDialog {
                 cards: [],
             },
             _response: {
-                assigned: {}
+                assigned,
             }
         };
     }
+    getCardMaximum(card) {
+        const {
+            data: {count, field},
+        } = this;
+        const damage = Math.max(0, Number(count) || 0);
+        const capacity = Math.max(0, Number(card[field]) || 0);
+
+        return Math.min(damage, capacity);
+    }
     get maximum() {
         const {
-            data: {count, cards, field},
+            data: {count, cards},
         } = this;
 
-        const maximum = cards.reduce((ret, card) => {
-            const value = card[field] || 0;
-
-            return ret + value;
-        }, 0);
-
-        return maximum < count ? maximum : count;
+        return Math.min(
+            Math.max(0, Number(count) || 0),
+            cards.reduce((total, card) =>
+                total + this.getCardMaximum(card), 0)
+        );
     }
     get assigned() {
         const {
@@ -50,7 +68,7 @@ export class McAssignDialog extends McDialog {
         } = this;
 
         return cards.reduce((ret, card) => {
-            const assignedCard = assigned[card.id] || 0;
+            const assignedCard = Number(assigned[card.id]) || 0;
 
             return ret + assignedCard;
         }, 0);
@@ -72,13 +90,72 @@ export class McAssignDialog extends McDialog {
             const {
                 _response: {assigned},
             } = this;
+            const current = Number(assigned[card.id]) || 0;
+            const requested = Math.min(
+                this.getCardMaximum(card),
+                Math.max(0, Math.trunc(Number(value) || 0))
+            );
+            const nextAssigned = this.data.cards.reduce((result, currentCard) => {
+                result[currentCard.id] =
+                    Number(assigned[currentCard.id]) || 0;
+
+                return result;
+            }, {});
+            const difference = requested - current;
+            const superhero = this.data.cards.find(({isSuperhero}) =>
+                isSuperhero
+            );
+            let adjusted = requested;
+
+            if (difference > 0) {
+                let remaining = difference;
+                const unassigned = Math.max(0, this.maximum - this.assigned);
+                const assignedFromUnallocated = Math.min(remaining, unassigned);
+                adjusted = current + assignedFromUnallocated;
+                remaining -= assignedFromUnallocated;
+
+                const otherCards = this.data.cards.filter(({id}) =>
+                    id !== card.id && id !== superhero?.id
+                ).reverse();
+                const sources = [
+                    ...(superhero && superhero.id !== card.id ? [superhero] : []),
+                    ...otherCards,
+                ];
+
+                sources.forEach(source => {
+                    const sourceAssigned = nextAssigned[source.id];
+                    const transferred = Math.min(remaining, sourceAssigned);
+                    nextAssigned[source.id] = sourceAssigned - transferred;
+                    adjusted += transferred;
+                    remaining -= transferred;
+                });
+            } else if (difference < 0) {
+                let remaining = -difference;
+                const destinations = [
+                    ...(superhero && superhero.id !== card.id ? [superhero] : []),
+                    ...this.data.cards.filter(({id}) =>
+                        id !== card.id && id !== superhero?.id
+                    ),
+                ];
+
+                destinations.forEach(destination => {
+                    const destinationAssigned = nextAssigned[destination.id];
+                    const capacity = Math.max(
+                        0,
+                        this.getCardMaximum(destination) - destinationAssigned
+                    );
+                    const transferred = Math.min(remaining, capacity);
+                    nextAssigned[destination.id] =
+                        destinationAssigned + transferred;
+                    remaining -= transferred;
+                });
+            }
+
+            nextAssigned[card.id] = adjusted;
 
             this._response = {
                 ...this._response,
-                assigned: {
-                    ...assigned,
-                    [card.id]: value,
-                }
+                assigned: nextAssigned,
             };
         };
     }
@@ -93,14 +170,11 @@ export class McAssignDialog extends McDialog {
     }
     renderAssigned(card) {
         const {
-            data: {count, field},
             _response: {assigned},
         } = this;
 
-        const valueField = card[field];
-
-        const value = assigned[card.id] || 0;
-        const max = count > valueField ? valueField : count;
+        const value = Number(assigned[card.id]) || 0;
+        const max = this.getCardMaximum(card);
 
         return html`
             <div slot="bottom" class="assigned-slider">

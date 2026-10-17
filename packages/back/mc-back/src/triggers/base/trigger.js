@@ -1,3 +1,5 @@
+import {isEventInPlayerHand} from '../../utils/trigger-card-player.js';
+
 export class Trigger {
     static #triggeredEffectsByTrigger = new WeakMap();
 
@@ -35,6 +37,10 @@ export class Trigger {
     }
     canRun(params) {
         const {ability} = this;
+
+        if (this.card?.isEvent && !isEventInPlayerHand(this.card, params.player)) {
+            return false;
+        }
 
         if (!ability) {
             return true;

@@ -33,6 +33,10 @@ export class ForEachEffect extends Effect {
         this.results = [];
         this.refreshTarget = false;
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.results = [];
+    }
     filterTarget(target, params) {
         if (!super.filterTarget(target, params)) {
             return false;

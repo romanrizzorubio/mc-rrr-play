@@ -58,6 +58,7 @@ test('Klaw adds both boost cards to the attack damage total', async () => {
         card: cardsFactory.createCard(klaw.config.villains[0]),
         owner: player,
     });
+    match.villain = villain;
     villain.getAttackValue = async () => 0;
     await villain.initTriggers();
 

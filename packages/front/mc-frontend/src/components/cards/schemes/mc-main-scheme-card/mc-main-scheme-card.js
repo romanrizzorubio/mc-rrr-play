@@ -20,6 +20,7 @@ export class MainSchemeCardComponent extends LitElement {
     static get properties() {
         return {
             card: {type: Object},
+            attached: {type: Array},
             player: {type: Object},
             dragActivation: {type: Object},
             name: { type: String},
@@ -36,6 +37,7 @@ export class MainSchemeCardComponent extends LitElement {
 
         this.name = '';
         this.card = null;
+        this.attached = [];
         this.player = null;
         this.dragActivation = null;
         this.image = '';
@@ -78,6 +80,7 @@ export class MainSchemeCardComponent extends LitElement {
     render() {
         const {
             card,
+            attached,
             name,
             image,
             threat,
@@ -89,6 +92,7 @@ export class MainSchemeCardComponent extends LitElement {
         return html`
             <mc-scheme-card
                 .card="${card}"
+                .attached="${attached}"
                 .basicActivation="${this.basicActivation}"
                 .dragActivation="${this.dragActivation}"
                 .clickDisabled="${this.clickDisabled}"

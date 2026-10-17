@@ -363,6 +363,9 @@ describe('Risky Business', () => {
         const attachment = {
             attachedTo: villain,
             card: {attack: 0},
+            toObj() {
+                return {id: 'test-attachment'};
+            },
             async discard() {
                 attachmentDiscarded = true;
             },

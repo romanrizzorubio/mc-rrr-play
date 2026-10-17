@@ -951,6 +951,8 @@ export class GameCard extends Engine {
         if (this.sides.length) {
             return {
                 ...this.currentSide.toObj(arguments[0]),
+                attached: this.getAttachedCards().map(card =>
+                    card.toObj(arguments[0])),
                 counters: this.counters,
                 faceDown: this.faceDown.map(faceDown => faceDown.toObj(arguments[0])),
                 tuckedCards: this.tuckedCards.map(card => card.toObj(arguments[0])),
@@ -961,7 +963,6 @@ export class GameCard extends Engine {
             id,
             abilities,
             accelerationTokens,
-            attached,
             faceDown,
             boost,
             card,
@@ -997,7 +998,8 @@ export class GameCard extends Engine {
             isSupport,
             isUpgrade,
             printedTextBlank,
-            attached: attached.map(_attached => _attached.toObj(arguments[0])),
+            attached: this.getAttachedCards().map(attached =>
+                attached.toObj(arguments[0])),
             faceDown: faceDown.map(_facedown => _facedown.toObj(arguments[0])),
             tuckedCards: tuckedCards.map(_tuckedCard => _tuckedCard.toObj(arguments[0])),
             abilities: abilities.map((ability, index) => ({
@@ -1006,8 +1008,17 @@ export class GameCard extends Engine {
             })),
         };
     }
+    getAttachedCards() {
+        const attached = new Set([
+            ...(this.parent?.attached ?? []),
+            ...(this.attached ?? []),
+            ...(this.sides.length ? this.currentSide.attached ?? [] : []),
+        ]);
+
+        return [...attached];
+    }
     async getAbilityAvailability(player) {
-        const attached = await Promise.all(this.attached.map(card =>
+        const attached = await Promise.all(this.getAttachedCards().map(card =>
             card.toObjWithAbilityAvailability(player)));
         const abilities = await getAbilitiesWithAvailability(this, player);
 

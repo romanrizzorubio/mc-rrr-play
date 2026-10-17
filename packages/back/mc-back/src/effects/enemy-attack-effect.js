@@ -38,6 +38,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.originalAttackTarget = undefined;
         this.defenderConditions = [];
         this.modifyDefense = 0;
+        this.activationInterrupted = false;
     }
     resetForResolution() {
         super.resetForResolution();
@@ -51,6 +52,55 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.defenderConditions = [];
         this.modifyDefense = 0;
         this.attacked = undefined;
+        this.activationInterrupted = false;
+    }
+    canContinueActivation() {
+        if (this.activationInterrupted || !this.enemy ||
+            this.match?.gameOverReason) {
+            this.activationInterrupted = true;
+            return false;
+        }
+
+        const currentVillain = this.match?.villain;
+        if (this.enemy.isVillain && currentVillain) {
+            if (currentVillain !== this.enemy) {
+                if (currentVillain.name !== this.enemy.name) {
+                    this.activationInterrupted = true;
+                    return false;
+                }
+
+                this.enemy = currentVillain;
+            }
+
+            return true;
+        }
+
+        if (this.enemy.isInPlay === false) {
+            this.activationInterrupted = true;
+            return false;
+        }
+
+        return true;
+    }
+    isResolved() {
+        return !this.activationInterrupted;
+    }
+    checkTrigger() {
+        return super.checkTrigger() && this.canContinueActivation();
+    }
+    async resolvePrepared(effectParams, triggersParams) {
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
+        await super.resolvePrepared(effectParams, triggersParams);
+    }
+    async triggerEnds(params, options) {
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
+        await super.triggerEnds(params, options);
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
@@ -270,8 +320,20 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
 
         const defenders = this.getDefenderCandidates(target);
         const requiredDefenders = this.getRequiredDefenders(target);
+        const availableDefenders = requiredDefenders.length ?
+            requiredDefenders :
+            defenders;
+        const currentDefender = this.getDefenderForTarget(target);
 
-        return requiredDefenders.length ? requiredDefenders : defenders;
+        if (currentDefender) {
+            return availableDefenders.filter(defender =>
+                defender === currentDefender ||
+                (defender.isSuperhero &&
+                    defender.currentSide === currentDefender)
+            );
+        }
+
+        return availableDefenders;
     }
     getDefenderCandidates(target) {
         if (Array.isArray(target)) {
@@ -321,6 +383,61 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         return this.getDefenderCandidates(target).filter(defender =>
             this.defenderConditions.every(condition => checkCondition(defender, condition)));
     }
+    getDefenseAbilityTarget(player) {
+        const attackTargets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
+
+        if (attackTargets.length === 1) {
+            return attackTargets[0];
+        }
+
+        return attackTargets.find(target => this.getTargetPlayer(target) === player);
+    }
+    getDefenderForTarget(target) {
+        const defender = this.defendersByTarget.get(target);
+        if (defender) {
+            return defender;
+        }
+
+        return Array.isArray(this.selectedTarget) ? undefined : this.defender;
+    }
+    canUseDefenseAbility(player) {
+        if (this.resolved || !player) {
+            return false;
+        }
+
+        const attackTarget = this.getDefenseAbilityTarget(player);
+        if (!attackTarget) {
+            return false;
+        }
+
+        const defender = this.getDefenderForTarget(attackTarget);
+
+        return !defender || defender.owner === player;
+    }
+    async setDefenderByAbility(player, params = {}) {
+        if (this.resolved || !this.canUseDefenseAbility(player)) {
+            return;
+        }
+
+        const attackTarget = this.getDefenseAbilityTarget(player);
+        if (this.getDefenderForTarget(attackTarget)) {
+            return;
+        }
+        if (!player.superhero?.currentSide) {
+            throw new TypeError(
+                'A defense ability requires its player to have a superhero.'
+            );
+        }
+
+        await this.setDefender(
+            player.superhero,
+            attackTarget,
+            params,
+            {exhaust: false}
+        );
+    }
     changeAttackTargets(targets) {
         if (!Array.isArray(targets) || !this.selectedTarget) {
             throw new Error('EnemyAttackEffect requires attack targets and an existing target.');
@@ -363,24 +480,32 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
     }
-    async setDefender(defender, attackTarget = this.selectedTarget, params = {}) {
+    async setDefender(
+        defender,
+        attackTarget = this.selectedTarget,
+        params = {},
+        {exhaust = true} = {}
+    ) {
         if (defender) {
+            const previousDefender = this.getDefenderForTarget(attackTarget);
             this.defender = defender.isSuperhero ? defender.currentSide : defender;
             this.defendersByTarget.set(attackTarget, this.defender);
             if (!Array.isArray(this.selectedTarget)) {
                 this.selectedTarget = defender.owner;
             }
 
-            const exhaustEffect = new ExhaustEffect({
-                target: TARGET_CARD,
-                match: this.match,
-            });
+            if (exhaust) {
+                const exhaustEffect = new ExhaustEffect({
+                    target: TARGET_CARD,
+                    match: this.match,
+                });
 
-            await exhaustEffect.runEffect({
-                card: defender,
-            });
+                await exhaustEffect.runEffect({
+                    card: defender,
+                });
+            }
 
-            if (this.defender.isHero) {
+            if (this.defender.isHero && this.defender !== previousDefender) {
                 const triggerParams = {
                     ...params,
                     effect: this,
@@ -395,15 +520,40 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         }
     }
     async execute(params) {
-        const {character, selectedTarget} = this;
+        const {selectedTarget} = this;
         const isMultiTarget = Array.isArray(selectedTarget);
         const attackTargets = isMultiTarget ? selectedTarget : [selectedTarget];
 
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
         await this.dealBoostCards(params);
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
         await this.showBoostCards();
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
         await this.defense(params);
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
         const boost = await this.resolveBoostCards(params);
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
         const atkValue = await this.getAttackValue(params);
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
+        const {character} = this;
         const attackedTargets = attackTargets.map(attackTarget =>
             this.defendersByTarget.get(attackTarget) ||
                 (isMultiTarget ? attackTarget : this.defender || attackTarget));
@@ -428,6 +578,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         });
 
         await dealDamageEffect.runEffect(params);
+        if (!this.canContinueActivation()) {
+            return;
+        }
 
         this.activation.takenDamage = dealDamageEffect.takenDamage;
     }

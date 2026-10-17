@@ -158,15 +158,15 @@ export class MatchRest {
                     id,
                     await this.mc.data.getSetConfig(id),
                 ])));
-                const isSelected = id =>
+                const isSelectedDefaultSet = id =>
                     setConfigs.get(id).standard !== false || activeSetIds.has(id);
                 const selectedModularSetIds = [...activeSetIds].filter(id =>
                     setConfigs.get(id).standard === false
                 );
 
-                scenarioConfig.sets = configuredSets.filter(isSelected);
+                scenarioConfig.sets = configuredSets;
                 scenarioConfig.defaultSets = [
-                    ...configuredDefaultSets.filter(isSelected),
+                    ...configuredDefaultSets.filter(isSelectedDefaultSet),
                     ...selectedModularSetIds.filter(id => !configuredSetIds.has(id)),
                 ];
                 const scenario = await matchFactory.createScenario(scenarioConfig);

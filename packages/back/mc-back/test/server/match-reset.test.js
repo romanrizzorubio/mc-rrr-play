@@ -269,7 +269,7 @@ describe('match reset', () => {
                 async getScenarioConfig(scenarioName) {
                     return {
                         name: scenarioName,
-                        sets: ['standard'],
+                        sets: ['standard', 'experimental-weapons'],
                         defaultSets: ['goblin-gimmicks'],
                     };
                 },
@@ -300,7 +300,10 @@ describe('match reset', () => {
             assert.equal(resetMatch.players[0].name, 'Hulka');
             assert.equal(resetMatch.players[0].initial, true);
             assert.equal(resetMatch.players[0].config, playerConfig);
-            assert.deepEqual(scenarioConfig.sets, ['standard']);
+            assert.deepEqual(
+                scenarioConfig.sets,
+                ['standard', 'experimental-weapons']
+            );
             assert.deepEqual(scenarioConfig.defaultSets, [
                 'goblin-gimmicks',
                 'legions-of-hydra',

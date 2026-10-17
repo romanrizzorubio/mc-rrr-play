@@ -211,6 +211,90 @@ test('renders tucked cards as a short visible strip beneath the host card', () =
     assert.match(styles, /\.tucked-card-peek\s*\{[^}]*align-items: flex-end/s);
 });
 
+test('shows generic counters on cards attached to any host', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        attached: [{id: 'countered-accessory', counters: 3}],
+        dragActivation: null,
+        size: 'm',
+    });
+    const template = card.renderAttached();
+
+    assert.ok(template.strings.join('').includes('show-generic'));
+});
+
+test('renders acquired keywords below the image rather than beside its stats', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        activationActor: {abilities: []},
+        dragActivation: null,
+        exhausted: false,
+        extraKeywords: [{name: 'retaliate'}],
+        extraTraits: ['example'],
+        facedownImage: '',
+        faceDown: [],
+        horizontal: false,
+        image: 'villain.png',
+        isFacedownCard: false,
+        name: 'Villain',
+        rotated: false,
+        showAcquiredTraits: true,
+        size: 'm',
+        tuckedCards: [],
+        _showFacedownPreview: false,
+    });
+    const acquiredTraits = card.renderAcquiredTraits();
+    const acquiredKeywords = card.renderAcquiredKeywords();
+    const bottomStats = {};
+    const attached = {};
+    Object.assign(card, {
+        renderHeader: () => '',
+        renderTucked: () => '',
+        renderStage: () => '',
+        renderFacedownPeekButton: () => '',
+        renderCounters: () => '',
+        renderBottomStats: () => bottomStats,
+        renderAcquiredTraits: () => acquiredTraits,
+        renderAcquiredKeywords: () => acquiredKeywords,
+        renderAttached: () => attached,
+        renderFaceDown: () => '',
+        renderMenu: () => '',
+    });
+
+    const template = card.renderCard();
+    const divDepthAt = value => {
+        const valueIndex = template.values.indexOf(value);
+        assert.notEqual(valueIndex, -1);
+
+        const markupBeforeValue = template.strings
+            .slice(0, valueIndex + 1)
+            .join('');
+        const cardFaceStart = markupBeforeValue.lastIndexOf(
+            '<div class="card-face">'
+        );
+        assert.notEqual(cardFaceStart, -1);
+
+        return (markupBeforeValue.slice(cardFaceStart).match(/<\/?div\b/g) || [])
+            .reduce((depth, tag) => depth + (tag.startsWith('</') ? -1 : 1), 0);
+    };
+
+    assert.equal(acquiredKeywords.values[0][0].values[0], 'Represalia');
+    assert.ok(template.values.indexOf(bottomStats) <
+        template.values.indexOf(acquiredTraits));
+    assert.ok(template.values.indexOf(acquiredTraits) <
+        template.values.indexOf(acquiredKeywords));
+    assert.ok(template.values.indexOf(acquiredKeywords) <
+        template.values.indexOf(attached));
+    assert.equal(divDepthAt(acquiredTraits), 1);
+    assert.equal(divDepthAt(acquiredKeywords), 1);
+    assert.match(
+        CardComponent.styles.cssText,
+        /\.card-face\s*\{[^}]*width: var\(--card-size\)/s
+    );
+    assert.match(
+        CardComponent.styles.cssText,
+        /\.acquired-keywords\s*\{[^}]*width: 100%/s
+    );
+});
+
 test('peeks at a facedown card and toggles the eye affordance to hide it again', () => {
     const card = Object.assign(Object.create(CardComponent.prototype), {
         canPeekFacedown: true,

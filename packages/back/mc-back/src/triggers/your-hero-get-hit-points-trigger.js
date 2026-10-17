@@ -1,10 +1,11 @@
 import {Trigger} from './base/trigger.js';
+import {getTriggerCardPlayer} from '../utils/trigger-card-player.js';
 
 export class YourHeroGetHitPointsTrigger extends Trigger {
     canTrigger(params) {
         const {card} = this;
         const {effect, player} = params;
-        const controller = card.isEvent ? card.owner : card.controller;
+        const controller = getTriggerCardPlayer(card, player);
         const superhero = player?.superhero;
 
         if (controller === player && superhero &&

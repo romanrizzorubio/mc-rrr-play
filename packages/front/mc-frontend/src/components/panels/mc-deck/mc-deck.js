@@ -32,9 +32,12 @@ export class DeckComponent extends LitElement {
             discard: {type: Array},
             knownCards: {type: Array, attribute: 'known-cards'},
             deckName: {type: String, attribute: 'deck-name'},
+            deckNamePosition: {type: String, attribute: 'deck-name-position'},
+            showDeckName: {type: Boolean, attribute: 'show-deck-name'},
             discardLabel: {type: String, attribute: 'discard-label'},
             highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
             showDeck: {type: Boolean, attribute: 'show-deck'},
+            showDiscard: {type: Boolean, attribute: 'show-discard'},
             dragActivation: {type: Object},
             type: {type: Number}
         };
@@ -46,9 +49,12 @@ export class DeckComponent extends LitElement {
         this.discard = [];
         this.knownCards = [];
         this.deckName = '';
+        this.deckNamePosition = 'bottom';
+        this.showDeckName = true;
         this.discardLabel = '';
         this.highlightPlayableDiscard = false;
         this.showDeck = true;
+        this.showDiscard = true;
         this.dragActivation = null;
         this.type = DECK_TYPES.ENCOUNTER;
     }
@@ -105,9 +111,11 @@ export class DeckComponent extends LitElement {
             return;
         }
 
-        const title = this.type === DECK_TYPES.PLAYER ?
-            `Cartas vistas del mazo de ${this.deckName || 'jugador'}` :
-            'Cartas vistas del mazo de encuentros';
+        const title = this.deckName ?
+            `Cartas vistas del mazo de ${this.deckName}` :
+            this.type === DECK_TYPES.PLAYER ?
+                'Cartas vistas del mazo de jugador' :
+                'Cartas vistas del mazo de encuentros';
 
         this.dispatchEvent(new CustomEvent('view-known-cards', {
             bubbles: true,
@@ -135,9 +143,14 @@ export class DeckComponent extends LitElement {
             </span>
         `;
     }
-    renderCards(src, count, isEmptyDiscard = false, knownCards = []) {
+    renderCards(src, count, isEmptyDiscard = false, knownCards = [], deckTitle = '') {
+        const hasDeckTitle = Boolean(deckTitle);
+
         return html`
-            <div class="panel deck-panel">
+            <div class="panel deck-panel ${hasDeckTitle ? 'deck-panel-titled' : ''}">
+                ${hasDeckTitle ? html`
+                    <span class="deck-name deck-name-top">${deckTitle}</span>
+                ` : ''}
                 ${this.renderCardStack(src, count, isEmptyDiscard)}
                 ${knownCards.length ? html`
                     <button
@@ -155,12 +168,17 @@ export class DeckComponent extends LitElement {
     }
     renderDeck() {
         const {cards, knownCards} = this;
+        const deckTitle = this.deckNamePosition === 'top' &&
+            this.showDeckName !== false ?
+            this.deckName :
+            '';
 
         return this.renderCards(
             this.getImageBack(),
             cards.length,
             false,
-            knownCards
+            knownCards,
+            deckTitle
         );
     }
     renderDiscard() {
@@ -186,11 +204,30 @@ export class DeckComponent extends LitElement {
         `;
     }
     render() {
-        const {showDeck} = this;
+        const {
+            deckName,
+            deckNamePosition,
+            showDeck,
+            showDiscard,
+        } = this;
+        const titleOnTop = deckNamePosition === 'top';
+        const title = deckName && this.showDeckName !== false ?
+            html`
+                <span class="${titleOnTop ? 'deck-name deck-name-top' : 'deck-name'}">
+                    ${deckName}
+                </span>
+            ` :
+            '';
 
         return html`
-            ${this.renderDiscard()}
-            ${showDeck ? this.renderDeck() : ''}
+            <div class="deck-display" aria-label="${deckName}">
+                ${titleOnTop && !showDeck ? title : ''}
+                <div class="deck-piles">
+                    ${showDiscard ? this.renderDiscard() : ''}
+                    ${showDeck ? this.renderDeck() : ''}
+                </div>
+                ${titleOnTop ? '' : title}
+            </div>
         `;
     }
 }

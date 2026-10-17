@@ -9,14 +9,15 @@ const scenarioConfig = {
     villains: [],
     mainSchemes: [],
     cards: [],
-    sets: ['standard', 'legions-of-hydra'],
-    defaultSets: ['bomb-scare'],
+    sets: ['standard', 'experimental-weapons'],
+    defaultSets: ['legions-of-hydra', 'bomb-scare'],
 };
 
 const setConfigs = {
     standard: {name: 'standard', standard: true, cards: []},
     'bomb-scare': {name: 'Amenaza de bomba', standard: false, cards: []},
     'legions-of-hydra': {name: 'Legiones de Hydra', standard: false, cards: []},
+    'experimental-weapons': {name: 'Armas experimentales', standard: false, cards: []},
     'the-doomsday-chair': {
         name: 'La Silla del Juicio Final',
         standard: false,
@@ -44,7 +45,7 @@ const createScenarioRest = () => {
     };
 };
 
-test('createScenario applies the selected modular sets and retains standard sets', async () => {
+test('createScenario applies optional modular sets and retains required sets', async () => {
     const {match, scenarioRest} = createScenarioRest();
 
     await scenarioRest.createScenario({
@@ -55,9 +56,12 @@ test('createScenario applies the selected modular sets and retains standard sets
 
     assert.deepEqual(
         match.scenario.sets.map(({name}) => name),
-        ['standard', 'La Silla del Juicio Final']
+        ['standard', 'Armas experimentales', 'La Silla del Juicio Final']
     );
-    assert.deepEqual(match.creationConfig.scenario.sets, ['standard']);
+    assert.deepEqual(
+        match.creationConfig.scenario.sets,
+        ['standard', 'experimental-weapons']
+    );
     assert.deepEqual(
         match.creationConfig.scenario.defaultSets,
         ['the-doomsday-chair']
@@ -74,11 +78,11 @@ test('createScenario defaults to the modular sets configured by the scenario', a
 
     assert.deepEqual(
         match.scenario.sets.map(({name}) => name),
-        ['standard', 'Legiones de Hydra', 'Amenaza de bomba']
+        ['standard', 'Armas experimentales', 'Legiones de Hydra', 'Amenaza de bomba']
     );
 });
 
-test('createScenario allows removing all optional modular sets', async () => {
+test('createScenario removes optional modular sets without removing required sets', async () => {
     const {match, scenarioRest} = createScenarioRest();
 
     await scenarioRest.createScenario({
@@ -89,7 +93,7 @@ test('createScenario allows removing all optional modular sets', async () => {
 
     assert.deepEqual(
         match.scenario.sets.map(({name}) => name),
-        ['standard']
+        ['standard', 'Armas experimentales']
     );
 });
 

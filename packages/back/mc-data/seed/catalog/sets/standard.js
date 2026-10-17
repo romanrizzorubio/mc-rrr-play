@@ -13,7 +13,6 @@ import {
     EFFECT_EXHAUST,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_PLACE_THREAT,
-    EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SHUFFLE_DECK,
     EFFECT_SURGE,
@@ -30,6 +29,7 @@ import {
     TARGET_YOU
 } from 'mc-shared';
 
+import {revealEncounterFrom} from '../utils/reveal-encounter.js';
 import {gangUp} from '../encounters/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
@@ -297,13 +297,12 @@ export default {
                             {
                                 'type': ABILITY_WHEN_REVEALED,
                                 'params': {
-                                    'effect': {
-                                        'type': EFFECT_REVEAL_ENCOUNTER,
-                                        'params': {
-                                            'from': PLACE_ENCOUNTER_DECK,
-                                            'target': TARGET_PLAYER
-                                        }
-                                    }
+                                    'effect': revealEncounterFrom({
+                                        from: PLACE_ENCOUNTER_DECK,
+                                        revealParams: {
+                                            target: TARGET_PLAYER,
+                                        },
+                                    })
                                 }
                             }
                         ]

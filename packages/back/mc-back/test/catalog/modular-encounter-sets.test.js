@@ -130,7 +130,7 @@ test('the three modular encounter sets are registered with their printed card co
     assert.equal(interferenceCards.get('Con las manos atadas').card.params.attach, TARGET_YOUR_SUPERHERO);
 });
 
-test('Scorpion registers quickstrike as a forced response when it engages a hero', async () => {
+test('Quickstrike only triggers when its minion engages a hero', async () => {
     const match = {
         players: [],
         triggerCards: {},
@@ -141,11 +141,13 @@ test('Scorpion registers quickstrike as a forced response when it engages a hero
         card: factory.createCard(scorpionConfig),
         owner: {},
     });
+    const otherMinion = createGameCard(factory, hydraSoldier);
     const quickstrike = scorpion.abilities.find(ability =>
         ability instanceof QuickstrikeAbility
     );
 
     assert.equal(scorpion.quickStrike, true);
+    assert.equal(otherMinion.quickStrike, false);
     assert.ok(quickstrike instanceof ForcedResponseAbility);
 
     quickstrike.initTriggers(scorpion);
@@ -172,6 +174,11 @@ test('Scorpion registers quickstrike as a forced response when it engages a hero
         effect: {selectedTarget: hero},
         player: revealingPlayer,
     }), true);
+    assert.equal(await trigger.canTrigger({
+        card: otherMinion,
+        effect: {selectedTarget: hero},
+        player: revealingPlayer,
+    }), false);
     assert.equal(trigger.getAbilityParams({
         effect: {selectedTarget: hero},
         player: revealingPlayer,

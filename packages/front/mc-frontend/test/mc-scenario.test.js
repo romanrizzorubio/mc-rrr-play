@@ -17,6 +17,12 @@ const {McCharacterCard} = await import(
 const {VillainCardComponent} = await import(
     '../src/components/cards/characters/mc-villain-card/mc-villain-card.js'
 );
+const {MainSchemeCardComponent} = await import(
+    '../src/components/cards/schemes/mc-main-scheme-card/mc-main-scheme-card.js'
+);
+const {SchemeCardComponent} = await import(
+    '../src/components/cards/schemes/mc-scheme-card/mc-scheme-card.js'
+);
 
 const assertUnprintedStatsForwarded = (template, unprintedStats) => {
     assert.match(template.strings.join(''), /\.unprintedStats=/);
@@ -32,10 +38,92 @@ test('scenario environments render their generic counters', () => {
                 cards: [environment, sideScheme],
             },
         },
+        renderExtraDecks: () => '',
     });
 
     assert.deepEqual(template.values[0], [environment]);
     assert.match(template.strings.join(''), /show-generic/);
+});
+
+test('scenario auxiliary decks render in the environment area without discard piles', () => {
+    const deck = {
+        cards: [{id: 'weapon'}],
+        hasDiscard: false,
+        name: 'Armas experimentales',
+    };
+    const component = Object.assign(Object.create(McScenario.prototype), {
+        scenario: {
+            extraDecks: {'experimental-weapons': deck},
+            gameZone: {cards: [{isEnvironment: true}]},
+        },
+        player: null,
+        dragActivation: null,
+    });
+    const schemesTemplate = component.renderSchemes();
+    const template = component.renderEnvironments();
+    const extraDecksTemplate = template.values.find(value =>
+        value?.strings?.join('').includes('class="extra-decks"')
+    );
+
+    assert.doesNotMatch(schemesTemplate.strings.join(''), /extra-decks/);
+    assert.match(template.strings.join(''), /class="environments"/);
+    assert.ok(extraDecksTemplate);
+    const deckTemplate = extraDecksTemplate.values[0][0];
+    assert.equal(deckTemplate.values[3], 'Armas experimentales');
+    assert.equal(deckTemplate.values[4], false);
+    assert.match(deckTemplate.strings.join(''), /deck-name-position="top"/);
+});
+
+test('main scheme attachments reach the shared card renderer', () => {
+    const attached = [{id: 'under-surveillance', name: 'Bajo vigilancia'}];
+    const scheme = {
+        name: 'Test main scheme',
+        image: 'main-scheme.png',
+        attached,
+    };
+    const scenarioTemplate = McScenario.prototype.renderMainScheme.call({
+        scenario: {mainScheme: scheme},
+        player: null,
+        dragActivation: null,
+    });
+    const mainSchemeTemplate = MainSchemeCardComponent.prototype.render.call({
+        card: scheme,
+        attached,
+        basicActivation: null,
+        dragActivation: null,
+        clickDisabled: false,
+        menuOptions: [],
+        name: scheme.name,
+        image: scheme.image,
+        threat: 0,
+        acceleration: 0,
+        value: 0,
+        stage: 1,
+        handleCardClick() {},
+    });
+    const schemeTemplate = SchemeCardComponent.prototype.render.call({
+        card: scheme,
+        attached,
+        basicActivation: null,
+        dragActivation: null,
+        clickDisabled: false,
+        menuOptions: [],
+        name: scheme.name,
+        image: scheme.image,
+        threat: 0,
+        acceleration: 0,
+        headerLeft: 0,
+        headerRight: 1,
+    });
+
+    for (const template of [
+        scenarioTemplate,
+        mainSchemeTemplate,
+        schemeTemplate,
+    ]) {
+        assert.match(template.strings.join(''), /\.attached=/);
+        assert.ok(template.values.includes(attached));
+    }
 });
 
 test('scenario villains forward unprinted stats to the villain card', () => {

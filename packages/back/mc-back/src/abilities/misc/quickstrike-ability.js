@@ -15,6 +15,13 @@ export class QuickstrikeAbility extends ForcedResponseAbility {
             match: this.match,
         });
     }
+    canTrigger(params) {
+        if (params.card !== this.card) {
+            return false;
+        }
+
+        return super.canTrigger(params);
+    }
     getTitle() {
         return 'Ataque veloz';
     }

@@ -36,6 +36,7 @@ export class Scenario extends Engine {
         this.match = match;
 
         this.deck = null;
+        this.extraDecks = {};
         this.gameZone = undefined;
         this.apart = [];
     }
@@ -91,6 +92,53 @@ export class Scenario extends Engine {
     drawEncounterCards(count = 1) {
         return this.deck.draw(count);
     }
+    getExtraDeck(id) {
+        const deck = this.extraDecks?.[id];
+        if (!deck) {
+            throw new Error(`No existe un mazo auxiliar del escenario con ID "${id}".`);
+        }
+
+        return deck;
+    }
+    createExtraDeck(id) {
+        if (!this.deck) {
+            throw new Error('No se puede crear un mazo auxiliar antes de construir el mazo de Encuentros.');
+        }
+        if (this.extraDecks[id]) {
+            throw new Error(`Ya existe un mazo auxiliar del escenario con ID "${id}".`);
+        }
+
+        const set = this.sets.find(({cards}) =>
+            cards.some(card => card.set === id));
+        if (!set) {
+            throw new Error(`El conjunto "${id}" no está configurado en el escenario.`);
+        }
+
+        const cards = set.cards.filter(card => this.deck.cards.includes(card));
+        if (!cards.length || cards.length !== set.cards.length) {
+            throw new Error(
+                `No se pueden mover todas las cartas del conjunto "${id}" al mazo auxiliar.`
+            );
+        }
+
+        const extraCards = new Set(cards);
+        this.deck.cards = this.deck.cards.filter(card => !extraCards.has(card));
+        this.deck.knownCards = this.deck.knownCards.filter(card =>
+            !extraCards.has(card));
+
+        const deck = new Deck({
+            owner: this,
+            id,
+            name: set.name,
+            isScenarioExtraDeck: true,
+            hasDiscard: false,
+            discardTarget: this.deck,
+        });
+        deck.initDeck(cards);
+        this.extraDecks[id] = deck;
+
+        return deck;
+    }
     getCard(cardId) {
         if (this.villain.id === cardId) {
             return this.villain;
@@ -110,6 +158,7 @@ export class Scenario extends Engine {
             owner: this,
             isScenarioDeck: true,
         });
+        this.extraDecks = {};
 
         this.scenarioCards = this.scenarioCards.concat(obligations);
 
@@ -354,6 +403,7 @@ export class Scenario extends Engine {
             villain,
             mainScheme,
             deck,
+            extraDecks = {},
             gameZone,
         } = this;
 
@@ -363,6 +413,10 @@ export class Scenario extends Engine {
             villain: villain && villain.toObj(),
             mainScheme: mainScheme && mainScheme.toObj(),
             deck: deck && deck.toObj(),
+            extraDecks: Object.fromEntries(Object.entries(extraDecks).map(([id, extraDeck]) => [
+                id,
+                extraDeck.toObj(),
+            ])),
             gameZone: gameZone && gameZone.toObj(),
         };
     }

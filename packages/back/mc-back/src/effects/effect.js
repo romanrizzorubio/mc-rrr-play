@@ -96,6 +96,47 @@ export class Effect extends Engine {
         this.isChoose = false;
         this._keepTriggering = false;
     }
+    resetResolutionData() {
+        this.delayedEffects = [];
+        this.lastingEffects = [];
+    }
+    resetResolutionState({
+        preserveSelectedTarget = false,
+        preserveNestedSelectedTargets = false,
+        visited = new Set(),
+    } = {}) {
+        if (visited.has(this)) {
+            return;
+        }
+        visited.add(this);
+
+        this.resolved = false;
+        this.fullResolved = false;
+        this.paymentCancelled = false;
+        if (!preserveSelectedTarget) {
+            this.selectedTarget = undefined;
+        }
+        this.resetResolutionData();
+
+        const nestedEffects = new Set();
+        Object.values(this).forEach(value => {
+            if (value instanceof Effect) {
+                nestedEffects.add(value);
+            } else if (Array.isArray(value)) {
+                value.flat(Infinity).forEach(nestedEffect => {
+                    if (nestedEffect instanceof Effect) {
+                        nestedEffects.add(nestedEffect);
+                    }
+                });
+            }
+        });
+
+        nestedEffects.forEach(effect => effect.resetResolutionState({
+            preserveSelectedTarget: preserveNestedSelectedTargets,
+            preserveNestedSelectedTargets,
+            visited,
+        }));
+    }
     get ability() {
         return this._ability;
     }
@@ -293,6 +334,13 @@ export class Effect extends Engine {
     }
     getEffectProperty(name, _params) {
         return path(this, name);
+    }
+    isActivationActive(params) {
+        const activationEffect = this._activation?.effect;
+
+        return activationEffect === this ||
+            typeof activationEffect?.checkTrigger !== 'function' ||
+            activationEffect.checkTrigger(params);
     }
     getTitle() {
         return this.title;
@@ -566,9 +614,10 @@ export class Effect extends Engine {
         });
     }
     async runEffect(params) {
-        this.resolved = false;
-        this.fullResolved = false;
-        this.paymentCancelled = false;
+        this.resetResolutionState({
+            preserveSelectedTarget: true,
+            preserveNestedSelectedTargets: true,
+        });
 
         const prepared = params.costPaymentSession?.takePreparedEffect(this);
         if (prepared) {

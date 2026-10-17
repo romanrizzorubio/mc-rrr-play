@@ -31,20 +31,33 @@ export class BasicAbility extends Ability {
         if ((this.isAttack || this.isThwart) &&
             !params.preselectedTarget &&
             !params.fixedPreselectedTarget) {
-            const targetState = await this.prepareToResolve(params);
-            if (!targetState.canRun) {
-                this.paymentCancelled = true;
-                return;
-            }
+            const statusReplacesActivation =
+                (this.isAttack && card?.isStunned) ||
+                (this.isThwart && card?.isConfused);
 
-            resolveParams = {
-                ...params,
-                preselectedTarget: targetState.preselectedTarget,
-                ...(targetState.preselectedTarget ? {
+            if (statusReplacesActivation) {
+                resolveParams = {
+                    ...params,
+                    preselectedTarget: true,
                     fixedPreselectedTarget: true,
-                    selectedTarget: this.effect.selectedTarget,
-                } : {}),
-            };
+                    selectedTarget: [],
+                };
+            } else {
+                const targetState = await this.prepareToResolve(params);
+                if (!targetState.canRun) {
+                    this.paymentCancelled = true;
+                    return;
+                }
+
+                resolveParams = {
+                    ...params,
+                    preselectedTarget: targetState.preselectedTarget,
+                    ...(targetState.preselectedTarget ? {
+                        fixedPreselectedTarget: true,
+                        selectedTarget: this.effect.selectedTarget,
+                    } : {}),
+                };
+            }
         }
 
         await super.resolveAbility(resolveParams);

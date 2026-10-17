@@ -16,6 +16,10 @@ export class SelectFromTopDeckEffect extends Effect {
 
         this.selectedCards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.selectedCards = [];
+    }
 
     async execute(params) {
         const {player} = params;

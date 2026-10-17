@@ -70,3 +70,71 @@ test('automatic indirect damage assignment does not exceed the target remaining 
         dialogCalls: 0,
     });
 });
+
+test('presents the superhero before allies and includes their assignable damage limits', async () => {
+    const superhero = {
+        damage: 0,
+        id: 'hero',
+        isSuperhero: true,
+        async getEffectiveStats() {
+            return {hitPoints: 10, life: 2};
+        },
+        toObj() {
+            return {id: this.id};
+        },
+    };
+    const ally = {
+        damage: 0,
+        id: 'ally',
+        isSuperhero: false,
+        async getEffectiveStats() {
+            return {hitPoints: 5, life: 4};
+        },
+        toObj() {
+            return {id: this.id};
+        },
+    };
+    let assignmentDialog;
+    const match = {
+        effectsFactory: {
+            createEffect({damage, selectedTarget}) {
+                return {
+                    async runEffect() {
+                        selectedTarget.damage += damage;
+                    },
+                };
+            },
+        },
+        triggerCards: {},
+        async openDialog(dialog) {
+            assignmentDialog = dialog;
+
+            return {
+                assigned: {
+                    hero: 2,
+                    ally: 1,
+                },
+            };
+        },
+    };
+    const effect = new AssignDamageEffect({
+        damage: 3,
+        match,
+        selectedTarget: [ally, superhero],
+    });
+
+    await effect.execute({player: {hand: {cards: []}}});
+
+    assert.deepEqual(
+        assignmentDialog.data.cards.map(({id, isSuperhero, life}) => ({
+            id,
+            isSuperhero,
+            life,
+        })),
+        [
+            {id: 'hero', isSuperhero: true, life: 2},
+            {id: 'ally', isSuperhero: false, life: 4},
+        ]
+    );
+    assert.deepEqual([superhero.damage, ally.damage], [2, 1]);
+});

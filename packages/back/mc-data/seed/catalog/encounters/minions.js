@@ -1,10 +1,57 @@
 import {
+    ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_DEFEATED,
     CARD_TYPE_MINION,
+    EFFECT_CHOOSE,
     EFFECT_DEAL_ENCOUNTER,
+    EFFECT_PLACE_THREAT,
+    EFFECT_TAKE_DAMAGE,
+    TARGET_MAIN_SCHEME,
     TARGET_ENGAGED,
+    TARGET_YOU,
     TRAIT_HYDRA,
 } from 'mc-shared';
+
+export const hydraTerrorist = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Terrorista de Hydra',
+        image: 'sets/bomb-scare/bomb2.webp',
+        traits: [TRAIT_HYDRA],
+        boost: 1,
+        scheme: 1,
+        attack: 1,
+        hitPoints: 2,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: {
+                        type: EFFECT_CHOOSE,
+                        params: {
+                            options: [
+                                {
+                                    type: EFFECT_TAKE_DAMAGE,
+                                    params: {
+                                        damage: 2,
+                                        target: TARGET_YOU,
+                                    },
+                                },
+                                {
+                                    type: EFFECT_PLACE_THREAT,
+                                    params: {
+                                        threat: 1,
+                                        target: TARGET_MAIN_SCHEME,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
 
 export const hydraSoldier = {
     'type': CARD_TYPE_MINION,

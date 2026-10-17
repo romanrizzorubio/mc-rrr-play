@@ -119,7 +119,22 @@ export class McMatchPage extends LitElement {
         const {match} = this;
 
         if (match) {
-            if (deck.isScenarioDeck) {
+            if (deck.isScenarioExtraDeck) {
+                if (!deck.id) {
+                    throw new Error('A scenario extra deck refresh requires a deck ID.');
+                }
+
+                this.changeMatch({
+                    ...this.match,
+                    scenario: {
+                        ...this.match.scenario,
+                        extraDecks: {
+                            ...this.match.scenario.extraDecks,
+                            [deck.id]: deck,
+                        },
+                    },
+                });
+            } else if (deck.isScenarioDeck) {
                 this.changeMatch({
                     ...this.match,
                     scenario: {

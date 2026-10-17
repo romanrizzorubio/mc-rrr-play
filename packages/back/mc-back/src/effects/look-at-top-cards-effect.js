@@ -19,6 +19,11 @@ export class LookAtTopCardsEffect extends Effect {
         this.cards = [];
         this.matchingCards = [];
     }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cards = [];
+        this.matchingCards = [];
+    }
     async execute(params) {
         const deck = this.selectedTarget;
         if (deck !== this.match.scenario.deck &&

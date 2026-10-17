@@ -9,16 +9,19 @@ import {
 test('an event owned by the player can trigger after their hero defeats an enemy', async () => {
     const hero = {};
     const player = {
+        hand: {cards: []},
         isHero: true,
         superhero: {
             currentSide: hero,
         },
     };
+    const card = {
+        isEvent: true,
+        owner: player,
+    };
+    player.hand.cards.push(card);
     const trigger = new YourHeroAttackDefeatEnemyTrigger({
-        card: {
-            isEvent: true,
-            owner: player,
-        },
+        card,
         ability: {
             canTrigger: () => true,
         },
