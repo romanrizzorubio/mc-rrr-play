@@ -1,6 +1,6 @@
 # Apéndice I: Personalización
 
-Esta sección detalla las reglas para la personalización de mazos de jugador y mazos de encuentro en Marvel Champions.
+Esta sección detalla las reglas para la personalización de mazos de jugador y mazos de encuentro en MC RRR.
 
 ## Mazos de Jugador
 

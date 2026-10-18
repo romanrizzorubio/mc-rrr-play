@@ -23,6 +23,7 @@ export class VillainCardComponent extends LitElement {
             player: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
             name: {type: String},
             image: {type: String},
             life: {type: Number},
@@ -51,6 +52,7 @@ export class VillainCardComponent extends LitElement {
         this.player = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
         this.image = '';
         this.life = 0;
         this.hitPoints = undefined;
@@ -126,6 +128,7 @@ export class VillainCardComponent extends LitElement {
                 .card="${card}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 .basicActivation="${this.basicActivation}"
                 .clickDisabled="${this.clickDisabled}"
                 .menuOptions="${this.menuOptions}"

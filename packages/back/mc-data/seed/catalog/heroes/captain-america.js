@@ -95,7 +95,7 @@ import {
     TRIGGER_INSTANT,
     TRIGGER_PLAYER_CAN_THWART,
     TRIGGER_PLAY_CARD,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
 import {hydraSoldier} from '../encounters/minions.js';
@@ -260,7 +260,7 @@ export default {
                             {
                                 'type': ABILITY_RESPONSE,
                                 'params': {
-                                    'trigger': TRIGGER_THIS_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
                                     'effect': {
                                         'type': EFFECT_REMOVE_THREAT,
                                         'params': {
@@ -643,7 +643,7 @@ export default {
                                 'type': ABILITY_CONSTANT,
                                 'params': {
                                     'hideDialog': true,
-                                    'trigger': TRIGGER_THIS_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
                                     'effect': {
                                         'type': EFFECT_ADD_KEYWORD,
                                         'params': {

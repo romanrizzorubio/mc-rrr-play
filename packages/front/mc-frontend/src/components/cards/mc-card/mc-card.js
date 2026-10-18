@@ -18,10 +18,16 @@ import {
 } from '../../../misc/cards.js';
 import {translateTrait} from '../../../utils/traits.js';
 import {
+    getActivationOptionForActor,
+    getActivationOptionsForActor,
     getBasicActivationOptionForActor,
     getBasicActivationOptionsForActor,
 } from '../../../utils/basic-activation.js';
 import {isPlayCardDropTarget} from '../../../utils/play-card-drag.js';
+import {
+    getResourcePaymentOption,
+    getResourcePaymentSource,
+} from '../../../utils/resource-payment-drag.js';
 
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
@@ -58,7 +64,9 @@ export class CardComponent extends LitElement {
                             src="${getCardAssetUrl(card.image)}"
                             size="${this._smallSize}"
                             .activationBlocked="${Boolean(
-                                this.dragActivation || this.dragPlayCard
+                                this.dragActivation ||
+                                this.dragPlayCard ||
+                                this.dragResourcePayment
                             )}"
                         ></mc-card-image>
                     </div>
@@ -78,6 +86,7 @@ export class CardComponent extends LitElement {
             activationActor: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
             allowPlayCardDrag: {type: Boolean},
             clickDisabled: {type: Boolean},
             image: {type: String},
@@ -101,6 +110,7 @@ export class CardComponent extends LitElement {
             recovery: {type: Number},
             scheme: {type: Number},
             unprintedStats: {type: Array},
+            emphasizedStats: {type: Array},
             acceleration: {type: Number},
             life: {type: Number},
             generic: {type: Number},
@@ -133,6 +143,7 @@ export class CardComponent extends LitElement {
         this.activationActor = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
         this.allowPlayCardDrag = false;
         this.clickDisabled = false;
         this.image = '';
@@ -157,6 +168,7 @@ export class CardComponent extends LitElement {
         this.recovery = undefined;
         this.scheme = undefined;
         this.unprintedStats = [];
+        this.emphasizedStats = [];
         this.generic = undefined;
         this.life = undefined;
         this.showThreat = false;
@@ -171,6 +183,7 @@ export class CardComponent extends LitElement {
         this._showBig = false;
         this._showFacedownPreview = false;
         this._draggingPlayCard = false;
+        this._draggingResourcePayment = false;
         this.stage = undefined;
     }
     willUpdate(changedProperties) {
@@ -195,12 +208,42 @@ export class CardComponent extends LitElement {
         return size === 's' ? 'xs' : 's';
     }
     get activationDropOption() {
-        return this.card && this.dragActivation ?
-            getBasicActivationOptionForActor(
-                this.dragActivation.actor,
-                this.card
-            ) :
+        const actor = this.dragActivation?.actor;
+        const getOption = actor?.isUpgrade || actor?.isSupport ?
+            getActivationOptionForActor :
+            getBasicActivationOptionForActor;
+
+        return this.card && actor ?
+            getOption(actor, this.card) :
             undefined;
+    }
+    get activationSourceOptions() {
+        return this.activationActor?.isUpgrade ||
+            this.activationActor?.isSupport ?
+            getActivationOptionsForActor(this.activationActor) :
+            getBasicActivationOptionsForActor(this.activationActor);
+    }
+    get resourcePaymentDropOption() {
+        return getResourcePaymentOption(
+            this.card,
+            this.dragResourcePayment
+        );
+    }
+    get isResourcePaymentDragSource() {
+        return Boolean(
+            this.card?.id &&
+            this.card.id === this.dragResourcePayment?.card?.id
+        );
+    }
+    get isResourcePaymentDropTarget() {
+        return Boolean(this.resourcePaymentDropOption);
+    }
+    get isResourcePaymentVeiled() {
+        return Boolean(
+            this.dragResourcePayment &&
+            !this.isResourcePaymentDragSource &&
+            !this.isResourcePaymentDropTarget
+        );
     }
     get isActivationDragSource() {
         return Boolean(
@@ -224,7 +267,17 @@ export class CardComponent extends LitElement {
             this.card?.id &&
             this.card.playable === true &&
             !this.dragActivation &&
-            !this.dragPlayCard
+            !this.dragPlayCard &&
+            !this.dragResourcePayment
+        );
+    }
+    get canDragResourcePayment() {
+        return Boolean(
+            this.card?.id &&
+            getResourcePaymentSource(this.card) &&
+            !this.dragActivation &&
+            !this.dragPlayCard &&
+            !this.dragResourcePayment
         );
     }
     get isPlayCardDragSource() {
@@ -380,7 +433,7 @@ export class CardComponent extends LitElement {
         }
     }
     handleActivationDragStart(event) {
-        const options = getBasicActivationOptionsForActor(this.activationActor);
+        const options = this.activationSourceOptions;
 
         if (!options.length) {
             if (this.activationActor?.id) {
@@ -421,12 +474,39 @@ export class CardComponent extends LitElement {
             return;
         }
 
+        if (this.canDragResourcePayment) {
+            this._draggingResourcePayment = true;
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', this.card.id);
+            }
+
+            this.dispatchEvent(new CustomEvent('resource-payment-drag-start', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    source: getResourcePaymentSource(this.card),
+                },
+            }));
+            return;
+        }
+
         this.handleActivationDragStart(event);
     }
     handleDragEnd() {
         if (this._draggingPlayCard) {
             this._draggingPlayCard = false;
             this.dispatchEvent(new CustomEvent('play-card-drag-end', {
+                bubbles: true,
+                composed: true,
+            }));
+            return;
+        }
+
+        if (this._draggingResourcePayment) {
+            this._draggingResourcePayment = false;
+            this.dispatchEvent(new CustomEvent('resource-payment-drag-end', {
                 bubbles: true,
                 composed: true,
             }));
@@ -447,6 +527,7 @@ export class CardComponent extends LitElement {
     }
     handleDragOver(event) {
         this.handlePlayCardDragOver(event);
+        this.handleResourcePaymentDragOver(event);
         this.handleActivationDragOver(event);
     }
     handlePlayCardDrop(event) {
@@ -466,9 +547,41 @@ export class CardComponent extends LitElement {
         }));
         return true;
     }
+    handleResourcePaymentDragOver(event) {
+        if (!this.isResourcePaymentDropTarget) {
+            return;
+        }
+
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+    handleResourcePaymentDrop(event) {
+        const option = this.resourcePaymentDropOption;
+
+        if (!option) {
+            return false;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('resource-payment-drop', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.dragResourcePayment.card,
+                targetCard: this.card,
+                option,
+            },
+        }));
+        return true;
+    }
     handleDrop(event) {
         if (!this.handlePlayCardDrop(event)) {
-            this.handleActivationDrop(event);
+            if (!this.handleResourcePaymentDrop(event)) {
+                this.handleActivationDrop(event);
+            }
         }
     }
     handleActivationDragEnd() {
@@ -552,6 +665,7 @@ export class CardComponent extends LitElement {
                     .cards="${attached}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     show-life
                     show-damage
                     show-generic
@@ -644,11 +758,23 @@ export class CardComponent extends LitElement {
             ...(this.isPlayCardDragSource ? ['play-card-drag-source'] : []),
             ...(this.isPlayCardDropTarget ? ['play-card-drop-target'] : []),
             ...(this.isPlayCardBlocked ? ['play-card-blocked'] : []),
+            ...(this.isResourcePaymentDragSource ? [
+                'resource-payment-drag-source'
+            ] : []),
+            ...(this.isResourcePaymentDropTarget ? [
+                'resource-payment-drop-target'
+            ] : []),
+            ...(this.isResourcePaymentVeiled ? [
+                'resource-payment-blocked'
+            ] : []),
         ].join(' ');
         const activationSourceOptions =
-            getBasicActivationOptionsForActor(this.activationActor);
+            this.activationSourceOptions;
         const isDraggable = this.canDragPlayCard ||
-            (!this.dragActivation && !this.dragPlayCard &&
+            this.canDragResourcePayment ||
+            (!this.dragActivation &&
+                !this.dragPlayCard &&
+                !this.dragResourcePayment &&
                 activationSourceOptions.length > 0);
 
         return html`
@@ -668,7 +794,8 @@ export class CardComponent extends LitElement {
                                     size="${size}"
                                     .horizontal="${horizontal}"
                                     .rotated="${rotated}"
-                                    .activationBlocked="${this.isActivationVeiled}"
+                                    .activationBlocked="${this.isActivationVeiled ||
+                                        this.isResourcePaymentVeiled}"
                                     ?draggable="${isDraggable}"
                                     @click="${this.handleClick.bind(this)}"
                                     @contextmenu="${this.hableContextMenu.bind(this)}"
@@ -747,13 +874,24 @@ export class CardComponent extends LitElement {
         ].filter(({value}) =>
             value !== undefined && value !== null && Number.isFinite(value)
         );
+        const emphasizedStats = this.emphasizedStats ?? [];
+        const hasEmphasizedStat = stats.some(({stat}) =>
+            emphasizedStats.includes(stat)
+        );
         const stageAligned = this.nameWithStage && Number.isFinite(this.stage);
+        const statsClass = [
+            stageAligned ? 'stage-aligned' : '',
+            hasEmphasizedStat ? 'has-emphasized' : '',
+        ].filter(Boolean).join(' ');
 
         return stats.length ? html`
-            <div class="character-stats ${stageAligned ? 'stage-aligned' : ''}">
+            <div class="character-stats ${statsClass}">
                 ${stats.map(({stat, label, value, className}) => html`
                     <span
-                        class="character-stat ${className}"
+                        class="character-stat ${[
+                            className,
+                            emphasizedStats.includes(stat) ? 'emphasized' : '',
+                        ].filter(Boolean).join(' ')}"
                         aria-label="${label}: ${value}"
                     >
                         ${this.renderStatValue(stat, value)}
@@ -784,8 +922,21 @@ export class CardComponent extends LitElement {
             <div class="counters" >
                 ${this.renderAccelerationCounters()}
                 ${this.renderThreatCounters()}
+                ${this.renderGenericCounter()}
             </div>
         `;
+    }
+    renderGenericCounter() {
+        const {generic, horizontal, showGeneric, showThreat} = this;
+
+        return showGeneric && horizontal && showThreat && generic ? html`
+            <div
+                class="character-stat stat-counters"
+                aria-label="CONTADORES: ${generic}"
+            >
+                <span class="numeric-value">${generic}</span>
+            </div>
+        ` : html``;
     }
     renderBottomStats() {
         const life = Number.isFinite(this.life) ?
@@ -806,7 +957,9 @@ export class CardComponent extends LitElement {
                 value: this.damage,
                 className: 'stat-damage',
             }] : []),
-            ...(this.showGeneric && this.generic ? [{
+            ...(this.showGeneric &&
+                !(this.horizontal && this.showThreat) &&
+                this.generic ? [{
                 label: 'CONTADORES',
                 value: this.generic,
                 className: 'stat-counters',
@@ -843,7 +996,9 @@ export class CardComponent extends LitElement {
                 src="${this.getImageBack(type)}"
                 size="${this._smallSize}"
                 .activationBlocked="${Boolean(
-                    this.dragActivation || this.dragPlayCard
+                    this.dragActivation ||
+                    this.dragPlayCard ||
+                    this.dragResourcePayment
                 )}"
                 @click="${this.handleFaceDownClick(type, types[type])}"
             ></mc-card-image>

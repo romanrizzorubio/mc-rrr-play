@@ -92,7 +92,7 @@ import {
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_INSTANT,
     TRIGGER_THIS_ATTACK,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
 export default {
@@ -226,7 +226,7 @@ export default {
                             {
                                 'type': ABILITY_RESPONSE,
                                 'params': {
-                                    'trigger': TRIGGER_THIS_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
                                     'effect': {
                                         'type': EFFECT_CONFUSE,
                                         'params': {

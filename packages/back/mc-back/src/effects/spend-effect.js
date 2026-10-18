@@ -88,6 +88,15 @@ export class SpendEffect extends Effect {
         return this.title || `Pagar ${cost}`;
     }
     async preparePayment(params, session) {
+        if (params.resourcePayment !== undefined) {
+            return this.selectedTarget.getDirectResourcePayment({
+                ...params.resourcePayment,
+                cardToPay: params.card,
+                excludedCardIds: session.getResourcePaymentExcludedCardIds(),
+                resourceUsage: session.getRemainingResources(),
+            });
+        }
+
         return this.selectedTarget.spendResources(
             this.resources,
             params.card,

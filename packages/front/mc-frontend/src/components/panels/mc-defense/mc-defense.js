@@ -78,6 +78,8 @@ export class McDefense extends LitElement {
             <h3>${prompt}</h3>
             <mc-card-list
                 .cards="${defenders}"
+                .emphasizedStats="${['defense']}"
+                show-basic-stats
                 show-life
                 show-generic
                 @card-list-select="${this.handleSelectDefender.bind(this)}"

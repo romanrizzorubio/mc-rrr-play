@@ -19,6 +19,7 @@ export class MatchComponent extends LitElement {
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
     constructor() {
@@ -29,6 +30,7 @@ export class MatchComponent extends LitElement {
         this.playCardPending = false;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     showAlert(msg) {
         this.dispatchEvent(new CustomEvent('show-alert', {
@@ -61,6 +63,7 @@ export class MatchComponent extends LitElement {
                 .player="${player}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 @ability="${this.handleAbility.bind(this)}"
                 @attached-card-click="${this.handleAbility.bind(this)}"
             ></mc-scenario>
@@ -78,6 +81,7 @@ export class MatchComponent extends LitElement {
                 .playCardPending="${this.playCardPending}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 @superhero-ability="${this.handleAbility.bind(this)}"
                 @attached-card-click="${this.handleAbility.bind(this)}"
                 @game-zone-card-click="${this.handleAbility.bind(this)}"

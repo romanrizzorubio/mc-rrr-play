@@ -1,25 +1,38 @@
-import {RESOURCE_WILD} from 'mc-shared';
+import {
+    getResourceIcons,
+    normalizeResourceRequirements,
+    resourceSatisfiesRequirement,
+} from './resource-requirements.js';
 
-export const findResourceAssignment = (cards, requirements, forcedCard) => {
+export const findResourceAssignment = (
+    cards,
+    requirements,
+    forcedCard,
+    {allowWildConversion = true, printed = false} = {}
+) => {
+    const normalizedRequirements = normalizeResourceRequirements(requirements);
     const resourceIcons = cards.flatMap(card =>
-        (card.resources || []).map((resource, index) => ({
+        getResourceIcons(card, {printed}).map((resource, index) => ({
             card,
             resource,
             index,
         })));
     const findAssignment = (requirementIndex, usedIcons) => {
-        if (requirementIndex === requirements.length) {
+        if (requirementIndex === normalizedRequirements.length) {
             return !forcedCard || usedIcons.some(icon => icon.card === forcedCard) ?
                 usedIcons :
                 undefined;
         }
 
-        const requirement = requirements[requirementIndex];
+        const requirement = normalizedRequirements[requirementIndex];
         for (const icon of resourceIcons) {
             if (usedIcons.some(usedIcon =>
                 usedIcon.card === icon.card && usedIcon.index === icon.index) ||
-                (icon.resource !== RESOURCE_WILD &&
-                    !requirement.includes(icon.resource))) {
+                !resourceSatisfiesRequirement(
+                    icon.resource,
+                    requirement,
+                    {allowWildConversion}
+                )) {
                 continue;
             }
 

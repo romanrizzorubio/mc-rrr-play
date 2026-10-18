@@ -27,7 +27,7 @@ import {
     TRAIT_OLYMPUS,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_DEFEAT_MINION
 } from 'mc-shared';
 
@@ -290,7 +290,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_DO_IF_HAS_PAID,
                                 'params': {

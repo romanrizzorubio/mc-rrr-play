@@ -4,8 +4,7 @@ import {
     DIALOG_ENCOUNTERS_REVEAL,
     TARGET_YOU,
     TRIGGER_ENGAGE_HERO,
-    TRIGGER_MINION_ENTER_PLAY,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
 import {EngageEffect} from '../../src/effects/engage-effect.js';
@@ -184,6 +183,6 @@ test('EngageEffect triggers engagement, but not enter-play, when changing player
     assert.equal(minion.controller, player);
     assert.equal(minion.engaged, player);
     assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), true);
-    assert.equal(triggeredTypes.includes(TRIGGER_THIS_ENTER_PLAY), false);
-    assert.equal(triggeredTypes.includes(TRIGGER_MINION_ENTER_PLAY), false);
+    assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
+    assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
 });

@@ -410,14 +410,14 @@ export class Scenario extends Engine {
         return {
             ...super.toObj(),
             name,
-            villain: villain && villain.toObj(),
-            mainScheme: mainScheme && mainScheme.toObj(),
-            deck: deck && deck.toObj(),
+            villain: villain?.toObj(),
+            mainScheme: mainScheme?.toObj(),
+            deck: deck?.toObj(),
             extraDecks: Object.fromEntries(Object.entries(extraDecks).map(([id, extraDeck]) => [
                 id,
                 extraDeck.toObj(),
             ])),
-            gameZone: gameZone && gameZone.toObj(),
+            gameZone: gameZone?.toObj(),
         };
     }
     async toObjWithAbilityAvailability(player) {

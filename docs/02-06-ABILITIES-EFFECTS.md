@@ -352,7 +352,7 @@ Cuando a un jugador se le ordena buscar una carta, se le permite mirar cada una 
 - Si un jugador encuentra múltiples cartas que satisfacen los criterios de una búsqueda, el jugador elige entre esas opciones.
 - Las cartas que se buscan no se consideran que abandonan el área buscada.
 - Si se busca cualquier parte de un mazo, al finalizar ese paso del juego, función del juego o capacidad de carta, baraja todo ese mazo.
-- Si se instruye a un jugador a "buscar en [su] colección" una carta, el jugador mira entre todas sus cartas de Marvel Champions fuera de la partida actual la carta especificada.
+- Si se instruye a un jugador a "buscar en [su] colección" una carta, el jugador mira entre todas sus cartas de MC RRR fuera de la partida actual la carta especificada.
     - Se convierte en el propietario de esa carta hasta el final de la partida.
 
 **Véase también**: localizar (Find), mazo de encuentros, mazo de jugador, barajar.

@@ -17,7 +17,7 @@ import {
     RESOURCE_ENERGY,
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ENCOUNTER_DECK,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import {DefeatEffect} from '../../src/effects/defeat-effect.js';
@@ -448,7 +448,7 @@ test('Dama Sif readies Thor or Odinson when another player puts her into play', 
             },
         };
         const sifAbility = sifCard.abilities.find(ability =>
-            ability.trigger === TRIGGER_THIS_ENTER_PLAY);
+            ability.trigger === TRIGGER_CARD_ENTER_PLAY);
         assert.ok(sifAbility);
         assert.equal(sifCard.isEvent, false);
         assert.equal(sifCard.isAlly, true);

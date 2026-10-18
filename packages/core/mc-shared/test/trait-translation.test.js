@@ -15,11 +15,14 @@ import {
     TRAIT_ELITE,
     TRAIT_GOBLIN,
     TRAIT_GIANT,
+    TRAIT_ICE,
     TRAIT_LOCATION,
+    TRAIT_METAL,
     TRAIT_OLYMPUS,
     TRAIT_PERSONA,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
+    TRAIT_STONE,
     TRAIT_SPY,
     TRAIT_TACTIC,
     TRAIT_THWART,
@@ -27,6 +30,7 @@ import {
     TRAIT_VEHICLE,
     TRAIT_TECH,
     translateTrait,
+    TRAIT_WOOD,
 } from '../index.js';
 
 test('translates supported traits to Spanish labels', () => {
@@ -52,9 +56,13 @@ test('translates supported traits to Spanish labels', () => {
         [TRAIT_DROID, 'Androide'],
         [TRAIT_GOBLIN, 'Duende'],
         [TRAIT_GIANT, 'Gigante'],
+        [TRAIT_ICE, 'Hielo'],
+        [TRAIT_METAL, 'Metal'],
         [TRAIT_PERSONA, 'Individuo'],
         [TRAIT_PREPARATION, 'Planificación'],
         [TRAIT_OLYMPUS, 'Olimpo'],
+        [TRAIT_STONE, 'Piedra'],
+        [TRAIT_WOOD, 'Madera'],
     ]);
 
     translations.forEach((label, trait) => {

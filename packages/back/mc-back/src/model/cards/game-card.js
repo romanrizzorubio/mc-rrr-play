@@ -360,6 +360,13 @@ export class GameCard extends Engine {
 
         return this.card.isPlayerCard;
     }
+    get isResource() {
+        if (this.sides.length) {
+            return this.currentSide.isResource;
+        }
+
+        return this.card.isResource;
+    }
     get isScheme() {
         if (this.sides.length) {
             return this.currentSide.isScheme;
@@ -953,7 +960,7 @@ export class GameCard extends Engine {
                 ...this.currentSide.toObj(arguments[0]),
                 attached: this.getAttachedCards().map(card =>
                     card.toObj(arguments[0])),
-                counters: this.counters,
+                counters: this.currentSide.counters ?? this.counters,
                 faceDown: this.faceDown.map(faceDown => faceDown.toObj(arguments[0])),
                 tuckedCards: this.tuckedCards.map(card => card.toObj(arguments[0])),
             };
@@ -974,6 +981,7 @@ export class GameCard extends Engine {
             isAttached,
             isAlly,
             isEnvironment,
+            isResource,
             isSideScheme,
             isSupport,
             isUpgrade,
@@ -994,6 +1002,7 @@ export class GameCard extends Engine {
             isAttached,
             isAlly,
             isEnvironment,
+            isResource,
             isSideScheme,
             isSupport,
             isUpgrade,

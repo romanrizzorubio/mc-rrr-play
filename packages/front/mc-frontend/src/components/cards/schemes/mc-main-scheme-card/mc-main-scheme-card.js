@@ -24,10 +24,12 @@ export class MainSchemeCardComponent extends LitElement {
             player: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
             name: { type: String},
             image: { type: String},
             acceleration: { type: Number},
             threat: { type: Number},
+            counters: { type: Number},
             value: { type: Number},
             stage: { type: Number},
         };
@@ -42,9 +44,11 @@ export class MainSchemeCardComponent extends LitElement {
         this.player = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
+        this.counters = undefined;
         this.value = 0;
         this.stage = undefined;
     }
@@ -87,6 +91,7 @@ export class MainSchemeCardComponent extends LitElement {
             image,
             threat,
             acceleration,
+            counters,
             value,
             stage,
         } = this;
@@ -98,11 +103,13 @@ export class MainSchemeCardComponent extends LitElement {
                 .basicActivation="${this.basicActivation}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 .clickDisabled="${this.clickDisabled}"
                 .menuOptions="${this.menuOptions}"
                 name="${name}"
                 image="${image}"
                 acceleration="${acceleration}"
+                .counters="${counters}"
                 threat="${threat}"
                 .headerLeft="${value}"
                 .headerRight="${stage}"

@@ -21,6 +21,7 @@ export class McGameZone extends LitElement {
             encounters: {type: Number},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
 
@@ -34,6 +35,7 @@ export class McGameZone extends LitElement {
         this.encounters = 0;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     handlePlayCardDragOver(event) {
         if (!this.dragPlayCard?.playableInGameZone) {
@@ -104,6 +106,7 @@ export class McGameZone extends LitElement {
         basicActivationType,
         dragActivation,
         dragPlayCard,
+        dragResourcePayment,
     }) {
         return html`
             <mc-card-list
@@ -112,6 +115,7 @@ export class McGameZone extends LitElement {
                 .player="${this.player}"
                 .dragActivation="${dragActivation}"
                 .dragPlayCard="${dragPlayCard}"
+                .dragResourcePayment="${dragResourcePayment}"
                 basic-activation-type="${basicActivationType || ''}"
                 size="s"
                 show-menu-abilities
@@ -157,6 +161,7 @@ export class McGameZone extends LitElement {
             showAcquiredTraits: true,
             dragActivation: this.dragActivation,
             dragPlayCard: this.dragPlayCard,
+            dragResourcePayment: this.dragResourcePayment,
         });
     }
     renderMinions() {
@@ -170,6 +175,7 @@ export class McGameZone extends LitElement {
             basicActivationType: 'attack',
             dragActivation: this.dragActivation,
             dragPlayCard: this.dragPlayCard,
+            dragResourcePayment: this.dragResourcePayment,
         });
     }
 
@@ -181,6 +187,7 @@ export class McGameZone extends LitElement {
             type: 'upgrades',
             dragActivation: this.dragActivation,
             dragPlayCard: this.dragPlayCard,
+            dragResourcePayment: this.dragResourcePayment,
         });
     }
 
@@ -194,6 +201,7 @@ export class McGameZone extends LitElement {
             type: 'supports',
             dragActivation: this.dragActivation,
             dragPlayCard: this.dragPlayCard,
+            dragResourcePayment: this.dragResourcePayment,
         });
     }
 

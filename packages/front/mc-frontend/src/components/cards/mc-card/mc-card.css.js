@@ -95,6 +95,23 @@ export default css`
       drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
       drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
   }
+
+  .card-front.resource-payment-blocked > mc-card-image,
+  :host(.playable) .card-front.resource-payment-blocked > mc-card-image {
+    filter: brightness(0.35);
+  }
+
+  .card-front.resource-payment-drag-source > mc-card-image,
+  :host(.playable) .card-front.resource-payment-drag-source > mc-card-image {
+    filter: none;
+  }
+
+  .card-front.resource-payment-drop-target > mc-card-image,
+  :host(.playable) .card-front.resource-payment-drop-target > mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
+      drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
+  }
   
   .cards-facedown {
     display: flex;
@@ -234,6 +251,10 @@ export default css`
     margin-top: var(--stage-label-height);
   }
 
+  .character-stats.has-emphasized {
+    align-items: center;
+  }
+
   .character-bottom-stats {
     display: flex;
     flex-wrap: wrap;
@@ -313,6 +334,12 @@ export default css`
     box-sizing: border-box;
     justify-content: center;
     min-width: 1.25rem;
+  }
+
+  .character-stats .character-stat.emphasized {
+    min-width: 1.75rem;
+    padding: 4px 6px;
+    font-size: 1.25rem;
   }
 
   .character-stats .stat-star {
@@ -432,7 +459,16 @@ export default css`
     bottom: 7px;
   }
 
-  .counters,
+  .counters {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: center;
+    justify-items: center;
+    gap: 3px;
+    text-align: center;
+  }
+
   .status {
     display: flex;
     align-items: center;
@@ -441,9 +477,8 @@ export default css`
     text-align: center;
   }
 
-  .counters {
-    justify-content: center;
-    gap: 3px;
+  .counters > .character-stat {
+    justify-self: center;
   }
 
   .stat-acceleration {
@@ -454,7 +489,7 @@ export default css`
   .acceleration,
   .threat {
     width: auto;
-    margin: 0 auto;
+    margin: 0;
   }
 
   .status-card {

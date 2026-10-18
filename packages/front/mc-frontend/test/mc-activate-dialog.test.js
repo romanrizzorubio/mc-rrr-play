@@ -44,6 +44,7 @@ test('activation dialog shows standard stats for both characters', () => {
         data: {
             character,
             target,
+            emphasizedStat: 'attack',
             statusMessage: '',
             statusType: '',
         },
@@ -65,4 +66,11 @@ test('activation dialog shows standard stats for both characters', () => {
         assert.ok(cardTemplate.values.includes(card.defense));
         assert.ok(cardTemplate.values.includes(card.recovery));
     }
+
+    assert.ok(characterCard.values.some(value =>
+        Array.isArray(value) && value.includes('attack')
+    ));
+    assert.ok(!targetCard.values.some(value =>
+        Array.isArray(value) && value.includes('attack')
+    ));
 });

@@ -1,11 +1,19 @@
 import {LitElement, html} from 'lit-element';
-import {RESOURCE_ANY} from 'mc-shared';
+import {
+    RESOURCE_ANY,
+    RESOURCE_PAYMENT_MODE_DISCARD,
+    RESOURCE_PAYMENT_MODE_PAYMENT,
+} from 'mc-shared';
 
 import styles from './mc-pay-cost.css.js';
 import '../../cards/mc-card-list/mc-card-list.js';
 import '../../common/mc-resource/mc-resource.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
 import {BALL_STATUS_KO, BALL_STATUS_OK} from '../../common/mc-ball/mc-ball.js';
+import {
+    getPaymentResourceUnits,
+    getResourceUnitKey,
+} from '../../../utils/resource-payment.js';
 
 export const PAY_COST_TYPE_GENERATOR = 'generators';
 export const PAY_COST_TYPE_HAND = 'hand';
@@ -22,7 +30,9 @@ export class McPayCost extends LitElement {
             cost: {type: String},
             resourceType: {type: String},
             requirement: {type: Array},
+            resourcePaymentMode: {type: String},
             wilds: {type: Array},
+            allowWildConversion: {type: Boolean},
             isPaid: {type: Boolean},
             allowPartial: {type: Boolean},
             validationError: {type: String},
@@ -38,7 +48,9 @@ export class McPayCost extends LitElement {
         this.cost = '';
         this.resourceType = undefined;
         this.requirement = [];
+        this.resourcePaymentMode = RESOURCE_PAYMENT_MODE_PAYMENT;
         this.wilds = [];
+        this.allowWildConversion = true;
         this.isPaid = false;
         this.allowPartial = false;
         this.validationError = '';
@@ -65,56 +77,14 @@ export class McPayCost extends LitElement {
         super.willUpdate(_changedProperties);
     }
     getResources(hand, generators) {
-        const _wilds = this._wilds.slice();
-        let wildIndex = 0;
-
-        const resources = [];
-        hand.forEach(card => {
-            if (card.selected) {
-                card.resources.forEach((resource, resourceIndex) => {
-                    resources.push({
-                        resource,
-                        used: false,
-                        cardId: card.id,
-                        resourceIndex,
-                        source: 'hand',
-                    });
-                });
+        return getPaymentResourceUnits(
+            {hand, generators},
+            {
+                selectedOnly: true,
+                selectedWilds: this._wilds,
+                allowWildConversion: this.allowWildConversion !== false,
             }
-        });
-        generators.forEach(card => {
-            if (card.selected) {
-                let resourceIndex = 0;
-                card.abilities.forEach(ability => {
-                    if (ability.isResource) {
-                        const generatedResources = ability.resources || [ability.resource];
-                        generatedResources.forEach(resource => {
-                            resources.push({
-                                resource,
-                                used: false,
-                                cardId: card.id,
-                                resourceIndex: resourceIndex++,
-                                source: 'generators',
-                            });
-                        });
-                    }
-                });
-            }
-        });
-
-        return resources.map(r => {
-            const resource = r.resource;
-            if (resource === RESOURCE_WILD && _wilds.length) {
-                return {
-                    ...r,
-                    resource: _wilds.shift(),
-                    wild: true,
-                    wildIndex: wildIndex++,
-                };
-            } else {
-                return r;
-            }
-        });
+        ).map(resource => ({...resource, used: false}));
     }
     handleResourceClick(e, unit) {
         const {resource, change} = e.detail;
@@ -167,12 +137,11 @@ export class McPayCost extends LitElement {
         }));
     }
     renderResourceIcon(resource, disabled, wild = false, unit, selectable = true) {
-        if (unit && this.resourceSelectionMode && selectable && !wild) {
-            const key = JSON.stringify([
-                unit.source,
-                unit.cardId,
-                unit.resourceIndex,
-            ]);
+        const isWild = wild || resource === RESOURCE_WILD;
+
+        if (unit && this.resourceSelectionMode && selectable &&
+            (!isWild || this.allowWildConversion === false)) {
+            const key = getResourceUnitKey(unit);
             const selected = !Array.isArray(this.selectedResources) ||
                 this.selectedResources.includes(key);
 
@@ -185,11 +154,11 @@ export class McPayCost extends LitElement {
                         'No usar'} recurso ${resource}"
                     aria-pressed="${selected}"
                     @click="${() => this.handleResourceUnitToggle(key)}"
-                >
-                    <mc-icon
-                        icon="${resource}"
-                        class="${wild ? 'wild' : ''}"
-                    ></mc-icon>
+                >${isWild ? html`
+                    <mc-icon icon="${resource}" class="wild"></mc-icon>
+                ` : html`
+                    <mc-icon icon="${resource}"></mc-icon>
+                `}
                 </button>
             `;
         }
@@ -198,7 +167,8 @@ export class McPayCost extends LitElement {
             <mc-resource
                 resource="${resource}"
                 .disabled="${disabled}"
-                .wild="${wild}"
+                .wild="${isWild}"
+                .notChange="${isWild && this.allowWildConversion === false}"
                 @resource-change="${e => this.handleResourceClick(e, unit)}"
             ></mc-resource>
         `;
@@ -207,7 +177,10 @@ export class McPayCost extends LitElement {
         const {allowPartial, requirement} = this;
 
         const render = [];
-        if (requirement && requirement.some(req => req !== RESOURCE_ANY)) {
+        if (requirement && requirement.some(req =>
+            (Array.isArray(req) ? req : [req]).some(
+                resource => resource !== RESOURCE_ANY
+            ))) {
             render.push(html`Requisito: `);
         }
 
@@ -215,13 +188,16 @@ export class McPayCost extends LitElement {
 
         if (requirement) {
             requirement.forEach(req => {
-                if (req === RESOURCE_ANY) {
+                const alternatives = Array.isArray(req) ? req : [req];
+                if (alternatives.includes(RESOURCE_ANY)) {
                     return;
                 }
 
                 const paid = resources.find(r =>
-                    (r.resource === req ||
-                        allowPartial && r.resource === RESOURCE_WILD) &&
+                    (alternatives.includes(r.resource) ||
+                        allowPartial &&
+                        this.allowWildConversion &&
+                        r.resource === RESOURCE_WILD) &&
                     !r.used
                 );
 
@@ -235,7 +211,7 @@ export class McPayCost extends LitElement {
                         false
                     ));
                 } else {
-                    render.push(this.renderResourceIcon(req, true));
+                    render.push(this.renderResourceIcon(alternatives[0], true));
                 }
             });
         }
@@ -270,14 +246,22 @@ export class McPayCost extends LitElement {
     }
     renderPanel(title, cards, selected = false, className = '') {
         if (cards) {
-            const generators = cards.generators.filter(card => card.selected === selected);
+            const generators = this.resourcePaymentMode ===
+                RESOURCE_PAYMENT_MODE_DISCARD ?
+                [] :
+                cards.generators.filter(card => card.selected === selected);
             const hand = cards.hand.filter(card => card.selected === selected);
 
             return html`
                 <div class="panel">
                     <h4>${title}</h4>
                     <div class="subpanels ${className}">
-                        ${this.renderSubpanel('Generadores', generators, this.handleSelectGenerator.bind(this), true)}
+                        ${generators.length ? this.renderSubpanel(
+                            'Generadores',
+                            generators,
+                            this.handleSelectGenerator.bind(this),
+                            true
+                        ) : ''}
                         ${this.renderSubpanel('Mano', hand, this.handleSelectHand.bind(this))}
                     </div>
                 </div>
@@ -288,7 +272,10 @@ export class McPayCost extends LitElement {
     }
     renderCost() {
         const {cost, cards, isPaid, allowPartial, validationError} = this;
-        const costLabel = allowPartial ?
+        const costLabel = this.resourcePaymentMode ===
+            RESOURCE_PAYMENT_MODE_DISCARD ?
+            `Iconos a descartar: ${cost}` :
+            allowPartial ?
             `Requisitos: ${cost} (paga todos los recursos posibles)` :
             `Coste: ${cost}`;
 
@@ -305,7 +292,9 @@ export class McPayCost extends LitElement {
                     </h2>
                     ${this.resourceSelectionMode ? html`
                         <p class="resource-selection-hint">
-                            Marca las unidades concretas que quieres gastar. Pulsa el comodín para cambiar el tipo que representa.
+                            ${this.resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD ?
+                                'Marca los iconos impresos que quieres descartar.' :
+                                'Marca las unidades concretas que quieres gastar. Pulsa el comodín para cambiar el tipo que representa.'}
                         </p>
                     ` : ''}
                     ${validationError ? html`
@@ -319,11 +308,21 @@ export class McPayCost extends LitElement {
     }
     render() {
         const {cards} = this;
+        const isDiscardMode = this.resourcePaymentMode ===
+            RESOURCE_PAYMENT_MODE_DISCARD;
 
         return html`
             ${this.renderCost()}
-            ${this.renderPanel('Pagado con', cards,true, 'divider')}
-            ${this.renderPanel('Pagar con', cards)}
+            ${this.renderPanel(
+                isDiscardMode ? 'Descartado con' : 'Pagado con',
+                cards,
+                true,
+                'divider'
+            )}
+            ${this.renderPanel(
+                isDiscardMode ? 'Descartar con' : 'Pagar con',
+                cards
+            )}
         `;
     }
 }

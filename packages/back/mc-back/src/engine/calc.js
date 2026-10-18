@@ -44,6 +44,16 @@ const CALCULATION_MAP = {
     [CALC_HALF_ROUNDED_DOWN]: source =>
         Math.floor((Array.isArray(source) ? source.length : source) / 2),
     [CALC_TRAITS_COUNT]: (source, {target, trait}) => {
+        if (source && typeof source.getEffectiveTraits === 'function') {
+            const traits = source.getEffectiveTraits();
+
+            if (traits && typeof traits.then === 'function') {
+                return traits.then(effectiveTraits =>
+                    effectiveTraits.filter(cardTrait => cardTrait === trait).length);
+            }
+
+            return traits.filter(cardTrait => cardTrait === trait).length;
+        }
         if (!Array.isArray(source)) {
             throw new Error(
                 `CALC_TRAITS_COUNT requiere que "${target}" resuelva a una lista.`

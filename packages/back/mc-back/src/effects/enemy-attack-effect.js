@@ -457,6 +457,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
 
         return `${character.name} ataca a ${target.name}`;
     }
+    getDialogEmphasizedStat() {
+        return 'attack';
+    }
     getTriggersWould() {
         return super.getTriggersWould()
             .concat([

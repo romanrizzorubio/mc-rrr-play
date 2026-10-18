@@ -70,6 +70,42 @@ test('playCard forwards the optional preselected target id', async () => {
     });
 });
 
+test('resolveAbility forwards a direct resource payment', async () => {
+    let abilityParams;
+    const refreshedPlayer = {name: 'TChalla'};
+    const player = {
+        name: 'TChalla',
+        async resolveAbility(...params) {
+            abilityParams = params;
+        },
+    };
+    const match = {
+        getPlayer: () => player,
+        refresh: async () => ({players: [refreshedPlayer]}),
+    };
+
+    await new PlayerRest({}).resolveAbility({
+        ability: 0,
+        card: 'energy-channel',
+        match,
+        player: player.name,
+        resourcePayment: {
+            cardId: 'energy-card',
+            source: 'hand',
+        },
+    });
+
+    assert.deepEqual(abilityParams, [
+        'energy-channel',
+        0,
+        undefined,
+        {
+            cardId: 'energy-card',
+            source: 'hand',
+        },
+    ]);
+});
+
 test('flip changes identity once and returns the refreshed player snapshot', async () => {
     const flipCalls = [];
     const refreshedPlayer = {name: 'TChalla'};

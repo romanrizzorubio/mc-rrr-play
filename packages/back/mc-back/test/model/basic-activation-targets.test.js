@@ -18,14 +18,15 @@ import {getAbilitiesWithAvailability} from '../../src/utils/ability-availability
 
 function createAbility({
     isAttack = false,
+    isAction = false,
     isThwart = false,
     targets = [],
     disabled = false,
 }) {
     return {
-        isAction: false,
+        isAction,
         isAttack,
-        isBasic: true,
+        isBasic: !isAction,
         isThwart,
         name: isAttack ? 'Ataque' : 'Intervención',
         effect: {
@@ -133,6 +134,37 @@ test('resolving a basic activation keeps the chosen target and rejects an invali
         player.resolveAbility(hero.id, 0, 'invalid-target'),
         /objetivo de la activación ya no es válido/
     );
+});
+
+test('resolving a targeted action keeps the chosen target', async () => {
+    const target = {id: 'villain-1'};
+    const ability = createAbility({
+        isAction: true,
+        targets: [target],
+    });
+    let resolution;
+    const upgrade = {
+        id: 'upgrade-1',
+        currentSide: {abilities: [ability]},
+        async resolveAbility(params) {
+            resolution = params;
+        },
+    };
+    const player = Object.create(Player.prototype);
+    player.superhero = {id: 'hero-1'};
+    player.getCard = cardId => cardId === upgrade.id ? upgrade : undefined;
+    const match = {
+        scenario: {
+            getCard: () => undefined,
+        },
+    };
+    upgrade.match = match;
+
+    await player.resolveAbility(upgrade.id, 0, target.id);
+
+    assert.equal(resolution.preselectedTarget, true);
+    assert.equal(resolution.selectedTarget, target);
+    assert.equal(ability.effect.selectedTarget, target);
 });
 
 test('fixed preselected targets are revalidated without opening a second target selection', () => {

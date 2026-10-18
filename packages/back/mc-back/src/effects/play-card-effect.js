@@ -4,7 +4,7 @@ import {
     PLACE_HAND,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PLAY_CARD,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
@@ -19,6 +19,7 @@ import {getPlayerCardPlayFromLocation} from '../utils/player-card-play-from.js';
 import {CostGroup} from '../model/costs/cost-group.js';
 import {ResourceCost} from '../model/costs/resource-cost.js';
 import {getEffectTargetEntries} from '../utils/effect-targets.js';
+import {toResourcePaymentCard} from '../utils/resource-requirements.js';
 
 const matchesTargetId = (target, targetId) =>
     target?.id === targetId || target?.parentId === targetId;
@@ -318,7 +319,7 @@ export class PlayCardEffect extends Effect {
         const effects = [
             this.ability?.effect,
             ...this.card.currentSide.abilities
-                .filter(ability => ability.trigger === TRIGGER_THIS_ENTER_PLAY)
+                .filter(ability => ability.trigger === TRIGGER_CARD_ENTER_PLAY)
                 .map(ability => ability.effect),
         ].filter(Boolean);
         const preferences = [
@@ -368,7 +369,9 @@ export class PlayCardEffect extends Effect {
                     generators: cardsToPay.generators
                         .map(_card => _card.toObj(arguments[0])),
                     hand: cardsToPay.hand
-                        .map(_card => _card.toObj({card})),
+                        .map(_card => toResourcePaymentCard(_card, {}, {
+                            cardToPay: card,
+                        })),
                 }
             },
         });

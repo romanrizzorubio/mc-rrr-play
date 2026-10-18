@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    getActivationOptionForActor,
+    getActivationOptionsForActor,
     getBasicActivationOptionForActor,
     getBasicActivationOption,
     getBasicActivationOptionsForActor,
@@ -126,6 +128,71 @@ test('hero and ally drag options expose only their enabled basic activations wit
     assert.equal(
         getBasicActivationOptionForActor(ally, {id: 'villain-2'}),
         undefined
+    );
+});
+
+test('targeted action drag options expose their action and legal targets', () => {
+    const upgrade = {
+        abilities: [{
+            availableTargetIds: ['villain-1'],
+            disable: false,
+            index: 1,
+            isAction: true,
+            isAttack: true,
+            isBasic: false,
+            isThwart: false,
+            name: 'Disparar',
+        }],
+        id: 'energy-channel',
+        isUpgrade: true,
+    };
+
+    assert.deepEqual(
+        getActivationOptionsForActor(upgrade),
+        [{
+            id: 'ability-1',
+            text: 'Disparar',
+            abilityIndex: 1,
+            activationType: 'attack',
+            availableTargetIds: ['villain-1'],
+        }]
+    );
+    assert.deepEqual(
+        getActivationOptionForActor(upgrade, {id: 'villain-1'}),
+        {
+            id: 'ability-1',
+            text: 'Disparar',
+            abilityIndex: 1,
+            targetId: 'villain-1',
+            activationType: 'attack',
+        }
+    );
+});
+
+test('targeted actions without attack or thwart labels can be dragged to cards', () => {
+    const support = {
+        abilities: [{
+            availableTargetIds: ['upgrade-1'],
+            disable: false,
+            index: 0,
+            isAction: true,
+            isAttack: false,
+            isBasic: false,
+            isThwart: false,
+            name: 'Activar apoyo',
+        }],
+        id: 'support-1',
+        isSupport: true,
+    };
+
+    assert.deepEqual(
+        getActivationOptionForActor(support, {id: 'upgrade-1'}),
+        {
+            id: 'ability-0',
+            text: 'Activar apoyo',
+            abilityIndex: 0,
+            targetId: 'upgrade-1',
+        }
     );
 });
 

@@ -126,6 +126,9 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
 
         return `${character.name} ejecuta el Plan`;
     }
+    getDialogEmphasizedStat() {
+        return 'scheme';
+    }
     async execute(params) {
         const schemeParams = this.resolveParams(params);
         const {preventThreat} = this;

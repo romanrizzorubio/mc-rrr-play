@@ -13,7 +13,7 @@ Una **partida** es una sesión de juego completa entre uno o más jugadores enfr
 - recursos y contadores de aceleración
 
 ### jugador (player)
-Un jugador es una persona que está jugando en una partida de Marvel Champions.
+Un jugador es una persona que está jugando en una partida de MC RRR.
 
 - Cada jugador en la partida tiene su propia zona de juego personal que contiene su carta de superhéroe, su dial de puntos de vida de superhéroe, su mano de cartas, su mazo del que roba, su pila de descartes en la que coloca sus cartas descartadas, cualquier aliado, mejora o apoyo que pueda tener en juego, y cualquier accesorio, esbirro u obligación que pueda tener en su zona de juego.
 - Durante cada fase del jugador de cada ronda, cada jugador toma su propio turno personal donde puede jugar cartas, realizar acciones con las cartas que controla y usar diversas capacidades.
@@ -175,7 +175,7 @@ Si se instruye a un jugador a robar una o más cartas, esas cartas se roban de l
 
 ### Sistema de Recursos y Costes
 
-En Marvel Champions, el **coste** es el valor numérico que debe pagarse para jugar una carta o usar una capacidad.
+En MC RRR, el **coste** es el valor numérico que debe pagarse para jugar una carta o usar una capacidad.
 
 #### reglas generales de los costes
 - **Coste de recurso**: Es el valor numérico impreso en la esquina superior izquierda de la carta.
@@ -206,7 +206,7 @@ En Marvel Champions, el **coste** es el valor numérico que debe pagarse para ju
 
 #### Los CUATRO Tipos de Recursos
 
-Marvel Champions tiene **4 tipos de recursos**:
+MC RRR tiene **4 tipos de recursos**:
 
 1. **Energy (Energía) ()** 
 - Recurso específico.

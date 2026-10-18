@@ -75,10 +75,17 @@ export class McConfirmDialog extends McDialog {
         } = this;
 
         if (basicActivation) {
+            const emphasizedStat = basicActivation.activationType === 'attack' ?
+                'attack' :
+                basicActivation.activationType === 'thwart' ?
+                    'thwart' :
+                    undefined;
+
             return html`
                 <div class="basic-activation-preview">
                     ${this.renderBasicActivationCard(
-                        basicActivation.activator || basicActivation.superhero
+                        basicActivation.activator || basicActivation.superhero,
+                        emphasizedStat
                     )}
                     ${this.renderBasicActivationCard(
                         basicActivation.target
@@ -157,7 +164,7 @@ export class McConfirmDialog extends McDialog {
             ` : ''}
         `;
     }
-    renderBasicActivationCard(card) {
+    renderBasicActivationCard(card, emphasizedStat) {
         const showThreat = Boolean(
             card.isScheme || card.isSideScheme || card.isMainScheme
         );
@@ -177,11 +184,12 @@ export class McConfirmDialog extends McDialog {
                     .recovery="${card.recovery}"
                     .scheme="${card.scheme}"
                     .unprintedStats="${card.unprintedStats ?? []}"
+                    .emphasizedStats="${emphasizedStat ? [emphasizedStat] : []}"
                     .threat="${card.threat}"
                     .showThreat="${showThreat}"
                     size="l"
                     show-basic-stats
-                    .horizontal="${isPlanCard(card)}"
+                    ?horizontal="${isPlanCard(card)}"
                 ></mc-card>
             </div>
         `;

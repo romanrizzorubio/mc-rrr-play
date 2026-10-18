@@ -6,7 +6,7 @@ import {
     TARGET_ALL_CHARACTERS,
     TARGET_YOUR_HERO,
     TRIGGER_CONDITION_GET_DEFENSE,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 import captainAmerica from '../../../mc-data/seed/catalog/heroes/captain-america.js';
 import {AddKeywordEffect} from '../../src/effects/add-keyword-effect.js';
@@ -97,6 +97,27 @@ describe('add keyword effect', () => {
         assert.deepEqual(hero.toObj().extraKeywords, []);
     });
 
+    test('character snapshots include keywords added during effective calculations', async () => {
+        const hero = createHero();
+        hero.getAbilityAvailability = async () => ({});
+        hero.getEffectiveStats = async () => ({});
+        hero.getEffectiveTraits = async () => {
+            hero.addKeywordModifier(
+                {isInPlay: true},
+                {},
+                {retaliate: 1},
+                false
+            );
+            return [];
+        };
+
+        const serialized = await hero.toObjWithAbilityAvailability({});
+
+        assert.deepEqual(serialized.extraKeywords, [
+            {name: 'retaliate', value: 1},
+        ]);
+    });
+
     test('superhero keywords remain displayed on both sides of its identity', () => {
         const hero = createHero();
         const currentSide = {
@@ -150,7 +171,7 @@ describe('add keyword effect', () => {
 
         assert.equal(shield.attach, undefined);
         assert.deepEqual(shield.keywords, {restricted: true});
-        assert.equal(keywordAbility.params.trigger, TRIGGER_THIS_ENTER_PLAY);
+        assert.equal(keywordAbility.params.trigger, TRIGGER_CARD_ENTER_PLAY);
         assert.equal(
             keywordAbility.params.effect.params.target,
             TARGET_ALL_CHARACTERS

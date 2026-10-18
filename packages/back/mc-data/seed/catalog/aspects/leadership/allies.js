@@ -36,9 +36,8 @@ import {
     TRAIT_AVENGER,
     TRAIT_DROID,
     TRAIT_SHIELD,
-    TRIGGER_MINION_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_ABILITY_COST,
-    TRIGGER_THIS_ENTER_PLAY
 } from 'mc-shared';
 
 export default [
@@ -70,7 +69,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_DRAW_CARD,
                                 'params': {
@@ -208,7 +207,7 @@ export default [
                     {
                         'type': ABILITY_CONSTANT,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_PLACE_COUNTERS,
                                 'params': {
@@ -221,7 +220,12 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_MINION_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
+                            'triggerParams': {
+                                'cardCondition': {
+                                    'isMinion': true
+                                }
+                            },
                             'arrow': {
                                 'type': EFFECT_REMOVE_COUNTER,
                                 'params': {
@@ -273,7 +277,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_CHAINED,
                                 'params': {
@@ -337,7 +341,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_DEAL_DAMAGE,
                                 'params': {

@@ -135,7 +135,9 @@ Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un o
 
 Al hacer clic en un enemigo se puede iniciar un ataque básico con el superhéroe; al hacer clic en un plan, una intervención básica. Si no hay otras acciones disponibles, aparece una confirmación cuyo título pregunta por el ataque o la intervención; muestra las cartas del superhéroe y del objetivo, sin etiquetas ni subtítulo. Se puede marcar **No volver a mostrar este diálogo durante esta partida**. Si el enemigo o plan tiene otras acciones disponibles, aparece un menú y la activación básica figura primero. Un enemigo o plan que no sea un objetivo legal para esa activación no ofrece la opción ni responde al clic de activación.
 
-También puedes arrastrar tu superhéroe o un aliado que pueda realizar una activación hasta un enemigo o plan válido. Mientras arrastras, los objetivos legales se marcan con un halo verde difuminado. Las imágenes de las demás cartas, incluidas las de la mano, los mazos y los descartes, aparecen cubiertas por un velo sin oscurecer el resto del panel; el personaje arrastrado permanece visible. Al soltarlo sobre un enemigo se propone un ataque básico; al soltarlo sobre un plan, una intervención básica. La acción se confirma en el mismo diálogo que al hacer clic en el objetivo.
+También puedes arrastrar tu superhéroe, un aliado, una mejora o un apoyo con una acción disponible hasta un objetivo válido en juego. Mientras arrastras, los objetivos legales se marcan con un halo verde difuminado. Las imágenes de las demás cartas, incluidas las de la mano, los mazos y los descartes, aparecen cubiertas por un velo sin oscurecer el resto del panel; el personaje arrastrado permanece visible. Al soltar un personaje se propone un ataque o intervención básicos; al soltar una mejora o apoyo se resuelve su acción sobre el objetivo elegido.
+
+Las capacidades de mejoras o apoyos que pagan recursos también aceptan arrastrar una carta de recurso de la mano o un generador de recursos válido hasta la carta de la capacidad. El pago se valida y se resuelve directamente, sin abrir el diálogo de pago.
 
 #### Jugar una Carta
 

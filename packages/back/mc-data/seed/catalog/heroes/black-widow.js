@@ -89,7 +89,7 @@ import {
     TRIGGER_ABILITY_RESOLVED,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_INSTANT,
-    TRIGGER_MINION_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_GET_ATTACK,
     TRIGGER_THIS_GET_SCHEME,
     TRIGGER_THIS_PLAY_CARD,
@@ -630,7 +630,12 @@ export default {
                                     'labels': [
                                         LABEL_ATTACK
                                     ],
-                                    'trigger': TRIGGER_MINION_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
+                                    'triggerParams': {
+                                        'cardCondition': {
+                                            'isMinion': true
+                                        }
+                                    },
                                     'arrow': {
                                         'type': EFFECT_DISCARD_GAME,
                                         'params': {

@@ -1,8 +1,12 @@
 import {
     DIALOG_LIST,
-    RESOURCE_ANY,
     RESOURCE_WILD,
 } from 'mc-shared';
+import {
+    getResourceIcons,
+    normalizeResourceRequirements,
+    resourceSatisfiesRequirement,
+} from './resource-requirements.js';
 
 export class CostPaymentSession {
     constructor() {
@@ -84,6 +88,7 @@ export class CostPaymentSession {
     getPaymentResourceUnits(payment, params) {
         const cardToPay = payment.cardToPay || params.card;
         const availableUnits = [];
+        const allowWildConversion = payment.allowWildConversion !== false;
 
         (payment.hand || []).forEach(card => {
             const resources = this.remainingResourcesByCard.get(card.id) || [];
@@ -117,7 +122,8 @@ export class CostPaymentSession {
         return (payment.resources || []).map(resource => {
             const unitIndex = availableUnits.findIndex((unit, index) =>
                 !usedUnitIndexes.has(index) &&
-                (unit.resource === resource || unit.resource === RESOURCE_WILD));
+                (unit.resource === resource ||
+                    allowWildConversion && unit.resource === RESOURCE_WILD));
             if (unitIndex < 0) {
                 throw new Error('El pago contiene un recurso que no está disponible.');
             }
@@ -130,23 +136,31 @@ export class CostPaymentSession {
             };
         });
     }
-    assignPaymentResources(units, requirements) {
+    assignPaymentResources(
+        units,
+        requirements,
+        {allowWildConversion = true} = {}
+    ) {
+        const normalizedRequirements = normalizeResourceRequirements(
+            requirements
+        );
         const findAssignment = (requirementIndex, assigned, usedUnitIndexes) => {
-            if (requirementIndex === requirements.length) {
+            if (requirementIndex === normalizedRequirements.length) {
                 return assigned;
             }
 
-            const requirement = requirements[requirementIndex];
+            const requirement = normalizedRequirements[requirementIndex];
             for (let index = 0; index < units.length; index++) {
                 if (usedUnitIndexes.has(index)) {
                     continue;
                 }
 
                 const {resource} = units[index];
-                if (requirement !== RESOURCE_ANY &&
-                    resource !== RESOURCE_ANY &&
-                    resource !== RESOURCE_WILD &&
-                    resource !== requirement) {
+                if (!resourceSatisfiesRequirement(
+                    resource,
+                    requirement,
+                    {allowWildConversion}
+                )) {
                     continue;
                 }
 
@@ -179,7 +193,13 @@ export class CostPaymentSession {
         const units = this.getPaymentResourceUnits(payment, params);
         const requirements = this.getPaymentResourceRequirements(effect, payment);
         const usedUnits = requirements ?
-            this.assignPaymentResources(units, requirements) :
+            this.assignPaymentResources(
+                units,
+                requirements,
+                {
+                    allowWildConversion: payment.allowWildConversion !== false,
+                }
+            ) :
             units;
 
         if (!usedUnits) {
@@ -237,9 +257,10 @@ export class CostPaymentSession {
 
             if (isResourcePayment &&
                 !this.remainingResourcesByCard.has(card.id)) {
-                const resources = typeof card.card?.getResources === 'function' ?
-                    card.card.getResources(cardToPay) :
-                    card.resources ?? card.card?.resources ?? [];
+                const resources = getResourceIcons(card, {
+                    printed: payment.printedResources === true,
+                    cardToPay,
+                });
                 this.remainingResourcesByCard.set(card.id, resources.slice());
             }
         });

@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    RESOURCE_ANY,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_PAYMENT_MODE_DISCARD,
     RESOURCE_WILD,
 } from 'mc-shared';
 
@@ -403,4 +405,68 @@ test('an invalid OK click shows an explanation below the requirements', () => {
 
     assert.ok(errorTemplate);
     assert.equal(errorTemplate.values[0], validationError);
+});
+
+test('discard mode accepts printed icons without converting wild resources', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: true,
+    };
+    const dialog = createDialog([wildCard], [], {
+        allowWildConversion: false,
+        cost: 1,
+        requirement: [[RESOURCE_MENTAL]],
+        resourcePaymentMode: RESOURCE_PAYMENT_MODE_DISCARD,
+    });
+    dialog._response.paid.hand = [wildCard];
+
+    assert.equal(dialog.validate(), false);
+
+    dialog.data.requirement = [[RESOURCE_ANY]];
+
+    assert.equal(dialog.validate(), true);
+    assert.deepEqual(dialog.resourcesConverted, [RESOURCE_WILD]);
+});
+
+test('discard mode keeps both icons of a double-resource card selectable', () => {
+    const doubleCard = {
+        id: 'double',
+        resources: [RESOURCE_MENTAL, RESOURCE_PHYSICAL],
+        selected: true,
+    };
+    const dialog = createDialog([doubleCard], [], {
+        allowWildConversion: false,
+        cost: 2,
+        requirement: [[RESOURCE_ANY], [RESOURCE_ANY]],
+        resourcePaymentMode: RESOURCE_PAYMENT_MODE_DISCARD,
+    });
+    dialog._response.paid.hand = [doubleCard];
+    assert.equal(dialog.validate(), true);
+    assert.equal(dialog.validate(), true);
+    assert.deepEqual(
+        dialog.getPaymentResourceUnits(dialog._response.paid, true)
+            .map(unit => unit.resource),
+        [RESOURCE_MENTAL, RESOURCE_PHYSICAL]
+    );
+});
+
+test('discard mode renders printed wild icons without a conversion control', () => {
+    const panel = Object.create(McPayCost.prototype);
+    panel.allowWildConversion = false;
+    panel.resourceSelectionMode = true;
+    panel.selectedResources = undefined;
+    const rendered = panel.renderResourceIcon(
+        RESOURCE_WILD,
+        false,
+        false,
+        {
+            source: 'hand',
+            cardId: 'wild',
+            resourceIndex: 0,
+        }
+    );
+
+    assert.match(rendered.strings.join(''), /resource-unit/);
+    assert.doesNotMatch(rendered.strings.join(''), /<mc-resource/);
 });

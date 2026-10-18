@@ -7,6 +7,7 @@ export default css`
   }
 
   .play-card-drop-zone {
+    min-width: 300px;
     min-height: 100%;
     border-radius: 8px;
     transition: box-shadow 120ms ease, background-color 120ms ease;
@@ -21,6 +22,12 @@ export default css`
   
   .panel:first-child {
     margin-right: 16px;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .count {

@@ -2,7 +2,7 @@
 
 ## ¿Qué es MC RRR Play?
 
-MC RRR Play es una plataforma digital para jugar **Marvel Champions: The Card Game**, un juego de cartas cooperativo donde los jugadores controlan superhéroes de Marvel enfrentándose contra villanos épicos.
+MC RRR Play es una plataforma digital para jugar **MC RRR: The Card Game**, un juego de cartas cooperativo donde los jugadores controlan superhéroes de MC RRR enfrentándose contra villanos épicos.
 
 Esta es una aplicación web completa que permite:
 - **Jugar en línea** contra villanos y escenarios
@@ -13,7 +13,7 @@ Esta es una aplicación web completa que permite:
 ## Propósito
 
 La aplicación existe para:
-1. **Digitalizar el juego de mesa** Marvel Champions TCG
+1. **Digitalizar el juego de mesa** MC RRR TCG
 2. **Facilitar juego remoto** entre múltiples jugadores
 3. **Automatizar cálculos y reglas** del juego
 4. **Ofrecer una experiencia fluida** y responsiva

@@ -11,7 +11,7 @@ import {
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_THIS_COUNTERS_REMOVED,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_SCHEMES,
 } from 'mc-shared';
@@ -628,7 +628,7 @@ describe('Risky Business', () => {
             {owner: player}
         );
         const enterPlayAbility = squirrelGirl.abilities.find(ability =>
-            ability.trigger === TRIGGER_THIS_ENTER_PLAY);
+            ability.trigger === TRIGGER_CARD_ENTER_PLAY);
         assert.ok(enterPlayAbility);
         villain.currentSide.abilities.find(ability =>
             ability.trigger === TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE).hideDialog = true;

@@ -1,5 +1,8 @@
 import {html} from 'lit-element';
-import {RESOURCE_ANY} from 'mc-shared';
+import {
+    RESOURCE_PAYMENT_MODE_DISCARD,
+    RESOURCE_PAYMENT_MODE_PAYMENT,
+} from 'mc-shared';
 
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import styles from './mc-pay-cost-dialog.css.js';
@@ -9,6 +12,14 @@ import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {BACK_CARD_PLAYER, getCardAssetUrl} from '../../../misc/cards.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
 import {isPlanCard} from '../../../misc/utils.js';
+import {
+    getAutomaticWilds,
+    getPaymentResourceUnits,
+    getResourceMatches,
+    getResourceUnitKey,
+    getResourceUnitKeysForCard,
+    normalizeResourceRequirements,
+} from '../../../utils/resource-payment.js';
 
 const COST_X = 'X';
 
@@ -49,7 +60,9 @@ export class McPayCostDialog extends McDialog {
             data: {
                 cost: 0,
                 allowPartial: false,
+                allowWildConversion: true,
                 differentTypes: false,
+                resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
                 resourceSelectionMode: false,
                 resourceType: undefined,
                 requirement: [],
@@ -87,10 +100,19 @@ export class McPayCostDialog extends McDialog {
     }
     get allowsResourceSelection() {
         return this.data.resourceSelectionMode ||
-            this.data.cost === COST_X;
+            this.data.cost === COST_X ||
+            this.data.resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD;
+    }
+    get allowsWildConversion() {
+        return this.data.allowWildConversion !== false &&
+            this.data.resourcePaymentMode !== RESOURCE_PAYMENT_MODE_DISCARD;
     }
     get resourcesConverted() {
         const {resources, data: {wilds}} = this;
+        if (!this.allowsWildConversion) {
+            return resources;
+        }
+
         const _resources = [];
         const _wilds = wilds ? wilds.slice() : [];
 
@@ -115,7 +137,15 @@ export class McPayCostDialog extends McDialog {
         return resources;
     }
     getTitle() {
-        const {allowPartial, card} = this.data;
+        const {
+            allowPartial,
+            card,
+            resourcePaymentMode,
+        } = this.data;
+        if (resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD) {
+            return this.title || 'Descarta iconos de recursos de tu mano';
+        }
+
         const action = allowPartial ?
             'Pagar los recursos posibles de' :
             'Pagar el coste de';
@@ -125,88 +155,25 @@ export class McPayCostDialog extends McDialog {
             allowPartial ? 'Pagar los recursos posibles' : 'Pagar el coste';
     }
     getResourceUnitKey({source, cardId, resourceIndex}) {
-        return JSON.stringify([source, cardId, resourceIndex]);
+        return getResourceUnitKey({source, cardId, resourceIndex});
     }
     getResourceUnitKeysForCard(card, source) {
-        const resources = source === 'hand' ?
-            card.resources :
-            (card.abilities || [])
-                .filter(ability => ability.isResource)
-                .flatMap(ability => ability.resources || [ability.resource]);
-
-        return resources.map((_resource, index) =>
-            this.getResourceUnitKey({
-                source,
-                cardId: card.id,
-                resourceIndex: index,
-            }));
+        return getResourceUnitKeysForCard(card, source);
     }
     getPaymentResourceUnits(
         cards,
         selectedOnly = false,
         selectedWilds = selectedOnly ? (this.data.wilds || []).slice() : []
     ) {
-        const {generators, hand} = cards;
-        const selected = selectedOnly ?
-            card => card.selected :
-            () => true;
-        const addResourceUnits = (
-            card,
-            resources,
-            units,
-            source,
-            resourceIndex = 0
-        ) => {
-            resources.forEach((resource, index) => {
-                const selectedResource = resource === RESOURCE_WILD && selectedWilds.length ?
-                    selectedWilds.shift() :
-                    resource;
-                units.push({
-                    resource: selectedResource,
-                    originalResource: resource,
-                    cardId: card.id,
-                    resourceIndex: resourceIndex + index,
-                    source,
-                });
-            });
-        };
-        const units = hand
-            .filter(selected)
-            .reduce((ret, card) => {
-                addResourceUnits(card, card.resources, ret, 'hand');
-
-                return ret;
-            }, []);
-
-        generators.filter(selected).forEach(card => {
-            let resourceIndex = 0;
-            card.abilities.forEach(ability => {
-                if (!ability.isResource) {
-                    return;
-                }
-
-                const resources = ability.resources || [ability.resource];
-                addResourceUnits(
-                    card,
-                    resources,
-                    units,
-                    'generators',
-                    resourceIndex
-                );
-                resourceIndex += resources.length;
-            });
+        return getPaymentResourceUnits(cards, {
+            selectedOnly,
+            selectedWilds,
+            allowWildConversion: this.allowsWildConversion,
+            selectedResourceKeys: selectedOnly &&
+                this.allowsResourceSelection ?
+                this._selectedResourceKeys :
+                undefined,
         });
-
-        if (selectedOnly &&
-            this.allowsResourceSelection &&
-            Array.isArray(this._selectedResourceKeys)) {
-            const selectedKeys = new Set(this._selectedResourceKeys);
-
-            return units.filter(unit =>
-                selectedKeys.has(this.getResourceUnitKey(unit)));
-        }
-
-        return units;
     }
     getAutomaticWilds(cards) {
         const {
@@ -216,94 +183,25 @@ export class McPayCostDialog extends McDialog {
             resourcePreferences,
         } = this.data;
         const resources = this.getPaymentResourceUnits(cards, true, []);
-        const wilds = resources
-            .filter(unit => unit.originalResource === RESOURCE_WILD)
-            .map(() => RESOURCE_WILD);
 
         if (cost === COST_X && resourceType) {
-            return wilds.map(() => resourceType);
+            return resources
+                .filter(unit => unit.originalResource === RESOURCE_WILD)
+                .map(() => resourceType);
         }
 
-        const resourceCounts = new Map();
-        resources.forEach(({originalResource: resource}) => {
-            if (resource !== RESOURCE_WILD) {
-                resourceCounts.set(resource, (resourceCounts.get(resource) || 0) + 1);
-            }
-        });
-
-        const paidResourceCounts = new Map(resourceCounts);
-
-        let wildIndex = 0;
-        (Array.isArray(requirement) ? requirement : [])
-            .forEach(required => {
-            if (required === RESOURCE_ANY || required === RESOURCE_WILD) {
-                return;
-            }
-
-            const available = resourceCounts.get(required) || 0;
-            if (available) {
-                resourceCounts.set(required, available - 1);
-            } else if (wildIndex < wilds.length) {
-                wilds[wildIndex++] = required;
-                paidResourceCounts.set(
-                    required,
-                    (paidResourceCounts.get(required) || 0) + 1
-                );
-            }
-            });
-
-        new Set(resourcePreferences).forEach(resource => {
-            if ((paidResourceCounts.get(resource) || 0) > 0 ||
-                wildIndex >= wilds.length) {
-                return;
-            }
-
-            wilds[wildIndex++] = resource;
-            paidResourceCounts.set(resource, 1);
-        });
-
-        return wilds;
+        return getAutomaticWilds(
+            {requirement, resourcePreferences},
+            resources,
+            {allowWildConversion: this.allowsWildConversion}
+        );
     }
     getResourceMatches(resources, requirement) {
-        const matchedResourceIndexes = Array(requirement.length).fill(-1);
-        // Match resource icons to distinct requirements, including wild resources.
-        const canPay = (resource, required) =>
-            required === RESOURCE_ANY ||
-            resource === RESOURCE_ANY ||
-            resource === RESOURCE_WILD ||
-            resource === required;
-        const assignResource = (resourceIndex, visitedRequirements) => {
-            for (let index = 0; index < requirement.length; index++) {
-                if (visitedRequirements.has(index) ||
-                    !canPay(resources[resourceIndex].resource, requirement[index])) {
-                    continue;
-                }
-
-                visitedRequirements.add(index);
-                const matchedResourceIndex = matchedResourceIndexes[index];
-                if (matchedResourceIndex === -1 ||
-                    assignResource(matchedResourceIndex, visitedRequirements)) {
-                    matchedResourceIndexes[index] = resourceIndex;
-
-                    return true;
-                }
-            }
-
-            return false;
-        };
-
-        let count = 0;
-        resources.forEach((_resource, index) => {
-            if (assignResource(index, new Set())) {
-                count++;
-            }
-        });
-
-        const cardIds = new Set(matchedResourceIndexes
-            .filter(index => index > -1)
-            .map(index => resources[index].cardId));
-
-        return {count, cardIds};
+        return getResourceMatches(
+            resources,
+            requirement,
+            {allowWildConversion: this.allowsWildConversion}
+        );
     }
     getPartialPaymentStatus() {
         const {data: {cards, requirement}} = this;
@@ -342,13 +240,24 @@ export class McPayCostDialog extends McDialog {
         return this.getResourceMatches(
             this.getPaymentResourceUnits(cards, true),
             requirement
-        ).count === requirement.length;
+        ).count >= normalizeResourceRequirements(requirement).length;
     }
     getValidationError() {
-        const {allowPartial, cost, differentTypes, requirement} = this.data;
+        const {
+            allowPartial,
+            cost,
+            differentTypes,
+            requirement,
+            resourcePaymentMode,
+        } = this.data;
+        const requirements = normalizeResourceRequirements(requirement);
+
+        if (resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD) {
+            return 'Los iconos seleccionados no cubren los requisitos de recursos impresos.';
+        }
 
         if (differentTypes &&
-            new Set(this.resourcesType).size < requirement.length) {
+            new Set(this.resourcesType).size < requirements.length) {
             return 'Selecciona recursos de tipos distintos.';
         }
 
@@ -414,44 +323,43 @@ export class McPayCostDialog extends McDialog {
         this._response = {
             ...this._response,
             resources: this.resourcesConverted,
+            resourceUnits: this.getPaymentResourceUnits(
+                this._response.paid,
+                true
+            ),
             fullyPaid: this.isFullyPaid(),
         };
 
         super.sendResponse();
     }
     validate() {
-        const {data: {allowPartial, cost, requirement, differentTypes}} = this;
+        const {
+            allowPartial,
+            cost,
+            requirement,
+            differentTypes,
+            resourcePaymentMode,
+        } = this.data;
+        const requirements = normalizeResourceRequirements(requirement);
 
         if (allowPartial && cost !== COST_X) {
             return this.isValidPartialPayment();
         }
 
         const resources = this.resourcesType;
-        if (differentTypes && new Set(resources).size < requirement.length) {
+        if (differentTypes && new Set(resources).size < requirements.length) {
             return false;
         }
         if (cost === COST_X) {
             if (resources.length > 0) {
                 return true;
             }
-        } else {
-            const costNumber = parseInt(cost);
-
-            if (resources.length >= costNumber) {
-                const _requirement = requirement.slice();
-
-                resources.forEach(_resource => {
-                    const index = _requirement.indexOf(_resource);
-                    const anyIndex = _requirement.indexOf(RESOURCE_ANY);
-                    const requirementIndex = index > -1 ? index : anyIndex;
-
-                    if (requirementIndex > -1) {
-                        _requirement.splice(requirementIndex, 1);
-                    }
-                });
-
-                return !_requirement.length;
-            }
+        } else if (this.getResourceMatches(
+            this.getPaymentResourceUnits(this._response.paid, true),
+            requirement
+        ).count >= requirements.length) {
+            return resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD ||
+                resources.length >= parseInt(cost);
         }
 
 
@@ -539,6 +447,8 @@ export class McPayCostDialog extends McDialog {
                 resourceType="${resourceType}"
                 .requirement="${requirement}"
                 .wilds="${this.data.wilds}"
+                .allowWildConversion="${this.allowsWildConversion}"
+                .resourcePaymentMode="${this.data.resourcePaymentMode}"
                 .resourceSelectionMode="${this.allowsResourceSelection}"
                 .selectedResources="${this._selectedResourceKeys}"
                 .cards="${cards}"

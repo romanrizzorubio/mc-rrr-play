@@ -24,7 +24,7 @@ import {
     TRAIT_ASGARD,
     TRAIT_SPY,
     TRAIT_INHUMAN,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
 export default [
@@ -58,7 +58,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_STUN,
                                 'params': {
@@ -100,7 +100,7 @@ export default [
                     {
                         'type': ABILITY_FORCED_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_CHAINED,
                                 'params': {
@@ -217,7 +217,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_SELECT_AND_ORDER_TOP_CARDS,
                                 'params': {

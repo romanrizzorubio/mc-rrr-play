@@ -185,6 +185,9 @@ test('basic activation confirmation titles the action and shows unlabeled cards 
     );
 
     assert.equal(previews.length, 2);
+    assert.ok(previews[0].values.some(value =>
+        Array.isArray(value) && value.includes('thwart')
+    ));
     assert.equal(dialog.getTitle(), '¿Quieres realizar esta intervención?');
     assert.equal(dialog.getSubtitle(), '');
     assert.equal(dialog.renderSubtitle(), '');
@@ -200,6 +203,7 @@ test('basic activation confirmation titles the action and shows unlabeled cards 
 
     const targetPreview = dialog.renderBasicActivationCard(target);
     assert.equal(targetPreview.values.at(-1), true);
+    assert.match(targetPreview.strings.join(''), /\?horizontal=/);
 });
 
 test('basic activation confirmation shows the ally that will perform the activation', () => {

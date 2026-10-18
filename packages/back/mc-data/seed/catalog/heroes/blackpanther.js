@@ -79,7 +79,7 @@ import {
     TRAIT_WAKANDA,
     TRAIT_WEAPON,
     TRIGGER_INSTANT,
-    TRIGGER_THIS_ENTER_PLAY
+    TRIGGER_CARD_ENTER_PLAY
 } from 'mc-shared';
 
 const wakandaForeverCard = {
@@ -229,7 +229,7 @@ export default {
                             {
                                 'type': ABILITY_RESPONSE,
                                 'params': {
-                                    'trigger': TRIGGER_THIS_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
                                     'effect': {
                                         'type': EFFECT_CHAINED,
                                         'params': {

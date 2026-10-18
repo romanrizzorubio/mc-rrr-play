@@ -1,7 +1,7 @@
 # Estructura del Juego
 
 ### Preparación (Setup)
-La preparación de una partida de Marvel Champions implica una serie de pasos secuenciales para configurar a los superhéroes, el villano y los mazos correspondientes.
+La preparación de una partida de MC RRR implica una serie de pasos secuenciales para configurar a los superhéroes, el villano y los mazos correspondientes.
 
 Para ver el procedimiento detallado paso a paso, consulta el **[Apéndice II: Preparación](02-10-APPENDIX-II-SETUP.md)**.
 
@@ -117,7 +117,7 @@ Si la capacidad de una carta indica a un jugador que se le reparta una carta de 
 **Véase también**: capacidad, carta de encuentro, mazo de encuentros, jugador, fase del villano.
 
 ## Modos de Juego (Modes of Play)
-Antes de comenzar una partida de Marvel Champions, los jugadores pueden personalizar su experiencia eligiendo o combinando diferentes modos de juego. Los modos de juego son:
+Antes de comenzar una partida de MC RRR, los jugadores pueden personalizar su experiencia eligiendo o combinando diferentes modos de juego. Los modos de juego son:
 
 - **Modo Normal**: El modo normal es el modo básico de juego para todos los escenarios.
     - Para jugar en modo normal, sigue las instrucciones de contenido y preparación para el escenario elegido.

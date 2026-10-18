@@ -16,11 +16,14 @@ const TRAIT_LABELS = {
     giant: 'Gigante',
     goblin: 'Duende',
     hydra: 'Hydra',
+    ice: 'Hielo',
     inhuman: 'Inhumano',
     location: 'Lugar',
+    metal: 'Metal',
     olympus: 'Olimpo',
     persona: 'Individuo',
     preparation: 'Planificación',
+    stone: 'Piedra',
     skill: 'Habilidad',
     spy: 'Espía',
     tactic: 'Táctica',
@@ -30,6 +33,7 @@ const TRAIT_LABELS = {
     vehicle: 'Vehículo',
     robot: 'Robot',
     weapon: 'Arma',
+    wood: 'Madera',
 };
 
 export function translateTrait(trait) {

@@ -30,6 +30,7 @@ export class HandComponent extends LitElement {
             showDamage: {type: Boolean, attribute: 'show-damage'},
             showThreat: {type: Boolean, attribute: 'show-threat'},
             showGeneric: {type: Boolean, attribute: 'show-generic'},
+            emphasizedStats: {type: Array},
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
             highlightPlayable: {type: Boolean, attribute: 'highlight-playable'},
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
@@ -38,6 +39,7 @@ export class HandComponent extends LitElement {
             basicActivationType: {type: String, attribute: 'basic-activation-type'},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
     constructor() {
@@ -54,6 +56,7 @@ export class HandComponent extends LitElement {
         this.showDamage = false;
         this.showThreat = false;
         this.showGeneric = false;
+        this.emphasizedStats = [];
         this.showExhausted = false;
         this.highlightPlayable = false;
         this.rotatePlanCards = false;
@@ -62,6 +65,7 @@ export class HandComponent extends LitElement {
         this.basicActivationType = '';
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     getMenuOptions(card) {
         const abilities = this.showMenuAbilities ?
@@ -173,6 +177,7 @@ export class HandComponent extends LitElement {
             showDamage,
             showThreat,
             showGeneric,
+            emphasizedStats,
             highlightPlayable,
             rotatePlanCards,
             allowPlayCardDrag,
@@ -229,9 +234,12 @@ export class HandComponent extends LitElement {
                 image="${image}"
                 .card="${card}"
                 .basicActivation="${this.getBasicActivationOption(card)}"
-                .activationActor="${card.isAlly ? card : null}"
+                .activationActor="${card.isAlly ||
+                    card.isUpgrade ||
+                    card.isSupport ? card : null}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 .allowPlayCardDrag="${allowPlayCardDrag &&
                     card.playable === true &&
                     !disabledCards.includes(index)}"
@@ -242,6 +250,7 @@ export class HandComponent extends LitElement {
                 .recovery="${recovery}"
                 .scheme="${scheme}"
                 .unprintedStats="${unprintedStats}"
+                .emphasizedStats="${emphasizedStats}"
                 .showBasicStats="${showBasicStats}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"

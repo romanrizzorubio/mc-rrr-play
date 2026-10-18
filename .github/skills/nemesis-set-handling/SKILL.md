@@ -5,4 +5,4 @@ description: Configure a superhero's nemesis encounter set, identify all nemesis
 
 # Focused entry point: Nemesis sets
 
-The maintained implementation guidance is in [Nemesis sets](../marvel-champions-content-authoring/SKILL.md#nemesis-sets). For source rules, consult `docs/02-03-CARD-TYPES.md` and `.junie/guidelines/translation-guide.md`.
+The maintained implementation guidance is in [Nemesis sets](../mc-rrr-content-authoring/SKILL.md#nemesis-sets). For source rules, consult `docs/02-03-CARD-TYPES.md` and `.junie/guidelines/translation-guide.md`.

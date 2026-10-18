@@ -18,6 +18,7 @@ export class McHand extends LitElement {
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
 
@@ -29,6 +30,7 @@ export class McHand extends LitElement {
         this.playCardPending = false;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
 
     getButton() {
@@ -79,6 +81,7 @@ export class McHand extends LitElement {
                     .disabledCards="${disabledCards}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     .allowPlayCardDrag="${true}"
                     .highlightPlayable="${true}"
                     @card-list-select="${this.handleSelect}"

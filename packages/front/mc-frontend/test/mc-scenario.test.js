@@ -79,6 +79,7 @@ test('main scheme attachments reach the shared card renderer', () => {
     const scheme = {
         name: 'Test main scheme',
         image: 'main-scheme.png',
+        counters: 3,
         attached,
     };
     const scenarioTemplate = McScenario.prototype.renderMainScheme.call({
@@ -97,6 +98,7 @@ test('main scheme attachments reach the shared card renderer', () => {
         image: scheme.image,
         threat: 0,
         acceleration: 0,
+        counters: scheme.counters,
         value: 0,
         stage: 1,
         handleCardClick() {},
@@ -112,6 +114,7 @@ test('main scheme attachments reach the shared card renderer', () => {
         image: scheme.image,
         threat: 0,
         acceleration: 0,
+        counters: scheme.counters,
         headerLeft: 0,
         headerRight: 1,
     });
@@ -124,6 +127,12 @@ test('main scheme attachments reach the shared card renderer', () => {
         assert.match(template.strings.join(''), /\.attached=/);
         assert.ok(template.values.includes(attached));
     }
+
+    assert.ok(scenarioTemplate.values.includes(scheme.counters));
+    assert.ok(mainSchemeTemplate.values.includes(scheme.counters));
+    assert.ok(schemeTemplate.values.includes(scheme.counters));
+    assert.match(schemeTemplate.strings.join(''), /\.generic=/);
+    assert.match(schemeTemplate.strings.join(''), /\.showGeneric=/);
 });
 
 test('scenario villains forward unprinted stats to the villain card', () => {

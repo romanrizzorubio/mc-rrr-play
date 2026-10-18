@@ -27,7 +27,7 @@ import {
     TRAIT_SHIELD,
     TRAIT_SPY,
     TRIGGER_CHARACTER_SCHEMES,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_GET_THWART,
     TRIGGER_THIS_THWARTS
 } from 'mc-shared';
@@ -152,7 +152,7 @@ export default [
                     {
                         'type': ABILITY_RESPONSE,
                         'params': {
-                            'trigger': TRIGGER_THIS_ENTER_PLAY,
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
                             'effect': {
                                 'type': EFFECT_CHAINED,
                                 'params': {

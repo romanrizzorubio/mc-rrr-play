@@ -34,7 +34,7 @@ export class Player {
             }
         });
     }
-    resolveAbility(player, card, ability, targetId) {
+    resolveAbility(player, card, ability, targetId, resourcePayment) {
         const {api} = this;
 
         return api.post({
@@ -44,6 +44,7 @@ export class Player {
                 card,
                 ability,
                 ...(targetId !== undefined ? {targetId} : {}),
+                ...(resourcePayment !== undefined ? {resourcePayment} : {}),
             }
         });
     }

@@ -1,4 +1,7 @@
-import {DIALOG_REVEAL_CARDS} from 'mc-shared';
+import {
+    DIALOG_ENCOUNTERS_REVEAL,
+    DIALOG_REVEAL_CARDS,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -6,6 +9,7 @@ export class DiscardUntilEffect extends Effect {
     constructor({
         condition,
         showDiscardedCards = false,
+        showSelectedCard = false,
         title = 'Cartas descartadas',
     }) {
         super(arguments[0]);
@@ -16,6 +20,7 @@ export class DiscardUntilEffect extends Effect {
 
         this.condition = condition;
         this.showDiscardedCards = showDiscardedCards;
+        this.showSelectedCard = showSelectedCard;
         this.title = title;
     }
     async execute(params) {
@@ -35,6 +40,19 @@ export class DiscardUntilEffect extends Effect {
         params.selectedCard = selectedCard;
         params.selectedCards = selectedCard ? [selectedCard] : [];
         await deck.refresh();
+
+        if (this.showSelectedCard && selectedCard) {
+            await this.openDialog({
+                dialogType: DIALOG_ENCOUNTERS_REVEAL,
+                title: this.title,
+                data: {
+                    card: selectedCard.toObj(params),
+                    horizontal: Boolean(
+                        selectedCard.isMainScheme || selectedCard.isSideScheme
+                    ),
+                },
+            });
+        }
 
         if (discardedCards?.length) {
             await this.openDialog({

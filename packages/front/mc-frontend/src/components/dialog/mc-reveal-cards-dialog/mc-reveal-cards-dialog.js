@@ -28,22 +28,15 @@ export class McRevealCardsDialog extends McDialog {
         const cardsWithPlayability = playFromPlace ?
             cards.map(card => ({
                 ...card,
-                playable: card.playFrom?.includes(playFromPlace) === true,
+                playable: card.playable ??
+                    card.playFrom?.includes(playFromPlace) === true,
             })) :
             cards;
-        const disabledCards = playFromPlace ?
-            cards.reduce((disabled, card, index) => {
-                if (!card.playFrom?.includes(playFromPlace)) {
-                    disabled.push(index);
-                }
-                return disabled;
-            }, []) :
-            [];
 
         return html`
             <mc-card-list
                 .cards="${cardsWithPlayability}"
-                .disabledCards="${disabledCards}"
+                .disabledCards="${[]}"
                 .highlightPlayable="${Boolean(playFromPlace)}"
                 .rotatePlanCards="${rotatePlanCards}"
                 @card-list-select="${this.handleSelectCard.bind(this)}"
@@ -54,7 +47,7 @@ export class McRevealCardsDialog extends McDialog {
         const {data: {playFromPlace}} = this;
         const {card} = e.detail;
 
-        if (!playFromPlace || !card.playFrom?.includes(playFromPlace)) {
+        if (!playFromPlace || card.playable !== true) {
             return;
         }
 

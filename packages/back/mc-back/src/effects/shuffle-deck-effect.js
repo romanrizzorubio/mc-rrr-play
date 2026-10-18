@@ -1,7 +1,6 @@
 import {Effect} from './effect.js';
 import {logGameTrace} from '../utils/game-trace.js';
 
-
 export class ShuffleDeckEffect extends Effect {
     async execute(params) {
         const {player} = params;

@@ -31,6 +31,34 @@ test('resolveAbility passes a preselected activation target when provided', () =
     });
 });
 
+test('resolveAbility passes a direct resource payment when provided', () => {
+    let requestParams;
+    const player = new Player({
+        post: params => {
+            requestParams = params.params;
+            return Promise.resolve({ok: true});
+        },
+    });
+
+    player.resolveAbility(
+        'Carol',
+        'energy-channel',
+        0,
+        undefined,
+        {cardId: 'energy-card', source: 'hand'}
+    );
+
+    assert.deepEqual(requestParams, {
+        player: 'Carol',
+        card: 'energy-channel',
+        ability: 0,
+        resourcePayment: {
+            cardId: 'energy-card',
+            source: 'hand',
+        },
+    });
+});
+
 test('playCard passes an optional drag-and-drop target id', () => {
     let requestParams;
     const player = new Player({

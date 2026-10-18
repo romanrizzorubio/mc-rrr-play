@@ -103,6 +103,9 @@ export class EnemyActivationEffect extends Effect {
 
         return `${character.name} se activa con ${target.name}`;
     }
+    getDialogEmphasizedStat() {
+        return undefined;
+    }
     resetForResolution() {
         this.enemy = this.configuredEnemy;
         this.boostCards = [];
@@ -134,6 +137,7 @@ export class EnemyActivationEffect extends Effect {
         const target = this.getTargetDialog(params);
         const characterData = await this.getActivationCharacterData(params);
         const targetData = await this.getCharacterDialogData(target, params);
+        const emphasizedStat = this.getDialogEmphasizedStat();
 
         await this.openDialog({
             dialogType: DIALOG_ACTIVATE,
@@ -141,6 +145,7 @@ export class EnemyActivationEffect extends Effect {
             data: {
                 character: characterData,
                 target: targetData,
+                ...(emphasizedStat ? {emphasizedStat} : {}),
             },
         });
     }

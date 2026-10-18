@@ -20,6 +20,7 @@ export class McScenario extends LitElement {
             player: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
     constructor() {
@@ -29,6 +30,7 @@ export class McScenario extends LitElement {
         this.player = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     handleCardSelect(e) {
         const {card} = e.detail;
@@ -79,6 +81,7 @@ export class McScenario extends LitElement {
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     name="${name}"
                     image="${image}"
                     life="${life}"
@@ -111,6 +114,7 @@ export class McScenario extends LitElement {
                 image,
                 threat,
                 accelerationTokens,
+                counters,
                 value,
                 stage,
                 attached = [],
@@ -123,10 +127,12 @@ export class McScenario extends LitElement {
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     name="${name}"
                     image="${image}"
                     .acceleration="${accelerationTokens}"
                     .threat="${threat}"
+                    .counters="${counters}"
                     .value="${value}"
                     .stage="${stage}"
                     show-threat
@@ -150,6 +156,7 @@ export class McScenario extends LitElement {
                         .showDiscard="${deck.hasDiscard !== false}"
                         .dragActivation="${this.dragActivation}"
                         .dragPlayCard="${this.dragPlayCard}"
+                        .dragResourcePayment="${this.dragResourcePayment}"
                         deck-name-position="top"
                     ></mc-deck>
                 `)}
@@ -170,6 +177,7 @@ export class McScenario extends LitElement {
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     basic-activation-type="thwart"
                     show-basic-stats
                     show-threat

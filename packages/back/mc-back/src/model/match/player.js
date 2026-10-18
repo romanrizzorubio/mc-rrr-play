@@ -4,6 +4,9 @@ import {
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
     PRIORITY_CONSTANT,
     RESOURCE_ANY,
+    RESOURCE_PAYMENT_MODE_DISCARD,
+    RESOURCE_PAYMENT_MODE_PAYMENT,
+    RESOURCE_WILD,
     RESOURCES_X,
     TARGET_CARD,
     TRIGGER_PLAYER_CAN_FLIP,
@@ -21,6 +24,12 @@ import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {findPlayerCardToPlayFrom} from '../../utils/player-card-play-from.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
+import {findResourceAssignment} from '../../utils/find-resource-assignment.js';
+import {
+    getResourceIcons,
+    normalizeResourceRequirements,
+    toResourcePaymentCard,
+} from '../../utils/resource-requirements.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
 import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
 
@@ -326,20 +335,95 @@ export class Player extends Engine {
         cardToPlay,
         resourceType,
         excludedCardIds = new Set(),
-        resourceUsage
+        resourceUsage,
+        {includeGenerators = true, printedResources = false} = {}
     ) {
         return {
-            generators: await this.getResourceGenerators(
-                cardToPlay,
-                resourceType,
-                excludedCardIds
-            ),
+            generators: includeGenerators ?
+                await this.getResourceGenerators(
+                    cardToPlay,
+                    resourceType,
+                    excludedCardIds
+                ) :
+                [],
             hand: this.hand.getCardsToPay(
                 cardToPlay,
                 resourceType,
                 excludedCardIds,
-                resourceUsage
+                resourceUsage,
+                {printedResources}
             ),
+        };
+    }
+    async getDirectResourcePayment({
+        cardId,
+        cardToPay,
+        excludedCardIds = new Set(),
+        resourceUsage,
+        resourceType,
+        source,
+    } = {}) {
+        if (!cardId ||
+            (source !== 'hand' && source !== 'generators')) {
+            throw new Error('El origen del pago de recursos no es válido.');
+        }
+
+        const cards = await this.getCardsToPay(
+            cardToPay,
+            resourceType,
+            excludedCardIds,
+            resourceUsage
+        );
+        const candidates = source === 'hand' ? cards.hand : cards.generators;
+        const selected = candidates.find(card => card.id === cardId);
+
+        if (!selected) {
+            throw new Error('La carta de recursos ya no es válida para el pago.');
+        }
+
+        const resources = source === 'hand' ?
+            getResourceIcons(selected, {cardToPay}) :
+            selected.abilities
+                .filter(ability => ability.isResource)
+                .flatMap(ability => {
+                    if (typeof ability.getGeneratedResources === 'function') {
+                        return ability.getGeneratedResources({
+                            card: selected,
+                            cardToPay,
+                            player: this,
+                        });
+                    }
+
+                    return ability.resources || (ability.resource ?
+                        [ability.resource] :
+                        []);
+                });
+        const resourceTypes = normalizeResourceTypes(resourceType);
+        const payableResources = resourceTypes.length &&
+            !resourceTypes.includes(RESOURCE_ANY) ?
+            resources.filter(resource =>
+                resourceTypes.includes(resource) ||
+                resource === RESOURCE_WILD
+            ) :
+            resources;
+
+        if (!payableResources.length) {
+            throw new Error('La carta no contiene un recurso válido para el pago.');
+        }
+        const handCard = source === 'hand' ?
+            this.hand.getCard(selected.id) :
+            undefined;
+
+        if (source === 'hand' && !handCard) {
+            throw new Error('La carta de recursos ya no está en la mano.');
+        }
+
+        return {
+            generators: source === 'generators' ? [selected] : [],
+            hand: source === 'hand' ?
+                [handCard] :
+                [],
+            resources: payableResources,
         };
     }
     getPrintedCard(cardId) {
@@ -479,7 +563,12 @@ export class Player extends Engine {
     removeStunned(count = 0) {
         return this.superhero.removeStunned(count);
     }
-    async resolveAbility(cardId, abilityIndex, targetId) {
+    async resolveAbility(
+        cardId,
+        abilityIndex,
+        targetId,
+        resourcePayment
+    ) {
         let card = this.getCard(cardId);
         if (!card) {
             card = this.match.scenario.getCard(cardId);
@@ -488,14 +577,17 @@ export class Player extends Engine {
         const params = {
             player: this,
             abilityIndex,
+            ...(resourcePayment !== undefined ? {resourcePayment} : {}),
         };
 
         if (targetId !== undefined) {
             const abilities = card?.currentSide?.abilities ?? card?.abilities;
             const ability = abilities?.[abilityIndex];
 
-            if (!ability?.isBasic ||
-                (!ability.isAttack && !ability.isThwart) ||
+            if (!ability ||
+                (!ability.isAction &&
+                    (!ability.isBasic ||
+                        (!ability.isAttack && !ability.isThwart))) ||
                 !ability.effect) {
                 throw new Error('La capacidad no admite una activación con objetivo preseleccionado.');
             }
@@ -522,7 +614,7 @@ export class Player extends Engine {
                 selectedTarget,
             };
             if (!await ability.canRun(preselectedParams)) {
-                throw new Error('La activación básica ya no está disponible.');
+                throw new Error('La activación seleccionada ya no está disponible.');
             }
 
             await card.resolveAbility({
@@ -613,6 +705,7 @@ export class Player extends Engine {
             data: {
                 allowPartial,
                 differentTypes,
+                resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
                 resourceSelectionMode: resourceUsage !== undefined,
                 cost: resources.length,
                 requirement: resources,
@@ -621,7 +714,9 @@ export class Player extends Engine {
                     generators: cardsToPay.generators.map(generator =>
                         generator.toObj({card: cardToPay})),
                     hand: cardsToPay.hand.map(resourceCard =>
-                        resourceCard.toObj({card: cardToPay})),
+                        toResourcePaymentCard(resourceCard, {}, {
+                            cardToPay,
+                        })),
                 }
             },
         });
@@ -641,6 +736,82 @@ export class Player extends Engine {
             };
         }
     }
+    async discardResources(
+        resourceRequirements,
+        excludedCardIds = new Set(),
+        {
+            cardToPay,
+            showCancel = true,
+            title = 'Descarta iconos de recursos de tu mano',
+        } = {}
+    ) {
+        const requirements = normalizeResourceRequirements(resourceRequirements);
+        const cards = this.hand.cards.filter(card =>
+            !excludedCardIds.has(card.id) &&
+            getResourceIcons(card, {printed: true}).length > 0
+        );
+        const eligibleCards = cards.filter(card =>
+            findResourceAssignment(
+                cards,
+                requirements,
+                card,
+                {allowWildConversion: false, printed: true}
+            )
+        );
+        if (!findResourceAssignment(
+            cards,
+            requirements,
+            undefined,
+            {allowWildConversion: false, printed: true}
+        )) {
+            return undefined;
+        }
+
+        const response = await this.openDialog({
+            dialogType: DIALOG_PAY_COST,
+            showCancel,
+            title,
+            data: {
+                allowPartial: false,
+                allowWildConversion: false,
+                card: cardToPay ? cardToPay.toObj() : undefined,
+                cost: requirements.length,
+                requirement: requirements,
+                resourcePaymentMode: RESOURCE_PAYMENT_MODE_DISCARD,
+                resourceSelectionMode: true,
+                resourceRequirements: requirements,
+                cards: {
+                    generators: [],
+                    hand: eligibleCards.map(card =>
+                        toResourcePaymentCard(card, {}, {printed: true})),
+                },
+            },
+        });
+
+        if (!response) {
+            return undefined;
+        }
+
+        const paid = response.paid || {};
+        const hand = (paid.hand || []).map(card => {
+            const selectedCard = this.hand.getCard(card.id);
+            if (!selectedCard ||
+                !eligibleCards.includes(selectedCard)) {
+                throw new Error('La selección de recursos descartados no es válida.');
+            }
+
+            return selectedCard;
+        });
+
+        return {
+            allowWildConversion: false,
+            generators: [],
+            hand,
+            printedResources: true,
+            resourceRequirements: requirements,
+            resources: response.resources || [],
+        };
+    }
     async spendResourcesX(
         resources,
         cardToPay,
@@ -658,6 +829,7 @@ export class Player extends Engine {
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
             data: {
+                resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
                 resourceType,
                 resourceSelectionMode: resourceUsage !== undefined,
                 cost: RESOURCES_X,
@@ -667,7 +839,9 @@ export class Player extends Engine {
                     generators: cardsToPay.generators.map(generator =>
                         generator.toObj({card: cardToPay})),
                     hand: cardsToPay.hand.map(resourceCard =>
-                        resourceCard.toObj({card: cardToPay})),
+                        toResourcePaymentCard(resourceCard, {}, {
+                            cardToPay,
+                        })),
                 }
             },
         });

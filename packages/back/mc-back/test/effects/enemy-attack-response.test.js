@@ -93,6 +93,7 @@ test('enemy attacks show a directly selected hero in the activation dialog', asy
     assert.equal(dialog.data.target.defense, 2);
     assert.equal(dialog.data.character.attack, 2);
     assert.equal(dialog.data.character.defense, 1);
+    assert.equal(dialog.data.emphasizedStat, 'attack');
 });
 
 test('Backflip is offered before attack damage is applied', async () => {

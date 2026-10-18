@@ -1,6 +1,6 @@
 # Mecánicas de Juego
 
-Esta sección detalla las reglas y mecánicas fundamentales de Marvel Champions. Para facilitar su consulta, la documentación se ha dividido en los siguientes temas:
+Esta sección detalla las reglas y mecánicas fundamentales de MC RRR. Para facilitar su consulta, la documentación se ha dividido en los siguientes temas:
 
 1. **[Fundamentos del Juego](02-01-FUNDAMENTALS.md)**: Reglas de oro, limitaciones de componentes y atributos básicos.
 2. **[Conceptos de Jugador](02-02-PLAYER-CONCEPTS.md)**: Superhéroes, identidades, sistema de recursos y zona de juego.

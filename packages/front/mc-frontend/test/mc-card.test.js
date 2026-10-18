@@ -38,7 +38,13 @@ const {ICON_EYE, ICON_EYE_SLASH, ICON_STAR} = await import(
     '../src/components/common/mc-icon/mc-icon.js'
 );
 
-const renderStats = ({attack, scheme, defense, unprintedStats}) => {
+const renderStats = ({
+    attack,
+    scheme,
+    defense,
+    unprintedStats,
+    emphasizedStats = [],
+}) => {
     const card = Object.assign(Object.create(CardComponent.prototype), {
         showBasicStats: true,
         nameWithStage: false,
@@ -49,19 +55,23 @@ const renderStats = ({attack, scheme, defense, unprintedStats}) => {
         thwart: undefined,
         recovery: undefined,
         unprintedStats,
+        emphasizedStats,
     });
 
     return card.renderStats();
 };
 
-const getStatValue = (template, label) => {
+const getStat = (template, label) => {
     const stats = template.values.find(Array.isArray);
-    const stat = stats.find(({values}) => values[1] === label);
 
-    return stat.values[3];
+    return stats.find(({values}) => values[1] === label);
 };
 
-test('renders the Marvel Champions star for marked unprinted stats that equal zero', () => {
+const getStatValue = (template, label) => {
+    return getStat(template, label).values[3];
+};
+
+test('renders the MC RRR star for marked unprinted stats that equal zero', () => {
     const template = renderStats({
         attack: 0,
         scheme: 0,
@@ -93,6 +103,49 @@ test('renders the calculated value when an unprinted stat becomes nonzero', () =
 
     assert.match(attack.strings.join(''), /numeric-value/);
     assert.equal(attack.values[0], 1);
+});
+
+test('emphasizes only the configured character stat', () => {
+    const template = renderStats({
+        attack: 2,
+        scheme: 1,
+        defense: 3,
+        unprintedStats: [],
+        emphasizedStats: ['attack'],
+    });
+    const attack = getStat(template, 'ATQ');
+    const scheme = getStat(template, 'PLA');
+
+    assert.match(attack.values[0], /\bemphasized\b/);
+    assert.doesNotMatch(scheme.values[0], /\bemphasized\b/);
+});
+
+test('centers main scheme counters alongside threat', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        acceleration: 0,
+        generic: 3,
+        horizontal: true,
+        showGeneric: true,
+        showThreat: true,
+        threat: 2,
+    });
+    const template = card.renderCounters();
+    const markup = template.values
+        .filter(value => value?.strings)
+        .map(value => value.strings.join(''))
+        .join('');
+
+    assert.ok(markup.indexOf('stat-threat') < markup.indexOf('stat-counters'));
+    assert.match(markup, /aria-label="CONTADORES:/);
+
+    const styles = CardComponent.styles.cssText;
+    assert.match(
+        styles,
+        /\.counters\s*\{[^}]*display: grid;[^}]*grid-auto-columns: minmax\(0, 1fr\);[^}]*justify-items: center;/s
+    );
+    assert.match(styles, /\.counters > \.character-stat\s*\{[^}]*justify-self: center;/s);
+    assert.doesNotMatch(styles, /\.counters > \.character-stat\s*\{[^}]*flex:/s);
+    assert.match(styles, /\.acceleration,\s*\.threat\s*\{[^}]*margin: 0;/s);
 });
 
 test('uses a diffuse green halo on legal targets and veils only non-target images', () => {
@@ -477,6 +530,142 @@ test('starting a drag publishes the actor and its legal basic activations', () =
     assert.equal(dispatchedEvent.detail.actor, ally);
     assert.equal(dispatchedEvent.detail.options[0].activationType, 'attack');
     assert.deepEqual(dragPayload, {type: 'text/plain', value: 'ally-1'});
+});
+
+test('starting and ending a drag supports a targeted attack action on an upgrade', () => {
+    const upgrade = {
+        abilities: [{
+            availableTargetIds: ['villain-1'],
+            disable: false,
+            index: 1,
+            isAction: true,
+            isAttack: true,
+            isBasic: false,
+            isThwart: false,
+            name: 'Disparar',
+        }],
+        id: 'energy-channel',
+        isUpgrade: true,
+    };
+    const source = Object.assign(Object.create(CardComponent.prototype), {
+        activationActor: upgrade,
+    });
+    let dragStart;
+    source.dispatchEvent = event => {
+        dragStart = event;
+        return true;
+    };
+
+    source.handleActivationDragStart({
+        dataTransfer: {
+            effectAllowed: '',
+            setData() {},
+        },
+    });
+
+    assert.equal(dragStart.type, 'activation-drag-start');
+    assert.equal(dragStart.detail.options[0].text, 'Disparar');
+
+    const target = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'villain-1', name: 'Rhino'},
+        dragActivation: {actor: upgrade},
+    });
+    let drop;
+    target.dispatchEvent = event => {
+        drop = event;
+        return true;
+    };
+
+    target.handleActivationDrop({
+        preventDefault() {},
+        stopPropagation() {},
+    });
+
+    assert.equal(drop.type, 'basic-activation');
+    assert.equal(drop.detail.actor, upgrade);
+    assert.equal(drop.detail.card, target.card);
+    assert.equal(drop.detail.option.abilityIndex, 1);
+    assert.equal(drop.detail.option.targetId, 'villain-1');
+    assert.equal(drop.detail.option.basicActivation, undefined);
+});
+
+test('dragging a resource card selects a compatible ability payment', () => {
+    const resource = {
+        id: 'energy-card',
+        isResource: true,
+    };
+    const source = Object.assign(Object.create(CardComponent.prototype), {
+        card: resource,
+        dragActivation: null,
+        dragPlayCard: null,
+        dragResourcePayment: null,
+    });
+    let dragStart;
+    source.dispatchEvent = event => {
+        dragStart = event;
+        return true;
+    };
+
+    source.handleDragStart({
+        dataTransfer: {
+            effectAllowed: '',
+            setData() {},
+        },
+    });
+
+    assert.equal(dragStart.type, 'resource-payment-drag-start');
+    assert.equal(dragStart.detail.source, 'hand');
+
+    const targetCard = {
+        abilities: [{
+            index: 0,
+            resourcePayment: {
+                sourceIds: [resource.id],
+            },
+        }],
+        id: 'energy-channel',
+    };
+    const target = Object.assign(Object.create(CardComponent.prototype), {
+        card: targetCard,
+        dragResourcePayment: {
+            card: resource,
+            source: 'hand',
+        },
+    });
+    let drop;
+    target.dispatchEvent = event => {
+        drop = event;
+        return true;
+    };
+
+    target.handleDrop({
+        preventDefault() {},
+        stopPropagation() {},
+    });
+
+    assert.equal(drop.type, 'resource-payment-drop');
+    assert.equal(drop.detail.card, resource);
+    assert.equal(drop.detail.targetCard, targetCard);
+    assert.deepEqual(drop.detail.option, {
+        abilityIndex: 0,
+        cardId: resource.id,
+        source: 'hand',
+    });
+});
+
+test('a resource generator can be dragged as a payment source', () => {
+    const generator = {
+        abilities: [{isResource: true}],
+        id: 'energy-generator',
+    };
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        card: generator,
+        dragActivation: null,
+        dragPlayCard: null,
+        dragResourcePayment: null,
+    });
+
+    assert.equal(card.canDragResourcePayment, true);
 });
 
 test('does not cancel a card drag when there is no in-play activation actor', () => {

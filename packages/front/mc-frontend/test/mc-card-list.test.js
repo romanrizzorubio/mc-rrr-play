@@ -236,7 +236,7 @@ test('highlights discard cards that can be played from that discard', () => {
 
     assert.equal(template.values[0][0].playable, true);
     assert.equal(template.values[0][1].playable, false);
-    assert.deepEqual(template.values[1], [1]);
+    assert.deepEqual(template.values[1], []);
     assert.equal(template.values[2], true);
 });
 

@@ -136,6 +136,66 @@ test('Player.spendResources only offers cards that can pay its resource requirem
     );
 });
 
+test('Player.getDirectResourcePayment resolves a dragged hand resource', async () => {
+    const resourceCard = {
+        card: {
+            getResources: () => [RESOURCE_ENERGY],
+        },
+        id: 'energy-card',
+        isPlaying: false,
+    };
+    const hand = Object.create(Hand.prototype);
+    hand.cards = [resourceCard];
+    hand.getCard = cardId => hand.cards.find(card => card.id === cardId);
+    const player = Object.create(Player.prototype);
+    player.hand = hand;
+    player.getCardsToPay = async () => ({
+        generators: [],
+        hand: [resourceCard],
+    });
+
+    const payment = await player.getDirectResourcePayment({
+        cardId: resourceCard.id,
+        cardToPay: {id: 'energy-channel'},
+        resourceType: RESOURCE_ENERGY,
+        source: 'hand',
+    });
+
+    assert.deepEqual(payment, {
+        generators: [],
+        hand: [resourceCard],
+        resources: [RESOURCE_ENERGY],
+    });
+});
+
+test('Player.getDirectResourcePayment resolves a dragged resource generator', async () => {
+    const generator = {
+        abilities: [{
+            getGeneratedResources: () => [RESOURCE_ENERGY],
+            isResource: true,
+        }],
+        id: 'energy-generator',
+    };
+    const player = Object.create(Player.prototype);
+    player.getCardsToPay = async () => ({
+        generators: [generator],
+        hand: [],
+    });
+
+    const payment = await player.getDirectResourcePayment({
+        cardId: generator.id,
+        cardToPay: {id: 'energy-channel'},
+        resourceType: RESOURCE_ENERGY,
+        source: 'generators',
+    });
+
+    assert.deepEqual(payment, {
+        generators: [generator],
+        hand: [],
+        resources: [RESOURCE_ENERGY],
+    });
+});
+
 test('resource-session dialogs show only remaining hand icons and enable icon selection', async () => {
     const doubleResourceCard = {
         card: {

@@ -20,6 +20,7 @@ import {
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
@@ -27,7 +28,6 @@ import {
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_HERO_DEFENDS_ATTACK,
-    TRIGGER_MINION_ENTER_PLAY,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLACE_THREAT,
@@ -43,7 +43,6 @@ import {
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_THIS_END_PLAY_CARD,
-    TRIGGER_THIS_ENTER_PLAY,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_GET_THWART,
     TRIGGER_THIS_GET_ATTACK,
@@ -86,6 +85,9 @@ import {
 import {ConditionGetDefenseTrigger} from '../../triggers/condition-get-defense-trigger.js';
 import {ConditionGetTraitsTrigger} from '../../triggers/condition-get-traits-trigger.js';
 import {EndPlayCardTrigger} from '../../triggers/end-play-card-trigger.js';
+import {
+    CardEnterPlayTrigger
+} from '../../triggers/card-enter-play-trigger.js';
 import {EncounterRevealTrigger} from '../../triggers/encounter-reveal-trigger.js';
 import {EnemyAttacksYouTrigger} from '../../triggers/enemy-attacks-you-trigger.js';
 import {
@@ -94,7 +96,6 @@ import {
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
-import {MinionEnterPlayTrigger} from '../../triggers/minion-enter-play-trigger.js';
 import {CharacterSchemesTrigger} from '../../triggers/character-schemes-trigger.js';
 import {
     MainSchemeCompletedTrigger
@@ -108,7 +109,6 @@ import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
 import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
-import {ThisEnterPlayTrigger} from '../../triggers/this-enter-play-trigger.js';
 import {ThisFlipTrigger} from '../../triggers/this-flip-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
 import {ThisGetAttackTrigger} from '../../triggers/this-get-attack-trigger.js';
@@ -194,7 +194,6 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_COUNTERS_REMOVED]: ThisCountersRemovedTrigger,
     [TRIGGER_THIS_DEFEAT]: ThisDefeatTrigger,
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
-    [TRIGGER_THIS_ENTER_PLAY]: ThisEnterPlayTrigger,
     [TRIGGER_THIS_FLIP]: ThisFlipTrigger,
     [TRIGGER_THIS_GET_THWART]: ThisGetThwartTrigger,
     [TRIGGER_THIS_GET_ATTACK]: ThisGetAttackTrigger,
@@ -222,9 +221,9 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOUR_ALTEREGO_GET_RECOVERY]: YourAlteregoGetRecoveryTrigger,
     [TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES]: YourPlayerGetMaxAlliesTrigger,
     [TRIGGER_END_PLAY_CARD]: EndPlayCardTrigger,
+    [TRIGGER_CARD_ENTER_PLAY]: CardEnterPlayTrigger,
     [TRIGGER_ENEMY_ATTACKS_YOU]: EnemyAttacksYouTrigger,
     [TRIGGER_INSTANT]: InstantTrigger,
-    [TRIGGER_MINION_ENTER_PLAY]: MinionEnterPlayTrigger,
     [TRIGGER_MAIN_SCHEME_COMPLETED]: MainSchemeCompletedTrigger,
     [TRIGGER_PHASE_ENDS]: PhaseEndsTrigger,
     [TRIGGER_ROUND_ENDS]: RoundEndsTrigger,

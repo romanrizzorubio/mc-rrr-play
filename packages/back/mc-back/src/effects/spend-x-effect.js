@@ -30,6 +30,16 @@ export class SpendXEffect extends Effect {
         return this.title || `Pagar los recursos ${resource}`;
     }
     async preparePayment(params, session) {
+        if (params.resourcePayment !== undefined) {
+            return this.selectedTarget.getDirectResourcePayment({
+                ...params.resourcePayment,
+                cardToPay: params.card,
+                excludedCardIds: session.getResourcePaymentExcludedCardIds(),
+                resourceUsage: session.getRemainingResources(),
+                resourceType: this.resourceType,
+            });
+        }
+
         return this.selectedTarget.spendResourcesX(
             this.resources,
             params.card,

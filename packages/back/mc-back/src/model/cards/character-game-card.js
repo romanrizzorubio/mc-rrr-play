@@ -579,10 +579,10 @@ export class CharacterGameCard extends GameCard {
             recovery,
         };
     }
-    async getEffectiveTraits() {
-        const {controller} = this;
+    async getEffectiveTraits({player} = {}) {
+        const traitPlayer = this.controller ?? player ?? this.match?.initialPlayer;
 
-        if (!controller) {
+        if (!traitPlayer) {
             throw new Error(`Character ${this.id} has no controller for trait calculation.`);
         }
 
@@ -590,7 +590,7 @@ export class CharacterGameCard extends GameCard {
             selectedTarget: this.currentSide,
             match: this.match,
         });
-        await getTraitsEffect.runEffect({player: controller});
+        await getTraitsEffect.runEffect({player: traitPlayer});
 
         return getTraitsEffect.traits;
     }
@@ -604,11 +604,21 @@ export class CharacterGameCard extends GameCard {
     async toObjWithAbilityAvailability(player) {
         const abilityAvailability = await this.getAbilityAvailability(player);
         const stats = await this.getEffectiveStats({player});
+        const effectiveTraits = this.controller || player || this.match?.initialPlayer ?
+            await this.getEffectiveTraits({player}) :
+            [];
+        const card = this.toObj();
+        const printedTraits = this.currentSide.card.traits || [];
+        const extraTraits = [...new Set([
+            ...(card.extraTraits || []),
+            ...effectiveTraits,
+        ])].filter(trait => !printedTraits.includes(trait));
 
         return {
-            ...this.toObj(),
+            ...card,
             ...abilityAvailability,
             ...stats,
+            extraTraits,
         };
     }
     toObj() {

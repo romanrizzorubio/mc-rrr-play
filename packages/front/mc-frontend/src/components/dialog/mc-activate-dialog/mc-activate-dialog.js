@@ -38,12 +38,13 @@ export class McActivateDialog extends McDialog {
                 ...super.defaultProperties.data,
                 character: null,
                 target: null,
+                emphasizedStat: '',
                 statusMessage: '',
                 statusType: '',
             },
         };
     }
-    renderCharacterCard(character) {
+    renderCharacterCard(character, emphasizedStat) {
         return html`
             <mc-card
                 .name="${character.name}"
@@ -58,6 +59,7 @@ export class McActivateDialog extends McDialog {
                 .recovery="${character.recovery}"
                 .scheme="${character.scheme}"
                 .unprintedStats="${character.unprintedStats ?? []}"
+                .emphasizedStats="${emphasizedStat ? [emphasizedStat] : []}"
                 size="l"
                 show-basic-stats
                 ?horizontal="${isPlanCard(character)}"
@@ -65,7 +67,15 @@ export class McActivateDialog extends McDialog {
         `;
     }
     renderContent() {
-        const {data: {character, target, statusMessage, statusType}} = this;
+        const {
+            data: {
+                character,
+                target,
+                emphasizedStat,
+                statusMessage,
+                statusType,
+            },
+        } = this;
 
         if (statusMessage) {
             const statusImage = STATUS_IMAGES[statusType];
@@ -87,7 +97,7 @@ export class McActivateDialog extends McDialog {
         }
 
         return html`
-            ${this.renderCharacterCard(character)}
+            ${this.renderCharacterCard(character, emphasizedStat)}
             <div class="vs">VS</div>
             ${this.renderCharacterCard(target)}
         `;

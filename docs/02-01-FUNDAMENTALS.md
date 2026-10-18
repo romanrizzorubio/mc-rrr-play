@@ -123,7 +123,7 @@ El icono  junto a un valor multiplica ese valor por el número de jugadores q
 **Véase también**: iconos, modificadores, eliminación de jugador.
 
 #### icono de único () (Unique Icon)
-El icono de único indica una carta que representa a una persona, lugar o cosa singular dentro del universo Marvel.
+El icono de único indica una carta que representa a una persona, lugar o cosa singular dentro del universo MC RRR.
 
 - Dos cartas únicas se considera que "coinciden" si se aplica cualquiera de lo siguiente:
     - Las dos cartas comparten título, y ambas no tienen subtítulo ni título de alter ego. (Por ejemplo, dos copias de la mejora Jarnbjorn, o el aliado Jessica Jones y el esbirro Jessica Jones).
@@ -154,7 +154,7 @@ Cada vez que se aplica o se quita un nuevo modificador, se recalcula toda la can
 **Véase también**: valor base, guion (valor), impreso.
 
 #### elemento de juego (Game Element)
-Un elemento de juego es un componente o persona involucrada en jugar una partida de Marvel Champions. Todos los siguientes son elementos de juego:
+Un elemento de juego es un componente o persona involucrada en jugar una partida de MC RRR. Todos los siguientes son elementos de juego:
 - Cartas
 - Mazos
 - Pilas de descarte

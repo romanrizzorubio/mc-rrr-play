@@ -8,7 +8,7 @@ const ACTIVATION_NAMES = {
     thwart: 'Intervención básica',
 };
 
-export function getBasicActivationOptionsForActor(actor) {
+export function getActivationOptionsForActor(actor) {
     return (actor?.abilities || []).reduce((options, ability, index) => {
         const activationType = ability.isAttack ?
             'attack' :
@@ -16,9 +16,9 @@ export function getBasicActivationOptionsForActor(actor) {
         const availableTargetIds = ability.availableTargetIds;
 
         if (
-            !ability.isBasic ||
+            (!ability.isBasic && !ability.isAction) ||
             ability.disable ||
-            !activationType ||
+            (!ability.isAction && !activationType) ||
             !Array.isArray(availableTargetIds) ||
             !availableTargetIds.length
         ) {
@@ -28,11 +28,15 @@ export function getBasicActivationOptionsForActor(actor) {
         const abilityIndex = ability.index ?? index;
 
         options.push({
-            id: `${BASIC_ACTIVATION_OPTION_PREFIX}${abilityIndex}`,
-            text: ACTIVATION_NAMES[activationType],
-            basicActivation: true,
+            id: `${ability.isBasic ?
+                BASIC_ACTIVATION_OPTION_PREFIX :
+                ABILITY_ID}${abilityIndex}`,
+            text: ability.isBasic ?
+                ACTIVATION_NAMES[activationType] :
+                ability.name,
+            ...(ability.isBasic ? {basicActivation: true} : {}),
             abilityIndex,
-            activationType,
+            ...(activationType ? {activationType} : {}),
             availableTargetIds,
         });
 
@@ -40,13 +44,18 @@ export function getBasicActivationOptionsForActor(actor) {
     }, []);
 }
 
-export function getBasicActivationOptionForActor(actor, card, type) {
+export function getBasicActivationOptionsForActor(actor) {
+    return getActivationOptionsForActor(actor)
+        .filter(option => option.basicActivation);
+}
+
+function findActivationOption(options, card, type) {
     if (!card?.id || (type && !ACTIVATION_NAMES[type])) {
         return undefined;
     }
 
     const targetIds = [card.id, card.parentId].filter(Boolean);
-    const option = getBasicActivationOptionsForActor(actor).find(candidate =>
+    const option = options.find(candidate =>
         (!type || candidate.activationType === type) &&
         candidate.availableTargetIds.some(id => targetIds.includes(id))
     );
@@ -62,11 +71,29 @@ export function getBasicActivationOptionForActor(actor, card, type) {
     return {
         id: option.id,
         text: option.text,
-        basicActivation: option.basicActivation,
+        ...(option.basicActivation ? {basicActivation: true} : {}),
         abilityIndex: option.abilityIndex,
         targetId,
-        activationType: option.activationType,
+        ...(option.activationType ? {
+            activationType: option.activationType,
+        } : {}),
     };
+}
+
+export function getActivationOptionForActor(actor, card, type) {
+    return findActivationOption(
+        getActivationOptionsForActor(actor),
+        card,
+        type
+    );
+}
+
+export function getBasicActivationOptionForActor(actor, card, type) {
+    return findActivationOption(
+        getBasicActivationOptionsForActor(actor),
+        card,
+        type
+    );
 }
 
 export function getBasicActivationOption(player, card, type) {

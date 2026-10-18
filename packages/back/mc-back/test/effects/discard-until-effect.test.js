@@ -60,6 +60,44 @@ describe('discard until and engage effects', () => {
         assert.equal(refreshCount, 1);
     });
 
+    test('DiscardUntilEffect can show only the matching card before it enters play', async () => {
+        const dialogs = [];
+        const environment = {
+            id: 'environment',
+            isEnvironment: true,
+            isInPlay: false,
+            toObj() {
+                return {id: this.id, name: 'Entorno'};
+            },
+        };
+        const deck = new Deck({owner: {match: {}}});
+        deck.cards = [{id: 'discarded'}, environment, {id: 'remaining'}];
+        deck.refresh = async () => {};
+
+        const effect = new DiscardUntilEffect({
+            condition: {isEnvironment: true},
+            match: {
+                async openDialog(dialog) {
+                    dialogs.push(dialog);
+                },
+            },
+            selectedTarget: deck,
+            showSelectedCard: true,
+            title: 'Entorno que entra en juego',
+        });
+
+        await effect.execute({});
+
+        assert.deepEqual(dialogs, [{
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: 'Entorno que entra en juego',
+            data: {
+                card: {id: environment.id, name: 'Entorno'},
+                horizontal: false,
+            },
+        }]);
+    });
+
     test('EngageEffect assigns a minion to the player it engages', async () => {
         const resolvingPlayer = {};
         const engagedMinions = [];

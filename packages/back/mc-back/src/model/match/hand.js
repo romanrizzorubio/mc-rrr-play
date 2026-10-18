@@ -10,6 +10,7 @@ import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
 import {PlayCardEffect} from '../../effects/play-card-effect.js';
 import {getEffectTargetEntries} from '../../utils/effect-targets.js';
+import {getResourceIcons} from '../../utils/resource-requirements.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
 
 export class Hand extends Engine {
@@ -82,7 +83,8 @@ export class Hand extends Engine {
         cardToPlay,
         resourceType,
         excludedCardIds = new Set(),
-        resourceUsage
+        resourceUsage,
+        {printedResources = false} = {}
     ) {
         const resourceTypes = normalizeResourceTypes(resourceType);
         const unrestricted = !resourceTypes.length ||
@@ -90,7 +92,10 @@ export class Hand extends Engine {
 
         return this.cards.filter(card => {
             const availableResources = resourceUsage?.get(card.id) ??
-                card.card.getResources(cardToPlay);
+                getResourceIcons(card, {
+                    printed: printedResources,
+                    cardToPay: cardToPlay,
+                });
 
             return !excludedCardIds.has(card.id) &&
                 !card.isPlaying &&

@@ -103,7 +103,7 @@ import {
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_ENGAGE_HERO,
     TRIGGER_INSTANT,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
@@ -251,7 +251,7 @@ export default {
                             {
                                 'type': ABILITY_RESPONSE,
                                 'params': {
-                                    'trigger': TRIGGER_THIS_ENTER_PLAY,
+                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
                                     'effect': {
                                         'type': EFFECT_READY,
                                         'params': {

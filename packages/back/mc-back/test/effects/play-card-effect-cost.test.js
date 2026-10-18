@@ -13,7 +13,7 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 import {Arrow} from '../../src/abilities/core/arrow.js';
 import {ResponseAbility} from '../../src/abilities/response/response-ability.js';
@@ -163,7 +163,7 @@ test('passes enter-play paid-resource preferences when paying to play a card', a
             resources: [RESOURCE_ENERGY],
         }),
         match: {},
-        trigger: TRIGGER_THIS_ENTER_PLAY,
+        trigger: TRIGGER_CARD_ENTER_PLAY,
     });
     const {calls, effect, player} = createPlayCardEffect({
         cardAbilities: [enterPlayAbility],

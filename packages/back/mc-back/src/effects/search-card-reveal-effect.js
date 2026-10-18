@@ -24,12 +24,14 @@ export class SearchCardAndRevealEffect extends Effect {
         this.cards = [];
         this.hasEnteredGame = false;
         this.hasResolvedCard = false;
+        this.location = undefined;
     }
     resetResolutionData() {
         super.resetResolutionData();
         this.cards = [];
         this.hasEnteredGame = false;
         this.hasResolvedCard = false;
+        this.location = undefined;
     }
     checkCondition(card, _player) {
         const {condition} = this;
@@ -69,6 +71,7 @@ export class SearchCardAndRevealEffect extends Effect {
             ...params,
             preventSurge: true,
         });
+        this.location = place;
         this.hasResolvedCard = true;
         if (SET_ASIDE_PLACES.has(place)) {
             this.hasEnteredGame = true;

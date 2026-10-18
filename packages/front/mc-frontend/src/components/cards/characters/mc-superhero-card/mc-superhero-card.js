@@ -25,6 +25,7 @@ export class SuperheroCardComponent extends LitElement {
             activationActor: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
             life: {type: Number},
             hitPoints: {type: Number},
             handSize: {type: Number},
@@ -53,6 +54,7 @@ export class SuperheroCardComponent extends LitElement {
         this.activationActor = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
         this.life = 0;
         this.hitPoints = undefined;
         this.handSize = 0;
@@ -168,6 +170,7 @@ export class SuperheroCardComponent extends LitElement {
                     .activationActor="${activationActor}"
                     .dragActivation="${this.dragActivation}"
                     .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
                     .life="${life}"
                     .hitPoints="${hitPoints}"
                     .statusCards="${statusCards}"

@@ -1,9 +1,9 @@
 ---
-name: marvel-champions-content-authoring
-description: Parse user-provided Marvel Champions card text and author hero, scenario, encounter-set, and ability configurations using this project's existing effects.
+name: mc-rrr-content-authoring
+description: Parse user-provided MC-RRR card text and author hero, scenario, encounter-set, and ability configurations using this project's existing effects.
 ---
 
-# Marvel Champions content authoring
+# MC-RRR content authoring
 
 Use this skill when a user provides card text or structured card data and asks to create or update a hero, scenario, encounter set, or its abilities and effects.
 
@@ -65,6 +65,7 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 - Add `LABEL_ATTACK` or `LABEL_THWART` only when the supplied card text explicitly labels the ability as `(attack)` or `(thwart)` (including localized equivalents such as `(ataque)` or `(intervención)`). Never infer these labels from damage, threat removal, targets, or effect types; without an explicit label in the text, leave them off.
 - For multiple consecutive player attacks, use one `EFFECT_DEAL_DAMAGE` with `isAttack: true` per attack in an `EFFECT_CHAINED`, preserving the printed order and separate attack windows. Do not use `EFFECT_SEVERAL_ATTACKS`, which resolves attacks by multiple enemies. Keep the enclosing ability unlabelled unless the card explicitly labels that ability as an attack.
 - Use `EFFECT_CHAINED` for ordered or data-dependent effects and `EFFECT_SIMULTANEOUS` for independent effects joined by "and". Do not assign an array directly to `ability.effect`.
+- When `EFFECT_MOVE_TO_DECK` receives a card list and uses `DECK_POSITION_SHUFFLE`, it already adds the cards and shuffles the deck. Do not append a separate `EFFECT_SHUFFLE_DECK` for that same operation; use `EFFECT_CHAINED` only when other ordered steps still need to precede or follow the move.
 - During an enemy attack, stop the activation as soon as its attacker leaves play: do not resolve later attack steps or the attack-end triggers, and leave the attack unresolved. A defeated minion always stops its activation. If a defeated Villain advances to a same-title stage, treat that stage as the same attacker and continue with it; a different-title stage or a completed game stops the activation. Recheck after interrupt/response windows and each awaited attack step, and test minion defeat, same-title continuation, different-title transition, and final Villain defeat.
 - For "look at the top N cards, discard one, and return the rest in any order," use the reusable `EFFECT_SELECT_AND_ORDER_TOP_CARDS` and explicitly select the deck with `target` (for example, `TARGET_ENCOUNTER_DECK`); do not discard the entire group or silently preserve its original order.
 - For damage that ignores a Tough status without discarding it, configure `ignoreTough: true` on `EFFECT_DEAL_DAMAGE`; do not use Piercing, which consumes the Tough status.

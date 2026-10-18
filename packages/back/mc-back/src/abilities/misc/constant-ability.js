@@ -8,7 +8,7 @@ import {
     EFFECT_SURGE,
     EFFECT_TOUGH,
     PRIORITY_CONSTANT,
-    TRIGGER_THIS_ENTER_PLAY,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
 } from 'mc-shared';
 import {Ability} from '../core/ability.js';
@@ -51,7 +51,7 @@ export class ConstantAbility extends MixinTriggeableAbility(Ability) {
             this.trigger = this.trigger || TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES;
         }
         this.hideDialog = this.hideDialog ||
-            this.trigger === TRIGGER_THIS_ENTER_PLAY ||
+            this.trigger === TRIGGER_CARD_ENTER_PLAY ||
             isAutomaticConstantEffect(this.effect);
     }
     initTriggers(card, _params) {

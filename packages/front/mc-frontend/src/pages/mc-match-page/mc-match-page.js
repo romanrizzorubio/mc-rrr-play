@@ -10,7 +10,10 @@ import '../../components/views/mc-match/mc-match.js';
 import {ABILITY_ID, path} from '../../misc/utils.js';
 import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../misc/card-menu.js';
 import {getEndTurnConfirmationReasons} from '../../utils/end-turn.js';
-import {getBasicActivationOptionForActor} from '../../utils/basic-activation.js';
+import {
+    getActivationOptionForActor,
+    getBasicActivationOptionForActor,
+} from '../../utils/basic-activation.js';
 
 import styles from './mc-match-page.css.js';
 
@@ -29,6 +32,7 @@ export class McMatchPage extends LitElement {
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
     constructor() {
@@ -43,6 +47,7 @@ export class McMatchPage extends LitElement {
         this.playCardPending = false;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -89,6 +94,21 @@ export class McMatchPage extends LitElement {
     handlePlayCardDragEnd() {
         this.dragPlayCard = null;
     }
+    handleResourcePaymentDragStart(e) {
+        if (this.playCardPending) {
+            return;
+        }
+
+        const {card, source} = e.detail;
+        if (!card?.id || !source) {
+            return;
+        }
+
+        this.dragResourcePayment = {card, source};
+    }
+    handleResourcePaymentDragEnd() {
+        this.dragResourcePayment = null;
+    }
     handlePlayCardDrop(e) {
         return this.handleSelectCardHand({
             detail: {
@@ -96,6 +116,36 @@ export class McMatchPage extends LitElement {
                 targetCard: e.detail.targetCard,
             },
         });
+    }
+    async handleResourcePaymentDrop(e) {
+        const {card, targetCard, option} = e.detail;
+
+        if (!card?.id || !targetCard?.id ||
+            !Number.isSafeInteger(option?.abilityIndex) ||
+            !option.source || option.cardId !== card.id) {
+            return;
+        }
+
+        try {
+            await this.apiPlayer.resolveAbility(
+                this.player,
+                targetCard.id,
+                option.abilityIndex,
+                undefined,
+                {
+                    cardId: card.id,
+                    source: option.source,
+                }
+            );
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        }
     }
     getBasicActivationPreferenceKey() {
         const matchId = this.match?.id ?? this.match?.name;
@@ -392,7 +442,49 @@ export class McMatchPage extends LitElement {
 
         const {actor, card, option} = e.detail;
 
+        if (!option?.basicActivation) {
+            return this.handleTargetedActivationSelection(card, option, actor);
+        }
+
         return this.handleBasicActivationSelection(card, option, actor);
+    }
+    handleTargetedActivationSelection(card, option, actor) {
+        const player = this.match?.players.find(_player =>
+            _player.name === this.player
+        );
+
+        if (!player || !card || !option) {
+            return;
+        }
+
+        const availableActors = [
+            player.superhero,
+            ...(player.gameZone?.cards || []),
+            ...(player.superhero?.attached || []),
+        ].filter(candidate =>
+            candidate === player.superhero ||
+            candidate.isAlly ||
+            candidate.isUpgrade ||
+            candidate.isSupport
+        );
+        const activator = actor ?
+            availableActors.find(candidate => candidate.id === actor.id) :
+            player.superhero;
+        const validOption = activator ?
+            getActivationOptionForActor(activator, card) :
+            undefined;
+
+        if (
+            !activator ||
+            !validOption ||
+            validOption.basicActivation ||
+            validOption.abilityIndex !== option.abilityIndex ||
+            validOption.targetId !== option.targetId
+        ) {
+            return;
+        }
+
+        return this.resolveActivation(card, validOption, activator);
     }
     handleBasicActivationSelection(card, option, actor) {
         const player = this.match?.players.find(_player =>
@@ -430,7 +522,7 @@ export class McMatchPage extends LitElement {
         }
 
         if (this.shouldSkipBasicActivationConfirmation()) {
-            return this.resolveBasicActivation(card, option, activator);
+            return this.resolveActivation(card, option, activator);
         }
 
         this.dispatchEvent(new CustomEvent('basic-activation-confirmation', {
@@ -450,7 +542,7 @@ export class McMatchPage extends LitElement {
                         this.rememberBasicActivationConfirmationChoice();
                     }
 
-                    return this.resolveBasicActivation(card, option, activator);
+                    return this.resolveActivation(card, option, activator);
                 },
             },
         }));
@@ -598,6 +690,7 @@ export class McMatchPage extends LitElement {
                 .playCardPending="${this.playCardPending}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @basic-activation="${this.handleBasicActivation.bind(this)}"
                 @activation-drag-start="${this.handleActivationDragStart.bind(this)}"
@@ -605,6 +698,9 @@ export class McMatchPage extends LitElement {
                 @play-card-drag-start="${this.handlePlayCardDragStart.bind(this)}"
                 @play-card-drag-end="${this.handlePlayCardDragEnd.bind(this)}"
                 @play-card-drop="${this.handlePlayCardDrop.bind(this)}"
+                @resource-payment-drag-start="${this.handleResourcePaymentDragStart.bind(this)}"
+                @resource-payment-drag-end="${this.handleResourcePaymentDragEnd.bind(this)}"
+                @resource-payment-drop="${this.handleResourcePaymentDrop.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"
@@ -612,11 +708,11 @@ export class McMatchPage extends LitElement {
             ></mc-match>
         `;
     }
-    async resolveBasicActivation(card, option, activator) {
+    async resolveActivation(card, option, activator) {
         try {
             if (!activator || !Number.isSafeInteger(option.abilityIndex) ||
                 !option.targetId) {
-                throw new Error('No se pudo iniciar la activación básica seleccionada.');
+                throw new Error('No se pudo iniciar la activación seleccionada.');
             }
 
             await this.apiPlayer.resolveAbility(

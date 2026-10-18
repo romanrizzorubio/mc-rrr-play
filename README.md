@@ -1,6 +1,6 @@
 # MC Monorepo
 
-Monorepo que contiene el frontend, el motor de juego, los contratos compartidos y los datos de Marvel Champions.
+Monorepo que contiene el frontend, el motor de juego, los contratos compartidos y los datos de MC RRR.
 
 ## Estructura
 

@@ -14,6 +14,7 @@ export * from './constants/match.js';
 export * from './constants/places.js';
 export * from './constants/priorities.js';
 export * from './constants/resources.js';
+export * from './constants/resource-payment.js';
 export * from './constants/status.js';
 export * from './constants/targets.js';
 export * from './constants/times.js';

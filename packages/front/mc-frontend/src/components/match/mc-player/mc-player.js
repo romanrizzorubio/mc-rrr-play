@@ -22,6 +22,7 @@ export class McPlayer extends LitElement {
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
         };
     }
     constructor() {
@@ -32,6 +33,7 @@ export class McPlayer extends LitElement {
         this.playCardPending = false;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
     }
     handleChangeMenu(e) {
         e.stopPropagation();
@@ -82,6 +84,7 @@ export class McPlayer extends LitElement {
                 .playCardPending="${this.playCardPending}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
             ></mc-hand>
         `;
     }
@@ -107,6 +110,7 @@ export class McPlayer extends LitElement {
                 .activationActor="${superhero}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 .card="${superhero}"
                 .canEndTurn="${this.canEndTurn}"
                 .life="${life}"
@@ -144,6 +148,7 @@ export class McPlayer extends LitElement {
                 .minions="${gameZone.minions}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
             ></mc-game-zone>
         `;
     }
@@ -165,6 +170,7 @@ export class McPlayer extends LitElement {
                 .highlightPlayableDiscard="${true}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 type="${DECK_TYPES.PLAYER}"
             ></mc-deck>
         ` : '';

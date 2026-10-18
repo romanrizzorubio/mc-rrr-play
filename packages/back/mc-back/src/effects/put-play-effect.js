@@ -2,9 +2,8 @@ import {
     PRIORITY_CONSTANT,
     TARGET_ALLY,
     TARGET_YOU,
+    TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_INSTANT,
-    TRIGGER_MINION_ENTER_PLAY,
-    TRIGGER_THIS_ENTER_PLAY,
 } from 'mc-shared';
 
 import {AttachEffect} from './attach-effect.js';
@@ -62,7 +61,8 @@ export class PutPlayEffect extends Effect {
             );
         }
 
-        return params.selectedCard;
+        return params.selectedCard ??
+            (this.selectedTarget?.isCard ? this.selectedTarget : undefined);
     }
     getController(params) {
         if (!this.controller) {
@@ -81,6 +81,23 @@ export class PutPlayEffect extends Effect {
         }
 
         return this.controller;
+    }
+    getCardForEnterPlayTrigger(params = {}) {
+        if (this.card) {
+            return this.card;
+        }
+        if (this.cardSource === undefined) {
+            return undefined;
+        }
+
+        const source = typeof this.cardSource === 'string' ?
+            path(params, this.cardSource) :
+            this.cardSource;
+        const cards = Array.isArray(source) ? source : [source];
+
+        return cards.find(card =>
+            card &&
+            (!this.cardCondition || checkCondition(card, this.cardCondition)));
     }
     async canRun(params) {
         const card = this.getCard(params);
@@ -116,10 +133,16 @@ export class PutPlayEffect extends Effect {
         }
 
         const triggers = super.getTriggersEnds(params)
-            .concat([TRIGGER_THIS_ENTER_PLAY]);
+            .concat([TRIGGER_CARD_ENTER_PLAY]);
 
-        if (card.isMinion) {
-            triggers.push(TRIGGER_MINION_ENTER_PLAY);
+        return triggers;
+    }
+    getTriggersInit(params) {
+        const triggers = super.getTriggersInit(params);
+        const card = this.getCardForEnterPlayTrigger(params);
+
+        if (card && !card.isInPlay) {
+            triggers.push(TRIGGER_CARD_ENTER_PLAY);
         }
 
         return triggers;

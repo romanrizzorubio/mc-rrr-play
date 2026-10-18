@@ -110,3 +110,90 @@ test('forwards a dropped event target to the play-card request', async () => {
     assert.deepEqual(requests, [['TChalla', 'damage-event', 'villain-1']]);
     assert.equal(page.playCardPending, false);
 });
+
+test('resolves a dropped targeted attack action from an upgrade', async () => {
+    const requests = [];
+    const upgrade = {
+        abilities: [{
+            availableTargetIds: ['villain-1'],
+            disable: false,
+            index: 1,
+            isAction: true,
+            isAttack: true,
+            isBasic: false,
+            isThwart: false,
+            name: 'Disparar',
+        }],
+        id: 'energy-channel',
+        isUpgrade: true,
+    };
+    const page = Object.assign(Object.create(McMatchPage.prototype), {
+        apiPlayer: {
+            async resolveAbility(...params) {
+                requests.push(params);
+            },
+        },
+        match: {
+            players: [{
+                gameZone: {cards: [upgrade]},
+                name: 'Carol',
+                superhero: {id: 'hero-1'},
+            }],
+        },
+        player: 'Carol',
+    });
+
+    await page.handleBasicActivation({
+        stopPropagation() {},
+        detail: {
+            actor: upgrade,
+            card: {id: 'villain-1'},
+            option: {
+                abilityIndex: 1,
+                activationType: 'attack',
+                targetId: 'villain-1',
+            },
+        },
+    });
+
+    assert.deepEqual(requests, [
+        ['Carol', 'energy-channel', 1, 'villain-1'],
+    ]);
+});
+
+test('resolves a dropped resource payment without opening a payment dialog', async () => {
+    const requests = [];
+    const page = Object.assign(Object.create(McMatchPage.prototype), {
+        apiPlayer: {
+            async resolveAbility(...params) {
+                requests.push(params);
+            },
+        },
+        player: 'Carol',
+    });
+
+    await page.handleResourcePaymentDrop({
+        detail: {
+            card: {id: 'energy-card'},
+            option: {
+                abilityIndex: 0,
+                cardId: 'energy-card',
+                source: 'hand',
+            },
+            targetCard: {id: 'energy-channel'},
+        },
+    });
+
+    assert.deepEqual(requests, [
+        [
+            'Carol',
+            'energy-channel',
+            0,
+            undefined,
+            {
+                cardId: 'energy-card',
+                source: 'hand',
+            },
+        ],
+    ]);
+});

@@ -33,6 +33,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_DISCARD_HAND,
     EFFECT_DISCARD_RANDOM,
+    EFFECT_DISCARD_RESOURCES,
     EFFECT_DISCARD_REVEAL,
     EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF_CARD_GAME,
@@ -152,6 +153,7 @@ import {DiscardFromDeckEffect} from '../../effects/discard-from-deck-effect.js';
 import {DiscardFromGameEffect} from '../../effects/discard-from-game-effect.js';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
 import {DiscardRandomEffect} from '../../effects/discard-random-effect.js';
+import {DiscardResourcesEffect} from '../../effects/discard-resources-effect.js';
 import {DiscardRevealEffect} from '../../effects/discard-reveal-effect.js';
 import {DiscardUntilEffect} from '../../effects/discard-until-effect.js';
 import {DoIfCardGameEffect} from '../../effects/do-if-card-game-effect.js';
@@ -277,6 +279,7 @@ export const EFFECT_MAP = {
     [EFFECT_DISCARD_HAND]: DiscardFromHandEffect,
     [EFFECT_DISCARD_CONDITION_HAND]: DiscardConditionHandEffect,
     [EFFECT_DISCARD_RANDOM]: DiscardRandomEffect,
+    [EFFECT_DISCARD_RESOURCES]: DiscardResourcesEffect,
     [EFFECT_DISCARD_REVEAL]: DiscardRevealEffect,
     [EFFECT_DISCARD_UNTIL]: DiscardUntilEffect,
     [EFFECT_DO_IF]: DoIfEffect,

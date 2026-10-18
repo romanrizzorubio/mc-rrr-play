@@ -1,6 +1,6 @@
 # MC RRR Play - Documentación
 
-Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digital para jugar Marvel Champions: The Card Game.
+Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digital para jugar MC RRR: The Card Game.
 
 ## 📚 Índice de Documentos
 
@@ -129,7 +129,6 @@ Controla un superhéroe con su baraja de cartas personal.
 ## 🔗 Enlaces Útiles
 
 - [GitHub Repository](https://github.com/romanrizzorubio/mc-rrr-play)
-- [Marvel Champions TCG Oficial](https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/)
 - [Lit-Element Docs](https://lit.dev/)
 - [Express.js Docs](https://expressjs.com/)
 - [Socket.IO Docs](https://socket.io/docs/)

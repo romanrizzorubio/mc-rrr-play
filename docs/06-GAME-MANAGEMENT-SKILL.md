@@ -1,6 +1,6 @@
-# Skill de Gestión de Partida: Marvel Champions
+# Skill de Gestión de Partida: MC RRR
 
-Este documento sirve como una guía rápida y exhaustiva para gestionar una partida de Marvel Champions, sintetizando las reglas fundamentales y los procedimientos paso a paso. Utiliza esta guía para asegurar que todas las fases y activaciones se resuelvan correctamente.
+Este documento sirve como una guía rápida y exhaustiva para gestionar una partida de MC RRR, sintetizando las reglas fundamentales y los procedimientos paso a paso. Utiliza esta guía para asegurar que todas las fases y activaciones se resuelvan correctamente.
 
 ---
 

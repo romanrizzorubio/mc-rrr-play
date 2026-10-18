@@ -303,10 +303,6 @@ npm run docker:down
 
 ## Recursos Adicionales
 
-### Marvel Champions TCG
-- [Página oficial](https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/)
-- Rulebook oficial (descargable en el sitio)
-
 ### Tecnologías Utilizadas
 - [Lit-Element Documentation](https://lit.dev/)
 - [Express.js Guide](https://expressjs.com/)
@@ -322,7 +318,7 @@ npm run docker:down
 
 ### Reglas del Juego
 - Consulta [02-GAME-MECHANICS.md](./02-GAME-MECHANICS.md)
-- Revisa rulebook oficial de Marvel Champions
+- Revisa rulebook oficial de MC RRR
 
 ### Preguntas Sobre Desarrollo
 - Lee [03-SYSTEM-ARCHITECTURE.md](./03-SYSTEM-ARCHITECTURE.md)

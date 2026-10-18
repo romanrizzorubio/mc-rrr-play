@@ -20,11 +20,13 @@ export class SchemeCardComponent extends LitElement {
             basicActivation: {type: Object},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
+            dragResourcePayment: {type: Object},
             clickDisabled: {type: Boolean},
             menuOptions: {type: Array},
             image: { type: String},
             acceleration: { type: Number},
             threat: { type: Number},
+            counters: { type: Number},
             showThreat: { type: Boolean, attribute: 'show-threat'},
             headerLeft: {type: Number, attribute: 'header-left'},
             headerRight: {type: Number, attribute: 'header-right'},
@@ -40,11 +42,13 @@ export class SchemeCardComponent extends LitElement {
         this.basicActivation = null;
         this.dragActivation = null;
         this.dragPlayCard = null;
+        this.dragResourcePayment = null;
         this.clickDisabled = false;
         this.menuOptions = [];
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
+        this.counters = undefined;
         this.headerLeft = undefined;
         this.headerRight = undefined;
     }
@@ -62,6 +66,7 @@ export class SchemeCardComponent extends LitElement {
             image,
             threat,
             acceleration,
+            counters,
             headerLeft,
             headerRight,
         } = this;
@@ -73,6 +78,7 @@ export class SchemeCardComponent extends LitElement {
                 .basicActivation="${basicActivation}"
                 .dragActivation="${dragActivation}"
                 .dragPlayCard="${dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
                 .clickDisabled="${clickDisabled}"
                 .menuOptions="${menuOptions}"
                 horizontal
@@ -81,6 +87,8 @@ export class SchemeCardComponent extends LitElement {
                 image="${image}"
                 threat="${threat}"
                 acceleration="${acceleration}"
+                .generic="${counters}"
+                .showGeneric="${Boolean(counters)}"
                 show-threat
                 .horizontal="${true}"
                 .headerLeft="${headerLeft}"
