@@ -22,7 +22,7 @@ export class Player {
             }
         });
     }
-    playCard(player, cardId) {
+    playCard(player, cardId, targetId) {
         const {api} = this;
 
         return api.post({
@@ -30,6 +30,7 @@ export class Player {
             params: {
                 player,
                 cardId,
+                ...(targetId !== undefined ? {targetId} : {}),
             }
         });
     }

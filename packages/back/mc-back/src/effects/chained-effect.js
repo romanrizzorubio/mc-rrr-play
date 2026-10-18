@@ -111,7 +111,9 @@ export class ChainedEffect extends Effect {
         await this.promisesSequential(this.effects, async effect => {
             if (effect.target === this.target) {
                 effect.selectedTarget = this.selectedTarget;
-            } else if (effect.refreshTarget) {
+            } else if (effect.refreshTarget &&
+                !params.preserveNestedSelectedTargets &&
+                !params.preselectedEffectTargets?.has(effect)) {
                 effect.selectedTarget = undefined;
             }
         });

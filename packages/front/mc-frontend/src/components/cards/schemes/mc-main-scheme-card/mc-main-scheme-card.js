@@ -23,6 +23,7 @@ export class MainSchemeCardComponent extends LitElement {
             attached: {type: Array},
             player: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
             name: { type: String},
             image: { type: String},
             acceleration: { type: Number},
@@ -40,6 +41,7 @@ export class MainSchemeCardComponent extends LitElement {
         this.attached = [];
         this.player = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
         this.image = '';
         this.acceleration = 0;
         this.threat = 0;
@@ -95,6 +97,7 @@ export class MainSchemeCardComponent extends LitElement {
                 .attached="${attached}"
                 .basicActivation="${this.basicActivation}"
                 .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
                 .clickDisabled="${this.clickDisabled}"
                 .menuOptions="${this.menuOptions}"
                 name="${name}"

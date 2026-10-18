@@ -3,10 +3,13 @@ import {
     DIALOG_DISCARD_RANDOM_HAND,
     RESOURCE_ANY,
     RESOURCE_WILD,
+    TARGET_YOU,
 } from 'mc-shared';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, random} from '../../engine/utils.js';
+import {PlayCardEffect} from '../../effects/play-card-effect.js';
+import {getEffectTargetEntries} from '../../utils/effect-targets.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
 
 export class Hand extends Engine {
@@ -145,11 +148,100 @@ export class Hand extends Engine {
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,
             });
+            const playTargets = playable ?
+                await this.getPlayTargets(card) :
+                {
+                    playableTargetIds: [],
+                    playableInGameZone: false,
+                };
 
             return {
                 ...card.toObj(),
                 playable,
+                ...playTargets,
             };
         }));
+    }
+    getTargetIds(targets) {
+        return [...new Set(targets.flat(Infinity)
+            .flatMap(target => [target?.id, target?.parentId])
+            .filter(id => id !== undefined && id !== null))];
+    }
+    async getEffectTargets(effect, params, visited = new Set()) {
+        const entries = await getEffectTargetEntries(effect, params, visited);
+
+        return entries.flatMap(({targets}) => targets);
+    }
+    async getPlayTargets(card) {
+        const {owner: player} = this;
+        const match = this.match;
+        const targetInfo = (targets, playableInGameZone) => ({
+            playableTargetIds: this.getTargetIds(targets),
+            playableInGameZone,
+        });
+
+        if (card.isEvent) {
+            const ability = card.abilities?.[0];
+            if (!ability?.effect) {
+                return targetInfo([], true);
+            }
+
+            ability.prepareEffect();
+            const playCardEffect = new PlayCardEffect({
+                ability,
+                card,
+                match,
+            });
+            const params = {
+                ability,
+                card,
+                match,
+                player,
+                playCardEffect,
+            };
+            const targets = await this.getEffectTargets(
+                ability.effect,
+                params
+            );
+
+            const playableTargetIds = this.getTargetIds(targets);
+            return {
+                playableTargetIds,
+                playableInGameZone: playableTargetIds.length === 0,
+            };
+        }
+
+        if (card.isUpgrade) {
+            const printedCard = card.card;
+            if (printedCard.controllerTarget) {
+                const playCardEffect = new PlayCardEffect({card, match});
+                const targets = await playCardEffect.getValidTarget({
+                    card,
+                    match,
+                    player,
+                    playCardEffect,
+                });
+
+                return targetInfo(targets, true);
+            }
+
+            const attachTarget = printedCard.getAttachConfig?.().target ??
+                printedCard.attach ??
+                TARGET_YOU;
+            if (attachTarget === TARGET_YOU) {
+                return targetInfo([], true);
+            }
+
+            const attachEffect = printedCard.createAttachEffect(card);
+            const targets = await attachEffect.getValidTarget({
+                card,
+                match,
+                player,
+            });
+
+            return targetInfo(targets, false);
+        }
+
+        return targetInfo([], true);
     }
 }

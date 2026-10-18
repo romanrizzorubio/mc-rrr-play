@@ -18,18 +18,32 @@ import {getRestrictedCards} from '../utils/enforce-restricted-limit.js';
 import {getPlayerCardPlayFromLocation} from '../utils/player-card-play-from.js';
 import {CostGroup} from '../model/costs/cost-group.js';
 import {ResourceCost} from '../model/costs/resource-cost.js';
+import {getEffectTargetEntries} from '../utils/effect-targets.js';
+
+const matchesTargetId = (target, targetId) =>
+    target?.id === targetId || target?.parentId === targetId;
+
+const canPreselectEffectTarget = effect =>
+    !effect.selectUpTo &&
+    !effect.targetCountCalc &&
+    (effect.selectCount === undefined || effect.selectCount === 1) &&
+    !effect.validTarget?.isMultipleTarget?.({target: effect.target});
 
 export class PlayCardEffect extends Effect {
     constructor({
         card,
         ability,
         abilityType,
+        targetId,
     }) {
         super(arguments[0]);
 
         this.card = card;
         this.ability = ability;
         this.abilityType = abilityType;
+        this.targetId = targetId;
+        this.hasPreselectedEventTarget = false;
+        this.preselectedEventEffects = new Set();
 
         this.resourcesPaid = [];
         this.cardsPaid = undefined;
@@ -161,6 +175,74 @@ export class PlayCardEffect extends Effect {
             card: this.card,
         };
     }
+    async preselectDroppedTarget(params) {
+        const {card, targetId} = this;
+
+        if (targetId === undefined) {
+            return;
+        }
+
+        if (card.isEvent) {
+            this.ability ??= await this.selectAbility(params);
+            const abilityEffect = this.ability?.effect;
+
+            if (!abilityEffect) {
+                throw new Error('La carta no tiene un objetivo de evento válido.');
+            }
+
+            abilityEffect.resetResolutionState();
+            const targetEntries = await getEffectTargetEntries(
+                abilityEffect,
+                {
+                    ...params,
+                    ability: this.ability,
+                    card,
+                    match: this.match,
+                    playCardEffect: this,
+                }
+            );
+            let targetFound = false;
+
+            targetEntries.forEach(({effect, targets}) => {
+                const target = targets.flat(Infinity).find(candidate =>
+                    matchesTargetId(candidate, targetId)
+                );
+                if (!target) {
+                    return;
+                }
+
+                targetFound = true;
+                if (canPreselectEffectTarget(effect)) {
+                    effect.selectedTarget = target;
+                    this.hasPreselectedEventTarget = true;
+                    this.preselectedEventEffects.add(effect);
+                }
+            });
+
+            if (!targetFound) {
+                throw new Error('El objetivo seleccionado para jugar la carta ya no es válido.');
+            }
+
+            return;
+        }
+
+        if (!this.target) {
+            throw new Error('La carta no admite el objetivo seleccionado.');
+        }
+
+        const target = (await this.getValidTarget({
+            ...params,
+            card,
+            match: this.match,
+        })).flat(Infinity).find(candidate =>
+            matchesTargetId(candidate, targetId)
+        );
+        if (!target) {
+            throw new Error('El objetivo seleccionado para jugar la carta ya no es válido.');
+        }
+
+        this.selectedTarget = target;
+    }
     async doPlay(params) {
         const {card, ability, selectedTarget} = this;
         const {player} = params;
@@ -173,6 +255,7 @@ export class PlayCardEffect extends Effect {
                 playCardEffect: this,
                 prePlayConfirmationAcceptedFor:
                     this.prePlayConfirmationAcceptedFor,
+                preselectedEffectTargets: this.preselectedEventEffects,
             });
 
             await player.deck.discard(card);
@@ -323,6 +406,8 @@ export class PlayCardEffect extends Effect {
             this.workInHandTriggersInitializedForPlay = true;
         }
 
+        await this.preselectDroppedTarget(params);
+
         this.removedFromHand = player.hand.cards.includes(card);
         if (this.removedFromHand) {
             player.hand.discardHand(card);
@@ -424,7 +509,13 @@ export class PlayCardEffect extends Effect {
         }
 
         const abilityState = this.ability ?
-            await this.ability.prepareToResolve(params) :
+            await this.ability.prepareToResolve({
+                ...params,
+                ...(this.hasPreselectedEventTarget ? {
+                    preselectedTarget: true,
+                    preselectedEffectTargets: this.preselectedEventEffects,
+                } : {}),
+            }) :
             {
                 canRun: true,
                 preselectedTarget: false,

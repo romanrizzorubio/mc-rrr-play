@@ -31,6 +31,9 @@ const {DeckComponent, DECK_TYPES} = await import(
 const {McHand} = await import(
     '../src/components/panels/mc-hand/mc-hand.js'
 );
+const {McGameZone} = await import(
+    '../src/components/panels/mc-game-zone/mc-game-zone.js'
+);
 const {ICON_EYE, ICON_EYE_SLASH, ICON_STAR} = await import(
     '../src/components/common/mc-icon/mc-icon.js'
 );
@@ -145,6 +148,123 @@ test('veils non-target cards but keeps the dragged actor and valid targets clear
     assert.equal(draggedActor.isActivationVeiled, false);
 });
 
+test('only playable cards in the hand can start a play-card drag', () => {
+    const playableCard = Object.assign(Object.create(CardComponent.prototype), {
+        allowPlayCardDrag: true,
+        card: {id: 'playable-card', playable: true},
+        dragActivation: null,
+        dragPlayCard: null,
+    });
+    const unplayableCard = Object.assign(Object.create(CardComponent.prototype), {
+        allowPlayCardDrag: true,
+        card: {id: 'unplayable-card', playable: false},
+        dragActivation: null,
+        dragPlayCard: null,
+    });
+
+    assert.equal(playableCard.canDragPlayCard, true);
+    assert.equal(unplayableCard.canDragPlayCard, false);
+});
+
+test('dims non-target cards and highlights card and parent-id play targets', () => {
+    const dragPlayCard = {
+        cardId: 'hand-card',
+        targetIds: ['villain-side', 'scheme-id'],
+        playableInGameZone: false,
+    };
+    const source = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'hand-card'},
+        dragPlayCard,
+    });
+    const validTarget = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'villain-side'},
+        dragPlayCard,
+    });
+    const parentTarget = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'scheme-side', parentId: 'scheme-id'},
+        dragPlayCard,
+    });
+    const invalidTarget = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'other-card'},
+        dragPlayCard,
+    });
+
+    assert.equal(source.isPlayCardDragSource, true);
+    assert.equal(source.isPlayCardBlocked, false);
+    assert.equal(validTarget.isPlayCardDropTarget, true);
+    assert.equal(parentTarget.isPlayCardDropTarget, true);
+    assert.equal(parentTarget.isPlayCardBlocked, false);
+    assert.equal(invalidTarget.isPlayCardDropTarget, false);
+    assert.equal(invalidTarget.isPlayCardBlocked, true);
+});
+
+test('dropping a hand card on a valid card target emits the play-card-drop event', () => {
+    const playedCard = {id: 'event-card', playable: true};
+    const target = Object.assign(Object.create(CardComponent.prototype), {
+        card: {id: 'villain'},
+        dragPlayCard: {
+            card: playedCard,
+            cardId: playedCard.id,
+            targetIds: ['villain'],
+        },
+    });
+    const dispatchedEvents = [];
+    target.dispatchEvent = event => dispatchedEvents.push(event);
+    let prevented = false;
+    let stopped = false;
+
+    target.handleDrop({
+        preventDefault() {
+            prevented = true;
+        },
+        stopPropagation() {
+            stopped = true;
+        },
+    });
+
+    assert.equal(prevented, true);
+    assert.equal(stopped, true);
+    assert.equal(dispatchedEvents[0].type, 'play-card-drop');
+    assert.equal(dispatchedEvents[0].detail.card, playedCard);
+    assert.strictEqual(dispatchedEvents[0].detail.targetCard, target.card);
+});
+
+test('the player game zone only accepts a card drop when the card can be played there', () => {
+    const playedCard = {id: 'support-card', playable: true};
+    const gameZone = Object.assign(Object.create(McGameZone.prototype), {
+        dragPlayCard: {
+            card: playedCard,
+            playableInGameZone: true,
+        },
+    });
+    const dispatchedEvents = [];
+    gameZone.dispatchEvent = event => dispatchedEvents.push(event);
+    let prevented = false;
+
+    gameZone.handlePlayCardDragOver({
+        preventDefault() {
+            prevented = true;
+        },
+    });
+    gameZone.handlePlayCardDrop({
+        preventDefault() {},
+        stopPropagation() {},
+    });
+
+    assert.equal(prevented, true);
+    assert.equal(dispatchedEvents[0].type, 'play-card-drop');
+    assert.equal(dispatchedEvents[0].detail.card, playedCard);
+
+    gameZone.dragPlayCard.playableInGameZone = false;
+    prevented = false;
+    gameZone.handlePlayCardDragOver({
+        preventDefault() {
+            prevented = true;
+        },
+    });
+    assert.equal(prevented, false);
+});
+
 test('mc-card-image can dim non-target card backs and discard cards', () => {
     assert.equal(McCardImage.properties.activationBlocked.reflect, true);
     assert.match(
@@ -169,11 +289,13 @@ test('veils deck and discard images while a drag activation is active', () => {
     assert.equal(noDragStack.values[2], false);
 });
 
-test('passes the activation drag state to cards in the player hand', () => {
+test('passes activation and play-card drag state to cards in the player hand', () => {
     const dragActivation = {actor: {id: 'hero-1'}};
+    const dragPlayCard = {cardId: 'event-card', targetIds: []};
     const hand = Object.assign(Object.create(McHand.prototype), {
         cards: [],
         dragActivation,
+        dragPlayCard,
         playCardPending: false,
         showPanel: true,
     });
@@ -181,6 +303,8 @@ test('passes the activation drag state to cards in the player hand', () => {
 
     assert.ok(template.strings.join('').includes('<mc-card-list'));
     assert.ok(template.values.includes(dragActivation));
+    assert.ok(template.values.includes(dragPlayCard));
+    assert.ok(template.values.includes(true));
 });
 
 test('renders tucked cards as a short visible strip beneath the host card', () => {

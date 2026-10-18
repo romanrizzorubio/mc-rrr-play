@@ -20,6 +20,7 @@ export class McGameZone extends LitElement {
             minions: {type: Array},
             encounters: {type: Number},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
         };
     }
 
@@ -32,6 +33,32 @@ export class McGameZone extends LitElement {
         this.minions = [];
         this.encounters = 0;
         this.dragActivation = null;
+        this.dragPlayCard = null;
+    }
+    handlePlayCardDragOver(event) {
+        if (!this.dragPlayCard?.playableInGameZone) {
+            return;
+        }
+
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+    handlePlayCardDrop(event) {
+        if (!this.dragPlayCard?.playableInGameZone) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('play-card-drop', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.dragPlayCard.card,
+            },
+        }));
     }
 
     handleSelect(e) {
@@ -76,6 +103,7 @@ export class McGameZone extends LitElement {
         showAcquiredTraits,
         basicActivationType,
         dragActivation,
+        dragPlayCard,
     }) {
         return html`
             <mc-card-list
@@ -83,6 +111,7 @@ export class McGameZone extends LitElement {
                 .cards="${cards}"
                 .player="${this.player}"
                 .dragActivation="${dragActivation}"
+                .dragPlayCard="${dragPlayCard}"
                 basic-activation-type="${basicActivationType || ''}"
                 size="s"
                 show-menu-abilities
@@ -107,7 +136,9 @@ export class McGameZone extends LitElement {
                 <mc-card-image
                     src="${getCardAssetUrl(BACK_CARD_ENCOUNTER)}"
                     size="xs"
-                    .activationBlocked="${Boolean(this.dragActivation)}"
+                    .activationBlocked="${Boolean(
+                        this.dragActivation || this.dragPlayCard
+                    )}"
                 ></mc-card-image>
                 <div class="count">
                     ${encounters}
@@ -125,6 +156,7 @@ export class McGameZone extends LitElement {
             showLife: true,
             showAcquiredTraits: true,
             dragActivation: this.dragActivation,
+            dragPlayCard: this.dragPlayCard,
         });
     }
     renderMinions() {
@@ -137,6 +169,7 @@ export class McGameZone extends LitElement {
             showAcquiredTraits: true,
             basicActivationType: 'attack',
             dragActivation: this.dragActivation,
+            dragPlayCard: this.dragPlayCard,
         });
     }
 
@@ -147,6 +180,7 @@ export class McGameZone extends LitElement {
             cards: getUpgradesForDisplay(cards, attachedUpgrades),
             type: 'upgrades',
             dragActivation: this.dragActivation,
+            dragPlayCard: this.dragPlayCard,
         });
     }
 
@@ -159,17 +193,25 @@ export class McGameZone extends LitElement {
                 .sort((a, b) => a.id > b.id ? 1 : -1),
             type: 'supports',
             dragActivation: this.dragActivation,
+            dragPlayCard: this.dragPlayCard,
         });
     }
 
     render() {
         return html`
-            ${this.renderEncounters()}
-            ${this.renderMinions()}
-            ${this.renderAllies()}
-            <div class="upgrades-supports">
-                ${this.renderUpgrades()}
-                ${this.renderSupports()}
+            <div
+                class="play-card-drop-zone ${this.dragPlayCard?.playableInGameZone ?
+                    'available' : ''}"
+                @dragover="${this.handlePlayCardDragOver.bind(this)}"
+                @drop="${this.handlePlayCardDrop.bind(this)}"
+            >
+                ${this.renderEncounters()}
+                ${this.renderMinions()}
+                ${this.renderAllies()}
+                <div class="upgrades-supports">
+                    ${this.renderUpgrades()}
+                    ${this.renderSupports()}
+                </div>
             </div>
         `;
     }

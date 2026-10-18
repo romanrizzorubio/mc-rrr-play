@@ -103,6 +103,7 @@ export class Effect extends Engine {
     resetResolutionState({
         preserveSelectedTarget = false,
         preserveNestedSelectedTargets = false,
+        preselectedEffectTargets,
         visited = new Set(),
     } = {}) {
         if (visited.has(this)) {
@@ -132,8 +133,10 @@ export class Effect extends Engine {
         });
 
         nestedEffects.forEach(effect => effect.resetResolutionState({
-            preserveSelectedTarget: preserveNestedSelectedTargets,
+            preserveSelectedTarget: preserveNestedSelectedTargets ||
+                preselectedEffectTargets?.has(effect),
             preserveNestedSelectedTargets,
+            preselectedEffectTargets,
             visited,
         }));
     }
@@ -396,7 +399,9 @@ export class Effect extends Engine {
             target,
         };
 
-        if (params.fixedPreselectedTarget && selectedTarget) {
+        if ((params.fixedPreselectedTarget ||
+            params.preselectedEffectTargets?.has(this)) &&
+            selectedTarget) {
             const selectedTargets = Array.isArray(selectedTarget) ?
                 selectedTarget :
                 [selectedTarget];
@@ -449,7 +454,9 @@ export class Effect extends Engine {
     selectTarget(params) {
         const {target, selectedTarget, ability} = this;
 
-        if (params.fixedPreselectedTarget) {
+        if ((params.fixedPreselectedTarget ||
+            params.preselectedEffectTargets?.has(this)) &&
+            selectedTarget) {
             return this.getValidTarget(params).length ? selectedTarget : null;
         }
 

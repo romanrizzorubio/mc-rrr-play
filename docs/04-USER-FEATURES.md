@@ -144,8 +144,10 @@ También puedes arrastrar tu superhéroe o un aliado que pueda realizar una acti
 - Suficientes recursos (para cartas de costo)
 - Cumplir condiciones especiales (si aplica)
 
+También puedes arrastrar una carta jugable de la mano. Los apoyos, aliados y mejoras sin vínculo especial resaltan tu zona de juego; las mejoras vinculadas y los eventos resaltan sus objetivos válidos, mientras las demás cartas quedan atenuadas. Si un evento no tiene objetivos de carta disponibles, puedes soltarlo en tu zona de juego. Al soltar la carta se abren los mismos diálogos que al hacer clic; el clic sigue disponible.
+
 **Pasos:**
-1. Hacer clic en la carta
+1. Hacer clic en la carta o arrastrarla hasta la zona de juego o un objetivo resaltado
 2. Seleccionar destino (si aplica)
 3. Confirmar acción
 4. Efecto se resuelve automáticamente

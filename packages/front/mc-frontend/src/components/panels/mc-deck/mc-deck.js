@@ -12,6 +12,7 @@ import {
     getCardAssetUrl,
 } from '../../../misc/cards.js';
 import {isPlanCard} from '../../../misc/utils.js';
+import {hasPlayCardDropTarget} from '../../../utils/play-card-drag.js';
 
 export const DECK_TYPES = {
     ENCOUNTER: 0,
@@ -39,6 +40,7 @@ export class DeckComponent extends LitElement {
             showDeck: {type: Boolean, attribute: 'show-deck'},
             showDiscard: {type: Boolean, attribute: 'show-discard'},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
             type: {type: Number}
         };
     }
@@ -56,6 +58,7 @@ export class DeckComponent extends LitElement {
         this.showDeck = true;
         this.showDiscard = true;
         this.dragActivation = null;
+        this.dragPlayCard = null;
         this.type = DECK_TYPES.ENCOUNTER;
     }
     getDiscardTop() {
@@ -143,11 +146,49 @@ export class DeckComponent extends LitElement {
             </span>
         `;
     }
+    handlePlayCardDragOver(cards, event) {
+        if (!hasPlayCardDropTarget(cards, this.dragPlayCard)) {
+            return;
+        }
+
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+    handlePlayCardDrop(cards, event) {
+        if (!hasPlayCardDropTarget(cards, this.dragPlayCard)) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('play-card-drop', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.dragPlayCard.card,
+            },
+        }));
+    }
     renderCards(src, count, isEmptyDiscard = false, knownCards = [], deckTitle = '') {
         const hasDeckTitle = Boolean(deckTitle);
+        const hasDropTarget = hasPlayCardDropTarget(
+            this.cards,
+            this.dragPlayCard
+        );
+        const dropClass = this.dragPlayCard ?
+            hasDropTarget ? 'play-card-drop-target' : 'play-card-blocked' :
+            '';
 
         return html`
-            <div class="panel deck-panel ${hasDeckTitle ? 'deck-panel-titled' : ''}">
+            <div
+                class="panel deck-panel ${hasDeckTitle ? 'deck-panel-titled' : ''} ${dropClass}"
+                @dragover="${event =>
+                    this.handlePlayCardDragOver(this.cards, event)}"
+                @drop="${event =>
+                    this.handlePlayCardDrop(this.cards, event)}"
+            >
                 ${hasDeckTitle ? html`
                     <span class="deck-name deck-name-top">${deckTitle}</span>
                 ` : ''}
@@ -184,6 +225,13 @@ export class DeckComponent extends LitElement {
     renderDiscard() {
         const card = this.getDiscardTop();
         const title = this.getDiscardTitle();
+        const hasDropTarget = hasPlayCardDropTarget(
+            this.discard,
+            this.dragPlayCard
+        );
+        const dropClass = this.dragPlayCard ?
+            hasDropTarget ? 'play-card-drop-target' : 'play-card-blocked' :
+            '';
 
         let src = getCardAssetUrl(BACK_CARD_EMPTY);
         if (card) {
@@ -193,11 +241,15 @@ export class DeckComponent extends LitElement {
 
         return html`
             <button
-                class="panel discard-button ${playable ? 'playable' : ''} ${this.dragActivation ? 'activation-blocked' : ''}"
+                class="panel discard-button ${playable ? 'playable' : ''} ${this.dragActivation ? 'activation-blocked' : ''} ${dropClass}"
                 type="button"
                 aria-label="Ver ${title} (${this.discard.length} cartas)"
                 ?disabled="${!card}"
                 @click="${this.handleViewDiscard.bind(this)}"
+                @dragover="${event =>
+                    this.handlePlayCardDragOver(this.discard, event)}"
+                @drop="${event =>
+                    this.handlePlayCardDrop(this.discard, event)}"
             >
                 ${this.renderCardStack(src, this.discard.length, !card, card)}
             </button>

@@ -203,6 +203,8 @@ export class Ability extends Engine {
         const paymentParams = {...params};
         delete paymentParams.preselectedTarget;
         delete paymentParams.fixedPreselectedTarget;
+        delete paymentParams.preserveNestedSelectedTargets;
+        delete paymentParams.preselectedEffectTargets;
 
         const result = await this.costs.pay({
             ...paymentParams,
@@ -230,7 +232,8 @@ export class Ability extends Engine {
         }
     }
     async prepareToResolve(params) {
-        this.prepareEffect();
+        const preselectedTarget = Boolean(params.preselectedTarget);
+        this.prepareEffect({preselectedTarget});
 
         if (!await this.canRun(params)) {
             return {
@@ -248,6 +251,9 @@ export class Ability extends Engine {
 
         const selectedTarget = await this.effect.selectTarget({
             ...params,
+            ...(preselectedTarget && this.effect.selectedTarget ? {
+                fixedPreselectedTarget: true,
+            } : {}),
             ...(this.isBasic && (this.isAttack || this.isThwart) ?
                 {showCancel: true} :
                 {}),
@@ -273,11 +279,20 @@ export class Ability extends Engine {
         }
     }
     async resolveAbility(params, effect = this.effect) {
-        const {player, preselectedTarget = false, arrowPaid = false} = params;
+        const {
+            player,
+            preselectedTarget = false,
+            preserveNestedSelectedTargets = false,
+            preselectedEffectTargets,
+            arrowPaid = false,
+        } = params;
         const resolvedAbilityController = this.card ?
             getTriggerCardPlayer(this.card, player) :
             undefined;
         const previousResolutionContext = this._resolutionContext;
+        const resolutionParams = preselectedEffectTargets ?
+            {...params, preselectedEffectTargets} :
+            params;
         this._resolutionContext = {
             character: this.character,
         };
@@ -288,6 +303,8 @@ export class Ability extends Engine {
             if (typeof effect?.resetResolutionState === 'function') {
                 effect.resetResolutionState({
                     preserveSelectedTarget: preselectedTarget,
+                    preserveNestedSelectedTargets,
+                    preselectedEffectTargets,
                 });
             }
             this.prepareEffect({preselectedTarget, effect});
@@ -295,7 +312,7 @@ export class Ability extends Engine {
                 effect.resetActivation();
             }
 
-            const canRun = await this.canRun(params, effect);
+            const canRun = await this.canRun(resolutionParams, effect);
 
             if (canRun) {
                 const canConfirmBeforeResolve =
@@ -304,7 +321,7 @@ export class Ability extends Engine {
                     !effect ||
                     params.prePlayConfirmationAcceptedFor === effect ||
                     !canConfirmBeforeResolve ||
-                    await effect.confirmBeforeResolve(params);
+                    await effect.confirmBeforeResolve(resolutionParams);
                 if (!confirmationAccepted) {
                     this.paymentCancelled = true;
                     return;
@@ -320,14 +337,16 @@ export class Ability extends Engine {
                         if (params.fixedPreselectedTarget) {
                             effect.selectedTarget = params.selectedTarget;
                         }
-                        const effectParams = {...params};
+                        const effectParams = {...resolutionParams};
                         delete effectParams.arrowPaid;
                         delete effectParams.preselectedTarget;
                         delete effectParams.fixedPreselectedTarget;
+                        if (!preserveNestedSelectedTargets) {
+                            delete effectParams.preserveNestedSelectedTargets;
+                        }
                         if (params.fixedPreselectedTarget) {
                             delete effectParams.selectedTarget;
                         }
-
                         await effect.runEffect({
                             ...effectParams,
                             player,

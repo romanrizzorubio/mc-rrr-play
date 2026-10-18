@@ -30,3 +30,38 @@ test('resolveAbility passes a preselected activation target when provided', () =
         targetId: 'rhino',
     });
 });
+
+test('playCard passes an optional drag-and-drop target id', () => {
+    let requestParams;
+    const player = new Player({
+        post: params => {
+            requestParams = params.params;
+            return Promise.resolve({ok: true});
+        },
+    });
+
+    player.playCard('TChalla', 'damage-event', 'rhino');
+
+    assert.deepEqual(requestParams, {
+        player: 'TChalla',
+        cardId: 'damage-event',
+        targetId: 'rhino',
+    });
+});
+
+test('playCard omits a target id when the card is played without a drop target', () => {
+    let requestParams;
+    const player = new Player({
+        post: params => {
+            requestParams = params.params;
+            return Promise.resolve({ok: true});
+        },
+    });
+
+    player.playCard('TChalla', 'support');
+
+    assert.deepEqual(requestParams, {
+        player: 'TChalla',
+        cardId: 'support',
+    });
+});

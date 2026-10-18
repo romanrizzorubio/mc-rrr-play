@@ -19,6 +19,7 @@ export class SchemeCardComponent extends LitElement {
             attached: {type: Array},
             basicActivation: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
             clickDisabled: {type: Boolean},
             menuOptions: {type: Array},
             image: { type: String},
@@ -38,6 +39,7 @@ export class SchemeCardComponent extends LitElement {
         this.attached = [];
         this.basicActivation = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
         this.clickDisabled = false;
         this.menuOptions = [];
         this.image = '';
@@ -53,6 +55,7 @@ export class SchemeCardComponent extends LitElement {
             attached,
             basicActivation,
             dragActivation,
+            dragPlayCard,
             clickDisabled,
             menuOptions,
             name,
@@ -69,6 +72,7 @@ export class SchemeCardComponent extends LitElement {
                 .attached="${attached}"
                 .basicActivation="${basicActivation}"
                 .dragActivation="${dragActivation}"
+                .dragPlayCard="${dragPlayCard}"
                 .clickDisabled="${clickDisabled}"
                 .menuOptions="${menuOptions}"
                 horizontal

@@ -21,8 +21,10 @@ export class SuperheroCardComponent extends LitElement {
         return {
             name: {type: String},
             image: {type: String},
+            card: {type: Object},
             activationActor: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
             life: {type: Number},
             hitPoints: {type: Number},
             handSize: {type: Number},
@@ -47,8 +49,10 @@ export class SuperheroCardComponent extends LitElement {
 
         this.name = '';
         this.image = '';
+        this.card = null;
         this.activationActor = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
         this.life = 0;
         this.hitPoints = undefined;
         this.handSize = 0;
@@ -139,6 +143,7 @@ export class SuperheroCardComponent extends LitElement {
     render() {
         const {
             image,
+            card,
             life,
             activationActor,
             hitPoints,
@@ -159,8 +164,10 @@ export class SuperheroCardComponent extends LitElement {
             <div class="panel">
                 <mc-card
                     image="${image}"
+                    .card="${card}"
                     .activationActor="${activationActor}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     .life="${life}"
                     .hitPoints="${hitPoints}"
                     .statusCards="${statusCards}"

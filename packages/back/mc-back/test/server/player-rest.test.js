@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {ABILITY_ACTION} from 'mc-shared';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {PlayerRest} from '../../src/server/rest/player-rest.js';
@@ -38,6 +39,35 @@ test('playCard reuses the player snapshot sent by match.refresh', async () => {
     assert.equal(result, refreshedPlayer);
     assert.equal(sent.length, 1);
     assert.equal(sent[0][2], matchState);
+});
+
+test('playCard forwards the optional preselected target id', async () => {
+    let playParams;
+    const refreshedPlayer = {name: 'TChalla'};
+    const player = {
+        name: 'TChalla',
+        async playCard(params) {
+            playParams = params;
+        },
+        toObjWithPlayableHand: async () => ({}),
+    };
+    const match = {
+        getPlayer: () => player,
+        refresh: async () => ({players: [refreshedPlayer]}),
+    };
+
+    await new PlayerRest({}).playCard({
+        cardId: 'damage-event',
+        match,
+        player: player.name,
+        targetId: 'villain-1',
+    });
+
+    assert.deepEqual(playParams, {
+        cardId: 'damage-event',
+        abilityType: ABILITY_ACTION,
+        targetId: 'villain-1',
+    });
 });
 
 test('flip changes identity once and returns the refreshed player snapshot', async () => {

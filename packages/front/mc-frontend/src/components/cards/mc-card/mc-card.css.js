@@ -78,6 +78,23 @@ export default css`
   :host(.playable) .card-front > mc-card-image[activation-blocked] {
     filter: none;
   }
+
+  .card-front.play-card-blocked > mc-card-image,
+  :host(.playable) .card-front.play-card-blocked > mc-card-image {
+    filter: brightness(0.35);
+  }
+
+  .card-front.play-card-drag-source > mc-card-image,
+  :host(.playable) .card-front.play-card-drag-source > mc-card-image {
+    filter: none;
+  }
+
+  .card-front.play-card-drop-target > mc-card-image,
+  :host(.playable) .card-front.play-card-drop-target > mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
+      drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
+  }
   
   .cards-facedown {
     display: flex;

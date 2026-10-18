@@ -436,6 +436,7 @@ export class Player extends Engine {
     async playCard({
         cardId,
         abilityType,
+        targetId,
     }) {
         const card = this.hand.getCard(cardId) ||
             findPlayerCardToPlayFrom(this, cardId);
@@ -448,6 +449,7 @@ export class Player extends Engine {
             card,
             abilityType,
             match: this.match,
+            targetId,
         });
 
         const params = {player: this};

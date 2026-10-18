@@ -118,6 +118,24 @@ export default css`
     filter: none;
   }
 
+  .deck-panel.play-card-blocked mc-card-image,
+  .discard-button.play-card-blocked mc-card-image {
+    filter: brightness(0.4);
+  }
+
+  .deck-panel.play-card-drop-target mc-card-image,
+  .discard-button.play-card-drop-target mc-card-image {
+    filter:
+      drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
+      drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
+  }
+
+  .deck-panel.play-card-drop-target,
+  .discard-button.play-card-drop-target {
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.85);
+  }
+
   .discard-button:focus-visible {
     outline: 2px solid #212121;
     outline-offset: 3px;

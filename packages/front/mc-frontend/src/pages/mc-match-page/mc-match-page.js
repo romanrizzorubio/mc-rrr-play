@@ -28,6 +28,7 @@ export class McMatchPage extends LitElement {
             api: {type: Api},
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
         };
     }
     constructor() {
@@ -41,6 +42,7 @@ export class McMatchPage extends LitElement {
         this.apiPlayer = null;
         this.playCardPending = false;
         this.dragActivation = null;
+        this.dragPlayCard = null;
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -66,6 +68,34 @@ export class McMatchPage extends LitElement {
     }
     handleActivationDragEnd() {
         this.dragActivation = null;
+    }
+    handlePlayCardDragStart(e) {
+        if (this.playCardPending) {
+            return;
+        }
+
+        const {card} = e.detail;
+        if (card?.playable !== true || !card.id) {
+            return;
+        }
+
+        this.dragPlayCard = {
+            card,
+            cardId: card.id,
+            targetIds: card.playableTargetIds || [],
+            playableInGameZone: card.playableInGameZone === true,
+        };
+    }
+    handlePlayCardDragEnd() {
+        this.dragPlayCard = null;
+    }
+    handlePlayCardDrop(e) {
+        return this.handleSelectCardHand({
+            detail: {
+                card: e.detail.card,
+                targetCard: e.detail.targetCard,
+            },
+        });
     }
     getBasicActivationPreferenceKey() {
         const matchId = this.match?.id ?? this.match?.name;
@@ -540,11 +570,11 @@ export class McMatchPage extends LitElement {
         }
 
         const {apiPlayer, player} = this;
-        const {card} = e.detail;
+        const {card, targetCard} = e.detail;
 
         this.playCardPending = true;
         try {
-            await apiPlayer.playCard(player, card.id);
+            await apiPlayer.playCard(player, card.id, targetCard?.id);
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -567,10 +597,14 @@ export class McMatchPage extends LitElement {
                 .player="${_player}"
                 .playCardPending="${this.playCardPending}"
                 .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @basic-activation="${this.handleBasicActivation.bind(this)}"
                 @activation-drag-start="${this.handleActivationDragStart.bind(this)}"
                 @activation-drag-end="${this.handleActivationDragEnd.bind(this)}"
+                @play-card-drag-start="${this.handlePlayCardDragStart.bind(this)}"
+                @play-card-drag-end="${this.handlePlayCardDragEnd.bind(this)}"
+                @play-card-drop="${this.handlePlayCardDrop.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"

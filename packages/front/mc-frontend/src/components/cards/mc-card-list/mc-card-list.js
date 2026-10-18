@@ -33,9 +33,11 @@ export class HandComponent extends LitElement {
             showExhausted: {type: Boolean, attribute: 'show-exhausted'},
             highlightPlayable: {type: Boolean, attribute: 'highlight-playable'},
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
+            allowPlayCardDrag: {type: Boolean},
             player: {type: Object},
             basicActivationType: {type: String, attribute: 'basic-activation-type'},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
         };
     }
     constructor() {
@@ -55,9 +57,11 @@ export class HandComponent extends LitElement {
         this.showExhausted = false;
         this.highlightPlayable = false;
         this.rotatePlanCards = false;
+        this.allowPlayCardDrag = false;
         this.player = null;
         this.basicActivationType = '';
         this.dragActivation = null;
+        this.dragPlayCard = null;
     }
     getMenuOptions(card) {
         const abilities = this.showMenuAbilities ?
@@ -171,6 +175,7 @@ export class HandComponent extends LitElement {
             showGeneric,
             highlightPlayable,
             rotatePlanCards,
+            allowPlayCardDrag,
         } = this;
         const {
             attached,
@@ -226,6 +231,10 @@ export class HandComponent extends LitElement {
                 .basicActivation="${this.getBasicActivationOption(card)}"
                 .activationActor="${card.isAlly ? card : null}"
                 .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
+                .allowPlayCardDrag="${allowPlayCardDrag &&
+                    card.playable === true &&
+                    !disabledCards.includes(index)}"
                 .clickDisabled="${this.isCardClickDisabled(card)}"
                 .attack="${attack}"
                 .thwart="${thwart}"

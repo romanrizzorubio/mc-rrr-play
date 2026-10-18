@@ -21,6 +21,7 @@ import {
     getBasicActivationOptionForActor,
     getBasicActivationOptionsForActor,
 } from '../../../utils/basic-activation.js';
+import {isPlayCardDropTarget} from '../../../utils/play-card-drag.js';
 
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
@@ -56,7 +57,9 @@ export class CardComponent extends LitElement {
                         <mc-card-image
                             src="${getCardAssetUrl(card.image)}"
                             size="${this._smallSize}"
-                            .activationBlocked="${Boolean(this.dragActivation)}"
+                            .activationBlocked="${Boolean(
+                                this.dragActivation || this.dragPlayCard
+                            )}"
                         ></mc-card-image>
                     </div>
                 `)}
@@ -74,6 +77,8 @@ export class CardComponent extends LitElement {
             basicActivation: {type: Object},
             activationActor: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
+            allowPlayCardDrag: {type: Boolean},
             clickDisabled: {type: Boolean},
             image: {type: String},
             isFacedownCard: {type: Boolean},
@@ -127,6 +132,8 @@ export class CardComponent extends LitElement {
         this.basicActivation = null;
         this.activationActor = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
+        this.allowPlayCardDrag = false;
         this.clickDisabled = false;
         this.image = '';
         this.isFacedownCard = false;
@@ -163,6 +170,7 @@ export class CardComponent extends LitElement {
         this._menuOpen = false;
         this._showBig = false;
         this._showFacedownPreview = false;
+        this._draggingPlayCard = false;
         this.stage = undefined;
     }
     willUpdate(changedProperties) {
@@ -208,6 +216,31 @@ export class CardComponent extends LitElement {
             this.dragActivation &&
             !this.isActivationDragSource &&
             !this.isActivationDropTarget
+        );
+    }
+    get canDragPlayCard() {
+        return Boolean(
+            this.allowPlayCardDrag &&
+            this.card?.id &&
+            this.card.playable === true &&
+            !this.dragActivation &&
+            !this.dragPlayCard
+        );
+    }
+    get isPlayCardDragSource() {
+        return Boolean(
+            this.card?.id &&
+            this.card.id === this.dragPlayCard?.cardId
+        );
+    }
+    get isPlayCardDropTarget() {
+        return isPlayCardDropTarget(this.card, this.dragPlayCard);
+    }
+    get isPlayCardBlocked() {
+        return Boolean(
+            this.dragPlayCard &&
+            !this.isPlayCardDragSource &&
+            !this.isPlayCardDropTarget
         );
     }
     firstUpdated(properties) {
@@ -370,6 +403,74 @@ export class CardComponent extends LitElement {
             },
         }));
     }
+    handleDragStart(event) {
+        if (this.canDragPlayCard) {
+            this._draggingPlayCard = true;
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', this.card.id);
+            }
+
+            this.dispatchEvent(new CustomEvent('play-card-drag-start', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                },
+            }));
+            return;
+        }
+
+        this.handleActivationDragStart(event);
+    }
+    handleDragEnd() {
+        if (this._draggingPlayCard) {
+            this._draggingPlayCard = false;
+            this.dispatchEvent(new CustomEvent('play-card-drag-end', {
+                bubbles: true,
+                composed: true,
+            }));
+            return;
+        }
+
+        this.handleActivationDragEnd();
+    }
+    handlePlayCardDragOver(event) {
+        if (!this.isPlayCardDropTarget) {
+            return;
+        }
+
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+    }
+    handleDragOver(event) {
+        this.handlePlayCardDragOver(event);
+        this.handleActivationDragOver(event);
+    }
+    handlePlayCardDrop(event) {
+        if (!this.isPlayCardDropTarget) {
+            return false;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        this.dispatchEvent(new CustomEvent('play-card-drop', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.dragPlayCard.card,
+                targetCard: this.card,
+            },
+        }));
+        return true;
+    }
+    handleDrop(event) {
+        if (!this.handlePlayCardDrop(event)) {
+            this.handleActivationDrop(event);
+        }
+    }
     handleActivationDragEnd() {
         this.dispatchEvent(new CustomEvent('activation-drag-end', {
             bubbles: true,
@@ -450,6 +551,7 @@ export class CardComponent extends LitElement {
                 <mc-card-list
                     .cards="${attached}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     show-life
                     show-damage
                     show-generic
@@ -539,9 +641,15 @@ export class CardComponent extends LitElement {
             'card-front',
             ...(this.isActivationDragSource ? ['activation-drag-source'] : []),
             ...(this.isActivationDropTarget ? ['activation-drop-target'] : []),
+            ...(this.isPlayCardDragSource ? ['play-card-drag-source'] : []),
+            ...(this.isPlayCardDropTarget ? ['play-card-drop-target'] : []),
+            ...(this.isPlayCardBlocked ? ['play-card-blocked'] : []),
         ].join(' ');
         const activationSourceOptions =
             getBasicActivationOptionsForActor(this.activationActor);
+        const isDraggable = this.canDragPlayCard ||
+            (!this.dragActivation && !this.dragPlayCard &&
+                activationSourceOptions.length > 0);
 
         return html`
             <div class="${exhausted ? 'exhausted' : ''}">
@@ -561,13 +669,13 @@ export class CardComponent extends LitElement {
                                     .horizontal="${horizontal}"
                                     .rotated="${rotated}"
                                     .activationBlocked="${this.isActivationVeiled}"
-                                    ?draggable="${activationSourceOptions.length > 0}"
+                                    ?draggable="${isDraggable}"
                                     @click="${this.handleClick.bind(this)}"
                                     @contextmenu="${this.hableContextMenu.bind(this)}"
-                                    @dragstart="${this.handleActivationDragStart.bind(this)}"
-                                    @dragend="${this.handleActivationDragEnd.bind(this)}"
-                                    @dragover="${this.handleActivationDragOver.bind(this)}"
-                                    @drop="${this.handleActivationDrop.bind(this)}"
+                                    @dragstart="${this.handleDragStart.bind(this)}"
+                                    @dragend="${this.handleDragEnd.bind(this)}"
+                                    @dragover="${this.handleDragOver.bind(this)}"
+                                    @drop="${this.handleDrop.bind(this)}"
                                 ></mc-card-image>
                                 ${this.renderFacedownPeekButton()}
                                 ${hiddenFacedown ? '' : this.renderCounters()}
@@ -734,7 +842,9 @@ export class CardComponent extends LitElement {
             <mc-card-image
                 src="${this.getImageBack(type)}"
                 size="${this._smallSize}"
-                .activationBlocked="${Boolean(this.dragActivation)}"
+                .activationBlocked="${Boolean(
+                    this.dragActivation || this.dragPlayCard
+                )}"
                 @click="${this.handleFaceDownClick(type, types[type])}"
             ></mc-card-image>
             ${types[type].length > 1 ? html`

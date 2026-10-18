@@ -17,6 +17,7 @@ export class McCharacterCard extends LitElement {
             card: {type: Object},
             basicActivation: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
             clickDisabled: {type: Boolean},
             menuOptions: {type: Array},
             name: {type: String},
@@ -50,6 +51,7 @@ export class McCharacterCard extends LitElement {
         this.card = null;
         this.basicActivation = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
         this.clickDisabled = false;
         this.menuOptions = [];
         this.image = '';
@@ -79,6 +81,7 @@ export class McCharacterCard extends LitElement {
             card,
             basicActivation,
             dragActivation,
+            dragPlayCard,
             clickDisabled,
             menuOptions,
             name,
@@ -109,6 +112,7 @@ export class McCharacterCard extends LitElement {
                 .card="${card}"
                 .basicActivation="${basicActivation}"
                 .dragActivation="${dragActivation}"
+                .dragPlayCard="${dragPlayCard}"
                 .clickDisabled="${clickDisabled}"
                 .menuOptions="${menuOptions}"
                 name="${name}"

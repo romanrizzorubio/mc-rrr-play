@@ -35,6 +35,8 @@ Rutas REST públicas disponibles en `mc-match-creation-service`:
 | `POST` | `/play-card` | Jugar una carta |
 | `POST` | `/resolve-ability` | Resolver una capacidad |
 
+`/play-card` recibe `player` y `cardId`, y acepta `targetId` opcional cuando se juega una carta arrastrándola sobre un objetivo legal. El backend debe volver a resolver y validar ese ID con el estado actual, y conservar el objetivo seleccionado durante el pago y la resolución de sus efectos; no debe confiar en un objeto de carta enviado por el cliente.
+
 `mc-back` expone las operaciones de creación mediante las rutas `INTERNAL_ENDPOINTS` con prefijo `/internal/`; las acciones de juego continúan registradas directamente en ese servicio.
 
 El lobby usa `GET /get-matches-list` para mostrar las partidas, `DELETE /delete-match` para eliminarlas y `POST /reset-match` para reiniciarlas con la configuración de creación guardada. Antes de iniciar o reiniciar una partida, la carcasa carga `mc-match`, que registra los diálogos que el backend puede solicitar durante el setup. Cada partida tiene un `id` estable para su ruta `/match/:id`; el nombre continúa identificando las salas internas y se envía en la cabecera `match` para las acciones existentes. Al reanudar una partida, el cliente se une por Socket.IO y recibe su estado por `match-refresh`. Las acciones de cambiar identidad, jugar carta y resolver capacidad siguen usando REST; el fin de turno usa Socket.IO.

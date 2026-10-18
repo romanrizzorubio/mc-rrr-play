@@ -19,6 +19,7 @@ export class McScenario extends LitElement {
             scenario: {type: Object},
             player: {type: Object},
             dragActivation: {type: Object},
+            dragPlayCard: {type: Object},
         };
     }
     constructor() {
@@ -27,6 +28,7 @@ export class McScenario extends LitElement {
         this.scenario = null;
         this.player = null;
         this.dragActivation = null;
+        this.dragPlayCard = null;
     }
     handleCardSelect(e) {
         const {card} = e.detail;
@@ -76,6 +78,7 @@ export class McScenario extends LitElement {
                     .card="${villain}"
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     name="${name}"
                     image="${image}"
                     life="${life}"
@@ -119,6 +122,7 @@ export class McScenario extends LitElement {
                     .attached="${attached}"
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     name="${name}"
                     image="${image}"
                     .acceleration="${accelerationTokens}"
@@ -145,6 +149,7 @@ export class McScenario extends LitElement {
                         .deckName="${deck.name}"
                         .showDiscard="${deck.hasDiscard !== false}"
                         .dragActivation="${this.dragActivation}"
+                        .dragPlayCard="${this.dragPlayCard}"
                         deck-name-position="top"
                     ></mc-deck>
                 `)}
@@ -164,6 +169,7 @@ export class McScenario extends LitElement {
                         card.isSideScheme)}"
                     .player="${this.player}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     basic-activation-type="thwart"
                     show-basic-stats
                     show-threat
@@ -181,6 +187,7 @@ export class McScenario extends LitElement {
                 <mc-card-list
                     .cards="${cards.filter(card => card.isEnvironment)}"
                     .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
                     show-basic-stats
                     show-generic
                     show-menu-abilities
@@ -198,6 +205,7 @@ export class McScenario extends LitElement {
                 .discard="${discard}"
                 .knownCards="${knownCards}"
                 .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
                 discard-label="Descarte del mazo de encuentros"
             ></mc-deck>
         `;

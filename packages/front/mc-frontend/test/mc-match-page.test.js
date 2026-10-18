@@ -1,9 +1,28 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+globalThis.HTMLElement ??= class {};
+globalThis.window ??= {
+    customElements: {
+        define() {},
+    },
+    mcStaticRemote: {
+        getAssetUrl(path) {
+            return path;
+        },
+    },
+};
+globalThis.CustomEvent ??= class {
+    constructor(type, options = {}) {
+        this.type = type;
+        Object.assign(this, options);
+    }
+};
+
 const {getEndTurnConfirmationReasons} = await import(
     '../src/utils/end-turn.js'
 );
+const {McMatchPage} = await import('../src/pages/mc-match-page/mc-match-page.js');
 
 function createPlayer({heroExhausted, allies = [], hand = []}) {
     return {
@@ -67,4 +86,27 @@ test('ignores unplayable cards when the hero and allies are exhausted', () => {
     });
 
     assert.deepEqual(getEndTurnConfirmationReasons(player), []);
+});
+
+test('forwards a dropped event target to the play-card request', async () => {
+    const requests = [];
+    const page = Object.assign(Object.create(McMatchPage.prototype), {
+        apiPlayer: {
+            async playCard(...params) {
+                requests.push(params);
+            },
+        },
+        player: 'TChalla',
+        playCardPending: false,
+    });
+
+    await page.handlePlayCardDrop({
+        detail: {
+            card: {id: 'damage-event'},
+            targetCard: {id: 'villain-1'},
+        },
+    });
+
+    assert.deepEqual(requests, [['TChalla', 'damage-event', 'villain-1']]);
+    assert.equal(page.playCardPending, false);
 });

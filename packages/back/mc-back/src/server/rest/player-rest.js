@@ -70,12 +70,13 @@ export class PlayerRest {
         return this.refreshPlayer(match, player);
     }
     async playCard(params) {
-        const {match, cardId} = params;
+        const {match, cardId, targetId} = params;
         const player = match.getPlayer(params.player);
 
         await player.playCard({
             cardId,
             abilityType: ABILITY_ACTION,
+            targetId,
         });
 
         return this.refreshPlayer(match, player);
@@ -92,7 +93,7 @@ export class PlayerRest {
         logGameTrace('ability.resolve.start', {
             traceId,
             match: match.name,
-            player: player && player.name,
+            player: player?.name,
         });
 
         let outcome = 'failed';
