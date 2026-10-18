@@ -148,7 +148,10 @@ export class EnemyActivationEffect extends Effect {
         return this.getCharacterDialogData(this.character, params);
     }
     async getCharacterDialogData(character, params, statOverrides = {}) {
-        const stats = await character.getEffectiveStats(statOverrides);
+        const stats = await character.getEffectiveStats({
+            ...statOverrides,
+            player: params.player,
+        });
 
         return {
             ...character.toObj(params),

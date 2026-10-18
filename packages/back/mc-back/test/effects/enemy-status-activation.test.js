@@ -227,6 +227,9 @@ describe('enemy activation effects', () => {
             isVillain: true,
             name: 'Villano',
             scheme: 2,
+            async getSchemeValue() {
+                return this.scheme;
+            },
             async getEffectiveStats() {
                 return {};
             },

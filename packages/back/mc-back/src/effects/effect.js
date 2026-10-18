@@ -244,6 +244,9 @@ export class Effect extends Engine {
     get effectCategories() {
         return [];
     }
+    get isRequiredForAbilityAvailability() {
+        return false;
+    }
     get piercing() {
         return this.keywords.piercing;
     }

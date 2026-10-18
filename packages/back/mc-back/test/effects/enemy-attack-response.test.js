@@ -17,6 +17,7 @@ import {
     TRIGGER_END_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_END_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
     TRIGGER_VILLAIN_ATTACKS_YOU,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
@@ -467,6 +468,7 @@ test('an attack event play wrapper does not create another attack context', () =
     assert.equal(playCardEffect.activation, undefined);
     assert.deepEqual(playCardEffect.getTriggersEnds(), [
         TRIGGER_END_PLAY_CARD,
+        TRIGGER_YOU_END_PLAY_CARD,
         TRIGGER_THIS_END_PLAY_CARD,
     ]);
 });

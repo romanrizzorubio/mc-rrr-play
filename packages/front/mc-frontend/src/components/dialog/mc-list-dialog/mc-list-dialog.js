@@ -5,7 +5,7 @@ import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {isPlanCard} from '../../../misc/utils.js';
-import {renderTextWithIcons} from '../../../utils/render-text-with-icons.js';
+import {renderTextWithFormatting} from '../../../utils/render-text-with-formatting.js';
 
 export class McListDialog extends McDialog {
     static get is() {
@@ -50,7 +50,7 @@ export class McListDialog extends McDialog {
     }
     renderItem(option, submenu = false) {
         const text = typeof option.text === 'string' ?
-            renderTextWithIcons(option.text) :
+            renderTextWithFormatting(option.text) :
             option.text;
 
         if (option.triggers) {

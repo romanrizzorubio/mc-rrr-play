@@ -39,6 +39,7 @@ test('prevent defeat replaces defeat before the minion is discarded', async () =
     await defeat.execute({player: {}});
 
     assert.equal(defeat.prevented, true);
+    assert.equal(defeat.defeated, false);
     assert.equal(defeatCount, 0);
 });
 

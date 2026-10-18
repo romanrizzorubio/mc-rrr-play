@@ -1,5 +1,6 @@
 import {
     ABILITY_CONSTANT,
+    ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_UPGRADE,
@@ -21,6 +22,8 @@ import {
     TRAIT_ARMOR,
     TRAIT_CONDITION,
     TRAIT_ITEM,
+    TRAIT_PREPARATION,
+    TRAIT_TACTIC,
     TRAIT_TECH,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
@@ -171,6 +174,56 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-postura-defensiva',
+        'aspect': 'protection',
+        'order': 31,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Postura defensiva',
+                'set': 'protection',
+                'image': 'aspect/protection/upgrades/08032.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_TACTIC
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'protection',
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_SUPERHERO
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_PREVENT_DAMAGE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'damage': 3
                                 }
                             }
                         }

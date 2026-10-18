@@ -43,11 +43,13 @@ import {
     TRAIT_BRUTE,
     TRAIT_CRIMINAL,
     TRAIT_ELITE,
-    TRAIT_HYDRA,
     TRAIT_WEAPON,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_VILLAIN_ATTACKS
 } from 'mc-shared';
+
+import {hydraMercenary} from '../encounters/minions.js';
+import {withCardSet} from '../with-card-set.js';
 
 export default {
     '_id': 'rhino',
@@ -340,24 +342,7 @@ export default {
             },
             {
                 'count': 2,
-                'card': {
-                    'type': CARD_TYPE_MINION,
-                    'params': {
-                        'name': 'Mercenario de Hydra',
-                        'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino9.webp',
-                        'traits': [
-                            TRAIT_HYDRA
-                        ],
-                        'boost': 1,
-                        'scheme': 0,
-                        'attack': 1,
-                        'hitPoints': 3,
-                        'keywords': {
-                            'guard': true
-                        }
-                    }
-                }
+                'card': withCardSet(hydraMercenary, 'rhino')
             },
             {
                 'count': 1,

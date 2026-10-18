@@ -68,7 +68,10 @@ test('defeating Madame Hydra clears her validation-only constant trigger', async
 });
 
 test('Madame Hydra can place threat on Legions of Hydra after she attacks', async () => {
-    const outOfPlayLegions = {name: 'Legiones de Hydra'};
+    const outOfPlayLegions = {
+        name: 'Legiones de Hydra',
+        triggers: {},
+    };
     const legions = {
         name: 'Legiones de Hydra',
         threat: 0,

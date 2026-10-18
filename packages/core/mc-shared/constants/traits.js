@@ -34,6 +34,7 @@ export const TRAIT_MASTERS_OF_EVIL = 'masters of evil';
 export const TRAIT_MERCENARY = 'mercenary';
 export const TRAIT_OLYMPUS = 'olympus';
 export const TRAIT_PERSONA = 'persona';
+export const TRAIT_PREPARATION = 'preparation';
 export const TRAIT_ROBOT = 'robot';
 export const TRAIT_SHIELD = 'S.H.I.E.L.D.';
 export const TRAIT_SKILL = 'skill';

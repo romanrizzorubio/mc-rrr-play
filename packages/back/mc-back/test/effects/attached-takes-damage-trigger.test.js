@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TRIGGER_ATTACHED_TAKES_DAMAGE} from 'mc-shared';
+import {
+    TRIGGER_ATTACHED_TAKES_DAMAGE,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
+} from 'mc-shared';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {AttachedTakesDamageTrigger} from '../../src/triggers/attached-takes-damage-trigger.js';
 
@@ -80,12 +83,23 @@ test('attached damage trigger follows damage to the next same-title villain stag
     }), false);
 });
 
-test('take damage effects expose the attached-character response window', () => {
+test('take damage effects expose character response windows only for positive damage', () => {
     const effect = new TakeDamageEffect({
         match: {triggerCards: {}},
         selectedTarget: {id: 'villain'},
         damage: 1,
     });
+    const noDamageEffect = new TakeDamageEffect({
+        match: {triggerCards: {}},
+        selectedTarget: {id: 'villain'},
+        damage: 0,
+    });
 
-    assert.deepEqual(effect.getTriggersEnds(), [TRIGGER_ATTACHED_TAKES_DAMAGE]);
+    assert.deepEqual(effect.getTriggersEnds(), [
+        TRIGGER_ATTACHED_TAKES_DAMAGE,
+        TRIGGER_CHARACTER_TAKES_DAMAGE,
+    ]);
+    assert.deepEqual(noDamageEffect.getTriggersEnds(), [
+        TRIGGER_ATTACHED_TAKES_DAMAGE,
+    ]);
 });

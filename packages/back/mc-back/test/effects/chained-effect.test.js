@@ -32,6 +32,39 @@ test('a chained effect skips an unavailable child outside a cost or Then', async
     assert.deepEqual(resolved, ['available']);
 });
 
+test('a chain requires only effects marked as availability requirements', async () => {
+    const createChain = (boostCancellationCanRun, attackDamageCanRun, otherCanRun) => {
+        const effect = new ChainedEffect({
+            effects: [
+                {
+                    isRequiredForAbilityAvailability: true,
+                    async canRun() {
+                        return boostCancellationCanRun;
+                    },
+                },
+                {
+                    isRequiredForAbilityAvailability: true,
+                    async canRun() {
+                        return attackDamageCanRun;
+                    },
+                },
+                {
+                    async canRun() {
+                        return otherCanRun;
+                    },
+                },
+            ],
+        });
+        effect.ability = {isAttack: true};
+
+        return effect;
+    };
+
+    assert.equal(await createChain(false, true, true).canRun({}), false);
+    assert.equal(await createChain(true, false, true).canRun({}), false);
+    assert.equal(await createChain(true, true, false).canRun({}), true);
+});
+
 test('a cost chain requires every child to be available', async () => {
     const resolved = [];
     const effect = new ChainedEffect({

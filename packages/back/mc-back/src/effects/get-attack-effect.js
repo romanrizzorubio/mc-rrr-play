@@ -1,6 +1,7 @@
 import {
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK,
+    TRIGGER_THIS_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_ATTACK
 } from 'mc-shared';
 
@@ -17,9 +18,16 @@ export class GetAttackEffect extends Effect {
         return super.getTriggersInit()
             .concat([
                 TRIGGER_CHARACTER_GET_ATTACK,
+                TRIGGER_THIS_GET_ATTACK,
                 TRIGGER_YOUR_HERO_GET_ATTACK,
                 TRIGGER_ATTACHED_GET_ATTACK,
             ]);
+    }
+    getTriggersParams(params) {
+        return {
+            ...super.getTriggersParams(params),
+            card: this.selectedTarget,
+        };
     }
     async execute(_params) {
         const {selectedTarget, modifyAttack} = this;

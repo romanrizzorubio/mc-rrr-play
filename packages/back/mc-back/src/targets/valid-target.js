@@ -9,6 +9,10 @@ import {DIALOG_SELECT_TARGET,
 } from 'mc-shared';
 
 import {Engine} from '../engine/engine.js';
+import {
+    filterTargetCandidates,
+    splitTargetCondition,
+} from '../utils/target-condition-utils.js';
 import {targetMap} from './index.js';
 
 const findSelectedTarget = (targets, selected) => {
@@ -74,50 +78,50 @@ export class ValidTarget extends Engine {
             return validation.isInvalidTarget(validationParams);
         });
     }
-    getValidTarget(params) {
+    getTargetCandidates(params, target, condition) {
+        if (Array.isArray(target)) {
+            return target.reduce((ret, _target) =>
+                ret.concat(this.getTargetCandidates(
+                    {...params, target: _target},
+                    _target,
+                    condition
+                )), []);
+        }
+
         const {
             ability,
             activation,
             attack,
             card,
             cards,
-            effect,
-            playCardEffect,
-            player,
-            source,
-            target,
-            triggeredCard,
         } = params;
 
-        if (target instanceof Array) {
-            return target.reduce((ret, _target) => {
-                return ret.concat(this.getValidTarget({
-                    ...params,
-                    target: _target,
-                }));
-            }, []);
-        }
-
         const targetFn = targetMap[target];
-        const targets = targetFn ? targetFn({
+        return targetFn ? targetFn({
             ability,
             activation,
             attack,
             card,
             cards,
-            condition: this.condition,
+            condition,
             currentRound: this.currentRound,
-            effect,
+            effect: params.effect,
             match: this.match,
             params,
-            playCardEffect,
-            player,
-            source,
+            playCardEffect: params.playCardEffect,
+            player: params.player,
+            source: params.source,
             targetEffect: this.effect,
-            triggeredCard,
+            triggeredCard: params.triggeredCard,
         }) : [];
+    }
+    getValidTarget(params) {
+        const {condition, selectionConditions} =
+            splitTargetCondition(this.condition);
+        const targets = this.getTargetCandidates(params, params.target, condition);
 
-        return targets.filter(target => this.filter(target, params));
+        return filterTargetCandidates(targets, selectionConditions)
+            .filter(target => this.filter(target, params));
     }
     isMultipleTarget(params) {
         const {multipleTarget} = this;

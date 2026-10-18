@@ -14,7 +14,7 @@ export default [
             'params': {
                 'name': 'El poder de la justicia',
                 'set': 'justice',
-                'image': 'aspect/justice/resources/j62-copy.webp',
+                'image': 'aspect/justice/resources/01062.png',
                 'resources': [
                     {
                         'condition': {

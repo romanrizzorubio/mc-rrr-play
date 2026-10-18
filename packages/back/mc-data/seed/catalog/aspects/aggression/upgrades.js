@@ -1,6 +1,8 @@
 import {
     ABILITY_CONSTANT,
+    ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
+    CALC_ALL,
     CARD_TYPE_UPGRADE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
@@ -10,21 +12,27 @@ import {
     EFFECT_SPEND,
     EFFECT_TAKE_DAMAGE,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
+    LABEL_ATTACK,
     RESOURCE_ENERGY,
     RESOURCE_PHYSICAL,
     TARGET_ANY_PLAYER,
     TARGET_ALLY,
     TARGET_ENEMY,
+    TARGET_ATTACKER,
     TARGET_EFFECT,
     TARGET_PLAYER,
     TARGET_THIS,
     TARGET_YOUR_HERO,
+    TARGET_YOUR_SUPERHERO,
     TRAIT_ASGARD,
     TRAIT_CONDITION,
+    TRAIT_PREPARATION,
     TRAIT_SKILL,
+    TRAIT_TACTIC,
     TRAIT_WEAPON,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK
@@ -238,4 +246,64 @@ export default [
         }
     },
 
+    {
+        '_id': 'aggression-contraataque',
+        'aspect': 'aggression',
+        'order': 67,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Contraataque',
+                'set': 'aggression',
+                'image': 'aspect/aggression/upgrades/08030.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_TACTIC
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'trigger': TRIGGER_CHARACTER_TAKES_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_SUPERHERO
+                            },
+                            'condition': {
+                                'effect.isAttack': true,
+                                'effect.activation.character.isEnemy': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ATTACKER,
+                                    'paramsCalc': {
+                                        'target': 'triggeredTargetDamage',
+                                        'formula': CALC_ALL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

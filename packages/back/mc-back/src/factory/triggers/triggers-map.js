@@ -8,9 +8,13 @@ import {
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ABILITY_COST,
+    TRIGGER_ABILITY_RESOLVED,
+    TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL,
+    TRIGGER_CHARACTER_SCHEMES,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_CONDITION_GET_DEFENSE,
@@ -33,6 +37,7 @@ import {
     TRIGGER_PLAYER_CAN_FLIP,
     TRIGGER_PLAYER_TURN_START,
     TRIGGER_ROUND_ENDS,
+    TRIGGER_SURGE,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_COUNTERS_REMOVED,
     TRIGGER_THIS_DEFEAT,
@@ -41,6 +46,9 @@ import {
     TRIGGER_THIS_ENTER_PLAY,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_GET_THWART,
+    TRIGGER_THIS_GET_ATTACK,
+    TRIGGER_THIS_GET_SCHEME,
+    TRIGGER_THIS_PLAY_CARD,
     TRIGGER_THIS_SCHEME,
     TRIGGER_THIS_THWARTS,
     TRIGGER_TREACHERY_REVEAL,
@@ -56,6 +64,7 @@ import {
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_YOU_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
@@ -66,6 +75,8 @@ import {
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
+import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
+import {CharacterDefeatedTrigger} from '../../triggers/character-defeated-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
 import {AttachedTakesDamageTrigger} from '../../triggers/attached-takes-damage-trigger.js';
 import {AttachedWouldAttackTrigger} from '../../triggers/attached-would-attack-trigger.js';
@@ -84,6 +95,7 @@ import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
 import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {MinionEnterPlayTrigger} from '../../triggers/minion-enter-play-trigger.js';
+import {CharacterSchemesTrigger} from '../../triggers/character-schemes-trigger.js';
 import {
     MainSchemeCompletedTrigger
 } from '../../triggers/main-scheme-completed-trigger.js';
@@ -99,6 +111,9 @@ import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.
 import {ThisEnterPlayTrigger} from '../../triggers/this-enter-play-trigger.js';
 import {ThisFlipTrigger} from '../../triggers/this-flip-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
+import {ThisGetAttackTrigger} from '../../triggers/this-get-attack-trigger.js';
+import {ThisGetSchemeTrigger} from '../../triggers/this-get-scheme-trigger.js';
+import {ThisPlayCardTrigger} from '../../triggers/this-play-card-trigger.js';
 import {ThisSchemeTrigger} from '../../triggers/this-scheme-trigger.js';
 import {ThisThwartsTrigger} from '../../triggers/this-thwarts-trigger.js';
 import {
@@ -111,6 +126,9 @@ import {
 import {
     CharacterWouldTakeDamageTrigger
 } from '../../triggers/character-would-take-damage-trigger.js';
+import {
+    CharacterTakesDamageTrigger
+} from '../../triggers/character-takes-damage-trigger.js';
 import {
     ThisCountersRemovedTrigger
 } from '../../triggers/this-counters-removed-trigger.js';
@@ -128,6 +146,8 @@ import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js'
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
 import {YouDefeatMinionTrigger} from '../../triggers/you-defeat-minion-trigger.js';
 import {YouPlayCardTrigger} from '../../triggers/you-play-card-trigger.js';
+import {YouEndPlayCardTrigger} from '../../triggers/you-end-play-card-trigger.js';
+import {SurgeTrigger} from '../../triggers/surge-trigger.js';
 import {Trigger} from '../../triggers/base/trigger.js';
 import {
     YourHeroAttackDefeatEnemyTrigger
@@ -150,6 +170,8 @@ import {
 
 export const TRIGGER_MAP = {
     [TRIGGER_ABILITY_COST]: InstantTrigger,
+    [TRIGGER_ABILITY_RESOLVED]: AbilityResolvedTrigger,
+    [TRIGGER_CHARACTER_DEFEATED]: CharacterDefeatedTrigger,
     [TRIGGER_ATTACHED_DEFEAT]: AttachedDefeatTrigger,
     [TRIGGER_ATTACHED_GET_ATTACK]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL]: AttachedGetStatTrigger,
@@ -162,6 +184,8 @@ export const TRIGGER_MAP = {
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE]: CharacterWouldTakeDamageTrigger,
+    [TRIGGER_CHARACTER_TAKES_DAMAGE]: CharacterTakesDamageTrigger,
+    [TRIGGER_CHARACTER_SCHEMES]: CharacterSchemesTrigger,
     [TRIGGER_CHARACTER_WOULD_BE_DEFEATED]: CharacterWouldBeDefeatedTrigger,
     [TRIGGER_HERO_DEFENDS_ATTACK]: HeroDefendsAttackTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
@@ -173,6 +197,9 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_ENTER_PLAY]: ThisEnterPlayTrigger,
     [TRIGGER_THIS_FLIP]: ThisFlipTrigger,
     [TRIGGER_THIS_GET_THWART]: ThisGetThwartTrigger,
+    [TRIGGER_THIS_GET_ATTACK]: ThisGetAttackTrigger,
+    [TRIGGER_THIS_GET_SCHEME]: ThisGetSchemeTrigger,
+    [TRIGGER_THIS_PLAY_CARD]: ThisPlayCardTrigger,
     [TRIGGER_THIS_SCHEME]: ThisSchemeTrigger,
     [TRIGGER_THIS_END_PLAY_CARD]: ThisEndPlayCardTrigger,
     [TRIGGER_THIS_THWARTS]: ThisThwartsTrigger,
@@ -205,12 +232,14 @@ export const TRIGGER_MAP = {
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
     [TRIGGER_YOU_PLAY_CARD]: YouPlayCardTrigger,
+    [TRIGGER_YOU_END_PLAY_CARD]: YouEndPlayCardTrigger,
     [TRIGGER_PLAYER_CAN_THWART]: Trigger,
     [TRIGGER_PLAYER_CAN_READY]: Trigger,
     [TRIGGER_PLAYER_CAN_FLIP]: Trigger,
     [TRIGGER_PLAYER_TURN_START]: PlayerTurnStartTrigger,
     [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,
     [TRIGGER_ENCOUNTER_ABILITY_RESOLVED]: EncounterAbilityResolvedTrigger,
+    [TRIGGER_SURGE]: SurgeTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
     [TRIGGER_FACEDOWN_CARD]: FacedownCardTrigger,

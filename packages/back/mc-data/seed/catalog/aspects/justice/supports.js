@@ -26,7 +26,7 @@ export default [
             'params': {
                 'name': 'Sala de interrogatorios',
                 'set': 'justice',
-                'image': 'aspect/justice/supports/j63-copy-2.webp',
+                'image': 'aspect/justice/supports/01063.png',
                 'traits': [
                     TRAIT_LOCATION
                 ],
@@ -72,7 +72,7 @@ export default [
             'params': {
                 'name': 'Equipo de vigilancia',
                 'set': 'justice',
-                'image': 'aspect/justice/supports/j64-copy.webp',
+                'image': 'aspect/justice/supports/01064.png',
                 'traits': [
                     TRAIT_SHIELD
                 ],

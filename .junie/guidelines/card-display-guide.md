@@ -4,7 +4,7 @@ Consulta esta guía al cambiar componentes de cartas, descartes o diálogos que 
 
 ## Texto con iconos
 
-- Para renderizar texto de interfaz que incluya códigos de icono entre corchetes, usa `renderTextWithIcons` de `mc-frontend/src/utils/render-text-with-icons.js`. Convierte los códigos compatibles con `mc-icon` en iconos y conserva literalmente los códigos desconocidos.
+- Para formatear texto de interfaz, usa `renderTextWithFormatting` de `mc-frontend/src/utils/render-text-with-formatting.js`. Convierte los códigos de icono compatibles con `mc-icon`, conserva literalmente los desconocidos y muestra los rasgos rodeados por `<...>` con `--mc-font-trait`.
 
 ## Orientación y composición
 

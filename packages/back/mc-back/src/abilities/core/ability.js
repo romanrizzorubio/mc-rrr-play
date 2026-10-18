@@ -1,9 +1,16 @@
-import {LABEL_ATTACK, LABEL_DEFENSE, LABEL_THWART} from 'mc-shared';
+import {
+    LABEL_ATTACK,
+    LABEL_DEFENSE,
+    LABEL_THWART,
+    PRIORITY_RESPONSE,
+    TRIGGER_ABILITY_RESOLVED,
+} from 'mc-shared';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
 import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';
 import {AbilityCosts} from '../../model/costs/ability-costs.js';
+import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
 
 export class Ability extends Engine {
     constructor({
@@ -267,6 +274,9 @@ export class Ability extends Engine {
     }
     async resolveAbility(params, effect = this.effect) {
         const {player, preselectedTarget = false, arrowPaid = false} = params;
+        const resolvedAbilityController = this.card ?
+            getTriggerCardPlayer(this.card, player) :
+            undefined;
         const previousResolutionContext = this._resolutionContext;
         this._resolutionContext = {
             character: this.character,
@@ -341,6 +351,27 @@ export class Ability extends Engine {
                 });
 
                 this.resolved = this.ifNot.resolved;
+            }
+
+            if (this.resolved && this.card) {
+                const trigger = typeof this.trigger === 'function' ?
+                    this.trigger :
+                    Engine.prototype.trigger;
+
+                if (trigger !== Engine.prototype.trigger || this.match?.triggerCards) {
+                    await trigger.call(
+                        this,
+                        PRIORITY_RESPONSE,
+                        [TRIGGER_ABILITY_RESOLVED],
+                        {
+                            ...params,
+                            card: this.card,
+                            effect: effect || this,
+                            resolvedAbility: this,
+                            resolvedAbilityController,
+                        }
+                    );
+                }
             }
         } finally {
             this._resolutionContext = previousResolutionContext;

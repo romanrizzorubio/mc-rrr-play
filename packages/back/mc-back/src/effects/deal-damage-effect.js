@@ -24,12 +24,24 @@ export class DealDamageEffect extends Effect {
         this.preventDamage = 0;
         this.takenDamage = 0;
         this.excessDamage = 0;
+        this.defeated = false;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.dealtDamage = 0;
+        this.preventDamage = 0;
+        this.takenDamage = 0;
+        this.excessDamage = 0;
+        this.defeated = false;
     }
     get character() {
         return this._character || super.character;
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
+    }
+    get isRequiredForAbilityAvailability() {
+        return this.isAttack;
     }
     checkTrigger(params) {
         if (!this.isActivationActive(params)) {
@@ -97,6 +109,7 @@ export class DealDamageEffect extends Effect {
         this.preventDamage = 0;
         this.takenDamage = 0;
         this.excessDamage = 0;
+        this.defeated = false;
 
         await super.prepare(params);
 
@@ -124,6 +137,8 @@ export class DealDamageEffect extends Effect {
     }
     /** @returns {Promise<void>} */
     async execute(params) {
+        this.defeated = false;
+
         if (Array.isArray(this.selectedTarget) &&
             this.selectedTarget.length === 0) {
             return;
@@ -157,6 +172,7 @@ export class DealDamageEffect extends Effect {
         await takeDamageEffect.runEffect(params);
 
         this.takenDamage = takeDamageEffect.takenDamage;
+        this.defeated = takeDamageEffect.defeated === true;
 
         if (this.activation) {
             this.activation.takenDamage = this.takenDamage;

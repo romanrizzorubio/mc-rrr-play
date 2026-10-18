@@ -1,6 +1,7 @@
 import {
     DIALOG_BOOST_DEALT,
     DIALOG_ENCOUNTERS_REVEAL,
+    PRIORITY_RESPONSE,
     TRIGGER_BOOST_REVEALED,
 } from 'mc-shared';
 
@@ -24,9 +25,17 @@ export class ResolveBoostEffect extends Effect {
         this.boostValue = 0;
         this.value = 0;
         this.cancelledBoostIcons = 0;
+        this.cancelledBoostAbility = false;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.cancelledBoostAbility = false;
     }
     get hasCancelableBoostIcons() {
         return getBoostIconCancellation(this).remainingBoostIcons > 0;
+    }
+    get hasBoostAbility() {
+        return Boolean(this.card.boostAbility);
     }
     getTriggersInit() {
         return super.getTriggersInit()
@@ -38,6 +47,15 @@ export class ResolveBoostEffect extends Effect {
             card: this.card,
             triggeredCard: this.card,
         };
+    }
+    async resolvePrepared(effectParams, triggersParams) {
+        if (await this.trigger(
+            PRIORITY_RESPONSE,
+            [TRIGGER_BOOST_REVEALED],
+            triggersParams,
+        )) {
+            await super.resolvePrepared(effectParams, triggersParams);
+        }
     }
     async showBoostDialog(params, {showUpdatedBoost = false} = {}) {
         const {card, cardIndex, enemyActivation} = this;
@@ -110,7 +128,7 @@ export class ResolveBoostEffect extends Effect {
     async execute(params) {
         const {card, enemyActivation} = this;
 
-        if (card.boostAbility) {
+        if (card.boostAbility && !this.cancelledBoostAbility) {
             const previousBoostValue = this.boostValue;
 
             await card.boostAbility.resolveAbility({

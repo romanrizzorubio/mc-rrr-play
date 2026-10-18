@@ -83,3 +83,21 @@ export const hydraSoldier = {
         ]
     }
 };
+
+export const hydraMercenary = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Mercenario de Hydra',
+        image: 'scenarios/rhino/rhino9.webp',
+        traits: [
+            TRAIT_HYDRA
+        ],
+        boost: 1,
+        scheme: 0,
+        attack: 1,
+        hitPoints: 3,
+        keywords: {
+            guard: true
+        }
+    }
+};

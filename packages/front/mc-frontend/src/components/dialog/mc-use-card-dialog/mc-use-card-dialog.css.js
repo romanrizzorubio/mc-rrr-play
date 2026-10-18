@@ -5,6 +5,10 @@ export default css`
     display: block;
   }
 
+  mc-card-list {
+    align-items: flex-end;
+  }
+
   .remember-choice {
     align-items: center;
     display: flex;

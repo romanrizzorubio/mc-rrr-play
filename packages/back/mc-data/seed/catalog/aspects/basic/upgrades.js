@@ -2,10 +2,14 @@ import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESOURCE,
+    ABILITY_HERO_RESPONSE,
+    ABILITY_INTERRUPT,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
     EFFECT_ADD_TRAIT,
+    EFFECT_CANCEL_BOOST_ABILITY,
     EFFECT_DISCARD_GAME,
+    EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_RECOVERY_VALUE,
@@ -22,14 +26,20 @@ import {
     TARGET_FRIENDLY_CHARACTER,
     TARGET_PLAYER,
     TARGET_THIS,
+    TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
     TRAIT_AVENGER,
     TRAIT_CONDITION,
+    TRAIT_PREPARATION,
+    TRAIT_SKILL,
+    TRAIT_SPY,
     TRAIT_TITLE,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
+    TRIGGER_BOOST_REVEALED,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
+    TRIGGER_SURGE,
 } from 'mc-shared';
 
 export default [
@@ -385,4 +395,99 @@ export default [
         }
     },
 
+    {
+        '_id': 'basic-objetivo-fijado',
+        'aspect': 'basic',
+        'order': 63,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Objetivo fijado',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/08024.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_SKILL
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_BOOST_REVEALED,
+                            'condition': {
+                                'effect.hasBoostAbility': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_CANCEL_BOOST_ABILITY,
+                                'params': {
+                                    'target': TARGET_EFFECT
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-espionaje',
+        'aspect': 'basic',
+        'order': 64,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Espionaje',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/08033.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_SKILL
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'paramsToPlay': {
+                    'friends.*.traits': TRAIT_SPY
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_SURGE,
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DRAW_CARD,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'count': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

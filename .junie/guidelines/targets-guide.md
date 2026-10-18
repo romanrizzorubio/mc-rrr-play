@@ -89,6 +89,17 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 
 `TARGET_UPGRADE_YOU_CONTROL` no implica que una mejora esté vinculada al superhéroe. Para cartas que exigen una mejora vinculada al superhéroe propio, usa `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO`; las mejoras vinculadas a aliados u otras cartas no son candidatas. Las mejoras de la zona de juego sin un vínculo físico se consideran una extensión del superhéroe en cualquiera de sus identidades.
 
+### Condiciones agregadas durante la selección
+
+Además de las condiciones que filtran cada candidato, `condition` puede limitar la lista ya resuelta por un selector usando `{operator: 'max', defaultValue: N}` en una propiedad numérica del objetivo. Se conservan todos los candidatos empatados en el valor máximo y el cálculo se realiza al resolver los candidatos para seleccionar un objetivo, no dentro de una clase de efecto. Si la propiedad no existe o es `null`, se usa `defaultValue`; para comparar costes impresos ausentes como 0, configura `cost: {operator: 'max', defaultValue: 0}`.
+
+```javascript
+condition: {
+    traits: TRAIT_PREPARATION,
+    cost: {operator: 'max', defaultValue: 0},
+}
+```
+
 ### Personajes mencionados por nombre
 
 Si el texto nombra al personaje que recibe una bonificación o palabra clave, filtra los candidatos por ese nombre/identidad; no infieras que es el héroe del jugador que controla la carta. Usa el `name` del lado activo cuando el efecto solo corresponda a esa forma y `mainName` cuando deba seguir al mismo superhéroe al cambiar entre héroe y alter ego. Para bonificaciones numéricas calculadas, condiciona el trigger admitido por el colector al `name` de `effect.selectedTarget`.
@@ -116,7 +127,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | Constante | Candidatos |
 | :--- | :--- |
 | `TARGET_ATTACKED` | El personaje atacado por el ataque actual, incluido el defensor elegido, solo si sigue en juego. Si se derrota una etapa del villano y la siguiente tiene el mismo título, apunta a la etapa activa nueva; si el objetivo queda fuera del juego sin reemplazo por una etapa del mismo villano, no devuelve candidatos. (La función auxiliar está en `utils/target-utils.js`.) |
-| `TARGET_ATTACKER` | El personaje que inició el ataque actual, tomado de `attack.character`; no devuelve candidatos si el contexto no contiene un atacante. |
+| `TARGET_ATTACKER` | El personaje que inició el ataque actual, tomado de `attack.character`; no devuelve candidatos si el contexto no contiene un atacante. `TRIGGER_CHARACTER_TAKES_DAMAGE` aporta este contexto cuando el daño efectivo proviene de un ataque. |
 | `TARGET_ALL_SCHEMES` | Todos los planes en juego, incluidos el principal y los secundarios. |
 | `TARGET_CONDITION_CARD` | Las cartas de la partida que cumplen `condition`. |
 | `TARGET_MAIN_SCHEME` | El plan principal. |

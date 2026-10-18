@@ -1,20 +1,34 @@
 import {
+    CARD_TYPE_ANY,
     ABILITY_CONSTANT,
     ABILITY_INTERRUPT,
     CARD_TYPE_UPGRADE,
+    EFFECT_CANCEL_ENCOUNTER,
+    EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
     EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_PREVENT_PLACE_THREAT,
+    PLACE_ENCOUNTER_DECK,
     RESOURCE_ENERGY,
+    RESOURCE_PHYSICAL,
     TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_MAIN_SCHEME,
     TARGET_PLAYER,
     TARGET_SIDE_SCHEME,
+    TARGET_THIS,
     TRAIT_CONDITION,
+    TRAIT_PREPARATION,
     TRAIT_SKILL,
+    TRAIT_SPY,
+    TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ATTACHED_DEFEAT,
+    TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_YOUR_HERO_GET_THWART
 } from 'mc-shared';
+
+import {revealEncounterFrom} from '../../utils/reveal-encounter.js';
 
 export default [
     {
@@ -118,4 +132,114 @@ export default [
         }
     },
 
+    {
+        '_id': 'justice-contraespionaje',
+        'aspect': 'justice',
+        'order': 61,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Contraespionaje',
+                'set': 'justice',
+                'image': 'aspect/justice/upgrades/08017.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_SKILL
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'justice',
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_WOULD_PLACE_THREAT,
+                            'condition': {
+                                'effect.selectedTarget.isMainScheme': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_PREVENT_PLACE_THREAT,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'threat': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-tacticas-de-infiltracion',
+        'aspect': 'justice',
+        'order': 62,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Tácticas de infiltración',
+                'set': 'justice',
+                'image': 'aspect/justice/upgrades/08018.png',
+                'traits': [
+                    TRAIT_PREPARATION,
+                    TRAIT_SKILL
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'justice',
+                'paramsToPlay': {
+                    'friends.*.traits': TRAIT_SPY
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_ENCOUNTER_REVEAL,
+                            'condition': {
+                                'effect.selectedTarget.hasUncancellableAbilities': false
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_CANCEL_ENCOUNTER,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'type': CARD_TYPE_ANY,
+                                                'full': true
+                                            }
+                                        },
+                                        revealEncounterFrom({
+                                            'from': PLACE_ENCOUNTER_DECK
+                                        })
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

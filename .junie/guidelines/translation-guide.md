@@ -118,11 +118,14 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
 | **droid (rasgo)** | Androide |
+| **elite (rasgo)** | Élite |
 | **location (rasgo)** | Lugar |
 | **persona (rasgo)** | Individuo |
+| **preparation (rasgo)** | Planificación |
 | **skill (rasgo)** | Habilidad |
 | **spy (rasgo)** | Espía |
 | **tactic (rasgo)** | Táctica |
+| **tech (rasgo)** | Tecnología |
 | **thwart (rasgo)** | Intervención |
 | **title (rasgo)** | Título |
 | **vehicle (rasgo)** | Vehículo |

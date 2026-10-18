@@ -8,6 +8,7 @@ import {Calc} from '../../engine/calc.js';
 
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
+import {GetSchemeEffect} from '../../effects/get-scheme-effect.js';
 import {
     GetattackConsequentialEffect
 } from '../../effects/get-attack-consequencial-effect.js';
@@ -192,6 +193,16 @@ export class CharacterGameCard extends GameCard {
         await getAttackEffect.runEffect(params);
 
         return getAttackEffect.attack;
+    }
+    async getSchemeValue(params) {
+        const getSchemeEffect = new GetSchemeEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getSchemeEffect.runEffect(params);
+
+        return getSchemeEffect.scheme;
     }
     async getattackConsequentialValue(params) {
         const getattackConsequentialEffect = new GetattackConsequentialEffect({
@@ -514,11 +525,20 @@ export class CharacterGameCard extends GameCard {
 
         return 0;
     }
-    async getEffectiveStats({attack: attackOverride} = {}) {
+    async getEffectiveStats({
+        attack: attackOverride,
+        scheme: schemeOverride,
+        player: effectPlayer,
+    } = {}) {
         const {controller, match} = this;
-        const player = controller?.isPlayer ?
-            controller :
-            match.initialPlayer || controller;
+        const engagedPlayer = this.isMinion && this.engaged?.isPlayer ?
+            this.engaged :
+            undefined;
+        const player = engagedPlayer ??
+            effectPlayer ??
+            (controller?.isPlayer ?
+                controller :
+                match.initialPlayer || controller);
 
         if (!player) {
             throw new Error(`Character ${this.id} has no player for stat calculation.`);
@@ -533,6 +553,11 @@ export class CharacterGameCard extends GameCard {
                 attackOverride :
                 await this.getAttackValue(params)) :
             this.attack;
+        const scheme = Number.isFinite(this.scheme) ?
+            (Number.isFinite(schemeOverride) ?
+                schemeOverride :
+                await this.getSchemeValue(params)) :
+            this.scheme;
         const thwart = Number.isFinite(this.thwart) ?
             await this.getThwartValue(params) :
             this.thwart;
@@ -546,6 +571,7 @@ export class CharacterGameCard extends GameCard {
 
         return {
             attack,
+            scheme,
             thwart,
             defense,
             hitPoints,
@@ -577,7 +603,7 @@ export class CharacterGameCard extends GameCard {
     }
     async toObjWithAbilityAvailability(player) {
         const abilityAvailability = await this.getAbilityAvailability(player);
-        const stats = await this.getEffectiveStats();
+        const stats = await this.getEffectiveStats({player});
 
         return {
             ...this.toObj(),

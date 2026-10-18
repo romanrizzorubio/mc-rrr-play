@@ -6,7 +6,9 @@ import {
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ENTER_PLAY,
     TRIGGER_THIS_END_PLAY_CARD,
+    TRIGGER_THIS_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -142,12 +144,14 @@ export class PlayCardEffect extends Effect {
             .concat([
                 TRIGGER_PLAY_CARD,
                 TRIGGER_YOU_PLAY_CARD,
+                TRIGGER_THIS_PLAY_CARD,
             ]);
     }
     getTriggersEnds() {
         return super.getTriggersEnds()
             .concat([
                 TRIGGER_END_PLAY_CARD,
+                TRIGGER_YOU_END_PLAY_CARD,
                 TRIGGER_THIS_END_PLAY_CARD,
             ]);
     }

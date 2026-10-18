@@ -162,6 +162,39 @@ test('cancel encounter cannot cancel permanent, villain, or main scheme reveals'
     }), true);
 });
 
+test('uncancellable abilities are derived from card rules, not card configuration', () => {
+    const configuredOnly = new GameCard({
+        card: {
+            id: 'configured-uncancellable',
+            hasUncancellableAbilities: true,
+            isEncounterCard: true,
+        },
+    });
+    const configuredFalseVillain = new GameCard({
+        card: {
+            id: 'configured-cancellable-villain',
+            hasUncancellableAbilities: false,
+            isVillain: true,
+        },
+    });
+    const cancelAnyEncounter = new CancelEncounterEffect({type: CARD_TYPE_ANY});
+
+    assert.equal(configuredOnly.hasUncancellableAbilities, false);
+    assert.equal(configuredFalseVillain.hasUncancellableAbilities, true);
+    assert.equal(cancelAnyEncounter.canRun({
+        effect: {
+            canceled: CANCEL_ENCOUNTER_NOT,
+            selectedTarget: configuredOnly,
+        },
+    }), true);
+    assert.equal(cancelAnyEncounter.canRun({
+        effect: {
+            canceled: CANCEL_ENCOUNTER_NOT,
+            selectedTarget: configuredFalseVillain,
+        },
+    }), false);
+});
+
 test('uncancellable abilities follow the current side of a double-sided card', () => {
     const regularSide = new GameCard({card: {id: 'regular-side'}});
     const permanentSide = new GameCard({

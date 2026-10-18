@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {DIALOG_BOOST_DEALT} from 'mc-shared';
+import {
+    DIALOG_BOOST_DEALT,
+    DIALOG_USE_CARD,
+    PRIORITY_RESPONSE,
+    TRIGGER_BOOST_REVEALED,
+} from 'mc-shared';
+import {loadCatalog} from '../../../mc-data/seed/catalog.js';
+import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {CancelBoostIconsEffect} from '../../src/effects/cancel-boost-icons-effect.js';
 import {ModifyBoostIconsEffect} from '../../src/effects/modify-boost-icons-effect.js';
@@ -123,6 +130,110 @@ test('amplification icons add a boost icon to every boost card in the activation
 
     assert.equal(effect.value, 3);
     assert.equal(dialogs[0].data.cumulativeBoost, 7);
+});
+
+test('Objetivo fijado cancels a revealed boost ability before it resolves', async () => {
+    const catalog = await loadCatalog();
+    const objectiveDefinition = catalog.aspects.find(({_id}) =>
+        _id === 'basic-objetivo-fijado');
+    assert.ok(objectiveDefinition);
+    const dialogs = [];
+    const match = new Match({
+        mc: {mcSocket: {send() {}}},
+        name: 'objetivo-fijado-boost-test',
+    });
+    match.scenario = {amplificationIcons: 0};
+    match.openDialog = async dialog => {
+        dialogs.push(dialog);
+        if (dialog.dialogType === DIALOG_USE_CARD) {
+            return {selected: {id: objectiveCard.id}};
+        }
+    };
+
+    const matchFactory = new MatchFactory(match);
+    const player = {
+        amplificationIcons: 0,
+        hand: {cards: []},
+        isHero: true,
+        isPlayer: true,
+        upgrades: [],
+    };
+    match.players.push(player);
+    const objectiveCard = matchFactory.cardsFactory.createGameCard({
+        card: matchFactory.cardsFactory.createCard(objectiveDefinition.card),
+        owner: player,
+    });
+    objectiveCard.controller = player;
+    player.upgrades.push(objectiveCard);
+    await objectiveCard.initTriggers({player});
+
+    const objectiveAbility = objectiveCard.abilities[0];
+    assert.equal(objectiveAbility.trigger, TRIGGER_BOOST_REVEALED);
+    assert.ok(
+        objectiveCard.triggers[TRIGGER_BOOST_REVEALED][PRIORITY_RESPONSE].length
+    );
+    objectiveAbility.costs.canPay = async () => true;
+    objectiveAbility.payCosts = async () => true;
+
+    let boostAbilityResolved = false;
+    const boostCard = {
+        boost: 1,
+        boostAbility: {
+            async resolveAbility() {
+                boostAbilityResolved = true;
+            },
+        },
+        isMainScheme: false,
+        isSideScheme: false,
+        toObj() {
+            return {name: 'Boost card', boost: this.boost};
+        },
+    };
+    const boostEffect = new ResolveBoostEffect({
+        card: boostCard,
+        enemyActivation: {boostCards: [boostCard]},
+        match,
+    });
+    assert.equal(boostEffect.hasBoostAbility, true);
+    assert.equal(
+        await objectiveAbility.canRun(
+            boostEffect.getTriggersParams({player})
+        ),
+        true
+    );
+    const boostWithoutAbility = new ResolveBoostEffect({
+        card: {
+            boost: 1,
+            isMainScheme: false,
+            isSideScheme: false,
+            toObj() {
+                return {name: 'Boost card without ability', boost: this.boost};
+            },
+        },
+        enemyActivation: {boostCards: []},
+        match,
+    });
+    assert.equal(boostWithoutAbility.hasBoostAbility, false);
+    assert.equal(
+        await objectiveAbility.canRun(
+            boostWithoutAbility.getTriggersParams({player})
+        ),
+        false
+    );
+
+    await boostEffect.runEffect({player});
+
+    const responseDialog = dialogs.find(({dialogType}) =>
+        dialogType === DIALOG_USE_CARD);
+    assert.ok(responseDialog);
+    assert.equal(
+        responseDialog.title,
+        '¿Quieres usar alguna Respuesta?'
+    );
+    assert.equal(responseDialog.data.cards[0].name, 'Objetivo fijado');
+    assert.equal(boostAbilityResolved, false);
+    assert.equal(boostEffect.cancelledBoostAbility, true);
+    assert.equal(boostEffect.value, 1);
 });
 
 test('a boost ability reopens the multi-card dialog with its updated icon count', async () => {

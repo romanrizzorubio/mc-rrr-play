@@ -12,6 +12,7 @@ import {
     EFFECT_CANCEL_ATTACK,
     EFFECT_CANCEL_SCHEME,
     EFFECT_CANCEL_ENCOUNTER,
+    EFFECT_CANCEL_BOOST_ABILITY,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CHAINED,
     EFFECT_CREATE_EXTRA_DECK,
@@ -60,6 +61,7 @@ import {
     EFFECT_LOOK_AT_TOP_CARDS,
     EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
+    EFFECT_MODIFY_ACTIVATION,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_BOOST_ICONS,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
@@ -129,6 +131,7 @@ import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
 import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
+import {CancelBoostAbilityEffect} from '../../effects/cancel-boost-ability-effect.js';
 import {CancelBoostIconsEffect} from '../../effects/cancel-boost-icons-effect.js';
 import {CreateExtraDeckEffect} from '../../effects/create-extra-deck-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
@@ -177,6 +180,7 @@ import {LastingEffect} from '../../effects/lasting-effect.js';
 import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
+import {ModifyActivationEffect} from '../../effects/modify-activation-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
 import {ModifyBoostIconsEffect} from '../../effects/modify-boost-icons-effect.js';
 import {
@@ -252,6 +256,7 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ATTACK]: CancelActivationEffect,
     [EFFECT_CANCEL_SCHEME]: CancelActivationEffect,
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
+    [EFFECT_CANCEL_BOOST_ABILITY]: CancelBoostAbilityEffect,
     [EFFECT_CANCEL_BOOST_ICONS]: CancelBoostIconsEffect,
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CREATE_EXTRA_DECK]: CreateExtraDeckEffect,
@@ -298,6 +303,7 @@ export const EFFECT_MAP = {
     [EFFECT_LOOK_AT_TOP_CARDS]: LookAtTopCardsEffect,
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
+    [EFFECT_MODIFY_ACTIVATION]: ModifyActivationEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
     [EFFECT_MODIFY_BOOST_ICONS]: ModifyBoostIconsEffect,
     [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyattackConsequentialEffect,

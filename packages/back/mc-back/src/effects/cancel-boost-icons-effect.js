@@ -14,6 +14,9 @@ export class CancelBoostIconsEffect extends Effect {
             params.requiresPrePlayConfirmation ?? false;
         this.prePlayConfirmation = params.prePlayConfirmation;
     }
+    get isRequiredForAbilityAvailability() {
+        return true;
+    }
     async confirmBeforeResolve(params) {
         const confirmation = this.prePlayConfirmation;
         if (!this.requiresPrePlayConfirmation && !confirmation) {

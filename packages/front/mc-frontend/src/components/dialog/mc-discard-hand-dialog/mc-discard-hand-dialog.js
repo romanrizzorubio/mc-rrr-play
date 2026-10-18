@@ -1,6 +1,6 @@
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
 import {McCardListDialog} from '../mc-card-list-dialog/mc-card-list-dialog.js';
-import {renderTextWithIcons} from '../../../utils/render-text-with-icons.js';
+import {renderTextWithFormatting} from '../../../utils/render-text-with-formatting.js';
 
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import styles from './mc-discard-hand-dialog.css.js';
@@ -42,7 +42,7 @@ export class McDiscardHandDialog extends McCardListDialog {
         let title;
 
         if (instruction) {
-            title = renderTextWithIcons(instruction);
+            title = renderTextWithFormatting(instruction);
         } else if (hand && cards.length > hand) {
             if (hand === 1) {
                 title = `Descarta hasta tener ${hand} carta como máximo.`;

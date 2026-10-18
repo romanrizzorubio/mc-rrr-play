@@ -13,6 +13,10 @@ export default css`
     font-family: var(--mc-font-title, sans-serif);
     font-weight: bold;  
   }
+
+  .trait-reference {
+    font-family: var(--mc-font-trait, sans-serif);
+  }
   
   .submenu {
     padding-left: 16px;

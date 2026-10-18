@@ -1,6 +1,7 @@
 import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
+    ABILITY_RESOURCE,
     CARD_TYPE_ANY,
     CARD_TYPE_ALLY,
     CARD_TYPE_SUPPORT,
@@ -11,15 +12,18 @@ import {
     EFFECT_MODIFY_MAX_ALLIES,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_ANY_PLAYER,
     TARGET_CARD,
     TARGET_EFFECT,
     TARGET_PHASE,
     TARGET_PLAYER,
+    TARGET_THIS,
     TIME_PHASE,
     TRAIT_AVENGER,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
+    TRAIT_VEHICLE,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLAY_CARD,
@@ -211,4 +215,43 @@ export default [
             }
         }
     },
+    {
+        '_id': 'basic-quintransporte',
+        'aspect': 'basic',
+        'order': 21,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'Quintransporte',
+                'set': 'basic',
+                'image': 'aspect/basic/supports/08023.png',
+                'traits': [
+                    TRAIT_AVENGER,
+                    TRAIT_VEHICLE
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'basic',
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_WILD,
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

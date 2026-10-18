@@ -94,6 +94,14 @@ export class ChainedEffect extends Effect {
                 effect.canRun(newParams));
         }
 
+        const requiredEffects = this.effects.filter(effect =>
+            effect.isRequiredForAbilityAvailability);
+
+        if (requiredEffects.length) {
+            return this.promisesSequentialEvery(requiredEffects, effect =>
+                effect.canRun(newParams));
+        }
+
         return this.promisesSequentialSome(this.effects, effect =>
             effect.canRun(newParams));
     }

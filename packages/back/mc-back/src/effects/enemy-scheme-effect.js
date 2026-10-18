@@ -1,8 +1,10 @@
-import {TARGET_MAIN_SCHEME} from 'mc-shared';
+import {
+    TARGET_MAIN_SCHEME,
+    TRIGGER_CHARACTER_SCHEMES,
+} from 'mc-shared';
 
 import {Calc} from '../engine/calc.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
-import {GetSchemeEffect} from './get-scheme-effect.js';
 import {PlaceThreatEffect} from './place-threat-effect.js';
 
 export class EnemySchemeEffect extends EnemyActivationEffect {
@@ -26,8 +28,34 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         this.preventThreat = 0;
         this.threatPlaced = 0;
     }
+    getSchemePlayer(params = {}) {
+        const character = this.character;
+        const engagedPlayer = character?.isMinion &&
+            character.engaged?.isPlayer ?
+            character.engaged :
+            undefined;
+        const player = engagedPlayer ??
+            (params.player?.isPlayer ? params.player : undefined) ??
+            this.match?.initialPlayer ??
+            params.player;
+
+        if (!player) {
+            throw new TypeError(
+                'EnemySchemeEffect requires a player for scheme resolution.'
+            );
+        }
+
+        return player;
+    }
+    resolveParams(params = {}) {
+        return {
+            ...params,
+            player: this.getSchemePlayer(params),
+        };
+    }
     getTargetDialog({player} = {}) {
-        const target = player?.superhero?.currentSide;
+        const schemePlayer = this.getSchemePlayer({player});
+        const target = schemePlayer?.superhero?.currentSide;
 
         if (!target) {
             throw new TypeError(
@@ -37,14 +65,21 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
 
         return target;
     }
-    getBoostTarget({player} = {}) {
-        if (!player) {
-            throw new TypeError(
-                'EnemySchemeEffect requires a player for boost resolution.'
-            );
-        }
+    getTriggersParams(params) {
+        return {
+            ...super.getTriggersParams(params),
+            player: this.getSchemePlayer(params),
+        };
+    }
+    getBoostTarget(params = {}) {
+        return this.getSchemePlayer(params);
+    }
+    getTriggersEnds(params) {
+        const triggers = super.getTriggersEnds(params);
 
-        return player;
+        return this.character?.isCharacter ?
+            triggers.concat([TRIGGER_CHARACTER_SCHEMES]) :
+            triggers;
     }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
@@ -56,11 +91,12 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
     }
     async getSchemeValue(params) {
         const {character} = this;
+        const schemeParams = this.resolveParams(params);
 
         if (this.schemeModifierCalc && !this._schemeModifierResolved) {
             const modifier = await new Calc(this.schemeModifierCalc).calculate({
-                ...params,
-                match: params.match ?? this.match,
+                ...schemeParams,
+                match: schemeParams.match ?? this.match,
                 effect: this,
             });
             if (!Number.isFinite(modifier)) {
@@ -73,21 +109,15 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
             this._schemeModifierResolved = true;
         }
 
-        const getSchemeEffect = new GetSchemeEffect({
-            selectedTarget: character,
-            match: this.match,
-        });
-
-        await getSchemeEffect.runEffect(params);
-
-        return getSchemeEffect.scheme + this.modifyScheme;
+        return await character.getSchemeValue(schemeParams) + this.modifyScheme;
     }
     async getActivationCharacterData(params) {
-        const scheme = await this.getSchemeValue(params);
+        const schemeParams = this.resolveParams(params);
+        const scheme = await this.getSchemeValue(schemeParams);
 
         return this.getCharacterDialogData(
             this.character,
-            params,
+            schemeParams,
             {scheme}
         );
     }
@@ -97,12 +127,13 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         return `${character.name} ejecuta el Plan`;
     }
     async execute(params) {
+        const schemeParams = this.resolveParams(params);
         const {preventThreat} = this;
 
-        await this.dealBoostCards(params);
+        await this.dealBoostCards(schemeParams);
         await this.showBoostCards();
-        const boost = await this.resolveBoostCards(params);
-        const schValue = await this.getSchemeValue(params);
+        const boost = await this.resolveBoostCards(schemeParams);
+        const schValue = await this.getSchemeValue(schemeParams);
         let threat = schValue + boost - preventThreat;
         if (threat < 0) {
             threat = 0;
@@ -117,7 +148,7 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
             ability: this.ability,
         });
 
-        await placeThreatEffect.runEffect(params);
+        await placeThreatEffect.runEffect(schemeParams);
         this.threatPlaced = placeThreatEffect.resolved ?
             placeThreatEffect.threat :
             0;

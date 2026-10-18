@@ -5,6 +5,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_REMOVE_THREAT,
@@ -170,6 +171,66 @@ export default [
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-ataque-sigiloso',
+        'aspect': 'justice',
+        'order': 31,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Ataque sigiloso',
+                'set': 'justice',
+                'image': 'aspect/justice/events/08013.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'justice',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 4
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.defeated': true
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_REMOVE_THREAT,
+                                                    'params': {
+                                                        'target': TARGET_SCHEME,
+                                                        'threat': 2
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

@@ -1,6 +1,8 @@
 import {
     DIALOG_SURGE,
     PLACE_ENCOUNTER_DECK,
+    PRIORITY_INTERRUPT,
+    TRIGGER_SURGE,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -13,6 +15,15 @@ export class ResolveSurgeEffect extends Effect {
     }
     async prepare() {}
     async execute(params) {
+        await this.trigger(
+            PRIORITY_INTERRUPT,
+            [TRIGGER_SURGE],
+            {
+                ...params,
+                effect: this,
+            }
+        );
+
         if (!this.match.skipSurgeNotification) {
             const response = await this.openDialog({
                 dialogType: DIALOG_SURGE,

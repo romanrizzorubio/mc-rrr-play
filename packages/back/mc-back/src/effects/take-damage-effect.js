@@ -2,6 +2,7 @@ import {
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_DEFEAT,
     EFFECT_PLACE_DAMAGE,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
 } from 'mc-shared';
@@ -22,6 +23,7 @@ export class TakeDamageEffect extends Effect {
         this.preventDamage = 0;
         this.excess = 0;
         this.canceled = false;
+        this.defeated = false;
     }
     resetResolutionData() {
         super.resetResolutionData();
@@ -29,6 +31,7 @@ export class TakeDamageEffect extends Effect {
         this.preventDamage = 0;
         this.excess = 0;
         this.canceled = false;
+        this.defeated = false;
     }
     cancel({triggeredTarget} = {}) {
         const {selectedTarget} = this;
@@ -187,10 +190,12 @@ export class TakeDamageEffect extends Effect {
             ]);
     }
     getTriggersEnds(params) {
-        return super.getTriggersEnds(params)
-            .concat([
-                TRIGGER_ATTACHED_TAKES_DAMAGE,
-            ]);
+        const triggers = super.getTriggersEnds(params)
+            .concat([TRIGGER_ATTACHED_TAKES_DAMAGE]);
+
+        return this.checkTrigger(params) ?
+            triggers.concat([TRIGGER_CHARACTER_TAKES_DAMAGE]) :
+            triggers;
     }
     async placeDamage(selectedTarget, takenDamage, params) {
         const placeDamageEffect = this.match.effectsFactory.createEffect({
@@ -213,11 +218,13 @@ export class TakeDamageEffect extends Effect {
         });
 
         await defeatEffect.runEffect(params);
+
+        return defeatEffect.defeated === true;
     }
 
     async takeDamage(selectedTarget, takenDamage, params) {
         if (takenDamage <= 0) {
-            return;
+            return false;
         }
 
         await this.placeDamage(selectedTarget, takenDamage, params);
@@ -225,18 +232,21 @@ export class TakeDamageEffect extends Effect {
         const life = await selectedTarget.getLife();
 
         if (life <= 0) {
-            await this.defeat(selectedTarget, params);
+            return this.defeat(selectedTarget, params);
         }
+
+        return false;
     }
     async execute(params) {
         const {selectedTarget, takenDamage} = this;
+        this.defeated = false;
 
         if (selectedTarget instanceof Array) {
             const takeDamage = async (target, index) => {
                 if (takenDamage instanceof Array) {
-                    await this.takeDamage(target, takenDamage[index], params);
+                    return this.takeDamage(target, takenDamage[index], params);
                 } else {
-                    await this.takeDamage(target, takenDamage, params);
+                    return this.takeDamage(target, takenDamage, params);
                 }
             };
 
@@ -245,7 +255,8 @@ export class TakeDamageEffect extends Effect {
 
             if (resolvesOverkill) {
                 for (const [index, target] of selectedTarget.entries()) {
-                    await takeDamage(target, index);
+                    this.defeated = await takeDamage(target, index) ||
+                        this.defeated;
                 }
             } else {
                 await Promise.all(selectedTarget.map(async (target, index) => {
@@ -277,12 +288,17 @@ export class TakeDamageEffect extends Effect {
 
                 for (const {target, life} of targetsToDefeat.filter(Boolean)) {
                     if (life <= 0) {
-                        await this.defeat(target, params);
+                        this.defeated = await this.defeat(target, params) ||
+                            this.defeated;
                     }
                 }
             }
         } else {
-            await this.takeDamage(selectedTarget, takenDamage, params);
+            this.defeated = await this.takeDamage(
+                selectedTarget,
+                takenDamage,
+                params
+            );
         }
     }
 }
