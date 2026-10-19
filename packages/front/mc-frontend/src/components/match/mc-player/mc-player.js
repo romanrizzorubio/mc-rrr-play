@@ -93,6 +93,7 @@ export class McPlayer extends LitElement {
             player: {
                 handSize,
                 superhero,
+                gameZone,
             },
         } = this;
         const {
@@ -101,6 +102,7 @@ export class McPlayer extends LitElement {
             extraKeywords = [], attached = [], tuckedCards = []
         } = superhero;
         const attachedCards = attached.filter(card => !card.isUpgrade);
+        const obligations = gameZone?.cards?.filter(card => card.isObligation) || [];
 
         return html`
             <mc-superhero-card
@@ -128,6 +130,7 @@ export class McPlayer extends LitElement {
                 .canFlip="${canFlip}"
                 .attached="${attachedCards}"
                 .tuckedCards="${tuckedCards}"
+                .obligations="${obligations}"
                 .exhausted="${exhausted}"
                 @change-menu="${this.handleChangeMenu.bind(this)}"
                 @superhero-ability="${this.handelSuperheroAbility.bind(this)}"
@@ -175,12 +178,45 @@ export class McPlayer extends LitElement {
             ></mc-deck>
         ` : '';
     }
+    renderExtraDecks() {
+        const extraDecks = Object.values(this.player.extraDecks || {});
+
+        return extraDecks.length ? html`
+            <div class="extra-decks">
+                ${extraDecks.map(deck => html`
+                    <mc-deck
+                        .cards="${deck.cards || []}"
+                        .discard="${deck.discard || []}"
+                        .topCard="${deck.topCard}"
+                        .topCardFaceUp="${deck.topCardFaceUp === true}"
+                        .knownCards="${deck.knownCards || []}"
+                        .deckName="${deck.name}"
+                        .deckNameSpansPiles="${true}"
+                        .dragActivation="${this.dragActivation}"
+                        .dragPlayCard="${this.dragPlayCard}"
+                        .dragResourcePayment="${this.dragResourcePayment}"
+                        type="${DECK_TYPES.PLAYER}"
+                        deck-name-position="top"
+                        discard-label="Descarte de ${deck.name}"
+                    ></mc-deck>
+                `)}
+            </div>
+        ` : '';
+    }
+    renderPlayerDecks() {
+        return html`
+            <div class="player-decks">
+                ${this.renderExtraDecks()}
+                ${this.renderDeck()}
+            </div>
+        `;
+    }
     render() {
         const {player} = this;
 
         return player ?
             html`
-                ${this.renderDeck()}
+                ${this.renderPlayerDecks()}
                 ${this.renderSuperhero()}
                 ${this.renderGameZone()}
                 ${this.renderHand()}

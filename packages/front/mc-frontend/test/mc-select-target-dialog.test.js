@@ -6,6 +6,11 @@ globalThis.window = {
     customElements: {
         define() {},
     },
+    mcStaticRemote: {
+        getAssetUrl(path) {
+            return path;
+        },
+    },
 };
 
 const {McSelectTargetDialog} = await import(
@@ -103,4 +108,27 @@ test('list dialog does not render a card when the context has no image', () => {
     const template = dialog.renderContent();
 
     assert.equal(template.values[0], '');
+});
+
+test('list dialog renders image options without visible status text', () => {
+    const dialog = Object.create(McListDialog.prototype);
+    const option = {
+        id: 'stunned',
+        image: 'status/stunned.webp',
+        text: 'Aturdido',
+    };
+    dialog.data = {
+        options: [option],
+        card: {},
+        showCounters: false,
+    };
+
+    const template = dialog.renderItem(option);
+    const imageTemplate = template.values.find(value =>
+        Array.isArray(value?.strings) &&
+        value.strings.some(part => part.includes('option-image')));
+
+    assert.ok(imageTemplate);
+    assert.ok(imageTemplate.values.includes('images/cards/status/stunned.webp'));
+    assert.ok(template.strings.join('').includes('md-list-item'));
 });

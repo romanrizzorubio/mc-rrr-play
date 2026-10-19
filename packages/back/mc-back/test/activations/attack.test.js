@@ -11,25 +11,28 @@ import {Attack} from '../../src/activations/attack.js';
 import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
 import {RetaliateTrigger} from '../../src/triggers/retaliate-trigger.js';
 
-test('basic attacks open the basic-attack interrupt window once', () => {
+test('attacks open the this-attack window and basic attacks open their window once', () => {
     const attack = new Attack({
         effect: {
             ability: {isBasic: true},
         },
     });
 
-    assert.deepEqual(attack.getTriggersInit(), [TRIGGER_YOU_BASIC_ATTACK]);
+    assert.deepEqual(attack.getTriggersInit(), [
+        TRIGGER_THIS_ATTACK,
+        TRIGGER_YOU_BASIC_ATTACK,
+    ]);
     assert.deepEqual(attack.getTriggersInit(), []);
 });
 
-test('non-basic attacks do not open the basic-attack interrupt window', () => {
+test('non-basic attacks open only the this-attack window', () => {
     const attack = new Attack({
         effect: {
             ability: {isBasic: false},
         },
     });
 
-    assert.deepEqual(attack.getTriggersInit(), []);
+    assert.deepEqual(attack.getTriggersInit(), [TRIGGER_THIS_ATTACK]);
 });
 
 test('does not offer retaliation for an enemy removed from play by the attack', async () => {

@@ -21,6 +21,7 @@ export class SearchCardsEffect extends Effect {
         filter = {},
         title = 'Elige una carta',
         count = 1,
+        topCount,
         upTo = false,
         firstMatch = false,
         reverseLocations = [],
@@ -35,6 +36,7 @@ export class SearchCardsEffect extends Effect {
         this.filter = filter;
         this.title = title;
         this.count = count;
+        this.topCount = topCount;
         this.upTo = upTo;
         this.firstMatch = firstMatch;
         this.reverseLocations = reverseLocations;
@@ -103,6 +105,13 @@ export class SearchCardsEffect extends Effect {
         for (const targetPlayer of targetPlayers) {
             for (const location of this.locations) {
                 let cards = this.getCardsAtLocation(targetPlayer, location);
+                if (location === PLACE_DECK &&
+                    this.topCount !== undefined) {
+                    if (!Number.isSafeInteger(this.topCount) || this.topCount < 0) {
+                        throw new TypeError('SearchCardsEffect topCount must be a non-negative integer.');
+                    }
+                    cards = cards.slice(0, this.topCount);
+                }
                 cards = cards.filter(card => !excludedCardIds.has(card.id));
                 if (this.firstMatch && this.reverseLocations.includes(location)) {
                     cards = cards.slice().reverse();

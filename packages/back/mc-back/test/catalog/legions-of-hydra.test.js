@@ -10,10 +10,12 @@ import {
     EFFECT_CANNOT_TARGET,
     EFFECT_DEAL_ENCOUNTER,
     PLACE_SCENARIO_ZONE,
+    PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     TARGET_ENGAGED,
     TRAIT_HYDRA,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_DEFEAT,
 } from 'mc-shared';
 import legionsOfHydra from '../../../mc-data/seed/catalog/sets/legions-of-hydra.js';
 import {ConstantAbility} from '../../src/abilities/misc/constant-ability.js';
@@ -191,6 +193,7 @@ test('Soldado de Hydra has Guard and deals an encounter card to its engaged play
         },
     };
     const match = {
+        triggerCards: {},
         async drawEncounterCards() {
             return [encounterCard];
         },
@@ -203,6 +206,7 @@ test('Soldado de Hydra has Guard and deals an encounter card to its engaged play
         card: cardsFactory.createCard(cardConfig),
         owner: {},
     });
+    await soldier.initTriggers();
     soldier.engaged = engagedPlayer;
     const [whenDefeated] = soldier.abilities;
     const effect = whenDefeated.effect;
@@ -214,6 +218,16 @@ test('Soldado de Hydra has Guard and deals an encounter card to its engaged play
     assert.equal(soldier.guard, true);
     assert.ok(whenDefeated instanceof WhenDefeatedAbility);
     assert.equal(whenDefeated.isWhenDefeated, true);
+    const defeatTriggers = soldier.triggers[TRIGGER_THIS_DEFEAT];
+    assert.ok(
+        defeatTriggers[PRIORITY_FORCED_INTERRUPT]
+            .some(({ability}) => ability === whenDefeated)
+    );
+    assert.equal(
+        defeatTriggers[PRIORITY_FORCED_RESPONSE]?.some(({ability}) =>
+            ability === whenDefeated) ?? false,
+        false
+    );
     assert.ok(effect instanceof DealEncounterEffect);
     assert.equal(effect.effectType, EFFECT_DEAL_ENCOUNTER);
     assert.equal(effect.target, TARGET_ENGAGED);

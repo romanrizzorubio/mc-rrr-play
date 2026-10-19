@@ -336,4 +336,40 @@ export default [
         }
     },
 
+    {
+        '_id': 'aggression-golpe-diestro',
+        'aspect': 'aggression',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Golpe diestro',
+                'set': 'aggression',
+                'image': 'aspect/aggression/events/09037.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

@@ -7,11 +7,13 @@ export class ChainedEffect extends Effect {
 // ChainedEffect
         effects = [],
         outputParams = [],
+        deckId,
     }) {
         super(arguments[0]);
 
         this.effects = effects;
         this.outputParams = outputParams;
+        this.deckId = deckId;
 
         effects.forEach(effect => {
             if (!effect) {

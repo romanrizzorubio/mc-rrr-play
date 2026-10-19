@@ -1,4 +1,4 @@
-import {TRIGGER_YOUR_HERO_GET_HAND_SIZE} from 'mc-shared';
+import {TRIGGER_GET_HAND_SIZE} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -12,7 +12,7 @@ export class GetHandSizeEffect extends Effect {
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
-                TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+                TRIGGER_GET_HAND_SIZE,
             ]);
     }
     async execute(_params) {

@@ -11,8 +11,13 @@ export class Delayed extends Engine {
         this.card = card;
         this.player = player;
         this.effect = effect;
+        this.resolved = false;
     }
-    resolve(params = {}) {
+    async resolve(params = {}) {
+        if (this.resolved) {
+            return;
+        }
+
         const {card, player, effect} = this;
 
         const _params = {
@@ -26,6 +31,9 @@ export class Delayed extends Engine {
             _params.player = player;
         }
 
-        return effect.runEffect(_params);
+        const result = await effect.runEffect(_params);
+        this.resolved = true;
+
+        return result;
     }
 }

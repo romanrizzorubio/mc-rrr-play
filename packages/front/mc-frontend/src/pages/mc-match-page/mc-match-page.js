@@ -231,6 +231,19 @@ export class McMatchPage extends LitElement {
                         deck,
                     });
                 }
+            } else if (deck.isPlayerExtraDeck) {
+                const _player = match.players.find(_p =>
+                    _p.name === deck.ownerName);
+
+                if (_player && deck.id) {
+                    this.changePlayer({
+                        ..._player,
+                        extraDecks: {
+                            ...(_player.extraDecks || {}),
+                            [deck.id]: deck,
+                        },
+                    });
+                }
             }
         }
     }

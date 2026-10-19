@@ -1,5 +1,11 @@
 import {EndLastingAbility} from '../abilities/misc/end-lasting-ability.js';
-import {TIME_PHASE, TIME_TRIGGER_MAP} from 'mc-shared';
+import {
+    TIME_PHASE,
+    TIME_TRIGGER_MAP,
+    TRIGGER_END_PLAY_CARD,
+    TRIGGER_THIS_END_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
+} from 'mc-shared';
 import {EndLastingEffect} from '../effects/end-lasting-effect.js';
 
 import {Engine} from './engine.js';
@@ -12,6 +18,7 @@ export class Lasting extends Engine {
         player,
         effect,
         endEffect,
+        condition,
         selectedTarget,
         triggerCard = card,
         until = TIME_PHASE,
@@ -23,6 +30,7 @@ export class Lasting extends Engine {
         this.player = player;
         this.effect = effect;
         this.endEffect = endEffect;
+        this.condition = condition;
         this.selectedTarget = selectedTarget;
         this.triggerCard = triggerCard;
         this.until = until;
@@ -48,6 +56,13 @@ export class Lasting extends Engine {
                 }),
                 match: this.match,
                 hideDialog: true,
+                condition: [
+                    TRIGGER_END_PLAY_CARD,
+                    TRIGGER_THIS_END_PLAY_CARD,
+                    TRIGGER_YOU_END_PLAY_CARD,
+                ].includes(trigger) ?
+                    this.condition :
+                    undefined,
             });
 
             endLastingAbility.initTriggers(triggerCard);

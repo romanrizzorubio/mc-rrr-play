@@ -105,7 +105,7 @@ import {
     TRIGGER_INSTANT,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
-    TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+    TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
 } from 'mc-shared';
 
@@ -554,7 +554,10 @@ export default {
                                 'type': ABILITY_CONSTANT,
                                 'params': {
                                     'hideDialog': true,
-                                    'trigger': TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+                                    'trigger': TRIGGER_GET_HAND_SIZE,
+                                    'triggerParams': {
+                                        'target': TARGET_YOUR_SUPERHERO
+                                    },
                                     'effect': {
                                         'type': EFFECT_MODIFY_HAND_SIZE,
                                         'params': {

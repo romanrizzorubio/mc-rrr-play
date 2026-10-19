@@ -14,4 +14,10 @@ export default css`
     position: relative;
   }
 
+  .obligations {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
 `;

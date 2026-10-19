@@ -24,9 +24,13 @@ export class CycleEffect extends Effect {
             await addAccelerationTokenEffect.runEffect({
                 player: selectedTarget.owner,
             });
+        } else if (selectedTarget.isPlayerExtraDeck) {
+            selectedTarget.cycle();
         }
 
-        selectedTarget.cycle();
+        if (!selectedTarget.isPlayerExtraDeck) {
+            selectedTarget.cycle();
+        }
         selectedTarget.refresh();
     }
 }

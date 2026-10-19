@@ -13,6 +13,7 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_COST,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PLACE_COUNTERS,
     EFFECT_REMOVE_THREAT,
@@ -23,9 +24,11 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_ALL_ENEMIES,
     TARGET_ALL_PLAYERS,
     TARGET_ENCOUNTER_DECK,
+    TARGET_EFFECT,
     TARGET_TRIGGERED_CARD,
     TARGET_THIS,
     TARGET_SCHEME,
@@ -37,6 +40,7 @@ import {
     TRAIT_DROID,
     TRAIT_SHIELD,
     TRIGGER_CARD_ENTER_PLAY,
+    TRIGGER_PLAY_CARD,
     TRIGGER_ABILITY_COST,
 } from 'mc-shared';
 
@@ -401,6 +405,53 @@ export default [
                                             'title': 'Descarta una carta de tu mano'
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-iron-man',
+        'aspect': 'leadership',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Iron Man',
+                'subtitle': 'Tony Stark',
+                'set': 'leadership',
+                'image': 'aspect/leadership/allies/09039.png',
+                'unique': true,
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'cost': 4,
+                'resources': [
+                    RESOURCE_WILD
+                ],
+                'classification': 'leadership',
+                'attack': 2,
+                'thwart': 2,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_PLAY_CARD,
+                            'condition': {
+                                'effect.card.isUpgrade': true,
+                                'effect.selectedTarget.name': 'Iron Man'
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_COST,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': -1
                                 }
                             }
                         }

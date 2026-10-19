@@ -109,6 +109,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **tough** | duro |
 | **trait** | rasgo |
 | **aerial (rasgo)** | Aéreo |
+| **artifact (rasgo)** | Artefacto |
 | **android (rasgo)** | droide |
 | **armor (rasgo)** | Armadura |
 | **attack (rasgo)** | Ataque |
@@ -122,10 +123,12 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **ice (rasgo)** | Hielo |
 | **location (rasgo)** | Lugar |
 | **metal (rasgo)** | Metal |
+| **mystic (rasgo)** | Místico |
 | **persona (rasgo)** | Individuo |
 | **preparation (rasgo)** | Planificación |
 | **skill (rasgo)** | Habilidad |
 | **spy (rasgo)** | Espía |
+| **spell (rasgo)** | Hechizo |
 | **stone (rasgo)** | Piedra |
 | **tactic (rasgo)** | Táctica |
 | **tech (rasgo)** | Tecnología |
@@ -134,6 +137,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **vehicle (rasgo)** | Vehículo |
 | **goblin (rasgo)** | Duende |
 | **wood (rasgo)** | Madera |
+| **invocation (rasgo)** | Invocación |
 | **triggered ability** | capacidad activada |
 | **triggering condition** | condición de activación |
 | **tuck** | meter debajo |

@@ -100,6 +100,27 @@ export class Effect extends Engine {
         this.delayedEffects = [];
         this.lastingEffects = [];
     }
+    getResolutionChildEffects() {
+        const nestedEffects = new Set();
+
+        Object.entries(this).forEach(([key, value]) => {
+            if (key === '_selectedTarget') {
+                return;
+            }
+
+            if (value instanceof Effect) {
+                nestedEffects.add(value);
+            } else if (Array.isArray(value)) {
+                value.flat(Infinity).forEach(nestedEffect => {
+                    if (nestedEffect instanceof Effect) {
+                        nestedEffects.add(nestedEffect);
+                    }
+                });
+            }
+        });
+
+        return nestedEffects;
+    }
     resetResolutionState({
         preserveSelectedTarget = false,
         preserveNestedSelectedTargets = false,
@@ -119,20 +140,7 @@ export class Effect extends Engine {
         }
         this.resetResolutionData();
 
-        const nestedEffects = new Set();
-        Object.values(this).forEach(value => {
-            if (value instanceof Effect) {
-                nestedEffects.add(value);
-            } else if (Array.isArray(value)) {
-                value.flat(Infinity).forEach(nestedEffect => {
-                    if (nestedEffect instanceof Effect) {
-                        nestedEffects.add(nestedEffect);
-                    }
-                });
-            }
-        });
-
-        nestedEffects.forEach(effect => effect.resetResolutionState({
+        this.getResolutionChildEffects().forEach(effect => effect.resetResolutionState({
             preserveSelectedTarget: preserveNestedSelectedTargets ||
                 preselectedEffectTargets?.has(effect),
             preserveNestedSelectedTargets,
@@ -513,12 +521,17 @@ export class Effect extends Engine {
     async triggerEnds(params, {
         triggerTypes = this.getTriggersEnds(params),
         resolveDelayedEffects = true,
+        resolveInterrupts = false,
     } = {}) {
 
         if (resolveDelayedEffects) {
             await this.resolveDelayedEffects(params);
         }
         await this.trigger(PRIORITY_CONSTANT, triggerTypes, params);
+        if (resolveInterrupts &&
+            await this.trigger(PRIORITY_FORCED_INTERRUPT, triggerTypes, params)) {
+            await this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+        }
 
         const {isActivation, activation} = this;
         const additionalForcedResponses = isActivation && activation &&

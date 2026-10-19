@@ -7,6 +7,8 @@ import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
+    EFFECT_DRAW_CARD,
+    EFFECT_EXHAUST,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
@@ -14,9 +16,11 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     TARGET_ENEMY,
+    TARGET_ANY_PLAYER,
     TARGET_EFFECT,
     TARGET_PLAYER,
     TARGET_THIS,
+    TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
     TARGET_YOUR_HERO,
     TRAIT_ARMOR,
@@ -224,6 +228,57 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'damage': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-imperturbable',
+        'aspect': 'protection',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Imperturbable',
+                'set': 'protection',
+                'image': 'aspect/protection/upgrades/09020.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'protection',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
+                            'condition': {
+                                'effect.isDefended': true,
+                                'effect.defender.isHero': true,
+                                'effect.activation.takenDamage': 0
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DRAW_CARD,
+                                'params': {
+                                    'target': TARGET_YOU
                                 }
                             }
                         }

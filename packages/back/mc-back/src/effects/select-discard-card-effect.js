@@ -1,7 +1,12 @@
-import { DIALOG_DISCARD_HAND} from 'mc-shared';
+import {DIALOG_DISCARD_HAND} from 'mc-shared';
 
 import {DiscardFromHandEffect} from './discard-from-hand-effect.js';
 import {Effect} from './effect.js';
+import {checkCondition} from '../engine/utils.js';
+import {
+    filterTargetCandidates,
+    splitTargetCondition,
+} from '../utils/target-condition-utils.js';
 
 export class SelectDiscardCardEffect extends Effect {
     constructor({
@@ -10,6 +15,7 @@ export class SelectDiscardCardEffect extends Effect {
         countFromHand = false,
         upTo = false,
         minCount = 1,
+        filter = {},
     }) {
         super(arguments[0]);
 
@@ -18,8 +24,17 @@ export class SelectDiscardCardEffect extends Effect {
         this.countFromHand = countFromHand;
         this.upTo = upTo;
         this.minCount = minCount;
+        this.cardFilter = filter;
 
         this.cards = [];
+    }
+    getEligibleCards(player) {
+        const {condition, selectionConditions} =
+            splitTargetCondition(this.cardFilter);
+        const cards = player.hand.cards.filter(card =>
+            checkCondition(card, condition));
+
+        return filterTargetCandidates(cards, selectionConditions);
     }
     async resolveParams(params) {
         const resolvedParams = await super.resolveParams(params);
@@ -44,7 +59,7 @@ export class SelectDiscardCardEffect extends Effect {
 
         const count = params.selectCount ?? this.count;
         return this.upTo || this.countFromHand ||
-            count <= (this.selectedTarget || params.player).hand.cards.length;
+            count <= this.getEligibleCards(this.selectedTarget || params.player).length;
     }
     getCostPaymentEffects(params) {
         return this.shouldPromptForPayment(params) ? [this] : [];
@@ -58,7 +73,7 @@ export class SelectDiscardCardEffect extends Effect {
     async preparePayment(params, session) {
         const {selectedTarget} = this;
         const excludedCardIds = session.getExcludedCardIds();
-        const cards = selectedTarget.hand.cards.filter(card =>
+        const cards = this.getEligibleCards(selectedTarget).filter(card =>
             !excludedCardIds.has(card.id));
         const countFromHand = this.countFromHand ? cards.length : undefined;
         const preparedParams = session.getPreparedEffect(this).effectParams;
@@ -114,8 +129,9 @@ export class SelectDiscardCardEffect extends Effect {
             this.cards = params.costPaymentSession.getPayment(this).cards;
         } else {
             const count = params.selectCount ?? this.count;
+            const eligibleCards = this.getEligibleCards(selectedTarget);
             const dialogCount = this.countFromHand ?
-                selectedTarget.hand.cards.length :
+                eligibleCards.length :
                 count;
             if (!this.upTo && count === 0) {
                 return;
@@ -128,7 +144,7 @@ export class SelectDiscardCardEffect extends Effect {
                     count: dialogCount,
                     upTo: this.upTo,
                     minCount: this.minCount,
-                    cards: selectedTarget.hand.cards.map(card => card.toObj(arguments[0]))
+                    cards: eligibleCards.map(card => card.toObj(arguments[0]))
                 },
             });
 
@@ -136,7 +152,7 @@ export class SelectDiscardCardEffect extends Effect {
 
             if (selected) {
                 this.cards = selected.map(card =>
-                    selectedTarget.hand.cards.find(c => c.id === card.id));
+                    eligibleCards.find(c => c.id === card.id));
             }
         }
 

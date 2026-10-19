@@ -11,7 +11,7 @@ export class ResolveAbilityEffect extends Effect {
         super({...arguments[0], target});
     }
     getAbility(params) {
-        const ability = path(params, this.target);
+        const ability = this.selectedTarget || path(params, this.target);
         if (ability !== undefined &&
             typeof ability.resolveAbility !== 'function') {
             throw new TypeError('ResolveAbilityEffect requires a resolvable ability.');

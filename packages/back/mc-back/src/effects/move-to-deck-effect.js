@@ -17,6 +17,7 @@ export class MoveToDeckEffect extends Effect {
     constructor({
         cards: cardsSource,
         position = DECK_POSITION_SHUFFLE,
+        deckId,
         ...params
     }) {
         super(params);
@@ -28,6 +29,7 @@ export class MoveToDeckEffect extends Effect {
         }
 
         this.position = position;
+        this.deckId = deckId;
         this.cardsSource = cardsSource;
     }
     getCardsToMove(params) {
@@ -50,33 +52,47 @@ export class MoveToDeckEffect extends Effect {
     }
     async execute(params) {
         const {player} = params;
-        const targetPlayer = this.selectedTarget || player;
         const cardsToMove = this.getCardsToMove(params);
+        const targetDeck = this.selectedTarget?.cards &&
+            typeof this.selectedTarget.addToDeck === 'function' ?
+            this.selectedTarget :
+            this.selectedTarget?.deck ||
+            this.selectedTarget?.owner?.deck ||
+            cardsToMove[0]?.owner?.deck ||
+            player?.deck;
 
-        if (targetPlayer?.deck) {
+        if (targetDeck) {
             if (cardsToMove.length > 0) {
                 cardsToMove.forEach(card => {
-                    targetPlayer.deck.searchDiscard(card);
+                    targetDeck.searchDiscard(card);
+                    if (typeof targetDeck.removeCardFromDeck === 'function') {
+                        targetDeck.removeCardFromDeck(card);
+                    } else {
+                        const index = targetDeck.cards?.indexOf(card);
+                        if (index > -1) {
+                            targetDeck.cards.splice(index, 1);
+                        }
+                    }
                 });
 
                 if (this.position === DECK_POSITION_TOP) {
-                    targetPlayer.deck.cards.unshift(...cardsToMove);
+                    targetDeck.cards.unshift(...cardsToMove);
                 } else {
-                    targetPlayer.deck.addToDeck(cardsToMove);
+                    targetDeck.addToDeck(cardsToMove);
                 }
 
                 logGameTrace('deck.cards-moved', {
                     match: this.match.name,
-                    player: targetPlayer.name,
+                    player: targetDeck.owner?.name,
                     count: cardsToMove.length,
                 });
             }
 
             if (this.position === DECK_POSITION_SHUFFLE) {
-                targetPlayer.deck.shuffle();
+                targetDeck.shuffle();
                 logGameTrace('deck.shuffled', {
                     match: this.match.name,
-                    player: targetPlayer.name,
+                    player: targetDeck.owner?.name,
                 });
             }
         }

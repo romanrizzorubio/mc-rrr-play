@@ -184,6 +184,11 @@ export default css`
     pointer-events: none;
   }
 
+  .tucked.side-scheme-facedown {
+    position: static;
+    height: 16px;
+  }
+
   .tucked-card-peek {
     display: flex;
     align-items: flex-end;

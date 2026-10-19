@@ -1,5 +1,13 @@
 export function getTriggerCardPlayer(card, player) {
-    return card.isEvent ? player : card.controller;
+    if (card.isEvent) {
+        return player;
+    }
+
+    const attachedPlayer = card.attachedTo?.owner;
+
+    return attachedPlayer?.isPlayer ?
+        attachedPlayer :
+        card.controller;
 }
 
 export function isEventInPlayerHand(card, player) {

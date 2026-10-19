@@ -2,11 +2,17 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
+    ABILITY_HERO_INTERRUPT,
     DIALOG_ACTIVATE,
     DIALOG_DEFENSE,
     DIALOG_USE_CARD,
     CHARACTER_VILLAIN,
+    EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DELAYED,
+    EFFECT_DO_IF,
+    EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_READY,
     EFFECT_TAKE_DAMAGE,
     LABEL_ATTACK,
     PRIORITY_CONSTANT,
@@ -15,6 +21,7 @@ import {
     PRIORITY_RESPONSE,
     TARGET_ATTACKER,
     TRIGGER_END_PLAY_CARD,
+    TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_YOU_END_PLAY_CARD,
@@ -334,6 +341,142 @@ test('Defensa hábil previews current enemy attack and successive defense bonuse
         bonus: 3,
         totalDefense: 9,
     });
+});
+
+test('Defensa desesperada delays its ready effect until the attack ends', async () => {
+    const event = protectionEvents.find(({_id}) =>
+        _id === 'protection-defensa-desesperada');
+    assert.ok(event);
+    const [abilityConfig] = event.card.params.abilities;
+
+    assert.equal(event.card.params.abilities.length, 1);
+    assert.equal(abilityConfig.type, ABILITY_HERO_INTERRUPT);
+    assert.equal(abilityConfig.params.trigger, TRIGGER_HERO_DEFENDS_ATTACK);
+    assert.equal(abilityConfig.params.effect.type, EFFECT_CHAINED);
+    assert.equal(
+        abilityConfig.params.effect.params.effects[0].type,
+        EFFECT_MODIFY_DEFENSE_VALUE
+    );
+    assert.equal(
+        abilityConfig.params.effect.params.effects[1].type,
+        EFFECT_DELAYED
+    );
+    assert.equal(
+        abilityConfig.params.effect.params.effects[1].params.effect.type,
+        EFFECT_DO_IF
+    );
+    assert.equal(
+        abilityConfig.params.effect.params.effects[1].params.effect.params.effect.type,
+        EFFECT_READY
+    );
+
+    const player = {
+        canDefend: () => true,
+        isHero: true,
+        isPlayer: true,
+    };
+    const hero = {
+        exhausted: true,
+        isHero: true,
+        owner: player,
+        ready() {
+            this.exhausted = false;
+        },
+        async refresh() {},
+    };
+    player.superhero = {
+        currentSide: hero,
+    };
+    const match = {
+        activationsFactory: {
+            createActivation: () => ({
+                checkStatus: () => true,
+                filterTarget: () => true,
+                getTriggersEnds: () => [],
+                getTriggersInit: () => [],
+                getTriggersParams: params => params,
+                getTriggersWould: () => [],
+            }),
+        },
+        triggerCards: {},
+    };
+    const abilitiesFactory = new AbilitiesFactory({match});
+    match.effectsFactory = abilitiesFactory.effectsFactory;
+    const ability = abilitiesFactory.createAbility(abilityConfig);
+    ability.card = {
+        id: 'desperate-defense',
+        isEvent: true,
+        owner: player,
+    };
+    const createAttack = takenDamage => {
+        const attack = new EnemyAttackEffect({
+            enemy: {
+                async getAttackValue() {
+                    return 2;
+                },
+                name: 'Rhino',
+            },
+            match,
+            selectedTarget: player,
+            activation: {
+                checkStatus() {
+                    return true;
+                },
+                getTriggersInit() {
+                    return [];
+                },
+                takenDamage,
+                getTriggersEnds() {
+                    return [];
+                },
+                getTriggersParams(params) {
+                    return params;
+                },
+                getTriggersWould() {
+                    return [];
+                },
+            },
+        });
+        attack.defender = hero;
+        attack.defValue = 2;
+        attack.defense = async () => {};
+
+        return attack;
+    };
+
+    const noDamageAttack = createAttack(0);
+    await ability.resolveAbility({
+        arrowPaid: true,
+        effect: noDamageAttack,
+        player,
+    });
+    assert.equal(noDamageAttack.modifyDefense, 2);
+    assert.equal(hero.exhausted, true);
+    assert.equal(noDamageAttack.delayedEffects.length, 1);
+
+    await noDamageAttack.execute({player});
+    assert.equal(hero.exhausted, false);
+
+    await noDamageAttack.triggerEnds({
+        effect: noDamageAttack,
+        match,
+        player,
+    });
+    assert.equal(hero.exhausted, false);
+
+    hero.exhausted = true;
+    const damageAttack = createAttack(1);
+    await ability.resolveAbility({
+        arrowPaid: true,
+        effect: damageAttack,
+        player,
+    });
+    await damageAttack.triggerEnds({
+        effect: damageAttack,
+        match,
+        player,
+    });
+    assert.equal(hero.exhausted, true);
 });
 
 test('Poneos detras de mi resolves its attack against the villain', async () => {

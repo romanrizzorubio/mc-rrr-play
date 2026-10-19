@@ -324,6 +324,10 @@ test('mc-card-image can dim non-target card backs and discard cards', () => {
         McCardImage.styles.cssText,
         /:host\(\[activation-blocked\]\) img\s*\{\s*filter: brightness\(0\.4\)/
     );
+    assert.match(
+        McCardImage.styles.cssText,
+        /img\s*\{\s*display: block;/
+    );
 });
 
 test('veils deck and discard images while a drag activation is active', () => {
@@ -370,14 +374,15 @@ test('renders tucked cards as a short visible strip beneath the host card', () =
         size: 'm',
     });
     const template = card.renderTucked();
+    const previews = template.values.find(Array.isArray);
     const styles = CardComponent.styles.cssText;
 
-    assert.equal(template.values[0].length, 2);
-    assert.ok(template.values[0].every(preview =>
+    assert.equal(previews.length, 2);
+    assert.ok(previews.every(preview =>
         preview.strings.join('').includes('class="tucked-card-peek"')
     ));
     assert.deepEqual(
-        template.values[0].map(preview => preview.values[0]),
+        previews.map(preview => preview.values[0]),
         [
             'images/cards/tucked-one.png',
             'images/cards/tucked-two.png',
@@ -386,6 +391,65 @@ test('renders tucked cards as a short visible strip beneath the host card', () =
     assert.match(styles, /top: calc\(100% - 8px\)/);
     assert.match(styles, /height: 16px/);
     assert.match(styles, /\.tucked-card-peek\s*\{[^}]*align-items: flex-end/s);
+});
+
+test('renders side-scheme facedown cards as back peeks beneath the host card', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        card: {isSideScheme: true},
+        faceDown: [{isPlayerCard: true}],
+        tuckedCards: [],
+        size: 'm',
+    });
+    const template = card.renderTucked();
+    const previews = template.values.find(Array.isArray);
+
+    assert.ok(template.values.includes('side-scheme-facedown'));
+    assert.equal(previews.length, 1);
+    assert.equal(
+        previews[0].values[0],
+        'images/cards/back/player.jpg'
+    );
+    assert.equal(card.renderFaceDown().strings.join(''), '');
+    assert.match(
+        CardComponent.styles.cssText,
+        /\.tucked\.side-scheme-facedown\s*\{[^}]*position: static;/s
+    );
+});
+
+test('places side-scheme facedown peeks before scheme counters', () => {
+    const peek = {};
+    const counters = {};
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        activationActor: {abilities: []},
+        card: {isSideScheme: true},
+        dragActivation: null,
+        dragPlayCard: null,
+        dragResourcePayment: null,
+        exhausted: false,
+        faceDown: [{isPlayerCard: true}],
+        horizontal: true,
+        image: 'portal.png',
+        isFacedownCard: false,
+        name: 'Abrir un portal a la Dimensión Oscura',
+        rotated: false,
+        size: 'm',
+        tuckedCards: [],
+        renderHeader: () => '',
+        renderStats: () => '',
+        renderTucked: () => peek,
+        renderStage: () => '',
+        renderFacedownPeekButton: () => '',
+        renderCounters: () => counters,
+        renderBottomStats: () => '',
+        renderAcquiredTraits: () => '',
+        renderAcquiredKeywords: () => '',
+        renderAttached: () => '',
+        renderFaceDown: () => '',
+        renderMenu: () => '',
+    });
+    const template = card.renderCard();
+
+    assert.ok(template.values.indexOf(peek) < template.values.indexOf(counters));
 });
 
 test('shows generic counters on cards attached to any host', () => {

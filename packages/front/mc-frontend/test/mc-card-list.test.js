@@ -204,6 +204,28 @@ test('renders an auxiliary scenario deck without its own discard pile', () => {
     assert.equal(template.values[4], '');
 });
 
+test('renders a player auxiliary deck with its top card face up', () => {
+    const deck = Object.assign(Object.create(DeckComponent.prototype), {
+        cards: [{id: 'top-card'}],
+        topCard: {id: 'top-card', image: 'heroes/doctor-strange/09032.png'},
+        topCardFaceUp: true,
+        knownCards: [],
+        deckName: 'Mazo de Invocación',
+        showDeck: true,
+        showDiscard: true,
+        showDeckName: true,
+        deckNamePosition: 'top',
+        type: DECK_TYPES.PLAYER,
+        dragActivation: null,
+        dragPlayCard: null,
+    });
+
+    const template = deck.renderDeck();
+
+    const cardTemplate = template.values[5];
+    assert.match(cardTemplate.values[1], /heroes\/doctor-strange\/09032\.png$/);
+});
+
 test('hides a player deck name without removing its accessible deck label', () => {
     const deck = Object.assign(Object.create(DeckComponent.prototype), {
         deckName: 'Peter Parker',

@@ -5,6 +5,7 @@ import {
     CARD_TYPE_EVENT,
     EFFECT_DEAL_DAMAGE,
     EFFECT_HEAL,
+    EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -15,11 +16,13 @@ import {
     TARGET_CHARACTER,
     TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_HERO,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
     TRAIT_SUPERPOWER,
     TRAIT_THWART,
     TRIGGER_VILLAIN_SCHEMES,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 
 export default [
@@ -168,4 +171,40 @@ export default [
         }
     },
 
+    {
+        '_id': 'basic-alerta',
+        'aspect': 'basic',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Alerta',
+                'set': 'basic',
+                'image': 'aspect/basic/events/09021.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_HERO
+                            },
+                            'effect': {
+                                'type': EFFECT_PREVENT_DAMAGE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'damage': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

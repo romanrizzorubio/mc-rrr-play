@@ -4,9 +4,14 @@ import {ResourceCost} from '../model/costs/resource-cost.js';
 
 
 export class PayPrintedCostEffect extends Effect {
-    constructor() {
+    constructor({
+        deckId,
+        position,
+    }) {
         super(arguments[0]);
 
+        this.deckId = deckId;
+        this.position = position;
         this.isPaid = false;
     }
 
@@ -17,7 +22,16 @@ export class PayPrintedCostEffect extends Effect {
         return this.isPaid;
     }
     getCard(params) {
-        return params.selectedCard || params.card || this.selectedTarget;
+        const selectedTarget = this.selectedTarget;
+        const selectedTargetCard = selectedTarget &&
+            selectedTarget.cost !== undefined ?
+            selectedTarget :
+            undefined;
+
+        return params.selectedCard ||
+            selectedTargetCard ||
+            params.card ||
+            selectedTarget;
     }
     getCostPaymentEffects(params) {
         const card = this.getCard(params);

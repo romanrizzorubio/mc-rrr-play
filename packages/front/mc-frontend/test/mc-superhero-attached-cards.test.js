@@ -95,6 +95,29 @@ test('renders superhero attachments on its card', () => {
     assert.ok(superhero.render().values.includes(superheroAttachments));
 });
 
+test('renders obligations above the superhero card', () => {
+    const obligations = [{id: 'obligation', isObligation: true}];
+    const superhero = Object.assign(
+        Object.create(SuperheroCardComponent.prototype),
+        {
+            image: 'hero',
+            life: 10,
+            obligations,
+            abilities: [],
+            extraTraits: [],
+            extraKeywords: [],
+            canEndTurn: false,
+            flipped: false,
+        }
+    );
+
+    const template = superhero.render();
+    const obligationsTemplate = template.values[0];
+
+    assert.ok(obligationsTemplate.values.includes(obligations));
+    assert.match(obligationsTemplate.strings.join(''), /class="obligations"/);
+});
+
 test('disables the identity-change menu option when flipping is not allowed', () => {
     const superhero = Object.assign(
         Object.create(SuperheroCardComponent.prototype),
@@ -171,4 +194,29 @@ test('forwards the server flip permission to the superhero card', () => {
 
     assert.notEqual(canFlipIndex, -1);
     assert.equal(template.values[canFlipIndex], true);
+});
+
+test('forwards player obligations to the superhero card', () => {
+    const obligations = [{id: 'obligation', isObligation: true}];
+    const player = Object.assign(Object.create(McPlayer.prototype), {
+        player: {
+            handSize: 5,
+            gameZone: {
+                cards: obligations,
+            },
+            superhero: {
+                name: 'Hero',
+                image: 'hero',
+                life: 10,
+                abilities: [],
+            },
+        },
+        canEndTurn: false,
+    });
+
+    const template = player.renderSuperhero();
+
+    assert.ok(template.values.some(value =>
+        Array.isArray(value) && value.some(card => card.id === obligations[0].id)
+    ));
 });

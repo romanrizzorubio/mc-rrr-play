@@ -17,6 +17,10 @@ export default css`
     filter: brightness(0.4);
   }
 
+  img {
+    display: block;
+  }
+
   :host([size="xs"]) {
     --card-short: var(--card-size-xs);
   }

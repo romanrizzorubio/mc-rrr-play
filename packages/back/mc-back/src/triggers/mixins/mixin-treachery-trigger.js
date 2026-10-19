@@ -6,8 +6,9 @@ export const MixinTreacheryTrigger = C => class extends C {
     }
     canTrigger(params) {
         const {effect} = params;
+        const selectedTarget = effect?.selectedTarget;
 
-        if (effect.selectedTarget.isTreachery &&
+        if (selectedTarget?.isTreachery &&
             effect.canceled === CANCEL_ENCOUNTER_NOT) {
             return super.canTrigger(params);
         }

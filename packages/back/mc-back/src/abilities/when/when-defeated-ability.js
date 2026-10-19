@@ -1,8 +1,8 @@
 import {TRIGGER_THIS_DEFEAT} from 'mc-shared';
 
-import {ForcedResponseAbility} from '../response/forced-response-ability.js';
+import {ForcedInterruptAbility} from '../interrupt/forced-interrupt-ability.js';
 
-export class WhenDefeatedAbility extends ForcedResponseAbility {
+export class WhenDefeatedAbility extends ForcedInterruptAbility {
     constructor({
         name = 'Cuando se derrote',
 // Ability

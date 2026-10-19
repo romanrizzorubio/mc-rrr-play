@@ -8,6 +8,10 @@ export class DealBoostEffect extends Effect {
 
         this.enemyActivation = enemyActivation;
     }
+    getResolutionChildEffects() {
+        return [...super.getResolutionChildEffects()]
+            .filter(effect => effect !== this.enemyActivation);
+    }
     async execute(params) {
         const selectedActivation = this.selectedTarget?.boostCards ?
             this.selectedTarget :

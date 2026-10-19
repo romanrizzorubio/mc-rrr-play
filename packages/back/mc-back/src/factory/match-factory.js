@@ -85,6 +85,11 @@ export class MatchFactory {
         const obligations = this._createCopies(params.obligation.card, params.obligation.count);
         const nemesis = this._createCollection(params.nemesis);
         const precon = this._createCollection(params.precon);
+        const extraDecks = (params.extraDecks || []).map(({id, name, cards}) => ({
+            id,
+            name,
+            cards: this._createCollection(cards),
+        }));
 
         return new Superhero({
             sides,
@@ -92,6 +97,7 @@ export class MatchFactory {
             obligations,
             nemesis,
             deck: precon,
+            extraDecks,
             match: this.match,
         });
     }

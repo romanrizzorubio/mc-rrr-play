@@ -33,6 +33,7 @@ export class Superhero extends CharacterGameCard {
         obligations,
         nemesis,
         deck,
+        extraDecks = [],
     }) {
         super(arguments[0]);
 
@@ -40,6 +41,7 @@ export class Superhero extends CharacterGameCard {
         this.obligations = obligations;
         this.nemesis = nemesis;
         this.deck = deck;
+        this.extraDecks = extraDecks;
 
         this.flipped = false;
     }

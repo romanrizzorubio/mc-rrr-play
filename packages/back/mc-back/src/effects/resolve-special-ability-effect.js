@@ -2,6 +2,7 @@ import {
     DIALOG_LIST,
     DIALOG_SELECT_CARD,
     PLACE_IN_PLAY,
+    TARGET_YOU,
 } from 'mc-shared';
 import {SpecialAbility} from '../abilities/misc/special-ability.js';
 import {checkCondition} from '../engine/utils.js';
@@ -15,11 +16,16 @@ export class ResolveSpecialAbilityEffect extends Effect {
         locations = [PLACE_IN_PLAY],
         filter = {},
         resolveAll = false,
+        target = TARGET_YOU,
+        deckId,
+        position,
     }) {
-        super(arguments[0]);
+        super({...arguments[0], target});
         this.locations = locations;
         this.filter = filter;
         this.resolveAll = resolveAll;
+        this.deckId = deckId;
+        this.position = position;
     }
 
     async getAvailableAbilities(params, resolvedCards, isLastStep) {
@@ -30,9 +36,14 @@ export class ResolveSpecialAbilityEffect extends Effect {
             isLastStep,
         };
 
-        for (const location of this.locations) {
-            let cards = [];
-            if (location === PLACE_IN_PLAY) {
+        const selectedCard = this.selectedTarget?.isCard ?
+            this.selectedTarget :
+            undefined;
+        const locations = selectedCard ? [selectedCard] : this.locations;
+
+        for (const location of locations) {
+            let cards = selectedCard ? [selectedCard] : [];
+            if (!selectedCard && location === PLACE_IN_PLAY) {
                 cards = player.gameZone.cards;
             }
             // Podríamos añadir más localizaciones si fuera necesario
@@ -129,6 +140,8 @@ export class ResolveSpecialAbilityEffect extends Effect {
             }
 
             const selected = await this.selectAbility(available, isLastStep);
+            params.selectedCard = selected.gameCard;
+            params.selectedCards = [selected.gameCard];
 
             await selected.ability.resolveAbility({
                 ...params,

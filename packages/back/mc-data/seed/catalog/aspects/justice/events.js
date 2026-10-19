@@ -1,8 +1,10 @@
 import {
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
+    ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
+    EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DO_IF,
@@ -21,7 +23,8 @@ import {
     TARGET_YOU,
     TRAIT_THWART,
     TRAIT_ATTACK,
-    TRIGGER_WOULD_PLACE_THREAT
+    TRIGGER_BOOST_REVEALED,
+    TRIGGER_WOULD_PLACE_THREAT,
 } from 'mc-shared';
 
 export default [
@@ -231,6 +234,38 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-no-tan-deprisa',
+        'aspect': 'justice',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': '¡No tan deprisa!',
+                'set': 'justice',
+                'image': 'aspect/justice/events/09038.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'justice',
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_BOOST_REVEALED,
+                            'effect': {
+                                'type': EFFECT_CANCEL_BOOST_ICONS,
+                                'params': {
+                                    'target': TARGET_EFFECT
                                 }
                             }
                         }

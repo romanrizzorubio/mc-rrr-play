@@ -48,37 +48,46 @@ export async function getAbilitiesWithAvailability(card, player) {
             return serializedAbility;
         }
 
-        ability.prepareEffect();
+        const effect = ability.effect;
+        const selectedTarget = effect?.selectedTarget;
 
-        const availabilityParams = {
-            player,
-            card,
-        };
-        const canRun = await ability.canRun(availabilityParams);
-        const availableTargetIds = isDragActivation &&
-            canRun &&
-            ability.effect &&
-            (!ability.effect.validTarget ||
-                !ability.effect.validTarget.isMultipleTarget({
-                    target: ability.effect.target,
-                })) ?
-            (await ability.effect.getValidTarget(availabilityParams))
-                .map(target => target.id) :
-            undefined;
-        const resourcePayment = await getResourcePaymentAvailability(
-            ability,
-            card,
-            player,
-            canRun
-        );
+        try {
+            ability.prepareEffect();
 
-        return {
-            ...serializedAbility,
-            disable: !canRun,
-            ...(availableTargetIds ?
-                {availableTargetIds} :
-                {}),
-            ...(resourcePayment ? {resourcePayment} : {}),
-        };
+            const availabilityParams = {
+                player,
+                card,
+            };
+            const canRun = await ability.canRun(availabilityParams);
+            const availableTargetIds = isDragActivation &&
+                canRun &&
+                ability.effect &&
+                (!ability.effect.validTarget ||
+                    !ability.effect.validTarget.isMultipleTarget({
+                        target: ability.effect.target,
+                    })) ?
+                (await ability.effect.getValidTarget(availabilityParams))
+                    .map(target => target.id) :
+                undefined;
+            const resourcePayment = await getResourcePaymentAvailability(
+                ability,
+                card,
+                player,
+                canRun
+            );
+
+            return {
+                ...serializedAbility,
+                disable: !canRun,
+                ...(availableTargetIds ?
+                    {availableTargetIds} :
+                    {}),
+                ...(resourcePayment ? {resourcePayment} : {}),
+            };
+        } finally {
+            if (effect) {
+                effect.selectedTarget = selectedTarget;
+            }
+        }
     }));
 }

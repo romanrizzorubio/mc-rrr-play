@@ -21,4 +21,12 @@ export default css`
   .submenu {
     padding-left: 16px;
   }
+
+  .option-image {
+    display: block;
+    width: 120px;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+  }
 `;

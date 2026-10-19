@@ -5,8 +5,19 @@ export class ToughEffect extends Effect {
         return !card.isTough &&
             super.filterTarget.apply(this, arguments);
     }
-    execute(_params) {
+    execute(params) {
         const {selectedTarget} = this;
+
+        if (Array.isArray(selectedTarget)) {
+            return this.promisesSequential(selectedTarget, target => {
+                const toughEffect = new ToughEffect({
+                    selectedTarget: target,
+                    match: this.match,
+                });
+
+                return toughEffect.runEffect(params);
+            });
+        }
 
         selectedTarget.setTough();
 

@@ -49,6 +49,7 @@ export class PlayCardEffect extends Effect {
         this.resourcesPaid = [];
         this.cardsPaid = undefined;
         this.canceled = false;
+        this.cardEffectsCanceled = false;
         this.paymentCancelled = false;
         this.prePlayConfirmationAcceptedFor = undefined;
         this.modifyCost = 0;
@@ -144,7 +145,8 @@ export class PlayCardEffect extends Effect {
             if (card.isUpgrade) {
                 if (card.card.controllerTarget) {
                     return target?.isPlayer &&
-                        !target.getPrintedCard(card.card.id);
+                        (!card.card.maximum ||
+                            !target.getPrintedCard(card.card.id));
                 }
                 return card.canAttach(target, player);
             }
@@ -254,6 +256,7 @@ export class PlayCardEffect extends Effect {
             await ability.resolveAbility({
                 ...params,
                 playCardEffect: this,
+                cancelEffects: this.cardEffectsCanceled,
                 prePlayConfirmationAcceptedFor:
                     this.prePlayConfirmationAcceptedFor,
                 preselectedEffectTargets: this.preselectedEventEffects,
@@ -289,6 +292,9 @@ export class PlayCardEffect extends Effect {
         this.removedFromHand = false;
         this.removedFromPlace = undefined;
         await player.hand.refresh();
+    }
+    cancelEffects() {
+        this.cardEffectsCanceled = true;
     }
     async getCost(params) {
         const {card} = params;

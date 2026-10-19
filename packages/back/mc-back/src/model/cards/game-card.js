@@ -565,7 +565,7 @@ export class GameCard extends Engine {
         }
 
         const {maximum} = this.card;
-        if (this.card.controllerTarget &&
+        if (this.card.controllerTarget && maximum &&
             !this.match.players.some(player =>
                 !player.getPrintedCard(this.card.id))) {
             return false;
@@ -592,7 +592,12 @@ export class GameCard extends Engine {
             }
         } else if (this.card.isEncounterCard) {
             encounterDeck = this.match.scenario.deck;
-            await this.match.scenario.gameZone.discard(this);
+            const controllerZone = this.controller?.gameZone;
+            const discardZone = controllerZone?.cards?.includes(this) ?
+                controllerZone :
+                this.match.scenario.gameZone;
+
+            await discardZone.discard(this);
             await encounterDeck.discard(this);
         }
 
@@ -981,6 +986,7 @@ export class GameCard extends Engine {
             isAttached,
             isAlly,
             isEnvironment,
+            isObligation,
             isResource,
             isSideScheme,
             isSupport,
@@ -1002,6 +1008,7 @@ export class GameCard extends Engine {
             isAttached,
             isAlly,
             isEnvironment,
+            isObligation,
             isResource,
             isSideScheme,
             isSupport,

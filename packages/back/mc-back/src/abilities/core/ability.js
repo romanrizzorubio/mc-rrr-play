@@ -285,6 +285,7 @@ export class Ability extends Engine {
             preserveNestedSelectedTargets = false,
             preselectedEffectTargets,
             arrowPaid = false,
+            cancelEffects = false,
         } = params;
         const resolvedAbilityController = this.card ?
             getTriggerCardPlayer(this.card, player) :
@@ -334,30 +335,34 @@ export class Ability extends Engine {
                     await this.onResolutionStart(params);
 
                     if (effect) {
-                        if (params.fixedPreselectedTarget) {
-                            effect.selectedTarget = params.selectedTarget;
-                        }
-                        const effectParams = {...resolutionParams};
-                        delete effectParams.arrowPaid;
-                        delete effectParams.preselectedTarget;
-                        delete effectParams.fixedPreselectedTarget;
-                        if (!preserveNestedSelectedTargets) {
-                            delete effectParams.preserveNestedSelectedTargets;
-                        }
-                        if (params.fixedPreselectedTarget) {
-                            delete effectParams.selectedTarget;
-                        }
-                        await effect.runEffect({
-                            ...effectParams,
-                            player,
-                        });
+                        if (cancelEffects) {
+                            this.resolved = false;
+                        } else {
+                            if (params.fixedPreselectedTarget) {
+                                effect.selectedTarget = params.selectedTarget;
+                            }
+                            const effectParams = {...resolutionParams};
+                            delete effectParams.arrowPaid;
+                            delete effectParams.preselectedTarget;
+                            delete effectParams.fixedPreselectedTarget;
+                            if (!preserveNestedSelectedTargets) {
+                                delete effectParams.preserveNestedSelectedTargets;
+                            }
+                            if (params.fixedPreselectedTarget) {
+                                delete effectParams.selectedTarget;
+                            }
+                            await effect.runEffect({
+                                ...effectParams,
+                                player,
+                            });
 
-                        if (effect.paymentCancelled) {
-                            this.paymentCancelled = true;
-                            return;
-                        }
+                            if (effect.paymentCancelled) {
+                                this.paymentCancelled = true;
+                                return;
+                            }
 
-                        this.resolved = effect.resolved;
+                            this.resolved = effect.resolved;
+                        }
                     } else {
                         this.resolved = true;
                     }

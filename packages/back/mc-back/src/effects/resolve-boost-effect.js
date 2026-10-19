@@ -27,6 +27,10 @@ export class ResolveBoostEffect extends Effect {
         this.cancelledBoostIcons = 0;
         this.cancelledBoostAbility = false;
     }
+    getResolutionChildEffects() {
+        return [...super.getResolutionChildEffects()]
+            .filter(effect => effect !== this.enemyActivation);
+    }
     resetResolutionData() {
         super.resetResolutionData();
         this.cancelledBoostAbility = false;

@@ -60,6 +60,9 @@ export class Trigger {
     get keepTriggering() {
         return this.ability.keepTriggering;
     }
+    get isOptional() {
+        return this.ability?.effect?.isOptional ?? false;
+    }
     getName(params) {
         if (this.ability.isInterrupt) {
             const name = this.getInterruptName(params);

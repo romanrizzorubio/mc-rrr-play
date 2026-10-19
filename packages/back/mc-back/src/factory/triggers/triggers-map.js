@@ -67,11 +67,12 @@ import {
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
-    TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+    TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART,
     TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
-    TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
+    TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
+    TRIGGER_YOUR_SUPERHERO_GET_TRAITS,
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
@@ -154,13 +155,14 @@ import {
 } from '../../triggers/your-hero-attack-defeat-enemy-trigger.js';
 import {YourHeroGetAttackTrigger} from '../../triggers/your-hero-get-attack-trigger.js';
 import {YourHeroGetDefenseTrigger} from '../../triggers/your-hero-get-defense-trigger.js';
-import {
-    YourHeroGetHandSizeTrigger
-} from '../../triggers/your-hero-get-hand-size-trigger.js';
+import {GetHandSizeTrigger} from '../../triggers/get-hand-size-trigger.js';
 import {
     YourHeroGetHitPointsTrigger
 } from '../../triggers/your-hero-get-hit-points-trigger.js';
 import {YourHeroGetThwartTrigger} from '../../triggers/your-hero-get-thwart-trigger.js';
+import {
+    YourSuperheroGetTraitsTrigger
+} from '../../triggers/your-superhero-get-traits-trigger.js';
 import {
     YourAlteregoGetRecoveryTrigger
 } from '../../triggers/your-alterego-get-recovery-trigger.js';
@@ -215,11 +217,12 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: YourHeroAttackDefeatEnemyTrigger,
     [TRIGGER_YOUR_HERO_GET_ATTACK]: YourHeroGetAttackTrigger,
     [TRIGGER_YOUR_HERO_GET_DEFENSE]: YourHeroGetDefenseTrigger,
-    [TRIGGER_YOUR_HERO_GET_HAND_SIZE]: YourHeroGetHandSizeTrigger,
+    [TRIGGER_GET_HAND_SIZE]: GetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,
     [TRIGGER_YOUR_HERO_GET_THWART]: YourHeroGetThwartTrigger,
     [TRIGGER_YOUR_ALTEREGO_GET_RECOVERY]: YourAlteregoGetRecoveryTrigger,
     [TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES]: YourPlayerGetMaxAlliesTrigger,
+    [TRIGGER_YOUR_SUPERHERO_GET_TRAITS]: YourSuperheroGetTraitsTrigger,
     [TRIGGER_END_PLAY_CARD]: EndPlayCardTrigger,
     [TRIGGER_CARD_ENTER_PLAY]: CardEnterPlayTrigger,
     [TRIGGER_ENEMY_ATTACKS_YOU]: EnemyAttacksYouTrigger,

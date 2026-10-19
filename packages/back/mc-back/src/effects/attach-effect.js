@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {getAttachmentHost} from '../utils/attachment-utils.js';
 
 export class AttachEffect extends Effect {
     constructor({
@@ -21,11 +22,12 @@ export class AttachEffect extends Effect {
     }
 
     async execute(_params) {
-        const {selectedTarget, card} = this;
+        const {card, selectedTarget} = this;
+        const attachedTo = getAttachmentHost(selectedTarget);
 
-        selectedTarget.attached.push(card);
-        card.attachedTo = selectedTarget;
+        attachedTo.attached.push(card);
+        card.attachedTo = attachedTo;
 
-        await selectedTarget.refresh();
+        await attachedTo.refresh();
     }
 }

@@ -31,9 +31,12 @@ export class DeckComponent extends LitElement {
         return {
             cards: {type: Array},
             discard: {type: Array},
+            topCard: {type: Object, attribute: 'top-card'},
+            topCardFaceUp: {type: Boolean, attribute: 'top-card-face-up'},
             knownCards: {type: Array, attribute: 'known-cards'},
             deckName: {type: String, attribute: 'deck-name'},
             deckNamePosition: {type: String, attribute: 'deck-name-position'},
+            deckNameSpansPiles: {type: Boolean, attribute: 'deck-name-spans-piles'},
             showDeckName: {type: Boolean, attribute: 'show-deck-name'},
             discardLabel: {type: String, attribute: 'discard-label'},
             highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
@@ -49,9 +52,12 @@ export class DeckComponent extends LitElement {
 
         this.cards = [];
         this.discard = [];
+        this.topCard = null;
+        this.topCardFaceUp = false;
         this.knownCards = [];
         this.deckName = '';
         this.deckNamePosition = 'bottom';
+        this.deckNameSpansPiles = false;
         this.showDeckName = true;
         this.discardLabel = '';
         this.highlightPlayableDiscard = false;
@@ -210,12 +216,16 @@ export class DeckComponent extends LitElement {
     renderDeck() {
         const {cards, knownCards} = this;
         const deckTitle = this.deckNamePosition === 'top' &&
-            this.showDeckName !== false ?
+            this.showDeckName !== false &&
+            !this.deckNameSpansPiles ?
             this.deckName :
             '';
+        const src = this.topCardFaceUp && this.topCard?.image ?
+            getCardAssetUrl(this.topCard.image) :
+            this.getImageBack();
 
         return this.renderCards(
-            this.getImageBack(),
+            src,
             cards.length,
             false,
             knownCards,
@@ -265,7 +275,9 @@ export class DeckComponent extends LitElement {
         const titleOnTop = deckNamePosition === 'top';
         const title = deckName && this.showDeckName !== false ?
             html`
-                <span class="${titleOnTop ? 'deck-name deck-name-top' : 'deck-name'}">
+                <span class="${titleOnTop ? `deck-name deck-name-top${
+                    this.deckNameSpansPiles ? ' deck-name-spans-piles' : ''
+                }` : 'deck-name'}">
                     ${deckName}
                 </span>
             ` :
@@ -273,7 +285,7 @@ export class DeckComponent extends LitElement {
 
         return html`
             <div class="deck-display" aria-label="${deckName}">
-                ${titleOnTop && !showDeck ? title : ''}
+                ${titleOnTop && (this.deckNameSpansPiles || !showDeck) ? title : ''}
                 <div class="deck-piles">
                     ${showDiscard ? this.renderDiscard() : ''}
                     ${showDeck ? this.renderDeck() : ''}

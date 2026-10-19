@@ -20,6 +20,9 @@ function createPlayer(name, match) {
         match,
         owner: player,
         sides: [],
+        getAttachedCards() {
+            return this.attached;
+        },
     };
 
     return player;

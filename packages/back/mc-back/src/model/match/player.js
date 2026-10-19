@@ -52,6 +52,7 @@ export class Player extends Engine {
         this.config = config;
 
         this.deck = undefined;
+        this.extraDecks = {};
         this.hand = new Hand(this);
         this.gameZone = undefined;
 
@@ -101,6 +102,9 @@ export class Player extends Engine {
     }
     get encounters() {
         return this.gameZone.encounters;
+    }
+    getExtraDeck(id) {
+        return this.extraDecks?.[id];
     }
     get exhausted() {
         return this.superhero.exhausted;
@@ -329,7 +333,10 @@ export class Player extends Engine {
         }
 
         return this.gameZone.getCard(cardId) ||
-            this.gameZone.minions.find(minion => minion.id === cardId);
+            this.gameZone.minions.find(minion => minion.id === cardId) ||
+            Object.values(this.extraDecks || {})
+                .flatMap(deck => [...deck.cards, ...deck.discardPile])
+                .find(card => card.id === cardId);
     }
     async getCardsToPay(
         cardToPlay,
@@ -468,11 +475,28 @@ export class Player extends Engine {
 
         this.deck.initDeck(this.superhero.cards.concat(this.superhero.deck));
     }
+    initExtraDecks() {
+        this.extraDecks = Object.fromEntries(
+            (this.superhero.extraDecks || []).map(({id, name, cards}) => {
+                const deck = new Deck({
+                    owner: this,
+                    id,
+                    name,
+                    isPlayerExtraDeck: true,
+                    topCardFaceUp: true,
+                });
+                deck.initDeck(cards);
+
+                return [id, deck];
+            })
+        );
+    }
     initGameZone() {
         this.gameZone = new PlayerZone({owner: this});
     }
     initPlayer() {
         this.initDeck();
+        this.initExtraDecks();
         this.initGameZone();
     }
     initNemesis() {
@@ -891,6 +915,12 @@ export class Player extends Engine {
             defeated,
             handSize,
             deck: deck ? deck.toObj(arguments[0]) : undefined,
+            extraDecks: Object.fromEntries(
+                Object.entries(this.extraDecks || {}).map(([id, extraDeck]) => [
+                    id,
+                    extraDeck.toObj(arguments[0]),
+                ])
+            ),
             hand: hand ? hand.toObj(arguments[0]) : undefined,
             superhero: superhero ? superhero.toObj(arguments[0]) : undefined,
             gameZone: gameZone ? gameZone.toObj(arguments[0]) : undefined,
@@ -903,7 +933,7 @@ export class Player extends Engine {
         const canFlip = await this.canFlip({card: superhero});
         const handSize = await this.getHandSize();
         const abilities = await getAbilitiesWithAvailability(superhero, this);
-        const attached = await Promise.all(superhero.attached.map(card =>
+        const attached = await Promise.all(superhero.getAttachedCards().map(card =>
             card.toObjWithAbilityAvailability(this)));
         const hand = await this.hand.toObjWithPlayability();
         const gameZone = this.gameZone ?

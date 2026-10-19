@@ -6,7 +6,8 @@ export class YouPlayCardTrigger extends Trigger {
         const {card} = this;
         const controller = getTriggerCardPlayer(card, params.player);
 
-        if (controller && controller === params.player) {
+        if (controller &&
+            (!controller.isPlayer || controller === params.player)) {
             return super.canTrigger(params);
         }
     }

@@ -12,6 +12,7 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_HIT_POINTS,
+    EFFECT_MODIFY_HAND_SIZE,
     EFFECT_MODIFY_RECOVERY_VALUE,
     EFFECT_REMOVE_COUNTER,
     EFFECT_READY,
@@ -28,16 +29,19 @@ import {
     TARGET_THIS,
     TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
+    TARGET_YOUR_HERO,
     TRAIT_AVENGER,
     TRAIT_CONDITION,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
     TRAIT_TITLE,
+    TRAIT_MYSTIC,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
+    TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
     TRIGGER_SURGE,
 } from 'mc-shared';
@@ -482,6 +486,48 @@ export default [
                                 'params': {
                                     'target': TARGET_YOU,
                                     'count': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-el-hechicero-supremo',
+        'aspect': 'basic',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'El Hechicero Supremo',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/09026.png',
+                'traits': [
+                    TRAIT_TITLE
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'basic',
+                'paramsToPlay': {
+                    'traits': TRAIT_MYSTIC
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_GET_HAND_SIZE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_HERO
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_HAND_SIZE,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO,
+                                    'count': 1
                                 }
                             }
                         }

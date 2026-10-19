@@ -93,8 +93,18 @@ export const groupTargets = {
             card.isEnvironment && (!condition || checkCondition(card, condition))),
     [TARGET_CHARACTER]: ({match}) => match.characters,
     [TARGET_ENEMY]: ({match}) => match.enemies,
-    [TARGET_HERO]: ({match}) =>
-        match.heroes.map(player => player.superhero.currentSide),
+    [TARGET_HERO]: ({condition, match}) => {
+        const heroes = match.heroes.map(player => player.superhero.currentSide);
+
+        if (Array.isArray(condition)) {
+            return heroes.filter(hero =>
+                condition.some(alternative => checkCondition(hero, alternative)));
+        }
+
+        return condition ?
+            filterCharactersByCondition(heroes, condition) :
+            heroes;
+    },
     [TARGET_MINION]: ({match}) => match.minions,
     [TARGET_VILLAIN]: ({match}) => [match.villain],
     [TARGET_YOUR_HERO]: ({player}) =>

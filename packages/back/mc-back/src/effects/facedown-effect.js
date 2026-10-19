@@ -22,7 +22,7 @@ export class FaceDownEffect extends Effect {
             match: this.match,
         });
 
-        if (!this.cards || !this.cards.length) {
+        if (!this.cards?.length) {
             this.cards = await validTarget.selectTarget({
                 ...params,
                 target: cardsTarget,

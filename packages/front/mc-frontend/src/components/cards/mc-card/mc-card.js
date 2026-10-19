@@ -53,15 +53,42 @@ export class CardComponent extends LitElement {
     static get is() {
         return 'mc-card';
     }
+    getFaceDownType(card) {
+        if (card.isEncounterCard) {
+            return CARD_TYPES.ENCOUNTER_CARD;
+        }
+        if (card.isPlayerCard) {
+            return CARD_TYPES.ENCOUNTER_PLAYER;
+        }
+        if (card.isVillain) {
+            return CARD_TYPES.ENCOUNTER_VILLAIN;
+        }
+    }
+    getFaceDownPeekCards() {
+        return this.card?.isSideScheme ?
+            (this.faceDown || []).filter(card => this.getFaceDownType(card)) :
+            [];
+    }
     renderTucked() {
         const tuckedCards = this.tuckedCards || [];
+        const faceDownCards = this.getFaceDownPeekCards();
+        const previews = [
+            ...tuckedCards.map(card => ({
+                image: getCardAssetUrl(card.image),
+            })),
+            ...faceDownCards.map(card => ({
+                image: this.getImageBack(this.getFaceDownType(card)),
+            })),
+        ].slice(0, 2);
 
-        return tuckedCards.length ? html`
-            <div class="tucked" aria-hidden="true">
-                ${tuckedCards.slice(0, 2).map(card => html`
+        return previews.length ? html`
+            <div class="tucked ${
+                faceDownCards.length ? 'side-scheme-facedown' : ''
+            }" aria-hidden="true">
+                ${previews.map(({image}) => html`
                     <div class="tucked-card-peek">
                         <mc-card-image
-                            src="${getCardAssetUrl(card.image)}"
+                            src="${image}"
                             size="${this._smallSize}"
                             .activationBlocked="${Boolean(
                                 this.dragActivation ||
@@ -314,12 +341,9 @@ export class CardComponent extends LitElement {
         };
 
         return faceDown ? faceDown.reduce((ret, card) => {
-            if (card.isEncounterCard) {
-                _addType(ret, CARD_TYPES.ENCOUNTER_CARD, card);
-            } else if (card.isPlayerCard) {
-                _addType(ret, CARD_TYPES.ENCOUNTER_PLAYER, card);
-            } else if (card.isVillain) {
-                _addType(ret, CARD_TYPES.ENCOUNTER_VILLAIN, card);
+            const type = this.getFaceDownType(card);
+            if (type) {
+                _addType(ret, type, card);
             }
 
             return ret;
@@ -748,6 +772,7 @@ export class CardComponent extends LitElement {
             rotated,
         } = this;
         const hiddenFacedown = this.isFacedownHidden();
+        const sideSchemeFaceDown = this.getFaceDownPeekCards().length > 0;
         const imageSrc = hiddenFacedown ?
             getCardAssetUrl(this.facedownImage || BACK_CARD_PLAYER) :
             getCardAssetUrl(image);
@@ -783,9 +808,15 @@ export class CardComponent extends LitElement {
                 <slot name="top"></slot>
                 <div class="cards-facedown">
                     ${hiddenFacedown ? '' : this.renderStats()}
-                    <div class="card ${this.tuckedCards?.length ? 'has-tucked-cards' : ''}">
+                    <div class="card ${
+                        this.tuckedCards?.length && !sideSchemeFaceDown ?
+                            'has-tucked-cards' :
+                            ''
+                    }">
                         <div class="card-face">
-                            ${hiddenFacedown ? '' : this.renderTucked()}
+                            ${hiddenFacedown || sideSchemeFaceDown ?
+                                '' :
+                                this.renderTucked()}
                             <div class="${cardFrontClasses}">
                                 ${hiddenFacedown ? '' : this.renderStage()}
                                 <mc-card-image
@@ -805,9 +836,15 @@ export class CardComponent extends LitElement {
                                     @drop="${this.handleDrop.bind(this)}"
                                 ></mc-card-image>
                                 ${this.renderFacedownPeekButton()}
-                                ${hiddenFacedown ? '' : this.renderCounters()}
+                                ${hiddenFacedown || sideSchemeFaceDown ?
+                                    '' :
+                                    this.renderCounters()}
                                 ${hiddenFacedown ? '' : this.renderBottomStats()}
                             </div>
+                            ${sideSchemeFaceDown ? this.renderTucked() : ''}
+                            ${sideSchemeFaceDown ?
+                                this.renderCounters() :
+                                ''}
                             ${hiddenFacedown ? '' : this.renderAcquiredTraits()}
                             ${hiddenFacedown ? '' : this.renderAcquiredKeywords()}
                         </div>
@@ -988,6 +1025,10 @@ export class CardComponent extends LitElement {
         ` : html``;
     }
     renderFaceDown() {
+        if (this.getFaceDownPeekCards().length) {
+            return html``;
+        }
+
         const types = this.getFaceDownTypes();
 
         const htmlFaceDown = Object.keys(types).map(type => {

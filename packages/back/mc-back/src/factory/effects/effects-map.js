@@ -8,6 +8,7 @@ import {
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CANCEL_ACTIVATION,
+    EFFECT_CANCEL_CARD_EFFECTS,
     EFFECT_REPLACE_EFFECT,
     EFFECT_CANCEL_ATTACK,
     EFFECT_CANCEL_SCHEME,
@@ -56,6 +57,7 @@ import {
     EFFECT_FLIP,
     EFFECT_GENERATE_RESOURCES_FROM_CARD,
     EFFECT_GET_ENCOUNTER_CARD,
+    EFFECT_GET_TOP_CARD,
     EFFECT_HEAL,
     EFFECT_INCLUDE_ASIDE_CARDS,
     EFFECT_LASTING,
@@ -92,10 +94,12 @@ import {
     EFFECT_READY,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_COUNTER,
+    EFFECT_REMOVE_STATUS,
     EFFECT_REMOVE_TRAIT,
     EFFECT_REMOVE_USE,
     EFFECT_RESOLVE_ABILITY,
     EFFECT_REMOVE_THREAT,
+    EFFECT_REPLACE_STATUS,
     EFFECT_REQUIRE_DEFENDER,
     EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
     EFFECT_RETURN_FACEDOWN,
@@ -130,6 +134,7 @@ import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-eff
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
+import {CancelCardEffectsEffect} from '../../effects/cancel-card-effects-effect.js';
 import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {CancelBoostAbilityEffect} from '../../effects/cancel-boost-ability-effect.js';
@@ -176,6 +181,7 @@ import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {GenerateResourcesFromCardEffect} from '../../effects/generate-resources-from-card-effect.js';
 import {GetEncounterCardEffect} from '../../effects/get-encounter-card-effect.js';
+import {GetTopCardEffect} from '../../effects/get-top-card-effect.js';
 import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
@@ -214,6 +220,7 @@ import {RandomCardEffect} from '../../effects/random-card-effect.js';
 import {ReadyEffect} from '../../effects/ready-effect.js';
 import {RemoveCardEffect} from '../../effects/remove-card-effect.js';
 import {RemoveCountersEffect} from '../../effects/remove-counters-effect.js';
+import {RemoveStatusEffect} from '../../effects/remove-status-effect.js';
 import {RemoveTraitEffect} from '../../effects/remove-trait-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
 import {RequireDefenderEffect} from '../../effects/require-defender-effect.js';
@@ -240,6 +247,7 @@ import {SurgeEffect} from '../../effects/surge-effect.js';
 import {TakeDamageEffect} from '../../effects/take-damage-effect.js';
 import {ToughEffect} from '../../effects/tough-effect.js';
 import {SelectDiscardToFindCardEffect} from '../../effects/select-discard-to-find-card-effect.js';
+import {ReplaceStatusEffect} from '../../effects/replace-status-effect.js';
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
@@ -254,6 +262,7 @@ export const EFFECT_MAP = {
     [EFFECT_PREVENT_PLACE_DAMAGE]: PreventPlaceDamageEffect,
     [EFFECT_PREVENT_PLACE_THREAT]: PreventPlaceThreatEffect,
     [EFFECT_CANCEL_ACTIVATION]: CancelActivationEffect,
+    [EFFECT_CANCEL_CARD_EFFECTS]: CancelCardEffectsEffect,
     [EFFECT_REPLACE_EFFECT]: ReplaceEffect,
     [EFFECT_CANCEL_ATTACK]: CancelActivationEffect,
     [EFFECT_CANCEL_SCHEME]: CancelActivationEffect,
@@ -299,6 +308,7 @@ export const EFFECT_MAP = {
     [EFFECT_CONVERT_FACEDOWN_CARD]: ConvertFacedownCardEffect,
     [EFFECT_FLIP]: FlipEffect,
     [EFFECT_GET_ENCOUNTER_CARD]: GetEncounterCardEffect,
+    [EFFECT_GET_TOP_CARD]: GetTopCardEffect,
     [EFFECT_HEAL]: HealEffect,
     [EFFECT_INCLUDE_ASIDE_CARDS]: IncludeAsideCardsEffect,
     [EFFECT_DELAYED]: DelayedEffect,
@@ -336,8 +346,10 @@ export const EFFECT_MAP = {
     [EFFECT_REMOVE_THREAT]: RemoveThreatEffect,
     [EFFECT_REQUIRE_DEFENDER]: RequireDefenderEffect,
     [EFFECT_REMOVE_COUNTER]: RemoveCountersEffect,
+    [EFFECT_REMOVE_STATUS]: RemoveStatusEffect,
     [EFFECT_REMOVE_TRAIT]: RemoveTraitEffect,
     [EFFECT_REMOVE_USE]: RemoveCountersEffect,
+    [EFFECT_REPLACE_STATUS]: ReplaceStatusEffect,
     [EFFECT_RETURN_FACEDOWN]: ReturnFaceDownEffect,
     [EFFECT_ENEMY_SCHEME]: EnemySchemeEffect,
     [EFFECT_PUT_PLAY]: PutPlayEffect,

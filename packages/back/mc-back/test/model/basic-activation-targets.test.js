@@ -73,6 +73,9 @@ function createPlayablePlayer(abilities) {
         },
         getEffectiveStats: async () => ({}),
         getEffectiveTraits: async () => [],
+        getAttachedCards() {
+            return this.attached;
+        },
     };
 
     return player;
@@ -99,6 +102,26 @@ test('player snapshot includes only legal target ids for each usable basic activ
         [['villain-1'], undefined]
     );
     assert.equal(snapshot.superhero.abilities[1].disable, true);
+});
+
+test('availability checks preserve an active basic activation target', async () => {
+    const target = {id: 'villain-1'};
+    const ability = createAbility({
+        isAttack: true,
+        targets: [target],
+    });
+    const card = {
+        currentSide: {
+            abilities: [ability],
+        },
+    };
+
+    ability.effect.selectedTarget = target;
+
+    const availability = await getAbilitiesWithAvailability(card, {});
+
+    assert.deepEqual(availability[0].availableTargetIds, ['villain-1']);
+    assert.equal(ability.effect.selectedTarget, target);
 });
 
 test('resolving a basic activation keeps the chosen target and rejects an invalid target', async () => {

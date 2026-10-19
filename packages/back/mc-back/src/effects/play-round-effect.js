@@ -24,6 +24,12 @@ export class PlayRoundEffect extends Effect {
                 TRIGGER_ROUND_ENDS,
             ]);
     }
+    triggerEnds(params, options) {
+        return super.triggerEnds(params, {
+            ...options,
+            resolveInterrupts: true,
+        });
+    }
     async execute(params) {
         this.playing = true;
 

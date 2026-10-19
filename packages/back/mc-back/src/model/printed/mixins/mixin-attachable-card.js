@@ -1,5 +1,6 @@
 import {TARGET_YOU} from 'mc-shared';
 import {AttachEffect} from '../../../effects/attach-effect.js';
+import {getAttachmentHost} from '../../../utils/attachment-utils.js';
 
 export const MixinAttachableCard = C => class extends C {
     constructor({
@@ -30,8 +31,11 @@ export const MixinAttachableCard = C => class extends C {
         });
     }
     canAttach(card) {
+        const attachHost = getAttachmentHost(card);
+
         if (this.maxAttach > 0) {
-            const attached = card.attached.filter(attached => attached.card.id === this.id);
+            const attached = attachHost.attached.filter(attached =>
+                attached.card.id === this.id);
             if (attached.length >= this.maxAttach) {
                 return false;
             }

@@ -11,10 +11,13 @@ import {
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DELAYED,
+    EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_HEAL,
     EFFECT_ENEMY_ATTACK,
     EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_READY,
     EFFECT_STUN,
     LABEL_ATTACK,
     LABEL_DEFENSE,
@@ -27,6 +30,8 @@ import {
     TARGET_HERO,
     TARGET_PLAYER,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
+    TARGET_YOUR_SUPERHERO,
     TARGET_VILLAIN,
     TRAIT_ATTACK,
     TRAIT_DEFENSE,
@@ -335,4 +340,118 @@ export default [
         }
     },
 
+    {
+        '_id': 'protection-defensa-desesperada',
+        'aspect': 'protection',
+        'order': 90,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Defensa desesperada',
+                'set': 'protection',
+                'image': 'aspect/protection/events/09015.png',
+                'traits': [
+                    TRAIT_DEFENSE
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'protection',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'labels': [
+                                LABEL_DEFENSE
+                            ],
+                            'trigger': TRIGGER_HERO_DEFENDS_ATTACK,
+                            'condition': {
+                                'effect.defender.isHero': true
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'count': 2
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DELAYED,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'effect': {
+                                                    'type': EFFECT_DO_IF,
+                                                    'params': {
+                                                        'condition': {
+                                                            'effect.activation.takenDamage': 0
+                                                        },
+                                                        'effect': {
+                                                            'type': EFFECT_READY,
+                                                            'params': {
+                                                                'target': TARGET_YOUR_HERO
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-invertir-las-tornas',
+        'aspect': 'protection',
+        'order': 91,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Invertir las tornas',
+                'set': 'protection',
+                'image': 'aspect/protection/events/09016.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'protection',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'arrow': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_YOUR_SUPERHERO,
+                                    'damage': 2
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 ];

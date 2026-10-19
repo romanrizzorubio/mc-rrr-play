@@ -86,7 +86,7 @@ import {
     TRAIT_SUPERPOWER,
     TRAIT_TECH,
     TRIGGER_INSTANT,
-    TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+    TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS, TARGET_ENEMY
 } from 'mc-shared';
 
@@ -141,7 +141,10 @@ export default {
                         {
                             'type': ABILITY_CONSTANT,
                             'params': {
-                                'trigger': TRIGGER_YOUR_HERO_GET_HAND_SIZE,
+                                'trigger': TRIGGER_GET_HAND_SIZE,
+                                'triggerParams': {
+                                    'target': TARGET_YOUR_HERO
+                                },
                                 'effect': {
                                     'type': EFFECT_MODIFY_HAND_SIZE,
                                     'params': {

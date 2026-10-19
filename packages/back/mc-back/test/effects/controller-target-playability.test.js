@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import basicUpgrades from '../../../mc-data/seed/catalog/aspects/basic/upgrades.js';
+import doctorStrange from '../../../mc-data/seed/catalog/heroes/doctor-strange.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
@@ -40,8 +41,44 @@ test('Aguante can be assigned to another player who does not control a copy', as
         playEffect.filterTarget(eligiblePlayer, {player: owner}),
         true
     );
-    assert.equal(playEffect.filterTarget({
+    const occupiedPlayer = {
         ...eligiblePlayer,
         getPrintedCard: () => ({id: cardId}),
-    }, {player: owner}), false);
+    };
+    assert.equal(playEffect.filterTarget(occupiedPlayer, {player: owner}), false);
+    match.players[1] = occupiedPlayer;
+    assert.equal(await gameCard.canPlay({player: owner}), false);
+});
+
+test('Mejoras mágicas can be assigned to a player who already controls a copy', async () => {
+    const magicEnhancements = doctorStrange.config.cards.find(({card}) =>
+        card.params.name === 'Mejoras mágicas');
+    assert.ok(magicEnhancements);
+
+    const cardId = `${magicEnhancements.card.params.name}--${magicEnhancements.card.params.set}`
+        .replaceAll(' ', '_')
+        .toLowerCase();
+    const player = {
+        isPlayer: true,
+        getPrintedCard(id) {
+            return id === cardId ? {id} : undefined;
+        },
+    };
+    const match = {
+        players: [player],
+        isUniqueCard: () => false,
+    };
+    const cardsFactory = new CardsFactory({match});
+    const gameCard = cardsFactory.createGameCardFromConfig(
+        magicEnhancements.card
+    );
+    gameCard.owner = player;
+
+    assert.equal(await gameCard.canPlay({player}), true);
+
+    const playEffect = new PlayCardEffect({
+        card: gameCard,
+        match,
+    });
+    assert.equal(playEffect.filterTarget(player, {player}), true);
 });

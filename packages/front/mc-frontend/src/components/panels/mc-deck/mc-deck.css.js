@@ -35,6 +35,12 @@ export default css`
     width: 100px;
   }
 
+  .deck-name-spans-piles {
+    align-self: stretch;
+    max-width: none;
+    width: auto;
+  }
+
   .deck-panel-titled {
     display: flex;
     flex-direction: column;

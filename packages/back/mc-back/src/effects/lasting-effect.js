@@ -65,6 +65,7 @@ export class LastingEffect extends Effect {
             until,
             effect,
             endEffect,
+            condition: this.condition,
             player,
             card: ability.card,
             triggerCard: lastingTriggerCard,

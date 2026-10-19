@@ -98,6 +98,21 @@ const normalizePrecon = entries => entries?.map(entry => {
     };
 });
 
+const normalizeExtraDecks = decks => decks?.map(deck => {
+    if (!deck || typeof deck !== 'object' ||
+        typeof deck.id !== 'string' || !deck.id ||
+        typeof deck.name !== 'string' || !deck.name ||
+        !Array.isArray(deck.cards)) {
+        throw new Error('Every hero extra deck must include an ID, name, and cards');
+    }
+
+    return {
+        id: deck.id,
+        name: deck.name,
+        cards: normalizeEntries(deck.cards),
+    };
+});
+
 const normalizeHero = hero => ({
     ...hero,
     config: {
@@ -105,6 +120,7 @@ const normalizeHero = hero => ({
         sides: hero.config.sides.map(normalizeCard),
         cards: normalizeEntries(hero.config.cards),
         precon: normalizePrecon(hero.config.precon),
+        extraDecks: normalizeExtraDecks(hero.config.extraDecks),
         obligation: {
             ...hero.config.obligation,
             card: normalizeCard(hero.config.obligation.card),

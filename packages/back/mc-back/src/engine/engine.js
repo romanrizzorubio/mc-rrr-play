@@ -9,6 +9,7 @@ import {
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TRIGGER_INSTANT,
 } from 'mc-shared';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {TriggersFactory} from '../factory/triggers/triggers-factory.js';
@@ -504,6 +505,10 @@ export class Engine {
     }
     async trigger(priority, type, params, additionalTriggers = []) {
         const triggered = [];
+        const isInstantTrigger = Array.isArray(type) ?
+            type.includes(TRIGGER_INSTANT) :
+            type === TRIGGER_INSTANT;
+        let mandatoryTriggerResolved = false;
         const isEffectActive = () => {
             const {effect} = params;
 
@@ -524,7 +529,11 @@ export class Engine {
                     await trigger.canTrigger(params)
             );
 
-            return registeredTriggers.concat(availableAdditionalTriggers);
+            const availableTriggers = registeredTriggers.concat(availableAdditionalTriggers);
+
+            return isInstantTrigger && mandatoryTriggerResolved ?
+                availableTriggers.filter(trigger => !trigger.isOptional) :
+                availableTriggers;
         };
 
         if (!isEffectActive()) {
@@ -559,6 +568,10 @@ export class Engine {
             }
 
             if (!trigger.paymentCancelled) {
+                if (isInstantTrigger && !trigger.isOptional) {
+                    mandatoryTriggerResolved = true;
+                }
+
                 if (trigger.ability.isOptionAbility) {
                     triggered.push(trigger);
                     triggers.forEach(_trigger => {

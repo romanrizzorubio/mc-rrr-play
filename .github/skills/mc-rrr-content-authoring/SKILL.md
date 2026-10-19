@@ -59,12 +59,22 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 - Auxiliary scenario decks are shuffled during setup, displayed separately, and do not cycle or expose their own discard pile. Obtain a card with `EFFECT_GET_ENCOUNTER_CARD` using `from: PLACE_SCENARIO_EXTRA_DECK` and its configured `deckId`, then pass `effects.0.card` to `EFFECT_REVEAL_ENCOUNTER`. The reveal effect shows and resolves the supplied card without managing its source.
 - Cards discarded from an auxiliary scenario deck go to the encounter deck's discard pile. Test setup separation, top-card reveal, discard routing, persistence, and the deck's discard-free presentation.
 
+### Hero-owned auxiliary decks
+
+- Put a hero-owned auxiliary deck in the hero configuration's `extraDecks` array with an `id`, user-facing `name`, and normalized card entries. Do not put those cards in the normal player deck or in a scenario set.
+- Player auxiliary decks have their own discard pile and are initialized with `topCardFaceUp: true`; serialize and render the top card separately from the facedown stack. Their discard pile must not be routed to the player's normal discard.
+- Use `TARGET_PLAYER_EXTRA_DECK` or `TARGET_PLAYER_EXTRA_DECK_DISCARD` with the effect's `deckId` for generic deck operations. Add `position: TARGET_TOP_CARD` when the effect must target the auxiliary deck's top card; do not create a top-card-specific target or a Doctor-Strange-specific branch.
+- Use `EFFECT_GET_TOP_CARD` with `target: TARGET_PLAYER_EXTRA_DECK` to take the deck's top card, and use `position: TARGET_TOP_CARD` only on effects such as `EFFECT_PAY_PRINTED_COST` or `EFFECT_RESOLVE_SPECIAL_ABILITY` that directly target that top card. Use `EFFECT_MOVE_TO_DECK` with the auxiliary-deck target to return a resolved card, and parameterize `EFFECT_RETURN_FACEDOWN` with a destination target when a facedown card stored under a host returns to a deck.
+- Test deck initialization, top-card serialization, independent discard/cycling, refresh routing, and the exact card identity across remove/resolve/return operations.
+
 ## Ability and effect composition
 
 - Consult `.junie/guidelines/translation-guide.md`, `.junie/guidelines/effects-guide.md`, `.junie/guidelines/targets-guide.md`, and `docs/02-06-ABILITIES-EFFECTS.md` when mapping or changing card abilities.
 - Add `LABEL_ATTACK` or `LABEL_THWART` only when the supplied card text explicitly labels the ability as `(attack)` or `(thwart)` (including localized equivalents such as `(ataque)` or `(intervención)`). Never infer these labels from damage, threat removal, targets, or effect types; without an explicit label in the text, leave them off.
 - For multiple consecutive player attacks, use one `EFFECT_DEAL_DAMAGE` with `isAttack: true` per attack in an `EFFECT_CHAINED`, preserving the printed order and separate attack windows. Do not use `EFFECT_SEVERAL_ATTACKS`, which resolves attacks by multiple enemies. Keep the enclosing ability unlabelled unless the card explicitly labels that ability as an attack.
 - Use `EFFECT_CHAINED` for ordered or data-dependent effects and `EFFECT_SIMULTANEOUS` for independent effects joined by "and". Do not assign an array directly to `ability.effect`.
+- Resolve pronouns such as “ese enemigo”, “ese Plan”, or “esa carta” against the exact target already selected. Give the enclosing chain and dependent effects the same target selector so the engine reuses the selection; do not open a second unrelated target dialog.
+- Treat “adicional” as a modifier of the effect immediately named before it. Include the base and additional amount in one effect using `paramsCalc.plus`, a numeric modifier, or the appropriate generic calculation; do not create a second target selection or a separate unrelated effect.
 - When `EFFECT_MOVE_TO_DECK` receives a card list and uses `DECK_POSITION_SHUFFLE`, it already adds the cards and shuffles the deck. Do not append a separate `EFFECT_SHUFFLE_DECK` for that same operation; use `EFFECT_CHAINED` only when other ordered steps still need to precede or follow the move.
 - During an enemy attack, stop the activation as soon as its attacker leaves play: do not resolve later attack steps or the attack-end triggers, and leave the attack unresolved. A defeated minion always stops its activation. If a defeated Villain advances to a same-title stage, treat that stage as the same attacker and continue with it; a different-title stage or a completed game stops the activation. Recheck after interrupt/response windows and each awaited attack step, and test minion defeat, same-title continuation, different-title transition, and final Villain defeat.
 - For "look at the top N cards, discard one, and return the rest in any order," use the reusable `EFFECT_SELECT_AND_ORDER_TOP_CARDS` and explicitly select the deck with `target` (for example, `TARGET_ENCOUNTER_DECK`); do not discard the entire group or silently preserve its original order.
@@ -82,6 +92,12 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 - When behavior depends on runtime paths such as `paramsCalc`, `targetCountCalc`, `condition`, `effectCondition`, `condition.exclude`, or `sourceIn`, add a regression test with the actual runtime context shape.
 - Numeric keyword values support `[value, true]` for per-player scaling. Apply this consistently to numeric keywords, and verify `Uses` initializes the resulting counters and discards its card when the last counter is removed.
 - Test changes to persistent scenario modifiers while their source is in play and after it leaves play.
+
+### Obligation cards
+
+- An obligation given to a player is put into that player's game zone and its abilities remain active there after its instant resolution. Do not discard it automatically just because its `TRIGGER_INSTANT` ability finished.
+- An option that creates a persistent obligation effect must target the obligation card as its source, keep the card in play while the effect is active, and discard/remove the obligation only through an effect printed on that obligation (for example, an end-of-play response owned by the obligation).
+- When a persistent option modifies the next card a player plays, scope the constant to the player's play trigger and the printed card condition, and ensure its cleanup targets the obligation rather than the player or the played card.
 
 ### Defeat trigger selection
 

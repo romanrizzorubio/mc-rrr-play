@@ -11,11 +11,11 @@ import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {TRIGGER_MAP} from '../../src/factory/triggers/triggers-map.js';
 import {YouPlayCardTrigger} from '../../src/triggers/you-play-card-trigger.js';
 
-test('YouPlayCardTrigger only matches plays by its card controller', () => {
+test('YouPlayCardTrigger matches plays by its player controller', () => {
     assert.equal(TRIGGER_MAP[TRIGGER_YOU_PLAY_CARD], YouPlayCardTrigger);
 
-    const controller = {};
-    const otherPlayer = {};
+    const controller = {isPlayer: true};
+    const otherPlayer = {isPlayer: true};
     const trigger = new YouPlayCardTrigger({
         ability: {
             canTrigger: () => true,
@@ -29,7 +29,33 @@ test('YouPlayCardTrigger only matches plays by its card controller', () => {
     assert.equal(trigger.canTrigger({player: otherPlayer}), undefined);
 });
 
-test('playing a card emits the controller-scoped trigger before paying its cost', async () => {
+test('scenario triggers apply to all players unless attached to a player', () => {
+    const scenario = {};
+    const firstPlayer = {isPlayer: true};
+    const secondPlayer = {isPlayer: true};
+    const createTrigger = card => new YouPlayCardTrigger({
+        ability: {
+            canTrigger: () => true,
+        },
+        card,
+    });
+    const scenarioTrigger = createTrigger({
+        controller: scenario,
+    });
+    const attachedTrigger = createTrigger({
+        attachedTo: {
+            owner: firstPlayer,
+        },
+        controller: scenario,
+    });
+
+    assert.equal(scenarioTrigger.canTrigger({player: firstPlayer}), true);
+    assert.equal(scenarioTrigger.canTrigger({player: secondPlayer}), true);
+    assert.equal(attachedTrigger.canTrigger({player: firstPlayer}), true);
+    assert.equal(attachedTrigger.canTrigger({player: secondPlayer}), undefined);
+});
+
+test('playing a card emits a scenario attachment trigger before paying its cost', async () => {
     const resourceGenerator = {
         abilities: [{
             isResource: true,
@@ -85,9 +111,13 @@ test('playing a card emits the controller-scoped trigger before paying its cost'
             }
         },
     };
+    const scenario = {};
     const nakia = {
-        controller: player,
-        owner: player,
+        attachedTo: {
+            owner: player,
+        },
+        controller: scenario,
+        owner: scenario,
         id: 'nakia',
         isEvent: false,
         triggers: {},

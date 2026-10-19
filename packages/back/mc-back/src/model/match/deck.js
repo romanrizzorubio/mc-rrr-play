@@ -6,23 +6,27 @@ export class Deck extends Engine {
     constructor({
         owner,
         isPlayerDeck = false,
+        isPlayerExtraDeck = false,
         isScenarioDeck = false,
         isScenarioExtraDeck = false,
         id,
         name,
         hasDiscard = true,
         discardTarget,
+        topCardFaceUp = false,
     }) {
         super();
 
         this.owner = owner;
         this.isPlayerDeck = isPlayerDeck;
+        this.isPlayerExtraDeck = isPlayerExtraDeck;
         this.isScenarioDeck = isScenarioDeck;
         this.isScenarioExtraDeck = isScenarioExtraDeck;
         this.id = id;
         this.deckName = name;
         this.hasDiscard = hasDiscard;
         this.discardTarget = discardTarget;
+        this.topCardFaceUp = topCardFaceUp;
 
         this.cards = [];
         this.discardPile = [];
@@ -159,7 +163,12 @@ export class Deck extends Engine {
         const index = this.cards.indexOf(card);
         if (index > -1) {
             this.cards.splice(index, 1);
+            this.knownCards = this.knownCards.filter(knownCard => knownCard !== card);
+
+            return true;
         }
+
+        return false;
     }
     async searchDeck(card) {
         const index = this.cards.indexOf(card);
@@ -184,25 +193,34 @@ export class Deck extends Engine {
     }
     toObj() {
         const {
+            owner,
             cards,
             discardPile,
             name,
             id,
             hasDiscard,
             isPlayerDeck,
+            isPlayerExtraDeck,
             isScenarioDeck,
             isScenarioExtraDeck,
+            topCardFaceUp,
         } = this;
         const knownCards = new Set(this.knownCards || []);
 
         return {
             name,
             ...(id ? {id} : {}),
+            ...(owner?.name ? {ownerName: owner.name} : {}),
             hasDiscard,
             isPlayerDeck,
+            isPlayerExtraDeck,
             isScenarioDeck,
             isScenarioExtraDeck,
+            topCardFaceUp,
             cards: cards.map(card => card.toObj(arguments[0])),
+            ...(topCardFaceUp && cards[0] ? {
+                topCard: cards[0].toObj(arguments[0]),
+            } : {}),
             ...(hasDiscard ? {
                 discard: discardPile.map(card => card.toObj(arguments[0])),
             } : {}),

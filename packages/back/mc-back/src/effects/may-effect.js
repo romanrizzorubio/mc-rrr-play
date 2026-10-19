@@ -9,6 +9,9 @@ export class MayEffect extends Effect {
 
         this.effect = effect;
     }
+    get isOptional() {
+        return true;
+    }
     get keepTriggering() {
         return this.effect.keepTriggering;
     }

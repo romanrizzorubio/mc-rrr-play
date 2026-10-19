@@ -145,6 +145,8 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | `TARGET_ENCOUNTER_DECK_CARDS` | Las cartas del mazo de encuentros. |
 | `TARGET_ENCOUNTER_DISCARD` | Las cartas del descarte de encuentros. |
 | `TARGET_PLAYER_DISCARD` | Las cartas del descarte del jugador actual. |
+| `TARGET_PLAYER_EXTRA_DECK` | El mazo auxiliar del jugador actual identificado por `effect.deckId`. |
+| `TARGET_PLAYER_EXTRA_DECK_DISCARD` | Las cartas del descarte del mazo auxiliar del jugador actual identificado por `effect.deckId`. |
 | `TARGET_ANY_PLAYER` | Todos los jugadores, para seleccionar uno cuando corresponda. |
 
 ### Selector especial (`targets/special.js`)
@@ -193,6 +195,8 @@ effect: {
     },
 }
 ```
+
+Los mazos auxiliares de jugador usan `TARGET_PLAYER_EXTRA_DECK` como `params.target` y `position: TARGET_TOP_CARD` cuando el efecto necesita seleccionar su carta superior.
 
 `Deck.getDiscardTop()` devuelve `discardPile[discardPile.length - 1]`. `Deck.discard()` agrega una carta al final (o concatena al final el orden elegido cuando descarta varias), por lo que la última carta del array es la superior del descarte.
 

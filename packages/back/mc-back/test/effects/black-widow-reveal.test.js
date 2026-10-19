@@ -9,20 +9,29 @@ import {
     EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_REVEAL_ENCOUNTER,
     PLACE_ENCOUNTER_DECK,
+    PRIORITY_INTERRUPT,
+    TARGET_EFFECT,
     TARGET_THIS,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_TREACHERY_REVEAL,
 } from 'mc-shared';
 import {
+    CANCEL_ENCOUNTER_FULL,
     CANCEL_ENCOUNTER_NOT,
+    CANCEL_ENCOUNTER_REVEAL,
     CancelEncounterEffect,
 } from '../../src/effects/cancel-encounter-effect.js';
-import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {AbilitiesFactory} from '../../src/factory/abilities/abilities-factory.js';
+import {Engine} from '../../src/engine/engine.js';
+import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {GameCard} from '../../src/model/cards/game-card.js';
 import {TRIGGER_MAP} from '../../src/factory/triggers/triggers-map.js';
 import {EncounterRevealTrigger} from '../../src/triggers/encounter-reveal-trigger.js';
+import {TreacheryRevealTrigger} from '../../src/triggers/treachery-reveal-trigger.js';
+import blackWidow from '../../../mc-data/seed/catalog/heroes/black-widow.js';
+import doctorStrange from '../../../mc-data/seed/catalog/heroes/doctor-strange.js';
 import protectionAllies from '../../../mc-data/seed/catalog/aspects/protection/allies.js';
+import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
 
 test('Black Widow cancels any revealed encounter card and reveals the next one', () => {
     const blackWidow = protectionAllies.find(({_id}) =>
@@ -85,6 +94,103 @@ test('Black Widow is not offered again while exhausted during the replacement re
     assert.equal(await ability.canTrigger(params), true);
 });
 
+test('treachery cancellation cards are not offered after the reveal is canceled', async () => {
+    const cancellationCards = [
+        {
+            hero: doctorStrange,
+            name: 'Salvaguarda arcana',
+            canceled: CANCEL_ENCOUNTER_FULL,
+        },
+        {
+            hero: spiderman,
+            name: 'Sentido Arácnido Mejorado',
+            canceled: CANCEL_ENCOUNTER_REVEAL,
+        },
+        {
+            hero: blackWidow,
+            name: 'Gancho de escalada',
+            canceled: CANCEL_ENCOUNTER_FULL,
+        },
+    ];
+
+    for (const {hero, name, canceled} of cancellationCards) {
+        const match = {
+            triggerCards: {},
+            openDialog: async ({data}) => ({
+                selected: data.cards[0],
+            }),
+        };
+        const player = {
+            hand: {cards: []},
+            isHero: true,
+            isPlayer: true,
+        };
+        const abilityFactory = new AbilitiesFactory({match});
+        const cardConfig = hero.config.cards.find(({card}) =>
+            card.params.name === name
+        ).card.params;
+        const createTrigger = index => {
+            const ability = abilityFactory.createAbility(cardConfig.abilities[0]);
+            const card = {
+                id: `${name}-${index}`,
+                isEvent: true,
+                name,
+                owner: player,
+                toObj() {
+                    return {id: this.id, name: this.name};
+                },
+            };
+            ability.card = card;
+
+            return new TreacheryRevealTrigger({
+                ability,
+                card,
+                trigger: cardConfig.abilities[0].params.trigger,
+            });
+        };
+        const triggers = [createTrigger(1), createTrigger(2)];
+        player.hand.cards = triggers.map(trigger => trigger.card);
+        let plays = 0;
+        player.triggerEvent = async (trigger, params) => {
+            plays++;
+            await trigger.ability.resolveAbility({
+                ...params,
+                arrowPaid: true,
+                card: trigger.card,
+                player,
+            });
+
+            return {
+                paymentCancelled: false,
+                triggered: trigger.ability.resolved,
+            };
+        };
+
+        const reveal = new RevealEncounterEffect({match});
+        reveal.selectedTarget = {
+            isEncounterCard: true,
+            isTreachery: true,
+        };
+        const engine = new Engine();
+        engine.match = match;
+
+        await engine.trigger(
+            PRIORITY_INTERRUPT,
+            [TRIGGER_TREACHERY_REVEAL],
+            {
+                arrowPaid: true,
+                effect: reveal,
+                player,
+            },
+            triggers
+        );
+
+        assert.equal(triggers[0].ability.effect.target, TARGET_EFFECT, name);
+        assert.equal(plays, 1, name);
+        assert.equal(reveal.canceled, canceled, name);
+    }
+});
+
 test('encounter reveal trigger accepts non-treachery encounter cards only', () => {
     const trigger = new EncounterRevealTrigger({
         ability: {
@@ -108,6 +214,21 @@ test('encounter reveal trigger accepts non-treachery encounter cards only', () =
             },
         },
     }), false);
+});
+
+test('treachery reveal trigger ignores a reveal without a selected target', () => {
+    const trigger = new TreacheryRevealTrigger({
+        ability: {
+            canTrigger: () => true,
+        },
+    });
+
+    assert.equal(trigger.canTrigger({
+        effect: {
+            canceled: CANCEL_ENCOUNTER_NOT,
+        },
+    }), false);
+    assert.equal(trigger.canTrigger({}), false);
 });
 
 test('cancel encounter defaults to treacheries and CARD_TYPE_ANY matches encounter cards', () => {

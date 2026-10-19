@@ -102,9 +102,15 @@ export class Attack extends Activation {
         const {triggersInitLaunched, effect} = this;
         const triggers = super.getTriggersInit(params);
 
-        return !triggersInitLaunched && effect?.ability?.isBasic ?
-            triggers.concat(TRIGGER_YOU_BASIC_ATTACK) :
-            triggers;
+        if (triggersInitLaunched) {
+            return triggers;
+        }
+
+        const attackTriggers = triggers.concat(TRIGGER_THIS_ATTACK);
+
+        return effect?.ability?.isBasic ?
+            attackTriggers.concat(TRIGGER_YOU_BASIC_ATTACK) :
+            attackTriggers;
     }
     checkStatus() {
         const {character} = this;

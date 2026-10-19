@@ -1,6 +1,7 @@
 import {
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
+    PRIORITY_INTERRUPT,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
@@ -101,6 +102,16 @@ export class DefeatEffect extends Effect {
         );
 
         this.defeatedController = selectedTarget.controller;
+        await this.trigger(
+            PRIORITY_INTERRUPT,
+            [TRIGGER_THIS_DEFEAT],
+            {
+                ...params,
+                match: this.match,
+                effect: this,
+                card: selectedTarget,
+            }
+        );
         await selectedTarget.defeat(player);
         this.defeated = true;
 
