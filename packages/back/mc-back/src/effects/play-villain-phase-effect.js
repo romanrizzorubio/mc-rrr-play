@@ -1,4 +1,7 @@
-import {DIALOG_ENCOUNTERS_DEALT} from 'mc-shared';
+import {
+    DIALOG_ENCOUNTERS_DEALT,
+    TRIGGER_VILLAIN_PHASE_STEP,
+} from 'mc-shared';
 
 import {AccelerateSchemeEffect} from './accelerate-scheme-effect.js';
 import {ActivateEffect} from './activate-effect.js';
@@ -130,6 +133,19 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         }
         this.match.players[index].initial = true;
     }
+    async triggerPhaseStep(step, params) {
+        const triggerTypes = [TRIGGER_VILLAIN_PHASE_STEP];
+        // Trigger deduplication is scoped by effect identity, and each step is a new occurrence.
+        const stepEffect = new PlayVillainPhaseEffect({match: this.match});
+        const triggerParams = {
+            ...params,
+            effect: stepEffect,
+            match: this.match,
+            step,
+        };
+
+        await this.triggerEnds(triggerParams, {triggerTypes});
+    }
 
     async execute(params) {
         logGameTrace('villain-phase.start', {
@@ -147,6 +163,9 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         for (let i = this.match.villainPhaseStep ; i < steps.length ; i++) {
             const [name, action] = steps[i];
             await this.runTracedStep(name, action);
+            if (this.match.playing) {
+                await this.triggerPhaseStep(i + 1, params);
+            }
             this.match.villainPhaseStep = i + 1;
             await this.match.persist();
             if (!this.match.playing) {

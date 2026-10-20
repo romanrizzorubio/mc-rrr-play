@@ -504,6 +504,7 @@ export default [
                 'name': 'El Hechicero Supremo',
                 'set': 'basic',
                 'image': 'aspect/basic/upgrades/09026.png',
+                'unique': true,
                 'traits': [
                     TRAIT_TITLE
                 ],

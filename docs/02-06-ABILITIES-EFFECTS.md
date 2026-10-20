@@ -477,6 +477,7 @@ Un **trigger** es una condición que activa un efecto especial:
 
 **Triggers Comunes:**
 - `"When this card is played"` - Al jugar la carta
+- `"Un jugador adopta su identidad de Héroe"` - Después de que un jugador cambie a su identidad de Héroe
 - `"Tu superhéroe realiza un ataque"` - Cuando tu superhéroe realiza un ataque
 - `"Un enemigo realiza un ataque"` - Cuando un enemigo ataca
 - `"This card is defeated"` - Cuando la carta es derrotada

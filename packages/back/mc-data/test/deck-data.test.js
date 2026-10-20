@@ -9,7 +9,9 @@ import {
     CARD_TYPE_HERO,
     TARGET_DECK,
     TRAIT_SHIELD,
+    getPlayerDeckCardCopyLimit,
 } from 'mc-shared';
+import basicUpgrades from '../seed/catalog/aspects/basic/upgrades.js';
 import leadershipAllies from '../seed/catalog/aspects/leadership/allies.js';
 import {MongoDataStore, parseRepositoryDeckSnapshot} from '../index.js';
 
@@ -27,10 +29,10 @@ const card = (id, aspect) => ({
     },
 });
 
-const makeDeckStore = () => {
+const makeDeckStore = (additionalAspectCards = []) => {
     const aspectCards = Array.from({length: 8}, (_value, index) =>
         card(`justice-${index + 1}`, 'justice'));
-    aspectCards.push(leadershipAllies[0]);
+    aspectCards.push(leadershipAllies[0], ...additionalAspectCards);
     aspectCards[0].card.params.cost = 2;
     aspectCards[0].card.params.resources = ['e', 'm'];
     aspectCards[0].card.params.traits = ['avenger', 'weapon'];
@@ -171,6 +173,22 @@ test('catalog exposes fixed hero cards and custom deck config expands only saved
             },
         },
     });
+});
+
+test('catalog marks El Hechicero Supremo as unique and limits it to one copy', async () => {
+    const supremeSorcerer = basicUpgrades.find(({_id}) =>
+        _id === 'basic-el-hechicero-supremo');
+    assert.ok(supremeSorcerer);
+
+    const {store} = makeDeckStore([supremeSorcerer]);
+    const catalog = await store.getDeckEditorCatalog('hero');
+    const cardFromCatalog = catalog.cards.find(({id}) => id === supremeSorcerer._id);
+
+    assert.equal(cardFromCatalog.unique, true);
+    assert.equal(getPlayerDeckCardCopyLimit({
+        aspect: 'justice',
+        cards: [],
+    }, catalog, cardFromCatalog.id), 1);
 });
 
 test('lists custom decks across heroes when no hero filter is provided', async () => {

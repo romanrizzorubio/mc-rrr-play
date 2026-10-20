@@ -66,6 +66,7 @@ export class MatchFactory {
             return this.cardsFactory.createCardSides(sides);
         });
         const scenarioCards = this._createCollection(params.cards);
+        const setAsideCards = this._createCollection(params.setAsideCards || []);
 
         const sets = (await this._getSets(params.sets))
             .concat(await this._getSets(params.defaultSets));
@@ -75,6 +76,7 @@ export class MatchFactory {
             villains,
             mainSchemes,
             scenarioCards,
+            setAsideCards,
             sets,
             match: this.match,
         });

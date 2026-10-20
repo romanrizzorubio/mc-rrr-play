@@ -23,6 +23,7 @@ export class Scenario extends Engine {
         villains,
         mainSchemes,
         scenarioCards,
+        setAsideCards = [],
         sets,
         match,
     }) {
@@ -39,6 +40,7 @@ export class Scenario extends Engine {
         this.extraDecks = {};
         this.gameZone = undefined;
         this.apart = [];
+        this.addApart(setAsideCards);
     }
     addApart(cards) {
         if (!Array.isArray(cards)) {

@@ -9,6 +9,7 @@ export const TRAIT_BLACK_PANTHER = 'black panther';
 export const TRAIT_BRUTE = 'brute';
 export const TRAIT_BUSINESSMAN = 'businessman';
 export const TRAIT_BIRD = 'bird';
+export const TRAIT_CAPTIVE = 'captive';
 export const TRAIT_CHAMPION = 'champion';
 export const TRAIT_CONDITION = 'condition';
 export const TRAIT_CRIMINAL = 'criminal';

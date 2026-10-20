@@ -2,9 +2,10 @@ import {
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_RESPONSE,
-   TARGET_ALTEREGO_SIDE,
-   TARGET_HERO_SIDE,
-   TRIGGER_THIS_FLIP,
+    TARGET_ALTEREGO_SIDE,
+    TARGET_HERO_SIDE,
+    TRIGGER_SUPERHERO_FLIPS,
+    TRIGGER_THIS_FLIP,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
@@ -129,14 +130,20 @@ export class FlipEffect extends Effect {
             await owner.hand.refresh();
         }
 
+        const triggerTypes = [TRIGGER_THIS_FLIP];
+        if (owner?.isPlayer) {
+            triggerTypes.push(TRIGGER_SUPERHERO_FLIPS);
+        }
         const triggerParams = {
             ...params,
             card: selectedTarget,
+            triggeredCard: selectedTarget,
+            ...(owner?.isPlayer ? {player: owner} : {}),
         };
 
-        await this.trigger(PRIORITY_CONSTANT, TRIGGER_THIS_FLIP, triggerParams);
-        await this.trigger(PRIORITY_FORCED_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
-        await this.trigger(PRIORITY_RESPONSE, TRIGGER_THIS_FLIP, triggerParams);
+        await this.trigger(PRIORITY_CONSTANT, triggerTypes, triggerParams);
+        await this.trigger(PRIORITY_FORCED_RESPONSE, triggerTypes, triggerParams);
+        await this.trigger(PRIORITY_RESPONSE, triggerTypes, triggerParams);
     }
     isResolved() {
         return !this.blocked;

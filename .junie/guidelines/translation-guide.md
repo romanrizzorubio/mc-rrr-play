@@ -115,6 +115,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **attack (rasgo)** | Ataque |
 | **avenger (rasgo)** | Vengador |
 | **businessman (rasgo)** | Empresario |
+| **captive (rasgo)** | Cautivo |
 | **condition (rasgo)** | Alteración |
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
