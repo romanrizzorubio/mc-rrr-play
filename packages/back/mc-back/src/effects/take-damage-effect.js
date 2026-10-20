@@ -115,6 +115,10 @@ export class TakeDamageEffect extends Effect {
             return true;
         }
 
+        if (this.isAttack && this.piercing) {
+            return true;
+        }
+
         const {selectedTarget} = this;
 
         if (Array.isArray(selectedTarget)) {
@@ -126,21 +130,24 @@ export class TakeDamageEffect extends Effect {
     async triggerWould(params) {
         const canResolve = await super.triggerWould(params);
         const {selectedTarget} = this;
+        const piercing = this.isAttack && this.piercing;
+        const multiTarget = Array.isArray(selectedTarget);
 
-        if (!canResolve || !Array.isArray(selectedTarget)) {
+        if (!canResolve || (!multiTarget && !piercing)) {
             return canResolve;
         }
 
+        const targets = multiTarget ? selectedTarget : [selectedTarget];
         const damage = Array.isArray(this.damage) ?
             this.damage.slice() :
-            selectedTarget.map(() => this.damage);
+            targets.map(() => this.damage);
         const prevention = Array.isArray(this.preventDamage) ?
             this.preventDamage :
-            selectedTarget.map(() => this.preventDamage);
+            targets.map(() => this.preventDamage);
         let hasDamage = false;
 
-        for (let index = 0; index < selectedTarget.length; index++) {
-            const target = selectedTarget[index];
+        for (let index = 0; index < targets.length; index++) {
+            const target = targets[index];
             const statusTarget = this.getStatusTarget(target);
             const prevented = prevention[index] || 0;
 
@@ -149,7 +156,9 @@ export class TakeDamageEffect extends Effect {
                 damage[index] - prevented > 0) {
                 statusTarget.removeTough();
                 await statusTarget.refresh();
-                damage[index] = prevented;
+                if (!piercing) {
+                    damage[index] = prevented;
+                }
             }
 
             if (damage[index] - prevented > 0) {
@@ -157,7 +166,7 @@ export class TakeDamageEffect extends Effect {
             }
         }
 
-        this.damage = damage;
+        this.damage = multiTarget ? damage : damage[0];
 
         return hasDamage;
     }

@@ -142,6 +142,7 @@ test('DealDamageEffect carries attack context into TakeDamageEffect', async () =
         activation: {},
         ignoreTough: true,
         isAttack: true,
+        keywords: {piercing: true},
         match,
     });
     effect.damage = 2;
@@ -151,4 +152,5 @@ test('DealDamageEffect carries attack context into TakeDamageEffect', async () =
 
     assert.equal(takeDamageEffect.isAttack, true);
     assert.equal(takeDamageEffect.ignoreTough, true);
+    assert.equal(takeDamageEffect.piercing, true);
 });

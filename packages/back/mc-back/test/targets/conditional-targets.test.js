@@ -5,11 +5,14 @@ import {
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_FRIENDLY_CHARACTERS,
+    TARGET_SOURCE,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_UPGRADE_YOU_CONTROL,
     TRAIT_AVENGER,
+    TRAIT_CAPTIVE,
     TRAIT_WEAPON,
 } from 'mc-shared';
+import {basicTargets} from '../../src/targets/basic.js';
 import {groupTargets} from '../../src/targets/groups.js';
 import {playerControlledTargets} from '../../src/targets/player-controlled.js';
 
@@ -43,6 +46,31 @@ test('character targets apply trait conditions', () => {
             condition: {traits: TRAIT_AVENGER},
         }),
         [avenger]
+    );
+});
+
+test('source targets apply configured conditions', () => {
+    const captive = {
+        isAlly: true,
+        traits: [TRAIT_CAPTIVE],
+    };
+    const otherCard = {
+        isAlly: false,
+        traits: [],
+    };
+
+    assert.deepEqual(
+        basicTargets[TARGET_SOURCE]({
+            condition: {
+                isAlly: true,
+                traits: TRAIT_CAPTIVE,
+            },
+            params: {
+                cards: [otherCard, captive],
+            },
+            source: 'cards',
+        }),
+        [captive]
     );
 });
 

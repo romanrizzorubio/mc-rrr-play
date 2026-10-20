@@ -8,6 +8,7 @@ export class LastingEffect extends Effect {
     constructor({
         effect,
         endEffect,
+        useTriggerPlayer = false,
         until,
         triggerType,
         triggerTarget,
@@ -19,6 +20,7 @@ export class LastingEffect extends Effect {
 
         this.effect = effect;
         this.endEffect = endEffect;
+        this.useTriggerPlayer = useTriggerPlayer;
         this.triggerType = triggerType;
         this.triggerTarget = triggerTarget;
         this.until = until;
@@ -27,7 +29,14 @@ export class LastingEffect extends Effect {
         this.limit = limit;
     }
     async execute(params) {
-        const {effect, endEffect, ability, triggerType, triggerTarget} = this;
+        const {
+            effect,
+            endEffect,
+            ability,
+            triggerType,
+            triggerTarget,
+            useTriggerPlayer,
+        } = this;
         const until = this.until ?? TIME_PHASE;
         const {player} = params;
 
@@ -65,6 +74,7 @@ export class LastingEffect extends Effect {
             until,
             effect,
             endEffect,
+            useTriggerPlayer,
             condition: this.condition,
             player,
             card: ability.card,

@@ -31,7 +31,7 @@ export class ForEachEffect extends Effect {
         this.effectDefinition = effectDefinition;
         this.condition = condition;
         this.results = [];
-        this.refreshTarget = false;
+        this.refreshTarget = true;
     }
     resetResolutionData() {
         super.resetResolutionData();

@@ -43,7 +43,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
 | `TARGET_SCENARIO` | El escenario de la partida. |
-| `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta debe producir una colección de candidatos. |
+| `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta debe producir una colección de candidatos; si se configura `condition`, solo devuelve los elementos que la cumplen. |
 | `TARGET_THIS` | La carta de la capacidad: `ability.card`. |
 | `TARGET_TRIGGERED_CARD` | La carta del evento que activó la capacidad, aunque `params.card` se reemplace por la carta que la posee. |
 | `TARGET_YOU` | El jugador actual. |

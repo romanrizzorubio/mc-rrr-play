@@ -18,6 +18,7 @@ export class Lasting extends Engine {
         player,
         effect,
         endEffect,
+        useTriggerPlayer = false,
         condition,
         selectedTarget,
         triggerCard = card,
@@ -30,6 +31,7 @@ export class Lasting extends Engine {
         this.player = player;
         this.effect = effect;
         this.endEffect = endEffect;
+        this.useTriggerPlayer = useTriggerPlayer;
         this.condition = condition;
         this.selectedTarget = selectedTarget;
         this.triggerCard = triggerCard;

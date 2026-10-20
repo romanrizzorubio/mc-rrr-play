@@ -46,6 +46,7 @@ export class FaceDownEffect extends Effect {
         selectedTarget.addFaceDown(cards);
 
         await this.promisesSequential([...owners], owner => owner.hand.refresh());
-        selectedTarget.refresh();
+        const refreshTarget = selectedTarget.gameZone || selectedTarget;
+        await refreshTarget.refresh();
     }
 }

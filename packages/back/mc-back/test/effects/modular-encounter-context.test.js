@@ -4,6 +4,8 @@ import {describe, test} from 'node:test';
 import {
     CALC_BOOST_ICONS,
     DIALOG_ACTIVATE,
+    DIALOG_ENCOUNTERS_REVEAL,
+    DIALOG_SELECT_CARD,
     EFFECT_ENEMY_ATTACK,
     EFFECT_TAKE_DAMAGE,
     RESOURCE_MENTAL,
@@ -14,6 +16,7 @@ import {
     TRIGGER_THIS_ATTACK,
 } from 'mc-shared';
 import aMessOfThings from '../../../mc-data/seed/catalog/sets/a-mess-of-things.js';
+import hydraPatrol from '../../../mc-data/seed/catalog/sets/hydra-patrol.js';
 import powerDrain from '../../../mc-data/seed/catalog/sets/power-drain.js';
 import runningInterference from '../../../mc-data/seed/catalog/sets/running-interference.js';
 import {Attack} from '../../src/activations/attack.js';
@@ -27,6 +30,7 @@ import {SelectDiscardToFindCardEffect} from '../../src/effects/select-discard-to
 import {StunEffect} from '../../src/effects/stun-effect.js';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
+import {CostPaymentSession} from '../../src/utils/cost-payment-session.js';
 
 const createHandCard = (id, resources) => ({
     id,
@@ -68,7 +72,149 @@ function createTailSweep(match) {
     });
 }
 
+const resolveHydraPatrolDefeat = async ({hydraMinionCount}) => {
+    const dialogs = [];
+    let shuffleCount = 0;
+    const hydraMinions = [];
+    let selectedHydraMinion;
+    const encounterDeck = {
+        isScenarioDeck: true,
+        cards: [],
+        discardPile: [],
+        knownCards: [],
+        markKnown(cards) {
+            this.knownCards.push(...cards);
+        },
+        removeCardFromDeck(card) {
+            this.cards = this.cards.filter(candidate => candidate !== card);
+        },
+        searchDiscard(card) {
+            this.discardPile = this.discardPile.filter(candidate => candidate !== card);
+        },
+        async refresh() {},
+        shuffle() {
+            shuffleCount++;
+        },
+    };
+    const scenario = {deck: encounterDeck};
+    const player = {
+        isPlayer: true,
+        name: 'Doctor Strange',
+        deck: {cards: [], discardPile: []},
+        hand: {cards: []},
+        gameZone: {
+            minions: [],
+            async refresh() {},
+        },
+        engage(minion) {
+            this.gameZone.minions.push(minion);
+        },
+        removeEngaged(minion) {
+            this.gameZone.minions = this.gameZone.minions.filter(card =>
+                card !== minion);
+        },
+        async refresh() {},
+    };
+    const match = {
+        name: 'Hydra Patrol regression',
+        players: [player],
+        scenario,
+        triggerCards: {},
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+            if (dialog.dialogType === DIALOG_SELECT_CARD) {
+                const selectedCard = dialog.data.cards.at(-1);
+                selectedHydraMinion = hydraMinions.find(card =>
+                    card.id === selectedCard.id);
+
+                return {selected: [{id: selectedCard.id}]};
+            }
+
+            return undefined;
+        },
+    };
+    const factory = new CardsFactory({match});
+    match.effectsFactory = factory.abilitiesFactory.effectsFactory;
+    const patrolConfig = hydraPatrol.config.cards.find(({card}) =>
+        card.params.name === 'Patrulla de Hydra').card;
+    const patrol = factory.createGameCardFromConfig(patrolConfig, {
+        owner: scenario,
+    });
+    for (const minionName of ['Tropa de Hydra', 'Soldado de Hydra']
+        .slice(0, hydraMinionCount)) {
+        const minionConfig = hydraPatrol.config.cards.find(({card}) =>
+            card.params.name === minionName).card;
+        hydraMinions.push(factory.createGameCardFromConfig(minionConfig, {
+            owner: scenario,
+        }));
+    }
+    encounterDeck.cards.push(...hydraMinions);
+
+    const invocation = {
+        id: 'images-of-ikonn',
+        isEvent: true,
+        name: 'Imágenes de Ikonn',
+        type: 'event',
+    };
+    await patrol.abilities[0].effect.runEffect({
+        player,
+        match,
+        card: patrol,
+        triggeredCard: invocation,
+        selectedCard: invocation,
+        selectedCards: [invocation],
+        costPaymentSession: new CostPaymentSession(),
+    });
+
+    return {
+        dialogs,
+        encounterDeck,
+        hydraMinions,
+        player,
+        selectedHydraMinion,
+        shuffleCount,
+    };
+};
+
 describe('modular encounter context', () => {
+    test('Patrulla de Hydra ignores a stale event selection when no Hydra minion is found', async () => {
+        const {
+            dialogs,
+            player,
+            shuffleCount,
+        } = await resolveHydraPatrolDefeat({hydraMinionCount: 0});
+
+        assert.deepEqual(player.gameZone.minions, []);
+        assert.deepEqual(dialogs, []);
+        assert.equal(shuffleCount, 1);
+    });
+
+    test('Patrulla de Hydra lets the player choose a minion inside another payment session', async () => {
+        const {
+            dialogs,
+            encounterDeck,
+            hydraMinions,
+            player,
+            selectedHydraMinion,
+            shuffleCount,
+        } = await resolveHydraPatrolDefeat({hydraMinionCount: 2});
+
+        assert.deepEqual(player.gameZone.minions, [selectedHydraMinion]);
+        assert.strictEqual(selectedHydraMinion, hydraMinions[1]);
+        assert.ok(hydraMinions.includes(selectedHydraMinion));
+        assert.equal(selectedHydraMinion.engaged, player);
+        assert.equal(encounterDeck.cards.includes(selectedHydraMinion), false);
+        assert.deepEqual(dialogs.map(({dialogType}) => dialogType), [
+            DIALOG_SELECT_CARD,
+            DIALOG_ENCOUNTERS_REVEAL,
+        ]);
+        assert.deepEqual(dialogs[0].data.cards.map(({name}) => name), [
+            'Tropa de Hydra',
+            'Soldado de Hydra',
+        ]);
+        assert.equal(shuffleCount, 1);
+    });
+
     test('Barrido de cola stuns if its single forced attack does not resolve', async () => {
         const condition = {
             isMinion: true,

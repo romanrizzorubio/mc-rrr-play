@@ -94,6 +94,11 @@ export default {
                                                                     {
                                                                         type: EFFECT_ENGAGE,
                                                                         params: {
+                                                                            cardSource: 'selectedCards',
+                                                                            cardCondition: {
+                                                                                isMinion: true,
+                                                                                traits: TRAIT_HYDRA,
+                                                                            },
                                                                             target: TARGET_YOU,
                                                                         },
                                                                     },

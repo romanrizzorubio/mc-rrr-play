@@ -227,9 +227,11 @@ export class SearchCardsEffect extends Effect {
         
         const options = await this.getOptions(params);
         const hasStagedPayment = costPaymentSession?.hasPayment(this) || false;
+        const isPreparedWithoutPayment =
+            costPaymentSession?.isPrepared(this) && !hasStagedPayment;
 
-        if ((costPaymentSession && !hasStagedPayment) ||
-            (options.length === 0 && !costPaymentSession)) {
+        if (isPreparedWithoutPayment ||
+            (options.length === 0 && !hasStagedPayment)) {
             return;
         }
 
@@ -240,10 +242,10 @@ export class SearchCardsEffect extends Effect {
             return;
         }
 
-        if (!costPaymentSession) {
+        if (!hasStagedPayment) {
             await this.markKnownDeckOptions(options, player);
         }
-        const response = costPaymentSession ?
+        const response = hasStagedPayment ?
             undefined :
             await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
@@ -257,12 +259,12 @@ export class SearchCardsEffect extends Effect {
                     upTo: this.upTo,
                 },
             });
-        if (this.showCancel && !costPaymentSession && !response) {
+        if (this.showCancel && !hasStagedPayment && !response) {
             this.paymentCancelled = true;
             return;
         }
 
-        const selected = costPaymentSession ?
+        const selected = hasStagedPayment ?
             costPaymentSession.getPayment(this).cards :
             response?.selected;
         if (selected && selected[0]) {

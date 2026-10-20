@@ -575,6 +575,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             damage: isMultiTarget ? damages : damages[0],
             activation: this.activation,
             isAttack: true,
+            keywords: {piercing: this.piercing},
             match: this.match,
             selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
             ability: this.ability,

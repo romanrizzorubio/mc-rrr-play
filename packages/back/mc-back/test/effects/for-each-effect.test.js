@@ -101,6 +101,22 @@ test('ForEach is unavailable when its condition excludes every target', async ()
     assert.notEqual(await effect.canRun(params), true);
 });
 
+test('ForEach rechecks targets after a prior availability check found none', async () => {
+    const player = createPlayer('player');
+    const effect = createEffect([player], player, []);
+    const params = {
+        effects: [{attacks: []}],
+        player,
+    };
+
+    await effect.prepare(params);
+    player.eligible = false;
+    assert.notEqual(await effect.canRun(params), true);
+
+    player.eligible = true;
+    assert.equal(await effect.canRun(params), true);
+});
+
 test('ForEach excludes targets resolved from paths in condition', async () => {
     const firstPlayer = createPlayer('first');
     const secondPlayer = createPlayer('second');

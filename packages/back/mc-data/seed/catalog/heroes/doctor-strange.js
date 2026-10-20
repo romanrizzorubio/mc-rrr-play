@@ -253,7 +253,7 @@ const invocationCards = [
                                             damage: 7,
                                         },
                                     },
-                                ]),
+                                ], TARGET_ENEMY),
                                 discardResolvedInvocation(),
                             ], {target: TARGET_ENEMY}),
                         },
@@ -710,6 +710,7 @@ const doctorStrange = {
                                 type: ABILITY_HERO_ACTION,
                                 params: {
                                     name: 'Maestro de las artes místicas',
+                                    arrow: payInvocationCost(),
                                     effect: chain([
                                         resolveInvocation(),
                                         invocationTarget(EFFECT_MOVE_TO_DECK, {

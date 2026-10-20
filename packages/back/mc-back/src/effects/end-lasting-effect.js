@@ -22,7 +22,9 @@ export class EndLastingEffect extends Effect {
             await lasting.endEffect.runEffect({
                 ...params,
                 card: lasting.card,
-                player: lasting.player,
+                player: lasting.useTriggerPlayer ?
+                    (params.player || lasting.player) :
+                    lasting.player,
             });
         }
 

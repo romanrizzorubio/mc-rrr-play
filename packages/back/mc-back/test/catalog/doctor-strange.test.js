@@ -6,19 +6,27 @@ import {
     ABILITY_WHEN_REVEALED,
     DIALOG_LIST,
     DIALOG_PAY_COST,
+    DIALOG_SELECT_CARD,
+    DIALOG_SELECT_TARGET,
     DIALOG_USE_CARD,
     EFFECT_CANCEL_CARD_EFFECTS,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_GET_TOP_CARD,
     EFFECT_LASTING,
     EFFECT_MODIFY_TRAITS,
+    EFFECT_PAY_PRINTED_COST,
     EFFECT_RETURN_FACEDOWN,
+    EFFECT_RESOLVE_SPECIAL_ABILITY,
+    EFFECT_SIMULTANEOUS,
+    EFFECT_STUN,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     RESOURCE_ANY,
     TARGET_ALL_CARDS,
     TARGET_ALL_CHARACTERS,
     TARGET_CARD,
+    TARGET_ENEMY,
     TARGET_PLAYER_EXTRA_DECK,
     TRAIT_AERIAL,
     TRAIT_SPELL,
@@ -383,6 +391,153 @@ test('Magic Domain pays the selected Invocation card cost', async () => {
     assert.equal(paid, true);
     assert.equal(paidCard, topCard);
     assert.deepEqual(paidResources, Array(topCard.cost).fill(RESOURCE_ANY));
+});
+
+test('Master of the Mystic Arts pays, resolves, and returns the top Invocation', async () => {
+    const {factory, hero, match, player} = await createDoctorStrange();
+    match.mc = {mcSocket: {send() {}}};
+    const heroSideIndex = player.superhero.sides.findIndex(side => side.isHero);
+    player.superhero.selectedSide = heroSideIndex;
+
+    const invocationDeck = player.getExtraDeck('invocation');
+    const topCardIndex = invocationDeck.cards.findIndex(card => card.cost > 0);
+    const [invocation] = invocationDeck.cards.splice(topCardIndex, 1);
+    assert.ok(invocation);
+    assert.ok(invocation.cost > 0);
+    invocationDeck.cards.unshift(invocation);
+
+    const resource = player.deck.cards.find(card =>
+        card.isResource && card.resources.length >= invocation.cost);
+    assert.ok(resource);
+    player.deck.cards.splice(player.deck.cards.indexOf(resource), 1);
+    player.hand.addCard(resource);
+
+    const maestroConfig = hero.config.cards.find(({card}) =>
+        card.params.name === 'Maestro de las artes místicas');
+    assert.ok(maestroConfig);
+    const maestro = factory.cardsFactory.createGameCardFromConfig(
+        maestroConfig.card,
+        {owner: player}
+    );
+    maestro.controller = player;
+    const maestroAbility = maestro.abilities[0];
+    assert.equal(maestroAbility.arrow.cost.effectType, EFFECT_PAY_PRINTED_COST);
+    assert.equal(
+        maestroAbility.effect.effects[0].effectType,
+        EFFECT_RESOLVE_SPECIAL_ABILITY
+    );
+
+    const resolutionOrder = [];
+    const specialAbility = invocation.abilities[0];
+    specialAbility.canRun = async () => true;
+    specialAbility.resolveAbility = async () => {
+        resolutionOrder.push('special');
+        await invocationDeck.discardTopCards(1);
+    };
+
+    match.openDialog = async ({dialogType, data}) => {
+        if (dialogType === DIALOG_PAY_COST) {
+            resolutionOrder.push('payment');
+            assert.equal(data.card.id, invocation.id);
+            assert.equal(data.cost, invocation.cost);
+
+            return {
+                paid: {
+                    generators: [],
+                    hand: [{id: resource.id}],
+                },
+                resources: resource.resources.slice(0, invocation.cost),
+            };
+        }
+        if (dialogType === DIALOG_SELECT_CARD) {
+            return {selected: [{id: data.cards[0].id}]};
+        }
+
+        throw new Error(`Unexpected dialog: ${dialogType}`);
+    };
+
+    await maestroAbility.resolveAbility({
+        card: maestro,
+        match,
+        player,
+    });
+
+    assert.deepEqual(resolutionOrder, ['payment', 'special']);
+    assert.equal(invocationDeck.cards[0], invocation);
+    assert.equal(invocationDeck.discardPile.includes(invocation), false);
+    assert.equal(invocationDeck.topCardFaceUp, true);
+    assert.equal(
+        player.toObj().extraDecks.invocation.topCard.id,
+        invocation.id
+    );
+});
+
+test('Bandas Carmesí de Cyttorak stuns and damages the same chosen enemy', async () => {
+    const {match, player} = await createDoctorStrange();
+    const invocation = player.getExtraDeck('invocation').cards.find(card =>
+        card.name === 'Bandas Carmesí de Cyttorak');
+    assert.ok(invocation);
+
+    const enemies = ['enemy-one', 'enemy-two'].map((id, index) => ({
+        id,
+        isEnemy: true,
+        isInPlay: true,
+        isStunned: false,
+        name: `Enemy ${index + 1}`,
+        stun() {
+            this.isStunned = true;
+        },
+        async refresh() {},
+        toObj() {
+            return {id: this.id, name: this.name};
+        },
+    }));
+    match.enemies = enemies;
+
+    const dialogs = [];
+    match.openDialog = async ({dialogType, data}) => {
+        dialogs.push({dialogType, data});
+
+        return {selected: {id: enemies[1].id}};
+    };
+
+    const effect = invocation.abilities[0].effect;
+    const [simultaneousEffect] = effect.effects;
+    assert.equal(simultaneousEffect.effectType, EFFECT_SIMULTANEOUS);
+    assert.equal(simultaneousEffect.target, TARGET_ENEMY);
+    const stunEffect = simultaneousEffect.effects.find(({effectType}) =>
+        effectType === EFFECT_STUN);
+    const damageEffect = simultaneousEffect.effects.find(({effectType}) =>
+        effectType === EFFECT_DEAL_DAMAGE);
+    const damageEvents = [];
+
+    damageEffect.execute = async function() {
+        damageEvents.push({
+            damage: this.damage,
+            target: this.selectedTarget,
+        });
+    };
+    effect.effects[1].execute = async () => {};
+
+    await effect.runEffect({
+        player,
+        match,
+        card: invocation,
+        selectedCard: invocation,
+        selectedCards: [invocation],
+    });
+
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].dialogType, DIALOG_SELECT_TARGET);
+    assert.deepEqual(dialogs[0].data.cards.map(({id}) => id), [
+        'enemy-one',
+        'enemy-two',
+    ]);
+    assert.strictEqual(stunEffect.selectedTarget, enemies[1]);
+    assert.strictEqual(damageEvents[0].target, enemies[1]);
+    assert.deepEqual(damageEvents.map(({damage}) => damage), [7]);
+    assert.equal(enemies[0].isStunned, false);
+    assert.equal(enemies[1].isStunned, true);
 });
 
 test('Cloak of Levitation can be played and grants Aerial', async () => {

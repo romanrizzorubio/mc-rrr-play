@@ -1,4 +1,4 @@
-import {path} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 import {
     TARGET_ACTIVATION,
     TARGET_CARD,
@@ -29,10 +29,16 @@ export const basicTargets = {
     },
     [TARGET_ROUND]: ({currentRound}) => [currentRound],
     [TARGET_SCENARIO]: ({match}) => [match.scenario],
-    [TARGET_SOURCE]: ({params, source}) => {
+    [TARGET_SOURCE]: ({condition, params, source}) => {
         const targets = path(params, source);
 
-        return Array.isArray(targets) ? targets : [];
+        if (!Array.isArray(targets)) {
+            return [];
+        }
+
+        return condition ?
+            targets.filter(target => checkCondition(target, condition)) :
+            targets;
     },
     [TARGET_THIS]: ({ability}) => [path(ability, 'card')],
     [TARGET_TRIGGERED_CARD]: ({triggeredCard}) => [triggeredCard],

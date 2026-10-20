@@ -167,6 +167,7 @@ export class DealDamageEffect extends Effect {
             ability: this.ability,
             activation: this.activation,
             isAttack: this.isAttack,
+            keywords: {piercing: this.piercing},
         });
 
         await takeDamageEffect.runEffect(params);

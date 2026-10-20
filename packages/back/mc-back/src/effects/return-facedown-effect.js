@@ -41,7 +41,7 @@ export class ReturnFaceDownEffect extends Effect {
         const owner = faceDown.card.owner;
         const targets = validTarget.getTargetCandidates({
             ...params,
-            player: owner,
+            player: params.player || owner,
             effect: this.destination,
         }, this.destination.target);
 
@@ -74,6 +74,7 @@ export class ReturnFaceDownEffect extends Effect {
             selectedFaceDown :
             selectedFaceDown ? [selectedFaceDown] : [];
         const owners = new Set();
+        const hands = new Set();
         const decks = new Set();
 
         await this.promisesSequential(faceDownCards, async faceDown => {
@@ -85,19 +86,26 @@ export class ReturnFaceDownEffect extends Effect {
             }
 
             faceDown.removeCard();
-            const moveToDeck = new MoveToDeckEffect({
-                selectedTarget: destination,
-                cards: [faceDown.card],
-                position: this.destination.position ?? DECK_POSITION_SHUFFLE,
-                match: this.match,
-            });
-            await moveToDeck.runEffect(params);
-            decks.add(destination);
+            if (destination?.hand?.addCard) {
+                faceDown.card.owner = destination;
+                destination.hand.addCard(faceDown.card);
+                hands.add(destination.hand);
+            } else {
+                const moveToDeck = new MoveToDeckEffect({
+                    selectedTarget: destination,
+                    cards: [faceDown.card],
+                    position: this.destination.position ?? DECK_POSITION_SHUFFLE,
+                    match: this.match,
+                });
+                await moveToDeck.runEffect(params);
+                decks.add(destination);
+            }
         });
 
         await selectedTarget.refresh();
         await this.promisesSequential([...owners].filter(Boolean), owner =>
             owner.hand.refresh());
+        await this.promisesSequential([...hands], hand => hand.refresh());
         await this.promisesSequential([...decks], deck => deck.refresh());
     }
 }

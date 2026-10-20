@@ -112,7 +112,9 @@ export class DefeatEffect extends Effect {
                 card: selectedTarget,
             }
         );
-        await selectedTarget.defeat(player);
+        if (selectedTarget.isInPlay !== false) {
+            await selectedTarget.defeat(player);
+        }
         this.defeated = true;
 
         const currentVillain = this.match.villain;
