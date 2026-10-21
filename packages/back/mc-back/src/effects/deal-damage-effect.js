@@ -10,10 +10,16 @@ import {Calc} from '../engine/calc.js';
 export class DealDamageEffect extends Effect {
     constructor(params) {
         super(params);
-        const {character, damage, ignoreTough = false} = params;
+        const {
+            character,
+            damage,
+            ignoreTough = false,
+            requiredForAvailability,
+        } = params;
 
         this._character = character;
         this.ignoreTough = ignoreTough;
+        this.requiredForAvailability = requiredForAvailability;
         this.baseDamage = damage;
         this.damageModifier = 0;
         this.targetCountCalc = params.targetCountCalc;
@@ -41,7 +47,7 @@ export class DealDamageEffect extends Effect {
         return [EFFECT_CATEGORY_DAMAGE];
     }
     get isRequiredForAbilityAvailability() {
-        return this.isAttack;
+        return this.requiredForAvailability ?? this.isAttack;
     }
     checkTrigger(params) {
         if (!this.isActivationActive(params)) {

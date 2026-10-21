@@ -4,6 +4,8 @@ import {
    TRIGGER_WOULD_PLACE_THREAT,
 } from 'mc-shared';
 
+import {placeThreatTokens} from '../utils/token-mutations.js';
+import {completeMainSchemeIfThresholdReached} from '../utils/scheme-threat-resolution.js';
 import {Effect} from './effect.js';
 
 export class PlaceThreatEffect extends Effect {
@@ -64,12 +66,14 @@ export class PlaceThreatEffect extends Effect {
         for (const selectedTarget of targets) {
             const threat = this.getThreat(params);
 
-            selectedTarget.placeThreat(threat);
+            placeThreatTokens(selectedTarget, threat);
 
-            if (selectedTarget.isMainScheme &&
-                selectedTarget.threat >= selectedTarget.value) {
-                await this.match.scenario.completeMainScheme(selectedTarget, params);
-            } else {
+            const completedMainScheme = await completeMainSchemeIfThresholdReached(
+                selectedTarget,
+                this.match,
+                params
+            );
+            if (!completedMainScheme) {
                 selectedTarget.refresh();
             }
         }

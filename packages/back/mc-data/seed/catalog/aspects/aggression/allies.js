@@ -4,14 +4,18 @@ import {
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     CALC_COUNT,
+    CALC_DAMAGE,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DEAL_ENCOUNTER,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DISCARD_GAME,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_HEAL,
     EFFECT_MODIFY_COST,
+    EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_REMOVE_THREAT,
     EFFECT_SIMULTANEOUS,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -20,13 +24,17 @@ import {
     TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_MINION,
+    TARGET_SCHEME,
     TARGET_THIS,
+    TARGET_YOU,
     TRAIT_ASGARD,
     TRAIT_AVENGER,
+    TRAIT_CHAMPION,
     TRAIT_GAMMA,
     TRAIT_OLYMPUS,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_GET_ATTACK,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_DEFEAT_MINION
 } from 'mc-shared';
@@ -41,7 +49,7 @@ export default [
             'params': {
                 'name': 'Hulk',
                 'set': 'aggression',
-                'image': 'aspect/aggression/allies/a50.webp',
+                'image': 'aspect/aggression/allies/01050.png',
                 'traits': [
                     TRAIT_AVENGER,
                     TRAIT_GAMMA
@@ -175,7 +183,7 @@ export default [
             'params': {
                 'name': 'Tigra',
                 'set': 'aggression',
-                'image': 'aspect/aggression/allies/a51.webp',
+                'image': 'aspect/aggression/allies/01051.png',
                 'traits': [
                     TRAIT_AVENGER
                 ],
@@ -311,6 +319,140 @@ export default [
                                             'target': TARGET_MINION,
                                             'damage': 2
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-vigor',
+        'aspect': 'aggression',
+        'order': 100,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Vigor',
+                'subtitle': 'Amadeus Cho',
+                'set': 'aggression',
+                'image': 'aspect/aggression/allies/10011.png',
+                'traits': [
+                    TRAIT_CHAMPION,
+                    TRAIT_GAMMA
+                ],
+                'unique': true,
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'aggression',
+                'thwart': 1,
+                'attack': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 5,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ATTACK,
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_SCHEME,
+                                    'threat': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-el-vigia',
+        'aspect': 'aggression',
+        'order': 101,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'El Vigía',
+                'subtitle': 'Robert Reynolds',
+                'set': 'aggression',
+                'image': 'aspect/aggression/allies/10012.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'aggression',
+                'thwart': 2,
+                'attack': 3,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 5,
+                'abilities': [
+                    {
+                        'type': ABILITY_FORCED_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
+                            'effect': {
+                                'type': EFFECT_DEAL_ENCOUNTER,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'count': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-hulka',
+        'aspect': 'aggression',
+        'order': 102,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Hulka',
+                'subtitle': 'Jennifer Walters',
+                'set': 'aggression',
+                'image': 'aspect/aggression/allies/10013.png',
+                'traits': [
+                    TRAIT_AVENGER,
+                    TRAIT_GAMMA
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'thwart': 2,
+                'attack': 1,
+                'thwartConsequential': 2,
+                'attackConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_GET_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'paramsCalc': {
+                                        'target': 'card',
+                                        'formula': CALC_DAMAGE
                                     }
                                 }
                             }

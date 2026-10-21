@@ -18,6 +18,7 @@ test('card maximums identify their limiting target', async () => {
         ['basic-avengers-mansion', {count: 1, target: TARGET_PLAYER}],
         ['basic-helicarrier', {count: 1, target: TARGET_PLAYER}],
         ['aggression-entrenamiento-de-combate', {count: 1, target: TARGET_PLAYER}],
+        ['aggression-destreza-marcial', {count: 1, target: TARGET_PLAYER}],
         ['justice-intuicion-heroica', {count: 1, target: TARGET_PLAYER}],
         ['justice-interrogation-room', {count: 1, target: TARGET_PLAYER}],
         ['leadership-inspiracion', {count: 3, target: TARGET_DECK}],

@@ -336,6 +336,21 @@ export class PlayCardEffect extends Effect {
 
         return [...new Set(preferences)];
     }
+    getExclusivePaymentResourcePreferences() {
+        const effects = [
+            this.ability?.effect,
+            ...this.card.currentSide.abilities
+                .filter(ability => ability.trigger === TRIGGER_CARD_ENTER_PLAY)
+                .map(ability => ability.effect),
+        ].filter(Boolean);
+        const preferences = [
+            ...super.getExclusivePaymentResourcePreferences(),
+            ...effects.flatMap(effect =>
+                effect.getExclusivePaymentResourcePreferences()),
+        ];
+
+        return [...new Set(preferences)];
+    }
     isResolved() {
         return !this.canceled;
     }
@@ -352,13 +367,15 @@ export class PlayCardEffect extends Effect {
         }
 
         const resourcePreferences = this.getPaymentResourcePreferences();
+        const exclusiveResourcePreferences =
+            this.getExclusivePaymentResourcePreferences();
         const excludedCardIds = session ?
             session.getResourcePaymentExcludedCardIds() :
             new Set();
         const resourceUsage = session?.getRemainingResources();
         const cardsToPay = await player.getCardsToPay(
             card,
-            undefined,
+            cost.resourceType,
             excludedCardIds,
             resourceUsage
         );
@@ -368,7 +385,9 @@ export class PlayCardEffect extends Effect {
             data: {
                 cost: cost.amount,
                 requirement: card.requirement,
+                resourceType: cost.resourceType,
                 resourcePreferences,
+                exclusiveResourcePreferences,
                 resourceSelectionMode: Boolean(session),
                 card: card.toObj(),
                 cards: {

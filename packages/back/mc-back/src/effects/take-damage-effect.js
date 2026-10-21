@@ -1,6 +1,5 @@
 import {
     EFFECT_CATEGORY_DAMAGE,
-    EFFECT_DEFEAT,
     EFFECT_PLACE_DAMAGE,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
@@ -8,6 +7,15 @@ import {
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {
+    canResolveDamageWithStatus,
+    defeatCharacter,
+    defeatCharacterIfLethal,
+    getDamageStatusTarget,
+    isCharacterLethal,
+    resolveDamageStatus,
+    resolveToughDamage,
+} from '../utils/damage-resolution.js';
 
 export class TakeDamageEffect extends Effect {
     constructor({
@@ -106,26 +114,13 @@ export class TakeDamageEffect extends Effect {
         return takenDamage > 0;
     }
     getStatusTarget(target = this.selectedTarget) {
-        return target.isPlayer ?
-            target.superhero.currentSide :
-            target;
+        return getDamageStatusTarget(target);
     }
     checkStatus() {
-        if (this.ignoreTough) {
-            return true;
-        }
-
-        if (this.isAttack && this.piercing) {
-            return true;
-        }
-
-        const {selectedTarget} = this;
-
-        if (Array.isArray(selectedTarget)) {
-            return true;
-        }
-
-        return !this.getStatusTarget(selectedTarget).isTough;
+        return canResolveDamageWithStatus(this.selectedTarget, {
+            ignoreTough: this.ignoreTough,
+            piercing: this.isAttack && this.piercing,
+        });
     }
     async triggerWould(params) {
         const canResolve = await super.triggerWould(params);
@@ -138,37 +133,18 @@ export class TakeDamageEffect extends Effect {
         }
 
         const targets = multiTarget ? selectedTarget : [selectedTarget];
-        const damage = Array.isArray(this.damage) ?
-            this.damage.slice() :
-            targets.map(() => this.damage);
-        const prevention = Array.isArray(this.preventDamage) ?
-            this.preventDamage :
-            targets.map(() => this.preventDamage);
-        let hasDamage = false;
+        const result = await resolveToughDamage({
+            targets,
+            damage: this.damage,
+            preventDamage: this.preventDamage,
+            getStatusTarget: target => this.getStatusTarget(target),
+            ignoreTough: this.ignoreTough,
+            piercing,
+        });
 
-        for (let index = 0; index < targets.length; index++) {
-            const target = targets[index];
-            const statusTarget = this.getStatusTarget(target);
-            const prevented = prevention[index] || 0;
+        this.damage = result.damage;
 
-            if (!this.ignoreTough &&
-                statusTarget.isTough &&
-                damage[index] - prevented > 0) {
-                statusTarget.removeTough();
-                await statusTarget.refresh();
-                if (!piercing) {
-                    damage[index] = prevented;
-                }
-            }
-
-            if (damage[index] - prevented > 0) {
-                hasDamage = true;
-            }
-        }
-
-        this.damage = multiTarget ? damage : damage[0];
-
-        return hasDamage;
+        return result.hasDamage;
     }
     getTitle() {
         return `Sufres ${this.damage} de Daño.`;
@@ -181,16 +157,9 @@ export class TakeDamageEffect extends Effect {
         return super.prepare(params);
     }
     resolveStatus() {
-        if (this.ignoreTough) {
-            return;
-        }
-
-        const {selectedTarget} = this;
-        const statusTarget = this.getStatusTarget(selectedTarget);
-
-        statusTarget.removeTough();
-
-        statusTarget.refresh();
+        return resolveDamageStatus(this.selectedTarget, {
+            ignoreTough: this.ignoreTough,
+        });
     }
     getTriggersWould() {
         return super.getTriggersWould()
@@ -216,19 +185,12 @@ export class TakeDamageEffect extends Effect {
     }
 
     async defeat(selectedTarget, params) {
-        const defeatTarget = selectedTarget.isPlayer ?
-            selectedTarget.superhero.currentSide :
-            selectedTarget;
-        const defeatEffect = this.match.effectsFactory.createEffect({
-            type: EFFECT_DEFEAT,
-            selectedTarget: defeatTarget,
+        return defeatCharacter(selectedTarget, {
+            match: this.match,
             ability: this.ability,
             activation: this.activation,
+            params,
         });
-
-        await defeatEffect.runEffect(params);
-
-        return defeatEffect.defeated === true;
     }
 
     async takeDamage(selectedTarget, takenDamage, params) {
@@ -238,13 +200,12 @@ export class TakeDamageEffect extends Effect {
 
         await this.placeDamage(selectedTarget, takenDamage, params);
 
-        const life = await selectedTarget.getLife();
-
-        if (life <= 0) {
-            return this.defeat(selectedTarget, params);
-        }
-
-        return false;
+        return defeatCharacterIfLethal(selectedTarget, {
+            match: this.match,
+            ability: this.ability,
+            activation: this.activation,
+            params,
+        });
     }
     async execute(params) {
         const {selectedTarget, takenDamage} = this;
@@ -288,18 +249,15 @@ export class TakeDamageEffect extends Effect {
                             return undefined;
                         }
 
-                        return {
-                            target,
-                            life: await target.getLife(),
-                        };
+                        return await isCharacterLethal(target) ?
+                            {target} :
+                            undefined;
                     })
                 );
 
-                for (const {target, life} of targetsToDefeat.filter(Boolean)) {
-                    if (life <= 0) {
-                        this.defeated = await this.defeat(target, params) ||
-                            this.defeated;
-                    }
+                for (const {target} of targetsToDefeat.filter(Boolean)) {
+                    this.defeated = await this.defeat(target, params) ||
+                        this.defeated;
                 }
             }
         } else {

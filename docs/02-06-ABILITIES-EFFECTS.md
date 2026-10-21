@@ -260,6 +260,8 @@ Las palabras "máximo" e "imponen" un máximo en todas las copias de una carta (
 #### resolución simultánea (Simultaneous Resolution)
 Si dos o más efectos con el mismo disparador de tiempo en negrita se resolvieran simultáneamente, el primer jugador determina el orden en el que se resuelven los efectos.
 
+Mover daño o amenaza retira los contadores del origen y los coloca en el destino en un único cambio de estado; no hay un momento intermedio en el que se hayan quitado pero aún no colocado. Los disparadores de colocar, quitar y mover se presentan juntos: las interrupciones se resuelven antes del cambio y las respuestas después de aplicar ambos extremos. Si se previene parte de la colocación de amenaza o el origen no tiene toda la cantidad indicada, solo se mueve la cantidad que realmente pueda trasladarse. Mover daño cuenta como infligir daño al destino y este lo sufre. En el contexto de estos disparadores, `effect.sourceTarget` identifica el origen y `effect.selectedTarget` o `effect.destinationTarget` identifica el destino.
+
 **Véase también**: "cada jugador", capacidad disparada.
 
 #### "puede" (May)

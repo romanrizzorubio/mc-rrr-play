@@ -79,6 +79,7 @@ import {
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MOVE_DAMAGE,
+    EFFECT_MOVE_THREAT,
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
     EFFECT_PAY_PRINTED_COST,
@@ -205,6 +206,7 @@ import {ModifySchemeValueEffect} from '../../effects/modify-scheme-value-effect.
 import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
+import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
 import {MoveToDeckEffect} from '../../effects/move-to-deck-effect.js';
 import {MoveToHandEffect} from '../../effects/move-to-hand-effect.js';
 import {PayPrintedCostEffect} from '../../effects/pay-printed-cost-effect.js';
@@ -331,6 +333,7 @@ export const EFFECT_MAP = {
     [EFFECT_MODIFY_HIT_POINTS]: ModifyHitPointsEffect,
     [EFFECT_MODIFY_TRAITS]: ModifyTraitsEffect,
     [EFFECT_MOVE_DAMAGE]: MoveDamageEffect,
+    [EFFECT_MOVE_THREAT]: MoveThreatEffect,
     [EFFECT_PLACE_COUNTERS]: PlaceCountersEffect,
     [EFFECT_PLACE_DAMAGE]: PlaceDamageEffect,
     [EFFECT_PLACE_THREAT]: PlaceThreatEffect,

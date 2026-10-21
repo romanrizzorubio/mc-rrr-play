@@ -30,6 +30,14 @@ const findSelectedTarget = (targets, selected) => {
         targets.find(target => target.id === selected.parentId);
 };
 
+const getTargetPlayerDialogParam = targetPlayer => {
+    const name = typeof targetPlayer === 'string' ?
+        targetPlayer :
+        targetPlayer?.name;
+
+    return typeof name === 'string' ? {targetPlayer: name} : {};
+};
+
 export class ValidTarget extends Engine {
     constructor({
         effect,
@@ -186,6 +194,7 @@ export class ValidTarget extends Engine {
             const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,
                 ...(showCancel ? {showCancel: true} : {}),
+                ...getTargetPlayerDialogParam(params.targetPlayer),
                 title: params.dialogTitle || 'Elige tus objetivos',
                 data: {
                     cards: validTarget.map(card => card.toObj(params)),
@@ -237,6 +246,7 @@ export class ValidTarget extends Engine {
                 const response = await this.openDialog({
                     dialogType: DIALOG_SELECT_TARGET,
                     ...(params.showCancel ? {showCancel: true} : {}),
+                    ...getTargetPlayerDialogParam(params.targetPlayer),
                     title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
                         cards: validTarget.map(card => card.toObj(params)),

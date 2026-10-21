@@ -105,6 +105,7 @@ export function getAutomaticWilds(
     {
         requirement = [],
         resourcePreferences = [],
+        exclusiveResourcePreferences = [],
     },
     resources,
     {allowWildConversion = true} = {}
@@ -145,6 +146,18 @@ export function getAutomaticWilds(
             }
         }
     });
+
+    const exclusivePreference = exclusiveResourcePreferences.find(resource =>
+        resource !== RESOURCE_ANY && resource !== RESOURCE_WILD);
+    if (exclusivePreference !== undefined) {
+        while (wildIndex < wilds.length) {
+            wilds[wildIndex++] = exclusivePreference;
+            paidResourceCounts.set(
+                exclusivePreference,
+                (paidResourceCounts.get(exclusivePreference) || 0) + 1
+            );
+        }
+    }
 
     new Set(resourcePreferences).forEach(resource => {
         if ((paidResourceCounts.get(resource) || 0) > 0 ||

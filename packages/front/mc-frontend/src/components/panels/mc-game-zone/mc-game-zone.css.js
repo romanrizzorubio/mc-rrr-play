@@ -8,7 +8,7 @@ export default css`
 
   .play-card-drop-zone {
     min-width: 300px;
-    min-height: 100%;
+    min-height: 200px;
     border-radius: 8px;
     transition: box-shadow 120ms ease, background-color 120ms ease;
   }

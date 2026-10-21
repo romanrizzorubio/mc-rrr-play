@@ -1,4 +1,6 @@
-import {EFFECT_DEFEAT, EFFECT_REMOVE_THREAT} from 'mc-shared';
+import {EFFECT_REMOVE_THREAT} from 'mc-shared';
+import {removeThreatTokens} from '../utils/token-mutations.js';
+import {defeatSideSchemeIfEmpty} from '../utils/scheme-threat-resolution.js';
 import {Effect} from './effect.js';
 
 export class RemoveThreatEffect extends Effect {
@@ -52,17 +54,15 @@ export class RemoveThreatEffect extends Effect {
             });
         }
 
-        selectedTarget.removeThreat(threat);
+        removeThreatTokens(selectedTarget, threat);
 
         selectedTarget.refresh();
 
-        if (selectedTarget.isSideScheme && selectedTarget.threat <= 0) {
-            const defeatEffect = this.match.effectsFactory.createEffect({
-                type: EFFECT_DEFEAT,
-                selectedTarget,
-                ability: this.ability,
-            });
-            return defeatEffect.runEffect(params);
-        }
+        return defeatSideSchemeIfEmpty(
+            selectedTarget,
+            this.match,
+            this.ability,
+            params
+        );
     }
 }

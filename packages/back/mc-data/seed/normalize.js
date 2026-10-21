@@ -121,11 +121,11 @@ const normalizeHero = hero => ({
         cards: normalizeEntries(hero.config.cards),
         precon: normalizePrecon(hero.config.precon),
         extraDecks: normalizeExtraDecks(hero.config.extraDecks),
-        obligation: {
+        obligation: hero.config.obligation ? {
             ...hero.config.obligation,
             card: normalizeCard(hero.config.obligation.card),
-        },
-        nemesis: normalizeEntries(hero.config.nemesis),
+        } : undefined,
+        nemesis: normalizeEntries(hero.config.nemesis || []),
     },
 });
 

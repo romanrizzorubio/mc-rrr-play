@@ -208,7 +208,7 @@ export class HandComponent extends LitElement {
         const life = showLife && Number.isFinite(card.life) ?
             card.life :
             undefined;
-        const threat = showThreat ? card.threat : undefined;
+        const threat = showThreat || card.threat ? card.threat : undefined;
         const generic = showGeneric ? card.counters : undefined;
         const exhausted = this.showExhausted && card.exhausted;
         const classes = [];

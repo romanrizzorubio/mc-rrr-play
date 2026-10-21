@@ -44,6 +44,7 @@ export const TRAIT_STONE = 'stone';
 export const TRAIT_PREPARATION = 'preparation';
 export const TRAIT_ROBOT = 'robot';
 export const TRAIT_SHIELD = 'S.H.I.E.L.D.';
+export const TRAIT_SCIENTIST = 'scientist';
 export const TRAIT_SKILL = 'skill';
 export const TRAIT_SPELL = 'spell';
 export const TRAIT_SOLDIER = 'soldier';

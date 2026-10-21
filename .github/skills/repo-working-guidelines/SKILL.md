@@ -8,6 +8,7 @@ description: Check this repository's .junie guidelines and docs before making ch
 Before working in this repository, consult the relevant guidance in `.junie/` and `docs/`.
 
 - Check `.junie/` for applicable development rules and domain-specific guides. Follow the relevant guidelines when planning and implementing changes.
+- When creating or editing a test file, keep every test in that file inside one `describe` block. If you touch a file whose tests are not grouped yet, wrap them all in one `describe` as part of that change.
 - Place reusable utility/helper modules in an appropriate `utils/` directory rather than beside feature-specific files; create the scoped directory when needed and update imports.
 - Use `docs/README.md` as the documentation index, then read the documents relevant to the task to understand the intended behavior and architecture.
 - In card seed `params`, put printed keyword flags inside the `keywords` object (for example, `keywords: { quickStrike: true }`), never as top-level fields. `Card` in `packages/back/mc-back/src/model/printed/card.js` builds its `Keywords` from that object, so top-level keyword fields are ignored; add or update a runtime card-factory test when the keyword enables behavior.

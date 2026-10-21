@@ -10,6 +10,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
+    EFFECT_HEAL,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_DEFENSE_VALUE,
@@ -430,6 +431,55 @@ export default [
                                         'target': 'effect.ability.arrow.cost.selectedTarget',
                                         'formula': CALC_ATTACK
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-presencia-inspiradora',
+        'aspect': 'leadership',
+        'order': 100,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Presencia inspiradora',
+                'set': 'leadership',
+                'image': 'aspect/leadership/events/10030.png',
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'leadership',
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'target': TARGET_ALLY,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_HEAL,
+                                            'params': {
+                                                'target': TARGET_ALLY,
+                                                'damage': 1
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_READY,
+                                            'params': {
+                                                'target': TARGET_ALLY
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

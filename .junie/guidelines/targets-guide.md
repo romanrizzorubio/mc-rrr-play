@@ -57,7 +57,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_ALL_CHARACTERS` | Enemigos y personajes amigos de la partida. |
 | `TARGET_ALL_ENEMIES` | Todos los enemigos. |
 | `TARGET_ALL_FRIENDLY_CHARACTERS` | Los personajes amigos de todos los jugadores: superhéroes en su forma actual (héroe o alter ego) y aliados. |
-| `TARGET_ALL_HEROES` | Todos los superhéroes que estén en forma de héroe. |
+| `TARGET_ALL_HEROES` | Todos los jugadores cuyo superhéroe esté en forma de héroe; devuelve jugadores, no las cartas de héroe. |
 | `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes en forma de héroe y los aliados. |
 | `TARGET_ALL_PLAYERS` | Todos los jugadores. |
 | `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
@@ -66,7 +66,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
 | `TARGET_CHARACTER` | Todos los personajes. |
 | `TARGET_ENEMY` | Todos los enemigos. |
-| `TARGET_HERO` | El lado héroe de cualquier jugador que esté en forma de héroe. |
+| `TARGET_HERO` | Los lados de héroe de todos los jugadores que estén en forma de héroe; selecciona uno si hay varios. Úsalo cuando la condición deba leer los atributos de la carta de héroe. |
 | `TARGET_YOUR_HERO` | El lado héroe del jugador actual, solo si está en forma de héroe. |
 | `TARGET_MINION` | Todos los esbirros. |
 | `TARGET_VILLAIN` | El villano. |

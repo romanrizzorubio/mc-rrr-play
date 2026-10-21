@@ -80,6 +80,7 @@ export const EFFECT_MODIFY_SCHEME_VALUE = 'modify-scheme-value';
 export const EFFECT_MODIFY_THWART_VALUE = 'modify-thwart-value';
 export const EFFECT_MODIFY_TRAITS = 'modify-traits';
 export const EFFECT_MOVE_DAMAGE = 'move-damage';
+export const EFFECT_MOVE_THREAT = 'move-threat';
 export const EFFECT_MOVE_TO_DECK = 'move-to-deck';
 export const EFFECT_MOVE_TO_HAND = 'move-to-hand';
 export const EFFECT_PAY_PRINTED_COST = 'pay-printed-cost';

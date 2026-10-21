@@ -2,6 +2,15 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {EVENTS} from 'mc-endpoints';
+import {
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_FORCED_RESPONSE,
+    PRIORITY_INTERRUPT,
+    PRIORITY_RESPONSE,
+    TRIGGER_PLAYER_TURN_END,
+    TRIGGER_PLAYER_TURN_START,
+} from 'mc-shared';
 import {PlayTurnEffect} from '../../src/effects/play-turn-effect.js';
 
 test('ending a turn clears the active player and refreshes the match state', async () => {
@@ -47,9 +56,9 @@ test('persists turn-start processing before opening its trigger windows', async 
         async refresh() {},
     };
     const effect = new PlayTurnEffect({match});
-    const priorities = [];
-    effect.trigger = async priority => {
-        priorities.push(priority);
+    const triggers = [];
+    effect.trigger = async (priority, triggerTypes) => {
+        triggers.push({priority, type: triggerTypes[0]});
         assert.equal(match.turnStartProcessed, true);
     };
 
@@ -58,10 +67,27 @@ test('persists turn-start processing before opening its trigger windows', async 
     listeners.get(EVENTS.TURN.END)({});
     await turn;
 
-    assert.equal(priorities.length, 5);
+    assert.deepEqual(triggers, [
+        {priority: PRIORITY_CONSTANT, type: TRIGGER_PLAYER_TURN_START},
+        {
+            priority: PRIORITY_FORCED_INTERRUPT,
+            type: TRIGGER_PLAYER_TURN_START,
+        },
+        {priority: PRIORITY_INTERRUPT, type: TRIGGER_PLAYER_TURN_START},
+        {
+            priority: PRIORITY_FORCED_RESPONSE,
+            type: TRIGGER_PLAYER_TURN_START,
+        },
+        {priority: PRIORITY_RESPONSE, type: TRIGGER_PLAYER_TURN_START},
+        {priority: PRIORITY_CONSTANT, type: TRIGGER_PLAYER_TURN_END},
+        {priority: PRIORITY_FORCED_INTERRUPT, type: TRIGGER_PLAYER_TURN_END},
+        {priority: PRIORITY_INTERRUPT, type: TRIGGER_PLAYER_TURN_END},
+        {priority: PRIORITY_FORCED_RESPONSE, type: TRIGGER_PLAYER_TURN_END},
+        {priority: PRIORITY_RESPONSE, type: TRIGGER_PLAYER_TURN_END},
+    ]);
 });
 
-test('does not replay turn-start triggers for a restored turn', async () => {
+test('restored turns skip start triggers but open their end triggers', async () => {
     const player = {name: 'Hulka'};
     const listeners = new Map();
     const match = {
@@ -77,9 +103,9 @@ test('does not replay turn-start triggers for a restored turn', async () => {
         async refresh() {},
     };
     const effect = new PlayTurnEffect({match});
-    let triggerCalls = 0;
-    effect.trigger = async () => {
-        triggerCalls++;
+    const triggers = [];
+    effect.trigger = async (_priority, triggerTypes) => {
+        triggers.push(triggerTypes[0]);
     };
 
     const turn = effect.execute({player});
@@ -87,6 +113,12 @@ test('does not replay turn-start triggers for a restored turn', async () => {
     listeners.get(EVENTS.TURN.END)({});
     await turn;
 
-    assert.equal(triggerCalls, 0);
+    assert.deepEqual(triggers, [
+        TRIGGER_PLAYER_TURN_END,
+        TRIGGER_PLAYER_TURN_END,
+        TRIGGER_PLAYER_TURN_END,
+        TRIGGER_PLAYER_TURN_END,
+        TRIGGER_PLAYER_TURN_END,
+    ]);
     assert.equal(match.turnStartProcessed, true);
 });

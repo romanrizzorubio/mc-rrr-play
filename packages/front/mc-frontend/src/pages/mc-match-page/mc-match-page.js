@@ -110,6 +110,7 @@ export class McMatchPage extends LitElement {
         this.dragResourcePayment = null;
     }
     handlePlayCardDrop(e) {
+        this.dragPlayCard = null;
         return this.handleSelectCardHand({
             detail: {
                 card: e.detail.card,

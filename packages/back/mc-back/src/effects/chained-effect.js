@@ -70,6 +70,13 @@ export class ChainedEffect extends Effect {
                 effect.getPaymentResourcePreferences())
         ];
     }
+    getExclusivePaymentResourcePreferences() {
+        return [
+            ...super.getExclusivePaymentResourcePreferences(),
+            ...this.effects.flatMap(effect =>
+                effect.getExclusivePaymentResourcePreferences())
+        ];
+    }
     async confirmBeforeResolve(params) {
         const effectParams = this.getEffectParams(params);
         for (const effect of this.effects) {

@@ -4,6 +4,7 @@ import {
     ABILITY_HERO_RESOURCE,
     ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
+    ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
     EFFECT_ADD_TRAIT,
@@ -20,6 +21,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_ATTACHED,
     TARGET_CARD,
     TARGET_ANY_PLAYER,
@@ -56,7 +58,7 @@ export default [
             'params': {
                 'name': 'Tenacidad',
                 'set': 'basic',
-                'image': 'aspect/basic/upgrades/b93-copy-2.webp',
+                'image': 'aspect/basic/upgrades/01093.png',
                 'traits': [
                     TRAIT_CONDITION
                 ],
@@ -529,6 +531,41 @@ export default [
                                 'params': {
                                     'target': TARGET_YOUR_HERO,
                                     'count': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-ingenio',
+        'aspect': 'basic',
+        'order': 91,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Ingenio',
+                'set': 'basic',
+                'image': 'aspect/basic/upgrades/10032.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_WILD
+                ],
+                'classification': 'basic',
+                'abilities': [
+                    {
+                        'type': ABILITY_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_WILD,
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
                                 }
                             }
                         }

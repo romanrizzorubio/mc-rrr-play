@@ -29,6 +29,8 @@ import {
     getResourcePaymentSource,
 } from '../../../utils/resource-payment-drag.js';
 
+const DOUBLE_CLICK_DELAY_MS = 500;
+
 const CARD_TYPES = {
     ENCOUNTER_CARD: 'ENCOUNTER_CARD',
     ENCOUNTER_PLAYER: 'ENCOUNTER_PLAYER',
@@ -154,6 +156,7 @@ export class CardComponent extends LitElement {
             nameWithStage: {type: Boolean, attribute: 'name-with-stage'},
             exhausted: {type: Boolean},
             menuOptions: {type: Array},
+            doubleClickOption: {type: String},
             _menuOpen: {type: Boolean},
             _showBig: {type: Boolean},
             _showFacedownPreview: {type: Boolean},
@@ -206,12 +209,18 @@ export class CardComponent extends LitElement {
         this.nameWithStage = false;
         this.exhausted = false;
         this.menuOptions = [];
+        this.doubleClickOption = '';
+        this._pendingSingleClickTimeout = undefined;
         this._menuOpen = false;
         this._showBig = false;
         this._showFacedownPreview = false;
         this._draggingPlayCard = false;
         this._draggingResourcePayment = false;
         this.stage = undefined;
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.clearPendingSingleClick();
     }
     willUpdate(changedProperties) {
         if (
@@ -408,7 +417,65 @@ export class CardComponent extends LitElement {
             },
         }));
     }
-    handleClick() {
+    dispatchMenuOption(option) {
+        if (option.id === MENU_OPTION_VIEW_TUCKED_CARDS) {
+            this.handleViewTuckedCards();
+        } else if (option.basicActivation) {
+            this.dispatchEvent(new CustomEvent('basic-activation', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    option,
+                },
+            }));
+        } else {
+            this.dispatchEvent(new CustomEvent('card-menu-click', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    option: option.id,
+                },
+            }));
+        }
+    }
+    clearPendingSingleClick() {
+        if (this._pendingSingleClickTimeout !== undefined) {
+            clearTimeout(this._pendingSingleClickTimeout);
+            this._pendingSingleClickTimeout = undefined;
+        }
+    }
+    handleClick(event) {
+        if (this.clickDisabled) {
+            return;
+        }
+
+        const doubleClickOption = this.menuOptions.find(option =>
+            option.id === this.doubleClickOption && !option.disable
+        );
+
+        if (doubleClickOption && event?.detail > 0) {
+            event.stopPropagation();
+
+            if (event.detail === 1) {
+                this.clearPendingSingleClick();
+                this._pendingSingleClickTimeout = setTimeout(() => {
+                    this._pendingSingleClickTimeout = undefined;
+                    this.handleSingleClick();
+                }, DOUBLE_CLICK_DELAY_MS);
+                return;
+            }
+
+            this.clearPendingSingleClick();
+            if (event.detail === 2) {
+                this.dispatchMenuOption(doubleClickOption);
+            }
+            return;
+        }
+
+        this.handleSingleClick();
+    }
+    handleSingleClick() {
         if (this.clickDisabled) {
             return;
         }
@@ -418,14 +485,22 @@ export class CardComponent extends LitElement {
         );
 
         if (this.menuOptions.length && hasOtherAction) {
-            this.dispatchEvent(new CustomEvent('change-menu', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    card: this.card,
-                    menuOptions: this.menuOptions,
-                }
-            }));
+            const availableOptions = this.menuOptions.filter(option =>
+                !option.disable
+            );
+
+            if (availableOptions.length === 1) {
+                this.dispatchMenuOption(availableOptions[0]);
+            } else {
+                this.dispatchEvent(new CustomEvent('change-menu', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        card: this.card,
+                        menuOptions: this.menuOptions,
+                    }
+                }));
+            }
         } else if (this.basicActivation) {
             this.dispatchEvent(new CustomEvent('basic-activation', {
                 bubbles: true,
@@ -964,9 +1039,10 @@ export class CardComponent extends LitElement {
         `;
     }
     renderGenericCounter() {
-        const {generic, horizontal, showGeneric, showThreat} = this;
+        const {generic, horizontal, showGeneric, showThreat, threat} = this;
+        const showAlongsideThreat = (horizontal && showThreat) || threat > 0;
 
-        return showGeneric && horizontal && showThreat && generic ? html`
+        return showGeneric && showAlongsideThreat && generic ? html`
             <div
                 class="character-stat stat-counters"
                 aria-label="CONTADORES: ${generic}"
@@ -996,6 +1072,7 @@ export class CardComponent extends LitElement {
             }] : []),
             ...(this.showGeneric &&
                 !(this.horizontal && this.showThreat) &&
+                !(this.threat && this.generic) &&
                 this.generic ? [{
                 label: 'CONTADORES',
                 value: this.generic,

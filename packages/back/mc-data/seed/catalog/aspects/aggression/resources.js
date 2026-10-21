@@ -14,7 +14,7 @@ export default [
             'params': {
                 'name': 'El poder de la agresividad',
                 'set': 'aggression',
-                'image': 'aspect/aggression/resources/a55-copy.webp',
+                'image': 'aspect/aggression/resources/01055.png',
                 'resources': [
                     {
                         'condition': {

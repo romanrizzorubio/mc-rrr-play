@@ -129,6 +129,8 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **preparation (rasgo)** | Planificación |
 | **skill (rasgo)** | Habilidad |
 | **spy (rasgo)** | Espía |
+| **scientist (rasgo)** | Científico |
+| **superpower (rasgo)** | Superpoder |
 | **spell (rasgo)** | Hechizo |
 | **stone (rasgo)** | Piedra |
 | **tactic (rasgo)** | Táctica |
@@ -137,6 +139,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **title (rasgo)** | Título |
 | **vehicle (rasgo)** | Vehículo |
 | **goblin (rasgo)** | Duende |
+| **genius (rasgo)** | Genio |
 | **wood (rasgo)** | Madera |
 | **invocation (rasgo)** | Invocación |
 | **triggered ability** | capacidad activada |

@@ -71,6 +71,121 @@ const getStatValue = (template, label) => {
     return getStat(template, label).values[3];
 };
 
+test('uses the only available card action without opening the menu', () => {
+    const events = [];
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        basicActivation: undefined,
+        card: {id: 'policia-de-barrio'},
+        clickDisabled: false,
+        menuOptions: [
+            {id: 'ability-0', disable: true},
+            {id: 'ability-1', disable: false},
+        ],
+        tuckedCards: [],
+        dispatchEvent(event) {
+            events.push(event);
+        },
+    });
+
+    card.handleClick();
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, 'card-menu-click');
+    assert.deepEqual(events[0].detail, {option: 'ability-1'});
+});
+
+test('keeps the menu when multiple card actions are available', () => {
+    const events = [];
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        basicActivation: undefined,
+        card: {id: 'policia-de-barrio'},
+        clickDisabled: false,
+        menuOptions: [
+            {id: 'ability-0', disable: false},
+            {id: 'ability-1', disable: false},
+        ],
+        tuckedCards: [],
+        dispatchEvent(event) {
+            events.push(event);
+        },
+    });
+
+    card.handleClick();
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, 'change-menu');
+    assert.deepEqual(events[0].detail.menuOptions, card.menuOptions);
+});
+
+test('double-clicking a configured menu option activates it instead of the single-click menu', () => {
+    const events = [];
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        basicActivation: undefined,
+        card: {id: 'hero'},
+        clickDisabled: false,
+        doubleClickOption: 'end-turn',
+        menuOptions: [
+            {id: 'end-turn', disable: false},
+            {id: 'flip', disable: false},
+        ],
+        tuckedCards: [],
+        dispatchEvent(event) {
+            events.push(event);
+        },
+    });
+    const click = {
+        stopPropagation() {},
+    };
+
+    card.handleClick({...click, detail: 1});
+    assert.equal(events.length, 0);
+
+    card.handleClick({...click, detail: 2});
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, 'card-menu-click');
+    assert.deepEqual(events[0].detail, {option: 'end-turn'});
+});
+
+test('a configured double-click option keeps the existing single-click menu behavior', () => {
+    const events = [];
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        basicActivation: undefined,
+        card: {id: 'hero'},
+        clickDisabled: false,
+        doubleClickOption: 'end-turn',
+        menuOptions: [
+            {id: 'end-turn', disable: false},
+            {id: 'flip', disable: false},
+        ],
+        tuckedCards: [],
+        dispatchEvent(event) {
+            events.push(event);
+        },
+    });
+    const originalSetTimeout = globalThis.setTimeout;
+    let delayedClick;
+
+    globalThis.setTimeout = callback => {
+        delayedClick = callback;
+        return 1;
+    };
+    try {
+        card.handleClick({
+            detail: 1,
+            stopPropagation() {},
+        });
+    } finally {
+        globalThis.setTimeout = originalSetTimeout;
+    }
+
+    assert.equal(events.length, 0);
+    delayedClick();
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].type, 'change-menu');
+});
+
 test('renders the MC RRR star for marked unprinted stats that equal zero', () => {
     const template = renderStats({
         attack: 0,
@@ -146,6 +261,41 @@ test('centers main scheme counters alongside threat', () => {
     assert.match(styles, /\.counters > \.character-stat\s*\{[^}]*justify-self: center;/s);
     assert.doesNotMatch(styles, /\.counters > \.character-stat\s*\{[^}]*flex:/s);
     assert.match(styles, /\.acceleration,\s*\.threat\s*\{[^}]*margin: 0;/s);
+});
+
+test('shows stored threat alongside generic counters on vertical cards', () => {
+    const card = Object.assign(Object.create(CardComponent.prototype), {
+        acceleration: 0,
+        damage: 0,
+        generic: 3,
+        handSize: undefined,
+        hitPoints: undefined,
+        horizontal: false,
+        life: undefined,
+        showDamage: false,
+        showGeneric: true,
+        showThreat: false,
+        statusCards: {},
+        threat: 2,
+    });
+    const counters = card.renderCounters();
+    const threatCounter = counters.values.find(value =>
+        value?.strings?.join('').includes('stat-threat')
+    );
+    const genericCounter = counters.values.find(value =>
+        value?.strings?.join('').includes('stat-counters')
+    );
+    const bottomStats = card.renderBottomStats();
+
+    assert.ok(threatCounter);
+    assert.ok(genericCounter);
+    assert.ok(
+        counters.values.indexOf(threatCounter) <
+            counters.values.indexOf(genericCounter)
+    );
+    assert.equal(threatCounter.values[0], 2);
+    assert.equal(genericCounter.values[0], 3);
+    assert.doesNotMatch(bottomStats.strings.join(''), /stat-counters/);
 });
 
 test('uses a diffuse green halo on legal targets and veils only non-target images', () => {

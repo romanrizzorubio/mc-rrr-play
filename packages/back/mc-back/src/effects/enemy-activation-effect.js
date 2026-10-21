@@ -36,6 +36,12 @@ export class EnemyActivationEffect extends Effect {
     checkTrigger() {
         return !this.canceled;
     }
+    async getEnemyTargetFilter(_params) {
+        return undefined;
+    }
+    async shouldSkipActivationDialog(_params) {
+        return false;
+    }
     async dealBoostCards(params) {
         const futureBoostCards = (this.enemy.faceDown || [])
             .filter(faceDown => faceDown.isFutureBoost);
@@ -103,6 +109,9 @@ export class EnemyActivationEffect extends Effect {
 
         return `${character.name} se activa con ${target.name}`;
     }
+    getEnemySelectionDialogTitle() {
+        return undefined;
+    }
     getDialogEmphasizedStat() {
         return undefined;
     }
@@ -132,6 +141,9 @@ export class EnemyActivationEffect extends Effect {
 
         if (!enemy) {
             await this.selectEnemy(params);
+        }
+        if (await this.shouldSkipActivationDialog(params)) {
+            return;
         }
 
         const target = this.getTargetDialog(params);
@@ -194,9 +206,11 @@ export class EnemyActivationEffect extends Effect {
     async selectEnemy(params) {
         const {enemyType, ability} = this;
 
+        const filter = await this.getEnemyTargetFilter(params);
         const validTarget = new ValidTarget({
             condition: this.condition,
             effect: this,
+            filter,
             match: this.match,
         });
 
@@ -204,6 +218,7 @@ export class EnemyActivationEffect extends Effect {
             ...params,
             ability,
             target: enemyType,
+            dialogTitle: this.getEnemySelectionDialogTitle(),
         });
     }
     toObj() {

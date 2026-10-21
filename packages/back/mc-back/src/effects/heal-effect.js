@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {removeDamageTokens} from '../utils/token-mutations.js';
 
 export class HealEffect extends Effect {
     constructor({
@@ -35,7 +36,7 @@ export class HealEffect extends Effect {
             await this.calculate(params) :
             this.damage;
 
-        selectedTarget.healDamage(damage);
+        removeDamageTokens(selectedTarget, damage);
 
         await selectedTarget.refresh();
     }

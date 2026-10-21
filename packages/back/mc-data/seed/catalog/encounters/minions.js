@@ -88,7 +88,7 @@ export const hydraMercenary = {
     type: CARD_TYPE_MINION,
     params: {
         name: 'Mercenario de Hydra',
-        image: 'scenarios/rhino/rhino9.webp',
+        image: 'scenarios/rhino/01101.png',
         traits: [
             TRAIT_HYDRA
         ],

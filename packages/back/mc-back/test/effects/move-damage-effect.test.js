@@ -1,98 +1,253 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
-import {TARGET_YOU} from 'mc-shared';
-import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
-import {HealEffect} from '../../src/effects/heal-effect.js';
+import {
+    EFFECT_DEFEAT,
+    PRIORITY_CONSTANT,
+    PRIORITY_RESPONSE,
+    TARGET_YOU,
+    TRIGGER_ATTACHED_TAKES_DAMAGE,
+    TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+    TRIGGER_MOVE_DAMAGE,
+    TRIGGER_PLACE_DAMAGE,
+    TRIGGER_REMOVE_DAMAGE,
+} from 'mc-shared';
 import {MoveDamageEffect} from '../../src/effects/move-damage-effect.js';
 
-test('heals the hero card when moving damage from TARGET_YOU', async () => {
-    const calls = {
-        damage: 0,
-        heroRefresh: 0,
-        playerRefresh: 0,
-    };
+test('moves damage atomically and shares placement, removal, and move trigger windows', async () => {
     const hero = {
         damage: 2,
-        healDamage(damage) {
-            this.damage -= damage;
+        removeDamage(damage) {
+            this.damage = Math.max(0, this.damage - damage);
         },
-        refresh() {
-            calls.heroRefresh++;
+        refresh() {},
+    };
+    const destination = {
+        damage: 0,
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        refresh() {},
+        getLife() {
+            return 10 - this.damage;
         },
     };
-    const player = {
-        superhero: hero,
-        get damage() {
-            return hero.damage;
+    const relatedTriggers = [
+        TRIGGER_PLACE_DAMAGE,
+        TRIGGER_REMOVE_DAMAGE,
+        TRIGGER_MOVE_DAMAGE,
+    ];
+    const windows = [];
+    const wouldWindows = [];
+    const effect = new MoveDamageEffect({
+        damage: 2,
+        fromTarget: TARGET_YOU,
+        match: {triggerCards: {}},
+        selectedTarget: destination,
+    });
+
+    effect.trigger = async (priority, types, params) => {
+        if (types.includes(TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE)) {
+            wouldWindows.push({
+                destinationDamage: destination.damage,
+                priority,
+                selectedTarget: params.effect.selectedTarget,
+                sourceDamage: hero.damage,
+                sourceTarget: params.effect.sourceTarget,
+                types,
+            });
+        }
+
+        if (types.includes(TRIGGER_MOVE_DAMAGE)) {
+            windows.push({
+                destinationDamage: destination.damage,
+                priority,
+                selectedTarget: params.effect.selectedTarget,
+                sourceDamage: hero.damage,
+                sourceTarget: params.effect.sourceTarget,
+                types,
+            });
+        }
+
+        return true;
+    };
+
+    await effect.runEffect({
+        match: effect.match,
+        player: {superhero: hero},
+    });
+
+    assert.equal(hero.damage, 0);
+    assert.equal(destination.damage, 2);
+    assert.ok(wouldWindows.some(window =>
+        window.priority === PRIORITY_CONSTANT &&
+        window.sourceDamage === 2 &&
+        window.destinationDamage === 0 &&
+        window.types.includes(TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE)
+    ));
+    assert.ok(windows.some(window =>
+        window.sourceDamage === 2 &&
+        window.destinationDamage === 0
+    ));
+    assert.ok(windows.some(window =>
+        window.priority === PRIORITY_RESPONSE &&
+        window.sourceDamage === 0 &&
+        window.destinationDamage === 2
+    ));
+    assert.ok(windows.every(window =>
+        relatedTriggers.every(trigger => window.types.includes(trigger))
+    ));
+    assert.ok(windows.some(window =>
+        window.priority === PRIORITY_RESPONSE &&
+        window.types.includes(TRIGGER_ATTACHED_TAKES_DAMAGE) &&
+        window.types.includes(TRIGGER_CHARACTER_TAKES_DAMAGE)
+    ));
+    assert.ok(wouldWindows.every(window =>
+        window.selectedTarget === destination &&
+        window.sourceTarget === hero
+    ));
+    assert.ok(windows.every(window =>
+        window.selectedTarget === destination &&
+        window.sourceTarget === hero
+    ));
+});
+
+test('moving damage defeats a character only after both ends of the move are updated', async () => {
+    const hero = {
+        damage: 1,
+        removeDamage(damage) {
+            this.damage = Math.max(0, this.damage - damage);
         },
-        refresh() {
-            calls.playerRefresh++;
+        refresh() {},
+    };
+    const destination = {
+        damage: 1,
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        refresh() {},
+        getLife() {
+            return 2 - this.damage;
         },
     };
+    let defeated = false;
     const match = {
         effectsFactory: {
-            createEffect: () => ({
-                runEffect: async () => {
-                    calls.damage++;
-                },
-            }),
+            createEffect({selectedTarget, type}) {
+                assert.equal(type, EFFECT_DEFEAT);
+                assert.equal(selectedTarget, destination);
+                return {
+                    defeated: false,
+                    async runEffect() {
+                        assert.equal(hero.damage, 0);
+                        assert.equal(destination.damage, 2);
+                        this.defeated = true;
+                        defeated = true;
+                    },
+                };
+            },
         },
         triggerCards: {},
     };
     const effect = new MoveDamageEffect({
-        damage: 2,
+        damage: 1,
         fromTarget: TARGET_YOU,
         match,
-        selectedTarget: {},
+        selectedTarget: destination,
     });
-    effect.damage = 2;
 
-    await effect.execute({player});
+    effect.trigger = async () => true;
 
-    assert.equal(hero.damage, 0);
-    assert.equal(calls.heroRefresh, 1);
-    assert.equal(calls.playerRefresh, 0);
-    assert.equal(calls.damage, 1);
+    await effect.runEffect({
+        match,
+        player: {superhero: hero},
+    });
+
+    assert.equal(defeated, true);
+    assert.equal(effect.defeated, true);
 });
 
-test('healing the source of an attack does not start a separate attack', async () => {
+test('damage prevention reduces both the damage placed and removed during a move', async () => {
     const hero = {
-        damage: 1,
+        damage: 2,
+        removeDamage(damage) {
+            this.damage = Math.max(0, this.damage - damage);
+        },
+        refresh() {},
+    };
+    const destination = {
+        damage: 0,
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        refresh() {},
+        getLife() {
+            return 10 - this.damage;
+        },
     };
     const effect = new MoveDamageEffect({
-        ability: {isAttack: true},
-        activation: {},
+        damage: 2,
+        fromTarget: TARGET_YOU,
+        match: {triggerCards: {}},
+        selectedTarget: destination,
+    });
+
+    effect.trigger = async (_priority, types, params) => {
+        if (types.includes(TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE)) {
+            params.effect.preventDamage = 1;
+        }
+
+        return true;
+    };
+
+    await effect.runEffect({
+        match: effect.match,
+        player: {superhero: hero},
+    });
+
+    assert.equal(hero.damage, 1);
+    assert.equal(destination.damage, 1);
+    assert.equal(effect.takenDamage, 1);
+});
+
+test('tough status prevents damage from moving while removing the status', async () => {
+    const hero = {
+        damage: 1,
+        removeDamage(damage) {
+            this.damage = Math.max(0, this.damage - damage);
+        },
+    };
+    const destination = {
+        damage: 0,
+        isTough: true,
+        placeDamage(damage) {
+            this.damage += damage;
+        },
+        removeTough() {
+            this.isTough = false;
+        },
+        refresh() {},
+        getLife() {
+            return 10 - this.damage;
+        },
+    };
+    const effect = new MoveDamageEffect({
         damage: 1,
         fromTarget: TARGET_YOU,
-        match: {},
-        selectedTarget: {},
+        match: {triggerCards: {}},
+        selectedTarget: destination,
     });
-    effect.damage = 1;
 
-    const originalHealRunEffect = HealEffect.prototype.runEffect;
-    const originalDamageCanRun = DealDamageEffect.prototype.canRun;
-    const originalDamageRunEffect = DealDamageEffect.prototype.runEffect;
-    let healIsAttack;
+    effect.trigger = async () => true;
 
-    HealEffect.prototype.runEffect = async function() {
-        healIsAttack = this.isAttack;
-    };
-    DealDamageEffect.prototype.canRun = async () => true;
-    DealDamageEffect.prototype.runEffect = async () => {};
+    await effect.runEffect({
+        match: effect.match,
+        player: {superhero: hero},
+    });
 
-    try {
-        await effect.execute({
-            player: {
-                superhero: hero,
-            },
-        });
-    } finally {
-        HealEffect.prototype.runEffect = originalHealRunEffect;
-        DealDamageEffect.prototype.canRun = originalDamageCanRun;
-        DealDamageEffect.prototype.runEffect = originalDamageRunEffect;
-    }
-
-    assert.equal(effect.isAttack, true);
-    assert.equal(healIsAttack, false);
+    assert.equal(hero.damage, 1);
+    assert.equal(destination.damage, 0);
+    assert.equal(destination.isTough, false);
 });

@@ -195,6 +195,7 @@ export class SuperheroCardComponent extends LitElement {
                     .attached="${attached}"
                     .tuckedCards="${tuckedCards}"
                     .menuOptions="${this.menuOptions}"
+                    .doubleClickOption="${this.canEndTurn ? MENU_OPTION_END : ''}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
                     show-acquired-traits

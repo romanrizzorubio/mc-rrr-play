@@ -7,7 +7,9 @@ import {
     TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
+import hydraPatrol from '../../../mc-data/seed/catalog/sets/hydra-patrol.js';
 import {EngageEffect} from '../../src/effects/engage-effect.js';
+import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 const createPlayer = () => ({
     gameZone: {
@@ -106,6 +108,61 @@ for (const location of ['deck', 'discardPile']) {
         }]);
     });
 }
+
+test('EngageEffect puts Tropa de Hydra into play without resolving Incite', async () => {
+    const cardConfig = hydraPatrol.config.cards.find(({card}) =>
+        card.params.name === 'Tropa de Hydra').card;
+    const dialogs = [];
+    const mainScheme = {
+        isMainScheme: true,
+        isScheme: true,
+        threat: 0,
+    };
+    const scenario = {
+        deck: {
+            isScenarioDeck: true,
+            cards: [],
+            discardPile: [],
+            removeCardFromDeck(card) {
+                this.cards = this.cards.filter(candidate => candidate !== card);
+            },
+            searchDiscard(card) {
+                this.discardPile = this.discardPile.filter(candidate => candidate !== card);
+            },
+            async refresh() {},
+        },
+    };
+    const match = {
+        limits: {},
+        mainScheme,
+        scenario,
+        triggerCards: {},
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+        },
+    };
+    const cardsFactory = new CardsFactory({match});
+    const minion = cardsFactory.createGameCardFromConfig(cardConfig, {
+        owner: scenario,
+    });
+    scenario.deck.cards.push(minion);
+    const player = createPlayer();
+    const effect = new EngageEffect({
+        card: minion,
+        controller: scenario,
+        match,
+        target: TARGET_YOU,
+    });
+    effect.selectedTarget = player;
+
+    assert.equal(minion.incite, 1);
+    await effect.runEffect({match, player, selectedCard: minion});
+
+    assert.equal(minion.isInPlay, true);
+    assert.equal(minion.engaged, player);
+    assert.equal(mainScheme.threat, 0);
+    assert.equal(dialogs[0].title, 'Esbirro puesto en juego');
+});
 
 test('EngageEffect does not re-engage a minion with its current player', async () => {
     const player = createPlayer();

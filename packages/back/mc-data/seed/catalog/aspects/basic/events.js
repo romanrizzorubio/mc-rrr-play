@@ -7,6 +7,7 @@ import {
     EFFECT_HEAL,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
+    EFFECT_REMOVE_THREAT,
     EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_THWART,
@@ -17,6 +18,7 @@ import {
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_HERO,
+    TARGET_SCHEME,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
     TRAIT_SUPERPOWER,
@@ -35,7 +37,7 @@ export default [
             'params': {
                 'name': 'Puñetazo demoledor',
                 'set': 'basic',
-                'image': 'aspect/basic/events/b87-1.webp',
+                'image': 'aspect/basic/events/01087.png',
                 'traits': [
                     TRAIT_ATTACK
                 ],
@@ -73,7 +75,7 @@ export default [
             'params': {
                 'name': 'Emergencia',
                 'set': 'basic',
-                'image': 'aspect/basic/events/b85-copy-2.webp',
+                'image': 'aspect/basic/events/01085.png',
                 'traits': [
                     TRAIT_THWART
                 ],
@@ -112,7 +114,7 @@ export default [
             'params': {
                 'name': 'Primeros auxilios',
                 'set': 'basic',
-                'image': 'aspect/basic/events/b86-copy-2.webp',
+                'image': 'aspect/basic/events/01086.png',
                 'traits': [],
                 'cost': 1,
                 'resources': [
@@ -199,6 +201,44 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'damage': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-al-rescate',
+        'aspect': 'basic',
+        'order': 91,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': '¡Al rescate!',
+                'set': 'basic',
+                'image': 'aspect/basic/events/10019.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'basic',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_SCHEME,
+                                    'threat': 2
                                 }
                             }
                         }

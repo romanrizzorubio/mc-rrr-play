@@ -17,6 +17,7 @@ import {
     RESOURCE_MENTAL,
     TARGET_ENEMY,
     TARGET_ANY_PLAYER,
+    TARGET_ATTACKER,
     TARGET_EFFECT,
     TARGET_PLAYER,
     TARGET_THIS,
@@ -279,6 +280,52 @@ export default [
                                 'type': EFFECT_DRAW_CARD,
                                 'params': {
                                     'target': TARGET_YOU
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-armadura-electrostatica',
+        'aspect': 'protection',
+        'order': 100,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Armadura electrostática',
+                'set': 'protection',
+                'image': 'aspect/protection/upgrades/10031.png',
+                'traits': [
+                    TRAIT_ARMOR,
+                    TRAIT_TECH
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'protection',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'name': 'Armadura electrostática',
+                            'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
+                            'condition': {
+                                'effect.isDefended': true
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ATTACKER,
+                                    'damage': 1
                                 }
                             }
                         }

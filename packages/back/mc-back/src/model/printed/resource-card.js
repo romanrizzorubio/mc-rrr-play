@@ -7,16 +7,24 @@ export class ResourceCard extends PlayerCard {
 // Card
         name: _name, set: _set, image: _image, traits: _traits, abilities: _abilities, unique: _unique, icons: _icons, keywords: _keywords,
 // PlayerCard
-        cost: _cost, resources: _resources, classification: _classification, canPlay: _canPlay,
+        cost: _cost, resources: _resources, spendCondition, classification: _classification, canPlay: _canPlay,
     }) {
         super(arguments[0]);
 
+        this.spendCondition = spendCondition;
         this.isResource = true;
     }
     canPlay(_params) {
         throw new Error('Los Recursos no se pueden jugar.');
     }
     getResources(card) {
+        if (this.spendCondition && !checkCondition(card, this.spendCondition)) {
+            return [];
+        }
+
+        return this.getResourcesFromConfig(card);
+    }
+    getResourcesFromConfig(card) {
         let resources = [];
 
         this.resources.some(resource => {
@@ -40,7 +48,7 @@ export class ResourceCard extends PlayerCard {
     getPrintedResources() {
         if (Array.isArray(this.resources)) {
             // Without a card being paid, conditional resource bonuses do not apply.
-            return this.getResources();
+            return this.getResourcesFromConfig();
         }
 
         if (!this.resources || typeof this.resources !== 'object') {

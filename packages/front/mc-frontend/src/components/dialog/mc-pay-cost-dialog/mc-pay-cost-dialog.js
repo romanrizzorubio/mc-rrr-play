@@ -1,5 +1,6 @@
 import {html} from 'lit-element';
 import {
+    RESOURCE_ANY,
     RESOURCE_PAYMENT_MODE_DISCARD,
     RESOURCE_PAYMENT_MODE_PAYMENT,
 } from 'mc-shared';
@@ -67,6 +68,7 @@ export class McPayCostDialog extends McDialog {
                 resourceType: undefined,
                 requirement: [],
                 resourcePreferences: [],
+                exclusiveResourcePreferences: [],
                 card: undefined,
                 cards: {
                     generators: [],
@@ -127,10 +129,10 @@ export class McPayCostDialog extends McDialog {
         return _resources;
     }
     get resourcesType() {
-        const {data: {cost, resourceType}} = this;
+        const {data: {resourceType}} = this;
         const resources = this.resourcesConverted;
 
-        if (cost === COST_X && resourceType) {
+        if (resourceType && resourceType !== RESOURCE_ANY) {
             return resources.filter(resource => resource === resourceType);
         }
 
@@ -177,21 +179,25 @@ export class McPayCostDialog extends McDialog {
     }
     getAutomaticWilds(cards) {
         const {
-            cost,
             requirement,
             resourceType,
             resourcePreferences,
+            exclusiveResourcePreferences,
         } = this.data;
         const resources = this.getPaymentResourceUnits(cards, true, []);
 
-        if (cost === COST_X && resourceType) {
+        if (resourceType && resourceType !== RESOURCE_ANY) {
             return resources
                 .filter(unit => unit.originalResource === RESOURCE_WILD)
                 .map(() => resourceType);
         }
 
         return getAutomaticWilds(
-            {requirement, resourcePreferences},
+            {
+                requirement,
+                resourcePreferences,
+                exclusiveResourcePreferences,
+            },
             resources,
             {allowWildConversion: this.allowsWildConversion}
         );
@@ -320,9 +326,14 @@ export class McPayCostDialog extends McDialog {
         `;
     }
     sendResponse() {
+        const {cost, resourceType} = this.data;
         this._response = {
             ...this._response,
-            resources: this.resourcesConverted,
+            resources: cost !== COST_X &&
+                resourceType &&
+                resourceType !== RESOURCE_ANY ?
+                this.resourcesType :
+                this.resourcesConverted,
             resourceUnits: this.getPaymentResourceUnits(
                 this._response.paid,
                 true

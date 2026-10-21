@@ -38,6 +38,7 @@ function createDialog(hand, wilds, overrides = {}) {
             RESOURCE_PHYSICAL,
         ],
         resourcePreferences: [],
+        exclusiveResourcePreferences: [],
         resourceSelectionMode: false,
         wilds,
         cards: {
@@ -223,6 +224,77 @@ test('an X payment can spend one icon from a double-resource card', () => {
     assert.equal(dialog.validate(), true);
 });
 
+test('a fixed card cost only counts resources of its configured type', () => {
+    const mixedCard = {
+        id: 'mixed',
+        resources: [RESOURCE_PHYSICAL, RESOURCE_MENTAL],
+        selected: true,
+    };
+    const dialog = createDialog([mixedCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [],
+        resourceType: RESOURCE_PHYSICAL,
+    });
+    dialog._response.paid.hand = [mixedCard];
+
+    assert.deepEqual(dialog.resourcesType, [RESOURCE_PHYSICAL]);
+    assert.equal(dialog.validate(), true);
+
+    dialog.data.cost = 2;
+    assert.equal(dialog.validate(), false);
+
+    const physicalCard = {
+        id: 'physical',
+        resources: [RESOURCE_PHYSICAL],
+        selected: true,
+    };
+    dialog.data.cards.hand.push(physicalCard);
+    dialog._response.paid.hand.push(physicalCard);
+    assert.equal(dialog.validate(), true);
+});
+
+test('fixed card payments only return resources of their configured type', () => {
+    const mixedCard = {
+        id: 'mixed',
+        resources: [RESOURCE_PHYSICAL, RESOURCE_MENTAL],
+        selected: true,
+    };
+    const dialog = createDialog([mixedCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [],
+        resourceType: RESOURCE_PHYSICAL,
+    });
+    const responses = [];
+    dialog._response.paid.hand = [mixedCard];
+    dialog.dispatchEvent = event => responses.push(event.detail);
+
+    dialog.sendResponse();
+
+    assert.deepEqual(responses[0].resources, [RESOURCE_PHYSICAL]);
+});
+
+test('wild resources are automatically assigned to a fixed cost resource type', () => {
+    const wildCard = {
+        id: 'wild',
+        resources: [RESOURCE_WILD],
+        selected: true,
+    };
+    const dialog = createDialog([wildCard], [], {
+        allowPartial: false,
+        cost: 1,
+        requirement: [],
+        resourceType: RESOURCE_PHYSICAL,
+    });
+    dialog._response.paid.hand = [wildCard];
+    dialog.data.wilds = dialog.getAutomaticWilds(dialog.data.cards);
+
+    assert.deepEqual(dialog.data.wilds, [RESOURCE_PHYSICAL]);
+    assert.deepEqual(dialog.resourcesType, [RESOURCE_PHYSICAL]);
+    assert.equal(dialog.validate(), true);
+});
+
 test('a simultaneous fixed cost can choose which icon of a card to spend', () => {
     const mixedResourceCard = {
         id: 'energy-and-mental',
@@ -336,6 +408,51 @@ test('automatically converts a wild resource to activate a card payment bonus', 
         dialog.getAutomaticWilds(dialog.data.cards),
         [RESOURCE_PHYSICAL]
     );
+});
+
+test('converts every selected wild to an exclusive bonus resource even when that type is already paid', () => {
+    const physicalCard = {
+        id: 'physical',
+        resources: [RESOURCE_PHYSICAL],
+        selected: false,
+    };
+    const firstWild = {
+        id: 'first-wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const secondWild = {
+        id: 'second-wild',
+        resources: [RESOURCE_WILD],
+        selected: false,
+    };
+    const dialog = createDialog([
+        physicalCard,
+        firstWild,
+        secondWild,
+    ], [], {
+        allowPartial: false,
+        cost: 3,
+        requirement: [],
+        resourcePreferences: [RESOURCE_PHYSICAL],
+        exclusiveResourcePreferences: [RESOURCE_PHYSICAL],
+    });
+
+    [physicalCard, firstWild, secondWild].forEach(card => {
+        dialog._handlePaySelect({
+            detail: {card, type: 'hand'},
+        });
+    });
+
+    assert.deepEqual(
+        dialog.data.wilds,
+        [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL]
+    );
+    assert.deepEqual(
+        dialog.resourcesConverted,
+        [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL, RESOURCE_PHYSICAL]
+    );
+    assert.equal(dialog.validate(), true);
 });
 
 test('a wild assigned to energy cannot also satisfy another resource requirement', () => {

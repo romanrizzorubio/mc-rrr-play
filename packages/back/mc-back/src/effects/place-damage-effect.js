@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {placeDamageTokens} from '../utils/token-mutations.js';
 
 export class PlaceDamageEffect extends Effect {
     constructor({
@@ -15,7 +16,7 @@ export class PlaceDamageEffect extends Effect {
             await this.calculate(params) :
             this.damage || params.damage;
 
-        selectedTarget.placeDamage(damage);
+        placeDamageTokens(selectedTarget, damage);
 
         if (selectedTarget.attachedTo) {
             await selectedTarget.attachedTo.refresh();

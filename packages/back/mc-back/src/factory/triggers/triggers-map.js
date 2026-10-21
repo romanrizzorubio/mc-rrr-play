@@ -30,6 +30,7 @@ import {
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
+    TRIGGER_PLACE_DAMAGE,
     TRIGGER_PLACE_THREAT,
     TRIGGER_PLAY_CARD,
     TRIGGER_PLAYER_CAN_THWART,
@@ -37,7 +38,12 @@ import {
     TRIGGER_PLAYER_CAN_FLIP,
     TRIGGER_SUPERHERO_FLIPS,
     TRIGGER_PLAYER_TURN_START,
+    TRIGGER_PLAYER_TURN_END,
     TRIGGER_ROUND_ENDS,
+    TRIGGER_REMOVE_DAMAGE,
+    TRIGGER_REMOVE_THREAT,
+    TRIGGER_MOVE_DAMAGE,
+    TRIGGER_MOVE_THREAT,
     TRIGGER_SURGE,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_COUNTERS_REMOVED,
@@ -108,6 +114,7 @@ import {RoundEndsTrigger} from '../../triggers/round-ends-trigger.js';
 import {PlaceThreatTrigger} from '../../triggers/place-threat-trigger.js';
 import {PlayCardTrigger} from '../../triggers/play-card-trigger.js';
 import {PlayerTurnStartTrigger} from '../../triggers/player-turn-start-trigger.js';
+import {PlayerTurnEndTrigger} from '../../triggers/player-turn-end-trigger.js';
 import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
 import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
@@ -233,7 +240,12 @@ export const TRIGGER_MAP = {
     [TRIGGER_MAIN_SCHEME_COMPLETED]: MainSchemeCompletedTrigger,
     [TRIGGER_PHASE_ENDS]: PhaseEndsTrigger,
     [TRIGGER_ROUND_ENDS]: RoundEndsTrigger,
+    [TRIGGER_PLACE_DAMAGE]: Trigger,
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,
+    [TRIGGER_REMOVE_DAMAGE]: Trigger,
+    [TRIGGER_REMOVE_THREAT]: Trigger,
+    [TRIGGER_MOVE_DAMAGE]: Trigger,
+    [TRIGGER_MOVE_THREAT]: Trigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
     [TRIGGER_YOU_PLAY_CARD]: YouPlayCardTrigger,
@@ -243,6 +255,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLAYER_CAN_FLIP]: Trigger,
     [TRIGGER_SUPERHERO_FLIPS]: Trigger,
     [TRIGGER_PLAYER_TURN_START]: PlayerTurnStartTrigger,
+    [TRIGGER_PLAYER_TURN_END]: PlayerTurnEndTrigger,
     [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,
     [TRIGGER_ENCOUNTER_ABILITY_RESOLVED]: EncounterAbilityResolvedTrigger,
     [TRIGGER_SURGE]: SurgeTrigger,

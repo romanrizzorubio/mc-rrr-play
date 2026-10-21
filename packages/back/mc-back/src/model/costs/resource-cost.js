@@ -10,6 +10,7 @@ export class ResourceCost extends Cost {
         match,
         playCardEffect,
         requirement = card?.requirement || [],
+        resourceType = card?.resourceType,
     }) {
         super({type: COST_TYPE_RESOURCE, match});
 
@@ -24,12 +25,13 @@ export class ResourceCost extends Cost {
         this.card = card || playCardEffect?.card;
         this.playCardEffect = playCardEffect;
         this.requirement = requirement;
+        this.resourceType = resourceType;
     }
     get requiresPayment() {
         return this.amount > 0 || this.requirement.length > 0;
     }
     getRequiredResources() {
-        return Array(this.amount).fill(RESOURCE_ANY);
+        return Array(this.amount).fill(this.resourceType ?? RESOURCE_ANY);
     }
     getEffect() {
         if (!this.playCardEffect || !this.requiresPayment) {

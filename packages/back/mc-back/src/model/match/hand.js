@@ -97,7 +97,8 @@ export class Hand extends Engine {
                     cardToPay: cardToPlay,
                 });
 
-            return !excludedCardIds.has(card.id) &&
+            return availableResources.length > 0 &&
+                !excludedCardIds.has(card.id) &&
                 !card.isPlaying &&
                 (!cardToPlay || card !== cardToPlay) &&
                 (unrestricted || availableResources.some(resource =>

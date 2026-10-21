@@ -64,7 +64,7 @@ export default {
                 'params': {
                     'name': 'Rino',
                     'set': 'rhino',
-                    'image': 'scenarios/rhino/rhino1.webp',
+                    'image': 'scenarios/rhino/01094.png',
                     'traits': [
                         TRAIT_BRUTE,
                         TRAIT_CRIMINAL
@@ -84,7 +84,7 @@ export default {
                 'params': {
                     'name': 'Rino',
                     'set': 'rhino',
-                    'image': 'scenarios/rhino/rhino2.webp',
+                    'image': 'scenarios/rhino/01095.png',
                     'traits': [
                         TRAIT_BRUTE,
                         TRAIT_CRIMINAL
@@ -123,7 +123,7 @@ export default {
                 'params': {
                     'name': 'Rino',
                     'set': 'rhino',
-                    'image': 'scenarios/rhino/rhino3.webp',
+                    'image': 'scenarios/rhino/01096.png',
                     'traits': [
                         TRAIT_BRUTE,
                         TRAIT_CRIMINAL
@@ -162,7 +162,7 @@ export default {
                     'params': {
                         'name': '¡Allanamiento!',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino4a.webp',
+                        'image': 'scenarios/rhino/01097a.png',
                         'stage': 1,
                         'content': {
                             'villains': [
@@ -181,7 +181,7 @@ export default {
                     'params': {
                         'name': '¡Allanamiento!',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino4b.webp',
+                        'image': 'scenarios/rhino/01097b.png',
                         'stage': 1,
                         'value': [
                             7,
@@ -211,7 +211,7 @@ export default {
                     'params': {
                         'name': 'Piel blindada del Rino',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino5.webp',
+                        'image': 'scenarios/rhino/01098.png',
                         'traits': [
                             TRAIT_ARMOR
                         ],
@@ -256,7 +256,7 @@ export default {
                     'params': {
                         'name': 'Embestida',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino6.webp',
+                        'image': 'scenarios/rhino/01099.png',
                         'attach': TARGET_VILLAIN,
                         'attack': 3,
                         'boost': 2,
@@ -307,7 +307,7 @@ export default {
                     'params': {
                         'name': 'Cuerno de marfil mejorado',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino8.webp',
+                        'image': 'scenarios/rhino/01100.png',
                         'traits': [
                             TRAIT_WEAPON
                         ],
@@ -351,7 +351,7 @@ export default {
                     'params': {
                         'name': 'Hombre de Arena',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino11.webp',
+                        'image': 'scenarios/rhino/01102.png',
                         'traits': [
                             TRAIT_CRIMINAL,
                             TRAIT_ELITE
@@ -374,7 +374,7 @@ export default {
                     'params': {
                         'name': 'Conmocionador',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino12.webp',
+                        'image': 'scenarios/rhino/01103.png',
                         'traits': [
                             TRAIT_CRIMINAL
                         ],
@@ -407,7 +407,7 @@ export default {
                     'params': {
                         'name': 'Difícil de tumbar',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino13.webp',
+                        'image': 'scenarios/rhino/01104.png',
                         'abilities': [
                             {
                                 'type': ABILITY_WHEN_REVEALED,
@@ -436,7 +436,7 @@ export default {
                     'params': {
                         'name': '¡Soy Duro!',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino15.webp',
+                        'image': 'scenarios/rhino/01105.png',
                         'abilities': [
                             {
                                 'type': ABILITY_WHEN_REVEALED,
@@ -464,7 +464,7 @@ export default {
                     'params': {
                         'name': 'Estampida',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino17.webp',
+                        'image': 'scenarios/rhino/01106.png',
                         'boost': 1,
                         'abilities': [
                             {
@@ -519,7 +519,7 @@ export default {
                     'params': {
                         'name': 'Arramblar con todo',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino20.webp',
+                        'image': 'scenarios/rhino/01107.png',
                         'boost': 2,
                         'icons': {
                             'hazard': 1
@@ -552,7 +552,7 @@ export default {
                     'params': {
                         'name': 'Control de multitudes',
                         'set': 'rhino',
-                        'image': 'scenarios/rhino/rhino21.webp',
+                        'image': 'scenarios/rhino/01108.png',
                         'boost': 2,
                         'icons': {
                             'crisis': true

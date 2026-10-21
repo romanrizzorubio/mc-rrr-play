@@ -78,6 +78,36 @@ test('Hand.getCardsToPay filters to any requested specific resource and universa
     );
 });
 
+test('Hand.getCardsToPay excludes cards with no resources for unrestricted costs', () => {
+    const cards = [
+        {
+            id: 'no-resources',
+            isPlaying: false,
+            card: {
+                getResources: () => [],
+            },
+        },
+        {
+            id: 'physical',
+            isPlaying: false,
+            card: {
+                getResources: () => [RESOURCE_PHYSICAL],
+            },
+        },
+    ];
+    const hand = Object.create(Hand.prototype);
+    hand.cards = cards;
+
+    assert.deepEqual(
+        hand.getCardsToPay({}, undefined).map(card => card.id),
+        ['physical']
+    );
+    assert.deepEqual(
+        hand.getCardsToPay({}, RESOURCE_ANY).map(card => card.id),
+        ['physical']
+    );
+});
+
 test('Hand.getCardsToPay distinguishes separate cards that share a legacy id', () => {
     const resourceCard = {
         id: 'duplicate-copy-id',

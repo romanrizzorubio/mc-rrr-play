@@ -8,10 +8,12 @@ export class DoIfHasPaidEffect extends DoIfEffect {
         effectNot: _effectNot,
 // DoIfHasDamageEffect
         resources = [],
+        exclusive = false,
     }) {
         super(arguments[0]);
 
         this.resources = resources;
+        this.exclusive = exclusive;
     }
     getPaymentResourcePreferences() {
         return [
@@ -19,10 +21,24 @@ export class DoIfHasPaidEffect extends DoIfEffect {
             ...this.resources,
         ];
     }
+    getExclusivePaymentResourcePreferences() {
+        return [
+            ...super.getExclusivePaymentResourcePreferences(),
+            ...(this.exclusive && new Set(this.resources).size === 1 ?
+                this.resources :
+                []),
+        ];
+    }
     checkCondition(params) {
         const {playCardEffect} = params;
 
         const paid = playCardEffect.resourcesPaid.slice();
+        if (this.exclusive &&
+            (!paid.length ||
+                paid.some(resource => !this.resources.includes(resource)))) {
+            return false;
+        }
+
         const needed = this.resources.slice();
 
         while (paid.length) {

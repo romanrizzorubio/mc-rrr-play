@@ -133,6 +133,13 @@ export class DoIfEffect extends Effect {
             ...(this.effectNot?.getPaymentResourcePreferences() ?? []),
         ];
     }
+    getExclusivePaymentResourcePreferences() {
+        return [
+            ...super.getExclusivePaymentResourcePreferences(),
+            ...(this.effect?.getExclusivePaymentResourcePreferences() ?? []),
+            ...(this.effectNot?.getExclusivePaymentResourcePreferences() ?? []),
+        ];
+    }
     async execute(params) {
         const checked = await this.checkCondition(params);
         const effect = checked ? this.effect : this.effectNot;

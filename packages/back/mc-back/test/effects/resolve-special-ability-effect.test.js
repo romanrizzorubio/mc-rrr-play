@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CARD_TYPE_UPGRADE,
@@ -58,7 +58,16 @@ const createSpecialCard = ({id, hasEnemy = true, onResolve = () => {}}) => {
 
 const createMoveDamageCard = ({id, lastStepDamage, onResolve = () => {}}) => {
     const match = {
-        enemies: [{id: `${id}-enemy`}],
+        enemies: [{
+            damage: 0,
+            id: `${id}-enemy`,
+            getLife() {
+                return 5 - this.damage;
+            },
+            placeDamage(damage) {
+                this.damage += damage;
+            },
+        }],
     };
     const ability = new SpecialAbility({
         effect: new MoveDamageEffect({
@@ -105,6 +114,9 @@ const createEffect = (cards, {resolveAll = false, choose, playerDamage = 0} = {}
                 damage: playerDamage,
                 superhero: {
                     damage: playerDamage,
+                    removeDamage(damage) {
+                        this.damage = Math.max(0, this.damage - damage);
+                    },
                 },
                 gameZone: {
                     cards: cards.map(({gameCard}) => gameCard),
@@ -114,233 +126,235 @@ const createEffect = (cards, {resolveAll = false, choose, playerDamage = 0} = {}
     };
 };
 
-test('automatically resolves the only runnable special ability', async () => {
-    const resolved = [];
-    const runnable = createSpecialCard({
-        id: 'runnable',
-        onResolve: async params => resolved.push({
+describe('resolve special ability effect', () => {
+    test('automatically resolves the only runnable special ability', async () => {
+        const resolved = [];
+        const runnable = createSpecialCard({
             id: 'runnable',
-            isLastStep: params.isLastStep,
-        }),
-    });
-    const blocked = createSpecialCard({
-        id: 'blocked',
-        hasEnemy: false,
-    });
-    const effect = new ResolveSpecialAbilityEffect({
-        filter: {
-            traits: [TRAIT_BLACK_PANTHER],
-            type: CARD_TYPE_UPGRADE,
-        },
-        locations: [PLACE_IN_PLAY],
-        match: {
-            async openDialog() {
-                throw new Error('A single option must not open a dialog.');
+            onResolve: async params => resolved.push({
+                id: 'runnable',
+                isLastStep: params.isLastStep,
+            }),
+        });
+        const blocked = createSpecialCard({
+            id: 'blocked',
+            hasEnemy: false,
+        });
+        const effect = new ResolveSpecialAbilityEffect({
+            filter: {
+                traits: [TRAIT_BLACK_PANTHER],
+                type: CARD_TYPE_UPGRADE,
             },
-        },
-    });
-
-    await effect.execute({
-        player: {
-            gameZone: {
-                cards: [runnable.gameCard, blocked.gameCard],
+            locations: [PLACE_IN_PLAY],
+            match: {
+                async openDialog() {
+                    throw new Error('A single option must not open a dialog.');
+                },
             },
-        },
+        });
+
+        await effect.execute({
+            player: {
+                gameZone: {
+                    cards: [runnable.gameCard, blocked.gameCard],
+                },
+            },
+        });
+
+        assert.deepEqual(resolved, [{id: 'runnable', isLastStep: true}]);
     });
 
-    assert.deepEqual(resolved, [{id: 'runnable', isLastStep: true}]);
-});
-
-test('offers multiple abilities and resolves only the chosen one by default', async () => {
-    const resolved = [];
-    const first = createSpecialCard({id: 'first'});
-    const second = createSpecialCard({
-        id: 'second',
-        onResolve: async params => resolved.push({
+    test('offers multiple abilities and resolves only the chosen one by default', async () => {
+        const resolved = [];
+        const first = createSpecialCard({id: 'first'});
+        const second = createSpecialCard({
             id: 'second',
-            isLastStep: params.isLastStep,
-        }),
+            onResolve: async params => resolved.push({
+                id: 'second',
+                isLastStep: params.isLastStep,
+            }),
+        });
+        const {dialogs, effect, params} = createEffect([first, second], {
+            choose: dialog => {
+                assert.equal(dialog.dialogType, DIALOG_SELECT_CARD);
+                return {selected: [{id: 'second'}]};
+            },
+        });
+
+        await effect.execute(params);
+
+        assert.deepEqual(resolved, [{id: 'second', isLastStep: true}]);
+        assert.equal(dialogs.length, 1);
+        assert.equal(dialogs[0].title, '¿Qué capacidad especial quieres resolver?');
+        assert.deepEqual(dialogs[0].data.cards.map(card => card.id), ['first', 'second']);
     });
-    const {dialogs, effect, params} = createEffect([first, second], {
-        choose: dialog => {
-            assert.equal(dialog.dialogType, DIALOG_SELECT_CARD);
-            return {selected: [{id: 'second'}]};
-        },
-    });
 
-    await effect.execute(params);
-
-    assert.deepEqual(resolved, [{id: 'second', isLastStep: true}]);
-    assert.equal(dialogs.length, 1);
-    assert.equal(dialogs[0].title, '¿Qué capacidad especial quieres resolver?');
-    assert.deepEqual(dialogs[0].data.cards.map(card => card.id), ['first', 'second']);
-});
-
-test('resolves all valid abilities one by one and marks only the last step', async () => {
-    const resolved = [];
-    const first = createSpecialCard({
-        id: 'first',
-        onResolve: async params => resolved.push({
+    test('resolves all valid abilities one by one and marks only the last step', async () => {
+        const resolved = [];
+        const first = createSpecialCard({
             id: 'first',
-            isLastStep: params.isLastStep,
-        }),
-    });
-    const second = createSpecialCard({
-        id: 'second',
-        onResolve: async params => resolved.push({
+            onResolve: async params => resolved.push({
+                id: 'first',
+                isLastStep: params.isLastStep,
+            }),
+        });
+        const second = createSpecialCard({
             id: 'second',
-            isLastStep: params.isLastStep,
-        }),
-    });
-    const {dialogs, effect, params} = createEffect([first, second], {
-        resolveAll: true,
-        choose: dialog => {
-            assert.equal(dialog.dialogType, DIALOG_SELECT_CARD);
-            const cardId = dialog.data.cards.length === 2 ? 'second' : 'first';
-            return {selected: [{id: cardId}]};
-        },
-    });
+            onResolve: async params => resolved.push({
+                id: 'second',
+                isLastStep: params.isLastStep,
+            }),
+        });
+        const {dialogs, effect, params} = createEffect([first, second], {
+            resolveAll: true,
+            choose: dialog => {
+                assert.equal(dialog.dialogType, DIALOG_SELECT_CARD);
+                const cardId = dialog.data.cards.length === 2 ? 'second' : 'first';
+                return {selected: [{id: cardId}]};
+            },
+        });
 
-    await effect.execute(params);
+        await effect.execute(params);
 
-    assert.deepEqual(resolved, [
-        {id: 'second', isLastStep: false},
-        {id: 'first', isLastStep: true},
-    ]);
-    assert.equal(dialogs.length, 2);
-    assert.deepEqual(dialogs.map(dialog => dialog.closeOnResponse), [false, true]);
-});
-
-test('rechecks target validity after resolving each ability', async () => {
-    const resolved = [];
-    const remaining = createSpecialCard({id: 'remaining'});
-    const selected = createSpecialCard({
-        id: 'selected',
-        onResolve: async () => {
-            remaining.match.enemies = [];
-            resolved.push('selected');
-        },
-    });
-    const {dialogs, effect, params} = createEffect([selected, remaining], {
-        resolveAll: true,
-        choose: () => ({selected: [{id: 'selected'}]}),
+        assert.deepEqual(resolved, [
+            {id: 'second', isLastStep: false},
+            {id: 'first', isLastStep: true},
+        ]);
+        assert.equal(dialogs.length, 2);
+        assert.deepEqual(dialogs.map(dialog => dialog.closeOnResponse), [false, true]);
     });
 
-    await effect.execute(params);
+    test('rechecks target validity after resolving each ability', async () => {
+        const resolved = [];
+        const remaining = createSpecialCard({id: 'remaining'});
+        const selected = createSpecialCard({
+            id: 'selected',
+            onResolve: async () => {
+                remaining.match.enemies = [];
+                resolved.push('selected');
+            },
+        });
+        const {dialogs, effect, params} = createEffect([selected, remaining], {
+            resolveAll: true,
+            choose: () => ({selected: [{id: 'selected'}]}),
+        });
 
-    assert.deepEqual(resolved, ['selected']);
-    assert.equal(dialogs.length, 1);
-});
+        await effect.execute(params);
 
-test('uses a list when more than five valid abilities are available', async () => {
-    const resolved = [];
-    const cards = Array.from({length: 6}, (_, index) =>
-        createSpecialCard({
-            id: `card-${index}`,
-            onResolve: async () => resolved.push(`card-${index}`),
-        }));
-    const {dialogs, effect, params} = createEffect(cards, {
-        choose: dialog => {
-            assert.equal(dialog.dialogType, DIALOG_LIST);
-            assert.equal(dialog.data.options.length, 6);
-            return {selected: dialog.data.options[5]};
-        },
+        assert.deepEqual(resolved, ['selected']);
+        assert.equal(dialogs.length, 1);
     });
 
-    await effect.execute(params);
+    test('uses a list when more than five valid abilities are available', async () => {
+        const resolved = [];
+        const cards = Array.from({length: 6}, (_, index) =>
+            createSpecialCard({
+                id: `card-${index}`,
+                onResolve: async () => resolved.push(`card-${index}`),
+            }));
+        const {dialogs, effect, params} = createEffect(cards, {
+            choose: dialog => {
+                assert.equal(dialog.dialogType, DIALOG_LIST);
+                assert.equal(dialog.data.options.length, 6);
+                return {selected: dialog.data.options[5]};
+            },
+        });
 
-    assert.deepEqual(resolved, ['card-5']);
-    assert.equal(dialogs.length, 1);
-});
+        await effect.execute(params);
 
-test('does not open a dialog when no special ability has a valid target', async () => {
-    const resolved = [];
-    const blocked = createSpecialCard({
-        id: 'blocked',
-        hasEnemy: false,
-        onResolve: async () => resolved.push('blocked'),
-    });
-    const {dialogs, effect, params} = createEffect([blocked], {
-        resolveAll: true,
-    });
-
-    await effect.execute(params);
-
-    assert.deepEqual(resolved, []);
-    assert.equal(dialogs.length, 0);
-});
-
-test('requires damage on the hero before offering the Panther Suit special', async () => {
-    const resolved = [];
-    const suit = createMoveDamageCard({
-        id: 'panther-suit',
-        onResolve: async () => resolved.push('resolved'),
-    });
-    const noDamage = createEffect([suit]);
-
-    await noDamage.effect.execute(noDamage.params);
-
-    assert.deepEqual(resolved, []);
-    assert.equal(noDamage.dialogs.length, 0);
-
-    const hasDamage = createEffect([suit], {
-        playerDamage: 1,
-        choose: () => ({selected: [{id: 'panther-suit'}]}),
+        assert.deepEqual(resolved, ['card-5']);
+        assert.equal(dialogs.length, 1);
     });
 
-    await hasDamage.effect.execute(hasDamage.params);
+    test('does not open a dialog when no special ability has a valid target', async () => {
+        const resolved = [];
+        const blocked = createSpecialCard({
+            id: 'blocked',
+            hasEnemy: false,
+            onResolve: async () => resolved.push('blocked'),
+        });
+        const {dialogs, effect, params} = createEffect([blocked], {
+            resolveAll: true,
+        });
 
-    assert.deepEqual(resolved, ['resolved']);
-});
+        await effect.execute(params);
 
-test('uses paramsLastStep values for damage and threat without persisting them', async () => {
-    const damage = new DealDamageEffect({
-        damage: 2,
-        match: {},
-        paramsLastStep: {damage: 4},
-        selectedTarget: {},
-    });
-    const threat = new RemoveThreatEffect({
-        match: {},
-        paramsLastStep: {threat: 2},
-        selectedTarget: {},
-        threat: 1,
+        assert.deepEqual(resolved, []);
+        assert.equal(dialogs.length, 0);
     });
 
-    await damage.prepare({isLastStep: true});
-    await threat.prepare({isLastStep: true});
-    assert.equal(damage.damage, 4);
-    assert.equal(threat.threat, 2);
+    test('requires damage on the hero before offering the Panther Suit special', async () => {
+        const resolved = [];
+        const suit = createMoveDamageCard({
+            id: 'panther-suit',
+            onResolve: async () => resolved.push('resolved'),
+        });
+        const noDamage = createEffect([suit]);
 
-    await damage.prepare({isLastStep: false});
-    await threat.prepare({isLastStep: false});
-    assert.equal(damage.damage, 2);
-    assert.equal(threat.threat, 1);
-});
+        await noDamage.effect.execute(noDamage.params);
 
-test('checks the last-step damage requirement before offering the Panther Suit', async () => {
-    const resolved = [];
-    const suit = createMoveDamageCard({
-        id: 'panther-suit',
-        lastStepDamage: 2,
-        onResolve: async params => resolved.push(params.isLastStep),
+        assert.deepEqual(resolved, []);
+        assert.equal(noDamage.dialogs.length, 0);
+
+        const hasDamage = createEffect([suit], {
+            playerDamage: 1,
+            choose: () => ({selected: [{id: 'panther-suit'}]}),
+        });
+
+        await hasDamage.effect.execute(hasDamage.params);
+
+        assert.deepEqual(resolved, ['resolved']);
     });
-    const oneDamage = createEffect([suit], {
-        playerDamage: 1,
-        resolveAll: true,
+
+    test('uses paramsLastStep values for damage and threat without persisting them', async () => {
+        const damage = new DealDamageEffect({
+            damage: 2,
+            match: {},
+            paramsLastStep: {damage: 4},
+            selectedTarget: {},
+        });
+        const threat = new RemoveThreatEffect({
+            match: {},
+            paramsLastStep: {threat: 2},
+            selectedTarget: {},
+            threat: 1,
+        });
+
+        await damage.prepare({isLastStep: true});
+        await threat.prepare({isLastStep: true});
+        assert.equal(damage.damage, 4);
+        assert.equal(threat.threat, 2);
+
+        await damage.prepare({isLastStep: false});
+        await threat.prepare({isLastStep: false});
+        assert.equal(damage.damage, 2);
+        assert.equal(threat.threat, 1);
     });
 
-    await oneDamage.effect.execute(oneDamage.params);
+    test('checks the last-step damage requirement before offering the Panther Suit', async () => {
+        const resolved = [];
+        const suit = createMoveDamageCard({
+            id: 'panther-suit',
+            lastStepDamage: 2,
+            onResolve: async params => resolved.push(params.isLastStep),
+        });
+        const oneDamage = createEffect([suit], {
+            playerDamage: 1,
+            resolveAll: true,
+        });
 
-    assert.deepEqual(resolved, []);
-    assert.equal(oneDamage.dialogs.length, 0);
+        await oneDamage.effect.execute(oneDamage.params);
 
-    const twoDamage = createEffect([suit], {
-        choose: () => ({selected: [{id: 'panther-suit'}]}),
-        playerDamage: 2,
-        resolveAll: true,
+        assert.deepEqual(resolved, []);
+        assert.equal(oneDamage.dialogs.length, 0);
+
+        const twoDamage = createEffect([suit], {
+            choose: () => ({selected: [{id: 'panther-suit'}]}),
+            playerDamage: 2,
+            resolveAll: true,
+        });
+        await twoDamage.effect.execute(twoDamage.params);
+
+        assert.deepEqual(resolved, [true]);
     });
-    await twoDamage.effect.execute(twoDamage.params);
-
-    assert.deepEqual(resolved, [true]);
 });

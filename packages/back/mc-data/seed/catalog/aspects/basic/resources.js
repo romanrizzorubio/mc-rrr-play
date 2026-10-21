@@ -16,7 +16,7 @@ export default [
             'params': {
                 'name': 'Energía',
                 'set': 'basic',
-                'image': 'aspect/basic/resources/b88-copy-2.webp',
+                'image': 'aspect/basic/resources/01088.png',
                 'resources': [
                     RESOURCE_ENERGY,
                     RESOURCE_ENERGY
@@ -38,7 +38,7 @@ export default [
             'params': {
                 'name': 'Genio',
                 'set': 'basic',
-                'image': 'aspect/basic/resources/b89-copy-2.webp',
+                'image': 'aspect/basic/resources/01089.png',
                 'resources': [
                     RESOURCE_MENTAL,
                     RESOURCE_MENTAL
@@ -60,7 +60,7 @@ export default [
             'params': {
                 'name': 'Fuerza',
                 'set': 'basic',
-                'image': 'aspect/basic/resources/b90-copy-2.webp',
+                'image': 'aspect/basic/resources/01090.png',
                 'resources': [
                     RESOURCE_PHYSICAL,
                     RESOURCE_PHYSICAL

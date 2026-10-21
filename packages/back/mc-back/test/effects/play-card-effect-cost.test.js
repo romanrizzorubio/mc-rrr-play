@@ -42,6 +42,7 @@ class CancelledPaymentEffect extends Effect {
 function createPlayCardEffect({
     calculatedCost,
     requirement = [],
+    resourceType,
     ability,
     cardAbilities = [],
 }) {
@@ -49,6 +50,7 @@ function createPlayCardEffect({
         abilities: cardAbilities,
         cost: 3,
         isUpgrade: false,
+        resourceType,
         requirement,
         currentSide: {abilities: cardAbilities},
         toObj: () => ({name: 'Test card'}),
@@ -56,10 +58,13 @@ function createPlayCardEffect({
     const calls = {
         dialogs: [],
         getCardsToPay: 0,
+        getCardsToPayParams: undefined,
     };
     const player = {
-        async getCardsToPay() {
+        async getCardsToPay(...params) {
             calls.getCardsToPay++;
+            calls.getCardsToPayParams = params;
+
             return {
                 generators: [],
                 hand: [],
@@ -127,6 +132,51 @@ test('still prompts to pay a positive calculated cost', async () => {
     assert.equal(calls.dialogs[0].data.cost, 2);
 });
 
+test('restricts every adjusted card-cost resource to its configured type', async () => {
+    const {calls, effect, player} = createPlayCardEffect({
+        calculatedCost: 2,
+        resourceType: RESOURCE_PHYSICAL,
+    });
+    effect.modifyCost = 1;
+
+    const resourceCost = await effect.getResourceCost({player});
+    assert.equal(resourceCost.amount, 3);
+    assert.deepEqual(resourceCost.getRequiredResources(), [
+        RESOURCE_PHYSICAL,
+        RESOURCE_PHYSICAL,
+        RESOURCE_PHYSICAL,
+    ]);
+
+    await effect.payCost({player});
+
+    assert.equal(
+        calls.getCardsToPayParams[1],
+        RESOURCE_PHYSICAL
+    );
+    assert.equal(
+        calls.dialogs[0].data.resourceType,
+        RESOURCE_PHYSICAL
+    );
+    assert.deepEqual(calls.dialogs[0].data.requirement, []);
+});
+
+test('a restricted card whose cost is reduced to zero needs no resource', async () => {
+    const {calls, effect, player} = createPlayCardEffect({
+        calculatedCost: 1,
+        resourceType: RESOURCE_PHYSICAL,
+    });
+    effect.modifyCost = -1;
+
+    const resourceCost = await effect.getResourceCost({player});
+    assert.equal(resourceCost.amount, 0);
+    assert.equal(resourceCost.requiresPayment, false);
+
+    await effect.payCost({player});
+
+    assert.equal(calls.dialogs.length, 0);
+    assert.equal(calls.getCardsToPay, 0);
+});
+
 test('passes conditional paid-resource preferences to the payment dialog', async () => {
     const paidResourceCondition = new DoIfHasPaidEffect({
         match: {},
@@ -152,6 +202,31 @@ test('passes conditional paid-resource preferences to the payment dialog', async
 
     assert.deepEqual(
         calls.dialogs[0].data.resourcePreferences,
+        [RESOURCE_PHYSICAL]
+    );
+});
+
+test('passes exclusive paid-resource preferences to the payment dialog', async () => {
+    const paidResourceCondition = new DoIfHasPaidEffect({
+        match: {},
+        resources: [RESOURCE_PHYSICAL],
+        exclusive: true,
+    });
+    const ability = {
+        effect: new ChainedEffect({
+            effects: [paidResourceCondition],
+            match: {},
+        }),
+    };
+    const {calls, effect, player} = createPlayCardEffect({
+        ability,
+        calculatedCost: 2,
+    });
+
+    await effect.payCost({player});
+
+    assert.deepEqual(
+        calls.dialogs[0].data.exclusiveResourcePreferences,
         [RESOURCE_PHYSICAL]
     );
 });

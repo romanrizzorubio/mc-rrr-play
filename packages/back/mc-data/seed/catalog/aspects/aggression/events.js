@@ -1,10 +1,12 @@
 import {
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
+    ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DRAW_CARD,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_ENGAGE,
@@ -12,6 +14,9 @@ import {
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SIMULTANEOUS,
+    EFFECT_STUN,
+    EFFECT_ENEMY_ATTACK,
     LABEL_ATTACK,
     LABEL_THWART,
     RESOURCE_ENERGY,
@@ -21,15 +26,18 @@ import {
     TARGET_EFFECT,
     TARGET_MINION,
     TARGET_SCHEME,
+    TARGET_SOURCE,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_YOU,
     TARGET_YOUR_HERO,
+    TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
     TRAIT_AERIAL,
     TRAIT_SKILL,
     TRAIT_THWART,
     TRAIT_WEAPON,
     TRIGGER_YOU_BASIC_ATTACK,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
 } from 'mc-shared';
 
@@ -82,7 +90,7 @@ export default [
             'params': {
                 'name': 'Asalto implacable',
                 'set': 'aggression',
-                'image': 'aspect/aggression/events/a53-copy-2.webp',
+                'image': 'aspect/aggression/events/01053.png',
                 'traits': [
                     TRAIT_ATTACK
                 ],
@@ -139,7 +147,7 @@ export default [
             'params': {
                 'name': 'Gancho',
                 'set': 'aggression',
-                'image': 'aspect/aggression/events/a54-copy-2.webp',
+                'image': 'aspect/aggression/events/01054.png',
                 'traits': [
                     TRAIT_ATTACK
                 ],
@@ -364,6 +372,188 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'count': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-patada-doble-voladora',
+        'aspect': 'aggression',
+        'order': 100,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Patada doble voladora',
+                'set': 'aggression',
+                'image': 'aspect/aggression/events/10014.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 4
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF_HAS_PAID,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'resources': [
+                                                    RESOURCE_PHYSICAL
+                                                ],
+                                                'exclusive': true,
+                                                'effect': {
+                                                    'type': EFFECT_SIMULTANEOUS,
+                                                    'params': {
+                                                        'target': TARGET_ENEMY,
+                                                        'effects': [
+                                                            {
+                                                                'type': EFFECT_STUN,
+                                                                'params': {
+                                                                    'target': TARGET_ENEMY
+                                                                }
+                                                            },
+                                                            {
+                                                                'type': EFFECT_DRAW_CARD,
+                                                                'params': {
+                                                                    'target': TARGET_YOU,
+                                                                    'count': 1
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-cara-a-cara',
+        'aspect': 'aggression',
+        'order': 101,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Cara a cara',
+                'set': 'aggression',
+                'image': 'aspect/aggression/events/10015.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'aggression',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_ENEMY_ATTACK,
+                                            'params': {
+                                                'enemyType': TARGET_ENEMY,
+                                                'target': TARGET_YOU,
+                                                'enemyTargetEffect': 'effects.1',
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_SOURCE,
+                                                'source': 'effects.0.enemyTargets',
+                                                'condition': {
+                                                    'isInPlay': true
+                                                },
+                                                'damage': 5,
+                                                'requiredForAvailability': false,
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-pagaras-por-eso',
+        'aspect': 'aggression',
+        'order': 102,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': '¡Pagarás por eso!',
+                'set': 'aggression',
+                'image': 'aspect/aggression/events/10016.png',
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'aggression',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'trigger': TRIGGER_CHARACTER_TAKES_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_SUPERHERO
+                            },
+                            'condition': {
+                                'effect.isAttack': true,
+                                'effect.activation.character.isVillain': true
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_SCHEME,
+                                    'threat': 0,
+                                    'paramsCalc': {
+                                        'target': 'triggeredTargetDamage',
+                                        'max': 5
+                                    }
                                 }
                             }
                         }

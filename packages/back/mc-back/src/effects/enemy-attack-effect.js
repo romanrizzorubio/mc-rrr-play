@@ -14,11 +14,15 @@ import {
 } from 'mc-shared';
 
 import {Calc} from '../engine/calc.js';
+import {checkCondition, path} from '../engine/utils.js';
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
 import {ValidTarget} from '../targets/valid-target.js';
-import {checkCondition} from '../engine/utils.js';
+import {
+    filterTargetCandidates,
+    splitTargetCondition,
+} from '../utils/target-condition-utils.js';
 
 
 export class EnemyAttackEffect extends EnemyActivationEffect {
@@ -29,6 +33,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         });
 
         this.attackModifierCalc = params.attackModifierCalc;
+        this.enemyTargetEffect = params.enemyTargetEffect;
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
         this.defender = null;
@@ -105,6 +110,54 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
     }
+    get enemyTargets() {
+        return this.enemy && this.enemy.isInPlay !== false ?
+            [this.enemy] :
+            [];
+    }
+    async getEnemyTargetFilter(params) {
+        if (!this.enemyTargetEffect) {
+            return undefined;
+        }
+
+        const targetEffect = path(params, this.enemyTargetEffect);
+        if (!targetEffect?.validTarget ||
+            typeof targetEffect.validTarget.filter !== 'function') {
+            throw new TypeError(
+                'EnemyAttackEffect requires enemyTargetEffect to resolve to an effect with target validation.'
+            );
+        }
+
+        const {condition, selectionConditions} =
+            splitTargetCondition(targetEffect.condition);
+        const canAttack = Boolean((await this.getValidTarget(params)).length);
+
+        const canDamageEnemy = (enemy, targetParams) => {
+            if (condition && !checkCondition(enemy, condition)) {
+                return false;
+            }
+            if (!filterTargetCandidates([enemy], selectionConditions).length) {
+                return false;
+            }
+
+            return targetEffect.validTarget.filter(enemy, {
+                ...params,
+                ...targetParams,
+                ability: targetEffect.ability,
+                effect: targetEffect,
+                match: targetEffect.match ?? this.match,
+                source: targetEffect.source,
+                target: targetEffect.target,
+            });
+        };
+
+        return (enemy, targetParams) =>
+            canAttack || canDamageEnemy(enemy, targetParams);
+    }
+    async shouldSkipActivationDialog(params) {
+        return Boolean(this.enemyTargetEffect) &&
+            !(await this.getValidTarget(params)).length;
+    }
     get attackedCharacters() {
         const attacked = Array.isArray(this.attacked) ?
             this.attacked :
@@ -126,19 +179,29 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         });
     }
     async canRun(params) {
-        if (!(await this.getValidTarget(params)).length) {
+        const canAttack = (await this.getValidTarget(params)).length > 0;
+        if (!canAttack && !this.enemyTargetEffect) {
             this.resolved = false;
             this.fullResolved = false;
 
             return false;
         }
+        const filter = await this.getEnemyTargetFilter(params);
         if (this.enemy) {
-            return true;
+            if (canAttack && (!filter || filter(this.enemy, params))) {
+                return true;
+            }
+
+            this.resolved = false;
+            this.fullResolved = false;
+
+            return false;
         }
 
         const enemyTarget = new ValidTarget({
             condition: this.condition,
             effect: this,
+            filter,
             match: this.match,
         });
 
@@ -450,6 +513,9 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     addDefenderCondition(condition) {
         this.defenderConditions.push(condition);
+    }
+    getEnemySelectionDialogTitle() {
+        return 'Elige el atacante';
     }
     getTitleDialog() {
         const {character} = this;

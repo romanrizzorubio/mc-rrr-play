@@ -14,6 +14,7 @@ export class PlayerCard extends Card {
         controllerTarget,
         playFrom = [],
         resources = [],
+        resourceType,
         requirement = [],
     }) {
         super(arguments[0]);
@@ -28,6 +29,7 @@ export class PlayerCard extends Card {
         this.controllerTarget = controllerTarget;
         this.playFrom = [...playFrom];
         this.classification = classification;
+        this.resourceType = resourceType;
         this.requirement = requirement;
 
         this.isPlayerCard = true;

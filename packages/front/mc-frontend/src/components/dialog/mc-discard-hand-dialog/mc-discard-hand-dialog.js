@@ -1,3 +1,5 @@
+import {html} from 'lit-element';
+
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
 import {McCardListDialog} from '../mc-card-list-dialog/mc-card-list-dialog.js';
 import {renderTextWithFormatting} from '../../../utils/render-text-with-formatting.js';
@@ -80,6 +82,13 @@ export class McDiscardHandDialog extends McCardListDialog {
         }
 
         return title;
+    }
+    renderButtonOk() {
+        const {count, hand, upTo} = this.data;
+
+        return hand === 0 && count > 0 && !upTo ?
+            html`` :
+            super.renderButtonOk();
     }
     validate() {
         const {

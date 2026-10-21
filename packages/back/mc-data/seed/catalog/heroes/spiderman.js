@@ -111,7 +111,7 @@ export default {
                 'params': {
                     'name': 'Peter Parker',
                     'set': 'Spiderman',
-                    'image': 'heroes/spiderman/peter0a.webp',
+                    'image': 'heroes/spiderman/01001b.png',
                     'traits': [
                         TRAIT_GENIUS
                     ],
@@ -140,7 +140,7 @@ export default {
                 'params': {
                     'name': 'Spiderman',
                     'set': 'Spiderman',
-                    'image': 'heroes/spiderman/peter0b.webp',
+                    'image': 'heroes/spiderman/01001a.png',
                     'traits': [
                         TRAIT_AVENGER
                     ],
@@ -177,7 +177,7 @@ export default {
                     'params': {
                         'name': 'Gata Negra',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter1.webp',
+                        'image': 'heroes/spiderman/01002.png',
                         'traits': [
                             TRAIT_HEROFORHIRE
                         ],
@@ -220,7 +220,7 @@ export default {
                     'params': {
                         'name': 'Voltereta hacia atrás',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter2.webp',
+                        'image': 'heroes/spiderman/01003.png',
                         'traits': [
                             TRAIT_DEFENSE,
                             TRAIT_SKILL
@@ -264,7 +264,7 @@ export default {
                     'params': {
                         'name': 'Sentido Arácnido Mejorado',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter4.webp',
+                        'image': 'heroes/spiderman/01004.png',
                         'traits': [
                             TRAIT_SUPERPOWER
                         ],
@@ -300,7 +300,7 @@ export default {
                     'params': {
                         'name': 'Balanceo con patada',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter6.webp',
+                        'image': 'heroes/spiderman/01005.png',
                         'traits': [
                             TRAIT_AERIAL,
                             TRAIT_ATTACK,
@@ -338,7 +338,7 @@ export default {
                     'params': {
                         'name': 'Tía May',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter9.webp',
+                        'image': 'heroes/spiderman/01006.png',
                         'traits': [
                             TRAIT_PERSONA
                         ],
@@ -378,7 +378,7 @@ export default {
                     'params': {
                         'name': 'Rastreador Arácnido',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter10.webp',
+                        'image': 'heroes/spiderman/01007.png',
                         'traits': [
                             TRAIT_ITEM,
                             TRAIT_TECH
@@ -415,7 +415,7 @@ export default {
                     'params': {
                         'name': 'Lanzarredes',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter12.webp',
+                        'image': 'heroes/spiderman/01008.png',
                         'traits': [
                             TRAIT_ITEM,
                             TRAIT_TECH
@@ -468,7 +468,7 @@ export default {
                     'params': {
                         'name': 'Envuelto en telaraña',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/peter14.webp',
+                        'image': 'heroes/spiderman/01009.png',
                         'traits': [
                             TRAIT_CONDITION
                         ],
@@ -586,7 +586,7 @@ export default {
                 'params': {
                     'name': 'Aviso de desahucio',
                     'set': 'Spiderman',
-                    'image': 'heroes/spiderman/petern0.webp',
+                    'image': 'heroes/spiderman/01165.png',
                     'boost': 2,
                     'giveToOwner': true,
                     'triggerInstant': true,
@@ -682,7 +682,7 @@ export default {
                     'params': {
                         'name': 'Ladrón Alado',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/petern1.webp',
+                        'image': 'heroes/spiderman/01166.png',
                         'boost': 3,
                         'icons': {
                             'acceleration': 1
@@ -742,7 +742,7 @@ export default {
                     'params': {
                         'name': 'Buitre',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/petern2.webp',
+                        'image': 'heroes/spiderman/01167.png',
                         'boost': 2,
                         'hitPoints': 4,
                         'attack': 3,
@@ -765,7 +765,7 @@ export default {
                     'params': {
                         'name': 'Picado arrollador',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/petern3.webp',
+                        'image': 'heroes/spiderman/01168.png',
                         'abilities': [
                             {
                                 'type': ABILITY_WHEN_REVEALED,
@@ -833,7 +833,7 @@ export default {
                     'params': {
                         'name': 'Los Planes del Buitre',
                         'set': 'Spiderman',
-                        'image': 'heroes/spiderman/petern5.webp',
+                        'image': 'heroes/spiderman/01169.png',
                         'boost': 2,
                         'abilities': [
                             {

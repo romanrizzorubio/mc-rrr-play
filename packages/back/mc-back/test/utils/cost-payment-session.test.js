@@ -4,6 +4,8 @@ import {test} from 'node:test';
 import {
     DIALOG_PAY_COST,
     RESOURCE_ENERGY,
+    RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
     RESOURCES_X,
 } from 'mc-shared';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
@@ -155,6 +157,57 @@ test('shares a double-resource card between printed and arrow costs', async () =
     assert.deepEqual(committedPrintedPayment.hand, [doubleEnergy]);
     assert.deepEqual(committedPrintedPayment.resources, [RESOURCE_ENERGY]);
     assert.deepEqual(session.getPayment(arrowCost).hand, []);
+});
+
+test('enforces a card resource type across every adjusted cost icon', () => {
+    const cardToPay = {
+        requirement: [],
+        resourceType: RESOURCE_PHYSICAL,
+    };
+    const resourceCost = new ResourceCost({
+        amount: 2,
+        card: cardToPay,
+    });
+    const costEffect = {resourceCost};
+    const mixedResourceCard = {
+        id: 'mixed-resource',
+        resources: [RESOURCE_PHYSICAL, RESOURCE_MENTAL],
+    };
+    const mixedPayment = {
+        generators: [],
+        hand: [mixedResourceCard],
+        resources: [RESOURCE_PHYSICAL, RESOURCE_MENTAL],
+    };
+    const invalidSession = new CostPaymentSession();
+
+    assert.throws(
+        () => invalidSession.stagePayment(
+            costEffect,
+            mixedPayment,
+            {card: cardToPay}
+        ),
+        /El pago no satisface los requisitos de recursos/
+    );
+
+    const physicalResourceCard = {
+        id: 'double-physical',
+        resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
+    };
+    const validSession = new CostPaymentSession();
+    validSession.stagePayment(
+        costEffect,
+        {
+            generators: [],
+            hand: [physicalResourceCard],
+            resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
+        },
+        {card: cardToPay}
+    );
+
+    assert.deepEqual(
+        validSession.getPayment(costEffect).resources,
+        [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL]
+    );
 });
 
 test('keeps cards reserved for non-resource costs excluded from resource payments', () => {

@@ -1,4 +1,4 @@
-import {ABILITY_ACTION, TARGET_SIDE} from 'mc-shared';
+import {ABILITY_ACTION, TARGET_PLAYER, TARGET_SIDE} from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {FaceDown} from '../match/facedown.js';
@@ -473,6 +473,9 @@ export class GameCard extends Engine {
     get requirement() {
         return this.card.requirement;
     }
+    get resourceType() {
+        return this.card.resourceType;
+    }
     get resources() {
         if (this.sides.length) {
             return this.currentSide.resources;
@@ -565,14 +568,14 @@ export class GameCard extends Engine {
         }
 
         const {maximum} = this.card;
-        if (this.card.controllerTarget && maximum &&
-            !this.match.players.some(player =>
-                !player.getPrintedCard(this.card.id))) {
-            return false;
-        }
-        if (maximum && !this.card.controllerTarget) {
-            const card = this.owner.getPrintedCard(this.card.id);
-            if (card) {
+        if (maximum?.target === TARGET_PLAYER) {
+            if (this.card.controllerTarget &&
+                !this.match.players.some(player =>
+                    !player.getPrintedCard(this.card.id))) {
+                return false;
+            }
+            if (!this.card.controllerTarget &&
+                this.owner.getPrintedCard(this.card.id)) {
                 return false;
             }
         }
@@ -822,6 +825,15 @@ export class GameCard extends Engine {
 
         return counters;
     }
+    canRemoveThreat() {
+        return this.threat > 0;
+    }
+    placeThreat(threat) {
+        this.threat += threat > 0 ? threat : 0;
+    }
+    removeThreat(threat) {
+        this.threat = Math.max(0, this.threat - threat);
+    }
     placeDamage(damage) {
         this.damage += damage;
 
@@ -901,6 +913,7 @@ export class GameCard extends Engine {
     reset() {
         this.damage = 0;
         this.counters = undefined;
+        this.threat = 0;
         this.printedTextBlank = false;
         this.setExhausted(false);
         this.attachedTo = undefined;
@@ -961,11 +974,14 @@ export class GameCard extends Engine {
     }
     toObj() {
         if (this.sides.length) {
+            const threat = this.currentSide.threat ?? this.threat;
+
             return {
                 ...this.currentSide.toObj(arguments[0]),
                 attached: this.getAttachedCards().map(card =>
                     card.toObj(arguments[0])),
                 counters: this.currentSide.counters ?? this.counters,
+                ...(threat > 0 ? {threat} : {}),
                 faceDown: this.faceDown.map(faceDown => faceDown.toObj(arguments[0])),
                 tuckedCards: this.tuckedCards.map(card => card.toObj(arguments[0])),
             };
@@ -992,6 +1008,7 @@ export class GameCard extends Engine {
             isSupport,
             isUpgrade,
             printedTextBlank,
+            threat,
             tuckedCards,
         } = this;
 
@@ -1001,6 +1018,7 @@ export class GameCard extends Engine {
             parentId: parent?.id,
             cost,
             counters,
+            ...(threat > 0 ? {threat} : {}),
             exhausted,
             damage,
             boost,

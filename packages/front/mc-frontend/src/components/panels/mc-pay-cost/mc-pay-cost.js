@@ -149,6 +149,7 @@ export class McPayCost extends LitElement {
                 <button
                     class="resource-unit"
                     type="button"
+                    ?disabled="${disabled}"
                     aria-label="${selected ?
                         'Usar' :
                         'No usar'} recurso ${resource}"
@@ -174,7 +175,11 @@ export class McPayCost extends LitElement {
         `;
     }
     renderResourceIcons(hand, generators) {
-        const {allowPartial, requirement} = this;
+        const {
+            allowPartial,
+            requirement,
+            resourceType,
+        } = this;
 
         const render = [];
         if (requirement && requirement.some(req =>
@@ -220,7 +225,9 @@ export class McPayCost extends LitElement {
             if (!resource.used) {
                 render.push(this.renderResourceIcon(
                     resource.resource,
-                    false,
+                    resourceType &&
+                        resourceType !== RESOURCE_ANY &&
+                        resource.resource !== resourceType,
                     resource.wild,
                     resource
                 ));

@@ -53,13 +53,16 @@ export class SelectDiscardCardEffect extends Effect {
         };
     }
     async canRun(params) {
-        if (!await super.canRun(params)) {
+        const resolvedParams = await this.resolveParams(params);
+        if (!await super.canRun(resolvedParams)) {
             return false;
         }
 
-        const count = params.selectCount ?? this.count;
+        const count = resolvedParams.selectCount ?? this.count;
         return this.upTo || this.countFromHand ||
-            count <= this.getEligibleCards(this.selectedTarget || params.player).length;
+            count <= this.getEligibleCards(
+                this.selectedTarget || resolvedParams.player
+            ).length;
     }
     getCostPaymentEffects(params) {
         return this.shouldPromptForPayment(params) ? [this] : [];

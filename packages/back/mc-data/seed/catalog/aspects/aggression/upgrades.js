@@ -1,11 +1,13 @@
 import {
     ABILITY_CONSTANT,
     ABILITY_HERO_RESPONSE,
+    ABILITY_RESOURCE,
     ABILITY_RESPONSE,
     CALC_ALL,
     CARD_TYPE_UPGRADE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
+    EFFECT_EXHAUST,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_READY,
     EFFECT_SIMULTANEOUS,
@@ -25,6 +27,7 @@ import {
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ASGARD,
+    TRAIT_ATTACK,
     TRAIT_CONDITION,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
@@ -48,7 +51,7 @@ export default [
             'params': {
                 'name': 'Entrenamiento de combate',
                 'set': 'aggression',
-                'image': 'aspect/aggression/upgrades/a57-copy-2.webp',
+                'image': 'aspect/aggression/upgrades/01057.png',
                 'traits': [
                     TRAIT_SKILL
                 ],
@@ -298,6 +301,50 @@ export default [
                                         'target': 'triggeredTargetDamage',
                                         'formula': CALC_ALL
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-destreza-marcial',
+        'aspect': 'aggression',
+        'order': 68,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Destreza marcial',
+                'set': 'aggression',
+                'image': 'aspect/aggression/upgrades/10018.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'aggression',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_PHYSICAL,
+                            'condition': {
+                                'cardToPay.isEvent': true,
+                                'cardToPay.traits': TRAIT_ATTACK
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS
                                 }
                             }
                         }

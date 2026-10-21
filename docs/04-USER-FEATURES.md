@@ -131,7 +131,7 @@ Durante la partida se oculta la navegación principal y aparecen los botones **R
 
 ### Ejecutar Acciones
 
-Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un objetivo válido o hayan superado su límite aparecen deshabilitadas.
+Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un objetivo válido o hayan superado su límite aparecen deshabilitadas. Durante tu turno, haz doble clic en el Superhéroe para activar **Finalizar turno**; se mantiene la confirmación habitual cuando corresponde.
 
 Al hacer clic en un enemigo se puede iniciar un ataque básico con el superhéroe; al hacer clic en un plan, una intervención básica. Si no hay otras acciones disponibles, aparece una confirmación cuyo título pregunta por el ataque o la intervención; muestra las cartas del superhéroe y del objetivo, sin etiquetas ni subtítulo. Se puede marcar **No volver a mostrar este diálogo durante esta partida**. Si el enemigo o plan tiene otras acciones disponibles, aparece un menú y la activación básica figura primero. Un enemigo o plan que no sea un objetivo legal para esa activación no ofrece la opción ni responde al clic de activación.
 
@@ -242,7 +242,7 @@ También puedes arrastrar una carta jugable de la mano. Los apoyos, aliados y me
 - Iconos claramente diferenciados
 - Mostrados en la zona del jugador
 - Contador en tiempo real
-- Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes y, después, a los tipos de recurso que activan bonificaciones de la carta (como Arremetida o Golpe contundente); puedes cambiar la asignación haciendo clic en el icono, incluso cuando el pago permite elegir unidades concretas.
+- Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes y, después, a los tipos de recurso que activan bonificaciones de la carta (como Arremetida o Golpe contundente). Si una bonificación exige pagar todo con un único tipo de recurso, los universales restantes se asignan a ese tipo; puedes cambiar la asignación haciendo clic en el icono, incluso cuando el pago permite elegir unidades concretas.
 
 ## Sistema de Turno
 

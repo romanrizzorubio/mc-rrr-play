@@ -99,6 +99,42 @@ test('passes generic counters to cards when generic counters are displayed', () 
     assert.equal(template.values[showGenericBinding], true);
 });
 
+test('passes stored threat to cards even when they are not scheme cards', () => {
+    const threat = 2;
+    const list = Object.assign(Object.create(McCardList.prototype), {
+        size: 's',
+        marked: [],
+        disabledCards: [],
+        showBasicStats: true,
+        showAcquiredTraits: false,
+        showLife: false,
+        showDamage: false,
+        showThreat: false,
+        showGeneric: true,
+        highlightPlayable: false,
+        rotatePlanCards: false,
+        showExhausted: false,
+        player: null,
+        basicActivationType: '',
+        dragActivation: null,
+    });
+    const template = list.renderCard({
+        name: 'Policía de barrio',
+        image: 'aspect/justice/supports/10029.png',
+        counters: 3,
+        threat,
+    }, 0);
+    const threatBinding = template.strings.findIndex(part =>
+        part.includes('threat=')
+    );
+    const genericBinding = template.strings.findIndex(part =>
+        part.includes('.generic=')
+    );
+
+    assert.equal(template.values[threatBinding], threat);
+    assert.equal(template.values[genericBinding], 3);
+});
+
 test('does not highlight a card while it is temporarily disabled', () => {
     assert.equal(renderCardClass(true, [0]), 'disabled');
 });

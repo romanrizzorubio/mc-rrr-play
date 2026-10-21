@@ -72,6 +72,38 @@ test('RevealEncounterEffect only shows the supplied encounter card', async () =>
     assert.strictEqual(effect.selectedTarget, topCard);
 });
 
+test('Incite places threat when the encounter card is revealed', async () => {
+    const mainScheme = {
+        isMainScheme: true,
+        isScheme: true,
+        threat: 0,
+        value: 100,
+        placeThreat(threat) {
+            this.threat += threat;
+        },
+        async refresh() {},
+    };
+    const match = {
+        limits: {},
+        mainScheme,
+        scenario: {mainScheme},
+        triggerCards: {},
+    };
+    const card = {
+        abilities: [],
+        incite: 1,
+        name: 'Tropa de Hydra',
+    };
+    const effect = new RevealEncounterEffect({
+        match,
+        selectedTarget: card,
+    });
+
+    await effect.reveal({player: {}});
+
+    assert.equal(mainScheme.threat, 1);
+});
+
 test('GetEncounterCardEffect can remove a chosen card from the encounter deck', async () => {
     const topCard = createEncounterCard('top');
     const movedCard = createEncounterCard('moved');

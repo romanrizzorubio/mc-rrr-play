@@ -126,6 +126,10 @@ export default {
                                     'target': TARGET_ROUND
                                 },
                                 'trigger': TRIGGER_WOULD_PLACE_THREAT,
+                                'condition': [
+                                    {'effect.selectedTarget.isScheme': true},
+                                    {'effect.selectedTarget.*.isScheme': true}
+                                ],
                                 'effect': {
                                     'type': EFFECT_PREVENT_PLACE_THREAT,
                                     'params': {

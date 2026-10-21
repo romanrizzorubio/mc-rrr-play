@@ -14,7 +14,7 @@ globalThis.CustomEvent = class {
     }
 };
 
-const {SuperheroCardComponent} = await import(
+const {MENU_OPTION_END, SuperheroCardComponent} = await import(
     '../src/components/cards/characters/mc-superhero-card/mc-superhero-card.js'
 );
 const {McPlayer} = await import(
@@ -131,6 +131,42 @@ test('disables the identity-change menu option when flipping is not allowed', ()
     const flipOption = superhero.menuOptions.find(({id}) => id === 'flip');
 
     assert.equal(flipOption.disable, true);
+});
+
+test('configures double-click to end the turn only when the player can end it', () => {
+    const superhero = Object.assign(
+        Object.create(SuperheroCardComponent.prototype),
+        {
+            abilities: [],
+            canEndTurn: true,
+            canFlip: false,
+            flipped: false,
+            tuckedCards: [],
+        }
+    );
+    const doubleClickOptionIndex = superhero.render().strings.findIndex(part =>
+        part.includes('.doubleClickOption=')
+    );
+
+    assert.equal(superhero.render().values[doubleClickOptionIndex], MENU_OPTION_END);
+
+    superhero.canEndTurn = false;
+    assert.equal(superhero.render().values[doubleClickOptionIndex], '');
+});
+
+test('activating the end-turn menu option emits the player-end event', () => {
+    const superhero = Object.assign(
+        Object.create(SuperheroCardComponent.prototype),
+        {
+            dispatchEvent(event) {
+                this.dispatchedEvent = event;
+            },
+        }
+    );
+
+    superhero.handleClickMenu({detail: {option: MENU_OPTION_END}});
+
+    assert.equal(superhero.dispatchedEvent.type, 'player-end');
 });
 
 test('adds a tucked-card viewer option to the superhero menu', () => {

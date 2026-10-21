@@ -5,6 +5,7 @@ import {
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TRIGGER_PLAYER_TURN_END,
     TRIGGER_PLAYER_TURN_START,
 } from 'mc-shared';
 
@@ -50,6 +51,40 @@ export class PlayTurnEffect extends Effect {
         await match.refresh();
 
         const response = await turnEnded;
+
+        if (!response?.gameOver && !response?.reset) {
+            const turnEndParams = {
+                effect: this,
+                player,
+            };
+            const turnEndTrigger = [TRIGGER_PLAYER_TURN_END];
+
+            await this.trigger(
+                PRIORITY_CONSTANT,
+                turnEndTrigger,
+                turnEndParams
+            );
+            await this.trigger(
+                PRIORITY_FORCED_INTERRUPT,
+                turnEndTrigger,
+                turnEndParams
+            );
+            await this.trigger(
+                PRIORITY_INTERRUPT,
+                turnEndTrigger,
+                turnEndParams
+            );
+            await this.trigger(
+                PRIORITY_FORCED_RESPONSE,
+                turnEndTrigger,
+                turnEndParams
+            );
+            await this.trigger(
+                PRIORITY_RESPONSE,
+                turnEndTrigger,
+                turnEndParams
+            );
+        }
 
         delete match.currentTurnPlayer;
         await match.refresh();

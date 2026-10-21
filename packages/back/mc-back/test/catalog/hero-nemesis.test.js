@@ -14,10 +14,14 @@ import {ShuffleDeckEffect} from '../../src/effects/shuffle-deck-effect.js';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
 
-test('every hero catalog designates at least one nemesis minion', async () => {
+test('every configured nemesis set designates at least one nemesis minion', async () => {
     const {heroes} = await loadCatalog();
+    const heroesWithoutNemesis = heroes.filter(({config}) =>
+        config.nemesis.length === 0);
 
-    for (const hero of heroes) {
+    assert.deepEqual(heroesWithoutNemesis, []);
+
+    for (const hero of heroes.filter(({config}) => config.nemesis.length > 0)) {
         const minions = hero.config.nemesis.filter(({card}) =>
             card.type === CARD_TYPE_MINION);
         const nemesisMinions = minions.filter(({card}) =>
