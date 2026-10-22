@@ -77,7 +77,9 @@ export class MoveToHandEffect extends Effect {
                 sourceCards.splice(sourceCards.indexOf(card), 1);
             }
 
-            player.hand.addCard(card);
+            if (!player.hand.cards?.includes(card)) {
+                player.hand.addCard(card);
+            }
         }
 
         const objectsToRefresh = new Set(sourceDecks);

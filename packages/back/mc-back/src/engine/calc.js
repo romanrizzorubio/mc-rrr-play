@@ -12,6 +12,7 @@ import {
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_IF,
     CALC_ALL,
+    CALC_SUM,
     CALC_STAGE,
     TARGET_MAIN_SCHEME,
     TARGET_VILLAIN,
@@ -40,6 +41,22 @@ const CALCULATION_MAP = {
 
         return source.filter(item =>
             filters.some(condition => checkCondition(item, condition))).length;
+    },
+    [CALC_SUM]: (source, {target, property}) => {
+        if (!Array.isArray(source)) {
+            throw new Error(`CALC_SUM requiere que "${target}" resuelva a una lista.`);
+        }
+
+        return source.reduce((sum, item) => {
+            const value = property ? path(item, property) : item;
+            if (!Number.isFinite(value)) {
+                throw new TypeError(
+                    `CALC_SUM requiere valores numéricos en "${target}".`
+                );
+            }
+
+            return sum + value;
+        }, 0);
     },
     [CALC_HALF_ROUNDED_DOWN]: source =>
         Math.floor((Array.isArray(source) ? source.length : source) / 2),
@@ -129,6 +146,7 @@ export class Calc {
         resourceType,
         strict,
         trait,
+        property,
         ifTrue,
         ifFalse,
         plus,
@@ -142,6 +160,7 @@ export class Calc {
         this.resourceType = resourceType;
         this.strict = strict;
         this.trait = trait;
+        this.property = property;
         this.ifTrue = ifTrue;
         this.ifFalse = ifFalse;
         this.plus = plus;

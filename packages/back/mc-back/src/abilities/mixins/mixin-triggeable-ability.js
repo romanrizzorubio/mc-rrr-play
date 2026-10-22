@@ -1,7 +1,20 @@
 function getDefenseAttackEffect(params) {
     const triggeringEffect = params.triggeredEffect || params.effect;
+    const enemyActivation = triggeringEffect?.enemyActivation;
 
-    return triggeringEffect?.enemyActivation || triggeringEffect;
+    if (enemyActivation) {
+        return enemyActivation;
+    }
+
+    if (typeof triggeringEffect?.setDefenderByAbility === 'function') {
+        return triggeringEffect;
+    }
+
+    const activationEffect = triggeringEffect?.activation?.effect;
+
+    return activationEffect?.enemyActivation ||
+        activationEffect ||
+        triggeringEffect;
 }
 
 function getAbilityPlayer(ability, params) {

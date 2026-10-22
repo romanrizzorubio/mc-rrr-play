@@ -25,6 +25,7 @@ const TRAIT_LABELS = {
     invocation: 'Invocación',
     location: 'Lugar',
     metal: 'Metal',
+    mutated: 'Mutado',
     mystic: 'Místico',
     olympus: 'Olimpo',
     persona: 'Individuo',

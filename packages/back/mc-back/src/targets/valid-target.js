@@ -128,8 +128,10 @@ export class ValidTarget extends Engine {
             splitTargetCondition(this.condition);
         const targets = this.getTargetCandidates(params, params.target, condition);
 
-        return filterTargetCandidates(targets, selectionConditions)
-            .filter(target => this.filter(target, params));
+        return filterTargetCandidates(
+            targets.filter(target => this.filter(target, params)),
+            selectionConditions
+        );
     }
     isMultipleTarget(params) {
         const {multipleTarget} = this;

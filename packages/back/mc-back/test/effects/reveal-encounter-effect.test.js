@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CARD_TYPE_ATTACHMENT,
@@ -8,7 +8,7 @@ import {
     PLACE_ENCOUNTER_DISCARD,
     PLACE_PLAYER_ENCOUNTERS,
     PLACE_SCENARIO_EXTRA_DECK,
-    TARGET_MINION_HIGHEST_PRINTED_HP,
+    TARGET_MINION,
     TARGET_YOU,
     PRIORITY_FORCED_RESPONSE,
     TRIGGER_ENGAGE_HERO,
@@ -35,6 +35,7 @@ const createEncounterCard = id => ({
     },
 });
 
+describe('Encounter reveal effect', () => {
 test('GetEncounterCardEffect retrieves a dealt card without revealing it', async () => {
     const first = createEncounterCard('first');
     const second = createEncounterCard('second');
@@ -477,7 +478,7 @@ test('an attachment with no valid target is discarded and keeps its printed surg
     };
     const attachment = {
         attach: {
-            target: TARGET_MINION_HIGHEST_PRINTED_HP,
+            target: TARGET_MINION,
         },
         getAttachConfig() {
             return this.attach;
@@ -548,7 +549,7 @@ test('an attachment with a valid target enters play and attaches to it', async (
         type: CARD_TYPE_ATTACHMENT,
         params: {
             attach: {
-                target: TARGET_MINION_HIGHEST_PRINTED_HP,
+                target: TARGET_MINION,
             },
             keywords: {
                 surge: true,
@@ -596,4 +597,5 @@ test('nested reveals skip dealt cards already consumed by another reveal', async
 
     assert.deepEqual(revealed, [first, second, third]);
     assert.deepEqual(player.encounters, []);
+});
 });

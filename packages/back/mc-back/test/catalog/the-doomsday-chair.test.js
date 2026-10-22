@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     ABILITY_FORCED_INTERRUPT,
@@ -19,7 +19,7 @@ import {
     PLACE_ENCOUNTER_DISCARD,
     TARGET_ATTACHED,
     TARGET_EFFECT,
-    TARGET_MINION_HIGHEST_PRINTED_HP,
+    TARGET_MINION,
     TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_YOU,
@@ -38,6 +38,7 @@ import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {ShuffleDeckEffect} from '../../src/effects/shuffle-deck-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
+describe('The Doomsday Chair set', () => {
 test('La Silla uses its main effect for the M.O.D.O.K. search', async () => {
     const {sets} = await loadCatalog();
     const set = sets.find(({_id}) => _id === 'the-doomsday-chair');
@@ -145,7 +146,12 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
     assert.deepEqual(attachmentEntry.card.params.traits, [TRAIT_TECH]);
     assert.equal(attachmentEntry.card.params.boost, 1);
     assert.equal(attachmentEntry.card.params.maxAttach, 1);
-    assert.equal(attachmentEntry.card.params.attach.target, TARGET_MINION_HIGHEST_PRINTED_HP);
+    assert.deepEqual(attachmentEntry.card.params.attach, {
+        target: TARGET_MINION,
+        condition: {
+            'currentSide.card.hitPoints': {operator: 'max'},
+        },
+    });
     assert.equal(attachmentEntry.card.params.attach.ifNot, undefined);
     assert.equal(attachmentEntry.card.params.keywords.surge, true);
 
@@ -177,4 +183,5 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
     assert.ok(attachmentAbility.effect.effects[0] instanceof PreventDefeatEffect);
     assert.ok(attachmentAbility.effect.effects[1] instanceof HealEffect);
     assert.ok(attachmentAbility.effect.thenEffect instanceof DiscardFromGameEffect);
+});
 });

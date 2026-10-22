@@ -12,6 +12,112 @@ import {SearchCardAndRevealEffect} from '../../src/effects/search-card-reveal-ef
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
 
 describe('SearchCardAndRevealEffect', () => {
+    test('reveals the first matching copy without asking which duplicate to use', async () => {
+        const firstCopy = {id: 'first-copy', name: 'Sujetos de prueba'};
+        const secondCopy = {id: 'second-copy', name: 'Sujetos de prueba'};
+        const removed = [];
+        const revealed = [];
+        let dialogOpened = false;
+        const effect = new SearchCardAndRevealEffect({
+            match: {},
+            places: [
+                PLACE_ENCOUNTER_DECK_CARDS,
+                PLACE_ENCOUNTER_DISCARD,
+            ],
+        });
+        effect.search = place => place === PLACE_ENCOUNTER_DECK_CARDS ?
+            [firstCopy] :
+            [secondCopy];
+        effect.removeRevealed = (place, cards) => {
+            removed.push({place, card: cards[0]});
+        };
+        effect.reveal = async (card, _params, place) => {
+            revealed.push({place, card});
+        };
+        effect.openDialog = async () => {
+            dialogOpened = true;
+        };
+
+        await effect.execute({player: {}});
+
+        assert.deepEqual(removed, [{
+            place: PLACE_ENCOUNTER_DECK_CARDS,
+            card: firstCopy,
+        }]);
+        assert.deepEqual(revealed, [{
+            place: PLACE_ENCOUNTER_DECK_CARDS,
+            card: firstCopy,
+        }]);
+        assert.equal(dialogOpened, false);
+    });
+
+    test('keeps one option per name when different matching cards remain', async () => {
+        const firstCopy = {
+            id: 'first-copy',
+            name: 'Sujetos de prueba',
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        };
+        const duplicateCopy = {
+            id: 'duplicate-copy',
+            name: 'Sujetos de prueba',
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        };
+        const otherCard = {
+            id: 'other-card',
+            name: 'Otro esbirro',
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        };
+        let dialogPlaces;
+        let dialogTitle;
+        let removed;
+        const revealed = [];
+        const effect = new SearchCardAndRevealEffect({
+            match: {},
+            places: [
+                PLACE_ENCOUNTER_DECK_CARDS,
+                PLACE_ENCOUNTER_DISCARD,
+            ],
+            title: 'Elige el Esbirro a mostrar',
+        });
+        effect.search = place => place === PLACE_ENCOUNTER_DECK_CARDS ?
+            [firstCopy, duplicateCopy] :
+            [otherCard];
+        effect.removeRevealed = (place, cards) => {
+            removed = {place, card: cards[0]};
+        };
+        effect.reveal = async card => {
+            revealed.push(card);
+        };
+        effect.openDialog = async ({data, title}) => {
+            dialogPlaces = data.places;
+            dialogTitle = title;
+
+            return {
+                selected: {
+                    place: PLACE_ENCOUNTER_DISCARD,
+                    card: {id: otherCard.id},
+                },
+            };
+        };
+
+        await effect.execute({player: {}});
+
+        assert.equal(dialogPlaces[PLACE_ENCOUNTER_DECK_CARDS].length, 1);
+        assert.equal(dialogPlaces[PLACE_ENCOUNTER_DISCARD].length, 1);
+        assert.equal(dialogTitle, 'Elige el Esbirro a mostrar');
+        assert.deepEqual(removed, {
+            place: PLACE_ENCOUNTER_DISCARD,
+            card: otherCard,
+        });
+        assert.deepEqual(revealed, [otherCard]);
+    });
+
     test('SearchCardAndRevealEffect removes searched cards from their selected places', () => {
         const encounterDeckCards = [];
         const encounterDiscard = [];

@@ -306,7 +306,9 @@ export default css`
   .acquired-keywords {
     box-sizing: border-box;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
     justify-content: center;
     gap: 2px;
     margin-top: 0;
@@ -324,6 +326,7 @@ export default css`
     font-style: italic;
     font-weight: 700;
     line-height: 1.1;
+    white-space: nowrap;
   }
 
   .character-stat {

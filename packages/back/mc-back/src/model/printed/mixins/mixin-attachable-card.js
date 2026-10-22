@@ -21,10 +21,11 @@ export const MixinAttachableCard = C => class extends C {
             {target: this.attach};
     }
     createAttachEffect(card) {
-        const {target} = this.getAttachConfig();
+        const {condition, target} = this.getAttachConfig();
 
         return new AttachEffect({
             card,
+            condition,
             target,
             canAttach: this.canAttach.bind(this),
             match: this.match,
@@ -51,7 +52,7 @@ export const MixinAttachableCard = C => class extends C {
         const targets = await attachEffect.getValidTarget(params);
 
         if (targets.length === 0 && ifNot) {
-            const effect = this.match.abilitiesFactory.effectsFactory.createEffect(ifNot);
+            const effect = this.match.effectsFactory.createEffect(ifNot);
             return effect.runEffect(params);
         }
 

@@ -48,6 +48,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **linked** | **enlazada** |
 | **piercing** | **penetrante** |
 | **restricted** | **restringida** |
+| **mutated** | **mutado** |
 | **Stalwart** | **firmeza** |
 | **team-up** | **equipo** |
 | **toughness** | **dureza** |

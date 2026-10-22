@@ -16,7 +16,7 @@ import {
     PLACE_ENCOUNTER_DISCARD,
     TARGET_ATTACHED,
     TARGET_EFFECT,
-    TARGET_MINION_HIGHEST_PRINTED_HP,
+    TARGET_MINION,
     TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_YOU,
@@ -122,7 +122,10 @@ export default {
                         'boost': 1,
                         'maxAttach': 1,
                         'attach': {
-                            'target': TARGET_MINION_HIGHEST_PRINTED_HP,
+                            'target': TARGET_MINION,
+                            'condition': {
+                                'currentSide.card.hitPoints': {'operator': 'max'}
+                            },
                         },
                         'keywords': {
                             'surge': true,

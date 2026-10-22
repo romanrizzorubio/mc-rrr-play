@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     TRAIT_AERIAL,
@@ -24,6 +24,7 @@ import {
     TRAIT_LOCATION,
     TRAIT_METAL,
     TRAIT_MYSTIC,
+    TRAIT_MUTATED,
     TRAIT_OLYMPUS,
     TRAIT_PERSONA,
     TRAIT_PREPARATION,
@@ -42,52 +43,55 @@ import {
     TRAIT_WOOD,
 } from '../index.js';
 
-test('translates supported traits to Spanish labels', () => {
-    const translations = new Map([
-        [TRAIT_THWART, 'Intervención'],
-        [TRAIT_ATTACK, 'Ataque'],
-        [TRAIT_ARMOR, 'Armadura'],
-        [TRAIT_ARTIFACT, 'Artefacto'],
-        [TRAIT_AVENGER, 'Vengador'],
-        [TRAIT_BUSINESSMAN, 'Empresario'],
-        [TRAIT_CAPTIVE, 'Cautivo'],
-        [TRAIT_CONDITION, 'Alteración'],
-        [TRAIT_DEFENDER, 'Defensor'],
-        [TRAIT_DEFENSE, 'Defensa'],
-        [TRAIT_ELITE, 'Élite'],
-        [TRAIT_GENIUS, 'Genio'],
-        [TRAIT_LOCATION, 'Lugar'],
-        [TRAIT_SKILL, 'Habilidad'],
-        [TRAIT_AERIAL, 'Aéreo'],
-        [TRAIT_ASGARD, 'Asgard'],
-        [TRAIT_TACTIC, 'Táctica'],
-        [TRAIT_SPY, 'Espía'],
-        [TRAIT_SPELL, 'Hechizo'],
-        [TRAIT_VEHICLE, 'Vehículo'],
-        [TRAIT_TECH, 'Tecnología'],
-        [TRAIT_TITLE, 'Título'],
-        [TRAIT_DROID, 'Androide'],
-        [TRAIT_GOBLIN, 'Duende'],
-        [TRAIT_HEROFORHIRE, 'Héroe de alquiler'],
-        [TRAIT_GIANT, 'Gigante'],
-        [TRAIT_ICE, 'Hielo'],
-        [TRAIT_INVOCATION, 'Invocación'],
-        [TRAIT_METAL, 'Metal'],
-        [TRAIT_MYSTIC, 'Místico'],
-        [TRAIT_PERSONA, 'Individuo'],
-        [TRAIT_PREPARATION, 'Planificación'],
-        [TRAIT_SCIENTIST, 'Científico'],
-        [TRAIT_SUPERPOWER, 'Superpoder'],
-        [TRAIT_OLYMPUS, 'Olimpo'],
-        [TRAIT_STONE, 'Piedra'],
-        [TRAIT_WOOD, 'Madera'],
-    ]);
+describe('trait translations', () => {
+    test('translates supported traits to Spanish labels', () => {
+        const translations = new Map([
+            [TRAIT_THWART, 'Intervención'],
+            [TRAIT_ATTACK, 'Ataque'],
+            [TRAIT_ARMOR, 'Armadura'],
+            [TRAIT_ARTIFACT, 'Artefacto'],
+            [TRAIT_AVENGER, 'Vengador'],
+            [TRAIT_BUSINESSMAN, 'Empresario'],
+            [TRAIT_CAPTIVE, 'Cautivo'],
+            [TRAIT_CONDITION, 'Alteración'],
+            [TRAIT_DEFENDER, 'Defensor'],
+            [TRAIT_DEFENSE, 'Defensa'],
+            [TRAIT_ELITE, 'Élite'],
+            [TRAIT_GENIUS, 'Genio'],
+            [TRAIT_LOCATION, 'Lugar'],
+            [TRAIT_SKILL, 'Habilidad'],
+            [TRAIT_AERIAL, 'Aéreo'],
+            [TRAIT_ASGARD, 'Asgard'],
+            [TRAIT_TACTIC, 'Táctica'],
+            [TRAIT_SPY, 'Espía'],
+            [TRAIT_SPELL, 'Hechizo'],
+            [TRAIT_VEHICLE, 'Vehículo'],
+            [TRAIT_TECH, 'Tecnología'],
+            [TRAIT_TITLE, 'Título'],
+            [TRAIT_DROID, 'Androide'],
+            [TRAIT_GOBLIN, 'Duende'],
+            [TRAIT_HEROFORHIRE, 'Héroe de alquiler'],
+            [TRAIT_GIANT, 'Gigante'],
+            [TRAIT_ICE, 'Hielo'],
+            [TRAIT_INVOCATION, 'Invocación'],
+            [TRAIT_METAL, 'Metal'],
+            [TRAIT_MYSTIC, 'Místico'],
+            [TRAIT_PERSONA, 'Individuo'],
+            [TRAIT_PREPARATION, 'Planificación'],
+            [TRAIT_SCIENTIST, 'Científico'],
+            [TRAIT_SUPERPOWER, 'Superpoder'],
+            [TRAIT_OLYMPUS, 'Olimpo'],
+            [TRAIT_STONE, 'Piedra'],
+            [TRAIT_MUTATED, 'Mutado'],
+            [TRAIT_WOOD, 'Madera'],
+        ]);
 
-    translations.forEach((label, trait) => {
-        assert.equal(translateTrait(trait), label);
+        translations.forEach((label, trait) => {
+            assert.equal(translateTrait(trait), label);
+        });
     });
-});
 
-test('preserves labels for unknown traits', () => {
-    assert.equal(translateTrait('custom trait'), 'custom trait');
+    test('preserves labels for unknown traits', () => {
+        assert.equal(translateTrait('custom trait'), 'custom trait');
+    });
 });

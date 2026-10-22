@@ -16,7 +16,7 @@ export class SearchCardAndRevealEffect extends Effect {
         revealAll = false,
     }) {
         super(arguments[0]);
-
+        this.condition = condition;
         this.condition = condition;
         this.places = places;
         this.revealAll = revealAll;
@@ -97,11 +97,24 @@ export class SearchCardAndRevealEffect extends Effect {
             });
 
         } else {
+            const seenNames = new Set();
             const cardPlaces = places.reduce((ret, place) => {
                 const cardsPlace = this.search(place, player);
+                const distinctNames = cardsPlace.filter(card => {
+                    if (typeof card.name !== 'string' || !card.name) {
+                        return true;
+                    }
+                    if (seenNames.has(card.name)) {
+                        return false;
+                    }
 
-                if (cardsPlace.length) {
-                    ret[place] = cardsPlace;
+                    seenNames.add(card.name);
+
+                    return true;
+                });
+
+                if (distinctNames.length) {
+                    ret[place] = distinctNames;
                 }
 
                 return ret;
@@ -115,20 +128,41 @@ export class SearchCardAndRevealEffect extends Effect {
                     place = keys[0];
                     card = cardPlaces[place][0];
                 } else {
-                    const selected = await this.openDialog({
+                    const response = await this.openDialog({
                         dialogType: DIALOG_SELECT_PLACES,
-                        title: 'Elige tu objetivo',
+                        title: this.title || 'Elige tu objetivo',
                         data: {
-                            places: keys.reduce((ret, place) => ({
-                                [place]: cardPlaces[place]
-                                    .map(card =>
-                                        card.toObj(arguments[0]))
-                            }), {}),
+                            places: keys.reduce((ret, place) => {
+                                ret[place] = cardPlaces[place]
+                                    .map(card => card.toObj(arguments[0]));
+
+                                return ret;
+                            }, {}),
                         },
                     });
+                    const selection = response?.selected;
 
-                    place = selected.place;
-                    card = cardPlaces[place].find(_card => _card.id === selected.card.id);
+                    if (!selection?.place || !selection.card?.id) {
+                        throw new Error(
+                            'La selección de la carta de Encuentro no es válida.',
+                        );
+                    }
+
+                    place = selection.place;
+                    const cardsAtPlace = cardPlaces[place];
+                    if (!cardsAtPlace) {
+                        throw new Error(
+                            'La ubicación seleccionada para la carta de Encuentro no es válida.',
+                        );
+                    }
+
+                    card = cardsAtPlace.find(_card =>
+                        _card.id === selection.card.id);
+                    if (!card) {
+                        throw new Error(
+                            'La carta seleccionada para mostrar no está disponible.',
+                        );
+                    }
                 }
 
                 this.removeRevealed(place, [card], player);

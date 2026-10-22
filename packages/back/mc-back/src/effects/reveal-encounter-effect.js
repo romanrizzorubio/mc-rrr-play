@@ -38,6 +38,7 @@ export class RevealEncounterEffect extends Effect {
 
         this.card = card ?? params.selectedTarget;
         this.player = player;
+        this.playerConfig = player;
         this.putInPlay = putInPlay;
 
         this.surge = false;
@@ -57,6 +58,26 @@ export class RevealEncounterEffect extends Effect {
         }
 
         return source?.isEncounterCard ? source : undefined;
+    }
+    async resolveParams(params) {
+        if (this.playerConfig === undefined) {
+            return params;
+        }
+
+        const player = typeof this.playerConfig === 'string' ?
+            path({
+                ...params,
+                match: params.match ?? this.match,
+            }, this.playerConfig) :
+            this.playerConfig;
+        if (!player?.isPlayer) {
+            throw new TypeError('RevealEncounterEffect player must resolve to a player.');
+        }
+
+        return {
+            ...params,
+            player,
+        };
     }
     async applySurge(params) {
         const {player} = params;
@@ -268,7 +289,7 @@ export class RevealEncounterEffect extends Effect {
                         if (!attachTarget) {
                             await selectedTarget.discard();
                             if (attachConfig.ifNot) {
-                                const ifNotEffect = this.match.abilitiesFactory.effectsFactory
+                                const ifNotEffect = this.match.effectsFactory
                                     .createEffect(attachConfig.ifNot);
                                 if (!ifNotEffect) {
                                     throw new Error('Unable to create attachment fallback effect.');

@@ -1,5 +1,9 @@
 import {isEventInPlayerHand} from '../../utils/trigger-card-player.js';
 
+function isLastingAbility(ability) {
+    return Boolean(ability?.lasting);
+}
+
 export class Trigger {
     static #triggeredEffectsByTrigger = new WeakMap();
 
@@ -38,7 +42,9 @@ export class Trigger {
     canRun(params) {
         const {ability} = this;
 
-        if (this.card?.isEvent && !isEventInPlayerHand(this.card, params.player)) {
+        if (this.card?.isEvent &&
+            !isLastingAbility(ability) &&
+            !isEventInPlayerHand(this.card, params.player)) {
             return false;
         }
 
@@ -116,9 +122,8 @@ export class Trigger {
     }
     runTrigger(params) {
         const {ability, card} = this;
-        const isLastingAbility = Boolean(ability?.lasting);
 
-        if (card.isEvent && !isLastingAbility) {
+        if (card.isEvent && !isLastingAbility(ability)) {
             return this.runEvent(params);
         } else {
             return this.runCard(params);

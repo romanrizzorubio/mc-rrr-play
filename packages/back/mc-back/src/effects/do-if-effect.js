@@ -116,7 +116,12 @@ export class DoIfEffect extends Effect {
         this.prepareChildEffect(this.effectNot);
     }
     checkCondition(params) {
-        return checkCondition(params, this.condition);
+        const ability = params.ability ?? this.ability;
+        const conditionParams = ability ?
+            {...params, ability} :
+            params;
+
+        return checkCondition(conditionParams, this.condition);
     }
     isInvalidTarget(params) {
         const effect = this.checkCondition(params) ? this.effect : this.effectNot;

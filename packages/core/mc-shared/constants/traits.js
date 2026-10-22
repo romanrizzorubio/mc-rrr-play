@@ -37,6 +37,7 @@ export const TRAIT_LOCATION = 'location';
 export const TRAIT_METAL = 'metal';
 export const TRAIT_MASTERS_OF_EVIL = 'masters of evil';
 export const TRAIT_MERCENARY = 'mercenary';
+export const TRAIT_MUTATED = 'mutated';
 export const TRAIT_MYSTIC = 'mystic';
 export const TRAIT_OLYMPUS = 'olympus';
 export const TRAIT_PERSONA = 'persona';

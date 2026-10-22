@@ -91,12 +91,21 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 
 ### Condiciones agregadas durante la selección
 
-Además de las condiciones que filtran cada candidato, `condition` puede limitar la lista ya resuelta por un selector usando `{operator: 'max', defaultValue: N}` en una propiedad numérica del objetivo. Se conservan todos los candidatos empatados en el valor máximo y el cálculo se realiza al resolver los candidatos para seleccionar un objetivo, no dentro de una clase de efecto. Si la propiedad no existe o es `null`, se usa `defaultValue`; para comparar costes impresos ausentes como 0, configura `cost: {operator: 'max', defaultValue: 0}`.
+Además de las condiciones que filtran cada candidato, `condition` puede limitar la lista ya resuelta por un selector usando `{operator: 'max', defaultValue: N}` en una propiedad numérica del objetivo. Primero se aplican las restricciones de elegibilidad del efecto y luego se conservan los candidatos empatados en el máximo. Si la propiedad no existe o es `null`, se usa `defaultValue`; para comparar costes impresos ausentes como 0, configura `cost: {operator: 'max', defaultValue: 0}`.
 
 ```javascript
 condition: {
     traits: TRAIT_PREPARATION,
     cost: {operator: 'max', defaultValue: 0},
+}
+```
+
+Usa `TARGET_MINION` con una condición agregada para elegir esbirros según su Vida restante (`life`), los puntos de Vida del lado activo (`currentSide.hitPoints`) o la Vida impresa (`currentSide.card.hitPoints`). El máximo se calcula después de filtrar los candidatos no elegibles.
+
+```javascript
+target: TARGET_MINION,
+condition: {
+    life: {operator: 'max'},
 }
 ```
 
@@ -131,8 +140,6 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | `TARGET_ALL_SCHEMES` | Todos los planes en juego, incluidos el principal y los secundarios. |
 | `TARGET_CONDITION_CARD` | Las cartas de la partida que cumplen `condition`. |
 | `TARGET_MAIN_SCHEME` | El plan principal. |
-| `TARGET_MINION_HIGHEST_HP` | Los esbirros con la mayor vida actual; puede devolver varios si hay empate. |
-| `TARGET_MINION_HIGHEST_PRINTED_HP` | Los esbirros elegibles con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
 | `TARGET_ENEMY_HIGHEST_PRINTED_HP` | Los enemigos elegibles (Villano y esbirros) con el mayor valor impreso de Vida; puede devolver varios si hay empate. |
 | `TARGET_SIDE_SCHEME` | Los planes secundarios; selecciona uno si hay varios. |
 | `TARGET_SCHEME` | Los planes de la partida. |

@@ -67,7 +67,7 @@ import {
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
-    TARGET_MINION_HIGHEST_HP,
+    TARGET_MINION,
     TARGET_PLAYER,
     TARGET_SCHEME,
     TARGET_SIDE,
@@ -794,7 +794,10 @@ export default {
                         ],
                         'boost': 1,
                         'attach': {
-                            'target': TARGET_MINION_HIGHEST_HP,
+                            'target': TARGET_MINION,
+                            'condition': {
+                                'currentSide.hitPoints': {'operator': 'max'}
+                            },
                             'ifNot': {
                                 'type': EFFECT_SURGE
                             }
