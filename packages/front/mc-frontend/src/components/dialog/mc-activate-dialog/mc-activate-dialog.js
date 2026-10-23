@@ -58,6 +58,7 @@ export class McActivateDialog extends McDialog {
                 .defense="${character.defense}"
                 .recovery="${character.recovery}"
                 .scheme="${character.scheme}"
+                .extraKeywords="${character.extraKeywords ?? []}"
                 .unprintedStats="${character.unprintedStats ?? []}"
                 .emphasizedStats="${emphasizedStat ? [emphasizedStat] : []}"
                 size="l"

@@ -200,6 +200,7 @@ export class McAssignDialog extends McDialog {
                 .life="${card.life}"
                 .hitPoints="${card.hitPoints}"
                 .statusCards="${card.statusCards}"
+                .extraKeywords="${card.extraKeywords ?? []}"
                 size="m"
                 ?horizontal="${isPlanCard(card)}"
             >

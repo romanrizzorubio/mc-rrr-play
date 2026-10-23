@@ -183,6 +183,7 @@ export class McConfirmDialog extends McDialog {
                     .defense="${card.defense}"
                     .recovery="${card.recovery}"
                     .scheme="${card.scheme}"
+                    .extraKeywords="${card.extraKeywords ?? []}"
                     .unprintedStats="${card.unprintedStats ?? []}"
                     .emphasizedStats="${emphasizedStat ? [emphasizedStat] : []}"
                     .threat="${card.threat}"

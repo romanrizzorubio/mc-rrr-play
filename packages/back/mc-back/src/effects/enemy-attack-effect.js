@@ -329,12 +329,13 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 const attack = this.toObj(arguments[0]);
                 attack.character.attack = attackValue;
                 const defenderCards = await Promise.all(defenders.map(async defender => {
-                    const {hitPoints, life} = await defender.getEffectiveStats();
+                    const stats = await defender.getEffectiveStats({
+                        player: targetPlayer,
+                    });
 
                     return {
                         ...defender.toObj(params),
-                        hitPoints,
-                        life,
+                        ...stats,
                     };
                 }));
 

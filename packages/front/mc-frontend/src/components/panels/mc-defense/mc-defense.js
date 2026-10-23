@@ -100,6 +100,7 @@ export class McDefense extends LitElement {
             <mc-card
                 name="${character.name}"
                 image="${character.image}"
+                .extraKeywords="${character.extraKeywords ?? []}"
                 .isFacedownCard="${character.isFacedownCard}"
                 size="s"
             ></mc-card>
