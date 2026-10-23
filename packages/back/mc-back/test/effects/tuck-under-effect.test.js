@@ -69,6 +69,55 @@ describe('Tuck-under effects', () => {
         });
     });
 
+    test('TuckUnderEffect can tuck a searched card directly from the player deck', async () => {
+        const deckRefreshes = [];
+        const before = createCard('before', null);
+        const after = createCard('after', null);
+        const owner = {
+            deck: {
+                cards: [],
+                discardPile: [],
+                async searchDeck(card) {
+                    this.cards.splice(this.cards.indexOf(card), 1);
+                },
+                searchDiscard() {},
+                async refresh() {
+                    deckRefreshes.push(true);
+                },
+            },
+        };
+        const card = createCard('searched-card', owner);
+        owner.deck.cards.push(before, card, after);
+        let hostRefreshes = 0;
+        const host = {
+            tuckedCards: [],
+            async refresh() {
+                hostRefreshes++;
+            },
+        };
+        const ability = {card: host};
+        const effect = new TuckUnderEffect({
+            cards: 'selectedCards',
+            match: {triggerCards: {}},
+            target: TARGET_THIS,
+        });
+        effect.ability = ability;
+
+        const params = {
+            ability,
+            player: owner,
+            selectedCards: [card],
+        };
+
+        assert.equal(await effect.canRun(params), true);
+        await effect.runEffect(params);
+
+        assert.deepEqual(owner.deck.cards, [before, after]);
+        assert.deepEqual(host.tuckedCards, [card]);
+        assert.equal(hostRefreshes, 1);
+        assert.equal(deckRefreshes.length, 1);
+    });
+
     test('Bruno automatically tucks the only available hand card', async () => {
         const handCards = [];
         const discardedFromHand = [];

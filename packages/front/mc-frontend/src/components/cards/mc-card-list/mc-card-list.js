@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-card-list.css.js';
 import '../mc-card/mc-card.js';
 import {ABILITY_ID, isPlanCard} from '../../../misc/utils.js';
+import {BACK_CARD_PLAYER} from '../../../misc/cards.js';
 import {
     getBasicActivationOption,
     getCardAbilityOptions,
@@ -35,6 +36,7 @@ export class HandComponent extends LitElement {
             highlightPlayable: {type: Boolean, attribute: 'highlight-playable'},
             rotatePlanCards: {type: Boolean, attribute: 'rotate-plan-cards'},
             allowPlayCardDrag: {type: Boolean},
+            selectOnClick: {type: Boolean, attribute: 'select-on-click'},
             player: {type: Object},
             basicActivationType: {type: String, attribute: 'basic-activation-type'},
             dragActivation: {type: Object},
@@ -61,6 +63,7 @@ export class HandComponent extends LitElement {
         this.highlightPlayable = false;
         this.rotatePlanCards = false;
         this.allowPlayCardDrag = false;
+        this.selectOnClick = false;
         this.player = null;
         this.basicActivationType = '';
         this.dragActivation = null;
@@ -181,6 +184,7 @@ export class HandComponent extends LitElement {
             highlightPlayable,
             rotatePlanCards,
             allowPlayCardDrag,
+            selectOnClick,
         } = this;
         const {
             attached,
@@ -201,6 +205,7 @@ export class HandComponent extends LitElement {
             extraKeywords = [],
             statusCards,
         } = card;
+        const isPlayerTarget = card.isPlayer === true;
         const horizontal = isPlanCard(card);
         const rotated = rotatePlanCards && horizontal;
         const {abilityNames = []} = card;
@@ -231,7 +236,7 @@ export class HandComponent extends LitElement {
             <mc-card
                 class="${classes.join(' ')}"
                 name="${name}"
-                image="${image}"
+                image="${isPlayerTarget ? BACK_CARD_PLAYER : image}"
                 .card="${card}"
                 .basicActivation="${this.getBasicActivationOption(card)}"
                 .activationActor="${card.isAlly ||
@@ -244,6 +249,7 @@ export class HandComponent extends LitElement {
                     card.playable === true &&
                     !disabledCards.includes(index)}"
                 .clickDisabled="${this.isCardClickDisabled(card)}"
+                .selectOnClick="${selectOnClick}"
                 .attack="${attack}"
                 .thwart="${thwart}"
                 .defense="${defense}"
@@ -264,7 +270,6 @@ export class HandComponent extends LitElement {
                 size="${size}"
                 ?horizontal="${horizontal}"
                 .rotated="${rotated}"
-                hide-name
                 .showThreat="${showThreat}"
                 .showGeneric="${showGeneric}"
                 .exhausted="${exhausted}"
@@ -274,6 +279,7 @@ export class HandComponent extends LitElement {
                 .isFacedownCard="${isFacedownCard}"
                 .canPeekFacedown="${Boolean(isFacedownCard && image)}"
                 .facedownImage="${card.facedownImage || ''}"
+                .hideName="${!isPlayerTarget}"
                 .statusCards="${statusCards}"
                 .menuOptions="${this.getMenuOptions(card)}"
                 @change-menu="${this.handleChangeMenu(index)}"

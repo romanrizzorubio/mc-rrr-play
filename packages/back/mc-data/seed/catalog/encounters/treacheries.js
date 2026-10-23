@@ -7,12 +7,10 @@ import {
     CHARACTER_ALL_ENGAGED_MINIONS,
     CHARACTER_VILLAIN,
     EFFECT_CHAINED,
-    EFFECT_DO_IF,
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENGAGE,
     EFFECT_FOR_EACH,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SEVERAL_ATTACKS,
     EFFECT_SURGE,
     PLACE_ENCOUNTER_DECK_CARDS,
@@ -20,7 +18,6 @@ import {
     TARGET_ALL_ENEMIES,
     TARGET_ALL_PLAYERS,
     TARGET_ENGAGED_HERO,
-    TARGET_SCENARIO,
     TARGET_YOU,
     TRAIT_HYDRA,
 } from 'mc-shared';
@@ -128,20 +125,6 @@ export const hailHydra = {
                                                         type: EFFECT_ENGAGE,
                                                         params: {
                                                             target: TARGET_YOU,
-                                                        },
-                                                    },
-                                                    {
-                                                        type: EFFECT_DO_IF,
-                                                        params: {
-                                                            condition: {
-                                                                'effects.0.locations': PLACE_ENCOUNTER_DECK_CARDS,
-                                                            },
-                                                            effect: {
-                                                                type: EFFECT_SHUFFLE_DECK,
-                                                                params: {
-                                                                    target: TARGET_SCENARIO,
-                                                                },
-                                                            },
                                                         },
                                                     },
                                                 ],

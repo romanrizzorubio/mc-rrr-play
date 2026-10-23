@@ -21,14 +21,20 @@ export class TakeDamageEffect extends Effect {
     constructor({
         damage,
         ignoreTough = false,
+        preventDamage = 0,
     }) {
         super(arguments[0]);
 
         this.initialDamage = damage;
         this.damage = damage;
         this.ignoreTough = ignoreTough;
+        this.initialPreventDamage = Array.isArray(preventDamage) ?
+            preventDamage.slice() :
+            preventDamage;
 
-        this.preventDamage = 0;
+        this.preventDamage = Array.isArray(this.initialPreventDamage) ?
+            this.initialPreventDamage.slice() :
+            this.initialPreventDamage;
         this.excess = 0;
         this.canceled = false;
         this.defeated = false;
@@ -36,7 +42,9 @@ export class TakeDamageEffect extends Effect {
     resetResolutionData() {
         super.resetResolutionData();
         this.damage = this.initialDamage;
-        this.preventDamage = 0;
+        this.preventDamage = Array.isArray(this.initialPreventDamage) ?
+            this.initialPreventDamage.slice() :
+            this.initialPreventDamage;
         this.excess = 0;
         this.canceled = false;
         this.defeated = false;
@@ -128,7 +136,10 @@ export class TakeDamageEffect extends Effect {
         const piercing = this.isAttack && this.piercing;
         const multiTarget = Array.isArray(selectedTarget);
 
-        if (!canResolve || (!multiTarget && !piercing)) {
+        if (!canResolve) {
+            return canResolve;
+        }
+        if (!multiTarget && !piercing) {
             return canResolve;
         }
 

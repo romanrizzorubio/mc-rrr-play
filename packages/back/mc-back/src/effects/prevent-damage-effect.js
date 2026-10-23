@@ -5,6 +5,8 @@ import {
     getPrePlayConfirmationCard,
 } from '../utils/pre-play-confirmation.js';
 
+const MAX_PREVENTABLE_DAMAGE = Number.MAX_SAFE_INTEGER;
+
 export class PreventDamageEffect extends Effect {
     constructor({
         damage = 0,
@@ -74,6 +76,9 @@ export class PreventDamageEffect extends Effect {
     }
     canRun(params) {
         const {effect} = params;
+        const isPendingAttack = effect?.isAttack &&
+            effect.damage === undefined &&
+            typeof effect.getAttackValue === 'function';
         const takenDamage = params.triggeredTarget ?
             params.triggeredTargetDamage :
             effect.takenDamage;
@@ -81,10 +86,23 @@ export class PreventDamageEffect extends Effect {
             takenDamage.some(damage => damage > 0) :
             takenDamage > 0;
 
-        return canPreventDamage && super.canRun(params);
+        return (isPendingAttack || canPreventDamage) && super.canRun(params);
     }
     execute(params) {
         const {effect} = params;
+
+        if (effect?.isAttack &&
+            effect.damage === undefined &&
+            typeof effect.getAttackValue === 'function') {
+            const preventDamage = this.damage > 0 ?
+                this.damage :
+                MAX_PREVENTABLE_DAMAGE;
+            effect.preventDamage = Math.min(
+                MAX_PREVENTABLE_DAMAGE,
+                (effect.preventDamage || 0) + preventDamage
+            );
+            return;
+        }
 
         if (params.triggeredTarget) {
             const targets = Array.isArray(effect.selectedTarget) ?

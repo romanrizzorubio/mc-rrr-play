@@ -38,6 +38,9 @@ const getTargetPlayerDialogParam = targetPlayer => {
     return typeof name === 'string' ? {targetPlayer: name} : {};
 };
 
+const targetToObj = (target, params) =>
+    target.toTargetObj?.(params) ?? target.toObj(params);
+
 export class ValidTarget extends Engine {
     constructor({
         effect,
@@ -199,7 +202,8 @@ export class ValidTarget extends Engine {
                 ...getTargetPlayerDialogParam(params.targetPlayer),
                 title: params.dialogTitle || 'Elige tus objetivos',
                 data: {
-                    cards: validTarget.map(card => card.toObj(params)),
+                    cards: validTarget.map(card =>
+                        targetToObj(card, params)),
                     count,
                     minCount,
                     upTo: Boolean(selectUpTo),
@@ -251,7 +255,8 @@ export class ValidTarget extends Engine {
                     ...getTargetPlayerDialogParam(params.targetPlayer),
                     title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
-                        cards: validTarget.map(card => card.toObj(params)),
+                        cards: validTarget.map(card =>
+                            targetToObj(card, params)),
                     },
                 });
                 if (params.showCancel && (

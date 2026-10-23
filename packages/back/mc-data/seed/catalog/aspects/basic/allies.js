@@ -1,4 +1,5 @@
 import {
+    ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
@@ -8,6 +9,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
+    EFFECT_MODIFY_ATTACK,
     EFFECT_REMOVE_THREAT,
     EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_STUN,
@@ -17,14 +19,17 @@ import {
     TARGET_CARD,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
+    TARGET_EFFECT,
     TARGET_SCHEME,
     TARGET_YOU,
     TIME_ROUND,
+    TRAIT_AVENGER,
     TRAIT_SHIELD,
     TRAIT_ASGARD,
     TRAIT_SPY,
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
+    TRIGGER_THIS_ATTACK,
 } from 'mc-shared';
 
 export default [
@@ -37,7 +42,7 @@ export default [
             'params': {
                 'name': 'Pájaro Burlón',
                 'set': 'basic',
-                'image': 'aspect/basic/allies/b83-copy-2.webp',
+                'image': 'aspect/basic/allies/01083.png',
                 'traits': [
                     TRAIT_SHIELD,
                     TRAIT_SPY
@@ -80,7 +85,7 @@ export default [
             'params': {
                 'name': 'Nick Furia',
                 'set': 'basic',
-                'image': 'aspect/basic/allies/b84-copy-2.webp',
+                'image': 'aspect/basic/allies/01084.png',
                 'traits': [
                     TRAIT_SHIELD,
                     TRAIT_SPY
@@ -189,6 +194,61 @@ export default [
             }
         }
     },
+{
+    '_id': 'basic-maquina-de-guerra',
+    'aspect': 'basic',
+    'order': 40,
+    'card': {
+        'type': CARD_TYPE_ALLY,
+        'params': {
+            'name': 'Máquina de Guerra',
+            'subtitle': 'James Rhodes',
+            'set': 'basic',
+            'image': 'aspect/basic/allies/04020.png',
+            'traits': [
+                TRAIT_AVENGER,
+                TRAIT_SHIELD,
+            ],
+            'unique': true,
+            'cost': 4,
+            'resources': [
+                RESOURCE_MENTAL,
+            ],
+            'classification': 'basic',
+            'thwart': 2,
+            'attack': 2,
+            'thwartConsequential': 1,
+            'attackConsequential': 1,
+            'hitPoints': 3,
+            'keywords': {
+                'toughness': true,
+            },
+            'abilities': [
+                {
+                    'type': ABILITY_CONSTANT,
+                    'params': {
+                        'hideDialog': true,
+                        'trigger': TRIGGER_THIS_ATTACK,
+                        'condition': {
+                            'effect.ability.isBasic': true,
+                        },
+                        'effect': {
+                            'type': EFFECT_MODIFY_ATTACK,
+                            'params': {
+                                'target': TARGET_EFFECT,
+                                'modify': {
+                                    'keywords': {
+                                        'ranged': true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
+        },
+    },
+},
 {
         '_id': 'basic-heimdall',
         'aspect': 'basic',

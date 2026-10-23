@@ -5,16 +5,92 @@ import {
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_HAND,
+    PLACE_IN_PLAY,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
 } from 'mc-shared';
-import {checkFilter} from '../utils/filter-utils.js';
 import {canPlayCard} from '../utils/card-play-utils.js';
+import {EFFECT_RESOLUTION_CONTEXT} from '../utils/effect-resolution-context.js';
+import {checkFilter} from '../utils/filter-utils.js';
 
 import {Effect} from './effect.js';
+import {ShuffleDeckEffect} from './shuffle-deck-effect.js';
 
+const REFERENCE_CARD_TYPE_ENCOUNTER = 'encounter';
+const REFERENCE_CARD_TYPE_PLAYER = 'player';
+const REFERENCE_PRIORITY_NO_MATCH = -1;
+const REFERENCE_PRIORITY_SOURCE_CARD = 0;
+const REFERENCE_PRIORITY_ASSOCIATED_SET = 1;
+const REFERENCE_PRIORITY_CARD_TYPE = 2;
+const REFERENCE_PRIORITY_COUNT = 3;
 
 export class SearchCardsEffect extends Effect {
+    static getCardSet(card) {
+        return card?.set ?? card?.card?.set;
+    }
+    static getAssociatedSuperheroSet(referenceCard, match) {
+        const ownerSuperheroSet = this.getCardSet(referenceCard?.owner?.superhero);
+        if (ownerSuperheroSet) {
+            return ownerSuperheroSet;
+        }
+
+        const referenceSet = this.getCardSet(referenceCard);
+        const associatedSuperhero = (match?.players || []).find(({superhero}) =>
+            referenceSet && this.getCardSet(superhero) === referenceSet)?.superhero;
+
+        return this.getCardSet(associatedSuperhero);
+    }
+    static isPlayerCard(card) {
+        return Boolean(
+            card?.isPlayerCard ||
+            card?.card?.isPlayerCard ||
+            card?.isSuperhero ||
+            card?.card?.isSuperhero
+        );
+    }
+    static isEncounterCard(card) {
+        return Boolean(card?.isEncounterCard || card?.card?.isEncounterCard);
+    }
+    static getReferenceCardType(card) {
+        if (this.isEncounterCard(card)) {
+            return REFERENCE_CARD_TYPE_ENCOUNTER;
+        }
+        if (this.isPlayerCard(card)) {
+            return REFERENCE_CARD_TYPE_PLAYER;
+        }
+    }
+    static isSameCard(card, referenceCard) {
+        return card === referenceCard ||
+            card?.parent === referenceCard ||
+            referenceCard?.parent === card ||
+            referenceCard?.sides?.includes(card) ||
+            card?.sides?.includes(referenceCard);
+    }
+    static getReferencePriority(
+        card,
+        referenceCard,
+        associatedSuperheroSet,
+        referenceCardType
+    ) {
+        if (this.isSameCard(card, referenceCard)) {
+            return REFERENCE_PRIORITY_SOURCE_CARD;
+        }
+        if (associatedSuperheroSet &&
+            this.getCardSet(card) === associatedSuperheroSet) {
+            return REFERENCE_PRIORITY_ASSOCIATED_SET;
+        }
+        if (
+            (referenceCardType === REFERENCE_CARD_TYPE_ENCOUNTER &&
+                this.isEncounterCard(card)) ||
+            (referenceCardType === REFERENCE_CARD_TYPE_PLAYER &&
+                this.isPlayerCard(card))
+        ) {
+            return REFERENCE_PRIORITY_CARD_TYPE;
+        }
+
+        return REFERENCE_PRIORITY_NO_MATCH;
+    }
+
     constructor({
         locations = [], // ['discardPile', 'deck', 'hand']
         players = TARGET_YOU,
@@ -44,6 +120,7 @@ export class SearchCardsEffect extends Effect {
         this.distinctNames = distinctNames;
         this.showCancel = showCancel;
         this.onlyPlayable = onlyPlayable;
+        this.searchedDecks = new Map();
     }
 
     async canRun(params) {
@@ -101,10 +178,29 @@ export class SearchCardsEffect extends Effect {
                 game.players :
                 [player];
         const options = [];
+        const searchedDecks = new Map();
+        const referenceCard = typeof this.filter.name === 'string' ?
+            this.ability?.card :
+            undefined;
+        const associatedSuperheroSet =
+            this.constructor.getAssociatedSuperheroSet(referenceCard, game);
+        const referenceCardType =
+            this.constructor.getReferenceCardType(referenceCard);
+        const referenceOptions = Array.from(
+            {length: REFERENCE_PRIORITY_COUNT},
+            () => []
+        );
+        let foundFirstMatch = false;
 
         for (const targetPlayer of targetPlayers) {
             for (const location of this.locations) {
                 let cards = this.getCardsAtLocation(targetPlayer, location);
+                if (location === PLACE_DECK) {
+                    searchedDecks.set(targetPlayer.deck, targetPlayer);
+                } else if (location === PLACE_ENCOUNTER_DECK_CARDS) {
+                    const scenario = this.match.scenario;
+                    searchedDecks.set(scenario.deck, scenario);
+                }
                 if (location === PLACE_DECK &&
                     this.topCount !== undefined) {
                     if (!Number.isSafeInteger(this.topCount) || this.topCount < 0) {
@@ -118,6 +214,21 @@ export class SearchCardsEffect extends Effect {
                 }
 
                 for (const card of cards) {
+                    const referencePriority = referenceCard ?
+                        this.constructor.getReferencePriority(
+                            card,
+                            referenceCard,
+                            associatedSuperheroSet,
+                            referenceCardType
+                        ) :
+                        -1;
+                    if (referenceCard && referencePriority < 0) {
+                        continue;
+                    }
+                    if (referenceCard && this.firstMatch &&
+                        referenceOptions[referencePriority].length) {
+                        continue;
+                    }
                     if (!await checkFilter(card, this.filter, params)) {
                         continue;
                     }
@@ -129,22 +240,38 @@ export class SearchCardsEffect extends Effect {
                         continue;
                     }
 
-                    options.push(card);
-                    if (this.firstMatch) {
-                        break;
+                    if (referenceCard) {
+                        referenceOptions[referencePriority].push(card);
+                        if (this.firstMatch &&
+                            referencePriority === REFERENCE_PRIORITY_SOURCE_CARD) {
+                            foundFirstMatch = true;
+                            break;
+                        }
+                    } else {
+                        options.push(card);
+                        if (this.firstMatch) {
+                            foundFirstMatch = true;
+                            break;
+                        }
                     }
                 }
 
-                if (this.firstMatch && options.length) {
+                if (foundFirstMatch) {
                     break;
                 }
             }
-
-            if (this.firstMatch && options.length) {
+            if (foundFirstMatch) {
                 break;
             }
         }
 
+        if (referenceCard) {
+            const highestPriorityOptions = referenceOptions.find(group =>
+                group.length);
+            options.push(...(highestPriorityOptions || []));
+        }
+
+        this.searchedDecks = searchedDecks;
         return options;
     }
     async preparePayment(params, session) {
@@ -206,6 +333,8 @@ export class SearchCardsEffect extends Effect {
             return player.deck.cards;
         } else if (location === PLACE_HAND) {
             return player.hand.cards;
+        } else if (location === PLACE_IN_PLAY) {
+            return player.gameZone?.cards || [];
         } else if (location === PLACE_ENCOUNTER_DECK_CARDS) {
             return this.match.scenario.deck.cards;
         } else if (location === PLACE_ENCOUNTER_DISCARD) {
@@ -213,6 +342,45 @@ export class SearchCardsEffect extends Effect {
         }
 
         return [];
+    }
+
+    async shuffleSearchedDecks(params) {
+        if (this.searchedDecks.size === 0) {
+            return;
+        }
+        if (!this.match) {
+            throw new TypeError('SearchCardsEffect requires match context to shuffle searched decks.');
+        }
+
+        const searchedDecks = [...this.searchedDecks];
+        for (const [deck] of searchedDecks) {
+            if (!deck || typeof deck.shuffle !== 'function' ||
+                typeof deck.refresh !== 'function') {
+                throw new TypeError('SearchCardsEffect requires searched decks to support shuffling and refreshing.');
+            }
+        }
+
+        const resolutionContext = params[EFFECT_RESOLUTION_CONTEXT];
+        if (resolutionContext) {
+            for (const [deck, target] of searchedDecks) {
+                resolutionContext.afterResolution.set(deck, () =>
+                    this.shuffleSearchedDeck(deck, target, params));
+            }
+
+            return;
+        }
+
+        for (const [deck, target] of searchedDecks) {
+            await this.shuffleSearchedDeck(deck, target, params);
+        }
+    }
+    async shuffleSearchedDeck(deck, target, params) {
+        const shuffleEffect = new ShuffleDeckEffect({
+            match: this.match,
+            selectedTarget: target,
+        });
+        await shuffleEffect.execute(params);
+        await deck.refresh();
     }
 
     async execute(params) {
@@ -225,13 +393,17 @@ export class SearchCardsEffect extends Effect {
             params.card = undefined;
         }
         
-        const options = await this.getOptions(params);
         const hasStagedPayment = costPaymentSession?.hasPayment(this) || false;
         const isPreparedWithoutPayment =
             costPaymentSession?.isPrepared(this) && !hasStagedPayment;
 
-        if (isPreparedWithoutPayment ||
-            (options.length === 0 && !hasStagedPayment)) {
+        if (isPreparedWithoutPayment) {
+            return;
+        }
+
+        const options = await this.getOptions(params);
+        if (options.length === 0 && !hasStagedPayment) {
+            await this.shuffleSearchedDecks(params);
             return;
         }
 
@@ -239,6 +411,7 @@ export class SearchCardsEffect extends Effect {
             params.selectedCards = options;
             params.selectedCard = options[0];
             params.card = options[0];
+            await this.shuffleSearchedDecks(params);
             return;
         }
 
@@ -261,6 +434,7 @@ export class SearchCardsEffect extends Effect {
             });
         if (this.showCancel && !hasStagedPayment && !response) {
             this.paymentCancelled = true;
+            await this.shuffleSearchedDecks(params);
             return;
         }
 
@@ -276,6 +450,7 @@ export class SearchCardsEffect extends Effect {
             this.setSelectedCards(params, params.selectedCards);
             params.card = params.selectedCard;
         }
+        await this.shuffleSearchedDecks(params);
     }
     setSelectedCards(params, selectedCards) {
         params.selectedCards = selectedCards;

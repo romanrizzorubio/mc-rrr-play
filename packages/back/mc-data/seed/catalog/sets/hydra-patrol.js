@@ -6,11 +6,9 @@ import {
     EFFECT_ENGAGE,
     EFFECT_FOR_EACH,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     TARGET_ALL_PLAYERS,
-    TARGET_SCENARIO,
     TARGET_YOU,
     TRAIT_HYDRA,
 } from 'mc-shared';
@@ -105,12 +103,6 @@ export default {
                                                                 ],
                                                             },
                                                         },
-                                                    },
-                                                },
-                                                {
-                                                    type: EFFECT_SHUFFLE_DECK,
-                                                    params: {
-                                                        target: TARGET_SCENARIO,
                                                     },
                                                 },
                                             ],

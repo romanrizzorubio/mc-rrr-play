@@ -44,6 +44,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.defenderConditions = [];
         this.modifyDefense = 0;
         this.activationInterrupted = false;
+        this.preventDamage = 0;
     }
     resetForResolution() {
         super.resetForResolution();
@@ -58,6 +59,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
         this.modifyDefense = 0;
         this.attacked = undefined;
         this.activationInterrupted = false;
+        this.preventDamage = 0;
     }
     canContinueActivation() {
         if (this.activationInterrupted || !this.enemy ||
@@ -642,6 +644,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             damage: isMultiTarget ? damages : damages[0],
             activation: this.activation,
             isAttack: true,
+            preventDamage: this.preventDamage,
             keywords: {piercing: this.piercing},
             match: this.match,
             selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],

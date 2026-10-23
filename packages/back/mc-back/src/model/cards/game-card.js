@@ -1,4 +1,8 @@
-import {ABILITY_ACTION, TARGET_PLAYER, TARGET_SIDE} from 'mc-shared';
+import {
+    ABILITY_ACTION,
+    TARGET_PLAYER,
+    TARGET_SIDE,
+} from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {FaceDown} from '../match/facedown.js';
@@ -1065,10 +1069,19 @@ export class GameCard extends Engine {
     }
     async toObjWithAbilityAvailability(player) {
         const abilityAvailability = await this.getAbilityAvailability(player);
+        const tuckedCards = await Promise.all(this.tuckedCards.map(async card => ({
+            ...card.toObj({player}),
+            playable: Boolean(player && card.isPlayerCard && await card.canPlay({
+                player,
+                abilityType: ABILITY_ACTION,
+                checkOnly: true,
+            })),
+        })));
 
         return {
             ...this.toObj(),
             ...abilityAvailability,
+            tuckedCards,
         };
     }
 }

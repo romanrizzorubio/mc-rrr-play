@@ -51,7 +51,6 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_RETURN_HAND,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SIMULTANEOUS,
     EFFECT_SPEND_X,
     EFFECT_STUN,
@@ -170,12 +169,6 @@ export default {
                                                     'target': TARGET_CARD
                                                 }
                                             },
-                                            {
-                                                'type': EFFECT_SHUFFLE_DECK,
-                                                'params': {
-                                                    'target': TARGET_YOU
-                                                }
-                                            }
                                         ]
                                     }
                                 }
@@ -379,12 +372,6 @@ export default {
                                                         'target': TARGET_CARD
                                                     }
                                                 },
-                                                {
-                                                    'type': EFFECT_SHUFFLE_DECK,
-                                                    'params': {
-                                                        'target': TARGET_YOU
-                                                    }
-                                                }
                                             ]
                                         }
                                     }

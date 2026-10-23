@@ -5,6 +5,7 @@ import {Effect} from './effect.js';
 
 export class RemoveThreatEffect extends Effect {
     constructor({
+        ignoreCrisis = false,
         threat,
         thwart,
     }) {
@@ -17,9 +18,10 @@ export class RemoveThreatEffect extends Effect {
         this.threat = threat;
         this.threatModifier = 0;
         this.thwart = thwart;
+        this.ignoreCrisis = ignoreCrisis;
     }
     filterTarget(card) {
-        return card.canRemoveThreat() &&
+        return card.canRemoveThreat({ignoreCrisis: this.ignoreCrisis}) &&
             super.filterTarget.apply(this, arguments);
     }
     async prepare(params) {

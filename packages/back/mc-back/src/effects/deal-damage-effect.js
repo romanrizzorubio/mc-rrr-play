@@ -14,11 +14,13 @@ export class DealDamageEffect extends Effect {
             character,
             damage,
             ignoreTough = false,
+            preventDamage = 0,
             requiredForAvailability,
         } = params;
 
         this._character = character;
         this.ignoreTough = ignoreTough;
+        this.preventDamageAmount = preventDamage;
         this.requiredForAvailability = requiredForAvailability;
         this.baseDamage = damage;
         this.damageModifier = 0;
@@ -165,10 +167,16 @@ export class DealDamageEffect extends Effect {
         }
 
         const {selectedTarget, damage} = this;
+        const preventDamage = this.preventDamageAmount > 0 ?
+            Array.isArray(damage) ?
+                damage.map(amount => Math.min(amount, this.preventDamageAmount)) :
+                Math.min(damage, this.preventDamageAmount) :
+            0;
         const takeDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_TAKE_DAMAGE,
             selectedTarget,
             damage,
+            preventDamage,
             ignoreTough: this.ignoreTough,
             ability: this.ability,
             activation: this.activation,

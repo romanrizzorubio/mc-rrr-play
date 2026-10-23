@@ -47,6 +47,7 @@ export class Player extends Engine {
         super();
 
         this.name = name;
+        this.id = name;
         this.superhero = superhero;
         this.initial = initial;
         this.config = config;
@@ -899,8 +900,16 @@ export class Player extends Engine {
             paymentCancelled: playCardEffect.paymentCancelled,
         };
     }
+    toTargetObj() {
+        return {
+            id: this.id,
+            isPlayer: true,
+            name: this.name,
+        };
+    }
     toObj() {
         const {
+            id,
             name,
             defeated,
             deck,
@@ -911,6 +920,8 @@ export class Player extends Engine {
         } = this;
 
         return {
+            id,
+            isPlayer: true,
             name,
             defeated,
             handSize,

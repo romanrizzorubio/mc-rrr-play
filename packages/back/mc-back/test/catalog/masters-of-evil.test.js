@@ -20,7 +20,6 @@ import {
     EFFECT_REQUIRE_DEFENDER,
     EFFECT_SEARCH_CARDS,
     EFFECT_SEVERAL_ATTACKS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
@@ -275,7 +274,7 @@ test('Señores del mal is listed as a selectable modular set', async () => {
     });
     assert.equal(Object.hasOwn(searchConfig.params, 'firstMatch'), false);
     assert.equal(engageConfig.type, EFFECT_ENGAGE);
-    assert.equal(fallbackChain.params.thenEffect.type, EFFECT_SHUFFLE_DECK);
+    assert.equal(fallbackChain.params.thenEffect, undefined);
 
     const chaos = cardsFactory.createGameCard({
         card: cardsFactory.createCard(chaosEntry.card),

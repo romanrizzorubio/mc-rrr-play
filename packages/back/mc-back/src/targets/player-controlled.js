@@ -25,18 +25,25 @@ const isLinkedToYourSuperhero = (upgrade, superhero) => {
         attachedTo.parent === superhero;
 };
 
-export const playerControlledTargets = {
-    [TARGET_ALL_ALLIES_YOU_CONTROL]: ({player}) => player.allies,
-    [TARGET_ALL_CHARACTERS_YOU_CONTROL]: ({player, condition}) => {
-        const characters = player.friends;
+const filterByCondition = (characters, condition) =>
+    condition ?
+        characters.filter(character => checkCondition(character, condition)) :
+        characters;
 
-        return condition ?
-            characters.filter(character => checkCondition(character, condition)) :
-            characters;
+export const playerControlledTargets = {
+    [TARGET_ALL_ALLIES_YOU_CONTROL]: ({ability, player}) => {
+        const controller = ability?.card?.controller;
+
+        // The trigger's player can differ from the controller of a persistent card.
+        return (controller?.isPlayer ? controller : player).allies;
+    },
+    [TARGET_ALL_CHARACTERS_YOU_CONTROL]: ({player, condition}) => {
+        return filterByCondition(player.friends, condition);
     },
     [TARGET_ALLY]: ({player}) => player.allies,
     [TARGET_ALL_ENGAGED_MINIONS]: ({player}) => player.minions,
-    [TARGET_FRIENDLY_CHARACTER]: ({player}) => player.friends,
+    [TARGET_FRIENDLY_CHARACTER]: ({condition, player}) =>
+        filterByCondition(player.friends, condition),
     [TARGET_SUPPORT_YOU_CONTROL]: ({player}) => player.supports,
     [TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO]: ({condition, player}) => {
         const superhero = player?.superhero;

@@ -189,6 +189,11 @@ export default css`
     height: 16px;
   }
 
+  .tucked.side-scheme-tucked {
+    position: static;
+    height: 16px;
+  }
+
   .tucked-card-peek {
     display: flex;
     align-items: flex-end;

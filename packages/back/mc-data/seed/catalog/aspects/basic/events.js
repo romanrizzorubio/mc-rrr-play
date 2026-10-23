@@ -5,8 +5,10 @@ import {
     CARD_TYPE_EVENT,
     EFFECT_DEAL_DAMAGE,
     EFFECT_HEAL,
+    EFFECT_EXHAUST,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
+    EFFECT_READY,
     EFFECT_REMOVE_THREAT,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -17,10 +19,12 @@ import {
     TARGET_CHARACTER,
     TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_ANY_CHARACTER_YOU_CONTROL,
     TARGET_HERO,
     TARGET_SCHEME,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
+    TRAIT_AVENGER,
     TRAIT_SUPERPOWER,
     TRAIT_THWART,
     TRIGGER_VILLAIN_SCHEMES,
@@ -239,6 +243,50 @@ export default [
                                 'params': {
                                     'target': TARGET_SCHEME,
                                     'threat': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-los-heroes-mas-poderosos',
+        'aspect': 'basic',
+        'order': 92,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Los héroes más poderosos',
+                'set': 'basic',
+                'image': 'aspect/basic/events/04022.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': 'basic',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_ANY_CHARACTER_YOU_CONTROL,
+                                    'condition': {
+                                        'traits': TRAIT_AVENGER
+                                    },
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_READY,
+                                'params': {
+                                    'target': TARGET_ANY_CHARACTER_YOU_CONTROL,
+                                    'condition': {
+                                        'traits': TRAIT_AVENGER
+                                    },
+                                    'excludeTarget': 'ability.arrow.cost.selectedTarget'
                                 }
                             }
                         }

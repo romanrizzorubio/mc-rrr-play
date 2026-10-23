@@ -49,7 +49,6 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_SET_LIFE,
     EFFECT_SELECT_DISCARD_CARD,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_TAKE_DAMAGE,
@@ -175,9 +174,6 @@ export default {
                                                     'source': 'selectedCards'
                                                 }
                                             },
-                                            {
-                                                'type': EFFECT_SHUFFLE_DECK
-                                            }
                                         ]
                                     }
                                 }

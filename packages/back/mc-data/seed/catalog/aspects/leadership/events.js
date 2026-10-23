@@ -20,6 +20,7 @@ import {
     EFFECT_READY,
     EFFECT_SEARCH_CARDS,
     EFFECT_SIMULTANEOUS,
+    EFFECT_TOUGH,
     PLACE_DISCARD_PILE,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -362,6 +363,40 @@ export default [
                                             ]
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-listo-para-la-accion',
+        'aspect': 'leadership',
+        'order': 40,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Listo para la acción',
+                'set': 'leadership',
+                'image': 'aspect/leadership/events/04017.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'leadership',
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_TOUGH,
+                                'params': {
+                                    'target': TARGET_ALLY_YOU_CONTROL
                                 }
                             }
                         }

@@ -17,7 +17,6 @@ import {
     EFFECT_REQUIRE_DEFENDER,
     EFFECT_SEARCH_CARDS,
     EFFECT_SEVERAL_ATTACKS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
@@ -27,7 +26,6 @@ import {
     TARGET_ENCOUNTER_DECK,
     TARGET_ENGAGED_HERO,
     TARGET_INITIAL_PLAYER,
-    TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_VILLAIN,
     TARGET_YOU,
@@ -324,12 +322,6 @@ const mastersOfChaos = {
                                                             },
                                                         },
                                                     ],
-                                                    'thenEffect': {
-                                                        'type': EFFECT_SHUFFLE_DECK,
-                                                        'params': {
-                                                            'target': TARGET_SCENARIO,
-                                                        },
-                                                    },
                                                 },
                                             },
                                         },

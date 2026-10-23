@@ -21,11 +21,18 @@ export const MixinAttachableCard = C => class extends C {
             {target: this.attach};
     }
     createAttachEffect(card) {
-        const {condition, target} = this.getAttachConfig();
+        const {
+            condition,
+            fallbackCondition,
+            fallbackTarget,
+            target,
+        } = this.getAttachConfig();
 
         return new AttachEffect({
             card,
             condition,
+            fallbackCondition,
+            fallbackTarget,
             target,
             canAttach: this.canAttach.bind(this),
             match: this.match,

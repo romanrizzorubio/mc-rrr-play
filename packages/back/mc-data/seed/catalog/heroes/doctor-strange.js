@@ -58,7 +58,6 @@ import {
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_REPLACE_STATUS,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_TAKE_DAMAGE,
@@ -760,9 +759,6 @@ const doctorStrange = {
                                                 target: TARGET_SOURCE,
                                                 source: 'selectedCards',
                                             },
-                                        },
-                                        {
-                                            type: EFFECT_SHUFFLE_DECK,
                                         },
                                     ]),
                                 },

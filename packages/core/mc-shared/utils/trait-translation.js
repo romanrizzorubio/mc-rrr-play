@@ -1,5 +1,6 @@
 const TRAIT_LABELS = {
     aerial: 'Aéreo',
+    arrow: 'Flecha',
     asgard: 'Asgard',
     armor: 'Armadura',
     artifact: 'Artefacto',
@@ -23,6 +24,7 @@ const TRAIT_LABELS = {
     ice: 'Hielo',
     inhuman: 'Inhumano',
     invocation: 'Invocación',
+    item: 'Objeto',
     location: 'Lugar',
     metal: 'Metal',
     mutated: 'Mutado',

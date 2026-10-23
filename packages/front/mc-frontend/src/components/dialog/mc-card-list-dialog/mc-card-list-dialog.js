@@ -41,6 +41,7 @@ export class McCardListDialog extends McDialog {
                 .showGeneric="${showCounters}"
                 .showLife="${showLife}"
                 .showDamage="${showDamage}"
+                .selectOnClick="${true}"
                 @card-list-select="${this.handleCardListSelect.bind(this)}"
             ></mc-card-list>
         `;

@@ -3,6 +3,7 @@ import {describe, test} from 'node:test';
 
 import {
     TRAIT_AERIAL,
+    TRAIT_ARROW,
     TRAIT_ASGARD,
     TRAIT_ARMOR,
     TRAIT_ARTIFACT,
@@ -21,6 +22,7 @@ import {
     TRAIT_HEROFORHIRE,
     TRAIT_ICE,
     TRAIT_INVOCATION,
+    TRAIT_ITEM,
     TRAIT_LOCATION,
     TRAIT_METAL,
     TRAIT_MYSTIC,
@@ -61,6 +63,7 @@ describe('trait translations', () => {
             [TRAIT_LOCATION, 'Lugar'],
             [TRAIT_SKILL, 'Habilidad'],
             [TRAIT_AERIAL, 'Aéreo'],
+            [TRAIT_ARROW, 'Flecha'],
             [TRAIT_ASGARD, 'Asgard'],
             [TRAIT_TACTIC, 'Táctica'],
             [TRAIT_SPY, 'Espía'],
@@ -74,6 +77,7 @@ describe('trait translations', () => {
             [TRAIT_GIANT, 'Gigante'],
             [TRAIT_ICE, 'Hielo'],
             [TRAIT_INVOCATION, 'Invocación'],
+            [TRAIT_ITEM, 'Objeto'],
             [TRAIT_METAL, 'Metal'],
             [TRAIT_MYSTIC, 'Místico'],
             [TRAIT_PERSONA, 'Individuo'],

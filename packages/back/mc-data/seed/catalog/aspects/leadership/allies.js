@@ -6,12 +6,16 @@ import {
     CARD_TYPE_ALLY,
     CARD_TYPE_TREACHERY,
     CALC_COUNT,
+    CALC_PRINTED_RESOURCES,
     EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_CHAINED,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
+    EFFECT_EXHAUST,
     EFFECT_LASTING,
+    EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_THWART_VALUE,
@@ -19,6 +23,7 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_REMOVE_COUNTER,
     EFFECT_SELECT_DISCARD_CARD,
+    EFFECT_SIMULTANEOUS,
     EFFECT_SPEND,
     EFFECT_LOOK_AT_TOP_CARDS,
     RESOURCE_ENERGY,
@@ -28,7 +33,9 @@ import {
     TARGET_ALL_ENEMIES,
     TARGET_ALL_PLAYERS,
     TARGET_ENCOUNTER_DECK,
+    TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_PHASE,
     TARGET_TRIGGERED_CARD,
     TARGET_THIS,
     TARGET_SCHEME,
@@ -42,6 +49,7 @@ import {
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_PLAY_CARD,
     TRIGGER_ABILITY_COST,
+    TRIGGER_THIS_ATTACK,
 } from 'mc-shared';
 
 export default [
@@ -249,8 +257,216 @@ export default [
                 ]
             }
         }
-    }
-    ,
+    },
+    {
+        '_id': 'leadership-ojo-de-halcon-kate-bishop',
+        'aspect': 'leadership',
+        'order': 3,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Ojo de Halcón',
+                'subtitle': 'Kate Bishop',
+                'set': 'leadership',
+                'image': 'aspect/leadership/allies/04011.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'leadership',
+                'thwart': 1,
+                'attack': 2,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'name': 'Descarta una carta para infligir daño',
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_SELECT_DISCARD_CARD,
+                                            'params': {
+                                                'target': TARGET_YOU,
+                                                'count': 1,
+                                                'title': 'Descarta una carta de tu mano'
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 0,
+                                    'paramsCalc': {
+                                        'target': 'effect.ability.arrow.cost.effects.1.cards',
+                                        'formula': CALC_PRINTED_RESOURCES
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-caballero-negro',
+        'aspect': 'leadership',
+        'order': 4,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Caballero Negro',
+                'subtitle': 'Dane Whitman',
+                'set': 'leadership',
+                'image': 'aspect/leadership/allies/04012.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'leadership',
+                'thwart': 1,
+                'attack': 2,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ATTACK,
+                            'condition': {
+                                'effect.ability.isBasic': true
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'modify': {
+                                        'keywords': {
+                                            'piercing': true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-goliat',
+        'aspect': 'leadership',
+        'order': 5,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Goliat',
+                'subtitle': 'Bill Foster',
+                'set': 'leadership',
+                'image': 'aspect/leadership/allies/04013.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'leadership',
+                'attack': 1,
+                'attackConsequential': 2,
+                'thwart': 2,
+                'thwartConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'name': 'Recibe +4 de ATQ y descarta a Goliat al final de la fase',
+                            'maximum': {
+                                'count': 1,
+                                'target': TARGET_PHASE
+                            },
+                            'effect': {
+                                'type': EFFECT_LASTING,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'until': TIME_PHASE,
+                                    'effect': {
+                                        'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                        'params': {
+                                            'target': TARGET_THIS,
+                                            'count': 4
+                                        }
+                                    },
+                                    'endEffect': {
+                                        'type': EFFECT_DISCARD_GAME,
+                                        'params': {
+                                            'target': TARGET_THIS
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-usagente',
+        'aspect': 'leadership',
+        'order': 6,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'USAgente',
+                'subtitle': 'John Walker',
+                'set': 'leadership',
+                'image': 'aspect/leadership/allies/04014.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': 'leadership',
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 5,
+                'keywords': {
+                    'retaliate': 1
+                }
+            }
+        }
+    },
     {
         '_id': 'leadership-falcon',
         'aspect': 'leadership',

@@ -57,10 +57,10 @@ export class SchemeGameCard extends GameCard {
         
         this.placeThreat(value, match.numPlayers);
     }
-    canRemoveThreat() {
+    canRemoveThreat({ignoreCrisis = false} = {}) {
         if (this.threat > 0) {
             if (this.isMainScheme) {
-                if (!this.match.hasCrisis) {
+                if (ignoreCrisis || !this.match.hasCrisis) {
                     return true;
                 }
             } else {
@@ -73,8 +73,8 @@ export class SchemeGameCard extends GameCard {
     canScheme() {
         return true;
     }
-    canThwart(player) {
-        if (this.canRemoveThreat()) {
+    canThwart(player, {ignoreCrisis = false} = {}) {
+        if (this.canRemoveThreat({ignoreCrisis})) {
             if (!player.hasPatrol) {
                 return true;
             }

@@ -797,7 +797,6 @@ const mainSchemeSetup = {
                             },
                         },
                     },
-                    shuffleEncounterDeck,
                 ],
             },
         },

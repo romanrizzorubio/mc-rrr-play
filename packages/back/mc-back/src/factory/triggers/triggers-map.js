@@ -2,6 +2,7 @@ import {
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
+    TRIGGER_ATTACHED_GET_TRAITS,
     TRIGGER_ATTACHED_GET_THWART,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
     TRIGGER_ATTACHED_WOULD_ATTACK,
@@ -83,6 +84,7 @@ import {
     TRIGGER_YOUR_SUPERHERO_GET_TRAITS,
 } from 'mc-shared';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
+import {AttachedGetTraitsTrigger} from '../../triggers/attached-get-traits-trigger.js';
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
 import {CharacterDefeatedTrigger} from '../../triggers/character-defeated-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
@@ -186,6 +188,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_DEFEAT]: AttachedDefeatTrigger,
     [TRIGGER_ATTACHED_GET_ATTACK]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL]: AttachedGetStatTrigger,
+    [TRIGGER_ATTACHED_GET_TRAITS]: AttachedGetTraitsTrigger,
     [TRIGGER_ATTACHED_GET_THWART]: AttachedGetStatTrigger,
     [TRIGGER_ATTACHED_TAKES_DAMAGE]: AttachedTakesDamageTrigger,
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,

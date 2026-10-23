@@ -17,6 +17,7 @@ import {Engine} from '../engine/engine.js';
 import {path, pathSet} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {Keywords} from '../model/commons/keywords.js';
+import {EFFECT_RESOLUTION_CONTEXT} from '../utils/effect-resolution-context.js';
 
 export class Effect extends Engine {
     constructor(params) {
@@ -642,34 +643,63 @@ export class Effect extends Engine {
         });
     }
     async runEffect(params) {
-        this.resetResolutionState({
-            preserveSelectedTarget: true,
-            preserveNestedSelectedTargets: true,
-        });
+        const resolutionContext = params[EFFECT_RESOLUTION_CONTEXT] || {
+            depth: 0,
+            afterResolution: new Map(),
+            params: new Set(),
+        };
+        resolutionContext.params ||= new Set();
+        const trackParams = effectParams => {
+            effectParams[EFFECT_RESOLUTION_CONTEXT] = resolutionContext;
+            resolutionContext.params.add(effectParams);
+        };
+        trackParams(params);
+        resolutionContext.depth++;
 
-        const prepared = params.costPaymentSession?.takePreparedEffect(this);
-        if (prepared) {
-            await this.resolvePrepared(
-                prepared.effectParams,
-                prepared.triggersParams
-            );
-            return;
-        }
+        try {
+            this.resetResolutionState({
+                preserveSelectedTarget: true,
+                preserveNestedSelectedTargets: true,
+            });
 
-        this.saveDataCard();
+            const prepared = params.costPaymentSession?.takePreparedEffect(this);
+            if (prepared) {
+                trackParams(prepared.effectParams);
+                await this.resolvePrepared(prepared.effectParams, prepared.triggersParams);
+                return;
+            }
 
-        const effectParams = await this.resolveParams(params);
+            this.saveDataCard();
 
-        await this.prepare({
-            ...effectParams,
-            source: this.source,
-        });
+            const resolvedEffectParams = await this.resolveParams(params);
+            trackParams(resolvedEffectParams);
 
-        const triggersParams = this.getTriggersParams(effectParams);
+            await this.prepare({
+                ...resolvedEffectParams,
+                source: this.source,
+            });
 
-        if (await this.triggerWould(triggersParams)) {
-            if (await this.triggerInit(triggersParams)) {
-                await this.resolvePrepared(effectParams, triggersParams);
+            const triggersParams = this.getTriggersParams(resolvedEffectParams);
+
+            if (await this.triggerWould(triggersParams)) {
+                if (await this.triggerInit(triggersParams)) {
+                    await this.resolvePrepared(resolvedEffectParams, triggersParams);
+                }
+            }
+        } finally {
+            resolutionContext.depth--;
+            if (resolutionContext.depth === 0) {
+                const deferredResolutions = [
+                    ...resolutionContext.afterResolution.values(),
+                ];
+                resolutionContext.afterResolution.clear();
+                for (const effectParams of resolutionContext.params) {
+                    delete effectParams[EFFECT_RESOLUTION_CONTEXT];
+                }
+                resolutionContext.params.clear();
+                for (const deferredResolution of deferredResolutions) {
+                    await deferredResolution();
+                }
             }
         }
     }

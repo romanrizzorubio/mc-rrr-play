@@ -21,7 +21,9 @@ export class Thwart extends Activation {
                 throw new TypeError(`Scheme card ${card.id} does not implement canThwart`);
             }
 
-            return card.canThwart(player);
+            return card.canThwart(player, {
+                ignoreCrisis: this.effect?.ignoreCrisis,
+            });
         }
 
         if (card.isCard) {

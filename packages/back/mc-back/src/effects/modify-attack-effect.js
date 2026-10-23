@@ -10,16 +10,19 @@ export class ModifyAttackEffect extends Effect {
     }
     execute(_params) {
         const {selectedTarget} = this;
+        const target = selectedTarget?.effect?.isAttack ?
+            selectedTarget.effect :
+            selectedTarget;
 
         Object.entries(this.modify).forEach(([key, value]) => {
             if (key === 'keywords' &&
                 value && typeof value === 'object' && !Array.isArray(value) &&
-                selectedTarget.keywords && typeof selectedTarget.keywords === 'object') {
-                Object.assign(selectedTarget.keywords, value);
+                target.keywords && typeof target.keywords === 'object') {
+                Object.assign(target.keywords, value);
                 return;
             }
 
-            selectedTarget[key] = value;
+            target[key] = value;
         });
     }
 }

@@ -40,7 +40,6 @@ import {
     EFFECT_MOVE_TO_DECK,
     EFFECT_PUT_PLAY,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SPEND,
     EFFECT_STUN,
     EFFECT_SURGE,
@@ -214,12 +213,6 @@ const stageOneSetup = {
                                     ],
                                 },
                             },
-                        },
-                    },
-                    {
-                        type: EFFECT_SHUFFLE_DECK,
-                        params: {
-                            target: TARGET_SCENARIO,
                         },
                     },
                 ],

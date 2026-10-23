@@ -12,6 +12,7 @@ import {
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_IF,
     CALC_ALL,
+    CALC_PRINTED_RESOURCES,
     CALC_SUM,
     CALC_STAGE,
     TARGET_MAIN_SCHEME,
@@ -56,6 +57,31 @@ const CALCULATION_MAP = {
             }
 
             return sum + value;
+        }, 0);
+    },
+    [CALC_PRINTED_RESOURCES]: (source, {target}) => {
+        if (!Array.isArray(source)) {
+            throw new Error(
+                `CALC_PRINTED_RESOURCES requiere que "${target}" resuelva a una lista.`
+            );
+        }
+
+        return source.reduce((sum, gameCard) => {
+            const printedCard = gameCard?.card;
+            if (typeof printedCard?.getPrintedResources !== 'function') {
+                throw new TypeError(
+                    `CALC_PRINTED_RESOURCES requiere cartas con recursos impresos en "${target}".`
+                );
+            }
+
+            const resources = printedCard.getPrintedResources();
+            if (!Array.isArray(resources)) {
+                throw new TypeError(
+                    `Los recursos impresos de "${target}" deben resolverse a una lista.`
+                );
+            }
+
+            return sum + resources.length;
         }, 0);
     },
     [CALC_HALF_ROUNDED_DOWN]: source =>

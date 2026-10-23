@@ -1,5 +1,8 @@
 import {checkCondition} from '../../engine/utils.js';
-import {getPlayerCardLocation} from '../../utils/player-card-play-from.js';
+import {
+    canPlayFromLocation,
+    getPlayerCardLocation,
+} from '../../utils/player-card-play-from.js';
 
 import {Card} from './card.js';
 
@@ -13,6 +16,7 @@ export class PlayerCard extends Card {
         paramsToPlay,
         controllerTarget,
         playFrom = [],
+        playTuckedCardsCondition,
         resources = [],
         resourceType,
         requirement = [],
@@ -28,6 +32,7 @@ export class PlayerCard extends Card {
         this.paramsToPlay = paramsToPlay;
         this.controllerTarget = controllerTarget;
         this.playFrom = [...playFrom];
+        this.playTuckedCardsCondition = playTuckedCardsCondition;
         this.classification = classification;
         this.resourceType = resourceType;
         this.requirement = requirement;
@@ -46,9 +51,11 @@ export class PlayerCard extends Card {
         const {gameCard} = params;
 
         const sourcePlayer = gameCard?.owner ?? params.player;
-        const place = gameCard && !sourcePlayer?.hand?.cards.includes(gameCard) &&
-            getPlayerCardLocation(gameCard, sourcePlayer)?.place;
-        if (place && !this.playFrom.includes(place)) {
+        const source = gameCard && !sourcePlayer?.hand?.cards.includes(gameCard) ?
+            getPlayerCardLocation(gameCard, sourcePlayer) :
+            undefined;
+        if (source &&
+            !canPlayFromLocation(gameCard, this.playFrom, source)) {
             return false;
         }
 

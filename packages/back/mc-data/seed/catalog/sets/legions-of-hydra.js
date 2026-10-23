@@ -12,12 +12,10 @@ import {
     EFFECT_ENGAGE,
     EFFECT_PLACE_THREAT,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_SCENARIO_ZONE,
     TARGET_BY_TITLE,
-    TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_YOU,
     TRAIT_ELITE,
@@ -87,12 +85,6 @@ export default {
                                                                         }
                                                                     }
                                                                 ],
-                                                                'thenEffect': {
-                                                                    'type': EFFECT_SHUFFLE_DECK,
-                                                                    'params': {
-                                                                        'target': TARGET_SCENARIO
-                                                                    }
-                                                                }
                                                             }
                                                         }
                                                     }

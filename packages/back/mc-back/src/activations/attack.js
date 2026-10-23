@@ -2,8 +2,8 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ATTACK,
-   TRIGGER_YOU_BASIC_ATTACK,
-   EFFECT_DEAL_DAMAGE,
+    TRIGGER_YOU_BASIC_ATTACK,
+    EFFECT_DEAL_DAMAGE,
 } from 'mc-shared';
 
 import {Activation} from './activation.js';
@@ -107,10 +107,13 @@ export class Attack extends Activation {
         }
 
         const attackTriggers = triggers.concat(TRIGGER_THIS_ATTACK);
+        const playerAttackTriggers = effect?.ability?.card ?
+            attackTriggers.concat(TRIGGER_YOU_ATTACK) :
+            attackTriggers;
 
         return effect?.ability?.isBasic ?
-            attackTriggers.concat(TRIGGER_YOU_BASIC_ATTACK) :
-            attackTriggers;
+            playerAttackTriggers.concat(TRIGGER_YOU_BASIC_ATTACK) :
+            playerAttackTriggers;
     }
     checkStatus() {
         const {character} = this;

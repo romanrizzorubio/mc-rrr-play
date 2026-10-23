@@ -1,4 +1,5 @@
 export const TRAIT_AERIAL = 'aerial';
+export const TRAIT_ARROW = 'arrow';
 export const TRAIT_ASGARD = 'asgard';
 export const TRAIT_ARMOR = 'armor';
 export const TRAIT_ASSASSIN = 'assassin';

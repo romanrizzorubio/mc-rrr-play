@@ -60,6 +60,7 @@ export const TARGET_ENEMY_HIGHEST_PRINTED_HP = 'enemy-highest-printed-hp';
 export const TARGET_ENGAGED = CHARACTER_ENGAGED;
 export const TARGET_ENGAGED_HERO = 'engaged-hero';
 export const TARGET_FRIENDLY_CHARACTER = 'friendly-character';
+export const TARGET_ANY_CHARACTER_YOU_CONTROL = TARGET_FRIENDLY_CHARACTER;
 export const TARGET_HAND_RANDOM = 'hand-random';
 export const TARGET_HERO = CHARACTER_HERO;
 export const TARGET_HERO_SIDE = `${TARGET_HERO}-side`;

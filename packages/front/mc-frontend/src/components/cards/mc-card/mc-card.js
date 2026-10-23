@@ -74,6 +74,11 @@ export class CardComponent extends LitElement {
     renderTucked() {
         const tuckedCards = this.tuckedCards || [];
         const faceDownCards = this.getFaceDownPeekCards();
+        const tuckedClass = faceDownCards.length ?
+            'side-scheme-facedown' :
+            this.card?.isSideScheme && tuckedCards.length ?
+                'side-scheme-tucked' :
+                '';
         const previews = [
             ...tuckedCards.map(card => ({
                 image: getCardAssetUrl(card.image),
@@ -84,9 +89,7 @@ export class CardComponent extends LitElement {
         ].slice(0, 2);
 
         return previews.length ? html`
-            <div class="tucked ${
-                faceDownCards.length ? 'side-scheme-facedown' : ''
-            }" aria-hidden="true">
+            <div class="tucked ${tuckedClass}" aria-hidden="true">
                 ${previews.map(({image}) => html`
                     <div class="tucked-card-peek">
                         <mc-card-image
@@ -118,6 +121,7 @@ export class CardComponent extends LitElement {
             dragResourcePayment: {type: Object},
             allowPlayCardDrag: {type: Boolean},
             clickDisabled: {type: Boolean},
+            selectOnClick: {type: Boolean, attribute: 'select-on-click'},
             image: {type: String},
             isFacedownCard: {type: Boolean},
             canPeekFacedown: {type: Boolean},
@@ -176,6 +180,7 @@ export class CardComponent extends LitElement {
         this.dragResourcePayment = null;
         this.allowPlayCardDrag = false;
         this.clickDisabled = false;
+        this.selectOnClick = false;
         this.image = '';
         this.isFacedownCard = false;
         this.canPeekFacedown = false;
@@ -480,6 +485,11 @@ export class CardComponent extends LitElement {
             return;
         }
 
+        if (this.selectOnClick) {
+            this.dispatchCardClick();
+            return;
+        }
+
         const hasOtherAction = this.menuOptions.some(option =>
             option.id !== MENU_OPTION_VIEW_TUCKED_CARDS && !option.disable
         );
@@ -522,14 +532,17 @@ export class CardComponent extends LitElement {
                 }
             }));
         } else {
-            this.dispatchEvent(new CustomEvent('card-click', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    card: this.card,
-                },
-            }));
+            this.dispatchCardClick();
         }
+    }
+    dispatchCardClick() {
+        this.dispatchEvent(new CustomEvent('card-click', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.card,
+            },
+        }));
     }
     handleActivationDragStart(event) {
         const options = this.activationSourceOptions;
@@ -771,6 +784,7 @@ export class CardComponent extends LitElement {
                     show-basic-stats
                     show-menu-abilities
                     highlight-playable
+                    show-exhausted
                     size="${this._smallSize}"
                     @card-list-select="${this.handleAttachedCardClick.bind(this)}"
                     @card-list-menu-click="${this.handleAttachedMenuClick.bind(this)}"
@@ -848,6 +862,10 @@ export class CardComponent extends LitElement {
         } = this;
         const hiddenFacedown = this.isFacedownHidden();
         const sideSchemeFaceDown = this.getFaceDownPeekCards().length > 0;
+        const sideSchemeFaceUpTucked = !hiddenFacedown &&
+            this.card?.isSideScheme === true &&
+            this.tuckedCards?.length > 0 &&
+            !sideSchemeFaceDown;
         const imageSrc = hiddenFacedown ?
             getCardAssetUrl(this.facedownImage || BACK_CARD_PLAYER) :
             getCardAssetUrl(image);
@@ -882,14 +900,20 @@ export class CardComponent extends LitElement {
                 ${this.renderHeader()}
                 <slot name="top"></slot>
                 <div class="cards-facedown">
-                    ${hiddenFacedown ? '' : this.renderStats()}
+                    ${hiddenFacedown || sideSchemeFaceUpTucked ?
+                        '' :
+                        this.renderStats()}
                     <div class="card ${
-                        this.tuckedCards?.length && !sideSchemeFaceDown ?
+                        this.tuckedCards?.length &&
+                            !sideSchemeFaceDown &&
+                            !sideSchemeFaceUpTucked ?
                             'has-tucked-cards' :
                             ''
                     }">
                         <div class="card-face">
-                            ${hiddenFacedown || sideSchemeFaceDown ?
+                            ${hiddenFacedown ||
+                                sideSchemeFaceDown ||
+                                sideSchemeFaceUpTucked ?
                                 '' :
                                 this.renderTucked()}
                             <div class="${cardFrontClasses}">
@@ -911,14 +935,26 @@ export class CardComponent extends LitElement {
                                     @drop="${this.handleDrop.bind(this)}"
                                 ></mc-card-image>
                                 ${this.renderFacedownPeekButton()}
-                                ${hiddenFacedown || sideSchemeFaceDown ?
+                                ${hiddenFacedown ||
+                                    sideSchemeFaceDown ||
+                                    sideSchemeFaceUpTucked ?
                                     '' :
                                     this.renderCounters()}
-                                ${hiddenFacedown ? '' : this.renderBottomStats()}
+                                ${hiddenFacedown || sideSchemeFaceUpTucked ?
+                                    '' :
+                                    this.renderBottomStats()}
                             </div>
-                            ${sideSchemeFaceDown ? this.renderTucked() : ''}
-                            ${sideSchemeFaceDown ?
+                            ${sideSchemeFaceDown || sideSchemeFaceUpTucked ?
+                                this.renderTucked() :
+                                ''}
+                            ${sideSchemeFaceDown || sideSchemeFaceUpTucked ?
                                 this.renderCounters() :
+                                ''}
+                            ${sideSchemeFaceUpTucked ?
+                                this.renderBottomStats() :
+                                ''}
+                            ${sideSchemeFaceUpTucked ?
+                                this.renderStats() :
                                 ''}
                             ${hiddenFacedown ? '' : this.renderAcquiredTraits()}
                             ${hiddenFacedown ? '' : this.renderAcquiredKeywords()}

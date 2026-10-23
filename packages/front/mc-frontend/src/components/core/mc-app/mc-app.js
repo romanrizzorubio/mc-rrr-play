@@ -30,6 +30,7 @@ import {
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
     PLACE_DISCARD_PILE,
+    PLACE_TUCKED,
 } from 'mc-shared';
 
 class McApp extends router(navigator(outlet(LitElement))) {
@@ -368,8 +369,19 @@ class McApp extends router(navigator(outlet(LitElement))) {
             title: card?.name ?
                 `Cartas metidas debajo de ${card.name}` :
                 'Cartas metidas debajo',
-            data: {cards},
-            callback: () => {},
+            subtitle: 'Selecciona una carta jugable para jugarla desde aquí.',
+            data: {
+                cards,
+                playFromPlace: PLACE_TUCKED,
+            },
+            callback: async response => {
+                if (response?.selected?.playable === true) {
+                    await new Player(this.api).playCard(
+                        this.player,
+                        response.selected.id
+                    );
+                }
+            },
         });
     }
     handleViewKnownCards(e) {

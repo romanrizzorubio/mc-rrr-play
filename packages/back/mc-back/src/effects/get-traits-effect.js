@@ -1,4 +1,5 @@
 import {
+    TRIGGER_ATTACHED_GET_TRAITS,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_YOUR_SUPERHERO_GET_TRAITS,
 } from 'mc-shared';
@@ -15,6 +16,7 @@ export class GetTraitsEffect extends Effect {
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
+                TRIGGER_ATTACHED_GET_TRAITS,
                 TRIGGER_CONDITION_GET_TRAITS,
                 TRIGGER_YOUR_SUPERHERO_GET_TRAITS,
             ]);

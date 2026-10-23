@@ -8,6 +8,7 @@ export class MoveToHandEffect extends Effect {
     constructor({
         refreshTarget = true,
         target = TARGET_CARD,
+        toOwner = false,
         ...params
     }) {
         super({
@@ -15,6 +16,7 @@ export class MoveToHandEffect extends Effect {
             refreshTarget,
             target,
         });
+        this.toOwner = toOwner;
     }
     async execute(params) {
         const {player} = params;
@@ -25,10 +27,19 @@ export class MoveToHandEffect extends Effect {
         if (!cards.length) {
             return;
         }
-        if (!player?.hand ||
-            typeof player.hand.addCard !== 'function' ||
-            typeof player.hand.refresh !== 'function') {
-            throw new Error('MoveToHandEffect requires a player with a hand.');
+        const destinations = new Map(cards.map(card => [
+            card,
+            this.toOwner ? card?.owner : player,
+        ]));
+        for (const [card, destination] of destinations) {
+            if (!card || typeof card !== 'object') {
+                throw new TypeError('MoveToHandEffect requires card objects.');
+            }
+            if (!destination?.hand ||
+                typeof destination.hand.addCard !== 'function' ||
+                typeof destination.hand.refresh !== 'function') {
+                throw new Error('MoveToHandEffect requires each destination player to have a hand.');
+            }
         }
 
         const sourceParams = {
@@ -56,11 +67,8 @@ export class MoveToHandEffect extends Effect {
         const sourceDecks = new Set();
 
         for (const card of cards) {
-            if (!card || typeof card !== 'object') {
-                throw new TypeError('MoveToHandEffect requires card objects.');
-            }
-
-            const sourceDeck = [card.owner?.deck, player.deck]
+            const destination = destinations.get(card);
+            const sourceDeck = [card.owner?.deck, player?.deck]
                 .find(deck => deck &&
                     (deck.cards.includes(card) || deck.discardPile.includes(card)));
 
@@ -77,8 +85,8 @@ export class MoveToHandEffect extends Effect {
                 sourceCards.splice(sourceCards.indexOf(card), 1);
             }
 
-            if (!player.hand.cards?.includes(card)) {
-                player.hand.addCard(card);
+            if (!destination.hand.cards?.includes(card)) {
+                destination.hand.addCard(card);
             }
         }
 
@@ -87,7 +95,9 @@ export class MoveToHandEffect extends Effect {
             typeof sourceContainer.refresh === 'function') {
             objectsToRefresh.add(sourceContainer);
         }
-        objectsToRefresh.add(player.hand);
+        for (const destination of destinations.values()) {
+            objectsToRefresh.add(destination.hand);
+        }
         await this.promisesSequential(
             [...objectsToRefresh],
             source => source.refresh()

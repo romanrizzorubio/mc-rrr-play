@@ -2,6 +2,7 @@ import {
     DIALOG_MAX_CARDS,
     DIALOG_PAY_COST,
     PLACE_HAND,
+    PLACE_TUCKED,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PLAY_CARD,
     TRIGGER_CARD_ENTER_PLAY,
@@ -31,14 +32,25 @@ const canPreselectEffectTarget = effect =>
     !effect.validTarget?.isMultipleTarget?.({target: effect.target});
 
 export class PlayCardEffect extends Effect {
-    constructor({
-        card,
-        ability,
-        abilityType,
-        targetId,
-    }) {
-        super(arguments[0]);
+    constructor(params) {
+        const {card} = params;
+        const attachConfig = card.isUpgrade ?
+            card.card?.getAttachConfig?.() :
+            undefined;
+        const controllerTarget = card.card?.controllerTarget;
+        const target = controllerTarget ||
+            (card.isUpgrade ? attachConfig?.target : params.target);
+        const condition = card.isUpgrade && !controllerTarget ?
+            attachConfig?.condition :
+            params.condition;
 
+        super({...params, target, condition});
+
+        const {
+            ability,
+            abilityType,
+            targetId,
+        } = params;
         this.card = card;
         this.ability = ability;
         this.abilityType = abilityType;
@@ -61,10 +73,6 @@ export class PlayCardEffect extends Effect {
         this.maxAllyToDiscardId = undefined;
         this.restrictedDialogAccepted = false;
         this.restrictedCardToDiscardId = undefined;
-
-        if (card.isUpgrade) {
-            this.target = card.card.controllerTarget || card.card.attach;
-        }
     }
     get isAttack() {
         return false;
@@ -142,13 +150,17 @@ export class PlayCardEffect extends Effect {
         if (super.filterTarget.apply(this, arguments)) {
             const {card} = this;
 
+            if (card.card?.controllerTarget) {
+                return target?.isPlayer &&
+                    (!card.card.maximum ||
+                        !target.getPrintedCard(card.card.id));
+            }
+
             if (card.isUpgrade) {
-                if (card.card.controllerTarget) {
-                    return target?.isPlayer &&
-                        (!card.card.maximum ||
-                            !target.getPrintedCard(card.card.id));
-                }
-                return card.canAttach(target, player);
+                return card.card.createAttachEffect(card).filterTarget(
+                    target,
+                    {player, effect: this, match: this.match},
+                );
             }
 
             return true;
@@ -450,9 +462,12 @@ export class PlayCardEffect extends Effect {
             if (source) {
                 source.cards.splice(source.index, 1);
                 this.removedFromPlace = source;
-                await (source.place === PLACE_HAND ?
+                const sourceContainer = source.place === PLACE_HAND ?
                     sourcePlayer.hand :
-                    sourcePlayer.deck).refresh();
+                    source.place === PLACE_TUCKED ?
+                        source.host :
+                        sourcePlayer.deck;
+                await sourceContainer.refresh();
             }
         }
 
@@ -471,16 +486,19 @@ export class PlayCardEffect extends Effect {
             this.removedFromHand = false;
             await player.hand.refresh();
         } else if (this.removedFromPlace) {
-            const {cards, index, place, player: sourcePlayer} =
+            const {cards, index, place, player: sourcePlayer, host} =
                 this.removedFromPlace;
 
             if (!cards.includes(card)) {
                 cards.splice(index, 0, card);
             }
             this.removedFromPlace = undefined;
-            await (place === PLACE_HAND ?
+            const sourceContainer = place === PLACE_HAND ?
                 sourcePlayer.hand :
-                sourcePlayer.deck).refresh();
+                place === PLACE_TUCKED ?
+                    host :
+                    sourcePlayer.deck;
+            await sourceContainer.refresh();
         }
 
         if (this.workInHandTriggersInitializedForPlay &&

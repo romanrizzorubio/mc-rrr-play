@@ -16,7 +16,6 @@ import {
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_COUNTER,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_SPEND,
     EFFECT_STUN,
     PLACE_DECK,
@@ -255,9 +254,6 @@ export default [
                                                 'target': TARGET_SOURCE,
                                                 'source': 'selectedCards',
                                             },
-                                        },
-                                        {
-                                            'type': EFFECT_SHUFFLE_DECK,
                                         },
                                     ],
                                 },

@@ -10,7 +10,6 @@ import {
     EFFECT_MOVE_TO_HAND,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
     RESOURCE_ENERGY,
@@ -180,9 +179,6 @@ export default [
                                                 'source': 'selectedCards'
                                             }
                                         },
-                                        {
-                                            'type': EFFECT_SHUFFLE_DECK
-                                        }
                                     ]
                                 }
                             }

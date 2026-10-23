@@ -170,7 +170,9 @@ export class Hand extends Engine {
     }
     getTargetIds(targets) {
         return [...new Set(targets.flat(Infinity)
-            .flatMap(target => [target?.id, target?.parentId])
+            .flatMap(target => target?.isPlayer ?
+                [] :
+                [target?.id, target?.parentId])
             .filter(id => id !== undefined && id !== null))];
     }
     async getEffectTargets(effect, params, visited = new Set()) {
@@ -213,24 +215,25 @@ export class Hand extends Engine {
             const playableTargetIds = this.getTargetIds(targets);
             return {
                 playableTargetIds,
-                playableInGameZone: playableTargetIds.length === 0,
+                playableInGameZone: playableTargetIds.length === 0 ||
+                    targets.flat(Infinity).some(target => target?.isPlayer),
             };
+        }
+
+        if (card.card.controllerTarget) {
+            const playCardEffect = new PlayCardEffect({card, match});
+            const targets = await playCardEffect.getValidTarget({
+                card,
+                match,
+                player,
+                playCardEffect,
+            });
+
+            return targetInfo([], targets.length > 0);
         }
 
         if (card.isUpgrade) {
             const printedCard = card.card;
-            if (printedCard.controllerTarget) {
-                const playCardEffect = new PlayCardEffect({card, match});
-                const targets = await playCardEffect.getValidTarget({
-                    card,
-                    match,
-                    player,
-                    playCardEffect,
-                });
-
-                return targetInfo(targets, true);
-            }
-
             const attachTarget = printedCard.getAttachConfig?.().target ??
                 printedCard.attach ??
                 TARGET_YOU;

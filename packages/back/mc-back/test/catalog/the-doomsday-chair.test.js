@@ -14,13 +14,11 @@ import {
     EFFECT_HEAL,
     EFFECT_PREVENT_DEFEAT,
     EFFECT_SEARCH_CARDS,
-    EFFECT_SHUFFLE_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     TARGET_ATTACHED,
     TARGET_EFFECT,
     TARGET_MINION,
-    TARGET_SCENARIO,
     TARGET_THIS,
     TARGET_YOU,
     TRAIT_CYBORG,
@@ -35,7 +33,6 @@ import {EngageEffect} from '../../src/effects/engage-effect.js';
 import {HealEffect} from '../../src/effects/heal-effect.js';
 import {PreventDefeatEffect} from '../../src/effects/prevent-defeat-effect.js';
 import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
-import {ShuffleDeckEffect} from '../../src/effects/shuffle-deck-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 describe('The Doomsday Chair set', () => {
@@ -63,7 +60,7 @@ test('La Silla uses its main effect for the M.O.D.O.K. search', async () => {
     assert.equal(typeof ability.effect.canRun, 'function');
     assert.ok(ability.effect.effects[0] instanceof SearchCardsEffect);
     assert.ok(ability.effect.effects[1] instanceof EngageEffect);
-    assert.ok(ability.effect.thenEffect instanceof ShuffleDeckEffect);
+    assert.equal(ability.effect.thenEffect, undefined);
 });
 
 test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect', async () => {
@@ -91,7 +88,7 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
 
     const searchAndEngage = whenRevealed.params.effect;
     assert.equal(searchAndEngage.type, EFFECT_CHAINED);
-    assert.ok(searchAndEngage.params.thenEffect);
+    assert.equal(searchAndEngage.params.thenEffect, undefined);
 
     const [search, engage] = searchAndEngage.params.effects;
     assert.equal(search.type, EFFECT_SEARCH_CARDS);
@@ -105,9 +102,6 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
     assert.equal(engage.type, EFFECT_ENGAGE);
     assert.equal(engage.params.target, TARGET_YOU);
 
-    assert.equal(searchAndEngage.params.thenEffect.type, EFFECT_SHUFFLE_DECK);
-    assert.equal(searchAndEngage.params.thenEffect.params.target, TARGET_SCENARIO);
-
     const cardsFactory = new CardsFactory({match: {}});
     const gameCard = cardsFactory.createGameCard({
         card: cardsFactory.createCard(card),
@@ -119,7 +113,7 @@ test('La Silla del Juicio Final is registered with its M.O.D.O.K. reveal effect'
     assert.equal(typeof ability.effect.canRun, 'function');
     assert.ok(ability.effect.effects[0] instanceof SearchCardsEffect);
     assert.ok(ability.effect.effects[1] instanceof EngageEffect);
-    assert.ok(ability.effect.thenEffect instanceof ShuffleDeckEffect);
+    assert.equal(ability.effect.thenEffect, undefined);
 
     const modokEntry = set.config.cards.find(({card}) => card.params.name === 'M.O.D.O.K.');
     assert.ok(modokEntry);

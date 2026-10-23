@@ -6,18 +6,25 @@ import {
     CARD_TYPE_SUPPORT,
     EFFECT_CHAINED,
     EFFECT_DISCARD_GAME,
+    EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_MAX_ALLIES,
     EFFECT_PLACE_COUNTERS,
     EFFECT_PUT_PLAY,
     EFFECT_SEARCH_CARDS,
     PLACE_HAND,
     RESOURCE_ENERGY,
+    RESOURCE_PHYSICAL,
+    TARGET_ANY_PLAYER,
+    TARGET_ALL_ALLIES_YOU_CONTROL,
+    TARGET_PLAYER,
     TARGET_THIS,
     TARGET_YOU,
+    TRAIT_CONDITION,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
     TRAIT_AVENGER,
     TRAIT_VEHICLE,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_PLAYER_TURN_START,
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
@@ -142,6 +149,48 @@ export default [
                                             'target': TARGET_THIS
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    ,
+    {
+        '_id': 'leadership-entrenamiento-en-equipo',
+        'aspect': 'leadership',
+        'order': 40,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'Entrenamiento en equipo',
+                'set': 'leadership',
+                'image': 'aspect/leadership/supports/04016.png',
+                'traits': [
+                    TRAIT_CONDITION
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': 'leadership',
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_ALL_ALLIES_YOU_CONTROL,
+                                    'count': 1
                                 }
                             }
                         }

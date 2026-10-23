@@ -38,7 +38,6 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SIMULTANEOUS,
-    EFFECT_SHUFFLE_DECK,
     EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_THWART,
@@ -175,9 +174,6 @@ export default {
                                                     'source': 'selectedCards'
                                                 }
                                             },
-                                            {
-                                                'type': EFFECT_SHUFFLE_DECK
-                                            }
                                         ]
                                     }
                                 }
@@ -253,9 +249,6 @@ export default {
                                                         'source': 'selectedCards'
                                                     }
                                                 },
-                                                {
-                                                    'type': EFFECT_SHUFFLE_DECK
-                                                }
                                             ]
                                         }
                                     }

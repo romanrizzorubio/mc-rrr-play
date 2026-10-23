@@ -1516,8 +1516,7 @@ describe('Zola scenario', () => {
         assert.equal(playerSetup[1].type, EFFECT_ENGAGE);
         assert.equal(playerSetup[1].params.cardSource, 'selectedCard');
         assert.equal(playerSetup[1].params.target, TARGET_YOU);
-        assert.equal(setupEffects[2].type, EFFECT_SHUFFLE_DECK);
-        assert.equal(setupEffects[2].params.target, TARGET_SCENARIO);
+        assert.equal(setupEffects.length, 2);
 
         assert.equal(stageTwoAbility.type, ABILITY_WHEN_REVEALED);
         assert.equal(stageTwoEffects[0].type, EFFECT_FOR_EACH);
