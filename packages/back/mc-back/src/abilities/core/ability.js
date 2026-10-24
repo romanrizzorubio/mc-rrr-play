@@ -11,8 +11,23 @@ import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';
 import {AbilityCosts} from '../../model/costs/ability-costs.js';
 import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
+import {createEffectInstance} from '../../utils/create-effect-instance.js';
 
 export class Ability extends Engine {
+    static #resolutionEffectInstances = new WeakMap();
+    static #getResolutionEffectState(ability) {
+        let state = Ability.#resolutionEffectInstances.get(ability);
+        if (!state) {
+            state = {
+                instancesByDefinition: new Map(),
+                definitionsByInstance: new WeakMap(),
+                lastResolutionEffect: undefined,
+            };
+            Ability.#resolutionEffectInstances.set(ability, state);
+        }
+
+        return state;
+    }
     constructor({
 // Ability
         name = '',
@@ -31,6 +46,7 @@ export class Ability extends Engine {
     }) {
         super(arguments[0]);
 
+        Ability.#getResolutionEffectState(this);
         this.name = name;
         this.labels = labels;
         this.effect = effect;
@@ -69,9 +85,6 @@ export class Ability extends Engine {
         if (ifNot) {
             this.ifNot = ifNot;
         }
-        if (effect) {
-            effect.ability = this;
-        }
         if (validation) {
             validation.ability = this;
         }
@@ -101,6 +114,37 @@ export class Ability extends Engine {
                 option.card = card;
             });
         }
+    }
+    get effect() {
+        const state = Ability.#getResolutionEffectState(this);
+
+        return this._resolutionContext?.effect ??
+            state.lastResolutionEffect ??
+            this._effectDefinition;
+    }
+    get effectDefinition() {
+        return this._effectDefinition;
+    }
+    set effect(effect) {
+        this._effectDefinition = effect;
+        const state = Ability.#getResolutionEffectState(this);
+        state.lastResolutionEffect = undefined;
+        state.instancesByDefinition.clear();
+        state.definitionsByInstance = new WeakMap();
+        if (effect) {
+            effect.ability = this;
+        }
+    }
+    _getCurrentEffectInstance(effect) {
+        const state = Ability.#getResolutionEffectState(this);
+        const definition = state.definitionsByInstance.get(effect) ??
+            effect;
+
+        return state.instancesByDefinition.get(definition) ?? effect;
+    }
+    getEffectDefinition(effect) {
+        return Ability.#getResolutionEffectState(this).definitionsByInstance.get(effect) ??
+            effect;
     }
     get character() {
         if (this._resolutionContext) {
@@ -182,7 +226,7 @@ export class Ability extends Engine {
             return false;
         }
         if (effect) {
-            if (! await effect.canRun(params)) {
+            if (!await effect.canRun(params)) {
                 return false;
             }
         }
@@ -278,7 +322,7 @@ export class Ability extends Engine {
             this.limit.use();
         }
     }
-    async resolveAbility(params, effect = this.effect) {
+    async resolveAbility(params, effect) {
         const {
             player,
             preselectedTarget = false,
@@ -287,42 +331,103 @@ export class Ability extends Engine {
             arrowPaid = false,
             cancelEffects = false,
         } = params;
+        const state = Ability.#getResolutionEffectState(this);
+        const effectDefinition = effect === undefined ?
+            state.lastResolutionEffect ?? this._effectDefinition :
+            effect;
+        const sourcePreselectedEffectTargets = preselectedEffectTargets &&
+            new Set([...preselectedEffectTargets].map(preselectedEffect =>
+                this._getCurrentEffectInstance(preselectedEffect)));
+        const sourcePrePlayConfirmationAcceptedFor =
+            params.prePlayConfirmationAcceptedFor ?
+                this._getCurrentEffectInstance(
+                    params.prePlayConfirmationAcceptedFor
+                ) :
+                undefined;
+        const effectInstance = createEffectInstance(effectDefinition, {
+            ability: this,
+            preselectedEffectTargets: sourcePreselectedEffectTargets,
+            preserveNestedSelectedTargets,
+            preserveSelectedTarget: preselectedTarget,
+            reuseInstance: effect !== undefined,
+            selectedTarget: params.selectedTarget,
+        });
+        const resolutionEffect = effectInstance.effect;
+        state.lastResolutionEffect = resolutionEffect;
+        state.instancesByDefinition = new Map();
+        effectInstance.effectInstances.forEach((effectInstance, sourceEffect) => {
+            const definition = state.definitionsByInstance.get(sourceEffect) ??
+                sourceEffect;
+            if (effectInstance && typeof effectInstance === 'object') {
+                state.definitionsByInstance.set(effectInstance, definition);
+            }
+            state.instancesByDefinition.set(definition, effectInstance);
+        });
         const resolvedAbilityController = this.card ?
             getTriggerCardPlayer(this.card, player) :
             undefined;
         const previousResolutionContext = this._resolutionContext;
-        const resolutionParams = preselectedEffectTargets ?
-            {...params, preselectedEffectTargets} :
+        let resolutionParams = effectInstance.preselectedEffectTargets ?
+            {
+                ...params,
+                preselectedEffectTargets:
+                    effectInstance.preselectedEffectTargets,
+            } :
             params;
+        const prePlayConfirmationEffect =
+            effectInstance.effectInstances.get(
+                sourcePrePlayConfirmationAcceptedFor
+            );
+        if (prePlayConfirmationEffect) {
+            resolutionParams = {
+                ...resolutionParams,
+                prePlayConfirmationAcceptedFor: prePlayConfirmationEffect,
+            };
+        }
+        const ifNotEffect = createEffectInstance(this.ifNot, {
+            ability: this,
+        }).effect;
         this._resolutionContext = {
             character: this.character,
+            effect: resolutionEffect,
         };
 
         try {
             this.resolved = false;
             this.paymentCancelled = false;
-            if (typeof effect?.resetResolutionState === 'function') {
-                effect.resetResolutionState({
-                    preserveSelectedTarget: preselectedTarget,
+            if (typeof resolutionEffect?.resetResolutionState === 'function') {
+                resolutionEffect.resetResolutionState({
+                    preserveSelectedTarget: preselectedTarget ||
+                        effectInstance.preselectedEffectTargets?.has(
+                            resolutionEffect
+                        ),
                     preserveNestedSelectedTargets,
-                    preselectedEffectTargets,
+                    preselectedEffectTargets:
+                        effectInstance.preselectedEffectTargets,
                 });
             }
-            this.prepareEffect({preselectedTarget, effect});
-            if (effect?.isActivation) {
-                effect.resetActivation();
+            this.prepareEffect({
+                preselectedTarget,
+                effect: resolutionEffect,
+            });
+            if (resolutionEffect?.isActivation) {
+                resolutionEffect.resetActivation();
             }
 
-            const canRun = await this.canRun(resolutionParams, effect);
+            const canRun = await this.canRun(
+                resolutionParams,
+                resolutionEffect
+            );
 
             if (canRun) {
                 const canConfirmBeforeResolve =
-                    typeof effect?.confirmBeforeResolve === 'function';
+                    typeof resolutionEffect?.confirmBeforeResolve === 'function';
                 const confirmationAccepted =
-                    !effect ||
-                    params.prePlayConfirmationAcceptedFor === effect ||
+                    !resolutionEffect ||
+                    resolutionParams.prePlayConfirmationAcceptedFor ===
+                        resolutionEffect ||
                     !canConfirmBeforeResolve ||
-                    await effect.confirmBeforeResolve(resolutionParams);
+                    await resolutionEffect.confirmBeforeResolve(resolutionParams);
                 if (!confirmationAccepted) {
                     this.paymentCancelled = true;
                     return;
@@ -334,12 +439,13 @@ export class Ability extends Engine {
                     this.maximum?.use();
                     await this.onResolutionStart(params);
 
-                    if (effect) {
+                    if (resolutionEffect) {
                         if (cancelEffects) {
                             this.resolved = false;
                         } else {
                             if (params.fixedPreselectedTarget) {
-                                effect.selectedTarget = params.selectedTarget;
+                                resolutionEffect.selectedTarget =
+                                    params.selectedTarget;
                             }
                             const effectParams = {...resolutionParams};
                             delete effectParams.arrowPaid;
@@ -351,30 +457,30 @@ export class Ability extends Engine {
                             if (params.fixedPreselectedTarget) {
                                 delete effectParams.selectedTarget;
                             }
-                            await effect.runEffect({
+                            await resolutionEffect.runEffect({
                                 ...effectParams,
                                 player,
                             });
 
-                            if (effect.paymentCancelled) {
+                            if (resolutionEffect.paymentCancelled) {
                                 this.paymentCancelled = true;
                                 return;
                             }
 
-                            this.resolved = effect.resolved;
+                            this.resolved = resolutionEffect.resolved;
                         }
                     } else {
                         this.resolved = true;
                     }
                     this.useLimit();
                 }
-            } else if (this.ifNot) {
-                await this.ifNot.runEffect({
+            } else if (ifNotEffect) {
+                await ifNotEffect.runEffect({
                     ...params,
                     card: params.card || this.card,
                 });
 
-                this.resolved = this.ifNot.resolved;
+                this.resolved = ifNotEffect.resolved;
             }
 
             if (this.resolved && this.card) {
@@ -390,7 +496,7 @@ export class Ability extends Engine {
                         {
                             ...params,
                             card: this.card,
-                            effect: effect || this,
+                            effect: resolutionEffect || this,
                             resolvedAbility: this,
                             resolvedAbilityController,
                         }

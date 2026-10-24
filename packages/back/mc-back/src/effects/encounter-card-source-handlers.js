@@ -56,8 +56,14 @@ export const ENCOUNTER_CARD_SOURCE_HANDLERS = new Map([
     [PLACE_SCENARIO_EXTRA_DECK, {
         hasCard: (effect, card) =>
             effect.getExtraDeck().cards.includes(card),
-        canGet: effect =>
-            Boolean(effect.getExtraDeck().cards.length),
+        canGet: effect => {
+            const deck = effect.getExtraDeck();
+
+            return Boolean(
+                deck.cards.length ||
+                (deck.hasDiscard && deck.discardPile.length)
+            );
+        },
         take: async (effect, card) => {
             const deck = effect.getExtraDeck();
             deck.cards.splice(deck.cards.indexOf(card), 1);
@@ -65,7 +71,9 @@ export const ENCOUNTER_CARD_SOURCE_HANDLERS = new Map([
         },
         get: async effect => {
             const deck = effect.getExtraDeck();
-            const card = deck.cards.shift();
+            const card = deck.hasDiscard ?
+                (await deck.draw(1))[0] :
+                deck.cards.shift();
             await deck.refresh();
 
             return card;

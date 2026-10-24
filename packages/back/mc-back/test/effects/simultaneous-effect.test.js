@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CALC_RESOURCES,
@@ -93,592 +93,595 @@ class CompletedEffect extends Effect {
     async execute() {}
 }
 
-test('simultaneous effects stage every dialog before committing and defer responses', async () => {
-    const calls = [];
-    const match = {
-        triggerCards: {},
-        async openDialog({data}) {
-            calls.push('choose');
+describe('simultaneous effects', () => {
+    test('simultaneous effects stage every dialog before committing and defer responses', async () => {
+        const calls = [];
+        const match = {
+            triggerCards: {},
+            async openDialog({data}) {
+                calls.push('choose');
 
-            return {selected: data.options[1]};
-        },
-    };
-    const effect = new SimultaneousEffect({
-        effects: [
-            new StagedEffect({calls, label: 'first', match}),
-            new StagedEffect({calls, label: 'second', match}),
-        ],
-        match,
-    });
-
-    await effect.runEffect({match, player: {}});
-
-    assert.deepEqual(calls, [
-        'choose',
-        'select:second',
-        'select:first',
-        'commit:first',
-        'commit:second',
-        'response:first',
-        'response:second',
-    ]);
-    assert.equal(effect.fullResolved, true);
-});
-
-test('cancelling a simultaneous payment prevents every effect from committing', async () => {
-    const calls = [];
-    const match = {
-        triggerCards: {},
-        async openDialog({data}) {
-            calls.push('choose');
-
-            return {selected: data.options[1]};
-        },
-    };
-    const effect = new SimultaneousEffect({
-        effects: [
-            new StagedEffect({calls, label: 'first', match}),
-            new StagedEffect({cancel: true, calls, label: 'second', match}),
-        ],
-        match,
-    });
-
-    await effect.runEffect({match, player: {}});
-
-    assert.deepEqual(calls, [
-        'choose',
-        'select:second',
-    ]);
-    assert.equal(effect.paymentCancelled, true);
-});
-
-test('cancelling a simultaneous triggered effect offers the interrupt again', async () => {
-    const calls = [];
-    const match = {
-        triggerCards: {},
-        async openDialog({data}) {
-            return {selected: data.options[1]};
-        },
-    };
-    const player = {isPlayer: true};
-    const card = {
-        id: 'simultaneous-interrupt',
-        owner: player,
-        triggers: {},
-    };
-    const secondEffect = new StagedEffect({
-        cancel: true,
-        calls,
-        label: 'second',
-        match,
-    });
-    const effect = new SimultaneousEffect({
-        effects: [
-            new StagedEffect({calls, label: 'first', match}),
-            secondEffect,
-        ],
-        match,
-    });
-    const ability = new InterruptAbility({
-        effect,
-        match,
-        trigger: TRIGGER_ENCOUNTER_REVEAL,
-    });
-    ability.card = card;
-
-    const trigger = new Trigger({
-        ability,
-        card,
-        trigger: TRIGGER_ENCOUNTER_REVEAL,
-    });
-    card.triggers[TRIGGER_ENCOUNTER_REVEAL] = {
-        [PRIORITY_INTERRUPT]: [trigger],
-    };
-    match.triggerCards[card.id] = card;
-
-    const engine = new Engine();
-    engine.match = match;
-    engine._openTriggersDialog = async (triggers, _priority, params) => {
-        calls.push('offer');
-        if (calls.filter(value => value === 'offer').length === 2) {
-            secondEffect.cancel = false;
-        }
-
-        await triggers[0].runTrigger(params);
-
-        return triggers[0];
-    };
-
-    await engine.trigger(PRIORITY_INTERRUPT, [TRIGGER_ENCOUNTER_REVEAL], {
-        effect: {},
-        player,
-    });
-
-    assert.equal(calls.filter(value => value === 'offer').length, 2);
-    assert.equal(calls.filter(value => value.startsWith('commit:')).length, 2);
-    assert.equal(effect.fullResolved, true);
-    assert.equal(trigger.triggered, true);
-});
-
-test('thenEffect only runs when all preceding effects fully resolve', async () => {
-    const match = {triggerCards: {}};
-    let thenRuns = 0;
-    const thenEffect = {
-        async runEffect() {
-            thenRuns++;
-        },
-    };
-    const partial = new ChainedEffect({
-        effects: [new PartiallyResolvedEffect({match})],
-        match,
-        thenEffect,
-    });
-
-    await partial.runEffect({match, player: {}});
-    assert.equal(thenRuns, 0);
-
-    const simultaneous = new SimultaneousEffect({
-        effects: [
-            new PartiallyResolvedEffect({match}),
-            new CompletedEffect({match}),
-        ],
-        match,
-        thenEffect,
-    });
-
-    await simultaneous.runEffect({match, player: {}});
-    assert.equal(thenRuns, 0);
-
-    const complete = new ChainedEffect({
-        effects: [new CompletedEffect({match})],
-        match,
-        thenEffect,
-    });
-
-    await complete.runEffect({match, player: {}});
-    assert.equal(thenRuns, 1);
-});
-
-test('Doble personalidad fills the hand only after the flip resolves', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = sheHulk.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Doble personalidad');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof ChainedEffect);
-    assert.equal(effect.effects.length, 1);
-    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_FILL_HAND);
-});
-
-test('Rayo repulsor discards first and applies its complete calculated damage once', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = ironMan.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Rayo repulsor');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof ChainedEffect);
-    assert.deepEqual(effect.effects.map(child => child.effectType), [
-        EFFECT_DISCARD_FROM_DECK,
-        EFFECT_DEAL_DAMAGE,
-    ]);
-    assert.equal(effect.effects[1].paramsCalc.formula, CALC_RESOURCES);
-    assert.equal(effect.effects[1].paramsCalc.multiply, 2);
-    assert.equal(effect.effects[1].paramsCalc.plus, 1);
-});
-
-test('La furia de Titania resolves its alternative heal and surge simultaneously', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const effectConfig = sheHulk.config.nemesis[3].card.params.abilities[0]
-        .params.ifNot;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof SimultaneousEffect);
-    assert.equal(effect.effects.length, 2);
-});
-
-test('Dagas de energía resolves both damage effects simultaneously', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = blackPanther.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Dagas de energía');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof SimultaneousEffect);
-    assert.equal(effect.effects.length, 2);
-});
-
-test('Wakanda Forever resets stale damage prevention and minion targets', async () => {
-    const player = {
-        gameZone: {cards: []},
-        isHero: true,
-        isPlayer: true,
-        minions: [],
-    };
-    const staleMinion = {
-        abilities: [],
-        damage: 0,
-        id: 'stale-minion',
-        async getLife() {
-            return 10 - this.damage;
-        },
-        placeDamage(damage) {
-            this.damage += damage;
-        },
-        async refresh() {},
-    };
-    const rhino = {
-        abilities: [],
-        damage: 0,
-        async getLife() {
-            return 14 - this.damage;
-        },
-        id: 'rhino',
-        placeDamage(damage) {
-            this.damage += damage;
-        },
-        async refresh() {},
-    };
-    const match = {
-        players: [player],
-        triggerCards: {},
-        villain: rhino,
-    };
-    const cardsFactory = new CardsFactory({match});
-    match.effectsFactory = cardsFactory.abilitiesFactory.effectsFactory;
-    const daggersConfig = blackPanther.config.cards.find(({card}) =>
-        card.params.name === 'Dagas de energía').card;
-    const daggers = cardsFactory.createGameCard({
-        card: cardsFactory.createCard(daggersConfig),
-        owner: player,
-    });
-    daggers.toObj = () => ({id: daggers.id, name: daggers.card.name});
-    daggers.abilities[0].effect.effects[0].preventDamage = 2;
-    daggers.abilities[0].effect.effects[1].selectedTarget = [staleMinion];
-    player.gameZone.cards.push(daggers);
-    const wakandaConfig = blackPanther.config.cards.find(({card}) =>
-        card.params.name === '¡Wakanda por siempre!').card;
-    const wakanda = cardsFactory.createGameCard({
-        card: cardsFactory.createCard(wakandaConfig),
-        owner: player,
-    });
-    let specialDialogs = 0;
-    wakanda.abilities[0].effect.openDialog = async ({data}) => {
-        specialDialogs++;
-
-        return {
-            selected: [{id: data.cards[0].id}],
-        };
-    };
-
-    await wakanda.abilities[0].resolveAbility({match, player});
-
-    assert.equal(specialDialogs, 1);
-    assert.equal(rhino.damage, 2);
-    assert.equal(staleMinion.damage, 0);
-});
-
-test('Hierba con forma de corazón gives tough simultaneously to villain and minions', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = blackPanther.config.nemesis[2];
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof SimultaneousEffect);
-    assert.equal(effect.effects.length, 2);
-});
-
-test('Combate ritual chooses an ability only after discarding the encounter card', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const effectConfig = blackPanther.config.nemesis[3].card.params.abilities[0]
-        .params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof ChainedEffect);
-    assert.equal(effect.effects.length, 1);
-    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHOOSE_ABILITY);
-});
-
-test('Envuelto en telaraña resolves cancellation and discard together, then stuns', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = spiderMan.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Envuelto en telaraña');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const cancelAttackConfig = effectConfig.params.effects[0].params.effects[0];
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.equal(cancelAttackConfig.params?.target, undefined);
-    assert.ok(effect instanceof ChainedEffect);
-    assert.ok(effect.effects[0] instanceof SimultaneousEffect);
-    assert.equal(effect.effects[0].effects.length, 2);
-    assert.equal(effect.thenEffect.effectType, EFFECT_STUN);
-});
-
-test('Envuelto en telaraña keeps its target when its source is discarded before the then effect', async () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = spiderMan.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Envuelto en telaraña');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-    const attachedEnemy = {
-        isStunned: false,
-        refresh() {},
-        stun() {
-            this.isStunned = true;
-        },
-    };
-    const sourceCard = {attachedTo: attachedEnemy};
-    const ability = {card: sourceCard};
-
-    effect.ability = ability;
-    await effect.prepare({});
-    effect.execute = async () => {
-        sourceCard.attachedTo = undefined;
-    };
-    effect.isResolved = () => true;
-    effect.isFullResolved = () => true;
-    effect.triggerEnds = async () => {};
-    effect.thenEffect.runEffect = async params => {
-        await effect.thenEffect.prepare(params);
-        effect.thenEffect.execute(params);
-    };
-
-    await effect.resolvePrepared({}, {});
-
-    assert.equal(effect.thenEffect.ability, ability);
-    assert.equal(effect.thenEffect.selectedTarget, attachedEnemy);
-    assert.equal(attachedEnemy.isStunned, true);
-});
-
-test('Evitar una crisis removes threat from another scheme when Vuelo cósmico grants Aerial', async () => {
-    const makeScheme = id => ({
-        id,
-        name: id,
-        threat: 5,
-        isCard: true,
-        isScheme: true,
-        isSideScheme: true,
-        canRemoveThreat() {
-            return this.threat > 0;
-        },
-        canThwart() {
-            return this.canRemoveThreat();
-        },
-        removeThreat(threat) {
-            this.threat = Math.max(0, this.threat - threat);
-        },
-        refresh() {},
-        toObj() {
-            return {id: this.id, name: this.name};
-        },
-    });
-    const firstScheme = makeScheme('first-scheme');
-    const secondScheme = makeScheme('second-scheme');
-    const hero = {
-        name: 'Capitana Marvel',
-        traits: [],
-        extraTraits: [],
-        refresh() {},
-    };
-    const player = {
-        isHero: true,
-        isConfused: false,
-        superhero: {currentSide: hero},
-        async canThwart() {
-            return true;
-        },
-    };
-    const match = {
-        triggerCards: {},
-        schemes: [firstScheme, secondScheme],
-    };
-    match.activationsFactory = new ActivationsFactory(match);
-    match.openDialog = async ({data}) => ({
-        selected: data.cards.find(card => card.id === firstScheme.id),
-    });
-
-    const factory = new AbilitiesFactory({match});
-    const flightCard = captainMarvel.config.cards.find(({card}) =>
-        card.params.name === 'Vuelo cósmico').card;
-    const flightAbility = factory.createAbility(flightCard.params.abilities[0]);
-    const flightGameCard = {
-        id: 'vuelo-cosmico',
-        isEvent: false,
-        triggers: {},
-    };
-    flightAbility.card = flightGameCard;
-    flightAbility.initTriggers(flightGameCard);
-
-    const crisisCard = captainMarvel.config.cards.find(({card}) =>
-        card.params.name === 'Evitar una crisis').card;
-    const crisisAbility = factory.createAbility(crisisCard.params.abilities[0]);
-    crisisAbility.card = {
-        id: 'evitar-una-crisis',
-        isEvent: true,
-        owner: player,
-    };
-    assert.deepEqual(crisisAbility.effect.effects.map(effect => effect.effectType), [
-        EFFECT_REMOVE_THREAT,
-        EFFECT_DO_IF_HAS_TRAITS,
-    ]);
-    assert.equal(crisisAbility.effect.effects[0].thenEffect, undefined);
-    assert.equal(crisisAbility.effect.effects[1].effect.effectType, EFFECT_REMOVE_THREAT);
-
-    const prepared = await crisisAbility.prepareToResolve({match, player});
-    await crisisAbility.resolveAbility({match, player, ...prepared});
-
-    assert.equal(firstScheme.threat, 3);
-    assert.equal(secondScheme.threat, 3);
-    assert.deepEqual(hero.traits, []);
-});
-
-test('Base orbital resolves one draw with a form-dependent count', async () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = captainMarvel.config.cards.find(({card: cardData}) =>
-        cardData.params.name === 'Base orbital de Alpha Flight');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-    const drawCounts = [];
-    const player = {
-        deck: {
-            async draw(count) {
-                drawCounts.push(count);
-
-                return [];
+                return {selected: data.options[1]};
             },
-        },
-        hand: {
-            addCards() {},
-            async refresh() {},
-        },
-        isAlterEgo: false,
-        isPlayer: true,
-    };
-    effect.selectedTarget = player;
+        };
+        const effect = new SimultaneousEffect({
+            effects: [
+                new StagedEffect({calls, label: 'first', match}),
+                new StagedEffect({calls, label: 'second', match}),
+            ],
+            match,
+        });
 
-    assert.equal(effect.effectType, EFFECT_DRAW_CARD);
-    await effect.execute({player});
-    player.isAlterEgo = true;
-    await effect.execute({player});
+        await effect.runEffect({match, player: {}});
 
-    assert.deepEqual(drawCounts, [1, 2]);
-});
-
-test('Liderar en vanguardia applies its attack and thwart modifiers simultaneously', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = leadershipEvents.find(({card: cardData}) =>
-        cardData.params.name === 'Liderar en vanguardia');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect.effect instanceof SimultaneousEffect);
-    assert.equal(effect.effect.effects.length, 2);
-});
-
-test('Moral elevada applies all three hero modifiers simultaneously until the end of the round', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = leadershipEvents.find(({card: cardData}) =>
-        cardData.params.name === 'Moral elevada');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.equal(effect.effectType, EFFECT_LASTING);
-    assert.equal(effect.target, TARGET_HERO);
-    assert.equal(effect.until, TIME_ROUND);
-    assert.ok(effect.effect instanceof SimultaneousEffect);
-    assert.equal(effect.effect.target, TARGET_HERO);
-    assert.deepEqual(
-        effect.effect.effects.map(child => child.effectType),
-        [
-            EFFECT_MODIFY_THWART_VALUE,
-            EFFECT_MODIFY_ATTACK_VALUE,
-            EFFECT_MODIFY_DEFENSE_VALUE,
-        ]
-    );
-    assert.ok(effect.effect.effects.every(child => child.target === TARGET_HERO));
-});
-
-test('Hulk resolves the wild-resource branch as one simultaneous group', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = aggressionAllies.find(({card: cardData}) =>
-        cardData.params.name === 'Hulk');
-    const wildBranch = card.card.params.abilities[0].params.effect
-        .params.effects[4].params.effect;
-    const effect = factory.effectsFactory.parseEffect(wildBranch);
-
-    assert.ok(effect instanceof SimultaneousEffect);
-    assert.equal(effect.effects.length, 3);
-});
-
-test('Black Widow reveals a replacement encounter card only after cancellation', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const card = protectionAllies.find(({card: cardData}) =>
-        cardData.params.name === 'Viuda Negra');
-    const effectConfig = card.card.params.abilities[0].params.effect;
-    const effect = factory.effectsFactory.parseEffect(effectConfig);
-
-    assert.ok(effect instanceof ChainedEffect);
-    assert.equal(effect.effects.length, 1);
-    assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHAINED);
-    assert.deepEqual(effect.effects[0].thenEffect.effects.map(({effectType}) =>
-        effectType), [
-        EFFECT_GET_ENCOUNTER_CARD,
-        EFFECT_REVEAL_ENCOUNTER,
-    ]);
-});
-
-test('chained effects inside an ability cost are parsed as simultaneous', () => {
-    const match = {triggerCards: {}};
-    const factory = new AbilitiesFactory({match});
-    const parsedSimultaneous = factory.effectsFactory.parseEffect({
-        type: EFFECT_SIMULTANEOUS,
-        params: {effects: []},
+        assert.deepEqual(calls, [
+            'choose',
+            'select:second',
+            'select:first',
+            'commit:first',
+            'commit:second',
+            'response:first',
+            'response:second',
+        ]);
+        assert.equal(effect.fullResolved, true);
     });
-    const {params} = factory._parseAbility({
-        type: 'action',
-        params: {
-            arrow: {
-                type: EFFECT_CHAINED,
-                params: {
-                    effects: [],
-                    thenEffect: {
-                        type: EFFECT_CHAINED,
-                        params: {
-                            effects: [],
+
+    test('cancelling a simultaneous payment prevents every effect from committing', async () => {
+        const calls = [];
+        const match = {
+            triggerCards: {},
+            async openDialog({data}) {
+                calls.push('choose');
+
+                return {selected: data.options[1]};
+            },
+        };
+        const effect = new SimultaneousEffect({
+            effects: [
+                new StagedEffect({calls, label: 'first', match}),
+                new StagedEffect({cancel: true, calls, label: 'second', match}),
+            ],
+            match,
+        });
+
+        await effect.runEffect({match, player: {}});
+
+        assert.deepEqual(calls, [
+            'choose',
+            'select:second',
+        ]);
+        assert.equal(effect.paymentCancelled, true);
+    });
+
+    test('cancelling a simultaneous triggered effect offers the interrupt again', async () => {
+        const calls = [];
+        const match = {
+            triggerCards: {},
+            async openDialog({data}) {
+                return {selected: data.options[1]};
+            },
+        };
+        const player = {isPlayer: true};
+        const card = {
+            id: 'simultaneous-interrupt',
+            owner: player,
+            triggers: {},
+        };
+        const secondEffect = new StagedEffect({
+            cancel: true,
+            calls,
+            label: 'second',
+            match,
+        });
+        const effect = new SimultaneousEffect({
+            effects: [
+                new StagedEffect({calls, label: 'first', match}),
+                secondEffect,
+            ],
+            match,
+        });
+        const ability = new InterruptAbility({
+            effect,
+            match,
+            trigger: TRIGGER_ENCOUNTER_REVEAL,
+        });
+        ability.card = card;
+
+        const trigger = new Trigger({
+            ability,
+            card,
+            trigger: TRIGGER_ENCOUNTER_REVEAL,
+        });
+        card.triggers[TRIGGER_ENCOUNTER_REVEAL] = {
+            [PRIORITY_INTERRUPT]: [trigger],
+        };
+        match.triggerCards[card.id] = card;
+
+        const engine = new Engine();
+        engine.match = match;
+        engine._openTriggersDialog = async (triggers, _priority, params) => {
+            calls.push('offer');
+            if (calls.filter(value => value === 'offer').length === 2) {
+                secondEffect.cancel = false;
+            }
+
+            await triggers[0].runTrigger(params);
+
+            return triggers[0];
+        };
+
+        await engine.trigger(PRIORITY_INTERRUPT, [TRIGGER_ENCOUNTER_REVEAL], {
+            effect: {},
+            player,
+        });
+
+        assert.equal(calls.filter(value => value === 'offer').length, 2);
+        assert.equal(calls.filter(value => value.startsWith('commit:')).length, 2);
+        assert.equal(effect.fullResolved, true);
+        assert.equal(trigger.triggered, true);
+    });
+
+    test('thenEffect only runs when all preceding effects fully resolve', async () => {
+        const match = {triggerCards: {}};
+        let thenRuns = 0;
+        const thenEffect = {
+            async runEffect() {
+                thenRuns++;
+            },
+        };
+        const partial = new ChainedEffect({
+            effects: [new PartiallyResolvedEffect({match})],
+            match,
+            thenEffect,
+        });
+
+        await partial.runEffect({match, player: {}});
+        assert.equal(thenRuns, 0);
+
+        const simultaneous = new SimultaneousEffect({
+            effects: [
+                new PartiallyResolvedEffect({match}),
+                new CompletedEffect({match}),
+            ],
+            match,
+            thenEffect,
+        });
+
+        await simultaneous.runEffect({match, player: {}});
+        assert.equal(thenRuns, 0);
+
+        const complete = new ChainedEffect({
+            effects: [new CompletedEffect({match})],
+            match,
+            thenEffect,
+        });
+
+        await complete.runEffect({match, player: {}});
+        assert.equal(thenRuns, 1);
+    });
+
+    test('Doble personalidad fills the hand only after the flip resolves', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = sheHulk.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Doble personalidad');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof ChainedEffect);
+        assert.equal(effect.effects.length, 1);
+        assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_FILL_HAND);
+    });
+
+    test('Rayo repulsor discards first and applies its complete calculated damage once', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = ironMan.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Rayo repulsor');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof ChainedEffect);
+        assert.deepEqual(effect.effects.map(child => child.effectType), [
+            EFFECT_DISCARD_FROM_DECK,
+            EFFECT_DEAL_DAMAGE,
+        ]);
+        assert.equal(effect.effects[1].paramsCalc.formula, CALC_RESOURCES);
+        assert.equal(effect.effects[1].paramsCalc.multiply, 2);
+        assert.equal(effect.effects[1].paramsCalc.plus, 1);
+    });
+
+    test('La furia de Titania resolves its alternative heal and surge simultaneously', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const effectConfig = sheHulk.config.nemesis[3].card.params.abilities[0]
+            .params.ifNot;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof SimultaneousEffect);
+        assert.equal(effect.effects.length, 2);
+    });
+
+    test('Dagas de energía resolves both damage effects simultaneously', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = blackPanther.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Dagas de energía');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof SimultaneousEffect);
+        assert.equal(effect.effects.length, 2);
+    });
+
+    test('Wakanda Forever resets stale damage prevention and minion targets', async () => {
+        const player = {
+            gameZone: {cards: []},
+            isHero: true,
+            isPlayer: true,
+            minions: [],
+        };
+        const staleMinion = {
+            abilities: [],
+            damage: 0,
+            id: 'stale-minion',
+            async getLife() {
+                return 10 - this.damage;
+            },
+            placeDamage(damage) {
+                this.damage += damage;
+            },
+            async refresh() {},
+        };
+        const rhino = {
+            abilities: [],
+            damage: 0,
+            async getLife() {
+                return 14 - this.damage;
+            },
+            id: 'rhino',
+            placeDamage(damage) {
+                this.damage += damage;
+            },
+            async refresh() {},
+        };
+        const match = {
+            players: [player],
+            triggerCards: {},
+            villain: rhino,
+        };
+        const cardsFactory = new CardsFactory({match});
+        match.effectsFactory = cardsFactory.abilitiesFactory.effectsFactory;
+        const daggersConfig = blackPanther.config.cards.find(({card}) =>
+            card.params.name === 'Dagas de energía').card;
+        const daggers = cardsFactory.createGameCard({
+            card: cardsFactory.createCard(daggersConfig),
+            owner: player,
+        });
+        daggers.toObj = () => ({id: daggers.id, name: daggers.card.name});
+        daggers.abilities[0].effect.effects[0].preventDamage = 2;
+        daggers.abilities[0].effect.effects[1].selectedTarget = [staleMinion];
+        player.gameZone.cards.push(daggers);
+        const wakandaConfig = blackPanther.config.cards.find(({card}) =>
+            card.params.name === '¡Wakanda por siempre!').card;
+        const wakanda = cardsFactory.createGameCard({
+            card: cardsFactory.createCard(wakandaConfig),
+            owner: player,
+        });
+        daggers.abilities[0].canRun = async () => true;
+        match.openDialog = async ({data}) => {
+            const [card] = data?.cards ?? [];
+
+            return card ? {selected: [{id: card.id}]} : {};
+        };
+
+        await wakanda.abilities[0].resolveAbility({
+            arrowPaid: true,
+            match,
+            player,
+        });
+
+        assert.equal(rhino.damage, 2);
+        assert.equal(staleMinion.damage, 0);
+    });
+
+    test('Hierba con forma de corazón gives tough simultaneously to villain and minions', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = blackPanther.config.nemesis[2];
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof SimultaneousEffect);
+        assert.equal(effect.effects.length, 2);
+    });
+
+    test('Combate ritual chooses an ability only after discarding the encounter card', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const effectConfig = blackPanther.config.nemesis[3].card.params.abilities[0]
+            .params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof ChainedEffect);
+        assert.equal(effect.effects.length, 1);
+        assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHOOSE_ABILITY);
+    });
+
+    test('Envuelto en telaraña resolves cancellation and discard together, then stuns', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = spiderMan.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Envuelto en telaraña');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const cancelAttackConfig = effectConfig.params.effects[0].params.effects[0];
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.equal(cancelAttackConfig.params?.target, undefined);
+        assert.ok(effect instanceof ChainedEffect);
+        assert.ok(effect.effects[0] instanceof SimultaneousEffect);
+        assert.equal(effect.effects[0].effects.length, 2);
+        assert.equal(effect.thenEffect.effectType, EFFECT_STUN);
+    });
+
+    test('Envuelto en telaraña keeps its target when its source is discarded before the then effect', async () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = spiderMan.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Envuelto en telaraña');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+        const attachedEnemy = {
+            isStunned: false,
+            refresh() {},
+            stun() {
+                this.isStunned = true;
+            },
+        };
+        const sourceCard = {attachedTo: attachedEnemy};
+        const ability = {card: sourceCard};
+
+        effect.ability = ability;
+        await effect.prepare({});
+        effect.execute = async () => {
+            sourceCard.attachedTo = undefined;
+        };
+        effect.isResolved = () => true;
+        effect.isFullResolved = () => true;
+        effect.triggerEnds = async () => {};
+        effect.thenEffect.runEffect = async params => {
+            await effect.thenEffect.prepare(params);
+            effect.thenEffect.execute(params);
+        };
+
+        await effect.resolvePrepared({}, {});
+
+        assert.equal(effect.thenEffect.ability, ability);
+        assert.equal(effect.thenEffect.selectedTarget, attachedEnemy);
+        assert.equal(attachedEnemy.isStunned, true);
+    });
+
+    test('Evitar una crisis removes threat from another scheme when Vuelo cósmico grants Aerial', async () => {
+        const makeScheme = id => ({
+            id,
+            name: id,
+            threat: 5,
+            isCard: true,
+            isScheme: true,
+            isSideScheme: true,
+            canRemoveThreat() {
+                return this.threat > 0;
+            },
+            canThwart() {
+                return this.canRemoveThreat();
+            },
+            removeThreat(threat) {
+                this.threat = Math.max(0, this.threat - threat);
+            },
+            refresh() {},
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        });
+        const firstScheme = makeScheme('first-scheme');
+        const secondScheme = makeScheme('second-scheme');
+        const hero = {
+            name: 'Capitana Marvel',
+            traits: [],
+            extraTraits: [],
+            refresh() {},
+        };
+        const player = {
+            isHero: true,
+            isConfused: false,
+            superhero: {currentSide: hero},
+            async canThwart() {
+                return true;
+            },
+        };
+        const match = {
+            triggerCards: {},
+            schemes: [firstScheme, secondScheme],
+        };
+        match.activationsFactory = new ActivationsFactory(match);
+        match.openDialog = async ({data}) => ({
+            selected: data.cards.find(card => card.id === firstScheme.id),
+        });
+
+        const factory = new AbilitiesFactory({match});
+        const flightCard = captainMarvel.config.cards.find(({card}) =>
+            card.params.name === 'Vuelo cósmico').card;
+        const flightAbility = factory.createAbility(flightCard.params.abilities[0]);
+        const flightGameCard = {
+            id: 'vuelo-cosmico',
+            isEvent: false,
+            triggers: {},
+        };
+        flightAbility.card = flightGameCard;
+        flightAbility.initTriggers(flightGameCard);
+
+        const crisisCard = captainMarvel.config.cards.find(({card}) =>
+            card.params.name === 'Evitar una crisis').card;
+        const crisisAbility = factory.createAbility(crisisCard.params.abilities[0]);
+        crisisAbility.card = {
+            id: 'evitar-una-crisis',
+            isEvent: true,
+            owner: player,
+        };
+        assert.deepEqual(crisisAbility.effect.effects.map(effect => effect.effectType), [
+            EFFECT_REMOVE_THREAT,
+            EFFECT_DO_IF_HAS_TRAITS,
+        ]);
+        assert.equal(crisisAbility.effect.effects[0].thenEffect, undefined);
+        assert.equal(crisisAbility.effect.effects[1].effect.effectType, EFFECT_REMOVE_THREAT);
+
+        const prepared = await crisisAbility.prepareToResolve({match, player});
+        await crisisAbility.resolveAbility({match, player, ...prepared});
+
+        assert.equal(firstScheme.threat, 3);
+        assert.equal(secondScheme.threat, 3);
+        assert.deepEqual(hero.traits, []);
+    });
+
+    test('Base orbital resolves one draw with a form-dependent count', async () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = captainMarvel.config.cards.find(({card: cardData}) =>
+            cardData.params.name === 'Base orbital de Alpha Flight');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+        const drawCounts = [];
+        const player = {
+            deck: {
+                async draw(count) {
+                    drawCounts.push(count);
+
+                    return [];
+                },
+            },
+            hand: {
+                addCards() {},
+                async refresh() {},
+            },
+            isAlterEgo: false,
+            isPlayer: true,
+        };
+        effect.selectedTarget = player;
+
+        assert.equal(effect.effectType, EFFECT_DRAW_CARD);
+        await effect.execute({player});
+        player.isAlterEgo = true;
+        await effect.execute({player});
+
+        assert.deepEqual(drawCounts, [1, 2]);
+    });
+
+    test('Liderar en vanguardia applies its attack and thwart modifiers simultaneously', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = leadershipEvents.find(({card: cardData}) =>
+            cardData.params.name === 'Liderar en vanguardia');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect.effect instanceof SimultaneousEffect);
+        assert.equal(effect.effect.effects.length, 2);
+    });
+
+    test('Moral elevada applies all three hero modifiers simultaneously until the end of the round', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = leadershipEvents.find(({card: cardData}) =>
+            cardData.params.name === 'Moral elevada');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.equal(effect.effectType, EFFECT_LASTING);
+        assert.equal(effect.target, TARGET_HERO);
+        assert.equal(effect.until, TIME_ROUND);
+        assert.ok(effect.effect instanceof SimultaneousEffect);
+        assert.equal(effect.effect.target, TARGET_HERO);
+        assert.deepEqual(
+            effect.effect.effects.map(child => child.effectType),
+            [
+                EFFECT_MODIFY_THWART_VALUE,
+                EFFECT_MODIFY_ATTACK_VALUE,
+                EFFECT_MODIFY_DEFENSE_VALUE,
+            ]
+        );
+        assert.ok(effect.effect.effects.every(child => child.target === TARGET_HERO));
+    });
+
+    test('Hulk resolves the wild-resource branch as one simultaneous group', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = aggressionAllies.find(({card: cardData}) =>
+            cardData.params.name === 'Hulk');
+        const wildBranch = card.card.params.abilities[0].params.effect
+            .params.effects[4].params.effect;
+        const effect = factory.effectsFactory.parseEffect(wildBranch);
+
+        assert.ok(effect instanceof SimultaneousEffect);
+        assert.equal(effect.effects.length, 3);
+    });
+
+    test('Black Widow reveals a replacement encounter card only after cancellation', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const card = protectionAllies.find(({card: cardData}) =>
+            cardData.params.name === 'Viuda Negra');
+        const effectConfig = card.card.params.abilities[0].params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+
+        assert.ok(effect instanceof ChainedEffect);
+        assert.equal(effect.effects.length, 1);
+        assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHAINED);
+        assert.deepEqual(effect.effects[0].thenEffect.effects.map(({effectType}) =>
+            effectType), [
+            EFFECT_GET_ENCOUNTER_CARD,
+            EFFECT_REVEAL_ENCOUNTER,
+        ]);
+    });
+
+    test('chained effects inside an ability cost are parsed as simultaneous', () => {
+        const match = {triggerCards: {}};
+        const factory = new AbilitiesFactory({match});
+        const parsedSimultaneous = factory.effectsFactory.parseEffect({
+            type: EFFECT_SIMULTANEOUS,
+            params: {effects: []},
+        });
+        const {params} = factory._parseAbility({
+            type: 'action',
+            params: {
+                arrow: {
+                    type: EFFECT_CHAINED,
+                    params: {
+                        effects: [],
+                        thenEffect: {
+                            type: EFFECT_CHAINED,
+                            params: {
+                                effects: [],
+                            },
                         },
                     },
                 },
             },
-        },
+        });
+
+        assert.ok(parsedSimultaneous instanceof SimultaneousEffect);
+        assert.ok(params.arrow.cost instanceof SimultaneousEffect);
+        assert.ok(params.arrow.cost.thenEffect instanceof ChainedEffect);
     });
 
-    assert.ok(parsedSimultaneous instanceof SimultaneousEffect);
-    assert.ok(params.arrow.cost instanceof SimultaneousEffect);
-    assert.ok(params.arrow.cost.thenEffect instanceof ChainedEffect);
-});
+    test('simultaneous constant effects stay hidden when every child is automatic', () => {
+        const ability = new ConstantAbility({
+            effect: {
+                effectType: EFFECT_SIMULTANEOUS,
+                effects: [{effectType: 'modify-attack-value'}],
+            },
+            match: {},
+        });
 
-test('simultaneous constant effects stay hidden when every child is automatic', () => {
-    const ability = new ConstantAbility({
-        effect: {
-            effectType: EFFECT_SIMULTANEOUS,
-            effects: [{effectType: 'modify-attack-value'}],
-        },
-        match: {},
+        assert.equal(ability.hideDialog, true);
     });
-
-    assert.equal(ability.hideDialog, true);
 });

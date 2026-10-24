@@ -115,6 +115,7 @@ import {
     EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_SELECT_FROM_TOP_DECK,
     EFFECT_SET_LIFE,
+    EFFECT_SET_THWART_VALUE,
     EFFECT_SEVERAL_ATTACKS,
     EFFECT_SHUFFLE_DECK,
     EFFECT_SPEND,
@@ -204,6 +205,7 @@ import {ModifyMaxAlliesEffect} from '../../effects/modify-max-allies-effect.js';
 import {ModifyRecoveryEffect} from '../../effects/modify-recovery-effect.js';
 import {ModifySchemeValueEffect} from '../../effects/modify-scheme-value-effect.js';
 import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.js';
+import {SetThwartValueEffect} from '../../effects/set-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
 import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
@@ -330,6 +332,7 @@ export const EFFECT_MAP = {
     [EFFECT_MODIFY_DEFENSE_VALUE]: ModifyDefenseValueEffect,
     [EFFECT_MODIFY_HAND_SIZE]: ModifyHandSizeEffect,
     [EFFECT_MODIFY_THWART_VALUE]: ModifyThwartValueEffect,
+    [EFFECT_SET_THWART_VALUE]: SetThwartValueEffect,
     [EFFECT_MODIFY_HIT_POINTS]: ModifyHitPointsEffect,
     [EFFECT_MODIFY_TRAITS]: ModifyTraitsEffect,
     [EFFECT_MOVE_DAMAGE]: MoveDamageEffect,

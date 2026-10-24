@@ -67,6 +67,8 @@ export class ResolveBoostEffect extends Effect {
 
         if (boostCards.length > 1) {
             const cumulativeBoost = this.previousBoost + this.boostValue;
+            const knownEncounterCards =
+                this.match?.scenario?.deck?.knownCards;
             const cards = boostCards.map((boostCard, index) => {
                 const cardData = boostCard.toObj(params);
                 const isFacedown = index > cardIndex;
@@ -76,7 +78,8 @@ export class ResolveBoostEffect extends Effect {
                         {
                             ...cardData,
                             isFacedownCard: true,
-                            canPeekFacedown: true,
+                            canPeekFacedown:
+                                knownEncounterCards?.includes(boostCard) === true,
                         } :
                         showUpdatedBoost && index === cardIndex ?
                             {...cardData, boost: this.boostValue} :

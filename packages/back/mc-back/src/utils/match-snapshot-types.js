@@ -40,6 +40,12 @@ import {Superhero} from '../model/match/superhero.js';
 import {Card} from '../model/printed/card.js';
 import {Trigger} from '../triggers/base/trigger.js';
 import {ValidTarget} from '../targets/valid-target.js';
+import {
+    EFFECT_CHAINED,
+    EFFECT_GET_ENCOUNTER_CARD,
+    EFFECT_REVEAL_ENCOUNTER,
+    PLACE_SCENARIO_EXTRA_DECK,
+} from 'mc-shared';
 import {MatchFactory} from '../factory/match-factory.js';
 
 export const VALID_TARGET_FILTER_MARKER = Symbol('valid-target-filter');
@@ -136,6 +142,116 @@ registerSnapshotType(Match, {
         }
     },
 });
+
+[
+    Ability,
+    ...Object.values(ABILITY_MAP),
+].forEach(AbilityType => registerSnapshotType(AbilityType, {
+    restore: ability => {
+        const effect = ability.effectDefinition;
+        const revealEffects = [];
+        const visited = new Set();
+        const pending = effect ? [effect] : [];
+        while (pending.length) {
+            const currentEffect = pending.pop();
+            if (!currentEffect || visited.has(currentEffect)) {
+                continue;
+            }
+            visited.add(currentEffect);
+            if (currentEffect.effectType === EFFECT_REVEAL_ENCOUNTER &&
+                currentEffect.cardSource === undefined) {
+                revealEffects.push(currentEffect);
+            }
+            if (currentEffect.effectType === EFFECT_CHAINED &&
+                Array.isArray(currentEffect.effects)) {
+                currentEffect.effects.forEach((sourceEffect, index) => {
+                    const revealEffect = currentEffect.effects[index + 1];
+                    if (sourceEffect.effectType !== EFFECT_GET_ENCOUNTER_CARD ||
+                        sourceEffect.from !== PLACE_SCENARIO_EXTRA_DECK ||
+                        !sourceEffect.resolved ||
+                        revealEffect?.effectType !== EFFECT_REVEAL_ENCOUNTER ||
+                        revealEffect.resolved ||
+                        !sourceEffect.card?.isEncounterCard) {
+                        return;
+                    }
+
+                    const scenario = ability.match?.scenario;
+                    const extraDeck = scenario?.extraDecks?.[sourceEffect.deckId];
+                    if (!extraDeck) {
+                        throw new Error(
+                            `Cannot restore drawn card from scenario deck "${sourceEffect.deckId}".`
+                        );
+                    }
+
+                    const card = sourceEffect.card;
+                    const cardZones = [
+                        extraDeck.cards,
+                        extraDeck.discardPile,
+                        scenario.deck?.cards,
+                        scenario.deck?.discardPile,
+                        scenario.apart,
+                        scenario.gameZone?.cards,
+                        ability.match.inPlayCards,
+                        ability.match.removedCards,
+                    ];
+                    const isInZone = cardZones.some(zone =>
+                        Array.isArray(zone) && zone.includes(card));
+                    if (!isInZone) {
+                        extraDeck.cards.unshift(card);
+                    }
+                });
+            }
+            currentEffect.getResolutionChildEffects?.().forEach(child =>
+                pending.push(child));
+        }
+
+        if (!revealEffects.length) {
+            return;
+        }
+
+        const gameCards = [
+            ability.card,
+            ...(ability.card?.sides || []),
+        ];
+        let abilityConfig;
+        for (const gameCard of gameCards) {
+            const abilityIndex = gameCard?.abilities?.indexOf(ability) ?? -1;
+            if (abilityIndex >= 0) {
+                abilityConfig = gameCard.card?.abilities?.[abilityIndex];
+                break;
+            }
+        }
+        const effectConfig = abilityConfig?.params?.effect;
+        const effectsFactory = ability.match?.effectsFactory;
+        if (!effectConfig || typeof effectsFactory?.parseEffect !== 'function') {
+            return;
+        }
+
+        const configuredEffect = effectsFactory.parseEffect(effectConfig);
+        const configuredRevealEffects = [];
+        const configuredVisited = new Set();
+        const configuredPending = configuredEffect ? [configuredEffect] : [];
+        while (configuredPending.length) {
+            const currentEffect = configuredPending.pop();
+            if (!currentEffect || configuredVisited.has(currentEffect)) {
+                continue;
+            }
+            configuredVisited.add(currentEffect);
+            if (currentEffect.effectType === EFFECT_REVEAL_ENCOUNTER) {
+                configuredRevealEffects.push(currentEffect);
+            }
+            currentEffect.getResolutionChildEffects?.().forEach(child =>
+                configuredPending.push(child));
+        }
+
+        revealEffects.forEach((revealEffect, index) => {
+            const configuredCardSource = configuredRevealEffects[index]?.cardSource;
+            if (configuredCardSource !== undefined) {
+                revealEffect.cardSource = configuredCardSource;
+            }
+        });
+    },
+}));
 
 registerSnapshotType(ValidTarget, {
     encodeProperty: (validTarget, propertyName, value, encodeValue) => {

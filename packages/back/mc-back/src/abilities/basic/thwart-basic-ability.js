@@ -45,12 +45,13 @@ export class ThwartBasicAbility extends BasicAbility {
 
         const getThwartEffect = new GetThwartEffect({
             selectedTarget: card,
+            scheme: this.effect.selectedTarget,
             match: this.match,
         });
 
         await getThwartEffect.runEffect(params);
 
-        return getThwartEffect.thwart;
+        return getThwartEffect.chooseThwartValue(params);
     }
     async resolveAbility(params) {
         const thwart = await this.getThwartValue(params);

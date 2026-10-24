@@ -144,9 +144,11 @@ export class McGameZone extends LitElement {
                         this.dragActivation || this.dragPlayCard
                     )}"
                 ></mc-card-image>
-                <div class="count">
-                    ${encounters}
-                </div>
+                ${encounters > 1 ? html`
+                    <div class="count">
+                        ${encounters}
+                    </div>
+                ` : ''}
             </div>
         ` : html``;
     }

@@ -24,8 +24,11 @@ export class McConfirmDialog extends McDialog {
         return 'confirm';
     }
     getTitle() {
-        const {basicActivation} = this.data;
+        const {basicActivation, thwartValueChoice} = this.data;
 
+        if (thwartValueChoice) {
+            return '¿Quieres usar ATQ en vez de INT?';
+        }
         if (basicActivation) {
             const titles = {
                 attack: '¿Quieres realizar este ataque?',
@@ -71,6 +74,7 @@ export class McConfirmDialog extends McDialog {
                 preventedDamageLabel,
                 defenseBonus,
                 basicActivation,
+                thwartValueChoice,
             },
         } = this;
 
@@ -99,6 +103,14 @@ export class McConfirmDialog extends McDialog {
                     >
                     <span>No volver a mostrar este diálogo durante esta partida</span>
                 </label>
+            `;
+        }
+        if (thwartValueChoice) {
+            return html`
+                <div class="basic-activation-preview">
+                    ${this.renderBasicActivationCard(thwartValueChoice.character)}
+                    ${this.renderBasicActivationCard(thwartValueChoice.scheme)}
+                </div>
             `;
         }
 
@@ -206,6 +218,7 @@ export class McConfirmDialog extends McDialog {
                 defenseBonus,
                 boostIconCount,
                 basicActivation,
+                thwartValueChoice,
             },
         } = this;
         const isPrePlayConfirmation = preventedDamage !== undefined ||
@@ -217,7 +230,8 @@ export class McConfirmDialog extends McDialog {
                 ${cancelText ??
                     (isPrePlayConfirmation ?
                         'Cancelar' :
-                        basicActivation ? 'Cancelar' : 'No, seguir jugando')}
+                        thwartValueChoice ? 'Usar INT' :
+                            basicActivation ? 'Cancelar' : 'No, seguir jugando')}
             </md-text-button>
         `;
     }
@@ -229,6 +243,7 @@ export class McConfirmDialog extends McDialog {
                 defenseBonus,
                 boostIconCount,
                 basicActivation,
+                thwartValueChoice,
             },
         } = this;
         const isPrePlayConfirmation = preventedDamage !== undefined ||
@@ -240,7 +255,8 @@ export class McConfirmDialog extends McDialog {
                 ${okText ??
                     (isPrePlayConfirmation ?
                         'OK' :
-                        basicActivation ? 'Ok' : 'Sí, finalizar el turno')}
+                        thwartValueChoice ? 'Usar ATQ' :
+                            basicActivation ? 'Ok' : 'Sí, finalizar el turno')}
             </md-text-button>
         `;
     }

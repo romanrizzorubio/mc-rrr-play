@@ -35,4 +35,10 @@ export default css`
   .activation-skipped p {
     margin: 0;
   }
+
+  .vs {
+    align-self: center;
+    margin-left: 0.75em;
+    font-family: var(--mc-font-title, sans-serif);
+  }
 `;

@@ -1,4 +1,4 @@
-import {TARGET_CARD} from 'mc-shared';
+import {EFFECT_CATEGORY_LEAVE_PLAY, TARGET_CARD} from 'mc-shared';
 import {path} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
@@ -17,6 +17,9 @@ export class MoveToHandEffect extends Effect {
             target,
         });
         this.toOwner = toOwner;
+    }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_LEAVE_PLAY];
     }
     async execute(params) {
         const {player} = params;

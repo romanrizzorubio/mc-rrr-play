@@ -8,6 +8,10 @@ export const checkCondition = (obj, condition) => {
 
     return Object.keys(condition).every(key => {
         const value = condition[key];
+        if (key === 'not') {
+            return !checkCondition(obj, value);
+        }
+
         const param = path(obj, key);
         if (Array.isArray(param) &&
             value &&

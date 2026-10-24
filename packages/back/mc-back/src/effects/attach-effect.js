@@ -46,7 +46,7 @@ export class AttachEffect extends Effect {
         return this.card.canAttach(target, params.player);
     }
 
-    async execute(_params) {
+    async execute(params) {
         const {card, selectedTarget} = this;
         const attachedTo = getAttachmentHost(selectedTarget);
 
@@ -54,5 +54,17 @@ export class AttachEffect extends Effect {
         card.attachedTo = attachedTo;
 
         await attachedTo.refresh();
+
+        const attackEffect = [
+            params.enemyActivation,
+            params.activation?.effect,
+            params.effect?.enemyActivation,
+        ].find(effect =>
+            effect?.isAttack &&
+            effect.character === attachedTo &&
+            typeof effect.resolveAttachedAttackModifiers === 'function');
+        if (attackEffect) {
+            await attackEffect.resolveAttachedAttackModifiers(card, params);
+        }
     }
 }

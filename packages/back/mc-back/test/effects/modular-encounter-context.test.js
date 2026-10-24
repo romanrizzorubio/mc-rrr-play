@@ -750,6 +750,14 @@ describe('modular encounter context', () => {
             owner: {},
         });
         const [forcedResponse] = tombstone.abilities;
+        let discardInstruction;
+        match.openDialog = async ({data}) => {
+            discardInstruction = data.instruction;
+
+            return {
+                selected: [data.cards[0]],
+            };
+        };
         const makeDamageParams = (selectedTarget, player, damage) => {
             const attack = new Attack({
                 effect: {
@@ -783,14 +791,6 @@ describe('modular encounter context', () => {
         assert.equal(damageParams.attack.takenDamage, 0);
         assert.equal(await forcedResponse.canTrigger(damageParams), true);
         assert.ok(discardEffect instanceof SelectDiscardToFindCardEffect);
-        let discardInstruction;
-        discardEffect.openDialog = async ({data}) => {
-            discardInstruction = data.instruction;
-
-            return {
-                selected: [data.cards[0]],
-            };
-        };
 
         await forcedResponse.resolveAbility(damageParams);
 

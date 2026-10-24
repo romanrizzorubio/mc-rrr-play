@@ -598,7 +598,13 @@ export class GameCard extends Engine {
                 await this.owner.deck.discard(this);
             }
         } else if (this.card.isEncounterCard) {
-            encounterDeck = this.match.scenario.deck;
+            const scenario = this.match.scenario;
+            const wasInPlay = this.isInPlay;
+            const extraDeck = wasInPlay && this.isSideScheme &&
+                typeof scenario.getExtraDeckForCard === 'function' ?
+                scenario.getExtraDeckForCard(this) :
+                undefined;
+            encounterDeck = extraDeck || scenario.deck;
             const controllerZone = this.controller?.gameZone;
             const discardZone = controllerZone?.cards?.includes(this) ?
                 controllerZone :

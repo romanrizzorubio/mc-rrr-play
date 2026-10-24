@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {DIALOG_BOOST_DEALT} from 'mc-shared';
 import {Attack} from '../../src/activations/attack.js';
@@ -13,6 +13,7 @@ import {
     serializeMatch,
 } from '../../src/utils/match-serialization.js';
 
+describe('DealBoostEffect', () => {
 test('DealBoostEffect adds an extra card to its selected enemy activation', async () => {
     const boostCard = {};
     let dialogCount = 0;
@@ -146,6 +147,7 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     const resolutions = [];
     const match = {
         amplificationIcons: 0,
+        scenario: {deck: {knownCards: []}},
         async openDialog(dialog) {
             dialogs.push(dialog);
         },
@@ -194,7 +196,7 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     assert.equal(dialogs[0].data.cards[0].card.boost, 1);
     assert.equal(dialogs[0].data.cards[0].hasBoostAbility, true);
     assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
-    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, true);
+    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, false);
     assert.equal(dialogs[0].data.cumulativeBoost, 1);
     assert.deepEqual(dialogs[1].data.cards.map(card => card?.card.name || null), [
         'Aumento 1',
@@ -346,4 +348,5 @@ test('a minion put into play by its boost ability is not discarded afterward', a
     await activation.resolveBoostCards({player});
 
     assert.equal(discarded, false);
+});
 });

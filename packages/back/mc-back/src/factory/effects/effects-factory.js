@@ -14,47 +14,121 @@ const EFFECT_DEPENDENCY_KEYS = [
     'thenEffect',
 ];
 
-function cloneEffectDependencies(value) {
-    if (Array.isArray(value)) {
-        const dependencies = value.map(cloneEffectDependencies);
+const EFFECT_RUNTIME_REFERENCE_KEYS = new Set([
+    'ability',
+    'activation',
+    'card',
+    'cardSource',
+    'cards',
+    'controller',
+    'costPaymentSession',
+    'match',
+    'owner',
+    'player',
+    'scenario',
+    'selectedCards',
+    'selectedTarget',
+    'source',
+    'triggeredCard',
+    'triggeredEffect',
+]);
 
-        return dependencies.some((dependency, index) =>
-            dependency !== value[index]) ?
-            dependencies :
-            value;
-    }
+export class EffectsFactory {
+    static cloneEffectDefinition(value, key, clonedValues = new WeakMap()) {
+        if (EFFECT_RUNTIME_REFERENCE_KEYS.has(key)) {
+            return value;
+        }
 
-    if (value && typeof value.createInstance === 'function') {
-        return value.createInstance();
-    }
+        if (Array.isArray(value)) {
+            if (clonedValues.has(value)) {
+                return clonedValues.get(value);
+            }
 
-    if (value && typeof value === 'object') {
+            const clonedArray = [];
+            clonedValues.set(value, clonedArray);
+            value.forEach(nestedValue => {
+                clonedArray.push(this.cloneEffectDefinition(
+                    nestedValue,
+                    undefined,
+                    clonedValues
+                ));
+            });
+
+            return clonedArray;
+        }
+
+        if (value && typeof value.createInstance === 'function') {
+            return value;
+        }
+
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+
         const prototype = Object.getPrototypeOf(value);
         if (prototype !== Object.prototype && prototype !== null) {
             return value;
         }
 
-        let clonedValue = value;
+        if (clonedValues.has(value)) {
+            return clonedValues.get(value);
+        }
 
-        EFFECT_DEPENDENCY_KEYS.forEach(key => {
-            if (Object.hasOwn(value, key)) {
-                const dependency = cloneEffectDependencies(value[key]);
-                if (dependency !== value[key]) {
-                    if (clonedValue === value) {
-                        clonedValue = {...value};
-                    }
-                    clonedValue[key] = dependency;
-                }
-            }
+        const clonedObject = {};
+        clonedValues.set(value, clonedObject);
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+            clonedObject[nestedKey] = this.cloneEffectDefinition(
+                nestedValue,
+                nestedKey,
+                clonedValues
+            );
         });
 
-        return clonedValue;
+        return clonedObject;
     }
+    static cloneEffectDependencies(value, effectInstances = new Map()) {
+        if (Array.isArray(value)) {
+            const dependencies = value.map(nestedValue =>
+                this.cloneEffectDependencies(nestedValue, effectInstances));
 
-    return value;
-}
+            return dependencies.some((dependency, index) =>
+                dependency !== value[index]) ?
+                dependencies :
+                value;
+        }
 
-export class EffectsFactory {
+        if (value && typeof value.createInstance === 'function') {
+            return value.createInstance({}, effectInstances);
+        }
+
+        if (value && typeof value === 'object') {
+            const prototype = Object.getPrototypeOf(value);
+            if (prototype !== Object.prototype && prototype !== null) {
+                return value;
+            }
+
+            let clonedValue = value;
+
+            EFFECT_DEPENDENCY_KEYS.forEach(key => {
+                if (Object.hasOwn(value, key)) {
+                    const dependency = this.cloneEffectDependencies(
+                        value[key],
+                        effectInstances
+                    );
+                    if (dependency !== value[key]) {
+                        if (clonedValue === value) {
+                            clonedValue = {...value};
+                        }
+                        clonedValue[key] = dependency;
+                    }
+                }
+            });
+
+            return clonedValue;
+        }
+
+        return value;
+    }
     constructor(abilitiesFactory) {
         this.abilitiesFactory = abilitiesFactory;
     }
@@ -74,19 +148,51 @@ export class EffectsFactory {
 
         const EffectClass = EFFECT_MAP[type];
         if (EffectClass) {
-            const effectDefinition = cloneEffectDependencies(effectParams);
+            const effectDefinition =
+                this.constructor.cloneEffectDefinition(effectParams);
+            const modifiedConfigValues = new Map();
             const effect = new EffectClass({
                 ...effectParams,
                 effectType: type,
             });
+            effect._effectInstanceDefinition = {
+                type,
+                params: effectDefinition,
+            };
+            effect._modifiedConfigValues = modifiedConfigValues;
             Object.defineProperty(effect, 'createInstance', {
-                value: (overrides = {}) => this.createEffect({
-                    type,
-                    params: {
-                        ...cloneEffectDependencies(effectDefinition),
-                        ...overrides,
-                    },
-                }),
+                value: (overrides = {}, effectInstances = new Map()) => {
+                    if (effectInstances.has(effect)) {
+                        return effectInstances.get(effect);
+                    }
+
+                    const instance = this.createEffect({
+                        type,
+                        params: {
+                            ...this.constructor.cloneEffectDependencies(
+                                effectDefinition,
+                                effectInstances
+                            ),
+                            ...overrides,
+                        },
+                    });
+                    if (overrides.ability) {
+                        instance.ability = overrides.ability;
+                    }
+                    effectInstances.set(effect, instance);
+                    modifiedConfigValues.forEach((value, property) => {
+                        instance.setConfigValue(property, value);
+                    });
+
+                    return instance;
+                },
+            });
+            Object.defineProperty(effect, 'setConfigValue', {
+                value: (property, value) => {
+                    effect[property] = value;
+                    effectDefinition[property] = value;
+                    modifiedConfigValues.set(property, value);
+                },
             });
 
             return effect;

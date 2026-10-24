@@ -14,6 +14,7 @@ import {
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL,
+    TRIGGER_SCHEME_GET_THWART,
     TRIGGER_CHARACTER_SCHEMES,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
@@ -132,6 +133,7 @@ import {
     CharacterGetHitPointsTrigger
 } from '../../triggers/character-get-hit-points-trigger.js';
 import {CharacterGetAttackTrigger} from '../../triggers/character-get-attack-trigger.js';
+import {SchemeGetThwartTrigger} from '../../triggers/scheme-get-thwart-trigger.js';
 import {
     CharacterWouldBeDefeatedTrigger
 } from '../../triggers/character-would-be-defeated-trigger.js';
@@ -197,6 +199,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
+    [TRIGGER_SCHEME_GET_THWART]: SchemeGetThwartTrigger,
     [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE]: CharacterWouldTakeDamageTrigger,
     [TRIGGER_CHARACTER_TAKES_DAMAGE]: CharacterTakesDamageTrigger,
     [TRIGGER_CHARACTER_SCHEMES]: CharacterSchemesTrigger,

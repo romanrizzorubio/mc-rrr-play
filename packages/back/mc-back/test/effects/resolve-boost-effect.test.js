@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     DIALOG_BOOST_DEALT,
@@ -9,11 +9,13 @@ import {
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
+import {Deck} from '../../src/model/match/deck.js';
 import {Match} from '../../src/model/match/match.js';
 import {CancelBoostIconsEffect} from '../../src/effects/cancel-boost-icons-effect.js';
 import {ModifyBoostIconsEffect} from '../../src/effects/modify-boost-icons-effect.js';
 import {ResolveBoostEffect} from '../../src/effects/resolve-boost-effect.js';
 
+describe('ResolveBoostEffect', () => {
 test('CancelBoostIconsEffect cancels all boost icons on the current card', async () => {
     const triggeredEffect = {
         boostValue: 5,
@@ -101,7 +103,10 @@ test('amplification icons add a boost icon to every boost card in the activation
         mc: {mcSocket: {send() {}}},
         name: 'amplification-icons-test',
     });
-    match.scenario = {amplificationIcons: 2};
+    match.scenario = {
+        amplificationIcons: 2,
+        deck: {knownCards: []},
+    };
     match.openDialog = async dialog => dialogs.push(dialog);
 
     const boostCard = {
@@ -254,21 +259,23 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
             return {boost: this.boost, name: 'Aumento con icono modificado'};
         },
     };
+    const futureBoostCard = {
+        toObj() {
+            return {name: 'Próxima carta de aumento', boost: 2};
+        },
+        isMainScheme: false,
+        isSideScheme: false,
+    };
     const enemyActivation = {
         boostCards: [
             boostCard,
-            {
-                toObj() {
-                    return {name: 'Próxima carta de aumento', boost: 2};
-                },
-                isMainScheme: false,
-                isSideScheme: false,
-            },
+            futureBoostCard,
         ],
         enemy: {name: 'Klaw'},
     };
     const match = {
         amplificationIcons: 0,
+        scenario: {deck: {knownCards: []}},
         async openDialog(dialog) {
             dialogs.push(dialog);
         },
@@ -297,8 +304,78 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
     );
     assert.equal(dialogs[0].data.cards[0].card.boost, 1);
     assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
-    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, true);
+    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, false);
     assert.equal(dialogs[0].data.cumulativeBoost, 1);
     assert.equal(dialogs[1].data.cards[0].card.boost, 2);
     assert.equal(dialogs[1].data.cumulativeBoost, 2);
+});
+
+test('future boost cards can only be peeked after they are known in the encounter deck', async () => {
+    const dialogs = [];
+    const currentBoost = {
+        name: 'Aumento actual',
+        boost: 1,
+        isMainScheme: false,
+        isSideScheme: false,
+        toObj() {
+            return {name: this.name, boost: this.boost};
+        },
+    };
+    const knownFutureBoost = {
+        name: 'Aumento conocido',
+        boost: 2,
+        isMainScheme: false,
+        isSideScheme: false,
+        toObj() {
+            return {name: this.name, boost: this.boost};
+        },
+    };
+    const unknownFutureBoost = {
+        name: 'Aumento desconocido',
+        boost: 3,
+        isMainScheme: false,
+        isSideScheme: false,
+        toObj() {
+            return {name: this.name, boost: this.boost};
+        },
+    };
+    const match = {
+        amplificationIcons: 0,
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+        },
+    };
+    const encounterDeck = new Deck({owner: {match}});
+    encounterDeck.cards = [
+        currentBoost,
+        knownFutureBoost,
+        unknownFutureBoost,
+    ];
+    encounterDeck.markKnown([knownFutureBoost]);
+    match.scenario = {deck: encounterDeck};
+
+    const enemyActivation = {
+        boostCards: [
+            currentBoost,
+            knownFutureBoost,
+            unknownFutureBoost,
+        ],
+        enemy: {name: 'Klaw'},
+    };
+    const effect = new ResolveBoostEffect({
+        card: currentBoost,
+        cardIndex: 0,
+        enemyActivation,
+        match,
+        selectedTarget: {},
+    });
+
+    await effect.prepare({});
+
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
+    assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, true);
+    assert.equal(dialogs[0].data.cards[2].card.isFacedownCard, true);
+    assert.equal(dialogs[0].data.cards[2].card.canPeekFacedown, false);
+});
 });

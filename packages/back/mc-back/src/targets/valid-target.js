@@ -76,8 +76,20 @@ export class ValidTarget extends Engine {
             match: this.match || params.match,
             targetCard: card,
         };
+        const sourceCards = Object.values(
+            validationParams.match?.triggerCards || {}
+        ).filter(sourceCard => sourceCard?.isInPlay);
+        const abilities = [
+            ...card.abilities,
+            ...sourceCards
+                .filter(sourceCard => sourceCard !== card)
+                .flatMap(sourceCard =>
+                    Array.isArray(sourceCard.abilities) ?
+                        sourceCard.abilities :
+                        []),
+        ];
 
-        return card.abilities.some(ability => {
+        return abilities.some(ability => {
             const {validation} = ability;
             if (!validation) {
                 return false;

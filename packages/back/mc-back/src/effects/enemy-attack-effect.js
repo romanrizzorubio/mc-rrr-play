@@ -17,6 +17,7 @@ import {Calc} from '../engine/calc.js';
 import {checkCondition, path} from '../engine/utils.js';
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
+import {AttackEffect} from './attack-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {
@@ -25,7 +26,7 @@ import {
 } from '../utils/target-condition-utils.js';
 
 
-export class EnemyAttackEffect extends EnemyActivationEffect {
+export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     constructor(params = {}) {
         super({
             ...params,
@@ -48,6 +49,7 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
     }
     resetForResolution() {
         super.resetForResolution();
+        this.resetAttackKeywordData();
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
         this.defender = null;
@@ -545,6 +547,29 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
     }
+    async resolveAttachedAttackModifiers(card, params) {
+        if (this.resolved ||
+            !this.activation?.triggersInitLaunched ||
+            card.attachedTo !== this.character) {
+            return;
+        }
+
+        const triggers = card.triggers?.[TRIGGER_VILLAIN_ATTACKS]?.[PRIORITY_CONSTANT] ??
+            [];
+        const triggerParams = this.getTriggersParams({
+            ...params,
+            effect: this,
+        });
+
+        await this.promisesSequential(triggers, async trigger => {
+            if (trigger.hasTriggeredFor(this) ||
+                !await trigger.canTrigger(triggerParams)) {
+                return;
+            }
+
+            await trigger.runTrigger(triggerParams);
+        });
+    }
     getTriggersEnds(params) {
         return this.activation.getTriggersEnds(params)
             .concat([
@@ -645,7 +670,6 @@ export class EnemyAttackEffect extends EnemyActivationEffect {
             activation: this.activation,
             isAttack: true,
             preventDamage: this.preventDamage,
-            keywords: {piercing: this.piercing},
             match: this.match,
             selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
             ability: this.ability,

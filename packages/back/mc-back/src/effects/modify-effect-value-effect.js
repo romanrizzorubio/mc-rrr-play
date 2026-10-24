@@ -30,7 +30,18 @@ export class ModifyEffectValueEffect extends Effect {
                 );
             }
 
-            effect[this.property] += this.count;
+            const value = effect[this.property] + this.count;
+            const definitionEffect =
+                effect.ability?.getEffectDefinition?.(effect);
+            if (typeof effect.setConfigValue === 'function') {
+                effect.setConfigValue(this.property, value);
+                if (definitionEffect !== effect &&
+                    typeof definitionEffect?.setConfigValue === 'function') {
+                    definitionEffect.setConfigValue(this.property, value);
+                }
+            } else {
+                effect[this.property] = value;
+            }
         }
 
         nestedEffectProperties.forEach(property => this.modify(effect[property]));

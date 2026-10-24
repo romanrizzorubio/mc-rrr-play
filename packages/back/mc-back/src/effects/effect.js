@@ -97,6 +97,48 @@ export class Effect extends Engine {
         this.isChoose = false;
         this._keepTriggering = false;
     }
+    createInstance(overrides = {}, effectInstances = new Map()) {
+        const definition = this._effectInstanceDefinition;
+        if (!definition) {
+            throw new TypeError('Cannot create an effect instance without its definition.');
+        }
+
+        if (effectInstances.has(this)) {
+            return effectInstances.get(this);
+        }
+
+        const effectsFactory = this.match?.effectsFactory;
+        if (typeof effectsFactory?.createEffect !== 'function' ||
+            typeof effectsFactory.constructor?.cloneEffectDependencies !== 'function') {
+            throw new TypeError('Cannot create an effect instance without an effects factory.');
+        }
+
+        const instance = effectsFactory.createEffect({
+            type: definition.type,
+            params: {
+                ...effectsFactory.constructor.cloneEffectDependencies(
+                    definition.params,
+                    effectInstances
+                ),
+                ...overrides,
+            },
+        });
+        if (overrides.ability) {
+            instance.ability = overrides.ability;
+        }
+        effectInstances.set(this, instance);
+        this._modifiedConfigValues?.forEach((value, property) =>
+            instance.setConfigValue(property, value));
+
+        return instance;
+    }
+    setConfigValue(property, value) {
+        this[property] = value;
+        if (this._effectInstanceDefinition) {
+            this._effectInstanceDefinition.params[property] = value;
+            this._modifiedConfigValues?.set(property, value);
+        }
+    }
     resetResolutionData() {
         this.delayedEffects = [];
         this.lastingEffects = [];
@@ -261,14 +303,11 @@ export class Effect extends Engine {
     get effectCategories() {
         return [];
     }
+    get usesActivationTargetFilter() {
+        return true;
+    }
     get isRequiredForAbilityAvailability() {
         return false;
-    }
-    get piercing() {
-        return this.keywords.piercing;
-    }
-    get ranged() {
-        return this.keywords.ranged;
     }
     calculate(params) {
         const {paramsCalc} = this;
@@ -338,7 +377,10 @@ export class Effect extends Engine {
     filterTarget(card, params) {
         const {excludeTarget, activation, isCost} = this;
 
-        if (activation && !isCost && !params.isCost) {
+        if (activation &&
+            this.usesActivationTargetFilter &&
+            !isCost &&
+            !params.isCost) {
             if (!activation.filterTarget(card, params)) {
                 return false;
             }

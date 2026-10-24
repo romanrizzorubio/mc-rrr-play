@@ -9,10 +9,12 @@ import {PutPlayEffect} from './put-play-effect.js';
 export class EngageEffect extends PutPlayEffect {
     constructor({
         deferEngageHeroTrigger = false,
+        cardShownInRevealDialog = false,
     }) {
         super(arguments[0]);
 
         this.deferEngageHeroTrigger = deferEngageHeroTrigger;
+        this.cardShownInRevealDialog = cardShownInRevealDialog;
         this.didEngage = false;
         this.enteredPlay = false;
     }
@@ -90,14 +92,6 @@ export class EngageEffect extends PutPlayEffect {
         const {selectedTarget} = this;
         const wasInPlay = card.isInPlay;
         const controller = this.getController(params);
-        const scenarioDeck = card.owner?.deck;
-        const isFromScenarioDeck = Boolean(
-            scenarioDeck?.isScenarioDeck &&
-            (
-                scenarioDeck.cards.includes(card) ||
-                scenarioDeck.discardPile.includes(card)
-            )
-        );
         if (!selectedTarget || typeof selectedTarget.engage !== 'function') {
             throw new Error('EngageEffect requires a player target.');
         }
@@ -122,7 +116,7 @@ export class EngageEffect extends PutPlayEffect {
 
         await selectedTarget.refresh();
 
-        if (isFromScenarioDeck) {
+        if (this.enteredPlay && !this.cardShownInRevealDialog) {
             await this.openDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 title: 'Esbirro puesto en juego',

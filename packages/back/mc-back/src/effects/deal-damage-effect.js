@@ -5,9 +5,10 @@ import {
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {AttackEffect} from './attack-effect.js';
 import {Calc} from '../engine/calc.js';
 
-export class DealDamageEffect extends Effect {
+export class DealDamageEffect extends AttackEffect(Effect) {
     constructor(params) {
         super(params);
         const {
@@ -181,7 +182,7 @@ export class DealDamageEffect extends Effect {
             ability: this.ability,
             activation: this.activation,
             isAttack: this.isAttack,
-            keywords: {piercing: this.piercing},
+            attackKeywordSource: this,
         });
 
         await takeDamageEffect.runEffect(params);

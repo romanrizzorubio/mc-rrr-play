@@ -21,8 +21,9 @@ import {
 import {getMovementTriggerContext} from '../utils/movement-trigger-context.js';
 import {moveDamageTokens} from '../utils/token-mutations.js';
 import {Effect} from './effect.js';
+import {AttackEffect} from './attack-effect.js';
 
-export class MoveDamageEffect extends Effect {
+export class MoveDamageEffect extends AttackEffect(Effect) {
     constructor({
         damage,
         fromTarget,

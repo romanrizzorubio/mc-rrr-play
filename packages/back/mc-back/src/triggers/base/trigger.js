@@ -84,8 +84,12 @@ export class Trigger {
     }
     getInterruptName() {}
     getAbilityParams(params) {
+        const abilityParams = {...params};
+        delete abilityParams.preselectedEffectTargets;
+        delete abilityParams.prePlayConfirmationAcceptedFor;
+
         return {
-            ...params,
+            ...abilityParams,
             fixedPreselectedTarget: false,
             triggeredEffect: params.effect,
         };

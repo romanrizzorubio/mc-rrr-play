@@ -220,14 +220,17 @@ export class DeckComponent extends LitElement {
             !this.deckNameSpansPiles ?
             this.deckName :
             '';
-        const src = this.topCardFaceUp && this.topCard?.image ?
+        const isEmpty = cards.length === 0;
+        const src = isEmpty ?
+            getCardAssetUrl(BACK_CARD_EMPTY) :
+            this.topCardFaceUp && this.topCard?.image ?
             getCardAssetUrl(this.topCard.image) :
             this.getImageBack();
 
         return this.renderCards(
             src,
             cards.length,
-            false,
+            isEmpty,
             knownCards,
             deckTitle
         );

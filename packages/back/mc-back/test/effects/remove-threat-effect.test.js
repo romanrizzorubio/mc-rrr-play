@@ -32,6 +32,9 @@ describe('RemoveThreatEffect', () => {
                     assert.equal(selectedTarget, source);
                     assert.equal(source.threat, 0);
                     return {
+                        async canRun() {
+                            return true;
+                        },
                         async runEffect() {
                             defeated = true;
                         },

@@ -2,6 +2,7 @@ import {
     DECK_POSITION_BOTTOM,
     DECK_POSITION_SHUFFLE,
     DECK_POSITION_TOP,
+    EFFECT_CATEGORY_LEAVE_PLAY,
 } from 'mc-shared';
 import {path} from '../engine/utils.js';
 import {Effect} from './effect.js';
@@ -32,6 +33,9 @@ export class MoveToDeckEffect extends Effect {
         this.deckId = deckId;
         this.cardsSource = cardsSource;
     }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_LEAVE_PLAY];
+    }
     getCardsToMove(params) {
         if (this.cardsSource !== undefined) {
             const source = typeof this.cardsSource === 'string' ?
@@ -52,7 +56,13 @@ export class MoveToDeckEffect extends Effect {
     }
     async execute(params) {
         const {player} = params;
-        const cardsToMove = this.getCardsToMove(params);
+        const cardsToMove = this.getCardsToMove(params).filter(card =>
+            this.validTarget.filter(card, {
+                ...params,
+                ability: this.ability,
+                effect: this,
+                source: this.source ?? params.source,
+            }));
         const targetDeck = this.selectedTarget?.cards &&
             typeof this.selectedTarget.addToDeck === 'function' ?
             this.selectedTarget :

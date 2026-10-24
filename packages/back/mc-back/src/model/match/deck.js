@@ -13,6 +13,7 @@ export class Deck extends Engine {
         name,
         hasDiscard = true,
         discardTarget,
+        collectCondition,
         topCardFaceUp = false,
     }) {
         super();
@@ -26,6 +27,7 @@ export class Deck extends Engine {
         this.deckName = name;
         this.hasDiscard = hasDiscard;
         this.discardTarget = discardTarget;
+        this.collectCondition = collectCondition;
         this.topCardFaceUp = topCardFaceUp;
 
         this.cards = [];
@@ -67,7 +69,7 @@ export class Deck extends Engine {
             return;
         }
 
-        if (card instanceof Array) {
+        if (Array.isArray(card)) {
             this.discardPile = this.discardPile.concat(card);
         } else {
             this.discardPile.push(card);
@@ -127,7 +129,7 @@ export class Deck extends Engine {
         return cards;
     }
     getDiscardTop() {
-        return this.discardPile[this.discardPile.length - 1];
+        return this.discardPile.at(-1);
     }
     initDeck(cards) {
         this.cards = cards;
@@ -141,10 +143,10 @@ export class Deck extends Engine {
         this.shuffle();
     }
     isInDeck(condition) {
-        return this.cards.filter(condition);
+        return this.cards.filter((element) => condition(element));
     }
     isInDiscard(condition) {
-        return this.discardPile.filter(condition);
+        return this.discardPile.filter((element) => condition(element));
     }
     markKnown(cards) {
         if (!Array.isArray(cards)) {

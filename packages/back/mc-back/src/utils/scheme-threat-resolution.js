@@ -20,5 +20,8 @@ export async function defeatSideSchemeIfEmpty(scheme, match, ability, params) {
         selectedTarget: scheme,
         ability,
     });
-    await defeatEffect.runEffect(params);
+    defeatEffect.refreshTarget = false;
+    if (await defeatEffect.canRun(params)) {
+        await defeatEffect.runEffect(params);
+    }
 }

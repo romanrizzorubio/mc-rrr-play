@@ -189,6 +189,11 @@ test('MoveThreatEffect updates the destination before defeating an emptied side 
                 assert.equal(type, EFFECT_DEFEAT);
                 assert.equal(selectedTarget, source);
                 return {
+                    async canRun() {
+                        assert.equal(source.threat, 0);
+                        assert.equal(destination.threat, 1);
+                        return true;
+                    },
                     async runEffect() {
                         assert.equal(source.threat, 0);
                         assert.equal(destination.threat, 1);

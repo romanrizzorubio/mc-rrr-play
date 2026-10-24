@@ -7,6 +7,7 @@ import {
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
+import {AttackEffect} from './attack-effect.js';
 import {
     canResolveDamageWithStatus,
     defeatCharacter,
@@ -17,17 +18,19 @@ import {
     resolveToughDamage,
 } from '../utils/damage-resolution.js';
 
-export class TakeDamageEffect extends Effect {
+export class TakeDamageEffect extends AttackEffect(Effect) {
     constructor({
         damage,
         ignoreTough = false,
         preventDamage = 0,
+        attackKeywordSource,
     }) {
         super(arguments[0]);
 
         this.initialDamage = damage;
         this.damage = damage;
         this.ignoreTough = ignoreTough;
+        this.attackKeywordSource = attackKeywordSource;
         this.initialPreventDamage = Array.isArray(preventDamage) ?
             preventDamage.slice() :
             preventDamage;
@@ -81,6 +84,17 @@ export class TakeDamageEffect extends Effect {
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
+    }
+    getAttackKeyword(name) {
+        if (this.attackKeywordSource?.isAttack &&
+            typeof this.attackKeywordSource.getAttackKeyword === 'function') {
+            return Boolean(
+                this.attackKeywordSource.getAttackKeyword(name) ||
+                super.getAttackKeyword(name)
+            );
+        }
+
+        return super.getAttackKeyword(name);
     }
     get takenDamage() {
         if (this.damage instanceof Array) {
@@ -154,6 +168,9 @@ export class TakeDamageEffect extends Effect {
         });
 
         this.damage = result.damage;
+        if (piercing && result.hasDamage) {
+            this._activation?.effect?.markAttackKeywordUsed?.('piercing');
+        }
 
         return result.hasDamage;
     }

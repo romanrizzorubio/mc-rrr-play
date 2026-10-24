@@ -387,9 +387,9 @@ export class SearchCardsEffect extends Effect {
         const {player} = params;
         const {costPaymentSession} = params;
 
+        this.setSelectedCards(params, []);
+
         if (this.firstMatch) {
-            params.selectedCards = [];
-            params.selectedCard = undefined;
             params.card = undefined;
         }
         

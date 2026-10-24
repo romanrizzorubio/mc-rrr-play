@@ -69,9 +69,12 @@ describe('defense abilities during damage resolution', () => {
             isEvent: true,
             owner: player,
         };
-        shieldBlock.effect.canRun = async () => true;
-        shieldBlock.effect.runEffect = async () => {
-            shieldBlock.effect.resolved = true;
+        const resolutionEffect = shieldBlock.effect.createInstance({
+            ability: shieldBlock,
+        });
+        resolutionEffect.canRun = async () => true;
+        resolutionEffect.runEffect = async () => {
+            resolutionEffect.resolved = true;
         };
 
         assert.equal(shieldBlock.isDefense, true);
@@ -81,10 +84,10 @@ describe('defense abilities during damage resolution', () => {
         await shieldBlock.resolveAbility({
             arrowPaid: true,
             effect: damageEffect,
-            prePlayConfirmationAcceptedFor: shieldBlock.effect,
+            prePlayConfirmationAcceptedFor: resolutionEffect,
             player,
             triggeredEffect: damageEffect,
-        });
+        }, resolutionEffect);
 
         assert.equal(attack.isDefended, true);
         assert.equal(attack.defender, player.superhero.currentSide);

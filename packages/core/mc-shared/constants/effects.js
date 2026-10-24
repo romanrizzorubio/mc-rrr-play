@@ -111,6 +111,7 @@ export const EFFECT_REVEAL_ENCOUNTER = 'reveal-encounter';
 export const EFFECT_SEARCH_CARD_REVEAL = 'search-cards-reveal';
 export const EFFECT_SEARCH_CARDS = 'search-cards';
 export const EFFECT_SET_LIFE = 'set-life';
+export const EFFECT_SET_THWART_VALUE = 'set-thwart-value';
 export const EFFECT_SELECT_DISCARD_CARD = 'select-discard-card';
 export const EFFECT_SELECT_DISCARD_TO_FIND_CARD = 'select-discard-to-find-card';
 export const EFFECT_SELECT_AND_ORDER_TOP_CARDS = 'select-and-order-top-cards';

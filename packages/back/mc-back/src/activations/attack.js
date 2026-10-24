@@ -58,8 +58,7 @@ export class Attack extends Activation {
             character;
 
         const retaliate = target?.retaliate ?? target?.card?.retaliate;
-        if (!attacker || !retaliate ||
-            !target.isInPlay || this.effect.ranged || !character) {
+        if (!attacker || !retaliate || !target.isInPlay || !character) {
             return;
         }
 
@@ -68,7 +67,11 @@ export class Attack extends Activation {
         if (target.isEnemy && !enemyIsInPlay) {
             return;
         }
+        if (this.effect.ranged) {
+            this.effect.markAttackKeywordUsed?.('ranged');
 
+            return;
+        }
         if (await target.getLife() <= 0) {
             return;
         }
@@ -84,7 +87,7 @@ export class Attack extends Activation {
         return await dealDamageEffect.canRun(params) ? dealDamageEffect : undefined;
     }
     getForcedResponseTriggers(type) {
-        if (!type.includes(TRIGGER_THIS_ATTACK) || this.effect.ranged) {
+        if (!type.includes(TRIGGER_THIS_ATTACK)) {
             return [];
         }
 
@@ -93,8 +96,7 @@ export class Attack extends Activation {
             this.selectedTarget;
         const targets = Array.isArray(attackedTargets) ? attackedTargets : [attackedTargets];
 
-        return targets
-            .filter(Boolean)
+        return targets.filter(Boolean)
             .map(target => target.isPlayer ? target.superhero.currentSide : target)
             .map(target => new RetaliateTrigger(this, target));
     }

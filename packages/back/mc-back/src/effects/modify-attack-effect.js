@@ -8,7 +8,7 @@ export class ModifyAttackEffect extends Effect {
 
         this.modify = modify;
     }
-    execute(_params) {
+    execute(params) {
         const {selectedTarget} = this;
         const target = selectedTarget?.effect?.isAttack ?
             selectedTarget.effect :
@@ -18,7 +18,21 @@ export class ModifyAttackEffect extends Effect {
             if (key === 'keywords' &&
                 value && typeof value === 'object' && !Array.isArray(value) &&
                 target.keywords && typeof target.keywords === 'object') {
-                Object.assign(target.keywords, value);
+                const isLasting = Boolean(params.lasting);
+                const source = params.lasting ??
+                    this.ability?.card ??
+                    this.source;
+                const dynamicModifierAdded = target.isAttack &&
+                    typeof target.addAttackKeywordModifier === 'function' &&
+                    target.addAttackKeywordModifier(
+                        source,
+                        this.ability,
+                        value,
+                        isLasting
+                    );
+                if (!dynamicModifierAdded) {
+                    Object.assign(target.keywords, value);
+                }
                 return;
             }
 

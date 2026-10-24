@@ -4,7 +4,8 @@
   "description": "MongoDB-backed game catalog",
   "type": "module",
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./seed/catalog.js": "./seed/catalog.js"
   },
   "scripts": {
     "seed": "node ./seed/seed.js"

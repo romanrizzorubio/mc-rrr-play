@@ -1,4 +1,8 @@
-import {DIALOG_ACTIVATE, DIALOG_BOOST_DEALT} from 'mc-shared';
+import {
+    DIALOG_ACTIVATE,
+    DIALOG_BOOST_DEALT,
+    TARGET_ACTIVATION,
+} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
 import {DealBoostEffect} from './deal-boost-effect.js';
@@ -20,6 +24,15 @@ export class EnemyActivationEffect extends Effect {
 
         this.boostCards = [];
         this.canceled = false;
+    }
+    async runEffect(params) {
+        try {
+            await super.runEffect(params);
+        } finally {
+            if (this.match?.limits) {
+                await this.endLimit(TARGET_ACTIVATION);
+            }
+        }
     }
     get character() {
         return this.enemy;

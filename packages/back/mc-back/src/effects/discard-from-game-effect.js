@@ -1,6 +1,11 @@
+import {EFFECT_CATEGORY_LEAVE_PLAY} from 'mc-shared';
+
 import {Effect} from './effect.js';
 
 export class DiscardFromGameEffect extends Effect {
+    get effectCategories() {
+        return [EFFECT_CATEGORY_LEAVE_PLAY];
+    }
     async execute(_params) {
         const {selectedTarget} = this;
 

@@ -363,6 +363,29 @@ test('SearchCardsEffect does not shuffle when searching only a discard pile', as
     assert.equal(shuffleCount, 0);
 });
 
+test('SearchCardsEffect exposes an empty result when an optional selection chooses no cards', async () => {
+    const card = createCard('discarded-card', 'Discarded card');
+    const params = {
+        player: {
+            deck: {discardPile: [card]},
+            hand: {cards: []},
+        },
+        selectedCards: [card],
+        selectedCard: card,
+    };
+    const effect = new SearchCardsEffect({
+        count: 3,
+        locations: [PLACE_DISCARD_PILE],
+        upTo: true,
+    });
+    effect.openDialog = async () => ({selected: []});
+
+    await effect.execute(params);
+
+    assert.deepEqual(params.selectedCards, []);
+    assert.equal(params.selectedCard, undefined);
+});
+
 test('SearchCardsEffect automatically selects its only mandatory payment match', async () => {
     const card = createCard('mjolnir', 'Mjolnir');
     let dialogCalls = 0;

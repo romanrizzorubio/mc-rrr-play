@@ -37,6 +37,7 @@ export class RevealEncounterEffect extends Effect {
         });
 
         this.card = card ?? params.selectedTarget;
+        this.cardSource = card;
         this.player = player;
         this.playerConfig = player;
         this.putInPlay = putInPlay;
@@ -50,9 +51,9 @@ export class RevealEncounterEffect extends Effect {
         this.canceled = CANCEL_ENCOUNTER_NOT;
     }
     getCard(params) {
-        const source = typeof this.card === 'string' ?
-            path(params, this.card) :
-            this.selectedTarget ?? this.card;
+        const source = typeof this.cardSource === 'string' ?
+            path(params, this.cardSource) :
+            this.cardSource ?? this.selectedTarget ?? this.card;
         if (Array.isArray(source)) {
             return source.find(card => card?.isEncounterCard);
         }
@@ -265,6 +266,7 @@ export class RevealEncounterEffect extends Effect {
                     controller: this.match.scenario,
                     target: selectedTarget.faceTo,
                     deferEngageHeroTrigger: true,
+                    cardShownInRevealDialog: true,
                     match: this.match,
                 });
 

@@ -224,6 +224,23 @@ test('GetEncounterCardEffect removes a chained discard-until card before it is r
     assert.strictEqual(effect.selectedTarget, discardedCard);
 });
 
+test('RevealEncounterEffect resolves its configured card path after its card field changes', () => {
+    const previouslyRevealed = createEncounterCard('previously-revealed');
+    const nextCard = createEncounterCard('next-card');
+    const unrelatedTarget = {name: 'RRR'};
+    const effect = new RevealEncounterEffect({
+        card: 'effects.0.card',
+        match: {},
+    });
+    effect.card = previouslyRevealed;
+    effect.selectedTarget = unrelatedTarget;
+
+    assert.strictEqual(
+        effect.getCard({effects: [{card: nextCard}]}),
+        nextCard
+    );
+});
+
 test('surge shows an encounter-back dialog before drawing and can hide future notices', async () => {
     const dialogs = [];
     const steps = [];

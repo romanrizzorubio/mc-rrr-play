@@ -102,24 +102,77 @@ export class Scenario extends Engine {
 
         return deck;
     }
-    createExtraDeck(id) {
+    getExtraDeckForCard(card) {
+        const matchingDecks = Object.values(this.extraDecks || {}).filter(deck =>
+            deck.collectCondition &&
+            checkCondition(card, deck.collectCondition));
+
+        if (matchingDecks.length > 1) {
+            throw new Error(
+                `La carta "${card.name}" coincide con varios mazos auxiliares del escenario.`
+            );
+        }
+
+        return matchingDecks[0];
+    }
+    createExtraDeck(id, {
+        cardCondition,
+        collectCondition,
+        name,
+        hasDiscard = false,
+    } = {}) {
         if (!this.deck) {
             throw new Error('No se puede crear un mazo auxiliar antes de construir el mazo de Encuentros.');
         }
         if (this.extraDecks[id]) {
             throw new Error(`Ya existe un mazo auxiliar del escenario con ID "${id}".`);
         }
+        if (cardCondition !== undefined &&
+            (!cardCondition || typeof cardCondition !== 'object' ||
+                Array.isArray(cardCondition) || Object.keys(cardCondition).length === 0)) {
+            throw new TypeError(
+                'La condición de un mazo auxiliar debe ser un objeto no vacío.'
+            );
+        }
+        if (collectCondition !== undefined &&
+            (!collectCondition || typeof collectCondition !== 'object' ||
+                Array.isArray(collectCondition) ||
+                Object.keys(collectCondition).length === 0)) {
+            throw new TypeError(
+                'La condición de recogida de un mazo auxiliar debe ser un objeto no vacío.'
+            );
+        }
+        if (collectCondition !== undefined && !hasDiscard) {
+            throw new TypeError(
+                'Un mazo auxiliar que recoge cartas debe tener una pila de descartes.'
+            );
+        }
+        if (typeof hasDiscard !== 'boolean') {
+            throw new TypeError('hasDiscard de un mazo auxiliar debe ser booleano.');
+        }
+        if (name !== undefined && (typeof name !== 'string' || !name)) {
+            throw new TypeError('El nombre del mazo auxiliar debe ser una cadena no vacía.');
+        }
 
         const set = this.sets.find(({cards}) =>
             cards.some(card => card.set === id));
-        if (!set) {
+        if (!set && cardCondition === undefined) {
             throw new Error(`El conjunto "${id}" no está configurado en el escenario.`);
         }
 
-        const cards = set.cards.filter(card => this.deck.cards.includes(card));
-        if (!cards.length || cards.length !== set.cards.length) {
+        const cards = cardCondition === undefined ?
+            set.cards.filter(card => this.deck.cards.includes(card)) :
+            this.deck.cards.filter(card => checkCondition(card, cardCondition));
+        if (cardCondition === undefined &&
+            (!cards.length || cards.length !== set.cards.length)) {
             throw new Error(
                 `No se pueden mover todas las cartas del conjunto "${id}" al mazo auxiliar.`
+            );
+        }
+        const deckName = name ?? set?.name;
+        if (typeof deckName !== 'string' || !deckName) {
+            throw new TypeError(
+                'Un mazo auxiliar basado en una condición requiere un nombre.'
             );
         }
 
@@ -131,10 +184,11 @@ export class Scenario extends Engine {
         const deck = new Deck({
             owner: this,
             id,
-            name: set.name,
+            name: deckName,
             isScenarioExtraDeck: true,
-            hasDiscard: false,
-            discardTarget: this.deck,
+            hasDiscard,
+            ...(hasDiscard ? {} : {discardTarget: this.deck}),
+            collectCondition,
         });
         deck.initDeck(cards);
         this.extraDecks[id] = deck;

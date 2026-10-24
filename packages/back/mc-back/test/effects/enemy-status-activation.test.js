@@ -182,7 +182,6 @@ describe('enemy activation effects', () => {
         const placedThreat = [];
         const dialogs = [];
         let drawnBoosts = 0;
-        let enemySelections = 0;
         const targetCharacter = {
             name: 'Alter ego',
             async getEffectiveStats() {
@@ -241,6 +240,9 @@ describe('enemy activation effects', () => {
             isMainScheme: true,
             threat: 0,
             value: 100,
+            canScheme() {
+                return true;
+            },
             placeThreat(threat) {
                 placedThreat.push(threat);
                 this.threat += threat;
@@ -250,19 +252,13 @@ describe('enemy activation effects', () => {
                 return {name: 'Plan principal'};
             },
         };
-        const effect = ability.effect;
-        effect.selectedTarget = mainScheme;
-        effect.validTarget.getValidTarget = () => [mainScheme];
-        effect.selectTarget = async () => mainScheme;
-        effect.selectEnemy = async () => {
-            enemySelections++;
-            effect.enemy = enemy;
-        };
+        enemy.canScheme = () => true;
+        match.villain = enemy;
+        match.mainScheme = mainScheme;
 
         await ability.resolveAbility({
             card: treachery,
             player,
-            preselectedTarget: true,
         });
         const resolveAgain = new ResolveAbilityEffect({
             match,
@@ -275,7 +271,10 @@ describe('enemy activation effects', () => {
         });
 
         assert.equal(drawnBoosts, 2);
-        assert.equal(enemySelections, 2);
+        assert.equal(
+            dialogs.filter(({dialogType}) => dialogType === DIALOG_ACTIVATE).length,
+            2
+        );
         assert.deepEqual(resolvedBoosts, ['Primer aumento', 'Segundo aumento']);
         assert.deepEqual(discardedBoosts, ['Primer aumento', 'Segundo aumento']);
         assert.deepEqual(placedThreat, [4, 5]);

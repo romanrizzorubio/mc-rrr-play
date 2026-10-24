@@ -3,10 +3,12 @@ import {Effect} from './effect.js';
 export class DealBoostEffect extends Effect {
     constructor({
         enemyActivation,
+        count = 1,
     }) {
         super(arguments[0]);
 
         this.enemyActivation = enemyActivation;
+        this.count = count;
     }
     getResolutionChildEffects() {
         return [...super.getResolutionChildEffects()]
@@ -30,12 +32,22 @@ export class DealBoostEffect extends Effect {
             throw new Error('DealBoostEffect requires an enemy activation.');
         }
         const {enemy} = enemyActivation;
+        const count = this.paramsCalc ?
+            await this.calculate(params) :
+            this.count;
+        if (!Number.isInteger(count) || count < 0) {
+            throw new RangeError(
+                'DealBoostEffect requires a non-negative integer count.'
+            );
+        }
 
         if (enemy.isVillain ||
             (enemy.isMinion && enemy.villainous)) {
-            const cards = await this.match.drawEncounterCards();
+            if (count > 0) {
+                const cards = await this.match.drawEncounterCards(count);
 
-            enemyActivation.boostCards.push(...cards);
+                enemyActivation.boostCards.push(...cards);
+            }
         }
     }
 }

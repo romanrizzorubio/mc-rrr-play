@@ -2,6 +2,7 @@ import {
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
+    EFFECT_CATEGORY_LEAVE_PLAY,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
@@ -22,6 +23,15 @@ export class DefeatEffect extends Effect {
         this.defeatedCharacter = undefined;
         this.defeatedController = undefined;
     }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_LEAVE_PLAY];
+    }
+    get isActivation() {
+        return false;
+    }
+    get usesActivationTargetFilter() {
+        return false;
+    }
     resetResolutionData() {
         super.resetResolutionData();
         this.defeated = false;
@@ -33,14 +43,10 @@ export class DefeatEffect extends Effect {
             (this.selectedTarget?.isInPlay || this.resolved);
     }
     getTriggersWould() {
-        return super.getTriggersWould()
-            .concat([TRIGGER_CHARACTER_WOULD_BE_DEFEATED]);
+        return [TRIGGER_CHARACTER_WOULD_BE_DEFEATED];
     }
     getTriggersInit() {
-        return super.getTriggersInit()
-            .concat([
-                TRIGGER_ATTACHED_DEFEAT,
-            ]);
+        return [TRIGGER_ATTACHED_DEFEAT];
     }
     getTriggersEnds() {
         const triggers = super.getTriggersEnds()

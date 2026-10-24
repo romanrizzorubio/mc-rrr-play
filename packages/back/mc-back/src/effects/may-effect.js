@@ -37,6 +37,26 @@ export class MayEffect extends Effect {
     execute(params) {
         const {effect} = this;
 
-        return effect.runEffect(params);
+        return effect.runEffect({
+            ...params,
+            mayEffect: this,
+        });
+    }
+    async confirm(params, {subtitle, data} = {}) {
+        if (!this.title) {
+            throw new TypeError('MayEffect confirmation requires a title.');
+        }
+
+        const {player} = params;
+        const response = await this.openDialog({
+            dialogType: 'confirm',
+            showCancel: true,
+            title: this.title,
+            subtitle,
+            hand: player.hand.cards.map(card => card.toObj(params)),
+            data,
+        });
+
+        return response?.confirmed === true;
     }
 }

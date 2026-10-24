@@ -224,6 +224,8 @@ Tipos de activaciones que los jugadores pueden ejecutar:
 
 Cada nueva resolución crea una activación independiente; los efectos de la misma resolución comparten su activación.
 
+Cada llamada normal a `Ability.resolveAbility()` crea una instancia del árbol completo de efectos. Los resultados se comparten entre los efectos hijos de esa ejecución, pero no sobreviven como estado de ejecución a la siguiente resolución. `ability.effect` expone la instancia más reciente; la próxima resolución usa la definición de fábrica para crear otra instancia limpia. Si se proporciona un efecto explícito como segundo argumento, quien llama aporta una instancia ya preparada y conserva su control sobre ella.
+
 Cada activación:
 - Requiere recursos específicos
 - Tiene un efecto base
