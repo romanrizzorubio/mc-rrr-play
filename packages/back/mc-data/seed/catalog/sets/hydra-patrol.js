@@ -13,7 +13,7 @@ import {
     TRAIT_HYDRA,
 } from 'mc-shared';
 
-import {hydraSoldier} from '../encounters/minions.js';
+import {hydraSoldier, hydraTroop} from '../encounters/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {
@@ -24,22 +24,7 @@ export default {
         cards: [
             {
                 count: 2,
-                card: {
-                    type: CARD_TYPE_MINION,
-                    params: {
-                        name: 'Tropa de Hydra',
-                        set: 'hydra-patrol',
-                        image: 'sets/hydra-patrol/04152.png',
-                        traits: [TRAIT_HYDRA],
-                        boost: 2,
-                        attack: 2,
-                        scheme: 1,
-                        hitPoints: 2,
-                        keywords: {
-                            incite: 1,
-                        },
-                    },
-                },
+                card: withCardSet(hydraTroop, 'hydra-patrol'),
             },
             {
                 count: 3,

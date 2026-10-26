@@ -661,7 +661,7 @@ export default {
         ],
         'precon': [
             {
-                'aspect': 'basic',
+                'classification': 'basic',
                 'cardRefs': [
                     {'id': 'basic-mockingbird', 'count': 1},
                     {'id': 'basic-nick-fury', 'count': 1},

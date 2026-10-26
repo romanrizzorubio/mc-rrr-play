@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     TARGET_ALL_CHARACTERS,
@@ -16,6 +16,7 @@ import {basicTargets} from '../../src/targets/basic.js';
 import {groupTargets} from '../../src/targets/groups.js';
 import {playerControlledTargets} from '../../src/targets/player-controlled.js';
 
+describe('Conditional target resolution', () => {
 test('character targets apply trait conditions', () => {
     const avenger = {
         id: 'avenger',
@@ -74,7 +75,7 @@ test('source targets apply configured conditions', () => {
     );
 });
 
-test('named character conditions match names and superhero identities in the intended scope', () => {
+test('named event targets use in-play names while other effects can reference identity sides', () => {
     const captainHeroSide = {
         name: 'Capitán América',
     };
@@ -84,6 +85,12 @@ test('named character conditions match names and superhero identities in the int
     const captainInAlterEgo = {
         mainName: 'Capitán América',
         name: 'Steve Rogers',
+        sides: [steveRogersSide, captainHeroSide],
+    };
+    const captainInHero = {
+        mainName: 'Capitán América',
+        name: 'Capitán América',
+        currentSide: captainHeroSide,
         sides: [steveRogersSide, captainHeroSide],
     };
     const captainAlly = {
@@ -96,22 +103,58 @@ test('named character conditions match names and superhero identities in the int
     const enemyCaptain = {
         name: 'Capitán América',
     };
-    const match = {
+    const alterEgoMatch = {
         enemies: [enemyCaptain],
         friends: [captainInAlterEgo, captainAlly, otherCharacter],
+    };
+    const heroMatch = {
+        enemies: [],
+        friends: [captainInHero, captainAlly],
     };
 
     assert.deepEqual(
         groupTargets[TARGET_ALL_CHARACTERS]({
-            match,
+            match: alterEgoMatch,
             condition: {name: 'Capitán América'},
         }),
         [enemyCaptain, captainHeroSide, captainAlly]
     );
     assert.deepEqual(
         groupTargets[TARGET_ALL_FRIENDLY_CHARACTERS]({
-            match,
+            match: alterEgoMatch,
             condition: {name: 'Capitán América'},
+        }),
+        [captainHeroSide, captainAlly]
+    );
+    assert.deepEqual(
+        groupTargets[TARGET_ALL_CHARACTERS]({
+            match: alterEgoMatch,
+            condition: {name: 'Capitán América'},
+            playCardEffect: {},
+        }),
+        [enemyCaptain, captainAlly]
+    );
+    assert.deepEqual(
+        groupTargets[TARGET_ALL_FRIENDLY_CHARACTERS]({
+            match: alterEgoMatch,
+            condition: {name: 'Capitán América'},
+            playCardEffect: {},
+        }),
+        [captainAlly]
+    );
+    assert.deepEqual(
+        groupTargets[TARGET_ALL_CHARACTERS]({
+            match: heroMatch,
+            condition: {name: 'Capitán América'},
+            playCardEffect: {},
+        }),
+        [captainHeroSide, captainAlly]
+    );
+    assert.deepEqual(
+        groupTargets[TARGET_ALL_FRIENDLY_CHARACTERS]({
+            match: heroMatch,
+            condition: {name: 'Capitán América'},
+            playCardEffect: {},
         }),
         [captainHeroSide, captainAlly]
     );
@@ -180,4 +223,5 @@ test('your superhero upgrade targets include unlinked and both identity-side upg
         }),
         [unlinkedWeapon, heroWeapon, alterEgoWeapon]
     );
+});
 });

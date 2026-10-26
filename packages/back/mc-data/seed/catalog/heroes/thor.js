@@ -706,7 +706,7 @@ export default {
                 ]
             },
             {
-                'aspect': 'basic',
+                'classification': 'basic',
                 'cardRefs': [
                     {'id': 'basic-heimdall', 'count': 1},
                     {'id': 'basic-invulnerabilidad', 'count': 3},

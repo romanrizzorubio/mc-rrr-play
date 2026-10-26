@@ -33,6 +33,7 @@ export class McMatchPage extends LitElement {
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
+            deckTargetSelection: {type: Object},
         };
     }
     constructor() {
@@ -48,6 +49,9 @@ export class McMatchPage extends LitElement {
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
+        this.deckTargetSelection = null;
+        this.deckTargetDocumentClickHandler = null;
+        this.deckTargetDocumentClickListenerAttached = false;
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -108,6 +112,10 @@ export class McMatchPage extends LitElement {
     }
     handleResourcePaymentDragEnd() {
         this.dragResourcePayment = null;
+    }
+    disconnectedCallback() {
+        this.clearDeckTargetSelection();
+        super.disconnectedCallback();
     }
     handlePlayCardDrop(e) {
         this.dragPlayCard = null;
@@ -436,11 +444,129 @@ export class McMatchPage extends LitElement {
         });
     }
     async handleAbility(e) {
-        const {apiPlayer, player} = this;
         const {card, ability} = e.detail;
 
         try {
-            await apiPlayer.resolveAbility(player, card.id, ability);
+            await this.resolveAbilityOrSelectDeck(card, ability);
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: error.message,
+                },
+            }));
+        }
+    }
+    getSelectableDeckIds(ability) {
+        if (ability?.targetSelectionMode !== 'deck' ||
+            !Array.isArray(ability.availableTargetIds)) {
+            return [];
+        }
+
+        const availableTargetIds = new Set(ability.availableTargetIds);
+        const decks = [
+            this.match?.scenario?.deck,
+            ...(this.match?.players || []).map(candidate => candidate.deck),
+        ];
+
+        return decks
+            .filter(deck =>
+                typeof deck?.id === 'string' &&
+                Array.isArray(deck.cards) &&
+                deck.cards.length > 0 &&
+                availableTargetIds.has(deck.id)
+            )
+            .map(deck => deck.id);
+    }
+    resolveAbilityOrSelectDeck(card, abilityIndex) {
+        if (!card?.id) {
+            throw new Error('La capacidad seleccionada no tiene una carta de origen.');
+        }
+
+        const targetIds = this.getSelectableDeckIds(
+            card.abilities?.[abilityIndex]
+        );
+        const numericAbilityIndex = Number(abilityIndex);
+
+        if (targetIds.length && Number.isSafeInteger(numericAbilityIndex)) {
+            const selection = {
+                cardId: card.id,
+                abilityIndex: numericAbilityIndex,
+                targetIds,
+            };
+            this.deckTargetSelection = selection;
+
+            if (globalThis.document?.addEventListener) {
+                this.deckTargetDocumentClickHandler ??=
+                    this.handleDeckTargetDocumentClick.bind(this);
+                queueMicrotask(() => {
+                    if (this.deckTargetSelection !== selection ||
+                        this.deckTargetDocumentClickListenerAttached ||
+                        !globalThis.document?.addEventListener) {
+                        return;
+                    }
+
+                    globalThis.document.addEventListener(
+                        'click',
+                        this.deckTargetDocumentClickHandler,
+                        true
+                    );
+                    this.deckTargetDocumentClickListenerAttached = true;
+                });
+            }
+
+            return;
+        }
+
+        return this.apiPlayer.resolveAbility(
+            this.player,
+            card.id,
+            abilityIndex
+        );
+    }
+    handleDeckTargetDocumentClick(event) {
+        const clickedDeckEye = event.composedPath?.().some(target =>
+            typeof target?.hasAttribute === 'function' &&
+            target.hasAttribute('data-deck-target-eye')
+        );
+
+        if (clickedDeckEye) {
+            return;
+        }
+
+        event.preventDefault?.();
+        event.stopPropagation?.();
+        this.clearDeckTargetSelection();
+    }
+    clearDeckTargetSelection() {
+        this.deckTargetSelection = null;
+        if (this.deckTargetDocumentClickListenerAttached) {
+            globalThis.document?.removeEventListener(
+                'click',
+                this.deckTargetDocumentClickHandler,
+                true
+            );
+            this.deckTargetDocumentClickListenerAttached = false;
+        }
+    }
+    async handleDeckTargetSelect(event) {
+        event.stopPropagation();
+
+        const selection = this.deckTargetSelection;
+        const {deckId} = event.detail || {};
+        if (!selection || !selection.targetIds.includes(deckId)) {
+            return;
+        }
+
+        this.clearDeckTargetSelection();
+        try {
+            await this.apiPlayer.resolveAbility(
+                this.player,
+                selection.cardId,
+                selection.abilityIndex,
+                deckId
+            );
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -579,9 +705,7 @@ export class McMatchPage extends LitElement {
             if (response === undefined) {
                 return;
             }
-
             const {selected} = response;
-            const {apiPlayer, player} = this;
 
             if (selected.id === MENU_OPTION_VIEW_TUCKED_CARDS) {
                 this.dispatchEvent(new CustomEvent('view-tucked-cards', {
@@ -604,8 +728,8 @@ export class McMatchPage extends LitElement {
                 case MENU_OPTION_FLIP:
                     return this.flipSuperhero();
                 default:
-                    const index = selected.id.substring(ABILITY_ID.length, selected.id.length);
-                    return apiPlayer.resolveAbility(player, card.id, index);
+                    const index = Number(selected.id.substring(ABILITY_ID.length));
+                    return this.resolveAbilityOrSelectDeck(card, index);
             }
         };
     }
@@ -702,6 +826,7 @@ export class McMatchPage extends LitElement {
                 .match="${match}"
                 .player="${_player}"
                 .playCardPending="${this.playCardPending}"
+                .deckSelectionTargetIds="${this.deckTargetSelection?.targetIds || []}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 .dragResourcePayment="${this.dragResourcePayment}"
@@ -717,6 +842,7 @@ export class McMatchPage extends LitElement {
                 @resource-payment-drop="${this.handleResourcePaymentDrop.bind(this)}"
                 @superhero-flip="${this.handleFlipSuperhero.bind(this)}"
                 @ability="${this.handleAbility.bind(this)}"
+                @deck-target-select="${this.handleDeckTargetSelect.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"
                 @player-end="${this.handlePlayerEnd.bind(this)}"
             ></mc-match>

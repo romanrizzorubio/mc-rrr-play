@@ -71,7 +71,7 @@ export const gangUp = {
 export const hailHydra = {
     type: CARD_TYPE_TREACHERY,
     params: {
-        name: '¡Hail Hydra!',
+        name: '¡Hail, Hydra!',
         image: 'heroes/captain-america/03030.png',
         boost: 2,
         abilities: [

@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_AGGRESSION,
     CARD_TYPE_RESOURCE,
     RESOURCE_WILD,
     TARGET_DECK
@@ -13,7 +14,7 @@ export default [
             'type': CARD_TYPE_RESOURCE,
             'params': {
                 'name': 'El poder de la agresividad',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/resources/01055.png',
                 'resources': [
                     {

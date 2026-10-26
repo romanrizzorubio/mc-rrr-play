@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_OPTION,
@@ -61,7 +62,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Maria Hill',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/01067.png',
                 'traits': [
                     TRAIT_SHIELD
@@ -103,7 +104,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Visión',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/01068.png',
                 'traits': [
                     TRAIT_DROID,
@@ -199,7 +200,7 @@ export default [
             'params': {
                 'name': 'Ojo de Halcón',
                 'subtitle': 'Clint Barton',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/01066.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -267,7 +268,7 @@ export default [
             'params': {
                 'name': 'Ojo de Halcón',
                 'subtitle': 'Kate Bishop',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/04011.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -335,7 +336,7 @@ export default [
             'params': {
                 'name': 'Caballero Negro',
                 'subtitle': 'Dane Whitman',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/04012.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -385,7 +386,7 @@ export default [
             'params': {
                 'name': 'Goliat',
                 'subtitle': 'Bill Foster',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/04013.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -445,7 +446,7 @@ export default [
             'params': {
                 'name': 'USAgente',
                 'subtitle': 'John Walker',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/04014.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -476,7 +477,7 @@ export default [
             'params': {
                 'name': 'Halcón',
                 'subtitle': 'Sam Wilson',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/03011.png',
                 'traits': [
                     TRAIT_AERIAL,
@@ -541,7 +542,7 @@ export default [
             'params': {
                 'name': 'Chica Ardilla',
                 'subtitle': 'Doreen Green',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/03013.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -584,7 +585,7 @@ export default [
             'params': {
                 'name': 'Hombre Maravilla',
                 'subtitle': 'Simon Williams',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/03014.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -638,7 +639,7 @@ export default [
             'params': {
                 'name': 'Iron Man',
                 'subtitle': 'Tony Stark',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/allies/09039.png',
                 'unique': true,
                 'traits': [

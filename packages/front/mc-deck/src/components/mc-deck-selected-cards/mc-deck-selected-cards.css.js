@@ -53,7 +53,7 @@ export default css`
     cursor: pointer;
   }
 
-  .selected-card.aspect-basic {
+  .selected-card.card-basic {
     background-color: #f2f2f2;
   }
 

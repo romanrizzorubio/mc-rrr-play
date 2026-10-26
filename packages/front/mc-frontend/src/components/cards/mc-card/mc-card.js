@@ -133,6 +133,7 @@ export class CardComponent extends LitElement {
             showBasicStats: {type: Boolean, attribute: 'show-basic-stats'},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
+            aspectMarkers: {type: Array},
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             hitPoints: {type: Number},
             damage: {type: Number},
@@ -193,6 +194,7 @@ export class CardComponent extends LitElement {
         this.showBasicStats = false;
         this.extraTraits = [];
         this.extraKeywords = [];
+        this.aspectMarkers = [];
         this.showAcquiredTraits = false;
         this.hitPoints = undefined;
         this.damage = undefined;
@@ -920,10 +922,14 @@ export class CardComponent extends LitElement {
                                 ${hiddenFacedown ? '' : this.renderStage()}
                                 <mc-card-image
                                     id="card"
+                                    class="${this.aspectMarkers?.length ?
+                                        'has-aspect-markers' :
+                                        ''}"
                                     src="${imageSrc}"
                                     size="${size}"
                                     .horizontal="${horizontal}"
                                     .rotated="${rotated}"
+                                    .aspectMarkers="${this.aspectMarkers}"
                                     .activationBlocked="${this.isActivationVeiled ||
                                         this.isResourcePaymentVeiled}"
                                     ?draggable="${isDraggable}"
@@ -1027,9 +1033,11 @@ export class CardComponent extends LitElement {
             emphasizedStats.includes(stat)
         );
         const stageAligned = this.nameWithStage && Number.isFinite(this.stage);
+        const aspectMarkersAligned = Boolean(this.aspectMarkers?.length);
         const statsClass = [
             stageAligned ? 'stage-aligned' : '',
             hasEmphasizedStat ? 'has-emphasized' : '',
+            aspectMarkersAligned ? 'aspect-markers-aligned' : '',
         ].filter(Boolean).join(' ');
 
         return stats.length ? html`

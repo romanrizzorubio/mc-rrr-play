@@ -12,6 +12,35 @@ import {RemoveThreatEffect} from '../../src/effects/remove-threat-effect.js';
 import {SchemeGameCard} from '../../src/model/cards/scheme-game-card.js';
 
 describe('RemoveThreatEffect', () => {
+    test('scales per-player threat removal by the number of players', async () => {
+        const source = {
+            isSideScheme: true,
+            threat: 10,
+            canRemoveThreat() {
+                return this.threat > 0;
+            },
+            removeThreat(threat) {
+                this.threat -= threat;
+            },
+            refresh() {},
+        };
+        const match = {
+            numPlayers: 2,
+            triggerCards: {},
+        };
+        const effect = new RemoveThreatEffect({
+            match,
+            selectedTarget: source,
+            target: TARGET_THIS,
+            threat: [3, true],
+        });
+
+        await effect.runEffect({match});
+
+        assert.equal(effect.threat, 6);
+        assert.equal(source.threat, 4);
+    });
+
     test('uses the shared side-scheme defeat check', async () => {
         const source = {
             isSideScheme: true,

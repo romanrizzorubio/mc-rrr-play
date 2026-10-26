@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_AGGRESSION,
     ABILITY_ALTEREGO_ACTION,
     ABILITY_ACTION,
     ABILITY_RESPONSE,
@@ -28,8 +29,8 @@ export default [
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
-                'name': 'Tac Team',
-                'set': 'aggression',
+                'name': 'Unidad táctica',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/supports/a56-copy-2.webp',
                 'traits': [
                     TRAIT_SHIELD
@@ -88,7 +89,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Salón de los Héroes',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/supports/06017.png',
                 'traits': [
                     TRAIT_ASGARD,

@@ -1,4 +1,7 @@
-import {EFFECT_CHOOSE_ABILITY} from 'mc-shared';
+import {
+    CLASSIFICATION_BASIC,
+    EFFECT_CHOOSE_ABILITY,
+} from 'mc-shared';
 
 const normalizeEffect = effect => {
     if (Array.isArray(effect)) {
@@ -85,15 +88,31 @@ const normalizePrecon = entries => entries?.map(entry => {
         return normalizeEntries([entry])[0];
     }
 
-    const {aspect, cardRefs} = entry;
-    if (typeof aspect !== 'string' || !aspect || !Array.isArray(cardRefs) || !cardRefs.length ||
+    const {aspect, classification, cardRefs} = entry;
+    const legacyBasicAspect = aspect === CLASSIFICATION_BASIC &&
+        classification === undefined;
+    const isBasicCard = classification === CLASSIFICATION_BASIC ||
+        legacyBasicAspect;
+    const cardAspect = legacyBasicAspect ? undefined : aspect;
+    const hasAspect = typeof cardAspect === 'string' && Boolean(cardAspect);
+    const hasExactlyOneCategory = hasAspect !== isBasicCard;
+    if ((aspect !== undefined &&
+        (typeof aspect !== 'string' || !aspect)) ||
+        (classification !== undefined &&
+            classification !== CLASSIFICATION_BASIC) ||
+        !hasExactlyOneCategory ||
+        !Array.isArray(cardRefs) || !cardRefs.length ||
         cardRefs.some(reference => !reference || typeof reference.id !== 'string' ||
             !reference.id || !Number.isInteger(reference.count) || reference.count < 1)) {
-        throw new Error('Every aspect-card reference must include an aspect, ID, and positive count');
+        throw new Error(
+            'Every precon category must include an aspect or basic classification and positive card references',
+        );
     }
 
     return {
-        aspect,
+        ...(isBasicCard ?
+            {classification: CLASSIFICATION_BASIC} :
+            {aspect: cardAspect}),
         cardRefs: cardRefs.map(({id, count}) => ({id, count})),
     };
 });
@@ -150,10 +169,17 @@ const normalizeSet = set => ({
 });
 
 const normalizeAspectCard = aspectCard => {
+    const hasAspect = typeof aspectCard.aspect === 'string' &&
+        Boolean(aspectCard.aspect);
+    const isBasicCard = aspectCard.classification === CLASSIFICATION_BASIC;
+    const hasExactlyOneCategory = hasAspect !== isBasicCard;
     if (typeof aspectCard._id !== 'string' || !aspectCard._id ||
-        typeof aspectCard.aspect !== 'string' || !aspectCard.aspect ||
+        (aspectCard.aspect !== undefined && !hasAspect) ||
+        !hasExactlyOneCategory ||
         !Number.isInteger(aspectCard.order) || aspectCard.order < 0) {
-        throw new Error('Every aspect card must have an ID, aspect, and non-negative order');
+        throw new Error(
+            'Every player card must have an ID, an aspect or basic classification, and a non-negative order',
+        );
     }
 
     return {

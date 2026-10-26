@@ -1,6 +1,6 @@
 import {translateTrait} from 'mc-shared';
 import {
-    getAspectName,
+    getCardOriginName,
     getCardTypeName,
 } from './deck-presentation.js';
 import {compareNumbers, compareText} from './deck-sort.js';
@@ -14,8 +14,8 @@ export function compareDeckPoolCards(left, right, column, direction = 'asc') {
             getCardTypeName(right.type),
         ),
         aspect: () => compareText(
-            getAspectName(left.aspect),
-            getAspectName(right.aspect),
+            getCardOriginName(left),
+            getCardOriginName(right),
         ),
         traits: () => compareText(
             getCardTraits(left).map(translateTrait).join(', '),

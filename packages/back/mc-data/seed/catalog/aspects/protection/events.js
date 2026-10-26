@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_PROTECTION,
     ABILITY_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_ACTION,
@@ -50,7 +51,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Contragolpe',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/01077.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -97,7 +98,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡Poneos detrás de mí!',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/01078.png',
                 'cost': 1,
                 'resources': [
@@ -144,7 +145,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Defensa hábil',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/03033.png',
                 'traits': [
                     TRAIT_DEFENSE
@@ -185,7 +186,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Ataque preventivo',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/05014.png',
                 'traits': [
                     TRAIT_DEFENSE
@@ -246,7 +247,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Arremetida',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/05015.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -299,7 +300,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Fuerzas de flaqueza',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/06033.png',
                 'cost': 3,
                 'resources': [
@@ -348,7 +349,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Defensa desesperada',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/09015.png',
                 'traits': [
                     TRAIT_DEFENSE
@@ -417,7 +418,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Invertir las tornas',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/events/09016.png',
                 'traits': [
                     TRAIT_ATTACK

@@ -3,6 +3,9 @@ import {
     DIALOG_PAY_COST,
     PLACE_HAND,
     PLACE_TUCKED,
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PLAY_CARD,
     TRIGGER_CARD_ENTER_PLAY,
@@ -23,7 +26,9 @@ import {getEffectTargetEntries} from '../utils/effect-targets.js';
 import {toResourcePaymentCard} from '../utils/resource-requirements.js';
 
 const matchesTargetId = (target, targetId) =>
-    target?.id === targetId || target?.parentId === targetId;
+    target?.id === targetId ||
+    target?.parentId === targetId ||
+    target?.parent?.id === targetId;
 
 const canPreselectEffectTarget = effect =>
     !effect.selectUpTo &&
@@ -176,6 +181,23 @@ export class PlayCardEffect extends Effect {
                 TRIGGER_THIS_PLAY_CARD,
             ]);
     }
+    async triggerInit(params) {
+        // Cost-modifying constants run before payment; play interrupts do not.
+        return this.trigger(PRIORITY_CONSTANT, this.getTriggersInit(), params);
+    }
+    async triggerPlayCardInterrupts(params) {
+        const triggerTypes = this.getTriggersInit();
+
+        if (!await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            triggerTypes,
+            params
+        )) {
+            return false;
+        }
+
+        return this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+    }
     getTriggersEnds() {
         return super.getTriggersEnds()
             .concat([
@@ -263,6 +285,12 @@ export class PlayCardEffect extends Effect {
         const {player} = params;
 
         this.played = true;
+        if (player.config?.aspectMarkerRules) {
+            player.superhero.addAspectMarkersFromCard(
+                card,
+                TRIGGER_YOU_PLAY_CARD
+            );
+        }
 
         if (card.isEvent) {
             await ability.resolveAbility({
@@ -598,6 +626,13 @@ export class PlayCardEffect extends Effect {
             this.canceled = true;
             card.isPlaying = false;
         } else {
+            const triggerParams = this.getTriggersParams(paymentParams);
+            if (!await this.triggerPlayCardInterrupts(triggerParams)) {
+                this.canceled = true;
+                card.isPlaying = false;
+                return;
+            }
+
             await this.doPlay({
                 ...paymentParams,
                 card,

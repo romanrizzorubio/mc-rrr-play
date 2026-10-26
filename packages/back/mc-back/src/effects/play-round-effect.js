@@ -61,6 +61,11 @@ export class PlayRoundEffect extends Effect {
         this.match.villainPhaseStep = 0;
         this.match.turnIndex = 0;
         await this.endLimit(TARGET_ROUND);
+        this.match.players.forEach(player => {
+            if (player.config?.aspectMarkerRules) {
+                player.superhero.clearAspectMarkers(TRIGGER_ROUND_ENDS);
+            }
+        });
         await this.match.persist();
         await this.match.refresh();
     }

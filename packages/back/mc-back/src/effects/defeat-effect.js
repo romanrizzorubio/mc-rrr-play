@@ -8,6 +8,7 @@ import {
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_SIDE_SCHEME_DEFEATED,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
 } from 'mc-shared';
@@ -55,6 +56,10 @@ export class DefeatEffect extends Effect {
                 TRIGGER_THIS_DEFEAT_MINION,
                 TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
             ]);
+
+        if (this.defeated && this.defeatedCharacter?.isSideScheme) {
+            triggers.push(TRIGGER_SIDE_SCHEME_DEFEATED);
+        }
 
         return this.defeated && this.defeatedCharacter?.isCharacter ?
             triggers.concat([TRIGGER_CHARACTER_DEFEATED]) :

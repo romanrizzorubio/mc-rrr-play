@@ -27,7 +27,12 @@ const validateDecks = decks => {
             typeof deck.id !== 'string' || !deck.id ||
             typeof deck.name !== 'string' || !deck.name.trim() ||
             typeof deck.heroId !== 'string' || !deck.heroId ||
-            typeof deck.aspect !== 'string' ||
+            (typeof deck.aspect !== 'string' &&
+                (!Array.isArray(deck.aspect) ||
+                    deck.aspect.some(aspect => typeof aspect !== 'string'))) ||
+            (deck.aspects !== undefined &&
+                (!Array.isArray(deck.aspects) ||
+                    deck.aspects.some(aspect => typeof aspect !== 'string'))) ||
             !Array.isArray(deck.cards) ||
             !isTimestamp(deck.createdAt) ||
             !isTimestamp(deck.updatedAt)) {
@@ -44,7 +49,16 @@ const validateDecks = decks => {
         }
     }
 
-    return decks;
+    return decks.map(deck => {
+        const {aspects: legacyAspects, ...fields} = deck;
+
+        return {
+            ...fields,
+            aspect: Array.isArray(fields.aspect) ?
+                fields.aspect :
+                Array.isArray(legacyAspects) ? legacyAspects : fields.aspect,
+        };
+    });
 };
 
 const validateDeletions = (deletions, deckIds) => {

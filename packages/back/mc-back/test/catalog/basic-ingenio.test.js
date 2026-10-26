@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
+    CLASSIFICATION_BASIC,
     EFFECT_DISCARD_GAME,
     RESOURCE_WILD,
     TARGET_THIS,
@@ -20,13 +21,13 @@ describe('Ingenio', () => {
 
         assert.ok(cardConfig);
         assert.equal(cardConfig.card.type, CARD_TYPE_UPGRADE);
-        assert.equal(cardConfig.aspect, 'basic');
+        assert.equal(cardConfig.classification, CLASSIFICATION_BASIC);
         assert.equal(cardConfig.card.params.name, 'Ingenio');
         assert.equal(cardConfig.card.params.image, 'aspect/basic/upgrades/10032.png');
         assert.deepEqual(cardConfig.card.params.traits, [TRAIT_SKILL]);
         assert.equal(cardConfig.card.params.cost, 1);
         assert.deepEqual(cardConfig.card.params.resources, [RESOURCE_WILD]);
-        assert.equal(cardConfig.card.params.classification, 'basic');
+        assert.equal(cardConfig.card.params.classification, CLASSIFICATION_BASIC);
         assert.equal(
             heroes.some(({config}) => config.precon?.some(({cardRefs}) =>
                 cardRefs.some(({id}) => id === cardConfig._id))),

@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESOURCE,
@@ -51,13 +52,13 @@ import {
 export default [
     {
         '_id': 'basic-tenacity',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 10,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Tenacidad',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/01093.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -107,13 +108,13 @@ export default [
     },
     {
         '_id': 'basic-honorary-avenger',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 20,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Vengador honorario',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/03025.png',
                 'traits': [
                     TRAIT_TITLE
@@ -161,13 +162,13 @@ export default [
     },
     {
         '_id': 'basic-enhanced-awareness',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 21,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Consciencia mejorada',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/03034.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -214,13 +215,13 @@ export default [
     },
     {
         '_id': 'basic-aguante',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 30,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Aguante',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/05023.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -255,13 +256,13 @@ export default [
     },
     {
         '_id': 'basic-reflejos-mejorados',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 31,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Reflejos mejorados',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/05024.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -308,13 +309,13 @@ export default [
     },
     {
         '_id': 'basic-tomarse-un-respiro',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 32,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Tomarse un respiro',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/05033.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -349,13 +350,13 @@ export default [
     },
 {
         '_id': 'basic-vigor-mejorado',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 62,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Vigor mejorado',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/06034.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -403,13 +404,13 @@ export default [
 
     {
         '_id': 'basic-objetivo-fijado',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 63,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Objetivo fijado',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/08024.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -452,13 +453,13 @@ export default [
     },
     {
         '_id': 'basic-espionaje',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 64,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Espionaje',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/08033.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -498,13 +499,13 @@ export default [
     },
     {
         '_id': 'basic-el-hechicero-supremo',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 90,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'El Hechicero Supremo',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/09026.png',
                 'unique': true,
                 'traits': [
@@ -541,13 +542,13 @@ export default [
     },
     {
         '_id': 'basic-ingenio',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 91,
         'card': {
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Ingenio',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/upgrades/10032.png',
                 'traits': [
                     TRAIT_SKILL

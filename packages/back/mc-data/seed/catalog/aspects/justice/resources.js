@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_JUSTICE,
     CARD_TYPE_RESOURCE,
     RESOURCE_WILD,
     TARGET_DECK
@@ -13,7 +14,7 @@ export default [
             'type': CARD_TYPE_RESOURCE,
             'params': {
                 'name': 'El poder de la justicia',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/resources/01062.png',
                 'resources': [
                     {

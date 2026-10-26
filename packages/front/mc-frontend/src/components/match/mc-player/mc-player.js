@@ -3,7 +3,6 @@ import {LitElement, html} from 'lit-element';
 import {DECK_TYPES} from '../../panels/mc-deck/mc-deck.js';
 
 import styles from './mc-player.css.js';
-import '../../panels/mc-hand/mc-hand.js';
 import '../../panels/mc-game-zone/mc-game-zone.js';
 import '../../cards/characters/mc-superhero-card/mc-superhero-card.js';
 import {path} from '../../../misc/utils.js';
@@ -19,7 +18,7 @@ export class McPlayer extends LitElement {
         return {
             player: {type: Object},
             canEndTurn: {type: Boolean},
-            playCardPending: {type: Boolean},
+            deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
@@ -30,7 +29,7 @@ export class McPlayer extends LitElement {
 
         this.player = null;
         this.canEndTurn = false;
-        this.playCardPending = false;
+        this.deckSelectionTargetIds = [];
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
@@ -53,6 +52,12 @@ export class McPlayer extends LitElement {
             },
         }));
     }
+    isDeckSelectable(deck) {
+        return Boolean(
+            deck?.id &&
+            this.deckSelectionTargetIds.includes(deck.id)
+        );
+    }
     handelSuperheroAbility(e) {
         e.stopPropagation();
 
@@ -71,23 +76,6 @@ export class McPlayer extends LitElement {
             },
         }));
     }
-    renderHand() {
-        const {
-            player: {
-                hand
-            }
-        } = this;
-
-        return html`
-            <mc-hand
-                .cards="${hand}"
-                .playCardPending="${this.playCardPending}"
-                .dragActivation="${this.dragActivation}"
-                .dragPlayCard="${this.dragPlayCard}"
-                .dragResourcePayment="${this.dragResourcePayment}"
-            ></mc-hand>
-        `;
-    }
     renderSuperhero() {
         const {
             player: {
@@ -99,7 +87,7 @@ export class McPlayer extends LitElement {
         const {
             name, image, life, hitPoints, attack, thwart, defense, recovery,
             flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
-            extraKeywords = [], attached = [], tuckedCards = []
+            extraKeywords = [], attached = [], tuckedCards = [], aspectMarkers = []
         } = superhero;
         const attachedCards = attached.filter(card => !card.isUpgrade);
         const obligations = gameZone?.cards?.filter(card => card.isObligation) || [];
@@ -125,6 +113,7 @@ export class McPlayer extends LitElement {
                 .abilities="${abilities}"
                 .extraTraits="${extraTraits}"
                 .extraKeywords="${extraKeywords}"
+                .aspectMarkers="${aspectMarkers}"
                 .flipped="${flipped}"
                 .statusCards="${statusCards}"
                 .canFlip="${canFlip}"
@@ -156,18 +145,17 @@ export class McPlayer extends LitElement {
         `;
     }
     renderDeck() {
-        const {name} = this.player;
-        const cards = path(this, 'player.deck.cards');
-        const discard = path(this, 'player.deck.discard');
-        const knownCards = path(this, 'player.deck.knownCards') || [];
+        const {name, deck} = this.player;
 
-        return cards && discard ? html`
+        return deck?.cards && deck?.discard ? html`
             <mc-deck
                 class="panel"
-                .cards="${cards}"
-                .discard="${discard}"
-                .knownCards="${knownCards}"
+                .cards="${deck.cards}"
+                .discard="${deck.discard}"
+                .knownCards="${deck.knownCards || []}"
                 .deckName="${name}"
+                .targetId="${deck.id || ''}"
+                .targetSelectable="${this.isDeckSelectable(deck)}"
                 .showDeckName="${false}"
                 discard-label="Descarte de ${name}"
                 .highlightPlayableDiscard="${true}"
@@ -219,7 +207,6 @@ export class McPlayer extends LitElement {
                 ${this.renderPlayerDecks()}
                 ${this.renderSuperhero()}
                 ${this.renderGameZone()}
-                ${this.renderHand()}
             ` : '';
     }
 }

@@ -1,8 +1,39 @@
+import {TARGET_PARENT} from 'mc-shared';
 import {getCurrentVillainStage} from '../utils/target-utils.js';
 
 import {Effect} from './effect.js';
 
 export class ChainedEffect extends Effect {
+    static getNestedEffects(value) {
+        if (value instanceof Effect) {
+            return [value];
+        }
+
+        return Array.isArray(value) ?
+            value.flatMap(nested => this.getNestedEffects(nested)) :
+            [];
+    }
+    static inheritTargetCondition(effect, target, condition, visited = new Set()) {
+        if (visited.has(effect)) {
+            return;
+        }
+        visited.add(effect);
+
+        if (effect.target === target && !effect.condition) {
+            effect.condition = condition;
+            effect.validTarget.condition = condition;
+        }
+
+        Object.values(effect)
+            .flatMap(value => this.getNestedEffects(value))
+            .forEach(nestedEffect =>
+                this.inheritTargetCondition(
+                    nestedEffect,
+                    target,
+                    condition,
+                    visited
+                ));
+    }
     constructor({
 // ChainedEffect
         effects = [],
@@ -16,11 +47,15 @@ export class ChainedEffect extends Effect {
         this.deckId = deckId;
 
         effects.forEach(effect => {
-            if (!effect) {
-                console.log('asdf');
-            }
             if (!effect.target) {
                 effect.target = this.target;
+            }
+            if (this.condition?.name) {
+                this.constructor.inheritTargetCondition(
+                    effect,
+                    this.target,
+                    this.condition
+                );
             }
 
             return effect;
@@ -56,10 +91,18 @@ export class ChainedEffect extends Effect {
         const targetPlayer = selectedTarget && selectedTarget.isPlayer ?
             selectedTarget :
             params.targetPlayer;
+        const parentTargets = selectedTarget === undefined ?
+            this.getValidTarget(params).flat(Infinity) :
+            selectedTarget === null ?
+                [] :
+                Array.isArray(selectedTarget) ?
+                    selectedTarget.flat(Infinity) :
+                    [selectedTarget];
 
         return {
             ...params,
             effects: this.effects,
+            parentTargets,
             ...(targetPlayer ? {targetPlayer} : {}),
         };
     }
@@ -118,7 +161,8 @@ export class ChainedEffect extends Effect {
         await super.prepare(params);
 
         await this.promisesSequential(this.effects, async effect => {
-            if (effect.target === this.target) {
+            if (effect.target === this.target ||
+                effect.target === TARGET_PARENT) {
                 effect.selectedTarget = this.selectedTarget;
             } else if (effect.refreshTarget &&
                 !params.preserveNestedSelectedTargets &&
@@ -156,7 +200,8 @@ export class ChainedEffect extends Effect {
                 this.selectedTarget,
                 this.match
             );
-            if (effect.target === this.target) {
+            if (effect.target === this.target ||
+                effect.target === TARGET_PARENT) {
                 effect.selectedTarget = this.selectedTarget;
             }
 

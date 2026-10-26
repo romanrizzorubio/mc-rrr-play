@@ -1,8 +1,10 @@
 import {
+    ASPECT_IDS,
     TARGET_ALTEREGO,
     TARGET_HERO,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
+    hasClassification,
 } from 'mc-shared';
 
 import {CharacterGameCard} from '../cards/character-game-card.js';
@@ -44,6 +46,30 @@ export class Superhero extends CharacterGameCard {
         this.extraDecks = extraDecks;
 
         this.flipped = false;
+        this.aspectMarkers = [];
+    }
+    addAspectMarkersFromCard(card, trigger) {
+        const rules = this.owner?.config?.aspectMarkerRules;
+        if (rules?.activateOn !== trigger || !card.isPlayerCard) {
+            return;
+        }
+
+        const playedAspects = ASPECT_IDS.filter(aspect =>
+            hasClassification(card.card.classification, aspect)
+        );
+        if (playedAspects.length) {
+            this.aspectMarkers = [...new Set([
+                ...(this.aspectMarkers ?? []),
+                ...playedAspects,
+            ])];
+        }
+    }
+
+    clearAspectMarkers(trigger) {
+        const rules = this.owner?.config?.aspectMarkerRules;
+        if (rules?.deactivateOn === trigger) {
+            this.aspectMarkers = [];
+        }
     }
     get controller() {
         return super.controller;
@@ -150,13 +176,16 @@ export class Superhero extends CharacterGameCard {
     }
     toObj() {
         const {flipped, id, life, mainName} = this;
+        const aspectMarkers = this.aspectMarkers ?? [];
+        const aspectMarkerRules = this.owner?.config?.aspectMarkerRules;
 
         return {
             ...super.toObj(arguments[0]),
             mainName,
             life,
             flipped,
-            id
+            id,
+            ...(aspectMarkerRules ? {aspectMarkers: [...aspectMarkers]} : {}),
         };
     }
 }

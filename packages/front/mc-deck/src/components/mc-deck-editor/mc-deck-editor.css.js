@@ -45,9 +45,41 @@ export default css`
     width: 100%;
   }
 
+  .aspect-selection {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+  }
+
+  .aspect-selection legend {
+    padding: 0 4px;
+  }
+
+  .aspect-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+  }
+
+  .aspect-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .aspect-rule {
+    margin: 8px 0 0;
+  }
+
   .deck-size,
+  .deck-composition,
   .draft-help {
     margin: 10px 0;
+  }
+
+  .deck-composition {
+    line-height: 1.6;
   }
 
   .validation {
@@ -87,6 +119,7 @@ export default css`
 
   .deck-editor-middle-counts {
     display: flex;
+    align-items: baseline;
     gap: 20px;
     flex-wrap: wrap;
   }

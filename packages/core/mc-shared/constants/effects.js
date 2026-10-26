@@ -5,6 +5,7 @@ export const EFFECT_ACTIVATE = 'activate';
 export const EFFECT_CHANGE_ATTACK_TARGETS = 'change-attack-targets';
 export const EFFECT_ADD_TRAIT = 'add-trait';
 export const EFFECT_ASSIGN_DAMAGE = 'assign-damage';
+export const EFFECT_ASSIGN_THREAT = 'assign-threat';
 export const EFFECT_BLANK_TEXT = 'blank-text';
 export const EFFECT_CANCEL_ACTIVATION = 'cancel-activation';
 export const EFFECT_CANCEL_CARD_EFFECTS = 'cancel-card-effects';

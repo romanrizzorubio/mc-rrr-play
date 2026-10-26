@@ -5,7 +5,12 @@ import 'mc-components';
 import './components/mc-deck-hero-selector/mc-deck-hero-selector.js';
 import './components/mc-deck-list/mc-deck-list.js';
 import './components/mc-deck-editor/mc-deck-editor.js';
-import {getPlayerDeckCardCopyLimit} from 'mc-shared';
+import {
+    CLASSIFICATION_BASIC,
+    getPlayerDeckCardCopyLimit,
+    getSelectedDeckAspects,
+    hasClassification,
+} from 'mc-shared';
 import {DeckServiceClient} from './services/deck-service-client.js';
 import styles from './remote-entry.css.js';
 
@@ -136,7 +141,7 @@ export class McDeckApp extends LitElement {
         this.deck = {
             name: `Mazo de ${hero.name}`,
             heroId: this.heroId,
-            aspect: '',
+            aspect: hero.deckBuildingRules?.aspectCount > 1 ? [] : '',
             cards: [],
             validation: null,
         };
@@ -256,11 +261,18 @@ export class McDeckApp extends LitElement {
         const currentCount = this.deck.cards
             .filter(entry => entry.id === cardId)
             .reduce((total, entry) => total + entry.count, 0);
-        const aspect = this.deck.aspect ||
-            (count > 0 && card.aspect !== 'basic' ? card.aspect : '');
-        const deckForLimit = aspect === this.deck.aspect ?
-            this.deck :
-            {...this.deck, aspect};
+        const multiAspectDeck = this.catalog.hero.deckBuildingRules?.aspectCount > 1;
+        const selectedAspects = getSelectedDeckAspects(this.deck);
+        const shouldSelectAspect = selectedAspects.length === 0 &&
+            count > 0 &&
+            !hasClassification(card.classification, CLASSIFICATION_BASIC);
+        const selectedAspectIds = shouldSelectAspect ?
+            [card.aspect] :
+            selectedAspects;
+        const aspect = multiAspectDeck ?
+            selectedAspectIds :
+            selectedAspectIds[0] || '';
+        const deckForLimit = {...this.deck, aspect};
         const copyLimit = getPlayerDeckCardCopyLimit(deckForLimit, this.catalog, cardId);
         if (count > copyLimit && count > currentCount) {
             this.error = `No puedes incluir más de ${copyLimit} copias de "${card.name}" en este mazo.`;
@@ -271,10 +283,7 @@ export class McDeckApp extends LitElement {
         if (count > 0) {
             cards.push({id: cardId, count});
         }
-        this.updateDeck({
-            ...(aspect !== this.deck.aspect ? {aspect} : {}),
-            cards,
-        });
+        this.updateDeck({aspect, cards});
     }
     get cardById() {
         return new Map((this.catalog?.cards || []).map(card => [card.id, card]));
@@ -319,11 +328,12 @@ export class McDeckApp extends LitElement {
             counts.set(id, (counts.get(id) || 0) + count);
             return counts;
         }, new Map());
+        const selectedAspects = getSelectedDeckAspects(this.deck);
 
         return this.catalog.cards
-            .filter(card => !this.deck.aspect ||
-                card.aspect === 'basic' ||
-                card.aspect === this.deck.aspect)
+            .filter(card => !selectedAspects.length ||
+                hasClassification(card.classification, CLASSIFICATION_BASIC) ||
+                selectedAspects.includes(card.aspect))
             .map(card => ({
                 ...card,
                 maxAddCount: Math.max(

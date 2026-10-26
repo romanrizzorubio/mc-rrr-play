@@ -12,6 +12,16 @@ const operators = {
 const numericOperators = new Set(['<', '<=', '>', '>=']);
 
 export const checkFilter = async (target, filter, params) => {
+    if (Array.isArray(filter)) {
+        for (const alternative of filter) {
+            if (await checkFilter(target, alternative, params)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     const staticFilter = {};
     const calculatedFilters = [];
 

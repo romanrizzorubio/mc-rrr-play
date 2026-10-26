@@ -452,37 +452,50 @@ describe('Hulk card tests', () => {
         assert.equal(hulkSide.params.handSize, 4);
         assert.equal(hulkSide.params.hitPoints, 18);
 
-        const references = hulk.config.precon.flatMap(({aspect, cardRefs}) =>
-            cardRefs.map(({id, count}) => ({aspect, id, count})));
+        const references = hulk.config.precon.flatMap(({
+            aspect,
+            classification,
+            cardRefs,
+        }) => cardRefs.map(({id, count}) => ({
+            category: aspect || classification,
+            id,
+            count,
+        })));
         assert.deepEqual(references, [
-            {aspect: 'basic', id: 'basic-energy', count: 1},
-            {aspect: 'basic', id: 'basic-strength', count: 1},
-            {aspect: 'basic', id: 'basic-genius', count: 1},
-            {aspect: 'basic', id: 'basic-al-rescate', count: 3},
-            {aspect: 'basic', id: 'basic-avengers-mansion', count: 1},
-            {aspect: 'basic', id: 'basic-helicarrier', count: 1},
+            {category: 'basic', id: 'basic-energy', count: 1},
+            {category: 'basic', id: 'basic-strength', count: 1},
+            {category: 'basic', id: 'basic-genius', count: 1},
+            {category: 'basic', id: 'basic-al-rescate', count: 3},
+            {category: 'basic', id: 'basic-avengers-mansion', count: 1},
+            {category: 'basic', id: 'basic-helicarrier', count: 1},
             {
-                aspect: 'aggression',
+                category: 'aggression',
                 id: 'aggression-the-power-of-aggression',
                 count: 2,
             },
             {
-                aspect: 'aggression',
+                category: 'aggression',
                 id: 'aggression-patada-doble-voladora',
                 count: 3,
             },
-            {aspect: 'aggression', id: 'aggression-cara-a-cara', count: 3},
-            {aspect: 'aggression', id: 'aggression-pagaras-por-eso', count: 3},
-            {aspect: 'aggression', id: 'aggression-vigor', count: 1},
-            {aspect: 'aggression', id: 'aggression-el-vigia', count: 1},
-            {aspect: 'aggression', id: 'aggression-hulka', count: 1},
-            {aspect: 'aggression', id: 'aggression-destreza-marcial', count: 3},
+            {category: 'aggression', id: 'aggression-cara-a-cara', count: 3},
+            {category: 'aggression', id: 'aggression-pagaras-por-eso', count: 3},
+            {category: 'aggression', id: 'aggression-vigor', count: 1},
+            {category: 'aggression', id: 'aggression-el-vigia', count: 1},
+            {category: 'aggression', id: 'aggression-hulka', count: 1},
+            {category: 'aggression', id: 'aggression-destreza-marcial', count: 3},
         ]);
 
         const aspectsById = new Map(aspects.map(card => [card._id, card]));
-        references.forEach(({aspect, id}) => {
-            assert.equal(aspectsById.get(id)?.aspect, aspect);
-            assert.equal(aspectsById.get(id)?.card.params.set, aspect);
+        references.forEach(({category, id}) => {
+            const cardRecord = aspectsById.get(id);
+            if (category === 'basic') {
+                assert.equal(cardRecord?.classification, 'basic');
+                assert.equal(Object.hasOwn(cardRecord, 'aspect'), false);
+            } else {
+                assert.equal(cardRecord?.aspect, category);
+            }
+            assert.equal(cardRecord?.card.params.set, category);
         });
 
         const rescueCard = aspectsById.get('basic-al-rescate')?.card;

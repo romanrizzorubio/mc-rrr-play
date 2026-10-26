@@ -172,7 +172,7 @@ export class Hand extends Engine {
         return [...new Set(targets.flat(Infinity)
             .flatMap(target => target?.isPlayer ?
                 [] :
-                [target?.id, target?.parentId])
+                [target?.id, target?.parentId, target?.parent?.id])
             .filter(id => id !== undefined && id !== null))];
     }
     async getEffectTargets(effect, params, visited = new Set()) {

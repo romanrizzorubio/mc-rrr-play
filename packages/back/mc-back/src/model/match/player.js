@@ -950,12 +950,14 @@ export class Player extends Engine {
         const gameZone = this.gameZone ?
             await this.gameZone.toObjWithAbilityAvailability(this) :
             undefined;
-        const currentTraits = superhero.currentSide.traits;
+        const printedTraits = superhero.currentSide.card ?
+            superhero.currentSide.card.traits || [] :
+            superhero.currentSide.traits || [];
         const player = this.toObj();
         const extraTraits = [...new Set([
             ...player.superhero.extraTraits,
             ...effectiveTraits,
-        ])].filter(trait => !currentTraits.includes(trait));
+        ])].filter(trait => !printedTraits.includes(trait));
 
         return {
             ...player,

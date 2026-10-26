@@ -755,7 +755,7 @@ export default {
                 ],
             },
             {
-                'aspect': 'basic',
+                'classification': 'basic',
                 'cardRefs': [
                     {'id': 'basic-avengers-tower', 'count': 1},
                     {'id': 'basic-energy', 'count': 1},

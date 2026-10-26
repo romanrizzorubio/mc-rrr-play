@@ -3,8 +3,12 @@ import {LitElement, html} from 'lit-element';
 import '../mc-deck-selected-cards/mc-deck-selected-cards.js';
 import '../mc-deck-card-pool/mc-deck-card-pool.js';
 import styles from './mc-deck-editor.css.js';
-import {getAspectName} from '../../utils/deck-presentation.js';
+import {
+    getAspectName,
+    getDeckComposition,
+} from '../../utils/deck-presentation.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
+import {getSelectedDeckAspects} from 'mc-shared';
 
 export class McDeckEditor extends LitElement {
     static get is() {
@@ -45,6 +49,19 @@ export class McDeckEditor extends LitElement {
             changes: {aspect: event.target.value},
         });
     }
+    handleAspectToggle(aspect, event) {
+        const selectedAspects = new Set(getSelectedDeckAspects(this.deck));
+        if (event.target.checked) {
+            selectedAspects.add(aspect);
+        } else {
+            selectedAspects.delete(aspect);
+        }
+        dispatchComponentEvent(this, 'deck-update', {
+            changes: {
+                aspect: [...selectedAspects],
+            },
+        });
+    }
     handleSave() {
         dispatchComponentEvent(this, 'save-deck');
     }
@@ -66,7 +83,62 @@ export class McDeckEditor extends LitElement {
             </div>
         `;
     }
+    renderAspectSelector() {
+        const aspectCount = this.catalog.hero.deckBuildingRules?.aspectCount ?? 1;
+        if (aspectCount <= 1) {
+            return html`
+                <md-filled-select
+                    label="Aspecto"
+                    .value="${this.deck.aspect}"
+                    @change="${this.handleAspectChange.bind(this)}"
+                >
+                    <md-select-option value="">
+                        <div slot="headline">Selecciona un aspecto</div>
+                    </md-select-option>
+                    ${this.catalog.aspects.map(aspect => html`
+                        <md-select-option value="${aspect.id}">
+                            <div slot="headline">${getAspectName(aspect.id)}</div>
+                        </md-select-option>
+                    `)}
+                </md-filled-select>
+            `;
+        }
+
+        const selectedAspects = getSelectedDeckAspects(this.deck);
+
+        return html`
+            <fieldset class="aspect-selection">
+                <legend>Aspectos (elige ${aspectCount})</legend>
+                <div class="aspect-options">
+                    ${this.catalog.aspects.map(aspect => html`
+                        <label>
+                            <input
+                                type="checkbox"
+                                .checked="${selectedAspects.includes(aspect.id)}"
+                                ?disabled="${!selectedAspects.includes(aspect.id) &&
+                                    selectedAspects.length >= aspectCount}"
+                                @change="${event =>
+                                    this.handleAspectToggle(aspect.id, event)}"
+                            >
+                            ${getAspectName(aspect.id)}
+                        </label>
+                    `)}
+                </div>
+            </fieldset>
+            ${selectedAspects.length === aspectCount &&
+                this.catalog.hero.deckBuildingRules?.equalAspectCardCounts ? html`
+                <p class="aspect-rule">
+                    Incluye la misma cantidad de cartas de cada aspecto seleccionado.
+                </p>
+            ` : ''}
+        `;
+    }
     render() {
+        const composition = getDeckComposition(
+            this.selectedCards,
+            getSelectedDeckAspects(this.deck),
+        );
+
         return html`
             <section class="editor" aria-labelledby="editor-title">
                 <div class="section-heading">
@@ -94,20 +166,7 @@ export class McDeckEditor extends LitElement {
                     ></md-filled-text-field>
                 </div>
                 <div class="field">
-                    <md-filled-select
-                        label="Aspecto"
-                        .value="${this.deck.aspect}"
-                        @change="${this.handleAspectChange.bind(this)}"
-                    >
-                        <md-select-option value="">
-                            <div slot="headline">Selecciona un aspecto</div>
-                        </md-select-option>
-                        ${this.catalog.aspects.map(aspect => html`
-                            <md-select-option value="${aspect.id}">
-                                <div slot="headline">${getAspectName(aspect.id)}</div>
-                            </md-select-option>
-                        `)}
-                    </md-filled-select>
+                    ${this.renderAspectSelector()}
                 </div>
                 <p class="deck-size">
                     Tamaño: <strong>${this.deckSize}</strong> / 40–50 cartas.
@@ -127,7 +186,15 @@ export class McDeckEditor extends LitElement {
                     >
                         <div class="deck-editor-middle-counts">
                             <p>Mazo actual: <strong>${this.deckSize}</strong> cartas</p>
-                            <p>Cartas disponibles: <strong>${this.availableCards.length}</strong></p>
+                            ${composition.length ? html`
+                                <p class="deck-composition" aria-label="Composición del mazo">
+                                    <strong>Composición:</strong>
+                                    ${composition.map((group, index) => html`
+                                        ${index ? html`<span aria-hidden="true"> · </span>` : ''}
+                                        <span>${group.label}: <strong>${group.count}</strong></span>
+                                    `)}
+                                </p>
+                            ` : ''}
                         </div>
                         <div class="section-actions">
                             <md-text-button
@@ -149,7 +216,7 @@ export class McDeckEditor extends LitElement {
                     <mc-deck-card-pool
                         .cards="${this.availableCards}"
                         .search="${this.search}"
-                        .deckAspect="${this.deck.aspect}"
+                        .deckAspects="${getSelectedDeckAspects(this.deck)}"
                     ></mc-deck-card-pool>
                 </div>
             </section>

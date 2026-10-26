@@ -9,7 +9,7 @@ export const MixinHeroAbility = C => class extends C {
     isValidIdentity({player}) {
         const owner = this.card.isEvent ?
             player :
-            this.card.owner || this.owner;
+            this.card.controller || this.card.owner || this.owner;
         if (owner && owner.isPlayer) {
             return owner.isHero;
         }

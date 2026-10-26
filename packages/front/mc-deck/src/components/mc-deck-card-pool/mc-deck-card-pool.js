@@ -4,10 +4,12 @@ import {translateTrait} from 'mc-shared';
 import styles from './mc-deck-card-pool.css.js';
 import '../shared/mc-deck-card-economy.js';
 import {
-    getAspectClass,
     getAspectName,
+    getCardCategoryClass,
     getCardImageUrl,
+    getCardOriginName,
     getCardTypeName,
+    matchesDeckAspectFilter,
 } from '../../utils/deck-presentation.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
 import {compareDeckPoolCards} from '../../utils/deck-card-pool-sort.js';
@@ -25,7 +27,7 @@ export class McDeckCardPool extends LitElement {
         return {
             cards: {type: Array},
             search: {type: String},
-            deckAspect: {type: String},
+            deckAspects: {type: Array},
             typeFilter: {type: String},
             aspectFilter: {type: String},
             traitFilter: {type: String},
@@ -43,7 +45,7 @@ export class McDeckCardPool extends LitElement {
 
         this.cards = [];
         this.search = '';
-        this.deckAspect = '';
+        this.deckAspects = [];
         this.typeFilter = 'all';
         this.aspectFilter = 'all';
         this.traitFilter = 'all';
@@ -53,7 +55,7 @@ export class McDeckCardPool extends LitElement {
         this.sortDirection = 'asc';
     }
     updated(changedProperties) {
-        if (changedProperties.has('deckAspect')) {
+        if (changedProperties.has('deckAspects')) {
             this.aspectFilter = 'all';
         }
         if (changedProperties.has('cards')) {
@@ -141,14 +143,16 @@ export class McDeckCardPool extends LitElement {
 
         return this.cards
             .filter(card => this.typeFilter === 'all' || card.type === this.typeFilter)
-            .filter(card => this.aspectFilter === 'all' ||
-                (this.aspectFilter === 'deck' && card.aspect === this.deckAspect) ||
-                (this.aspectFilter === 'basic' && card.aspect === 'basic'))
+            .filter(card => matchesDeckAspectFilter(
+                card,
+                this.aspectFilter,
+                this.deckAspects,
+            ))
             .filter(card => matchesCardTraitFilter(card, this.traitFilter))
             .filter(card => !query || [
                 card.name,
                 getCardTypeName(card.type),
-                getAspectName(card.aspect),
+                getCardOriginName(card),
                 ...getCardTraits(card).flatMap(trait => [
                     trait,
                     translateTrait(trait),
@@ -208,7 +212,7 @@ export class McDeckCardPool extends LitElement {
         const addCount = this.addCountFor(card);
 
         return html`
-            <tr id="${card.id}" class="${getAspectClass(card.aspect)}">
+            <tr id="${card.id}" class="${getCardCategoryClass(card)}">
                 <td>
                     <div class="card-cell">
                         ${imageUrl ? html`
@@ -232,7 +236,7 @@ export class McDeckCardPool extends LitElement {
                     </div>
                 </td>
                 <td>${getCardTypeName(card.type)}</td>
-                <td>${getAspectName(card.aspect)}</td>
+                <td>${getCardOriginName(card)}</td>
                 <td class="traits-cell">
                     ${this.renderTraits(card)}
                 </td>
@@ -300,20 +304,17 @@ export class McDeckCardPool extends LitElement {
                     >
                         <md-select-option value="all">
                             <div slot="headline">
-                                ${this.deckAspect ?
-                                    'Aspecto del mazo y básicas' :
+                                ${this.deckAspects.length ?
+                                    'Aspectos del mazo y básicas' :
                                     'Todos los aspectos y básicas'
                                 }
                             </div>
                         </md-select-option>
-                        <md-select-option value="deck" ?disabled="${!this.deckAspect}">
-                            <div slot="headline">
-                                ${this.deckAspect ?
-                                    getAspectName(this.deckAspect) :
-                                    'Aspecto del mazo'
-                                }
-                            </div>
-                        </md-select-option>
+                        ${this.deckAspects.map(aspect => html`
+                            <md-select-option value="${aspect}">
+                                <div slot="headline">${getAspectName(aspect)}</div>
+                            </md-select-option>
+                        `)}
                         <md-select-option value="basic">
                             <div slot="headline">Básicas</div>
                         </md-select-option>

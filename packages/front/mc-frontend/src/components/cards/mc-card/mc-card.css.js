@@ -4,6 +4,7 @@ export default css`
   :host {
     --card-size: 100px;
     --stage-label-height: calc(0.85rem + 6px);
+    --aspect-marker-space: 16px;
 
     display: block;
     position: relative;
@@ -259,6 +260,10 @@ export default css`
 
   .character-stats.stage-aligned {
     margin-top: var(--stage-label-height);
+  }
+
+  .character-stats.aspect-markers-aligned {
+    margin-top: var(--aspect-marker-space);
   }
 
   .character-stats.has-emphasized {

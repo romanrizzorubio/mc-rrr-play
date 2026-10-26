@@ -18,6 +18,7 @@ export class McScenario extends LitElement {
         return {
             scenario: {type: Object},
             player: {type: Object},
+            deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
@@ -28,6 +29,7 @@ export class McScenario extends LitElement {
 
         this.scenario = null;
         this.player = null;
+        this.deckSelectionTargetIds = [];
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
@@ -50,6 +52,12 @@ export class McScenario extends LitElement {
                 },
             }));
         }
+    }
+    isDeckSelectable(deck) {
+        return Boolean(
+            deck?.id &&
+            this.deckSelectionTargetIds.includes(deck.id)
+        );
     }
     renderVillain() {
         const villain = path(this, 'scenario.villain');
@@ -206,13 +214,15 @@ export class McScenario extends LitElement {
         `;
     }
     renderDeck() {
-        const {scenario: {deck: {cards, discard, knownCards = []}}} = this;
+        const {deck} = this.scenario;
 
         return html`
             <mc-deck
-                .cards="${cards}"
-                .discard="${discard}"
-                .knownCards="${knownCards}"
+                .cards="${deck.cards}"
+                .discard="${deck.discard || []}"
+                .knownCards="${deck.knownCards || []}"
+                .targetId="${deck.id || ''}"
+                .targetSelectable="${this.isDeckSelectable(deck)}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 discard-label="Descarte del mazo de encuentros"

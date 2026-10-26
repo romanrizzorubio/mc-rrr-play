@@ -7,6 +7,7 @@ import {
     EFFECT_CHANGE_ATTACK_TARGETS,
     EFFECT_ADD_TRAIT,
     EFFECT_ASSIGN_DAMAGE,
+    EFFECT_ASSIGN_THREAT,
     EFFECT_CANCEL_ACTIVATION,
     EFFECT_CANCEL_CARD_EFFECTS,
     EFFECT_REPLACE_EFFECT,
@@ -135,6 +136,7 @@ import {ActivateEffect} from '../../effects/activate-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
+import {AssignThreatEffect} from '../../effects/assign-threat-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
 import {CancelCardEffectsEffect} from '../../effects/cancel-card-effects-effect.js';
 import {ReplaceEffect} from '../../effects/replace-effect.js';
@@ -262,6 +264,7 @@ export const EFFECT_MAP = {
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
     [EFFECT_ASSIGN_DAMAGE]: AssignDamageEffect,
+    [EFFECT_ASSIGN_THREAT]: AssignThreatEffect,
     [EFFECT_PREVENT_DAMAGE]: PreventDamageEffect,
     [EFFECT_PREVENT_PLACE_DAMAGE]: PreventPlaceDamageEffect,
     [EFFECT_PREVENT_PLACE_THREAT]: PreventPlaceThreatEffect,

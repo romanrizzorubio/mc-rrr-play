@@ -5,6 +5,7 @@ import {DIALOG_SELECT_TARGET,
     TARGET_ALL_SCHEMES,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
+    TARGET_PARENT,
     TARGET_SELECTED_PLAYER_CHARACTERS,
 } from 'mc-shared';
 
@@ -13,6 +14,7 @@ import {
     filterTargetCandidates,
     splitTargetCondition,
 } from '../utils/target-condition-utils.js';
+import {filterReferentialTargets} from '../utils/referential-ability-utils.js';
 import {targetMap} from './index.js';
 
 const findSelectedTarget = (targets, selected) => {
@@ -20,14 +22,14 @@ const findSelectedTarget = (targets, selected) => {
         return undefined;
     }
 
-    const directMatch = targets.find(target => target.id === selected.id);
+    const directMatch = targets.find(target => target?.id === selected.id);
     if (directMatch) {
         return directMatch;
     }
 
     return selected.parentId === undefined ?
         undefined :
-        targets.find(target => target.id === selected.parentId);
+        targets.find(target => target?.id === selected.parentId);
 };
 
 const getTargetPlayerDialogParam = targetPlayer => {
@@ -58,6 +60,9 @@ export class ValidTarget extends Engine {
         this._filter = filter;
     }
     filter(card, params) {
+        if (!card) {
+            return false;
+        }
         if (this._filter && !this._filter(card, params)) {
             return false;
         }
@@ -142,11 +147,31 @@ export class ValidTarget extends Engine {
         const {condition, selectionConditions} =
             splitTargetCondition(this.condition);
         const targets = this.getTargetCandidates(params, params.target, condition);
+        const validTargets = targets.filter(target =>
+            this.filter(target, params));
+        const referenceCard = params.ability?.card ??
+            params.effect?.ability?.card ??
+            this.effect?.ability?.card;
+        const referentialTargets = filterReferentialTargets(
+            validTargets,
+            condition,
+            referenceCard,
+            this.match || params.match
+        );
 
         return filterTargetCandidates(
-            targets.filter(target => this.filter(target, params)),
+            referentialTargets,
             selectionConditions
         );
+    }
+    resolveSelectedTargets(selectedTarget, params) {
+        const validTargets = this.getValidTarget(params);
+        const selectedTargets = Array.isArray(selectedTarget) ?
+            selectedTarget :
+            [selectedTarget];
+
+        return selectedTargets.map(selected =>
+            findSelectedTarget(validTargets, selected));
     }
     isMultipleTarget(params) {
         const {multipleTarget} = this;
@@ -170,15 +195,26 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_ENGAGED_MINIONS:
             case TARGET_ALL_SCHEMES:
             case TARGET_ALL_SIDE_SCHEMES:
+            case TARGET_PARENT:
                 return true;
         }
 
         return false;
     }
     async selectFrom(candidates, params) {
-        const validTarget = candidates.filter(card => this.filter(card, params));
+        const validTargets = candidates.filter(card =>
+            this.filter(card, params));
+        const referenceCard = params.ability?.card ??
+            params.effect?.ability?.card ??
+            this.effect?.ability?.card;
+        const referentialTargets = filterReferentialTargets(
+            validTargets,
+            this.condition,
+            referenceCard,
+            this.match || params.match
+        );
 
-        return this.selectSingleTarget(validTarget, params);
+        return this.selectSingleTarget(referentialTargets, params);
     }
     async selectTarget(params) {
         const validTarget = this.getValidTarget(params);

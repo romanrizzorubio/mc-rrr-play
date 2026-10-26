@@ -20,7 +20,13 @@ const normalizeDeck = (body, catalog) => {
 
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const heroId = typeof body.heroId === 'string' ? body.heroId : '';
-    const aspect = typeof body.aspect === 'string' ? body.aspect : '';
+    const aspect = body.aspect;
+    if (aspect !== undefined &&
+        typeof aspect !== 'string' &&
+        (!Array.isArray(aspect) ||
+            aspect.some(selectedAspect => typeof selectedAspect !== 'string'))) {
+        throw createError('El aspecto del mazo debe ser un nombre o una lista de nombres.', 400);
+    }
     if (!name || name.length > 100) {
         throw createError('El nombre del mazo debe tener entre 1 y 100 caracteres.', 400);
     }
@@ -50,11 +56,19 @@ const normalizeDeck = (body, catalog) => {
         cardsById.set(entry.id, count);
     }
 
+    const submittedAspects = Array.isArray(aspect) ?
+        [...aspect] :
+        aspect ? [aspect] : [];
+    const isMultiAspectDeck = catalog.hero.deckBuildingRules?.aspectCount > 1;
+    if (!isMultiAspectDeck && submittedAspects.length > 1) {
+        throw createError('Este superhéroe solo puede seleccionar un aspecto.', 400);
+    }
+
     return {
         ...(typeof body.id === 'string' && body.id ? {id: body.id} : {}),
         name,
         heroId,
-        aspect,
+        aspect: isMultiAspectDeck ? submittedAspects : submittedAspects[0] || '',
         cards: [...cardsById].map(([id, count]) => ({id, count})),
     };
 };

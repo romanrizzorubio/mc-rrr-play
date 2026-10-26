@@ -1,4 +1,7 @@
-import {isEventInPlayerHand} from '../../utils/trigger-card-player.js';
+import {
+    getTriggerCardPlayer,
+    isEventInPlayerHand,
+} from '../../utils/trigger-card-player.js';
 
 function isLastingAbility(ability) {
     return Boolean(ability?.lasting);
@@ -85,11 +88,13 @@ export class Trigger {
     getInterruptName() {}
     getAbilityParams(params) {
         const abilityParams = {...params};
+        const player = getTriggerCardPlayer(this.card, params.player);
         delete abilityParams.preselectedEffectTargets;
         delete abilityParams.prePlayConfirmationAcceptedFor;
 
         return {
             ...abilityParams,
+            ...(player?.isPlayer ? {player} : {}),
             fixedPreselectedTarget: false,
             triggeredEffect: params.effect,
         };

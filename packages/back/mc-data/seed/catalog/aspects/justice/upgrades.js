@@ -1,12 +1,16 @@
 import {
+    CLASSIFICATION_JUSTICE,
     CARD_TYPE_ANY,
     ABILITY_CONSTANT,
+    ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     CARD_TYPE_UPGRADE,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
+    EFFECT_DRAW_CARD,
+    EFFECT_EXHAUST,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PREVENT_PLACE_THREAT,
     PLACE_ENCOUNTER_DECK,
@@ -15,15 +19,18 @@ import {
     TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_MAIN_SCHEME,
+    TARGET_ANY_PLAYER,
     TARGET_PLAYER,
     TARGET_SIDE_SCHEME,
     TARGET_THIS,
+    TARGET_YOU,
     TRAIT_CONDITION,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ATTACHED_DEFEAT,
+    TRIGGER_SIDE_SCHEME_DEFEATED,
     TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_YOUR_HERO_GET_THWART
 } from 'mc-shared';
@@ -39,7 +46,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Intuición heróica',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/upgrades/j65-copy.webp',
                 'traits': [
                     TRAIT_SKILL
@@ -80,7 +87,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Seguimiento',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/upgrades/03032.png',
                 'cost': 1,
                 'resources': [
@@ -115,7 +122,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Bajo vigilancia',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/upgrades/06031.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -131,6 +138,53 @@ export default [
             }
         }
     },
+    {
+        '_id': 'justice-investigador-sagaz',
+        'aspect': 'justice',
+        'order': 63,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Investigador sagaz',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/upgrades/04047.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_SIDE_SCHEME_DEFEATED,
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DRAW_CARD,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'count': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
 
     {
         '_id': 'justice-contraespionaje',
@@ -140,7 +194,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Contraespionaje',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/upgrades/08017.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -190,7 +244,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Tácticas de infiltración',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/upgrades/08018.png',
                 'traits': [
                     TRAIT_PREPARATION,

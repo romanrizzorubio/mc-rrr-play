@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
@@ -53,7 +54,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Hacer la llamada',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/01071.png',
                 'cost': 0,
                 'resources': [
@@ -110,7 +111,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Liderar en vanguardia',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/01070.png',
                 'traits': [
                     TRAIT_TACTIC
@@ -167,7 +168,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Preparación',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/01069.png',
                 'cost': 0,
                 'resources': [
@@ -198,7 +199,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡Vengadores, reuníos!',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/03015.png',
                 'cost': 4,
                 'resources': [
@@ -275,7 +276,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Superioridad numérica',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/03017.png',
                 'cost': 0,
                 'resources': [
@@ -318,7 +319,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Moral elevada',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/05032.png',
                 'cost': 1,
                 'resources': [
@@ -379,7 +380,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Listo para la acción',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/04017.png',
                 'traits': [
                     TRAIT_TACTIC
@@ -413,7 +414,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Trabajo en equipo',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/06032.png',
                 'traits': [
                     TRAIT_TACTIC
@@ -482,7 +483,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Presencia inspiradora',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/events/10030.png',
                 'cost': 1,
                 'resources': [

@@ -180,6 +180,9 @@ describe('damage interrupt dialog', () => {
             },
         };
         const match = {
+            activationsFactory: {
+                createActivation: () => ({filterTarget: () => true}),
+            },
             enemies: [],
             friends: [damagedCharacter],
             openDialog: async dialog => {

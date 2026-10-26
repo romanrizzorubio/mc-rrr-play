@@ -51,6 +51,7 @@ export class Lasting extends Engine {
         } else {
             const trigger = TIME_TRIGGER_MAP[until] ?? until;
             const endLastingAbility = new EndLastingAbility({
+                card: this.card,
                 trigger,
                 lasting: this,
                 effect: new EndLastingEffect({

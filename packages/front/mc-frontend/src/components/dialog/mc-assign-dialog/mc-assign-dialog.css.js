@@ -12,5 +12,19 @@ export default css`
   .cards {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .assigned-slider {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .assigned-slider md-slider {
+    box-sizing: border-box;
+    display: block;
+    min-inline-size: 0;
+    width: 100%;
   }
 `;

@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_PROTECTION,
     ABILITY_ACTION,
     CARD_TYPE_SUPPORT,
     EFFECT_CHAINED,
@@ -24,7 +25,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Equipo médico',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/supports/01080.png',
                 'traits': [
                     TRAIT_SHIELD
@@ -84,7 +85,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'La Enfermera de Noche',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/supports/09019.png',
                 'traits': [
                     TRAIT_PERSONA

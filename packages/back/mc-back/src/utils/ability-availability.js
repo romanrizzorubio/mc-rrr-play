@@ -53,6 +53,8 @@ export async function getAbilitiesWithAvailability(card, player) {
 
         try {
             ability.prepareEffect();
+            const targetSelectionMode =
+                ability.effect?.getTargetSelectionMode?.();
 
             const availabilityParams = {
                 player,
@@ -78,6 +80,7 @@ export async function getAbilitiesWithAvailability(card, player) {
 
             return {
                 ...serializedAbility,
+                ...(targetSelectionMode ? {targetSelectionMode} : {}),
                 disable: !canRun,
                 ...(availableTargetIds ?
                     {availableTargetIds} :

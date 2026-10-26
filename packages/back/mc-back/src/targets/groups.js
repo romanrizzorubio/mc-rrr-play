@@ -21,25 +21,39 @@ import {
 } from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
-const resolveCharacterCondition = (character, condition) => {
+const resolveCharacterCondition = (
+    character,
+    condition,
+    matchActiveNameOnly
+) => {
     const {name, ...otherConditions} = condition;
 
     if ((name !== undefined &&
             character.name !== name &&
-            character.mainName !== name) ||
+            (matchActiveNameOnly || character.mainName !== name)) ||
         !checkCondition(character, otherConditions)) {
         return undefined;
     }
 
     if (name !== undefined && character.sides?.length) {
-        return character.sides.find(side => side.name === name) || character;
+        return matchActiveNameOnly ?
+            character.currentSide ?? character :
+            character.sides.find(side => side.name === name) || character;
     }
 
     return character;
 };
-const filterCharactersByCondition = (characters, condition) =>
+const filterCharactersByCondition = (
+    characters,
+    condition,
+    matchActiveNameOnly
+) =>
     characters.flatMap(character => {
-        const target = resolveCharacterCondition(character, condition);
+        const target = resolveCharacterCondition(
+            character,
+            condition,
+            matchActiveNameOnly
+        );
 
         return target ? [target] : [];
     });
@@ -50,19 +64,31 @@ export const groupTargets = {
     [TARGET_ALL_CARDS]: ({cards}) => cards,
     [TARGET_ALL_ALLIES]: ({match}) =>
         match.players.flatMap(player => player.allies),
-    [TARGET_ALL_CHARACTERS]: ({match, condition}) => {
+    [TARGET_ALL_CHARACTERS]: ({match, condition, playCardEffect}) => {
         const characters = match.enemies.concat(match.friends);
 
         return condition ?
-            filterCharactersByCondition(characters, condition) :
+            filterCharactersByCondition(
+                characters,
+                condition,
+                Boolean(playCardEffect)
+            ) :
             characters;
     },
     [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
-    [TARGET_ALL_FRIENDLY_CHARACTERS]: ({match, condition}) => {
+    [TARGET_ALL_FRIENDLY_CHARACTERS]: ({
+        match,
+        condition,
+        playCardEffect,
+    }) => {
         const characters = match.friends;
 
         return condition ?
-            filterCharactersByCondition(characters, condition) :
+            filterCharactersByCondition(
+                characters,
+                condition,
+                Boolean(playCardEffect)
+            ) :
             characters;
     },
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,
@@ -93,7 +119,7 @@ export const groupTargets = {
             card.isEnvironment && (!condition || checkCondition(card, condition))),
     [TARGET_CHARACTER]: ({match}) => match.characters,
     [TARGET_ENEMY]: ({match}) => match.enemies,
-    [TARGET_HERO]: ({condition, match}) => {
+    [TARGET_HERO]: ({condition, match, playCardEffect}) => {
         const heroes = match.heroes.map(player => player.superhero.currentSide);
 
         if (Array.isArray(condition)) {
@@ -102,7 +128,11 @@ export const groupTargets = {
         }
 
         return condition ?
-            filterCharactersByCondition(heroes, condition) :
+            filterCharactersByCondition(
+                heroes,
+                condition,
+                Boolean(playCardEffect)
+            ) :
             heroes;
     },
     [TARGET_MINION]: ({match}) => match.minions,

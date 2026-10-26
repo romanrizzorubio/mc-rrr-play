@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_JUSTICE,
     ABILITY_CONSTANT,
     ABILITY_RESPONSE,
     CALC_COUNT,
@@ -9,6 +10,7 @@ import {
     EFFECT_EXHAUST,
     EFFECT_MOVE_TO_HAND,
     EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_REMOVE_THREAT,
     EFFECT_SEARCH_CARDS,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
@@ -17,6 +19,7 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_SIDE_SCHEME,
     TARGET_SOURCE,
     TARGET_THIS,
     TARGET_TRIGGERED_CARD,
@@ -28,7 +31,8 @@ import {
     TRIGGER_CHARACTER_SCHEMES,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_GET_THWART,
-    TRIGGER_THIS_THWARTS
+    TRIGGER_THIS_THWARTS,
+    TRIGGER_YOU_END_PLAY_CARD
 } from 'mc-shared';
 
 export default [
@@ -40,7 +44,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Daredevil',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/allies/j58.webp',
                 'traits': [
                     TRAIT_DEFENDER
@@ -83,7 +87,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Jessica Jones',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/allies/j59.webp',
                 'traits': [
                     TRAIT_DEFENDER
@@ -130,7 +134,7 @@ export default [
             'params': {
                 'name': 'Agente Coulson',
                 'subtitle': 'Phil Coulson',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/allies/08011.png',
                 'traits': [
                     TRAIT_SHIELD,
@@ -197,7 +201,7 @@ export default [
             'params': {
                 'name': 'Temblor',
                 'subtitle': 'Daisy Johnson',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/allies/08012.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -233,6 +237,52 @@ export default [
                                 'params': {
                                     'target': TARGET_TRIGGERED_CARD,
                                     'damage': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-spiderman',
+        'aspect': 'justice',
+        'order': 23,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Spiderman',
+                'subtitle': 'Peter Parker',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/allies/04045.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 5,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'thwart': 2,
+                'attack': 2,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.name': 'Spiderman'
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_SIDE_SCHEME,
+                                    'threat': [3, true]
                                 }
                             }
                         }

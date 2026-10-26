@@ -2,8 +2,9 @@ import {LitElement, html} from 'lit-element';
 
 import styles from './mc-deck-list.css.js';
 import {
-    getAspectClass,
-    getAspectName,
+    getDeckAspectClass,
+    getDeckAspectGradient,
+    getDeckAspectName,
 } from '../../utils/deck-presentation.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
 import {compareDeckListItems} from '../../utils/deck-list-sort.js';
@@ -42,7 +43,7 @@ export class McDeckList extends LitElement {
         return this.decks.filter(deck => [
             deck.name,
             deck.heroName,
-            getAspectName(deck.aspect),
+            getDeckAspectName(deck),
         ].some(value => value.toLocaleLowerCase('es').includes(query)));
     }
     get sortedDecks() {
@@ -105,8 +106,13 @@ export class McDeckList extends LitElement {
         dispatchComponentEvent(this, 'delete-deck', {deck});
     }
     renderDeck(deck) {
+        const aspectGradient = getDeckAspectGradient(deck);
+
         return html`
-            <div class="deck-row ${getAspectClass(deck.aspect)}">
+            <div
+                class="deck-row ${getDeckAspectClass(deck)}"
+                style="${aspectGradient ? `background-image: ${aspectGradient};` : ''}"
+            >
                 <md-list-item
                     class="deck-row-main"
                     type="button"
@@ -121,7 +127,7 @@ export class McDeckList extends LitElement {
                         </span>
                         <span>
                             <span class="field-label">Aspecto</span>
-                            ${getAspectName(deck.aspect)}
+                            ${getDeckAspectName(deck)}
                         </span>
                         <span class="deck-size">
                             <span class="field-label">Cartas</span>

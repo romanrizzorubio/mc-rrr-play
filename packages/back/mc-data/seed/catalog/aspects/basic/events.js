@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
     ABILITY_INTERRUPT,
@@ -34,13 +35,13 @@ import {
 export default [
     {
         '_id': 'basic-haymaker',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 2,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Puñetazo demoledor',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/01087.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -72,13 +73,13 @@ export default [
     },
     {
         '_id': 'basic-emergency',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 3,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Emergencia',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/01085.png',
                 'traits': [
                     TRAIT_THWART
@@ -111,13 +112,13 @@ export default [
     },
     {
         '_id': 'basic-first-aid',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 4,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Primeros auxilios',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/01086.png',
                 'traits': [],
                 'cost': 1,
@@ -144,13 +145,13 @@ export default [
     },
 {
         '_id': 'basic-invulnerabilidad',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 61,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Invulnerabilidad',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/06021.png',
                 'traits': [
                     TRAIT_SUPERPOWER
@@ -179,13 +180,13 @@ export default [
 
     {
         '_id': 'basic-alerta',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 90,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Alerta',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/09021.png',
                 'cost': 0,
                 'resources': [
@@ -215,13 +216,13 @@ export default [
     },
     {
         '_id': 'basic-al-rescate',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 91,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡Al rescate!',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/10019.png',
                 'traits': [
                     TRAIT_THWART
@@ -253,13 +254,13 @@ export default [
     },
     {
         '_id': 'basic-los-heroes-mas-poderosos',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 92,
         'card': {
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Los héroes más poderosos',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/events/04022.png',
                 'cost': 0,
                 'resources': [

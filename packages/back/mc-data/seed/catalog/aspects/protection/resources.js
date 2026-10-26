@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_PROTECTION,
     CARD_TYPE_RESOURCE,
     RESOURCE_WILD,
     TARGET_DECK
@@ -13,7 +14,7 @@ export default [
             'type': CARD_TYPE_RESOURCE,
             'params': {
                 'name': 'El poder de la protección',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/resources/01079.png',
                 'resources': [
                     {

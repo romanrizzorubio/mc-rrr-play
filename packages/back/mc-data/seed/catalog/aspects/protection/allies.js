@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_PROTECTION,
     ABILITY_CONSTANT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
@@ -53,7 +54,7 @@ export default [
             'params': {
                 'name': 'Viuda Negra',
                 'subtitle': 'Natasha Romanoff',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/01075.png',
                 'traits': [
                     TRAIT_SHIELD,
@@ -128,7 +129,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Luke Cage',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/01076.png',
                 'traits': [
                     TRAIT_DEFENDER
@@ -159,7 +160,7 @@ export default [
             'params': {
                 'name': 'Nova',
                 'subtitle': 'Sam Alexander',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/05012.png',
                 'traits': [
                     TRAIT_CHAMPION
@@ -210,7 +211,7 @@ export default [
             'params': {
                 'name': 'Hermano Vudú',
                 'subtitle': 'Jericho Drumm',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/09012.png',
                 'unique': true,
                 'traits': [
@@ -272,7 +273,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Clea',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/09013.png',
                 'unique': true,
                 'traits': [
@@ -327,7 +328,7 @@ export default [
             'params': {
                 'name': 'Puño de Hierro',
                 'subtitle': 'Danny Rand',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/09014.png',
                 'unique': true,
                 'traits': [

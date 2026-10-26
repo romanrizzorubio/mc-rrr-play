@@ -42,6 +42,11 @@ export class DeckComponent extends LitElement {
             highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
             showDeck: {type: Boolean, attribute: 'show-deck'},
             showDiscard: {type: Boolean, attribute: 'show-discard'},
+            targetId: {type: String, attribute: 'target-id'},
+            targetSelectable: {
+                type: Boolean,
+                attribute: 'target-selectable',
+            },
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             type: {type: Number}
@@ -63,6 +68,8 @@ export class DeckComponent extends LitElement {
         this.highlightPlayableDiscard = false;
         this.showDeck = true;
         this.showDiscard = true;
+        this.targetId = '';
+        this.targetSelectable = false;
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.type = DECK_TYPES.ENCOUNTER;
@@ -135,6 +142,18 @@ export class DeckComponent extends LitElement {
             },
         }));
     }
+    handleSelectDeckTarget(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.dispatchEvent(new CustomEvent('deck-target-select', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                deckId: this.targetId,
+            },
+        }));
+    }
     renderCardStack(src, count, isEmptyDiscard = false, card) {
         const horizontal = isPlanCard(card);
 
@@ -177,15 +196,25 @@ export class DeckComponent extends LitElement {
             },
         }));
     }
-    renderCards(src, count, isEmptyDiscard = false, knownCards = [], deckTitle = '') {
+    renderCards(
+        src,
+        count,
+        isEmptyDiscard = false,
+        knownCards = [],
+        deckTitle = '',
+        targetSelectable = false
+    ) {
         const hasDeckTitle = Boolean(deckTitle);
         const hasDropTarget = hasPlayCardDropTarget(
             this.cards,
             this.dragPlayCard
         );
-        const dropClass = this.dragPlayCard ?
-            hasDropTarget ? 'play-card-drop-target' : 'play-card-blocked' :
-            '';
+        const dropClass = [
+            this.dragPlayCard ?
+                hasDropTarget ? 'play-card-drop-target' : 'play-card-blocked' :
+                '',
+            targetSelectable ? 'target-selectable' : '',
+        ].filter(Boolean).join(' ');
 
         return html`
             <div
@@ -210,6 +239,25 @@ export class DeckComponent extends LitElement {
                         <mc-icon icon="${ICON_EYE}" aria-hidden="true"></mc-icon>
                     </button>
                 ` : ''}
+                ${targetSelectable ? html`
+                    <div
+                        class="target-selection-shield"
+                        aria-hidden="true"
+                    ></div>
+                    <button
+                        class="deck-target-button"
+                        type="button"
+                        data-deck-target-eye
+                        aria-label="Mirar el mazo ${this.deckName || ''}"
+                        title="Mirar el mazo ${this.deckName || ''}"
+                        @click="${this.handleSelectDeckTarget.bind(this)}"
+                    >
+                        <mc-icon
+                            icon="${ICON_EYE}"
+                            aria-hidden="true"
+                        ></mc-icon>
+                    </button>
+                ` : ''}
             </div>
         `;
     }
@@ -232,7 +280,8 @@ export class DeckComponent extends LitElement {
             cards.length,
             isEmpty,
             knownCards,
-            deckTitle
+            deckTitle,
+            this.targetSelectable && Boolean(this.targetId)
         );
     }
     renderDiscard() {

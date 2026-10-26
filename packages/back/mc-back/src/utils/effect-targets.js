@@ -21,17 +21,22 @@ export async function getEffectTargetEntries(
     }
     visited.add(effect);
 
+    const targets = await effect.getValidTarget(params);
     const entries = [{
         effect,
-        targets: await effect.getValidTarget(params),
+        targets,
     }];
+    const nestedParams = {
+        ...params,
+        parentTargets: targets.flat(Infinity),
+    };
     const nestedEffects = Object.values(effect)
         .flatMap(value => getNestedEffects(value));
 
     for (const nestedEffect of nestedEffects) {
         entries.push(...await getEffectTargetEntries(
             nestedEffect,
-            params,
+            nestedParams,
             visited
         ));
     }

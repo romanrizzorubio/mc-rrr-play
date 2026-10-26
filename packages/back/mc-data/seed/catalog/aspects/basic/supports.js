@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_RESOURCE,
@@ -33,13 +34,13 @@ import {
 export default [
     {
         '_id': 'basic-avengers-mansion',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 0,
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Mansión de los Vengadores',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/b91-copy-2.webp',
                 'traits': [
                     TRAIT_AVENGER,
@@ -78,13 +79,13 @@ export default [
     },
     {
         '_id': 'basic-avengers-tower',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 20,
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Torre de los Vengadores',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/03024.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -158,13 +159,13 @@ export default [
     },
     {
         '_id': 'basic-helicarrier',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 1,
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Helitransporte',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/b92-copy-2.webp',
                 'traits': [
                     TRAIT_SHIELD,
@@ -217,13 +218,13 @@ export default [
     },
     {
         '_id': 'basic-quintransporte',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 21,
         'card': {
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Quintransporte',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/08023.png',
                 'traits': [
                     TRAIT_AVENGER,

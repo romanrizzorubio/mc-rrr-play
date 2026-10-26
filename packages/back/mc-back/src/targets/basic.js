@@ -5,6 +5,7 @@ import {
     TARGET_EFFECT,
     TARGET_EFFECT_PLAY_CARD,
     TARGET_INITIAL_PLAYER,
+    TARGET_PARENT,
     TARGET_PLAYER,
     TARGET_REVEALED_ABILITY,
     TARGET_ROUND,
@@ -21,6 +22,7 @@ export const basicTargets = {
     [TARGET_EFFECT]: ({effect}) => [effect],
     [TARGET_EFFECT_PLAY_CARD]: ({playCardEffect}) => [playCardEffect],
     [TARGET_INITIAL_PLAYER]: ({match}) => match.initialPlayer ? [match.initialPlayer] : [],
+    [TARGET_PARENT]: ({params}) => params.parentTargets || [],
     [TARGET_PLAYER]: ({player}) => [player],
     [TARGET_REVEALED_ABILITY]: ({params}) => {
         const ability = path(params, TARGET_REVEALED_ABILITY);

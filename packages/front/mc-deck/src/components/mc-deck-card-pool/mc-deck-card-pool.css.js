@@ -25,7 +25,7 @@ export default css`
     font-family: var(--mc-font-trait-separator, sans-serif);
   }
 
-  .aspect-basic > td {
+  .card-basic > td {
     background-color: #f2f2f2;
   }
 

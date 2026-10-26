@@ -53,6 +53,22 @@ export const hydraTerrorist = {
     },
 };
 
+export const hydraTroop = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Tropa de Hydra',
+        image: 'sets/hydra-patrol/04152.png',
+        traits: [TRAIT_HYDRA],
+        boost: 2,
+        attack: 2,
+        scheme: 1,
+        hitPoints: 2,
+        keywords: {
+            incite: 1,
+        },
+    },
+};
+
 export const hydraSoldier = {
     'type': CARD_TYPE_MINION,
     'params': {

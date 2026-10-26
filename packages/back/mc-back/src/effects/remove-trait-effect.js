@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {refreshCharacter} from '../utils/character-utils.js';
 
 export class RemoveTraitEffect extends Effect {
     constructor({
@@ -15,7 +16,7 @@ export class RemoveTraitEffect extends Effect {
 
         if (extraTraits.length !== selectedTarget.extraTraits.length) {
             selectedTarget.extraTraits = extraTraits;
-            await selectedTarget.refresh();
+            await refreshCharacter(selectedTarget);
         }
     }
 }

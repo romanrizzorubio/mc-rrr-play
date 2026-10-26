@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESPONSE,
@@ -44,7 +45,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Inspiración',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/upgrades/01074.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -101,7 +102,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Respuesta rápida',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/upgrades/08031.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -165,7 +166,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Aeromoto',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/upgrades/04015.png',
                 'traits': [
                     TRAIT_VEHICLE

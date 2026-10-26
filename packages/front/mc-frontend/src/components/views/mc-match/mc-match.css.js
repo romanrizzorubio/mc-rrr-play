@@ -9,6 +9,19 @@ export default css`
     background-color: #E2E2E2;
   }
 
+  .match-board {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .deck-target-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.58);
+    cursor: not-allowed;
+  }
+
   .other-player-discards {
     display: flex;
     flex-wrap: wrap;

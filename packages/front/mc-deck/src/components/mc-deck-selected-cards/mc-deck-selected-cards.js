@@ -5,7 +5,7 @@ import styles from './mc-deck-selected-cards.css.js';
 import '../shared/mc-deck-card-economy.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
 import {
-    getAspectClass,
+    getCardCategoryClass,
     getCardImageUrl,
     getCardOriginName,
     getCardTypeName,
@@ -144,7 +144,7 @@ export class McDeckSelectedCards extends LitElement {
 
         return html`
             <li
-                class="selected-card ${getAspectClass(card.aspect)}"
+                class="selected-card ${getCardCategoryClass(card)}"
                 role="${card.fixed ? 'listitem' : 'button'}"
                 tabindex="${card.fixed ? '-1' : '0'}"
                 aria-label="${card.fixed ? card.name : `Quitar ${card.name} del mazo`}"

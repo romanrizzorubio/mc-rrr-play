@@ -1,4 +1,5 @@
 import {
+    TARGET_ALL_DECKS,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENCOUNTER_DECK_CARDS,
     TARGET_ENCOUNTER_DISCARD,
@@ -22,6 +23,10 @@ const getPlayerExtraDeck = ({player, effect, targetEffect}) => {
 };
 
 export const deckAndDeckTargets = {
+    [TARGET_ALL_DECKS]: ({match}) => [
+        match.scenario?.deck,
+        ...match.players.map(player => player.deck),
+    ].filter(deck => deck?.cards?.length > 0),
     [TARGET_ENCOUNTER_DECK]: ({match}) => [match.scenario.deck],
     [TARGET_ENCOUNTER_DECK_CARDS]: ({match}) => match.scenario.deck.cards,
     [TARGET_ENCOUNTER_DISCARD]: ({match}) => match.scenario.deck.discardPile,

@@ -14,6 +14,7 @@ import {
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {TriggersFactory} from '../factory/triggers/triggers-factory.js';
 import {Trigger} from '../triggers/base/trigger.js';
+import {getTriggerCardPlayer} from '../utils/trigger-card-player.js';
 
 import {path} from './utils.js';
 
@@ -303,8 +304,13 @@ export class Engine {
     }
     _getPlayersTriggers(triggers) {
         return triggers.reduce((players, trigger) => {
-            if (!players.includes(trigger.card.owner)) {
-                players.push(trigger.card.owner);
+            const triggerPlayer = getTriggerCardPlayer(trigger.card);
+            const player = triggerPlayer?.isPlayer ?
+                triggerPlayer :
+                trigger.card.owner;
+
+            if (player && !players.includes(player)) {
+                players.push(player);
             }
 
             return players;

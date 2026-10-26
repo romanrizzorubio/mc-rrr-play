@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_JUSTICE,
     ABILITY_ACTION,
     ABILITY_RESPONSE,
     CARD_TYPE_SUPPORT,
@@ -32,7 +33,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Sala de interrogatorios',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/supports/01063.png',
                 'traits': [
                     TRAIT_LOCATION
@@ -78,7 +79,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Equipo de vigilancia',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/supports/01064.png',
                 'traits': [
                     TRAIT_SHIELD
@@ -137,7 +138,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Policía de barrio',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/supports/10029.png',
                 'traits': [
                     TRAIT_PERSONA

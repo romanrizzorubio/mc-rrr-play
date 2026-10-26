@@ -342,10 +342,10 @@ test('the four new modular sets preserve the supplied cards and counts', async (
     assert.deepEqual(flyingSoldier.card.params.keywords, {quickStrike: true});
     assert.equal(flyingSoldier.card.params.boostAbility.type, ABILITY_BOOST);
 
-    const sharedHailHydra = getEntry(hydraAssault, '¡Hail Hydra!');
+    const sharedHailHydra = getEntry(hydraAssault, '¡Hail, Hydra!');
     const captainAmerica = heroes.find(({_id}) => _id === 'captain-america');
     const captainAmericaHailHydra = captainAmerica.config.nemesis.find(({card}) =>
-        card.params.name === '¡Hail Hydra!');
+        card.params.name === '¡Hail, Hydra!');
     const captainAmericaHydraSoldier = captainAmerica.config.nemesis.find(({card}) =>
         card.params.name === 'Soldado de Hydra');
     assert.ok(captainAmericaHailHydra);

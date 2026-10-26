@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_JUSTICE,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
@@ -7,6 +8,7 @@ import {
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DRAW_CARD,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_PREVENT_PLACE_THREAT,
@@ -36,7 +38,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Por la justicia',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/events/j60-copy-2.webp',
                 'traits': [
                     TRAIT_THWART
@@ -89,7 +91,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Una gran responsabilidad',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/events/j61-copy-2.webp',
                 'cost': 0,
                 'resources': [
@@ -137,7 +139,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Golpe contundente',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/events/05031.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -190,7 +192,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Ataque sigiloso',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/events/08013.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -243,6 +245,67 @@ export default [
         }
     },
     {
+        '_id': 'justice-despejar-la-zona',
+        'aspect': 'justice',
+        'order': 32,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Despejar la zona',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/04049.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_SCHEME,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_REMOVE_THREAT,
+                                            'params': {
+                                                'target': TARGET_SCHEME,
+                                                'threat': 2
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.selectedTarget.threat': 0
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_DRAW_CARD,
+                                                    'params': {
+                                                        'target': TARGET_YOU,
+                                                        'count': 1
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
         '_id': 'justice-no-tan-deprisa',
         'aspect': 'justice',
         'order': 90,
@@ -250,7 +313,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡No tan deprisa!',
-                'set': 'justice',
+                'set': CLASSIFICATION_JUSTICE,
                 'image': 'aspect/justice/events/09038.png',
                 'cost': 0,
                 'resources': [

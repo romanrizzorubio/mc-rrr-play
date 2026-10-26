@@ -1006,7 +1006,7 @@ const doctorStrange = {
         ],
         precon: [
             {
-                aspect: 'basic',
+                classification: 'basic',
                 cardRefs: [
                     {id: 'basic-energy', count: 1},
                     {id: 'basic-genius', count: 1},

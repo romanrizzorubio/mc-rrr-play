@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_RESPONSE,
@@ -38,7 +39,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'El Triskelion',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/supports/01073.png',
                 'traits': [
                     TRAIT_LOCATION,
@@ -77,7 +78,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Quinjet',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/supports/03019.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -166,7 +167,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Entrenamiento en equipo',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/supports/04016.png',
                 'traits': [
                     TRAIT_CONDITION

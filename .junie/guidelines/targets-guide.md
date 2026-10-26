@@ -11,6 +11,7 @@ Esta guía describe los selectores de objetivo disponibles para las capacidades 
 - Cada resolver devuelve una lista de candidatos. Un resultado vacío significa que no hay objetivo disponible.
 - Las validaciones de las capacidades constantes se aplican a cada candidato antes de mostrar o resolver objetivos, incluidos los objetivos múltiples y preseleccionados. Se consultan tanto las validaciones de la propia carta objetivo como las de capacidades constantes de cartas en juego; así, una carta fuente puede prohibir que otras cartas sean objetivos mientras permanezca en juego. `EFFECT_CANNOT_TARGET` puede filtrar por tipo/categoría de efecto, presencia de cartas en juego y propiedades de la carta objetivo.
 - `TARGET_CARD` es la carta recibida en el contexto de resolución; `TARGET_TRIGGERED_CARD` es la carta del evento que activó la capacidad; `TARGET_THIS` es `ability.card`. No son intercambiables.
+- `TARGET_PARENT` usa los candidatos resueltos por el efecto compuesto que contiene al efecto actual. Úsalo en los efectos hijos cuando comparten el objetivo definido por el grupo; el contexto se conserva al calcular objetivos de arrastre y al atravesar efectos anidados. Si se amplía a otro wrapper compuesto, pásale los candidatos validados del padre y haz que sus hijos usen esta misma referencia, en lugar de duplicar el selector.
 - Si `params.target` se omite, `Effect` usa `TARGET_YOU`.
 - Un array en `target` combina los resultados de sus selectores; no encadena selectores ni significa “elige la carta superior”.
 
@@ -29,6 +30,10 @@ Que un selector devuelva una colección de candidatos no significa por sí solo 
 
 Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH` con `target` y, cuando corresponda, `condition`. Este efecto filtra los candidatos, conserva el orden del selector y el contexto del candidato actual; no aplica un orden especial según el tipo de selector.
 
+Cuando una habilidad de carta identifica un objetivo por `condition.name`, el motor aplica automáticamente la regla de referencia a los candidatos válidos: primero la propia carta fuente, después las cartas asociadas al mismo superhéroe/conjunto y, por último, las cartas de la misma categoría que la fuente (jugador o encuentro). Solo permanecen las coincidencias del nivel más alto disponible, y se conservan todas las coincidencias de ese nivel. El conjunto asociado se obtiene de la carta fuente y su superhéroe; no lo repitas en la condición de la carta. Esta prioridad también se comprueba al validar objetivos preseleccionados.
+
+Si un efecto compuesto y varios hijos comparten el mismo selector, define el `target` y su condición en el efecto compuesto y configura `TARGET_PARENT` en esos hijos. Así comparten exactamente la selección validada del efecto principal, en vez de calcular cada uno una lista independiente. Al extender esta estrategia a otro tipo de grupo, conserva este mismo flujo de contexto y añade cobertura tanto para la disponibilidad como para la resolución real de sus hijos.
+
 ## Selectores resolubles
 
 ### Básicos (`targets/basic.js`)
@@ -40,6 +45,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_EFFECT` | El efecto de `params.effect`. |
 | `TARGET_EFFECT_PLAY_CARD` | El efecto de jugar una carta (`params.playCardEffect`). |
 | `TARGET_INITIAL_PLAYER` | El jugador inicial de la partida. |
+| `TARGET_PARENT` | Los objetivos validados por el efecto compuesto superior. |
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
 | `TARGET_SCENARIO` | El escenario de la partida. |
@@ -86,7 +92,7 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
 | `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO` | Las mejoras que controla el jugador actual y que están vinculadas a su superhéroe. Incluye las mejoras de su zona de juego sin vínculo físico y las vinculadas a cualquiera de sus identidades; excluye las vinculadas a aliados u otras cartas. |
 
-`TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_FRIENDLY_CHARACTER` (incluido su alias `TARGET_ANY_CHARACTER_YOU_CONTROL`) y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. En los selectores globales de personajes, `condition.name` coincide con el nombre actual o el `mainName` estable del superhéroe. Si coincide por `mainName`, el objetivo resuelto es la cara cuyo nombre coincide con `condition.name` y el modificador solo aplica a esa cara; para afectar ambas caras, usa `TARGET_YOUR_SUPERHERO` cuando el texto se refiera a «tu superhéroe».
+`TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_FRIENDLY_CHARACTER` (incluido su alias `TARGET_ANY_CHARACTER_YOU_CONTROL`) y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. Al comprobar objetivos de un evento (`playCardEffect`), los selectores de personajes comparan `condition.name` solo con el nombre de la representación activa en juego; no coinciden con `mainName` ni convierten una cara inactiva en objetivo. Otros personajes en juego con ese nombre siguen siendo candidatos, sujetos a la regla de referencia. Fuera de la comprobación de objetivos de evento, los selectores globales también pueden resolver el lado nombrado a través de `mainName`, por ejemplo para una modificación persistente ligada a ese lado.
 
 `TARGET_UPGRADE_YOU_CONTROL` no implica que una mejora esté vinculada al superhéroe. Para cartas que exigen una mejora vinculada al superhéroe propio, usa `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO`; las mejoras vinculadas a aliados u otras cartas no son candidatas. Las mejoras de la zona de juego sin un vínculo físico se consideran una extensión del superhéroe en cualquiera de sus identidades.
 
@@ -149,6 +155,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 
 | Constante | Candidatos |
 | :--- | :--- |
+| `TARGET_ALL_DECKS` | El mazo de encuentros y el mazo de cada jugador. |
 | `TARGET_ENCOUNTER_DECK` | El mazo de encuentros como objeto de mazo. |
 | `TARGET_ENCOUNTER_DECK_CARDS` | Las cartas del mazo de encuentros. |
 | `TARGET_ENCOUNTER_DISCARD` | Las cartas del descarte de encuentros. |

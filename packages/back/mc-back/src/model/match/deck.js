@@ -23,7 +23,13 @@ export class Deck extends Engine {
         this.isPlayerExtraDeck = isPlayerExtraDeck;
         this.isScenarioDeck = isScenarioDeck;
         this.isScenarioExtraDeck = isScenarioExtraDeck;
-        this.id = id;
+        this.id = id ?? (
+            isScenarioDeck ?
+                'scenario-deck' :
+                isPlayerDeck && (owner?.id ?? owner?.name) ?
+                    `player-deck-${owner.id ?? owner.name}` :
+                    undefined
+        );
         this.deckName = name;
         this.hasDiscard = hasDiscard;
         this.discardTarget = discardTarget;

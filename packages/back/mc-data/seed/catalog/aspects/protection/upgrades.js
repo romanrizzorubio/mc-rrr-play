@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_PROTECTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
@@ -44,7 +45,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Chaleco blindado',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/01081.png',
                 'traits': [
                     TRAIT_ARMOR
@@ -85,7 +86,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Indómito',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/01082.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -131,7 +132,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Barrera de energía',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/05017.png',
                 'traits': [
                     TRAIT_ITEM,
@@ -195,7 +196,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Postura defensiva',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/08032.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -245,7 +246,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Imperturbable',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/09020.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -296,7 +297,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Armadura electrostática',
-                'set': 'protection',
+                'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/upgrades/10031.png',
                 'traits': [
                     TRAIT_ARMOR,

@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_LEADERSHIP,
     CARD_TYPE_RESOURCE,
     RESOURCE_WILD,
     TARGET_DECK
@@ -13,7 +14,7 @@ export default [
             'type': CARD_TYPE_RESOURCE,
             'params': {
                 'name': 'El poder del liderazgo',
-                'set': 'leadership',
+                'set': CLASSIFICATION_LEADERSHIP,
                 'image': 'aspect/leadership/resources/01072.png',
                 'resources': [
                     {

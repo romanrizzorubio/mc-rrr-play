@@ -11,6 +11,11 @@ export default css`
     --card-large: calc(var(--card-short) * 1.39667);
     
     display: block;
+    position: relative;
+  }
+
+  :host(.has-aspect-markers) {
+    margin-top: var(--aspect-marker-space, 16px);
   }
 
   :host([activation-blocked]) img {
@@ -87,6 +92,42 @@ export default css`
     transform: translate(-50%, -50%) rotate(-90deg);
     transform-origin: center;
   }
-  
-  
+
+  .aspect-markers {
+    display: flex;
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    z-index: 1;
+    justify-content: center;
+    gap: 4px;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+  }
+
+  .aspect-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .aspect-marker.aspect-aggression {
+    background-color: #d32f2f;
+  }
+
+  .aspect-marker.aspect-justice {
+    background-color: #fbc02d;
+  }
+
+  .aspect-marker.aspect-leadership {
+    background-color: #1565c0;
+  }
+
+  .aspect-marker.aspect-protection {
+    background-color: #388e3c;
+  }
+
+  .aspect-marker.aspect-pool {
+    background-color: #c2185b;
+  }
 `;

@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-match.css.js';
 import '../../match/mc-scenario/mc-scenario.js';
 import '../../match/mc-player/mc-player.js';
+import '../../panels/mc-hand/mc-hand.js';
 import {DECK_TYPES} from '../../panels/mc-deck/mc-deck.js';
 
 export class MatchComponent extends LitElement {
@@ -17,6 +18,7 @@ export class MatchComponent extends LitElement {
             match: {type: Object},
             player: {type: Object},
             playCardPending: {type: Boolean},
+            deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
@@ -28,6 +30,7 @@ export class MatchComponent extends LitElement {
         this.match = null;
         this.player = null;
         this.playCardPending = false;
+        this.deckSelectionTargetIds = [];
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
@@ -54,6 +57,12 @@ export class MatchComponent extends LitElement {
             }
         }));
     }
+    isDeckSelectable(deck) {
+        return Boolean(
+            deck?.id &&
+            this.deckSelectionTargetIds.includes(deck.id)
+        );
+    }
     renderScenario() {
         const {match, player} = this;
 
@@ -61,6 +70,7 @@ export class MatchComponent extends LitElement {
             <mc-scenario
                 .scenario="${match.scenario}"
                 .player="${player}"
+                .deckSelectionTargetIds="${this.deckSelectionTargetIds}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 .dragResourcePayment="${this.dragResourcePayment}"
@@ -78,7 +88,7 @@ export class MatchComponent extends LitElement {
             <mc-player
                 .player="${player}"
                 .canEndTurn="${canEndTurn}"
-                .playCardPending="${this.playCardPending}"
+                .deckSelectionTargetIds="${this.deckSelectionTargetIds}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 .dragResourcePayment="${this.dragResourcePayment}"
@@ -89,8 +99,22 @@ export class MatchComponent extends LitElement {
             ></mc-player>
         ` : '';
     }
+    renderHand() {
+        const {player} = this;
+
+        return player ? html`
+            <mc-hand
+                .cards="${player.hand || []}"
+                .playCardPending="${this.playCardPending}"
+                .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
+            ></mc-hand>
+        ` : '';
+    }
     renderOtherPlayerDiscards() {
         const {match, player} = this;
+        const selectingDeck = this.deckSelectionTargetIds.length > 0;
 
         if (!match || !player) {
             return '';
@@ -107,18 +131,31 @@ export class MatchComponent extends LitElement {
             <div
                 class="other-player-discards"
                 role="group"
-                aria-label="Pilas de descartes de otros jugadores"
+                aria-label="${selectingDeck ?
+                    'Mazos de otros jugadores' :
+                    'Pilas de descartes de otros jugadores'}"
             >
                 ${otherPlayers.map(otherPlayer => html`
                     <div class="other-player-discard">
                         <span>${otherPlayer.name}</span>
                         <mc-deck
-                            .discard="${otherPlayer.deck.discard}"
-                            .showDeck="${false}"
+                            .cards="${selectingDeck ?
+                                otherPlayer.deck.cards || [] :
+                                []}"
+                            .discard="${selectingDeck ?
+                                [] :
+                                otherPlayer.deck.discard || []}"
+                            .showDeck="${selectingDeck}"
+                            .showDiscard="${!selectingDeck}"
+                            .targetId="${otherPlayer.deck.id || ''}"
+                            .targetSelectable="${selectingDeck &&
+                                this.isDeckSelectable(otherPlayer.deck)}"
                             .type="${DECK_TYPES.PLAYER}"
                             .dragActivation="${this.dragActivation}"
                             .dragPlayCard="${this.dragPlayCard}"
-                            discard-label="Descarte de ${otherPlayer.name}"
+                            discard-label="${selectingDeck ?
+                                `Mazo de ${otherPlayer.name}` :
+                                `Descarte de ${otherPlayer.name}`}"
                         ></mc-deck>
                     </div>
                 `)}
@@ -126,10 +163,21 @@ export class MatchComponent extends LitElement {
         `;
     }
     render() {
+        const selectingDeck = this.deckSelectionTargetIds.length > 0;
+
         return html`
-            ${this.renderOtherPlayerDiscards()}
-            ${this.renderScenario()}
-            ${this.renderPlayer()}
+            <div class="match-board">
+                ${this.renderOtherPlayerDiscards()}
+                ${this.renderScenario()}
+                ${this.renderPlayer()}
+                ${selectingDeck ? html`
+                    <div
+                        class="deck-target-veil"
+                        aria-hidden="true"
+                    ></div>
+                ` : ''}
+            </div>
+            ${this.renderHand()}
         `;
     }
 }

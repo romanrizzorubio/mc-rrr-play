@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CALC_COUNT,
@@ -35,6 +35,7 @@ import {Match} from '../../src/model/match/match.js';
 import {Player} from '../../src/model/match/player.js';
 import {PlayerZone} from '../../src/model/match/player-zone.js';
 
+describe('Black Widow', () => {
 test('Black Widow catalog contains the supplied hero, precon, and nemesis set', async () => {
     const catalog = await loadCatalog();
     const blackWidow = catalog.heroes.find(({_id}) => _id === 'black-widow');
@@ -52,13 +53,18 @@ test('Black Widow catalog contains the supplied hero, precon, and nemesis set', 
         blackWidow.config.cards.reduce((count, entry) => count + entry.count, 0),
         15
     );
-    const aspectIds = new Map(catalog.aspects.map(({_id, aspect}) => [_id, aspect]));
+    const classificationsById = new Map(catalog.aspects.map(card => [
+        card._id,
+        card.classification ?? card.aspect,
+    ]));
     for (const group of blackWidow.config.precon) {
+        const expectedClassification = group.classification ?? group.aspect;
+
         for (const reference of group.cardRefs) {
             assert.equal(
-                aspectIds.get(reference.id),
-                group.aspect,
-                `Missing ${group.aspect} precon card ${reference.id}`
+                classificationsById.get(reference.id),
+                expectedClassification,
+                `Invalid ${expectedClassification} precon card ${reference.id}`
             );
         }
     }
@@ -653,4 +659,5 @@ test('Black Widow hero responds after a Preparation ability resolves', async () 
         await resolveAbility(otherPreparationCard, otherPlayer),
         []
     );
+});
 });

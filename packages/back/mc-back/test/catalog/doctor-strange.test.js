@@ -119,7 +119,8 @@ describe('Doctor Strange', () => {
         assert.ok(hero.config.extraDecks);
         assert.equal(hero.config.extraDecks[0].cards.length, 5);
         assert.deepEqual(
-            hero.config.precon.map(({aspect}) => aspect),
+            hero.config.precon.map(({aspect, classification}) =>
+                classification ?? aspect),
             ['basic', 'protection'],
         );
         assert.ok(invocationDeck);

@@ -4,6 +4,7 @@ import {
     ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
     CARD_TYPE_EVENT,
+    CLASSIFICATION_AGGRESSION,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
@@ -50,7 +51,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'A por ellos',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/01052.png',
                 'traits': [
                     TRAIT_THWART
@@ -89,7 +90,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Asalto implacable',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/01053.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -146,7 +147,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Gancho',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/01054.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -177,6 +178,114 @@ export default [
         }
     },
     {
+        '_id': 'aggression-aprovechar-la-ventaja',
+        'aspect': 'aggression',
+        'order': 40,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Aprovechar la ventaja',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/04043.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 2
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'condition': [
+                                                    {
+                                                        'effects.0.selectedTarget.isStunned': true
+                                                    },
+                                                    {
+                                                        'effects.0.selectedTarget.isConfused': true
+                                                    }
+                                                ],
+                                                'effect': {
+                                                    'type': EFFECT_DRAW_CARD,
+                                                    'params': {
+                                                        'target': TARGET_YOU,
+                                                        'count': 1
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-golpe-imparable',
+        'aspect': 'aggression',
+        'order': 41,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Golpe imparable',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/04044.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 3,
+                                    'keywords': {
+                                        'piercing': true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
         '_id': 'aggression-cuerpo-a-cuerpo',
         'aspect': 'aggression',
         'order': 30,
@@ -184,7 +293,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Cuerpo a cuerpo',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/05030.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -237,7 +346,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡Ven aquí!',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/06014.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -306,7 +415,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Golpetazo',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/06015.png',
                 'traits': [
                     TRAIT_SKILL
@@ -352,7 +461,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Golpe diestro',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/09037.png',
                 'traits': [
                     TRAIT_SKILL
@@ -388,7 +497,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Patada doble voladora',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/10014.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -465,7 +574,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': 'Cara a cara',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/10015.png',
                 'traits': [
                     TRAIT_ATTACK
@@ -523,7 +632,7 @@ export default [
             'type': CARD_TYPE_EVENT,
             'params': {
                 'name': '¡Pagarás por eso!',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/events/10016.png',
                 'cost': 1,
                 'resources': [

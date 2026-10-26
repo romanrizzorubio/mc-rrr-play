@@ -1,5 +1,6 @@
 import {
     DIALOG_REVEAL_CARDS,
+    TARGET_ALL_DECKS,
 } from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
 
@@ -18,6 +19,9 @@ export class LookAtTopCardsEffect extends Effect {
         this.title = title;
         this.cards = [];
         this.matchingCards = [];
+    }
+    getTargetSelectionMode() {
+        return this.target === TARGET_ALL_DECKS ? 'deck' : undefined;
     }
     resetResolutionData() {
         super.resetResolutionData();

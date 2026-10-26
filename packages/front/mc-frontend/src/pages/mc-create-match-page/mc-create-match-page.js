@@ -296,7 +296,8 @@ export class McCreateMatchPage extends LitElement {
     }
     getPlayerSummary(player) {
         const hero = player.hero ? ` (${player.hero})` : '';
-        const aspect = player.aspect ? ` - ${translateAspect(player.aspect)}` : '';
+        const aspectName = translateAspect(player.aspect);
+        const aspect = aspectName ? ` - ${aspectName}` : '';
 
         return `${player.name}${hero}${aspect}`;
     }

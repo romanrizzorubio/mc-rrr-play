@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_BASIC,
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
     ABILITY_RESPONSE,
@@ -35,13 +36,13 @@ import {
 export default [
     {
         '_id': 'basic-mockingbird',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 8,
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Pájaro Burlón',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/01083.png',
                 'traits': [
                     TRAIT_SHIELD,
@@ -78,13 +79,13 @@ export default [
     },
     {
         '_id': 'basic-nick-fury',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 9,
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Nick Furia',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/01084.png',
                 'traits': [
                     TRAIT_SHIELD,
@@ -166,13 +167,13 @@ export default [
     },
     {
         '_id': 'basic-mandibulas',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 30,
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Mandíbulas',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/05018.png',
                 'traits': [
                     TRAIT_INHUMAN
@@ -196,14 +197,14 @@ export default [
     },
 {
     '_id': 'basic-maquina-de-guerra',
-    'aspect': 'basic',
+    'classification': 'basic',
     'order': 40,
     'card': {
         'type': CARD_TYPE_ALLY,
         'params': {
             'name': 'Máquina de Guerra',
             'subtitle': 'James Rhodes',
-            'set': 'basic',
+            'set': CLASSIFICATION_BASIC,
             'image': 'aspect/basic/allies/04020.png',
             'traits': [
                 TRAIT_AVENGER,
@@ -251,13 +252,13 @@ export default [
 },
 {
         '_id': 'basic-heimdall',
-        'aspect': 'basic',
+        'classification': 'basic',
         'order': 60,
         'card': {
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Heimdall',
-                'set': 'basic',
+                'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/06020.png',
                 'traits': [
                     TRAIT_ASGARD

@@ -1,4 +1,5 @@
 import {
+    CLASSIFICATION_AGGRESSION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESPONSE,
     ABILITY_RESOURCE,
@@ -50,7 +51,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Entrenamiento de combate',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/01057.png',
                 'traits': [
                     TRAIT_SKILL
@@ -91,7 +92,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Enfurecido',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/03031.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -144,7 +145,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Furia de combate',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/06018.png',
                 'traits': [
                     TRAIT_CONDITION
@@ -207,7 +208,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Jarnbjorn',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/06019.png',
                 'traits': [
                     TRAIT_ASGARD,
@@ -257,7 +258,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Contraataque',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/08030.png',
                 'traits': [
                     TRAIT_PREPARATION,
@@ -317,7 +318,7 @@ export default [
             'type': CARD_TYPE_UPGRADE,
             'params': {
                 'name': 'Destreza marcial',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/upgrades/10018.png',
                 'traits': [
                     TRAIT_SKILL

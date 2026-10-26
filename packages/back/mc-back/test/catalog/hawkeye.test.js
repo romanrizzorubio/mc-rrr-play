@@ -390,29 +390,37 @@ describe('Hawkeye catalog', () => {
             },
         });
 
-        const precon = hawkeye.config.precon.flatMap(({aspect, cardRefs}) =>
-            cardRefs.map(({id, count}) => ({aspect, id, count})));
+        const precon = hawkeye.config.precon.flatMap(({
+            aspect,
+            classification,
+            cardRefs,
+        }) => cardRefs.map(({id, count}) => ({
+            category: aspect || classification,
+            id,
+            count,
+        })));
         assert.deepEqual(precon, [
-            {aspect: 'leadership', id: 'leadership-liderar-en-vanguardia', count: 2},
-            {aspect: 'leadership', id: 'leadership-el-poder-del-liderazgo', count: 2},
-            {aspect: 'leadership', id: 'leadership-ojo-de-halcon-kate-bishop', count: 1},
-            {aspect: 'leadership', id: 'leadership-caballero-negro', count: 1},
-            {aspect: 'leadership', id: 'leadership-goliat', count: 1},
-            {aspect: 'leadership', id: 'leadership-usagente', count: 1},
-            {aspect: 'leadership', id: 'leadership-aeromoto', count: 3},
-            {aspect: 'leadership', id: 'leadership-entrenamiento-en-equipo', count: 3},
-            {aspect: 'leadership', id: 'leadership-listo-para-la-accion', count: 3},
-            {aspect: 'basic', id: 'basic-avengers-tower', count: 1},
-            {aspect: 'basic', id: 'basic-energy', count: 1},
-            {aspect: 'basic', id: 'basic-strength', count: 1},
-            {aspect: 'basic', id: 'basic-genius', count: 1},
-            {aspect: 'basic', id: 'basic-maquina-de-guerra', count: 1},
-            {aspect: 'basic', id: 'basic-los-heroes-mas-poderosos', count: 3},
+            {category: 'leadership', id: 'leadership-liderar-en-vanguardia', count: 2},
+            {category: 'leadership', id: 'leadership-el-poder-del-liderazgo', count: 2},
+            {category: 'leadership', id: 'leadership-ojo-de-halcon-kate-bishop', count: 1},
+            {category: 'leadership', id: 'leadership-caballero-negro', count: 1},
+            {category: 'leadership', id: 'leadership-goliat', count: 1},
+            {category: 'leadership', id: 'leadership-usagente', count: 1},
+            {category: 'leadership', id: 'leadership-aeromoto', count: 3},
+            {category: 'leadership', id: 'leadership-entrenamiento-en-equipo', count: 3},
+            {category: 'leadership', id: 'leadership-listo-para-la-accion', count: 3},
+            {category: 'basic', id: 'basic-avengers-tower', count: 1},
+            {category: 'basic', id: 'basic-energy', count: 1},
+            {category: 'basic', id: 'basic-strength', count: 1},
+            {category: 'basic', id: 'basic-genius', count: 1},
+            {category: 'basic', id: 'basic-maquina-de-guerra', count: 1},
+            {category: 'basic', id: 'basic-los-heroes-mas-poderosos', count: 3},
         ]);
         const warMachineEntry = catalog.aspects.find(({_id}) =>
             _id === 'basic-maquina-de-guerra');
         assert.ok(warMachineEntry);
-        assert.equal(warMachineEntry.aspect, 'basic');
+        assert.equal(warMachineEntry.classification, 'basic');
+        assert.equal(Object.hasOwn(warMachineEntry, 'aspect'), false);
         assert.equal(warMachineEntry.card.type, CARD_TYPE_ALLY);
         assert.equal(warMachineEntry.card.params.name, 'Máquina de Guerra');
         assert.equal(warMachineEntry.card.params.subtitle, 'James Rhodes');
@@ -485,10 +493,19 @@ describe('Hawkeye catalog', () => {
                 modify: {keywords: {piercing: true}},
             },
         });
-        const aspectsById = new Map(catalog.aspects.map(({_id, aspect}) => [_id, aspect]));
-        for (const {aspect, cardRefs} of hawkeye.config.precon) {
+        const classificationsById = new Map(catalog.aspects.map(card => [
+            card._id,
+            card.classification ?? card.aspect,
+        ]));
+        for (const {aspect, classification, cardRefs} of hawkeye.config.precon) {
+            const expectedClassification = classification ?? aspect;
+
             for (const {id} of cardRefs) {
-                assert.equal(aspectsById.get(id), aspect, `Invalid ${aspect} card reference: ${id}`);
+                assert.equal(
+                    classificationsById.get(id),
+                    expectedClassification,
+                    `Invalid ${expectedClassification} card reference: ${id}`
+                );
             }
         }
 

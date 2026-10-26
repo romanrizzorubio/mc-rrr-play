@@ -3,6 +3,7 @@ import {MongoClient} from 'mongodb';
 import {
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_HERO,
+    CLASSIFICATION_BASIC,
     validatePlayerDeck,
 } from 'mc-shared';
 import {loadCatalog} from './seed/catalog.js';
@@ -195,7 +196,9 @@ export class MongoDataStore {
     async getHeroConfig(id) {
         const config = await this._getConfig(collectionNames.heroes, id);
         const precon = [];
-        const selectedAspect = config.precon.find(({aspect}) => aspect !== 'basic');
+        const selectedAspect = config.precon.find(({aspect}) =>
+            typeof aspect === 'string' && aspect &&
+            aspect !== CLASSIFICATION_BASIC);
         if (!selectedAspect) {
             throw new Error(`No default aspect configured for hero "${id}"`);
         }
@@ -207,15 +210,27 @@ export class MongoDataStore {
             }
 
             const ids = entry.cardRefs.map(({id: cardId}) => cardId);
+            const cardCategory = entry.classification === CLASSIFICATION_BASIC ||
+                entry.aspect === CLASSIFICATION_BASIC ?
+                {$or: [
+                    {classification: CLASSIFICATION_BASIC},
+                    {aspect: CLASSIFICATION_BASIC},
+                ]} :
+                {aspect: entry.aspect};
             const records = await this._collection(collectionNames.aspects)
-                .find({_id: {$in: ids}, aspect: entry.aspect}, {projection: {_id: 1, card: 1}})
+                .find({_id: {$in: ids}, ...cardCategory}, {
+                    projection: {_id: 1, card: 1},
+                })
                 .toArray();
             const cardsById = new Map(records.map(record => [record._id, record.card]));
 
             for (const {id: cardId, count} of entry.cardRefs) {
                 const card = cardsById.get(cardId);
                 if (!card) {
-                    throw new Error(`No ${entry.aspect} card configuration found for "${cardId}"`);
+                    const cardCategoryName = entry.classification || entry.aspect;
+                    throw new Error(
+                        `No ${cardCategoryName} card configuration found for "${cardId}"`,
+                    );
                 }
                 precon.push({count, card});
             }
@@ -235,6 +250,7 @@ export class MongoDataStore {
                     _id: 1,
                     name: 1,
                     'config.cards': 1,
+                    'config.deckBuildingRules': 1,
                     'config.precon': 1,
                     'config.sides': 1,
                 },
@@ -245,24 +261,37 @@ export class MongoDataStore {
         }
 
         const cardRecords = await this._collection(collectionNames.aspects)
-            .find({}, {projection: {_id: 1, aspect: 1, order: 1, card: 1}})
-            .sort({aspect: 1, order: 1})
+            .find({}, {
+                projection: {
+                    _id: 1,
+                    aspect: 1,
+                    classification: 1,
+                    order: 1,
+                    card: 1,
+                },
+            })
+            .sort({aspect: 1, classification: 1, order: 1})
             .toArray();
-        const summarizeCard = ({type, params = {}}, values = {}) => ({
-            ...values,
-            name: params.name,
-            subtitle: params.subtitle || '',
-            type,
-            image: params.image || '',
-            cost: params.cost ?? 0,
-            traits: Array.isArray(params.traits) ?
-                params.traits :
-                typeof params.traits === 'string' ? [params.traits] : [],
-            resources: params.resources || [],
-            unique: Boolean(params.unique),
-            permanent: Boolean(params.keywords?.permanent),
-            ...(params.maximum ? {maximum: params.maximum} : {}),
-        });
+        const summarizeCard = ({type, params = {}}, values = {}) => {
+            const classification = values.classification ?? params.classification;
+
+            return {
+                ...values,
+                ...(classification !== undefined ? {classification} : {}),
+                name: params.name,
+                subtitle: params.subtitle || '',
+                type,
+                image: params.image || '',
+                cost: params.cost ?? 0,
+                traits: Array.isArray(params.traits) ?
+                    params.traits :
+                    typeof params.traits === 'string' ? [params.traits] : [],
+                resources: params.resources || [],
+                unique: Boolean(params.unique),
+                permanent: Boolean(params.keywords?.permanent),
+                ...(params.maximum ? {maximum: params.maximum} : {}),
+            };
+        };
         const fixedCards = hero.config.cards.map(({count, card}) => ({
             ...summarizeCard(card),
             count,
@@ -275,16 +304,27 @@ export class MongoDataStore {
         }] : [];
         const precon = hero.config.precon.flatMap(entry =>
             (entry.cardRefs || []).map(({id, count}) => ({id, count})));
-        const cards = cardRecords.map(({_id, aspect, card}) =>
-            summarizeCard(card, {id: _id, aspect}));
+        const cards = cardRecords.map(({_id, aspect, classification, card}) => {
+            const isBasicCard = classification === CLASSIFICATION_BASIC ||
+                aspect === CLASSIFICATION_BASIC;
+            const category = isBasicCard ?
+                {classification: CLASSIFICATION_BASIC} :
+                {aspect};
+
+            return summarizeCard(card, {id: _id, ...category});
+        });
         const aspectIds = [...new Set(cardRecords
             .map(({aspect}) => aspect)
-            .filter(aspect => aspect !== 'basic'))];
+            .filter(aspect => typeof aspect === 'string' &&
+                aspect !== CLASSIFICATION_BASIC))];
 
         return {
             hero: {
                 id: hero._id,
                 name: hero.name,
+                ...(hero.config.deckBuildingRules ? {
+                    deckBuildingRules: hero.config.deckBuildingRules,
+                } : {}),
                 baseCardCount: fixedCards.reduce((total, card) =>
                     total + (card.permanent ? 0 : card.count), 0),
                 fixedCards,
@@ -300,9 +340,12 @@ export class MongoDataStore {
             return null;
         }
 
-        const {_id, ...fields} = deck;
+        const {_id, aspects: legacyAspects, ...fields} = deck;
+        const aspect = Array.isArray(fields.aspect) ?
+            fields.aspect :
+            Array.isArray(legacyAspects) ? legacyAspects : fields.aspect;
 
-        return {id: _id, ...fields};
+        return {id: _id, ...fields, aspect};
     }
     async getDeck(id) {
         const deck = await this._collection(collectionNames.decks).findOne({_id: id});

@@ -93,7 +93,7 @@ test('Captain America cards compile and all precon references resolve', async ()
     assert.equal(deathSquadAbility.effect.target, TARGET_ALL_PLAYERS);
 
     const hailHydra = captainAmerica.config.nemesis.find(({card}) =>
-        card.params.name === '¡Hail Hydra!');
+        card.params.name === '¡Hail, Hydra!');
     const hailHydraCard = cardsFactory.createGameCard({
         card: cardsFactory.createCard(hailHydra.card),
         owner: {},

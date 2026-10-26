@@ -72,6 +72,47 @@ export default css`
     position: relative;
   }
 
+  .deck-panel.target-selectable {
+    z-index: 11;
+  }
+
+  .target-selection-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.18);
+    cursor: not-allowed;
+  }
+
+  .deck-target-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: #ffd600;
+    color: #212121;
+    box-shadow: 0 0 0 4px #0d47a1, 0 0 18px rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+  }
+
+  .deck-target-button mc-icon {
+    display: inline-flex;
+    font-size: 2.2rem;
+  }
+
+  .deck-target-button:focus-visible {
+    outline: 4px solid #212121;
+    outline-offset: 3px;
+  }
+
   .known-cards-button {
     position: absolute;
     top: 6px;

@@ -3,6 +3,11 @@ import {css} from 'lit-element';
 export default css`
   :host {
     display: block;
+    --deck-aspect-aggression-color: #fff0ef;
+    --deck-aspect-justice-color: #fffbea;
+    --deck-aspect-protection-color: #eff8ef;
+    --deck-aspect-leadership-color: #eef5ff;
+    --deck-aspect-pool-color: #fff0f6;
   }
 
   .deck-list {
@@ -125,28 +130,24 @@ export default css`
     min-width: 0;
   }
 
-  .deck-row.aspect-basic {
-    background-color: #f2f2f2;
-  }
-
   .deck-row.aspect-aggression {
-    background-color: #fff0ef;
+    background-color: var(--deck-aspect-aggression-color);
   }
 
   .deck-row.aspect-justice {
-    background-color: #fffbea;
+    background-color: var(--deck-aspect-justice-color);
   }
 
   .deck-row.aspect-protection {
-    background-color: #eff8ef;
+    background-color: var(--deck-aspect-protection-color);
   }
 
   .deck-row.aspect-leadership {
-    background-color: #eef5ff;
+    background-color: var(--deck-aspect-leadership-color);
   }
 
   .deck-row.aspect-pool {
-    background-color: #fff0f6;
+    background-color: var(--deck-aspect-pool-color);
   }
 
   .deck-row + .deck-row {

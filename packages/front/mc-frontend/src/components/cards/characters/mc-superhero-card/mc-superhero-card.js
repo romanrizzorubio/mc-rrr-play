@@ -44,6 +44,7 @@ export class SuperheroCardComponent extends LitElement {
             abilities: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
+            aspectMarkers: {type: Array},
         };
     }
 
@@ -74,6 +75,7 @@ export class SuperheroCardComponent extends LitElement {
         this.abilities = [];
         this.extraTraits = [];
         this.extraKeywords = [];
+        this.aspectMarkers = [];
     }
 
     get menuOptions() {
@@ -198,6 +200,7 @@ export class SuperheroCardComponent extends LitElement {
                     .doubleClickOption="${this.canEndTurn ? MENU_OPTION_END : ''}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
+                    .aspectMarkers="${this.aspectMarkers}"
                     show-acquired-traits
                     show-basic-stats
                     .handSize="${handSize}"

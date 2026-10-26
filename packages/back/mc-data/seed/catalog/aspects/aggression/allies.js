@@ -5,7 +5,9 @@ import {
     CARD_TYPE_ALLY,
     CALC_COUNT,
     CALC_DAMAGE,
+    CLASSIFICATION_AGGRESSION,
     EFFECT_CHAINED,
+    EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DISCARD_FROM_DECK,
@@ -17,6 +19,7 @@ import {
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_REMOVE_THREAT,
     EFFECT_SIMULTANEOUS,
+    EFFECT_STUN,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -36,7 +39,8 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_GET_ATTACK,
     TRIGGER_CARD_ENTER_PLAY,
-    TRIGGER_THIS_DEFEAT_MINION
+    TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_YOU_END_PLAY_CARD
 } from 'mc-shared';
 
 export default [
@@ -48,7 +52,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Hulk',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/01050.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -182,7 +186,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Tigra',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/01051.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -225,7 +229,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Hércules',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/06011.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -278,7 +282,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Valquiria',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/06012.png',
                 'traits': [
                     TRAIT_ASGARD,
@@ -337,7 +341,7 @@ export default [
             'params': {
                 'name': 'Vigor',
                 'subtitle': 'Amadeus Cho',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/10011.png',
                 'traits': [
                     TRAIT_CHAMPION,
@@ -381,7 +385,7 @@ export default [
             'params': {
                 'name': 'El Vigía',
                 'subtitle': 'Robert Reynolds',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/10012.png',
                 'traits': [
                     TRAIT_AVENGER
@@ -424,7 +428,7 @@ export default [
             'params': {
                 'name': 'Hulka',
                 'subtitle': 'Jennifer Walters',
-                'set': 'aggression',
+                'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/10013.png',
                 'traits': [
                     TRAIT_AVENGER,
@@ -454,6 +458,65 @@ export default [
                                         'target': 'card',
                                         'formula': CALC_DAMAGE
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-spidergirl',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 103,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Spidergirl',
+                'subtitle': 'Anya Corazon',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/allies/04040.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'attack': 2,
+                'attackConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.name': 'Spidergirl'
+                            },
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'target': TARGET_MINION,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_STUN,
+                                            'params': {
+                                                'target': TARGET_MINION
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_CONFUSE,
+                                            'params': {
+                                                'target': TARGET_MINION
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

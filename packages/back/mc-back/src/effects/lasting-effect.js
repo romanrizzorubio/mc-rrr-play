@@ -1,4 +1,4 @@
-import {TIME_PHASE} from 'mc-shared';
+import {TARGET_PARENT, TIME_PHASE} from 'mc-shared';
 import {LastingAbility} from '../abilities/misc/lasting-ability.js';
 import {Lasting} from '../engine/lasting.js';
 
@@ -100,12 +100,21 @@ export class LastingEffect extends Effect {
             lastingAbility.initTriggers(ability.card);
         } else if (effect) {
             effect.ability = ability;
-            if (effect.target === this.target) {
+            if (effect.target === this.target ||
+                effect.target === TARGET_PARENT) {
                 effect.selectedTarget = this.selectedTarget;
                 effect.refreshTarget = false;
             }
+            const parentTargets = this.selectedTarget === undefined ?
+                params.parentTargets :
+                this.selectedTarget === null ?
+                    [] :
+                    Array.isArray(this.selectedTarget) ?
+                        this.selectedTarget.flat(Infinity) :
+                        [this.selectedTarget];
             await effect.runEffect({
                 ...params,
+                ...(parentTargets ? {parentTargets} : {}),
                 lasting,
             });
         }

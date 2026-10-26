@@ -1,29 +1,36 @@
 import {RemoveTraitEffect} from '../effects/remove-trait-effect.js';
+import {refreshCharacter} from './character-utils.js';
 
 export async function addCharacterTraits(effect, params, traits) {
     const {match, selectedTarget, target} = effect;
 
-    if (!selectedTarget || !Array.isArray(selectedTarget.extraTraits)) {
-        return;
+    const selectedTargets = Array.isArray(selectedTarget) ?
+        selectedTarget.flat(Infinity) :
+        [selectedTarget];
+
+    for (const character of new Set(selectedTargets)) {
+        if (!character || !Array.isArray(character.extraTraits)) {
+            continue;
+        }
+
+        const traitsToAdd = [...new Set(traits)]
+            .filter(trait => !character.traits.includes(trait));
+
+        if (!traitsToAdd.length) {
+            continue;
+        }
+
+        character.extraTraits.push(...traitsToAdd);
+
+        if (params.lasting) {
+            const cleanup = new RemoveTraitEffect({
+                match,
+                target,
+                traits: traitsToAdd,
+            });
+            params.lasting.registerCleanup(cleanup, character);
+        }
+
+        await refreshCharacter(character);
     }
-
-    const traitsToAdd = [...new Set(traits)]
-        .filter(trait => !selectedTarget.traits.includes(trait));
-
-    if (!traitsToAdd.length) {
-        return;
-    }
-
-    selectedTarget.extraTraits.push(...traitsToAdd);
-
-    if (params.lasting) {
-        const cleanup = new RemoveTraitEffect({
-            match,
-            target,
-            traits: traitsToAdd,
-        });
-        params.lasting.registerCleanup(cleanup, selectedTarget);
-    }
-
-    await selectedTarget.refresh();
 }

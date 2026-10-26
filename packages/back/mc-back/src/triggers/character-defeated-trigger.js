@@ -18,10 +18,12 @@ export class CharacterDefeatedTrigger extends Trigger {
     }
     getAbilityParams(params) {
         const player = getTriggerCardPlayer(this.card, params.player);
+        const character = this.getCharacter(params);
 
         return {
             ...super.getAbilityParams({...params, player}),
-            card: this.getCharacter(params),
+            card: character,
+            triggeredCard: character,
         };
     }
     canTrigger(params) {
@@ -37,7 +39,9 @@ export class CharacterDefeatedTrigger extends Trigger {
             return false;
         }
 
-        return super.canTrigger({...params, player});
+        return super.canTrigger(
+            this.getAbilityParams({...params, player})
+        );
     }
     runCard(params) {
         const player = getTriggerCardPlayer(this.card, params.player);

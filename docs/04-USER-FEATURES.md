@@ -20,7 +20,7 @@ Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida u
 
 **Resultado:**
 - Las partidas inicializadas recuperan el tablero completo.
-- El lobby muestra el superhéroe y el aspecto del mazo elegido para cada jugador.
+- El lobby muestra el superhéroe y el aspecto o los aspectos del mazo elegido para cada jugador.
 - Si el setup de una partida continúa en el backend, se vuelven a mostrar los diálogos pendientes.
 - Las partidas se conservan en MongoDB y pueden reanudarse tras reiniciar el backend.
 - Al eliminarlas desde el lobby, dejan de estar disponibles y se borran de MongoDB.
@@ -54,17 +54,17 @@ Al crear una partida, junto al superhéroe se puede seleccionar uno de sus mazos
 
 ### Editar Mazos
 
-La página principal de **Mazos** muestra todos los mazos creados con su nombre, superhéroe, aspecto y número total de cartas; cada fila usa el color de su aspecto. Las columnas de nombre, héroe, aspecto y cartas permiten ordenar el listado. También permite filtrar por nombre, héroe o aspecto; al seleccionar una fila se edita el mazo y el botón **Eliminar** de la fila lo borra. **Crear mazo** muestra una cuadrícula alfabética con la carta de héroe y su nombre debajo; al seleccionar uno se inicia un mazo editable vacío, sin aspecto preseleccionado.
+La página principal de **Mazos** muestra todos los mazos creados con su nombre, superhéroe, aspecto o aspectos y número total de cartas; cada fila usa el color de su aspecto y, si el mazo es multiaspecto, un degradado con los colores de los aspectos seleccionados. Las columnas de nombre, héroe, aspecto y cartas permiten ordenar el listado. También permite filtrar por nombre, héroe o aspecto; al seleccionar una fila se edita el mazo y el botón **Eliminar** de la fila lo borra. **Crear mazo** muestra una cuadrícula alfabética con la carta de héroe y su nombre debajo; al seleccionar uno se inicia un mazo editable vacío, sin aspecto preseleccionado.
 
 Cada vista tiene su propia ruta: `/decks` muestra el listado, `/decks/create` permite elegir héroe, `/decks/edit` abre el editor de un mazo nuevo y `/decks/edit/:id` edita un mazo guardado. Al guardar por primera vez, la ruta del editor se actualiza para incluir el identificador asignado al mazo.
 
-En el editor se utiliza todo el ancho disponible y los listados crecen según su contenido, sin scroll interno. Los botones **Guardar** y **Cerrar** aparecen juntos en la cabecera del editor y se repiten como **Guardar** y **Cancelar** entre los paneles del mazo actual y las cartas disponibles, junto a los recuentos de ambos. En pantallas amplias, el mazo actual organiza Recursos y Mejoras en la primera columna, Aliados y Apoyos en la segunda y Eventos en la tercera; las columnas se apilan sin huecos verticales entre grupos de distinta altura. En pantallas más estrechas se adaptan a dos o una columna. Cada tipo muestra su cantidad de cartas e indica si cada carta es fija del héroe, básica o de un aspecto cuyo nombre se muestra sin prefijo; las cartas fijas no se pueden modificar. Al pulsar una fila editable se solicita confirmación para quitar la carta. Pulsar una imagen abre una vista ampliada. Debajo, una tabla de cartas disponibles permite buscar, filtrar por tipo, aspecto y rasgo, y elegir cuántas copias añadir; si aún no se ha elegido aspecto muestra cartas de todos los aspectos y básicas. Al añadir la primera carta de aspecto, este queda seleccionado automáticamente y se ocultan los demás aspectos. Sus cabeceras de Carta, Tipo, Aspecto, Rasgos, Coste y Copias ordenan el listado. El coste aparece en su propia columna. Ambos listados muestran los recursos de cada carta y el mazo actual conserva el coste junto a cada carta. Las cantidades respetan el límite general de 3 copias por título, las restricciones de máximo indicadas en cada carta, la unicidad y el máximo de 50 cartas.
+En el editor se utiliza todo el ancho disponible y los listados crecen según su contenido, sin scroll interno. Los botones **Guardar** y **Cerrar** aparecen juntos en la cabecera del editor y se repiten como **Guardar** y **Cancelar** entre los paneles del mazo actual y las cartas disponibles, junto al recuento del mazo actual. El panel intermedio muestra la composición, en este orden: cartas de héroe, básicas, de cada aspecto seleccionado y permanentes; omite los grupos sin cartas y cuenta las permanentes por separado de su origen. En pantallas amplias, el mazo actual organiza Recursos y Mejoras en la primera columna, Aliados y Apoyos en la segunda y Eventos en la tercera; las columnas se apilan sin huecos verticales entre grupos de distinta altura. En pantallas más estrechas se adaptan a dos o una columna. Cada tipo muestra su cantidad de cartas e indica si cada carta es fija del héroe, básica o de un aspecto cuyo nombre se muestra sin prefijo; las cartas fijas no se pueden modificar. Al pulsar una fila editable se solicita confirmación para quitar la carta. Pulsar una imagen abre una vista ampliada. Debajo, una tabla de cartas disponibles permite buscar, filtrar por tipo, aspecto y rasgo, y elegir cuántas copias añadir; si aún no se ha elegido aspecto muestra cartas de todos los aspectos y básicas. Al añadir la primera carta de aspecto, este queda seleccionado automáticamente y se ocultan los demás aspectos. Para héroes con más de un aspecto, el filtro ofrece cada aspecto seleccionado por separado. Sus cabeceras de Carta, Tipo, Aspecto, Rasgos, Coste y Copias ordenan el listado. El coste aparece en su propia columna. Ambos listados muestran los recursos de cada carta y el mazo actual conserva el coste junto a cada carta. Las cantidades respetan el límite general de 3 copias por título, las restricciones de máximo indicadas en cada carta, la unicidad y el máximo de 50 cartas.
 
 En el listado de mazos, **Guardar copia en el catálogo** sincroniza MongoDB con el fichero físico `packages/back/mc-data/seed/catalog/decks.json`, sin necesidad de hacer un commit. **Restaurar del repositorio** combina ese snapshot con los datos locales: para cada ID conserva el evento más reciente, comparando `updatedAt` para mazos y `deletedAt` para borrados explícitos. No elimina mazos que solo existan localmente; los borrados guardados en el snapshot sí se aplican y quedan registrados para que esos mazos no reaparezcan en futuras restauraciones.
 
 Al crear o editar un mazo asociado a un superhéroe, se aplican estas reglas:
 
-- Cada mazo usa un único aspecto y puede incluir cartas básicas.
+- Cada mazo usa el número de aspectos definido por su héroe y puede incluir cartas básicas. Si el héroe exige equilibrar sus aspectos, el validador comprueba que el mazo contenga la misma cantidad de cartas de cada uno.
 - Las cartas específicas del superhéroe son fijas: el editor las incluye al calcular el tamaño, pero no las guarda ni permite modificarlas.
 - El mazo persistido contiene únicamente el identificador de cada carta editable y su número de copias.
 - El editor aplica el tamaño permitido de 40 a 50 cartas, el máximo de tres copias por título no único y las restricciones de unicidad.
@@ -106,6 +106,7 @@ La pantalla se divide en varias áreas:
 
 **Zona del Jugador (Player Area)**
 - Superhéroe con contador de vida
+- Spiderwoman muestra sobre su carta una bolita por cada aspecto distinto jugado durante la ronda; las bolitas desaparecen al terminarla
 - Cartas en juego (aliados, mejoramientos)
 - Contador de recursos (4 tipos: Energy, Mental, Physical, Wild)
 - Estado y efectos activos
@@ -132,6 +133,8 @@ Durante la partida se oculta la navegación principal y aparecen los botones **R
 ### Ejecutar Acciones
 
 Al hacer clic en el Superhéroe se muestran sus acciones; las que no tengan un objetivo válido o hayan superado su límite aparecen deshabilitadas. Durante tu turno, haz doble clic en el Superhéroe para activar **Finalizar turno**; se mantiene la confirmación habitual cuando corresponde.
+
+Al seleccionar una capacidad que permite mirar un mazo sin especificar uno concreto, el tablero queda cubierto por un velo y cada mazo disponible muestra un icono de ojo destacado. Pulsa uno de esos ojos para elegir el mazo y resolver la capacidad; al pulsar en cualquier otro lugar se cancela sin resolverla.
 
 Al hacer clic en un enemigo se puede iniciar un ataque básico con el superhéroe; al hacer clic en un plan, una intervención básica. Si no hay otras acciones disponibles, aparece una confirmación cuyo título pregunta por el ataque o la intervención; muestra las cartas del superhéroe y del objetivo, sin etiquetas ni subtítulo. Se puede marcar **No volver a mostrar este diálogo durante esta partida**. Si el enemigo o plan tiene otras acciones disponibles, aparece un menú y la activación básica figura primero. Un enemigo o plan que no sea un objetivo legal para esa activación no ofrece la opción ni responde al clic de activación.
 

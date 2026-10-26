@@ -727,7 +727,7 @@ export default {
                 ]
             },
             {
-                'aspect': 'basic',
+                'classification': 'basic',
                 'cardRefs': [
                     {'id': 'basic-avengers-mansion', 'count': 1},
                     {'id': 'basic-helicarrier', 'count': 1},

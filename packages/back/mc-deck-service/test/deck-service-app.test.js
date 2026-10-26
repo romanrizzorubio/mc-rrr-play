@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import {mkdtemp, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {ENDPOINTS} from 'mc-endpoints';
-import {TARGET_DECK} from 'mc-shared';
+import {CLASSIFICATION_BASIC, TARGET_DECK} from 'mc-shared';
 import {createDeckServiceApp} from '../src/deck-service-app.js';
 
 const listen = async app => {
@@ -35,7 +35,9 @@ const createCatalog = (heroId = 'hero', heroName = 'Héroe') => ({
     cards: Array.from({length: 12}, (_value, index) => ({
         id: `card-${index + 1}`,
         name: `Carta ${index + 1}`,
-        aspect: index >= 8 ? 'basic' : 'justice',
+        ...(index >= 8 ?
+            {classification: CLASSIFICATION_BASIC} :
+            {aspect: 'justice'}),
         type: 'event',
         unique: false,
         permanent: false,
@@ -78,6 +80,7 @@ const createData = (catalog, ...otherCatalogs) => {
     };
 };
 
+describe('deck service app', () => {
 test('lists heroes with their face image for deck creation', async () => {
     const service = await listen(createDeckServiceApp({data: createData(createCatalog())}));
 
@@ -325,6 +328,7 @@ test('marks aspect, copy-limit, and uniqueness conflicts as draft validation err
     catalog.cards[1].name = 'Carta repetida';
     catalog.cards[2].name = 'Nombre civil';
     catalog.cards[2].unique = true;
+    delete catalog.cards[8].classification;
     catalog.cards[8].aspect = 'aggression';
     catalog.aspects.push({id: 'aggression'});
     const data = createData(catalog);
@@ -445,4 +449,5 @@ test('rejects unknown card IDs and missing heroes', async () => {
     } finally {
         await service.close();
     }
+});
 });

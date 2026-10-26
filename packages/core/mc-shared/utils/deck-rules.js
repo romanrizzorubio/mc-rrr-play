@@ -1,4 +1,7 @@
+import {CLASSIFICATION_BASIC} from '../constants/classifications.js';
 import {TARGET_DECK} from '../constants/targets.js';
+import {translateAspect} from './aspect-translation.js';
+import {hasClassification} from './classification.js';
 import {uniqueCardsShareIdentity} from './unique-card-identity.js';
 
 export const MAX_PLAYER_DECK_SIZE = 50;
@@ -12,16 +15,31 @@ const getDeclaredDeckMaximum = (cards, title) => cards
         card.maximum.count >= 0 ?
         Math.min(maximum, card.maximum.count) : maximum, Infinity);
 
+export const getSelectedDeckAspects = deck => {
+    if (Array.isArray(deck?.aspect)) {
+        return deck.aspect;
+    }
+
+    return typeof deck?.aspect === 'string' && deck.aspect ? [deck.aspect] : [];
+};
+
 export const getPlayerDeckCardCopyLimit = (deck, catalog, cardId) => {
     const {hero, cards = [], aspects = []} = catalog || {};
     const card = cards.find(item => item.id === cardId);
-    const selectedAspect = deck?.aspect || '';
-    const selectedAspectIsValid = !selectedAspect ||
-        aspects.some(aspect => aspect.id === selectedAspect);
-    const cardAspectIsAvailable = card?.aspect === 'basic' ||
-        aspects.some(aspect => aspect.id === card?.aspect);
-    if (!hero || !card || !selectedAspectIsValid || !cardAspectIsAvailable ||
-        (selectedAspect && card.aspect !== 'basic' && card.aspect !== selectedAspect)) {
+    const selectedAspects = getSelectedDeckAspects(deck);
+    const availableAspects = new Set(aspects.map(aspect => aspect.id));
+    const selectedAspectsAreValid = selectedAspects.length ===
+        new Set(selectedAspects).size &&
+        selectedAspects.every(aspect => availableAspects.has(aspect));
+    const isBasicCard = hasClassification(
+        card?.classification,
+        CLASSIFICATION_BASIC,
+    );
+    const cardAspectIsAvailable = isBasicCard ||
+        availableAspects.has(card?.aspect);
+    if (!hero || !card || !selectedAspectsAreValid || !cardAspectIsAvailable ||
+        (selectedAspects.length && !isBasicCard &&
+            !selectedAspects.includes(card.aspect))) {
         return 0;
     }
 
@@ -78,7 +96,7 @@ export const getPlayerDeckCardCopyLimit = (deck, catalog, cardId) => {
 export const validatePlayerDeck = (deck, catalog) => {
     const errors = [];
     const {hero, cards = [], aspects = []} = catalog || {};
-    const selectedAspect = deck?.aspect || '';
+    const selectedAspects = getSelectedDeckAspects(deck);
     const availableAspects = new Set(aspects.map(({id}) => id));
 
     if (!hero) {
@@ -88,8 +106,21 @@ export const validatePlayerDeck = (deck, catalog) => {
             errors: ['No se encontró el héroe para validar el mazo.'],
         };
     }
-    if (!selectedAspect || !availableAspects.has(selectedAspect)) {
-        errors.push('Elige exactamente un aspecto para el mazo.');
+    const requiredAspectCount = hero.deckBuildingRules?.aspectCount ?? 1;
+    if (!Number.isInteger(requiredAspectCount) || requiredAspectCount < 1) {
+        errors.push('Las reglas de construcción del héroe tienen un número de aspectos no válido.');
+    } else if (selectedAspects.length !== requiredAspectCount) {
+        errors.push(requiredAspectCount === 1 ?
+            'Elige exactamente un aspecto para el mazo.' :
+            `Elige exactamente ${requiredAspectCount} aspectos para el mazo.`);
+    }
+    if (selectedAspects.length !== new Set(selectedAspects).size) {
+        errors.push('No puedes seleccionar el mismo aspecto más de una vez.');
+    }
+    for (const selectedAspect of selectedAspects) {
+        if (!availableAspects.has(selectedAspect)) {
+            errors.push(`El aspecto "${selectedAspect}" no está disponible para este mazo.`);
+        }
     }
 
     const cardsById = new Map(cards.map(card => [card.id, card]));
@@ -111,10 +142,18 @@ export const validatePlayerDeck = (deck, catalog) => {
         });
         selectedCards.push({card, count: entry.count});
 
-        if (card.aspect !== 'basic' && card.aspect !== selectedAspect) {
-            errors.push(
-                `"${card.name}" no pertenece al aspecto seleccionado (${selectedAspect || 'ninguno'}).`
-            );
+        const isBasicCard = hasClassification(
+            card.classification,
+            CLASSIFICATION_BASIC,
+        );
+        if (!isBasicCard && !selectedAspects.includes(card.aspect)) {
+            const aspectLabel = selectedAspects.length ?
+                selectedAspects.join(', ') :
+                'ninguno';
+            const aspectRequirement = requiredAspectCount === 1 ?
+                'al aspecto seleccionado' :
+                'a los aspectos seleccionados';
+            errors.push(`"${card.name}" no pertenece ${aspectRequirement} (${aspectLabel}).`);
         }
 
         if (card.unique && entry.count > 1) {
@@ -153,6 +192,29 @@ export const validatePlayerDeck = (deck, catalog) => {
                     `No puedes incluir más de ${copyLimit} ${copyLabel} de "${title}" en el mazo.`
                 );
             }
+        }
+    }
+
+    if (hero.deckBuildingRules?.equalAspectCardCounts &&
+        selectedAspects.length > 1 &&
+        selectedAspects.length === new Set(selectedAspects).size &&
+        selectedAspects.every(aspect => availableAspects.has(aspect))) {
+        const cardsByAspect = new Map(selectedAspects.map(aspect => [aspect, 0]));
+        for (const {card, count} of selectedCards) {
+            if (!hasClassification(card.classification, CLASSIFICATION_BASIC) &&
+                cardsByAspect.has(card.aspect)) {
+                cardsByAspect.set(card.aspect, cardsByAspect.get(card.aspect) + count);
+            }
+        }
+
+        const aspectCounts = [...cardsByAspect.values()];
+        if (aspectCounts.some(count => count !== aspectCounts[0])) {
+            const breakdown = [...cardsByAspect]
+                .map(([aspect, count]) => `${translateAspect(aspect)}: ${count}`)
+                .join(', ');
+            errors.push(
+                `Debes incluir la misma cantidad de cartas de cada aspecto (${breakdown}).`,
+            );
         }
     }
 

@@ -12,85 +12,18 @@ import {
 import {canPlayCard} from '../utils/card-play-utils.js';
 import {EFFECT_RESOLUTION_CONTEXT} from '../utils/effect-resolution-context.js';
 import {checkFilter} from '../utils/filter-utils.js';
+import {
+    REFERENCE_PRIORITY_COUNT,
+    REFERENCE_PRIORITY_SOURCE_CARD,
+    getAssociatedSuperheroSet,
+    getReferenceCardType,
+    getReferencePriority,
+} from '../utils/referential-ability-utils.js';
 
 import {Effect} from './effect.js';
 import {ShuffleDeckEffect} from './shuffle-deck-effect.js';
 
-const REFERENCE_CARD_TYPE_ENCOUNTER = 'encounter';
-const REFERENCE_CARD_TYPE_PLAYER = 'player';
-const REFERENCE_PRIORITY_NO_MATCH = -1;
-const REFERENCE_PRIORITY_SOURCE_CARD = 0;
-const REFERENCE_PRIORITY_ASSOCIATED_SET = 1;
-const REFERENCE_PRIORITY_CARD_TYPE = 2;
-const REFERENCE_PRIORITY_COUNT = 3;
-
 export class SearchCardsEffect extends Effect {
-    static getCardSet(card) {
-        return card?.set ?? card?.card?.set;
-    }
-    static getAssociatedSuperheroSet(referenceCard, match) {
-        const ownerSuperheroSet = this.getCardSet(referenceCard?.owner?.superhero);
-        if (ownerSuperheroSet) {
-            return ownerSuperheroSet;
-        }
-
-        const referenceSet = this.getCardSet(referenceCard);
-        const associatedSuperhero = (match?.players || []).find(({superhero}) =>
-            referenceSet && this.getCardSet(superhero) === referenceSet)?.superhero;
-
-        return this.getCardSet(associatedSuperhero);
-    }
-    static isPlayerCard(card) {
-        return Boolean(
-            card?.isPlayerCard ||
-            card?.card?.isPlayerCard ||
-            card?.isSuperhero ||
-            card?.card?.isSuperhero
-        );
-    }
-    static isEncounterCard(card) {
-        return Boolean(card?.isEncounterCard || card?.card?.isEncounterCard);
-    }
-    static getReferenceCardType(card) {
-        if (this.isEncounterCard(card)) {
-            return REFERENCE_CARD_TYPE_ENCOUNTER;
-        }
-        if (this.isPlayerCard(card)) {
-            return REFERENCE_CARD_TYPE_PLAYER;
-        }
-    }
-    static isSameCard(card, referenceCard) {
-        return card === referenceCard ||
-            card?.parent === referenceCard ||
-            referenceCard?.parent === card ||
-            referenceCard?.sides?.includes(card) ||
-            card?.sides?.includes(referenceCard);
-    }
-    static getReferencePriority(
-        card,
-        referenceCard,
-        associatedSuperheroSet,
-        referenceCardType
-    ) {
-        if (this.isSameCard(card, referenceCard)) {
-            return REFERENCE_PRIORITY_SOURCE_CARD;
-        }
-        if (associatedSuperheroSet &&
-            this.getCardSet(card) === associatedSuperheroSet) {
-            return REFERENCE_PRIORITY_ASSOCIATED_SET;
-        }
-        if (
-            (referenceCardType === REFERENCE_CARD_TYPE_ENCOUNTER &&
-                this.isEncounterCard(card)) ||
-            (referenceCardType === REFERENCE_CARD_TYPE_PLAYER &&
-                this.isPlayerCard(card))
-        ) {
-            return REFERENCE_PRIORITY_CARD_TYPE;
-        }
-
-        return REFERENCE_PRIORITY_NO_MATCH;
-    }
-
     constructor({
         locations = [], // ['discardPile', 'deck', 'hand']
         players = TARGET_YOU,
@@ -183,9 +116,9 @@ export class SearchCardsEffect extends Effect {
             this.ability?.card :
             undefined;
         const associatedSuperheroSet =
-            this.constructor.getAssociatedSuperheroSet(referenceCard, game);
+            getAssociatedSuperheroSet(referenceCard, game);
         const referenceCardType =
-            this.constructor.getReferenceCardType(referenceCard);
+            getReferenceCardType(referenceCard);
         const referenceOptions = Array.from(
             {length: REFERENCE_PRIORITY_COUNT},
             () => []
@@ -215,7 +148,7 @@ export class SearchCardsEffect extends Effect {
 
                 for (const card of cards) {
                     const referencePriority = referenceCard ?
-                        this.constructor.getReferencePriority(
+                        getReferencePriority(
                             card,
                             referenceCard,
                             associatedSuperheroSet,

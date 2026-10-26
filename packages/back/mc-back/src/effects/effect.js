@@ -10,6 +10,7 @@ import {
     PRIORITY_FORCED_RESPONSE,
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TARGET_PARENT,
     TARGET_YOU,
 } from 'mc-shared';
 import {Calc} from '../engine/calc.js';
@@ -18,6 +19,7 @@ import {path, pathSet} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {Keywords} from '../model/commons/keywords.js';
 import {EFFECT_RESOLUTION_CONTEXT} from '../utils/effect-resolution-context.js';
+import {hasReferentialTargetCondition} from '../utils/referential-ability-utils.js';
 
 export class Effect extends Engine {
     constructor(params) {
@@ -454,6 +456,12 @@ export class Effect extends Engine {
             source: this.source ?? params.source,
             target,
         };
+        const usesReferentialTargets = hasReferentialTargetCondition(
+            this.validTarget.condition ?? this.condition,
+            targetParams.ability?.card
+        );
+        const revalidateSelectedTargets = usesReferentialTargets ||
+            target === TARGET_PARENT;
 
         if ((params.fixedPreselectedTarget ||
             params.preselectedEffectTargets?.has(this)) &&
@@ -461,17 +469,28 @@ export class Effect extends Engine {
             const selectedTargets = Array.isArray(selectedTarget) ?
                 selectedTarget :
                 [selectedTarget];
-            const validTargets = selectedTargets.filter(selected =>
-                this.validTarget.filter(selected, targetParams));
+            const validTargets = revalidateSelectedTargets ?
+                this.validTarget.resolveSelectedTargets(
+                    selectedTarget,
+                    targetParams
+                ) :
+                selectedTargets.filter(selected =>
+                    this.validTarget.filter(selected, targetParams));
 
-            return validTargets.length === selectedTargets.length ?
+            return validTargets.every(Boolean) &&
+                validTargets.length === selectedTargets.length ?
                 [Array.isArray(selectedTarget) ? validTargets : validTargets[0]] :
                 [];
         }
 
         if (!this.refreshTarget && Array.isArray(selectedTarget)) {
-            const validTargets = selectedTarget.filter(selected =>
-                this.validTarget.filter(selected, targetParams));
+            const validTargets = revalidateSelectedTargets ?
+                this.validTarget.resolveSelectedTargets(
+                    selectedTarget,
+                    targetParams
+                ).filter(Boolean) :
+                selectedTarget.filter(selected =>
+                    this.validTarget.filter(selected, targetParams));
             if (validTargets.length !== selectedTarget.length) {
                 this.selectedTarget = validTargets;
             }
@@ -479,9 +498,16 @@ export class Effect extends Engine {
             return validTargets.length ? [validTargets] : [];
         }
         if (!this.refreshTarget && selectedTarget) {
-            return this.validTarget.filter(selectedTarget, targetParams) ?
-                [selectedTarget] :
-                [];
+            const [validTarget] = revalidateSelectedTargets ?
+                this.validTarget.resolveSelectedTargets(
+                    selectedTarget,
+                    targetParams
+                ) :
+                this.validTarget.filter(selectedTarget, targetParams) ?
+                    [selectedTarget] :
+                    [];
+
+            return validTarget ? [validTarget] : [];
         }
 
         return this.validTarget.getValidTarget(targetParams);

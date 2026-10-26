@@ -33,7 +33,7 @@ export class RemoveThreatEffect extends Effect {
         } else if (this.paramsCalc) {
             this.threat = this.calculate(params);
         } else {
-            this.threat = this.baseThreat ?? params.threat;
+            this.threat = this.calcPerPlayer(this.baseThreat ?? params.threat);
         }
         if (Number.isFinite(this.threat)) {
             this.threat += this.threatModifier;
