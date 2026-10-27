@@ -83,6 +83,15 @@ export function matchesDeckAspectFilter(card, filter, deckAspects) {
         deckAspects.includes(filter) && card.aspect === filter;
 }
 
+export function normalizeDeckAspectFilter(filter, deckAspects) {
+    return filter === 'all' ||
+        filter === 'basic' ||
+        filter === 'deck' ||
+        deckAspects.includes(filter) ?
+        filter :
+        'all';
+}
+
 export function getAspectClass(aspect) {
     return Object.hasOwn(ASPECT_NAMES, aspect) ? `aspect-${aspect}` : '';
 }

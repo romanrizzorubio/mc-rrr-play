@@ -12,6 +12,7 @@ import {
     TRAIT_BUSINESSMAN,
     TRAIT_CAPTIVE,
     TRAIT_CONDITION,
+    TRAIT_CREATURE,
     TRAIT_DEFENDER,
     TRAIT_DEFENSE,
     TRAIT_DROID,
@@ -31,6 +32,7 @@ import {
     TRAIT_PERSONA,
     TRAIT_PREPARATION,
     TRAIT_SCIENTIST,
+    TRAIT_SOLDIER,
     TRAIT_SKILL,
     TRAIT_STONE,
     TRAIT_SUPERPOWER,
@@ -41,6 +43,7 @@ import {
     TRAIT_TITLE,
     TRAIT_VEHICLE,
     TRAIT_TECH,
+    TRAIT_TEMPORAL,
     translateTrait,
     TRAIT_WOOD,
 } from '../index.js';
@@ -56,6 +59,7 @@ describe('trait translations', () => {
             [TRAIT_BUSINESSMAN, 'Empresario'],
             [TRAIT_CAPTIVE, 'Cautivo'],
             [TRAIT_CONDITION, 'Alteración'],
+            [TRAIT_CREATURE, 'Criatura'],
             [TRAIT_DEFENDER, 'Defensor'],
             [TRAIT_DEFENSE, 'Defensa'],
             [TRAIT_ELITE, 'Élite'],
@@ -83,11 +87,13 @@ describe('trait translations', () => {
             [TRAIT_PERSONA, 'Individuo'],
             [TRAIT_PREPARATION, 'Planificación'],
             [TRAIT_SCIENTIST, 'Científico'],
+            [TRAIT_SOLDIER, 'Soldado'],
             [TRAIT_SUPERPOWER, 'Superpoder'],
             [TRAIT_OLYMPUS, 'Olimpo'],
             [TRAIT_STONE, 'Piedra'],
             [TRAIT_MUTATED, 'Mutado'],
             [TRAIT_WOOD, 'Madera'],
+            [TRAIT_TEMPORAL, 'Temporal'],
         ]);
 
         translations.forEach((label, trait) => {

@@ -54,6 +54,36 @@ export class MoveToDeckEffect extends Effect {
             selectedCards.slice() :
             params.card ? [params.card] : [];
     }
+    static getDestinationDeck(targetDeck, card) {
+        if (!card.isInPlay || !targetDeck?.isScenarioDeck) {
+            return targetDeck;
+        }
+
+        return targetDeck.owner?.getExtraDeckForCard?.(card) ?? targetDeck;
+    }
+    async removeFromPlay(card) {
+        if (!card.isInPlay) {
+            return undefined;
+        }
+
+        const gameZones = [
+            card.controller?.gameZone,
+            card.gameZone,
+            card.owner?.gameZone,
+            this.match?.scenario?.gameZone,
+        ];
+        const gameZone = gameZones.find(zone =>
+            zone?.cards?.includes(card));
+
+        if (gameZone) {
+            await gameZone.discard(card);
+        }
+        if (typeof card.init === 'function') {
+            await card.init();
+        }
+
+        return gameZone;
+    }
     async execute(params) {
         const {player} = params;
         const cardsToMove = this.getCardsToMove(params).filter(card =>
@@ -72,38 +102,68 @@ export class MoveToDeckEffect extends Effect {
             player?.deck;
 
         if (targetDeck) {
+            const cardsByDeck = new Map();
             if (cardsToMove.length > 0) {
                 cardsToMove.forEach(card => {
-                    targetDeck.searchDiscard(card);
-                    if (typeof targetDeck.removeCardFromDeck === 'function') {
-                        targetDeck.removeCardFromDeck(card);
-                    } else {
-                        const index = targetDeck.cards?.indexOf(card);
-                        if (index > -1) {
-                            targetDeck.cards.splice(index, 1);
-                        }
+                    const destinationDeck = MoveToDeckEffect.getDestinationDeck(
+                        targetDeck,
+                        card,
+                    );
+                    if (!cardsByDeck.has(destinationDeck)) {
+                        cardsByDeck.set(destinationDeck, []);
                     }
+                    cardsByDeck.get(destinationDeck).push(card);
                 });
-
-                if (this.position === DECK_POSITION_TOP) {
-                    targetDeck.cards.unshift(...cardsToMove);
-                } else {
-                    targetDeck.addToDeck(cardsToMove);
-                }
-
-                logGameTrace('deck.cards-moved', {
-                    match: this.match.name,
-                    player: targetDeck.owner?.name,
-                    count: cardsToMove.length,
-                });
+            } else {
+                cardsByDeck.set(targetDeck, []);
             }
 
-            if (this.position === DECK_POSITION_SHUFFLE) {
-                targetDeck.shuffle();
-                logGameTrace('deck.shuffled', {
-                    match: this.match.name,
-                    player: targetDeck.owner?.name,
-                });
+            const gameZones = new Set();
+            for (const [destinationDeck, cards] of cardsByDeck) {
+                for (const card of cards) {
+                    const gameZone = await this.removeFromPlay(card);
+                    if (gameZone) {
+                        gameZones.add(gameZone);
+                    }
+                    destinationDeck.searchDiscard(card);
+                    if (typeof destinationDeck.removeCardFromDeck === 'function') {
+                        destinationDeck.removeCardFromDeck(card);
+                    } else {
+                        const index = destinationDeck.cards?.indexOf(card);
+                        if (index > -1) {
+                            destinationDeck.cards.splice(index, 1);
+                        }
+                    }
+                }
+
+                if (this.position === DECK_POSITION_TOP) {
+                    destinationDeck.cards.unshift(...cards);
+                } else {
+                    destinationDeck.addToDeck(cards);
+                }
+
+                if (cards.length > 0) {
+                    logGameTrace('deck.cards-moved', {
+                        match: this.match.name,
+                        player: destinationDeck.owner?.name,
+                        count: cards.length,
+                    });
+                }
+
+                if (this.position === DECK_POSITION_SHUFFLE) {
+                    destinationDeck.shuffle();
+                    logGameTrace('deck.shuffled', {
+                        match: this.match.name,
+                        player: destinationDeck.owner?.name,
+                    });
+                }
+            }
+
+            if (cardsToMove.length > 0) {
+                await this.promisesSequential([...gameZones], gameZone =>
+                    gameZone.refresh?.());
+                await this.promisesSequential([...cardsByDeck.keys()], deck =>
+                    deck.refresh?.());
             }
         }
     }

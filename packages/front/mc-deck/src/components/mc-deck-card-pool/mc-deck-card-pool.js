@@ -10,6 +10,7 @@ import {
     getCardOriginName,
     getCardTypeName,
     matchesDeckAspectFilter,
+    normalizeDeckAspectFilter,
 } from '../../utils/deck-presentation.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
 import {compareDeckPoolCards} from '../../utils/deck-card-pool-sort.js';
@@ -56,7 +57,10 @@ export class McDeckCardPool extends LitElement {
     }
     updated(changedProperties) {
         if (changedProperties.has('deckAspects')) {
-            this.aspectFilter = 'all';
+            this.aspectFilter = normalizeDeckAspectFilter(
+                this.aspectFilter,
+                this.deckAspects,
+            );
         }
         if (changedProperties.has('cards')) {
             this.addCounts = {};

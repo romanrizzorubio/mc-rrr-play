@@ -64,6 +64,7 @@ import {
     TARGET_ACTIVATION,
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_SCHEMES,
+    TARGET_CARD,
     TARGET_ENCOUNTER_DECK,
     TARGET_EFFECT,
     TARGET_INITIAL_PLAYER,
@@ -155,7 +156,11 @@ const createBasicThwart = (match, selectedTarget) => {
     return {ability, character};
 };
 
-const createScenario = async ({expert = false, includeSideScheme = false} = {}) => {
+const createScenario = async ({
+    expert = false,
+    includeSideScheme = false,
+    includeTemporalSet = false,
+} = {}) => {
     const {scenarios, sets} = await loadCatalog();
     const scenarioRecord = scenarios.find(({_id}) => _id === 'red-skull');
     assert.ok(scenarioRecord);
@@ -223,7 +228,11 @@ const createScenario = async ({expert = false, includeSideScheme = false} = {}) 
     }));
 
     const factory = new MatchFactory(match);
-    const scenario = await factory.createScenario(scenarioRecord.config);
+    const scenarioConfig = includeTemporalSet ? {
+        ...scenarioRecord.config,
+        defaultSets: [...scenarioRecord.config.defaultSets, 'temporal'],
+    } : scenarioRecord.config;
+    const scenario = await factory.createScenario(scenarioConfig);
     match.scenario = scenario;
     scenario.selectVillain = async () => {};
 
@@ -2369,6 +2378,48 @@ describe('Cráneo Rojo scenario', () => {
             match,
         });
         assert.equal(await getFromSideSchemeDeck.canRun({match}), true);
+    });
+
+    test('a defeated Temporal side scheme returns to Red Skull side-scheme deck', async () => {
+        const {match, scenario} = await createScenario({
+            includeTemporalSet: true,
+        });
+        const sideSchemeDeck = scenario.getExtraDeck(SIDE_SCHEME_DECK);
+        const portal = sideSchemeDeck.cards.find(({name}) =>
+            name === 'Portal a través del tiempo');
+        const forcedInterrupt = portal?.abilities[0];
+
+        assert.ok(portal);
+        assert.ok(forcedInterrupt);
+        assert.equal(scenario.getExtraDeckForCard(portal), sideSchemeDeck);
+        assert.equal(sideSchemeDeck.removeCardFromDeck(portal), true);
+        portal.controller = scenario;
+        scenario.gameZone.addToGameZone(portal);
+        await portal.initTriggers();
+        match.openDialog = async ({dialogType, data}) =>
+            dialogType === DIALOG_USE_CARD && data.cards?.length ?
+                {selected: data.cards[0]} :
+                {};
+
+        const defeatEffect = new DefeatEffect({
+            match,
+            selectedTarget: portal,
+            target: TARGET_CARD,
+        });
+        await defeatEffect.runEffect({
+            card: portal,
+            effect: defeatEffect,
+            match,
+            player: match.initialPlayer,
+        });
+
+        assert.equal(defeatEffect.defeated, true);
+        assert.equal(forcedInterrupt.resolved, true);
+        assert.equal(scenario.sideSchemes.includes(portal), false);
+        assert.equal(sideSchemeDeck.cards.includes(portal), true);
+        assert.equal(sideSchemeDeck.discardPile.includes(portal), false);
+        assert.equal(scenario.deck.cards.includes(portal), false);
+        assert.equal(scenario.deck.discardPile.includes(portal), false);
     });
 
     test('the side-scheme reveal response uses a fresh effect tree on each resolution', async () => {

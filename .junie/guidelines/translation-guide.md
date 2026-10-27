@@ -119,6 +119,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **businessman (rasgo)** | Empresario |
 | **captive (rasgo)** | Cautivo |
 | **condition (rasgo)** | Alteración |
+| **creature (rasgo)** | Criatura |
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
 | **droid (rasgo)** | Androide |
@@ -132,11 +133,13 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **skill (rasgo)** | Habilidad |
 | **spy (rasgo)** | Espía |
 | **scientist (rasgo)** | Científico |
+| **soldier (rasgo)** | Soldado |
 | **superpower (rasgo)** | Superpoder |
 | **spell (rasgo)** | Hechizo |
 | **stone (rasgo)** | Piedra |
 | **tactic (rasgo)** | Táctica |
 | **tech (rasgo)** | Tecnología |
+| **temporal (rasgo)** | Temporal |
 | **thwart (rasgo)** | Intervención |
 | **title (rasgo)** | Título |
 | **vehicle (rasgo)** | Vehículo |
