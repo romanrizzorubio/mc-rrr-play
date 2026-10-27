@@ -8,6 +8,7 @@ import {COST_TYPE_ABILITY, COST_TYPE_ARROW} from './cost-constants.js';
 export class AbilityCosts extends CostGroup {
     constructor({ability, match} = {}) {
         super({ability, match, type: COST_TYPE_ABILITY});
+        this.paymentEffect = undefined;
     }
     async getEffect(params) {
         const ability = this.ability;
@@ -53,6 +54,7 @@ export class AbilityCosts extends CostGroup {
         });
     }
     async pay(params, paramsToUpdate = params) {
+        this.paymentEffect = undefined;
         const effect = await this.getEffect(params);
         if (!effect) {
             const result = {
@@ -78,12 +80,33 @@ export class AbilityCosts extends CostGroup {
                     effectParams: params,
                     resolved: paid,
                 };
+            if (result.resolved) {
+                this.paymentEffect = effect;
+            }
             this.setPaymentResult(result);
 
             return result;
         }
 
-        return super.pay(params, paramsToUpdate, effect);
+        const result = await super.pay(params, paramsToUpdate, effect);
+        if (result.resolved) {
+            this.paymentEffect = effect;
+        }
+
+        return result;
+    }
+    clearPaymentEffect() {
+        this.paymentEffect = undefined;
+    }
+    async rollbackPayment() {
+        const effect = this.paymentEffect;
+        this.paymentEffect = undefined;
+
+        if (!effect?.canRollbackCost()) {
+            return false;
+        }
+
+        return effect.rollbackCost();
     }
     setPaymentResult(result) {
         super.setPaymentResult(result);

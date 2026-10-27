@@ -5,6 +5,7 @@ import {
 } from 'mc-shared';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
+import {checkCondition} from '../../engine/utils.js';
 import {FaceDown} from '../match/facedown.js';
 import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
 
@@ -34,6 +35,7 @@ export class GameCard extends Engine {
         this.attached = [];
         this.tuckedCards = [];
         this.keywordModifiers = [];
+        this.blankTextModifiers = [];
         this.isPlaying = false;
         this.printedTextBlank = false;
 
@@ -61,8 +63,51 @@ export class GameCard extends Engine {
         if (this.parent?.sides?.includes(this)) {
             return this.parent.damage;
         }
-
         return this._damage;
+    }
+    get printedTextBlank() {
+        return this._printedTextBlank ||
+            (this.blankTextModifiers || []).some(({
+                source,
+                blank,
+                modifierCondition,
+            }) =>
+                blank &&
+                source?.isInPlay &&
+                (!modifierCondition || checkCondition({
+                    card: this,
+                    player: this.engaged,
+                    target: this,
+                }, modifierCondition)));
+    }
+    set printedTextBlank(blank) {
+        this._printedTextBlank = Boolean(blank);
+    }
+    addBlankTextModifier(
+        source,
+        ability,
+        blank = true,
+        modifierCondition
+    ) {
+        if (!Array.isArray(this.blankTextModifiers)) {
+            this.blankTextModifiers = [];
+        }
+
+        const modifier = this.blankTextModifiers.find(existing =>
+            existing.source === source &&
+            existing.ability === ability &&
+            existing.modifierCondition === modifierCondition);
+
+        if (modifier) {
+            modifier.blank = blank;
+        } else {
+            this.blankTextModifiers.push({
+                source,
+                ability,
+                blank,
+                modifierCondition,
+            });
+        }
     }
     set damage(damage) {
         if (this.parent?.sides?.includes(this)) {
@@ -116,6 +161,9 @@ export class GameCard extends Engine {
         }
 
         return false;
+    }
+    get countsTowardAllyLimit() {
+        return this.card.countsTowardAllyLimit !== false;
     }
     get controller() {
         if (this.sides.length) {
@@ -245,6 +293,14 @@ export class GameCard extends Engine {
                 this.currentSide.name !== conditionName) {
                 return value;
             }
+            if (modifier.modifierCondition &&
+                !checkCondition({
+                    card: this,
+                    player: this.engaged,
+                    target: this,
+                }, modifier.modifierCondition)) {
+                return value;
+            }
 
             const addedValue = modifier.keyword[name];
             if (typeof addedValue === 'number') {
@@ -254,7 +310,13 @@ export class GameCard extends Engine {
             return Boolean(value || addedValue);
         }, printedValue ?? defaultValue);
     }
-    addKeywordModifier(source, ability, keyword, lasting) {
+    addKeywordModifier(
+        source,
+        ability,
+        keyword,
+        lasting,
+        modifierCondition
+    ) {
         if (!Array.isArray(this.keywordModifiers)) {
             this.keywordModifiers = [];
         }
@@ -262,18 +324,21 @@ export class GameCard extends Engine {
         const modifier = this.keywordModifiers.find(existing =>
             existing.source === source &&
             existing.ability === ability &&
-            existing.lasting === lasting);
+            existing.lasting === lasting &&
+            existing.modifierCondition === modifierCondition);
         if (modifier) {
             modifier.keyword = {
                 ...modifier.keyword,
                 ...keyword,
             };
+            modifier.modifierCondition = modifierCondition;
         } else {
             this.keywordModifiers.push({
                 source,
                 ability,
                 keyword: {...keyword},
                 lasting,
+                modifierCondition,
             });
         }
     }

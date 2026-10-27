@@ -27,6 +27,7 @@ export const TARGET_ALL_DECKS = 'all-decks';
 export const TARGET_ALL_ENEMIES = 'all-enemies';
 export const TARGET_ALL_FRIENDLY_CHARACTERS = 'all-friendly-characters';
 export const TARGET_ALL_ENGAGED_MINIONS = CHARACTER_ALL_ENGAGED_MINIONS;
+export const TARGET_ALL_MINIONS = 'all-minions';
 export const TARGET_ALL_HEROES = CHARACTER_ALL_HEROES;
 export const TARGET_ALL_HEROES_ALLIES = 'all-heroes-allies';
 export const TARGET_ALL_PLAYERS = 'all-players';

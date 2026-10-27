@@ -282,6 +282,7 @@ export default [
             'type': CARD_TYPE_ALLY,
             'params': {
                 'name': 'Valquiria',
+                'unique': true,
                 'set': CLASSIFICATION_AGGRESSION,
                 'image': 'aspect/aggression/allies/06012.png',
                 'traits': [

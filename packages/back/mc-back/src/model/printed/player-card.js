@@ -20,11 +20,15 @@ export class PlayerCard extends Card {
         resources = [],
         resourceType,
         requirement = [],
+        allowOverpay = false,
     }) {
         super(arguments[0]);
 
         if (!Array.isArray(playFrom)) {
             throw new TypeError('Player card playFrom must be an array of places.');
+        }
+        if (typeof allowOverpay !== 'boolean') {
+            throw new TypeError('Player card allowOverpay must be a boolean.');
         }
 
         this.cost = cost;
@@ -36,6 +40,7 @@ export class PlayerCard extends Card {
         this.classification = classification;
         this.resourceType = resourceType;
         this.requirement = requirement;
+        this.allowOverpay = allowOverpay;
 
         this.isPlayerCard = true;
         this.isAlly = false;
@@ -63,11 +68,36 @@ export class PlayerCard extends Card {
             return false;
         }
 
-        if (this.paramsToPlay) {
-            return checkCondition(params.player, this.paramsToPlay);
+        if (this.paramsToPlay &&
+            !checkCondition(params.player, this.paramsToPlay)) {
+            return false;
         }
 
-        return true;
+        return this.hasTeamUpCharacters(params.player);
+    }
+    hasTeamUpCharacters(player) {
+        const teamUp = this.keywords.teamUp;
+        if (!teamUp) {
+            return true;
+        }
+
+        const friends = player?.match?.friends;
+        if (!Array.isArray(friends)) {
+            return false;
+        }
+
+        return friends.some(firstCharacter =>
+            this.matchesTeamUpCharacter(firstCharacter, teamUp[0]) &&
+            friends.some(secondCharacter =>
+                firstCharacter !== secondCharacter &&
+                this.matchesTeamUpCharacter(secondCharacter, teamUp[1])
+            )
+        );
+    }
+    matchesTeamUpCharacter(character, name) {
+        const printedCard = character?.currentSide?.card ?? character?.card;
+
+        return printedCard?.name === name || printedCard?.subtitle === name;
     }
     getResources() {
         return this.resources;

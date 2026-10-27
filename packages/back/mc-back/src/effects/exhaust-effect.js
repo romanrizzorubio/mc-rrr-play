@@ -7,6 +7,45 @@ export class ExhaustEffect extends Effect {
         super(params);
 
         this.targetCountCalc = params.targetCountCalc;
+        this.exhaustedTargets = [];
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.exhaustedTargets = [];
+    }
+    canRollbackCost() {
+        return this.resolved &&
+            this.fullResolved &&
+            this.exhaustedTargets.length > 0;
+    }
+    async rollbackCost() {
+        if (!this.canRollbackCost()) {
+            throw new Error('Cannot roll back an unresolved exhaust cost.');
+        }
+
+        const gameZones = new Set();
+        for (const target of this.exhaustedTargets) {
+            if (!target.exhausted) {
+                continue;
+            }
+
+            target.ready();
+            await target.refresh();
+
+            const gameZone = target.gameZone ||
+                target.controller?.gameZone ||
+                target.owner?.gameZone;
+            if (gameZone) {
+                gameZones.add(gameZone);
+            }
+        }
+
+        await this.promisesSequential([...gameZones], gameZone => gameZone.refresh());
+        this.exhaustedTargets = [];
+        this.resolved = false;
+        this.fullResolved = false;
+
+        return true;
     }
     async resolveParams(params) {
         const resolvedParams = await super.resolveParams(params);
@@ -45,7 +84,11 @@ export class ExhaustEffect extends Effect {
         const gameZones = new Set();
 
         for (const target of selectedTargets) {
+            const wasExhausted = target.exhausted;
             target.exhaust();
+            if (!wasExhausted) {
+                this.exhaustedTargets.push(target);
+            }
             await target.refresh();
 
             const gameZone = target.gameZone ||

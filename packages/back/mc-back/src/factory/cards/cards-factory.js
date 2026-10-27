@@ -24,6 +24,23 @@ export class CardsFactory {
         }
     }
     createCardSides(sides, index, owner, {sameCard = false} = {}) {
+        const sideIds = new Set();
+        sides.forEach((side, sideIndex) => {
+            if (!sideIds.has(side.id)) {
+                sideIds.add(side.id);
+                return;
+            }
+
+            let suffix = sideIndex;
+            let sideId = `${side.id}-${suffix}`;
+            while (sideIds.has(sideId)) {
+                suffix++;
+                sideId = `${side.id}-${suffix}`;
+            }
+            side.id = sideId;
+            sideIds.add(sideId);
+        });
+
         const CardClass = sides[0]?.card?.isCharacter ?
             CharacterGameCard :
             GameCard;

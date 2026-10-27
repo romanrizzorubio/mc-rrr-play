@@ -4,8 +4,10 @@ import {
     PRIORITY_RESPONSE,
     TARGET_ALTEREGO_SIDE,
     TARGET_HERO_SIDE,
+    TARGET_SIDE,
     TRIGGER_SUPERHERO_FLIPS,
     TRIGGER_THIS_FLIP,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
@@ -48,7 +50,9 @@ export class FlipEffect extends Effect {
                 case TARGET_ALTEREGO_SIDE:
                     return !card.isAlterEgo;
                 case TARGET_HERO_SIDE:
-                    return !card.isHero;
+                    return !card.isHero ||
+                        Boolean(card.sides?.some(side =>
+                            side.isHero && side !== card.currentSide));
             }
 
             return true;
@@ -62,15 +66,27 @@ export class FlipEffect extends Effect {
 
         if (!this.selectedFormTarget) {
             const {formTarget} = this;
+            const dialogTitle = formTarget === TARGET_HERO_SIDE ?
+                'Elige tu identidad de héroe' :
+                formTarget === TARGET_ALTEREGO_SIDE ?
+                    'Elige tu identidad de alter ego' :
+                    formTarget === TARGET_SIDE ?
+                        'Elige tu identidad' :
+                        undefined;
 
+            const selectsHeroSide = formTarget === TARGET_HERO_SIDE;
             const validTarget = new ValidTarget({
                 match: this.match,
+                ...(selectsHeroSide ? {
+                    filter: side => side.isHero,
+                } : {}),
             });
 
             this.selectedFormTarget = await validTarget.selectTarget({
                 ...params,
                 card: this.selectedTarget,
-                target: formTarget,
+                target: selectsHeroSide ? TARGET_SIDE : formTarget,
+                ...(!params.dialogTitle && dialogTitle ? {dialogTitle} : {}),
             });
         }
     }
@@ -132,7 +148,10 @@ export class FlipEffect extends Effect {
 
         const triggerTypes = [TRIGGER_THIS_FLIP];
         if (owner?.isPlayer) {
-            triggerTypes.push(TRIGGER_SUPERHERO_FLIPS);
+            triggerTypes.push(
+                TRIGGER_SUPERHERO_FLIPS,
+                TRIGGER_YOUR_SUPERHERO_FLIPS,
+            );
         }
         const triggerParams = {
             ...params,

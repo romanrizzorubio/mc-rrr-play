@@ -11,6 +11,7 @@ export class ResourceCost extends Cost {
         playCardEffect,
         requirement = card?.requirement || [],
         resourceType = card?.resourceType,
+        allowOverpay = false,
     }) {
         super({type: COST_TYPE_RESOURCE, match});
 
@@ -20,15 +21,21 @@ export class ResourceCost extends Cost {
         if (!Array.isArray(requirement)) {
             throw new TypeError('A resource cost requirement must be an array.');
         }
+        if (typeof allowOverpay !== 'boolean') {
+            throw new TypeError('A resource cost allowOverpay must be a boolean.');
+        }
 
         this.amount = amount;
         this.card = card || playCardEffect?.card;
         this.playCardEffect = playCardEffect;
         this.requirement = requirement;
         this.resourceType = resourceType;
+        this.allowOverpay = allowOverpay;
     }
     get requiresPayment() {
-        return this.amount > 0 || this.requirement.length > 0;
+        return this.amount > 0 ||
+            this.requirement.length > 0 ||
+            this.allowOverpay;
     }
     getRequiredResources() {
         return Array(this.amount).fill(this.resourceType ?? RESOURCE_ANY);

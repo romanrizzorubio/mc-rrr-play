@@ -199,9 +199,6 @@ export class MongoDataStore {
         const selectedAspect = config.precon.find(({aspect}) =>
             typeof aspect === 'string' && aspect &&
             aspect !== CLASSIFICATION_BASIC);
-        if (!selectedAspect) {
-            throw new Error(`No default aspect configured for hero "${id}"`);
-        }
 
         for (const entry of config.precon) {
             if (!Array.isArray(entry.cardRefs)) {
@@ -238,7 +235,7 @@ export class MongoDataStore {
 
         return {
             ...config,
-            aspect: selectedAspect.aspect,
+            ...(selectedAspect ? {aspect: selectedAspect.aspect} : {}),
             precon,
         };
     }
@@ -287,6 +284,7 @@ export class MongoDataStore {
                     params.traits :
                     typeof params.traits === 'string' ? [params.traits] : [],
                 resources: params.resources || [],
+                ...(params.keywords ? {keywords: params.keywords} : {}),
                 unique: Boolean(params.unique),
                 permanent: Boolean(params.keywords?.permanent),
                 ...(params.maximum ? {maximum: params.maximum} : {}),

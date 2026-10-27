@@ -2,6 +2,7 @@ export const CALC_ALL = 'all';
 export const CALC_ATTACK = 'attack';
 export const CALC_BOOST_ICONS = 'boost-icons';
 export const CALC_COUNT = 'count';
+export const CALC_COUNTERS = 'counters';
 export const CALC_DAMAGE = 'damage';
 export const CALC_DIFFERENT_CARD_TYPES = 'different-card-types';
 export const CALC_DIFFERENT_RESOURCE_TYPE = 'different-resource-type';

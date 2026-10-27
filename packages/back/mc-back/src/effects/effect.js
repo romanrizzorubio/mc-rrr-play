@@ -145,6 +145,12 @@ export class Effect extends Engine {
         this.delayedEffects = [];
         this.lastingEffects = [];
     }
+    canRollbackCost() {
+        return false;
+    }
+    async rollbackCost() {
+        return false;
+    }
     getResolutionChildEffects() {
         const nestedEffects = new Set();
 

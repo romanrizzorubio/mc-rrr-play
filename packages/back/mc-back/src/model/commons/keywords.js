@@ -39,11 +39,20 @@ export class Keywords extends Engine {
             restricted = false,
             incite = 0,
             retaliate = 0,
+            teamUp,
             uses,
             hint,
             match,
         } = params;
         super(params);
+
+        if (teamUp !== undefined &&
+            (!Array.isArray(teamUp) ||
+                teamUp.length !== 2 ||
+                teamUp.some(name =>
+                    typeof name !== 'string' || !name.trim()))) {
+            throw new TypeError('Team-Up keyword must name exactly two characters.');
+        }
 
         this.match = match;
         this.guard = guard;
@@ -58,6 +67,7 @@ export class Keywords extends Engine {
         this.restricted = restricted;
         this._incite = incite;
         this._retaliate = retaliate;
+        this.teamUp = teamUp ? [...teamUp] : undefined;
         this._uses = uses;
         this._hint = hint;
     }

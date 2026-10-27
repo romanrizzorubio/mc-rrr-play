@@ -1,4 +1,5 @@
 import {
+    TRIGGER_ATTACHED_ACTIVATES,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
@@ -40,6 +41,7 @@ import {
     TRIGGER_PLAYER_CAN_READY,
     TRIGGER_PLAYER_CAN_FLIP,
     TRIGGER_SUPERHERO_FLIPS,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
     TRIGGER_PLAYER_TURN_START,
     TRIGGER_PLAYER_TURN_END,
     TRIGGER_ROUND_ENDS,
@@ -59,6 +61,7 @@ import {
     TRIGGER_THIS_GET_SCHEME,
     TRIGGER_THIS_PLAY_CARD,
     TRIGGER_THIS_SCHEME,
+    TRIGGER_THIS_SPEND,
     TRIGGER_THIS_THWARTS,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_VILLAIN_ACTIVATES,
@@ -85,6 +88,7 @@ import {
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
     TRIGGER_YOUR_SUPERHERO_GET_TRAITS,
 } from 'mc-shared';
+import {AttachedActivatesTrigger} from '../../triggers/attached-activates-trigger.js';
 import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
 import {AttachedGetTraitsTrigger} from '../../triggers/attached-get-traits-trigger.js';
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
@@ -128,6 +132,7 @@ import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
 import {ThisGetAttackTrigger} from '../../triggers/this-get-attack-trigger.js';
 import {ThisGetSchemeTrigger} from '../../triggers/this-get-scheme-trigger.js';
 import {ThisPlayCardTrigger} from '../../triggers/this-play-card-trigger.js';
+import {ThisSpendTrigger} from '../../triggers/this-spend-trigger.js';
 import {ThisSchemeTrigger} from '../../triggers/this-scheme-trigger.js';
 import {ThisThwartsTrigger} from '../../triggers/this-thwarts-trigger.js';
 import {
@@ -183,8 +188,10 @@ import {
 import {
     YourPlayerGetMaxAlliesTrigger
 } from '../../triggers/your-player-get-max-allies-trigger.js';
+import {YourSuperheroFlipsTrigger} from '../../triggers/your-superhero-flips-trigger.js';
 
 export const TRIGGER_MAP = {
+    [TRIGGER_ATTACHED_ACTIVATES]: AttachedActivatesTrigger,
     [TRIGGER_ABILITY_COST]: InstantTrigger,
     [TRIGGER_ABILITY_RESOLVED]: AbilityResolvedTrigger,
     [TRIGGER_CHARACTER_DEFEATED]: CharacterDefeatedTrigger,
@@ -219,6 +226,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_GET_SCHEME]: ThisGetSchemeTrigger,
     [TRIGGER_THIS_PLAY_CARD]: ThisPlayCardTrigger,
     [TRIGGER_THIS_SCHEME]: ThisSchemeTrigger,
+    [TRIGGER_THIS_SPEND]: ThisSpendTrigger,
     [TRIGGER_THIS_END_PLAY_CARD]: ThisEndPlayCardTrigger,
     [TRIGGER_THIS_THWARTS]: ThisThwartsTrigger,
     [TRIGGER_VILLAIN_ATTACKS]: VillainAttacksTrigger,
@@ -262,6 +270,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLAYER_CAN_READY]: Trigger,
     [TRIGGER_PLAYER_CAN_FLIP]: Trigger,
     [TRIGGER_SUPERHERO_FLIPS]: Trigger,
+    [TRIGGER_YOUR_SUPERHERO_FLIPS]: YourSuperheroFlipsTrigger,
     [TRIGGER_PLAYER_TURN_START]: PlayerTurnStartTrigger,
     [TRIGGER_PLAYER_TURN_END]: PlayerTurnEndTrigger,
     [TRIGGER_ENCOUNTER_REVEAL]: EncounterRevealTrigger,

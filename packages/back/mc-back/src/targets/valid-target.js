@@ -2,6 +2,7 @@ import {DIALOG_SELECT_TARGET,
     TARGET_ALL_ALLIES, TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_ENEMIES, TARGET_ALL_FRIENDLY_CHARACTERS, TARGET_ALL_HEROES,
+    TARGET_ALL_MINIONS,
     TARGET_ALL_SCHEMES,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
@@ -173,14 +174,8 @@ export class ValidTarget extends Engine {
         return selectedTargets.map(selected =>
             findSelectedTarget(validTargets, selected));
     }
-    isMultipleTarget(params) {
-        const {multipleTarget} = this;
+    isAllTarget(params) {
         const {target} = params;
-
-        if (multipleTarget) {
-            return true;
-        }
-
         switch (target) {
             case TARGET_ALL_ALLIES:
             case TARGET_ALL_ALLIES_YOU_CONTROL:
@@ -191,6 +186,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_ENEMIES:
             case TARGET_ALL_HEROES:
             case TARGET_ALL_HEROES_ALLIES:
+            case TARGET_ALL_MINIONS:
             case TARGET_SELECTED_PLAYER_CHARACTERS:
             case TARGET_ALL_ENGAGED_MINIONS:
             case TARGET_ALL_SCHEMES:
@@ -200,6 +196,9 @@ export class ValidTarget extends Engine {
         }
 
         return false;
+    }
+    isMultipleTarget(params) {
+        return Boolean(this.multipleTarget || this.isAllTarget(params));
     }
     async selectFrom(candidates, params) {
         const validTargets = candidates.filter(card =>

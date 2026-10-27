@@ -571,7 +571,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         });
     }
     getTriggersEnds(params) {
-        return this.activation.getTriggersEnds(params)
+        return super.getTriggersEnds(params)
             .concat([
                 TRIGGER_VILLAIN_ATTACKS_YOU,
                 TRIGGER_ENEMY_ATTACKS_YOU,

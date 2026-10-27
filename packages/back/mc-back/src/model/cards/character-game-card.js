@@ -5,6 +5,7 @@ import {QuickstrikeAbility} from '../../abilities/misc/quickstrike-ability.js';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 import {STATUS_NONE, STATUS_STALWART, STATUS_STEADY} from 'mc-shared';
 import {Calc} from '../../engine/calc.js';
+import {checkCondition} from '../../engine/utils.js';
 
 import {GameCard} from './game-card.js';
 import {GetAttackEffect} from '../../effects/get-attack-effect.js';
@@ -36,6 +37,7 @@ export class CharacterGameCard extends GameCard {
         this.modifyScheme = 0;
         this.modifyThwart = 0;
         this.extraTraits = [];
+        this.traitModifiers = [];
 
         this.engaged = null;
 
@@ -369,7 +371,50 @@ export class CharacterGameCard extends GameCard {
         if (this.sides.length) {
             traits = this.currentSide.traits || [];
         }
-        return [...traits, ...this.extraTraits];
+        const conditionalTraits = this.traitModifiers
+            .filter(({source, lasting, modifierCondition}) => {
+                const isActive = lasting ?
+                    source?.match?.lasting?.includes(source) :
+                    source?.isInPlay;
+
+                return isActive && checkCondition({
+                    card: this,
+                    player: this.engaged,
+                    target: this,
+                }, modifierCondition);
+            })
+            .map(({trait}) => trait)
+            .filter(trait =>
+                !traits.includes(trait) && !this.extraTraits.includes(trait));
+
+        return [...traits, ...this.extraTraits, ...conditionalTraits];
+    }
+    addTraitModifier(
+        source,
+        ability,
+        trait,
+        modifierCondition,
+        lasting
+    ) {
+        const existing = this.traitModifiers.find(modifier =>
+            modifier.source === source &&
+            modifier.ability === ability &&
+            modifier.trait === trait &&
+            modifier.lasting === lasting &&
+            modifier.modifierCondition === modifierCondition);
+        if (existing) {
+            return false;
+        }
+
+        this.traitModifiers.push({
+            source,
+            ability,
+            trait,
+            lasting,
+            modifierCondition,
+        });
+
+        return true;
     }
     get extraKeywords() {
         const printedCard = this.sides.length ?

@@ -306,14 +306,14 @@ export class Match extends Engine {
         return this.players.find(_player => _player.name === player);
     }
     async initMatch(expert = false) {
-        // Select first player
-        const player = this.initialPlayer;
         // Obligation
         const obligations = this.createObligations();
         // Nemesis
         this.initNemesis();
         // Shuffle Player decks
         this.initPlayers();
+        // Select first player after initPlayers assigns the default.
+        const player = this.initialPlayer;
         // Put Villain and Scheme &
         // Create Encounter Deck and Shuffle &
         // Put setup cards into play &

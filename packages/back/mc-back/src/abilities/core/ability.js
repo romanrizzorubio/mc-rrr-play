@@ -395,6 +395,7 @@ export class Ability extends Engine {
         try {
             this.resolved = false;
             this.paymentCancelled = false;
+            this.costs.clearPaymentEffect();
             if (typeof resolutionEffect?.resetResolutionState === 'function') {
                 resolutionEffect.resetResolutionState({
                     preserveSelectedTarget: preselectedTarget ||
@@ -464,6 +465,7 @@ export class Ability extends Engine {
 
                             if (resolutionEffect.paymentCancelled) {
                                 this.paymentCancelled = true;
+                                await this.costs.rollbackPayment();
                                 return;
                             }
 

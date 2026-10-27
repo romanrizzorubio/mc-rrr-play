@@ -2,11 +2,13 @@ import {
     CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
+    ABILITY_INTERRUPT,
     ABILITY_OPTION,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     CARD_TYPE_TREACHERY,
     CALC_COUNT,
+    CALC_COUNTERS,
     CALC_PRINTED_RESOURCES,
     EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_CHAINED,
@@ -19,6 +21,7 @@ import {
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_COST,
+    EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PLACE_COUNTERS,
     EFFECT_REMOVE_THREAT,
@@ -46,11 +49,15 @@ import {
     TRAIT_AERIAL,
     TRAIT_AVENGER,
     TRAIT_DROID,
+    TRAIT_GIANT,
     TRAIT_SHIELD,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_PLAY_CARD,
     TRIGGER_ABILITY_COST,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_GET_ATTACK,
+    TRIGGER_THIS_GET_THWART,
 } from 'mc-shared';
 
 export default [
@@ -676,5 +683,212 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'leadership-hombre-hormiga',
+        'aspect': 'leadership',
+        'order': 91,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Hombre Hormiga',
+                'subtitle': 'Hank Pym',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/12011.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 0,
+                'allowOverpay': true,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 2,
+                'thwart': 2,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 0,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'paramsCalc': {
+                                        'target': 'effect.ability.card',
+                                        'formula': CALC_COUNTERS
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
+                            'workInHand': true,
+                            'condition': {
+                                'playCardEffect.resourcesOverpaid': '>0'
+                            },
+                            'effect': {
+                                'type': EFFECT_PLACE_COUNTERS,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'maxCounters': 4,
+                                    'paramsCalc': {
+                                        'target': 'playCardEffect.resourcesOverpaid'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-hombre-gigante',
+        'aspect': 'leadership',
+        'order': 92,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Hombre Gigante',
+                'subtitle': 'Raz Malhotra',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/12012.png',
+                'traits': [
+                    TRAIT_AVENGER,
+                    TRAIT_GIANT,
+                ],
+                'unique': true,
+                'cost': 5,
+                'resources': [
+                    RESOURCE_PHYSICAL,
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 2,
+                'thwart': 2,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_GET_ATTACK,
+                            'condition': {
+                                'card.life': '>2',
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-ronin',
+        'aspect': 'leadership',
+        'order': 93,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Ronin',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/12013.png',
+                'traits': [
+                    TRAIT_AVENGER,
+                ],
+                'unique': true,
+                'cost': 3,
+                'resources': [
+                    RESOURCE_ENERGY,
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 2,
+                'thwart': 1,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_GET_ATTACK,
+                            'condition': {
+                                'card.attached.*.isUpgrade': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_GET_THWART,
+                            'condition': {
+                                'card.attached.*.isUpgrade': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-aguijon',
+        'aspect': 'leadership',
+        'order': 94,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Aguijón',
+                'subtitle': 'Cassie Lang',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/12014.png',
+                'traits': [
+                    TRAIT_AVENGER,
+                ],
+                'unique': true,
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY,
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 1,
+                'thwart': 1,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 2,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER,
+                },
+                'countsTowardAllyLimit': false,
+            },
+        },
+    },
 ];

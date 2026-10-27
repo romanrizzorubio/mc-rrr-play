@@ -3,6 +3,7 @@ import {describe, test} from 'node:test';
 
 import {
     TRAIT_AERIAL,
+    TRAIT_ANTS,
     TRAIT_ARROW,
     TRAIT_ASGARD,
     TRAIT_ARMOR,
@@ -11,6 +12,7 @@ import {
     TRAIT_AVENGER,
     TRAIT_BUSINESSMAN,
     TRAIT_CAPTIVE,
+    TRAIT_CIVILIAN,
     TRAIT_CONDITION,
     TRAIT_CREATURE,
     TRAIT_DEFENDER,
@@ -44,6 +46,7 @@ import {
     TRAIT_VEHICLE,
     TRAIT_TECH,
     TRAIT_TEMPORAL,
+    TRAIT_TINY,
     translateTrait,
     TRAIT_WOOD,
 } from '../index.js';
@@ -58,6 +61,7 @@ describe('trait translations', () => {
             [TRAIT_AVENGER, 'Vengador'],
             [TRAIT_BUSINESSMAN, 'Empresario'],
             [TRAIT_CAPTIVE, 'Cautivo'],
+            [TRAIT_CIVILIAN, 'Civil'],
             [TRAIT_CONDITION, 'Alteración'],
             [TRAIT_CREATURE, 'Criatura'],
             [TRAIT_DEFENDER, 'Defensor'],
@@ -67,6 +71,7 @@ describe('trait translations', () => {
             [TRAIT_LOCATION, 'Lugar'],
             [TRAIT_SKILL, 'Habilidad'],
             [TRAIT_AERIAL, 'Aéreo'],
+            [TRAIT_ANTS, 'Hormigas'],
             [TRAIT_ARROW, 'Flecha'],
             [TRAIT_ASGARD, 'Asgard'],
             [TRAIT_TACTIC, 'Táctica'],
@@ -94,6 +99,7 @@ describe('trait translations', () => {
             [TRAIT_MUTATED, 'Mutado'],
             [TRAIT_WOOD, 'Madera'],
             [TRAIT_TEMPORAL, 'Temporal'],
+            [TRAIT_TINY, 'Diminuto'],
         ]);
 
         translations.forEach((label, trait) => {

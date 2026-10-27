@@ -1,6 +1,6 @@
 import {
     PRIORITY_CONSTANT,
-    TARGET_ALLY,
+    TARGET_FRIENDLY_CHARACTER,
     TARGET_YOU,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_INSTANT,
@@ -14,6 +14,8 @@ import {GetMaxAlliesEffect} from './get-max-allies-effect.js';
 import {enforceRestrictedLimit} from '../utils/enforce-restricted-limit.js';
 import {canPlayCard} from '../utils/card-play-utils.js';
 import {checkCondition, path} from '../engine/utils.js';
+import {defeatCharacterIfLethal} from '../utils/damage-resolution.js';
+import {getAlliesCountingTowardLimit} from '../utils/ally-utils.js';
 
 
 export class PutPlayEffect extends Effect {
@@ -180,6 +182,17 @@ export class PutPlayEffect extends Effect {
             params
         );
     }
+    async resolvePrepared(effectParams, triggersParams) {
+        await super.resolvePrepared(effectParams, triggersParams);
+
+        const card = this.getCard(effectParams);
+        if (card?.isCharacter && card.isInPlay) {
+            await defeatCharacterIfLethal(card, {
+                match: this.match,
+                params: effectParams,
+            });
+        }
+    }
     async canPutCardInPlay(card, controller, params) {
         if (this.requirePlayable &&
             card.isPlayerCard &&
@@ -309,13 +322,17 @@ export class PutPlayEffect extends Effect {
 
         await getMaxAlliesEffect.runEffect(params);
 
-        const allies = player.allies;
+        const allies = getAlliesCountingTowardLimit(player.allies);
         if (allies.length <= getMaxAlliesEffect.maxAllies) {
             return;
         }
 
         const discardFromGameEffect = new DiscardFromGameEffect({
-            target: TARGET_ALLY,
+            target: TARGET_FRIENDLY_CHARACTER,
+            condition: {
+                isAlly: true,
+                countsTowardAllyLimit: true,
+            },
             match: this.match,
         });
         this.selectAllyToDiscard(allies, discardFromGameEffect);

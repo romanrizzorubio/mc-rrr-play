@@ -18,6 +18,7 @@ import {
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_ENEMY_ATTACK,
+    EFFECT_HEAL,
     LABEL_ATTACK,
     LABEL_THWART,
     RESOURCE_ENERGY,
@@ -662,6 +663,41 @@ export default [
                                     'paramsCalc': {
                                         'target': 'triggeredTargetDamage',
                                         'max': 5
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-momento-triunfal',
+        'aspect': 'aggression',
+        'order': 103,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Momento triunfal',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/12030.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
+                            'effect': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO,
+                                    'paramsCalc': {
+                                        'target': 'attack.excessDamage'
                                     }
                                 }
                             }

@@ -246,6 +246,46 @@ describe('multi-aspect deck persistence', () => {
         ]);
     });
 
+    test('loads a hero precon without a default aspect', async () => {
+        const basicCard = {
+            _id: 'basic-first-aid',
+            classification: CLASSIFICATION_BASIC,
+            card: {
+                type: 'event',
+                params: {name: 'Primeros auxilios'},
+            },
+        };
+        const hero = {
+            _id: 'ant-man',
+            name: 'Hombre Hormiga',
+            config: {
+                precon: [{
+                    classification: CLASSIFICATION_BASIC,
+                    cardRefs: [{id: 'basic-first-aid', count: 2}],
+                }],
+            },
+        };
+        const store = new MongoDataStore();
+        store.database = {
+            collection: name => ({
+                findOne: async () => name === 'heroes' ? hero : null,
+                find: query => ({
+                    toArray: async () => query._id.$in.includes(basicCard._id) ?
+                        [basicCard] :
+                        [],
+                }),
+            }),
+        };
+
+        const config = await store.getHeroConfig('ant-man');
+
+        assert.equal(Object.hasOwn(config, 'aspect'), false);
+        assert.deepEqual(config.precon, [{
+            count: 2,
+            card: basicCard.card,
+        }]);
+    });
+
     test('stores one aspect field in repository deck snapshots', () => {
         const snapshot = {
             decks: [multiAspectDeck()],

@@ -3,6 +3,7 @@ import {
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
+    ABILITY_HERO_RESPONSE,
     CALC_ALL,
     CALC_ATTACK,
     CALC_COUNT,
@@ -10,12 +11,14 @@ import {
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
     EFFECT_DRAW_CARD,
+    EFFECT_DISCARD_UNTIL,
     EFFECT_EXHAUST,
     EFFECT_HEAL,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_MOVE_TO_HAND,
     EFFECT_PAY_PRINTED_COST,
     EFFECT_PUT_PLAY,
     EFFECT_READY,
@@ -36,13 +39,16 @@ import {
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ROUND,
     TARGET_EFFECT,
+    TARGET_SOURCE,
     TARGET_YOU,
+    TARGET_YOUR_HERO,
     TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
     TRAIT_TACTIC,
     TRIGGER_YOU_BASIC_ATTACK,
-    TRIGGER_YOU_BASIC_THWART
+    TRIGGER_YOU_BASIC_THWART,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
 
 export default [
@@ -183,6 +189,111 @@ export default [
                                 'type': EFFECT_READY,
                                 'params': {
                                     'target': TARGET_ALLY
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-pedir-ayuda',
+        'aspect': 'leadership',
+        'order': 15,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Pedir ayuda',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/12015.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_DISCARD_UNTIL,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'condition': {
+                                        'isAlly': true,
+                                        'traits': TRAIT_AVENGER
+                                    },
+                                    'showDiscardedCards': true,
+                                    'thenEffect': {
+                                        'type': EFFECT_MOVE_TO_HAND,
+                                        'params': {
+                                            'target': TARGET_SOURCE,
+                                            'source': 'selectedCards'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-aplomo',
+        'aspect': 'leadership',
+        'order': 16,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Aplomo',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/12016.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_SUPERHERO_FLIPS,
+                            'effect': {
+                                'type': EFFECT_LASTING,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO,
+                                    'until': TIME_ROUND,
+                                    'effect': {
+                                        'type': EFFECT_SIMULTANEOUS,
+                                        'params': {
+                                            'target': TARGET_YOUR_HERO,
+                                            'effects': [
+                                                {
+                                                    'type': EFFECT_MODIFY_THWART_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_YOUR_HERO,
+                                                        'count': 1
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_YOUR_HERO,
+                                                        'count': 1
+                                                    }
+                                                },
+                                                {
+                                                    'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_YOUR_HERO,
+                                                        'count': 1
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
                                 }
                             }
                         }

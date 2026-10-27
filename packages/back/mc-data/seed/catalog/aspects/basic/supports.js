@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
+    ABILITY_HERO_ACTION,
     ABILITY_RESOURCE,
     CARD_TYPE_ANY,
     CARD_TYPE_ALLY,
@@ -11,6 +12,7 @@ import {
     EFFECT_LASTING,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_MAX_ALLIES,
+    EFFECT_PLAY_CARD,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
@@ -19,7 +21,9 @@ import {
     TARGET_EFFECT,
     TARGET_PHASE,
     TARGET_PLAYER,
+    TARGET_SOURCE,
     TARGET_THIS,
+    TARGET_YOUR_HERO,
     TIME_PHASE,
     TRAIT_AVENGER,
     TRAIT_LOCATION,
@@ -41,7 +45,7 @@ export default [
             'params': {
                 'name': 'Mansión de los Vengadores',
                 'set': CLASSIFICATION_BASIC,
-                'image': 'aspect/basic/supports/b91-copy-2.webp',
+                'image': 'aspect/basic/supports/01091.png',
                 'traits': [
                     TRAIT_AVENGER,
                     TRAIT_LOCATION
@@ -166,7 +170,7 @@ export default [
             'params': {
                 'name': 'Helitransporte',
                 'set': CLASSIFICATION_BASIC,
-                'image': 'aspect/basic/supports/b92-copy-2.webp',
+                'image': 'aspect/basic/supports/01092.png',
                 'traits': [
                     TRAIT_SHIELD,
                     TRAIT_LOCATION
@@ -254,5 +258,45 @@ export default [
                 ]
             }
         }
+    },
+    {
+        '_id': 'basic-espiritu-de-equipo',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 22,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'Espíritu de equipo',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/supports/12024.png',
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL,
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_PLAY_CARD,
+                                'params': {
+                                    'target': TARGET_SOURCE,
+                                    'source': 'player.hand.cards',
+                                    'sharedTraitsWith': TARGET_YOUR_HERO,
+                                    'costReduction': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
     }
 ];

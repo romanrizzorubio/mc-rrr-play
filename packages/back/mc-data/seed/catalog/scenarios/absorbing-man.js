@@ -356,7 +356,6 @@ const mainSchemeB = {
                         cardCondition: {
                             isEnvironment: true,
                         },
-                        beforeEnterPlay: true,
                     },
                     effect: {
                         type: EFFECT_FOR_EACH,

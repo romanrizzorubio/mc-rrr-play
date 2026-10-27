@@ -27,6 +27,7 @@ export class PayCostEffect extends Effect {
             const discardFromHandEffect = new DiscardFromHandEffect({
                 selectedTarget: card,
                 refreshTarget: true,
+                resourcePayment: true,
                 match: this.match,
             });
 

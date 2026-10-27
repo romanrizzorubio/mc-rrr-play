@@ -19,13 +19,23 @@ const numericKeywords = new Set(['incite', 'retaliate']);
 export class AddKeywordEffect extends Effect {
     constructor({
         keyword,
+        modifierCondition,
     }) {
         super(arguments[0]);
 
         this.keyword = keyword;
+        this.modifierCondition = modifierCondition;
+
+        if (modifierCondition !== undefined &&
+            (modifierCondition === null ||
+                typeof modifierCondition !== 'object')) {
+            throw new TypeError(
+                'EFFECT_ADD_KEYWORD modifierCondition must be an object.'
+            );
+        }
     }
     async execute(params) {
-        const {ability, keyword} = this;
+        const {ability, keyword, modifierCondition} = this;
         const source = params.lasting || ability?.card;
 
         if (!source) {
@@ -64,7 +74,8 @@ export class AddKeywordEffect extends Effect {
                 source,
                 ability,
                 resolvedKeyword,
-                Boolean(params.lasting)
+                Boolean(params.lasting),
+                modifierCondition
             );
             if (typeof target.refresh === 'function') {
                 await target.refresh();

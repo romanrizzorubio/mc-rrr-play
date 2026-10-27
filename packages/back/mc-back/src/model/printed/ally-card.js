@@ -1,6 +1,7 @@
 import {DIALOG_MAX_CARDS} from 'mc-shared';
 import {GetMaxAlliesEffect} from '../../effects/get-max-allies-effect.js';
 
+import {getAlliesCountingTowardLimit} from '../../utils/ally-utils.js';
 import {MixinCharacterCard} from './mixins/mixin-character-card.js';
 import {MixinFriendFrontCard} from './mixins/mixin-friend-front-card.js';
 import {PlayerCard} from './player-card.js';
@@ -22,12 +23,14 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
         subtitle,
         thwartConsequential,
         attackConsequential,
+        countsTowardAllyLimit = true,
     }) {
         super(arguments[0]);
 
         this.subtitle = subtitle;
         this.thwartConsequential = thwartConsequential;
         this.attackConsequential = attackConsequential;
+        this.countsTowardAllyLimit = countsTowardAllyLimit;
 
         this.isAlly = true;
     }
@@ -39,9 +42,10 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
         });
 
         await getMaxAlliesEffect.runEffect(params);
-        const allies = player.allies;
+        const allies = getAlliesCountingTowardLimit(player.allies);
 
-        if (allies.length >= getMaxAlliesEffect.maxAllies) {
+        if (this.countsTowardAllyLimit &&
+            allies.length >= getMaxAlliesEffect.maxAllies) {
             if (checkOnly || playCardEffect?.maxAlliesDialogAccepted) {
                 return super.canPlay(params);
             }

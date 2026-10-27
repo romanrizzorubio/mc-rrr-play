@@ -192,7 +192,7 @@ export class CostPaymentSession {
 
         const units = this.getPaymentResourceUnits(payment, params);
         const requirements = this.getPaymentResourceRequirements(effect, payment);
-        const usedUnits = requirements ?
+        const requiredUnits = requirements ?
             this.assignPaymentResources(
                 units,
                 requirements,
@@ -202,9 +202,12 @@ export class CostPaymentSession {
             ) :
             units;
 
-        if (!usedUnits) {
+        if (!requiredUnits) {
             throw new Error('El pago no satisface los requisitos de recursos.');
         }
+        const usedUnits = effect.resourceCost?.allowOverpay ?
+            units :
+            requiredUnits;
 
         const usedIndexesByCard = new Map();
         usedUnits.forEach(unit => {

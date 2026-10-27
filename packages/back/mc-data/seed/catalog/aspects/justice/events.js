@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_JUSTICE,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
+    ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
@@ -26,6 +27,7 @@ import {
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
     TRIGGER_WOULD_PLACE_THREAT,
 } from 'mc-shared';
 
@@ -39,7 +41,7 @@ export default [
             'params': {
                 'name': 'Por la justicia',
                 'set': CLASSIFICATION_JUSTICE,
-                'image': 'aspect/justice/events/j60-copy-2.webp',
+                'image': 'aspect/justice/events/01060.png',
                 'traits': [
                     TRAIT_THWART
                 ],
@@ -92,7 +94,7 @@ export default [
             'params': {
                 'name': 'Una gran responsabilidad',
                 'set': CLASSIFICATION_JUSTICE,
-                'image': 'aspect/justice/events/j61-copy-2.webp',
+                'image': 'aspect/justice/events/01061.png',
                 'cost': 0,
                 'resources': [
                     RESOURCE_MENTAL
@@ -329,6 +331,61 @@ export default [
                                 'type': EFFECT_CANCEL_BOOST_ICONS,
                                 'params': {
                                     'target': TARGET_EFFECT
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-imponer-la-ley',
+        'aspect': 'justice',
+        'order': 91,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Imponer la ley',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/12031.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'trigger': TRIGGER_YOUR_SUPERHERO_FLIPS,
+                            'effect': {
+                                'type': EFFECT_DO_IF_HAS_PAID,
+                                'params': {
+                                    'target': TARGET_SCHEME,
+                                    'resources': [
+                                        RESOURCE_MENTAL
+                                    ],
+                                    'effect': {
+                                        'type': EFFECT_REMOVE_THREAT,
+                                        'params': {
+                                            'target': TARGET_SCHEME,
+                                            'threat': 4
+                                        }
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_REMOVE_THREAT,
+                                        'params': {
+                                            'target': TARGET_SCHEME,
+                                            'threat': 3
+                                        }
+                                    }
                                 }
                             }
                         }

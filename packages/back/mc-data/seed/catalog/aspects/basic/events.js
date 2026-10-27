@@ -5,8 +5,12 @@ import {
     ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_CHAINED,
     EFFECT_HEAL,
+    EFFECT_FLIP,
     EFFECT_EXHAUST,
+    EFFECT_LASTING,
+    EFFECT_MODIFY_HAND_SIZE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_READY,
@@ -18,16 +22,23 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_CHARACTER,
+    TARGET_CARD,
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_ANY_CHARACTER_YOU_CONTROL,
+    TARGET_DECK,
     TARGET_HERO,
+    TARGET_HERO_SIDE,
     TARGET_SCHEME,
     TARGET_YOUR_SUPERHERO,
+    TARGET_YOUR_HERO,
+    TIME_PHASE,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
     TRAIT_SUPERPOWER,
+    TRAIT_TACTIC,
     TRAIT_THWART,
+    TRIGGER_GET_HAND_SIZE,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
@@ -288,6 +299,110 @@ export default [
                                         'traits': TRAIT_AVENGER
                                     },
                                     'excludeTarget': 'ability.arrow.cost.selectedTarget'
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-tacticas-de-enjambre',
+        'classification': 'basic',
+        'order': 93,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Tácticas de enjambre',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/events/12020.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_DECK
+                },
+                'keywords': {
+                    'teamUp': [
+                        'Hombre Hormiga',
+                        'Avispa'
+                    ]
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_FLIP,
+                                            'params': {
+                                                'target': TARGET_YOUR_SUPERHERO,
+                                                'formTarget': TARGET_HERO_SIDE
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_READY,
+                                            'params': {
+                                                'target': TARGET_YOUR_HERO
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-evaluar-la-situacion',
+        'classification': 'basic',
+        'order': 94,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Evaluar la situación',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/events/12033.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_LASTING,
+                                'params': {
+                                    'until': TIME_PHASE,
+                                    'triggerType': TRIGGER_GET_HAND_SIZE,
+                                    'triggerParams': {
+                                        'target': TARGET_CARD
+                                    },
+                                    'triggerTarget': TARGET_YOUR_SUPERHERO,
+                                    'effect': {
+                                        'type': EFFECT_MODIFY_HAND_SIZE,
+                                        'params': {
+                                            'target': TARGET_EFFECT,
+                                            'count': 1
+                                        }
+                                    }
                                 }
                             }
                         }

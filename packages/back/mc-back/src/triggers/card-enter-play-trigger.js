@@ -3,14 +3,12 @@ import {checkCondition} from '../engine/utils.js';
 
 export class CardEnterPlayTrigger extends Trigger {
     constructor({
-        beforeEnterPlay = false,
         cardCondition,
         matchSource = cardCondition === undefined,
         ...params
     }) {
         super(params);
 
-        this.beforeEnterPlay = beforeEnterPlay;
         this.cardCondition = cardCondition;
         this.matchSource = matchSource;
     }
@@ -23,7 +21,7 @@ export class CardEnterPlayTrigger extends Trigger {
         }
     }
     matchesTiming(card) {
-        return this.beforeEnterPlay ? !card.isInPlay : card.isInPlay;
+        return this.ability?.isInterrupt ? !card.isInPlay : card.isInPlay;
     }
     matchesSource(card) {
         const attachedTo = this.card.attachedTo?.currentSide || this.card.attachedTo;

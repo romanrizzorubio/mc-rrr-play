@@ -54,6 +54,13 @@ export class PlayCardResourceCostEffect extends Effect {
         }
 
         this.playCardEffect.resourcesPaid = payment.resources;
+        const requiredResourceCount =
+            this.resourceCost.getRequiredResources().length +
+            this.resourceCost.requirement.length;
+        this.playCardEffect.resourcesOverpaid =
+            this.resourceCost.allowOverpay ?
+                Math.max(0, payment.resources.length - requiredResourceCount) :
+                0;
         this.isPaid = true;
     }
 }

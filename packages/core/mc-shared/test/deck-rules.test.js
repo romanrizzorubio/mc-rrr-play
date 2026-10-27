@@ -215,4 +215,54 @@ describe('deck rules', () => {
             cards: [],
         }, catalog, 'hero-aggression'), 3);
     });
+
+    test('limits Team-Up deck inclusion to heroes named by the keyword', () => {
+        const catalog = createCatalog();
+        catalog.cards.push({
+            id: 'team-up-event',
+            name: 'Tácticas de enjambre',
+            classification: CLASSIFICATION_BASIC,
+            unique: false,
+            keywords: {teamUp: ['Peter Parker', 'Avispa']},
+            maximum: {count: 1, target: TARGET_DECK},
+        });
+
+        assert.equal(getPlayerDeckCardCopyLimit(
+            {aspect: 'justice', cards: []},
+            catalog,
+            'team-up-event',
+        ), 1);
+        assert.equal(getPlayerDeckCardCopyLimit(
+            {aspect: 'justice', cards: [{id: 'team-up-event', count: 1}]},
+            catalog,
+            'team-up-event',
+        ), 1);
+        assert.equal(
+            validatePlayerDeck({
+                aspect: 'justice',
+                cards: [{id: 'team-up-event', count: 2}],
+            }, catalog).errors.some(error => error.includes('más de 1 copia')),
+            true,
+        );
+
+        catalog.hero.name = 'Otro héroe';
+        catalog.hero.identities = [{
+            name: 'Otra identidad',
+            relatedNames: [],
+            unique: true,
+        }];
+        assert.equal(getPlayerDeckCardCopyLimit(
+            {aspect: 'justice', cards: []},
+            catalog,
+            'team-up-event',
+        ), 0);
+        assert.equal(
+            validatePlayerDeck({
+                aspect: 'justice',
+                cards: [{id: 'team-up-event', count: 1}],
+            }, catalog).errors.some(error =>
+                error.includes('palabra clave Equipo')),
+            true,
+        );
+    });
 });

@@ -11,6 +11,7 @@ export class LastingEffect extends Effect {
         useTriggerPlayer = false,
         until,
         triggerType,
+        triggerParams,
         triggerTarget,
         hideDialog,
         condition,
@@ -22,6 +23,7 @@ export class LastingEffect extends Effect {
         this.endEffect = endEffect;
         this.useTriggerPlayer = useTriggerPlayer;
         this.triggerType = triggerType;
+        this.triggerParams = triggerParams;
         this.triggerTarget = triggerTarget;
         this.until = until;
         this.hideDialog = hideDialog;
@@ -34,6 +36,7 @@ export class LastingEffect extends Effect {
             endEffect,
             ability,
             triggerType,
+            triggerParams,
             triggerTarget,
             useTriggerPlayer,
         } = this;
@@ -91,13 +94,14 @@ export class LastingEffect extends Effect {
                 lasting,
                 effect,
                 trigger: triggerType,
+                triggerParams,
                 card: ability.card,
                 match: this.match,
                 hideDialog: this.hideDialog,
                 condition: this.condition,
                 limit: this.limit,
             });
-            lastingAbility.initTriggers(ability.card);
+            lastingAbility.initTriggers(lastingTriggerCard);
         } else if (effect) {
             effect.ability = ability;
             if (effect.target === this.target ||

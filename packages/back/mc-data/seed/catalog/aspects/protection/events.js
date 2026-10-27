@@ -20,6 +20,7 @@ import {
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_READY,
     EFFECT_STUN,
+    EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_DEFENSE,
     RESOURCE_ENERGY,
@@ -28,6 +29,7 @@ import {
     TARGET_EFFECT,
     TARGET_ATTACKER,
     TARGET_ENEMY,
+    TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
     TARGET_PLAYER,
     TARGET_YOU,
@@ -35,6 +37,7 @@ import {
     TARGET_YOUR_SUPERHERO,
     TARGET_VILLAIN,
     TRAIT_ATTACK,
+    TRAIT_AVENGER,
     TRAIT_DEFENSE,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ENEMY_ATTACKS_YOU,
@@ -447,6 +450,47 @@ export default [
                                 'params': {
                                     'target': TARGET_ENEMY,
                                     'damage': 2
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-armarse-de-valor',
+        'aspect': 'protection',
+        'order': 120,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Armarse de valor',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/12032.png',
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_PROTECTION,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'name': 'Armarse de valor',
+                            'effect': {
+                                'type': EFFECT_TOUGH,
+                                'params': {
+                                    'target': TARGET_FRIENDLY_CHARACTER,
+                                    'multipleTarget': true,
+                                    'selectUpTo': true,
+                                    'targetCountCalc': {
+                                        'target': 'match.villain.stage',
+                                        'max': 3
+                                    }
                                 }
                             }
                         }

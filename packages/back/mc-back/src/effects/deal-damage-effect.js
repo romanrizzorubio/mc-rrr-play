@@ -50,7 +50,9 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         return [EFFECT_CATEGORY_DAMAGE];
     }
     get isRequiredForAbilityAvailability() {
-        return this.requiredForAvailability ?? this.isAttack;
+        return this.requiredForAvailability ??
+            (this.isAttack &&
+                !this.validTarget.isAllTarget({target: this.target}));
     }
     checkTrigger(params) {
         if (!this.isActivationActive(params)) {

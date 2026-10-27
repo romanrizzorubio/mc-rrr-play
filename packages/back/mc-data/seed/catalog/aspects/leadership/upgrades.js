@@ -3,6 +3,7 @@ import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESPONSE,
+    ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
@@ -10,6 +11,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_PUT_PLAY,
@@ -18,6 +20,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALLY,
+    TARGET_ENEMY,
     TARGET_ATTACHED,
     TARGET_DECK,
     TARGET_EFFECT,
@@ -30,10 +33,15 @@ import {
     TRAIT_PREPARATION,
     TRAIT_TACTIC,
     TRAIT_VEHICLE,
+    TRAIT_ARMOR,
+    TRAIT_TECH,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_THWART,
     TRIGGER_ATTACHED_GET_TRAITS,
     TRIGGER_CHARACTER_DEFEATED,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
+    TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_THWARTS,
 } from 'mc-shared';
 
 export default [
@@ -220,5 +228,105 @@ export default [
                 ],
             },
         },
-    }
+    },
+    {
+        '_id': 'leadership-guanteletes-de-energia',
+        'aspect': 'leadership',
+        'order': 95,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Guanteletes de energía',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/upgrades/12017.png',
+                'traits': [
+                    TRAIT_ARMOR,
+                    TRAIT_TECH,
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL,
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attach': {
+                    'target': TARGET_ALLY,
+                    'condition': {
+                        'traits': TRAIT_AVENGER,
+                    },
+                },
+                'maxAttach': 1,
+                'maximum': {
+                    'count': 3,
+                    'target': TARGET_DECK,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ATTACK,
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_THWARTS,
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-traje-reforzado',
+        'aspect': 'leadership',
+        'order': 96,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Traje reforzado',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/upgrades/12018.png',
+                'traits': [
+                    TRAIT_ARMOR,
+                    TRAIT_TECH,
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY,
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attach': TARGET_ALLY,
+                'maxAttach': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_ATTACHED,
+                                    'count': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

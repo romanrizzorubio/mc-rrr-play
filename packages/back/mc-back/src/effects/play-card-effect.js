@@ -64,6 +64,7 @@ export class PlayCardEffect extends Effect {
         this.preselectedEventEffects = new Set();
 
         this.resourcesPaid = [];
+        this.resourcesOverpaid = 0;
         this.cardsPaid = undefined;
         this.canceled = false;
         this.cardEffectsCanceled = false;
@@ -355,6 +356,9 @@ export class PlayCardEffect extends Effect {
         }) + this.modifyCost;
 
         return new ResourceCost({
+            allowOverpay: this.card.card?.allowOverpay ??
+                this.card.allowOverpay ??
+                false,
             amount: Math.max(0, amount),
             card: this.card,
             match: this.match,
@@ -622,6 +626,7 @@ export class PlayCardEffect extends Effect {
         if (!payment.resolved) {
             this.paymentCancelled = payment.cancelled;
             this.resourcesPaid = [];
+            this.resourcesOverpaid = 0;
             this.cardsPaid = undefined;
             this.canceled = true;
             card.isPlaying = false;

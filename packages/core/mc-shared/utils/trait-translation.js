@@ -1,5 +1,6 @@
 const TRAIT_LABELS = {
     aerial: 'Aéreo',
+    ants: 'Hormigas',
     arrow: 'Flecha',
     asgard: 'Asgard',
     armor: 'Armadura',
@@ -10,6 +11,7 @@ const TRAIT_LABELS = {
     businessman: 'Empresario',
     captive: 'Cautivo',
     champion: 'Campeón',
+    civilian: 'Civil',
     condition: 'Alteración',
     creature: 'Criatura',
     defender: 'Defensor',
@@ -45,6 +47,7 @@ const TRAIT_LABELS = {
     title: 'Título',
     tech: 'Tecnología',
     temporal: 'Temporal',
+    tiny: 'Diminuto',
     vehicle: 'Vehículo',
     robot: 'Robot',
     weapon: 'Arma',

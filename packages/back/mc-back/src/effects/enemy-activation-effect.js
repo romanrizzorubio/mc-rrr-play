@@ -2,6 +2,7 @@ import {
     DIALOG_ACTIVATE,
     DIALOG_BOOST_DEALT,
     TARGET_ACTIVATION,
+    TRIGGER_ATTACHED_ACTIVATES,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 
@@ -110,6 +111,13 @@ export class EnemyActivationEffect extends Effect {
             ...super.getTriggersParams(params),
             character,
         };
+    }
+    getTriggersEnds(params) {
+        const triggers = super.getTriggersEnds(params);
+
+        return this.resolved && !this.canceled ?
+            triggers.concat([TRIGGER_ATTACHED_ACTIVATES]) :
+            triggers;
     }
     getTargetDialog() {
         const {selectedTarget} = this;

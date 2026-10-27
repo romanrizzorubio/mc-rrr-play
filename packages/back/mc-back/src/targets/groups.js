@@ -6,6 +6,7 @@ import {
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
+    TARGET_ALL_MINIONS,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ALL_PLAYERS,
     TARGET_ALL_SUPPORTS,
@@ -93,6 +94,7 @@ export const groupTargets = {
     },
     [TARGET_ALL_HEROES]: ({match}) => match.heroes,
     [TARGET_ALL_HEROES_ALLIES]: ({match}) => match.heroesAndAllies,
+    [TARGET_ALL_MINIONS]: ({match}) => match.minions,
     [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {
         const {targetPlayer} = params;
 

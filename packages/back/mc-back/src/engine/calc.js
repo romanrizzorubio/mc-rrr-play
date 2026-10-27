@@ -8,6 +8,7 @@ import {
     CALC_DAMAGE,
     CALC_ATTACK,
     CALC_COUNT,
+    CALC_COUNTERS,
     CALC_DIFFERENT_CARD_TYPES,
     CALC_DIFFERENT_RESOURCE_TYPE,
     CALC_IF,
@@ -42,6 +43,22 @@ const CALCULATION_MAP = {
 
         return source.filter(item =>
             filters.some(condition => checkCondition(item, condition))).length;
+    },
+    [CALC_COUNTERS]: (source, {target}) => {
+        if (!source || typeof source !== 'object' || Array.isArray(source)) {
+            throw new TypeError(
+                `CALC_COUNTERS requiere una carta en "${target}".`
+            );
+        }
+
+        const counters = source.counters ?? 0;
+        if (!Number.isSafeInteger(counters) || counters < 0) {
+            throw new TypeError(
+                `CALC_COUNTERS requiere un número entero no negativo en "${target}".`
+            );
+        }
+
+        return counters;
     },
     [CALC_SUM]: (source, {target, property}) => {
         if (!Array.isArray(source)) {

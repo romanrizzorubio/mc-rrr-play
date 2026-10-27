@@ -5,6 +5,7 @@ import {
     DIALOG_ACTIVATE,
     TARGET_MAIN_SCHEME,
     TARGET_REVEALED_ABILITY,
+    TRIGGER_ATTACHED_ACTIVATES,
 } from 'mc-shared';
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
 import {Attack} from '../../src/activations/attack.js';
@@ -78,6 +79,7 @@ describe('enemy activation effects', () => {
         resolveDialog();
         assert.equal(await activation, false);
         assert.equal(character.isStunned, false);
+        assert.ok(!effect.getTriggersEnds().includes(TRIGGER_ATTACHED_ACTIVATES));
     });
 
     test('confused enemy scheme shows why it was skipped before consuming confusion', async () => {
@@ -120,6 +122,7 @@ describe('enemy activation effects', () => {
         resolveDialog();
         assert.equal(await activation, false);
         assert.equal(character.isConfused, false);
+        assert.ok(!effect.getTriggersEnds().includes(TRIGGER_ATTACHED_ACTIVATES));
     });
 
     test('enemy scheme defaults to the main scheme and resolves boosts against its player', async () => {

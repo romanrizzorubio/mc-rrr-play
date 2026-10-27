@@ -39,11 +39,11 @@ export class Hand extends Engine {
     addCards(cards) {
         cards.forEach(this.addCard.bind(this));
     }
-    discardHand(card) {
-        if (card.isEvent ||
+    discardHand(card, {preserveTriggers = false} = {}) {
+        if (!preserveTriggers && (card.isEvent ||
             (card.abilities?.some(ability => ability.workInHand) &&
                 !card.isPlaying &&
-                !card.isInPlay)) {
+                !card.isInPlay))) {
             card.endTriggers();
         }
         const index = this.cards.indexOf(card);

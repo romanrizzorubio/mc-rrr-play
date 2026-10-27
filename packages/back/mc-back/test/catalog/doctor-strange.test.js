@@ -402,11 +402,28 @@ describe('Doctor Strange', () => {
         player.superhero.selectedSide = heroSideIndex;
 
         const invocationDeck = player.getExtraDeck('invocation');
-        const topCardIndex = invocationDeck.cards.findIndex(card => card.cost > 0);
+        const topCardIndex = invocationDeck.cards.findIndex(card =>
+            card.name === 'Siete Anillos de Raggador');
+        assert.notEqual(topCardIndex, -1);
         const [invocation] = invocationDeck.cards.splice(topCardIndex, 1);
         assert.ok(invocation);
         assert.ok(invocation.cost > 0);
         invocationDeck.cards.unshift(invocation);
+        const resolutionOrder = [];
+        const friendlyCharacter = {
+            id: 'friendly',
+            isTough: false,
+            setTough() {
+                this.isTough = true;
+                resolutionOrder.push('special');
+            },
+            async refresh() {},
+            toObj() {
+                return {id: this.id};
+            },
+        };
+        match.friends = [friendlyCharacter];
+        match.enemies = [];
 
         const resource = player.deck.cards.find(card =>
             card.isResource && card.resources.length >= invocation.cost);
@@ -429,14 +446,6 @@ describe('Doctor Strange', () => {
             EFFECT_RESOLVE_SPECIAL_ABILITY
         );
 
-        const resolutionOrder = [];
-        const specialAbility = invocation.abilities[0];
-        specialAbility.canRun = async () => true;
-        specialAbility.resolveAbility = async () => {
-            resolutionOrder.push('special');
-            await invocationDeck.discardTopCards(1);
-        };
-
         match.openDialog = async ({dialogType, data}) => {
             if (dialogType === DIALOG_PAY_COST) {
                 resolutionOrder.push('payment');
@@ -452,7 +461,15 @@ describe('Doctor Strange', () => {
                 };
             }
             if (dialogType === DIALOG_SELECT_CARD) {
+                assert.deepEqual(
+                    data.cards.map(({id}) => id),
+                    [invocation.id]
+                );
+
                 return {selected: [{id: data.cards[0].id}]};
+            }
+            if (dialogType === DIALOG_SELECT_TARGET) {
+                return {selected: [{id: friendlyCharacter.id}]};
             }
 
             throw new Error(`Unexpected dialog: ${dialogType}`);
@@ -465,6 +482,7 @@ describe('Doctor Strange', () => {
         });
 
         assert.deepEqual(resolutionOrder, ['payment', 'special']);
+        assert.equal(friendlyCharacter.isTough, true);
         assert.equal(invocationDeck.cards[0], invocation);
         assert.equal(invocationDeck.discardPile.includes(invocation), false);
         assert.equal(invocationDeck.topCardFaceUp, true);
@@ -476,16 +494,29 @@ describe('Doctor Strange', () => {
 
     test('Bandas Carmesí de Cyttorak stuns and damages the same chosen enemy', async () => {
         const {match, player} = await createDoctorStrange();
-        const invocation = player.getExtraDeck('invocation').cards.find(card =>
+        const invocationDeck = player.getExtraDeck('invocation');
+        const invocation = invocationDeck.cards.find(card =>
             card.name === 'Bandas Carmesí de Cyttorak');
         assert.ok(invocation);
 
         const enemies = ['enemy-one', 'enemy-two'].map((id, index) => ({
+            abilities: [],
+            damage: 0,
+            hitPoints: 12,
             id,
+            isCharacter: true,
             isEnemy: true,
             isInPlay: true,
             isStunned: false,
             name: `Enemy ${index + 1}`,
+            getLife() {
+                return this.hitPoints - this.damage;
+            },
+            placeDamage(damage) {
+                this.damage += damage;
+
+                return damage;
+            },
             stun() {
                 this.isStunned = true;
             },
@@ -511,15 +542,6 @@ describe('Doctor Strange', () => {
             effectType === EFFECT_STUN);
         const damageEffect = simultaneousEffect.effects.find(({effectType}) =>
             effectType === EFFECT_DEAL_DAMAGE);
-        const damageEvents = [];
-
-        damageEffect.execute = async function() {
-            damageEvents.push({
-                damage: this.damage,
-                target: this.selectedTarget,
-            });
-        };
-        effect.effects[1].execute = async () => {};
 
         await effect.runEffect({
             player,
@@ -536,10 +558,14 @@ describe('Doctor Strange', () => {
             'enemy-two',
         ]);
         assert.strictEqual(stunEffect.selectedTarget, enemies[1]);
-        assert.strictEqual(damageEvents[0].target, enemies[1]);
-        assert.deepEqual(damageEvents.map(({damage}) => damage), [7]);
+        assert.strictEqual(damageEffect.selectedTarget, enemies[1]);
+        assert.equal(damageEffect.takenDamage, 7);
+        assert.equal(enemies[0].damage, 0);
+        assert.equal(enemies[1].damage, 7);
         assert.equal(enemies[0].isStunned, false);
         assert.equal(enemies[1].isStunned, true);
+        assert.equal(invocationDeck.cards.includes(invocation), false);
+        assert.equal(invocationDeck.discardPile.at(-1), invocation);
     });
 
     test('Cloak of Levitation can be played and grants Aerial', async () => {

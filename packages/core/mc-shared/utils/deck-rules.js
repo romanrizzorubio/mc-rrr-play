@@ -9,6 +9,30 @@ export const MAX_PLAYER_DECK_COPIES_PER_TITLE = 3;
 
 const getPlayerDeckCardCount = card => card.permanent ? 0 : card.count;
 
+const getHeroIdentityNames = hero => new Set([
+    hero?.name,
+    ...(hero?.identities || []).flatMap(identity => [
+        identity.name,
+        ...(identity.relatedNames || []),
+    ]),
+].filter(name => typeof name === 'string' && name.length));
+
+const canHeroIncludeTeamUpCard = (card, hero) => {
+    const teamUp = card?.keywords?.teamUp;
+    if (teamUp === undefined) {
+        return true;
+    }
+    if (!Array.isArray(teamUp) ||
+        teamUp.length !== 2 ||
+        teamUp.some(name => typeof name !== 'string' || !name.trim())) {
+        return false;
+    }
+
+    const heroNames = getHeroIdentityNames(hero);
+
+    return teamUp.some(name => heroNames.has(name));
+};
+
 const getDeclaredDeckMaximum = (cards, title) => cards
     .filter(card => card.name === title && card.maximum?.target === TARGET_DECK)
     .reduce((maximum, card) => Number.isInteger(card.maximum.count) &&
@@ -38,6 +62,7 @@ export const getPlayerDeckCardCopyLimit = (deck, catalog, cardId) => {
     const cardAspectIsAvailable = isBasicCard ||
         availableAspects.has(card?.aspect);
     if (!hero || !card || !selectedAspectsAreValid || !cardAspectIsAvailable ||
+        !canHeroIncludeTeamUpCard(card, hero) ||
         (selectedAspects.length && !isBasicCard &&
             !selectedAspects.includes(card.aspect))) {
         return 0;
@@ -141,6 +166,12 @@ export const validatePlayerDeck = (deck, catalog) => {
             count: entry.count,
         });
         selectedCards.push({card, count: entry.count});
+
+        if (!canHeroIncludeTeamUpCard(card, hero)) {
+            errors.push(
+                `"${card.name}" no puede incluirse en el mazo porque su palabra clave Equipo no nombra a ${hero.name}.`
+            );
+        }
 
         const isBasicCard = hasClassification(
             card.classification,

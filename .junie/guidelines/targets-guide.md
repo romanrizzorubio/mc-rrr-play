@@ -23,8 +23,8 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
 - En objetivos de doble cara, el diálogo devuelve el `id` del lado mostrado y su `parentId`; la selección se resuelve contra el candidato de la partida usando el ID directo o el ID del padre.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`.
-- Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina durante la resolución o después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE` o `EFFECT_EXHAUST`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`.
+- Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina durante la resolución o después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`, `EFFECT_EXHAUST` o `EFFECT_TOUGH`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
 
 Que un selector devuelva una colección de candidatos no significa por sí solo que el efecto se aplique a todos.
 
@@ -74,7 +74,8 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ENEMY` | Todos los enemigos. |
 | `TARGET_HERO` | Los lados de héroe de todos los jugadores que estén en forma de héroe; selecciona uno si hay varios. Úsalo cuando la condición deba leer los atributos de la carta de héroe. |
 | `TARGET_YOUR_HERO` | El lado héroe del jugador actual, solo si está en forma de héroe. |
-| `TARGET_MINION` | Todos los esbirros. |
+| `TARGET_MINION` | Todos los esbirros; selecciona uno si hay varios. |
+| `TARGET_ALL_MINIONS` | Todos los esbirros; resuelve todos los resultados sin selección. |
 | `TARGET_VILLAIN` | El villano. |
 
 ### Cartas del jugador (`targets/player-controlled.js`)

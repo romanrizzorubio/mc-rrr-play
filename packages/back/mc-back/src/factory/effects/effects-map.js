@@ -84,6 +84,7 @@ import {
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
     EFFECT_PAY_PRINTED_COST,
+    EFFECT_PLAY_CARD,
     EFFECT_PLACE_COUNTERS,
     EFFECT_PLACE_DAMAGE,
     EFFECT_PLACE_THREAT,
@@ -214,6 +215,7 @@ import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
 import {MoveToDeckEffect} from '../../effects/move-to-deck-effect.js';
 import {MoveToHandEffect} from '../../effects/move-to-hand-effect.js';
 import {PayPrintedCostEffect} from '../../effects/pay-printed-cost-effect.js';
+import {PlayCardActionEffect} from '../../effects/play-card-action-effect.js';
 import {PlaceCountersEffect} from '../../effects/place-counters-effect.js';
 import {PlaceDamageEffect} from '../../effects/place-damage-effect.js';
 import {PlaceThreatEffect} from '../../effects/place-threat-effect.js';
@@ -368,6 +370,7 @@ export const EFFECT_MAP = {
     [EFFECT_MOVE_TO_HAND]: MoveToHandEffect,
     [EFFECT_MOVE_TO_DECK]: MoveToDeckEffect,
     [EFFECT_PAY_PRINTED_COST]: PayPrintedCostEffect,
+    [EFFECT_PLAY_CARD]: PlayCardActionEffect,
     [EFFECT_FILL_HAND]: FillHandEffect,
     [EFFECT_GENERATE_RESOURCES_FROM_CARD]: GenerateResourcesFromCardEffect,
     [EFFECT_SEARCH_CARD_REVEAL]: SearchCardAndRevealEffect,
