@@ -202,6 +202,7 @@ describe('Risky Business', () => {
         };
         match.players = [player];
         match.currentPlayer = player;
+        match.playing = true;
         match.drawEncounterCards = async () => [{
             id: `encounter-${++dealtCards}`,
             toObj() {

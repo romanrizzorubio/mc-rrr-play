@@ -25,4 +25,10 @@ export class Dialog {
             }
         });
     }
+    listenDialogComplete(callback) {
+        this.api.listen({
+            event: EVENTS.DIALOG.COMPLETE,
+            callback,
+        });
+    }
 }

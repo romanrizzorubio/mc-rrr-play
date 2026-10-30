@@ -7,6 +7,9 @@ export class PlayerZone extends GameZone {
         this.minions = [];
         this.encounters = [];
     }
+    get id() {
+        return `player-zone:${this.owner.id}`;
+    }
     engage(minion) {
         this.minions.push(minion);
     }
@@ -35,6 +38,7 @@ export class PlayerZone extends GameZone {
 
         return {
             ...super.toObj(arguments[0]),
+            id: this.id,
             minions: minions.map(minion => minion.toObj(arguments[0])),
             encounters: encounters.length,
         };

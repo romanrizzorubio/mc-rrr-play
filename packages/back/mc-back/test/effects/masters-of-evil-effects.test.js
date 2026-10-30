@@ -389,6 +389,7 @@ describe('Masters of Evil effects', () => {
     test('attack resolves undefended if no defender is available', async () => {
         const target = {
             id: 'target',
+            isPlayer: true,
             defenders: [],
         };
         const enemy = {};

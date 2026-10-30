@@ -1,10 +1,13 @@
 import {DIALOG_SELECT_TARGET,
     TARGET_ALL_ALLIES, TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_CHARACTERS_YOU_CONTROL,
+    TARGET_ALL_DECKS,
     TARGET_ALL_ENEMIES, TARGET_ALL_FRIENDLY_CHARACTERS, TARGET_ALL_HEROES,
     TARGET_ALL_MINIONS,
+    TARGET_ALL_PLAYERS,
     TARGET_ALL_SCHEMES,
     TARGET_ALL_SIDE_SCHEMES,
+    TARGET_ALL_SUPPORTS,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
     TARGET_PARENT,
     TARGET_SELECTED_PLAYER_CHARACTERS,
@@ -34,11 +37,17 @@ const findSelectedTarget = (targets, selected) => {
 };
 
 const getTargetPlayerDialogParam = targetPlayer => {
-    const name = typeof targetPlayer === 'string' ?
+    const playerName = typeof targetPlayer === 'string' ?
         targetPlayer :
         targetPlayer?.name;
+    const playerId = typeof targetPlayer === 'string' ?
+        targetPlayer :
+        targetPlayer?.id ?? targetPlayer?.userId ?? playerName;
 
-    return typeof name === 'string' ? {targetPlayer: name} : {};
+    return typeof playerId === 'string' ? {
+        targetPlayer: playerId,
+        ...(typeof playerName === 'string' ? {targetPlayerName: playerName} : {}),
+    } : {};
 };
 
 const targetToObj = (target, params) =>
@@ -180,6 +189,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_ALLIES:
             case TARGET_ALL_ALLIES_YOU_CONTROL:
             case TARGET_ALL_CARDS:
+            case TARGET_ALL_DECKS:
             case TARGET_ALL_CHARACTERS:
             case TARGET_ALL_CHARACTERS_YOU_CONTROL:
             case TARGET_ALL_FRIENDLY_CHARACTERS:
@@ -187,10 +197,12 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_HEROES:
             case TARGET_ALL_HEROES_ALLIES:
             case TARGET_ALL_MINIONS:
+            case TARGET_ALL_PLAYERS:
             case TARGET_SELECTED_PLAYER_CHARACTERS:
             case TARGET_ALL_ENGAGED_MINIONS:
             case TARGET_ALL_SCHEMES:
             case TARGET_ALL_SIDE_SCHEMES:
+            case TARGET_ALL_SUPPORTS:
             case TARGET_PARENT:
                 return true;
         }
@@ -246,7 +258,9 @@ export class ValidTarget extends Engine {
             const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,
                 ...(showCancel ? {showCancel: true} : {}),
-                ...getTargetPlayerDialogParam(params.targetPlayer),
+                ...getTargetPlayerDialogParam(
+                    params.targetPlayer ?? params.player
+                ),
                 title: params.dialogTitle || 'Elige tus objetivos',
                 data: {
                     cards: validTarget.map(card =>
@@ -299,7 +313,9 @@ export class ValidTarget extends Engine {
                 const response = await this.openDialog({
                     dialogType: DIALOG_SELECT_TARGET,
                     ...(params.showCancel ? {showCancel: true} : {}),
-                    ...getTargetPlayerDialogParam(params.targetPlayer),
+                    ...getTargetPlayerDialogParam(
+                        params.targetPlayer ?? params.player
+                    ),
                     title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
                         cards: validTarget.map(card =>

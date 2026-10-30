@@ -48,4 +48,22 @@ export class Player {
             }
         });
     }
+    requestAction(player, targetPlayer) {
+        return this.api.post({
+            endpoint: ENDPOINTS.MATCH.REQUEST_ACTION,
+            params: {player, targetPlayer},
+        });
+    }
+    respondToActionRequest(player, accept) {
+        return this.api.post({
+            endpoint: ENDPOINTS.MATCH.RESPOND_ACTION,
+            params: {player, accept},
+        });
+    }
+    completeRequestedAction(player) {
+        return this.api.post({
+            endpoint: ENDPOINTS.MATCH.COMPLETE_ACTION,
+            params: {player},
+        });
+    }
 }

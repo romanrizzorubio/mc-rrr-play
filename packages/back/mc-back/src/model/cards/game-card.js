@@ -8,8 +8,18 @@ import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
 import {FaceDown} from '../match/facedown.js';
 import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
+import {canPlayCardDuringTurn} from '../../utils/player-turn-permissions.js';
+import {REFRESH_EVENTS} from 'mc-endpoints';
 
 export class GameCard extends Engine {
+    static getRefreshPayload(card, snapshot) {
+        const controller = card.controller;
+
+        return {
+            ...snapshot,
+            ...(controller?.isPlayer ? {playerId: controller.id} : {}),
+        };
+    }
     constructor({
         card,
         index,
@@ -382,10 +392,17 @@ export class GameCard extends Engine {
     }
     get isInPlay() {
         const controller = this.controller;
+        const scenario = this.match.scenario;
+        const scenarioZones = scenario?.zones?.length ?
+            scenario.zones :
+            [scenario?.gameZone].filter(Boolean);
 
         return !!controller ||
-            this.match.villain === this ||
-            this.match.scenario?.gameZone?.currentVillain === this;
+            scenarioZones.some(zone =>
+                zone?.currentVillain === this ||
+                zone?.currentScheme === this ||
+                zone?.cards?.includes(this)) ||
+            this.match.villain === this;
     }
     get isHero() {
         if (this.sides.length) {
@@ -511,6 +528,15 @@ export class GameCard extends Engine {
     }
     get objectToRefresh() {
         return 'card';
+    }
+    refresh() {
+        const {match, objectToRefresh} = this;
+
+        match.mc.mcSocket.send(
+            match.name,
+            REFRESH_EVENTS[objectToRefresh],
+            GameCard.getRefreshPayload(this, this.toObj()),
+        );
     }
     get quickStrike() {
         return this.getKeyword('quickStrike');
@@ -673,6 +699,8 @@ export class GameCard extends Engine {
             const controllerZone = this.controller?.gameZone;
             const discardZone = controllerZone?.cards?.includes(this) ?
                 controllerZone :
+                this.scenarioZone ??
+                this.match.getScenarioZone?.(this.controller) ??
                 this.match.scenario.gameZone;
 
             await discardZone.discard(this);
@@ -786,7 +814,7 @@ export class GameCard extends Engine {
             return this;
         }
 
-        return this.attached.find(card => card.id === cardId);
+        return this.getAttachedCards().find(card => card.id === cardId);
     }
     hasResourceGenerators(cardToPay, resourceType) {
         return this.promisesSequentialSome(this.abilities, ability => {
@@ -1142,7 +1170,8 @@ export class GameCard extends Engine {
         const abilityAvailability = await this.getAbilityAvailability(player);
         const tuckedCards = await Promise.all(this.tuckedCards.map(async card => ({
             ...card.toObj({player}),
-            playable: Boolean(player && card.isPlayerCard && await card.canPlay({
+            playable: Boolean(player && canPlayCardDuringTurn(card, player) &&
+                card.isPlayerCard && await card.canPlay({
                 player,
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,

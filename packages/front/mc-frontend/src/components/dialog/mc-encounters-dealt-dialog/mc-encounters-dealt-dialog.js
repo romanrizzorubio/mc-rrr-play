@@ -2,10 +2,10 @@ import {html} from 'lit-element';
 
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import styles from './mc-encounters-dealt-dialog.css.js';
-import '../../cards/mc-card/mc-card.js';
+import '../../cards/mc-card-image/mc-card-image.js';
 import {ICON_HAZARD} from '../../common/mc-icon/mc-icon.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
-import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
+import {BACK_CARD_ENCOUNTER, getCardAssetUrl} from '../../../misc/cards.js';
 
 export class McEncountersDealtDialog extends McDialog {
     static get is() {
@@ -43,10 +43,7 @@ export class McEncountersDealtDialog extends McDialog {
         return `Se reparten ${hazardIcons} cartas de encuentro adicionales por los iconos de riesgo.`;
     }
     _renderEncountersPlayer(player) {
-        const {name, count, hazardIcons = 0, cards = []} = player;
-        const displayedCards = cards.length ?
-            cards :
-            [null];
+        const {name, count, hazardIcons = 0} = player;
 
         return html`
             <div class="player-encounters">
@@ -61,25 +58,17 @@ export class McEncountersDealtDialog extends McDialog {
                         `)}
                     </div>
                 ` : ''}
-                <div class="encounter-cards">
-                    ${displayedCards.map(card => card ? html`
-                        <mc-card
-                            name="${card.name}"
-                            image="${card.image}"
-                            .card="${card}"
-                            .isFacedownCard="${true}"
-                            .canPeekFacedown="${Boolean(card.canPeekFacedown)}"
-                            .facedownImage="${BACK_CARD_ENCOUNTER}"
-                            size="s"
-                        ></mc-card>
-                    ` : html`
-                        <mc-card
-                            name="${name}"
-                            image="${BACK_CARD_ENCOUNTER}"
-                        ></mc-card>
-                    `)}
-                </div>
-                <div class="encounter-count">${count}</div>
+                <h3 class="player-name">${name}</h3>
+                <mc-card-image
+                    src="${getCardAssetUrl(BACK_CARD_ENCOUNTER)}"
+                    size="m"
+                    role="img"
+                    aria-label="Dorso de Encuentros"
+                ></mc-card-image>
+                <div
+                    class="encounter-count"
+                    aria-label="${count} ${count === 1 ? 'carta repartida' : 'cartas repartidas'}"
+                >${count}</div>
             </div>
         `;
     }

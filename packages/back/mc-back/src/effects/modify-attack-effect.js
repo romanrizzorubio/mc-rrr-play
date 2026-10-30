@@ -31,7 +31,12 @@ export class ModifyAttackEffect extends Effect {
                         isLasting
                     );
                 if (!dynamicModifierAdded) {
-                    Object.assign(target.keywords, value);
+                    if (target.isAttack &&
+                        typeof target.setTemporaryAttackKeywords === 'function') {
+                        target.setTemporaryAttackKeywords(value);
+                    } else {
+                        Object.assign(target.keywords, value);
+                    }
                 }
                 return;
             }

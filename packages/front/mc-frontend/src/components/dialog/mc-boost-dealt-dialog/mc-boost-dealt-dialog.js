@@ -36,6 +36,14 @@ export class McBoostDealtDialog extends McDialog {
             },
         };
     }
+    getSubtitle() {
+        const playerText = this.targetPlayerName ?
+            `Aumento mostrado por ${this.targetPlayerName}.` : '';
+        return [super.getSubtitle(), playerText].filter(Boolean).join(' ');
+    }
+    renderResponsiblePlayer() {
+        return html``;
+    }
     renderContent() {
         const {data: {allowHideFuture, cardCount, cards, cumulativeBoost}} = this;
         const displayedCards = cards.length ?
@@ -74,7 +82,7 @@ export class McBoostDealtDialog extends McDialog {
                                 name="${boostCard.card.name}"
                                 image="${boostCard.card.image}"
                                 .isFacedownCard="${boostCard.card.isFacedownCard}"
-                                .canPeekFacedown="${Boolean(boostCard.card.canPeekFacedown)}"
+                                .canPeekFacedown="${Boolean(!this.readOnly && boostCard.card.canPeekFacedown)}"
                                 .facedownImage="${BACK_CARD_ENCOUNTER}"
                                 size="${size}"
                                 ?horizontal="${boostCard.horizontal}"
@@ -96,7 +104,7 @@ export class McBoostDealtDialog extends McDialog {
                     <span class="boost-icon-list">${cumulativeBoostIcons}</span>
                 </div>
             ` : ''}
-            ${allowHideFuture ? html`
+            ${allowHideFuture && !this.readOnly ? html`
                 <label class="remember-choice">
                     <input
                         type="checkbox"

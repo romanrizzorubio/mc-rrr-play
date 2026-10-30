@@ -1,4 +1,10 @@
 export const EFFECT_ADD_ACCELERATION_TOKEN = 'add-acceleration-token';
+export const EFFECT_ADVANCE_MAIN_SCHEME_STAGE = 'advance-main-scheme-stage';
+export const EFFECT_ADD_SCENARIO_VILLAIN = 'add-scenario-villain';
+export const EFFECT_START_SCENARIO_SPLIT = 'start-scenario-split';
+export const EFFECT_MERGE_SCENARIO_ZONE = 'merge-scenario-zone';
+export const EFFECT_REVEAL_FACEDOWN_UNDER = 'reveal-facedown-under';
+export const EFFECT_REMOVE_SCENARIO_MAIN_SCHEME = 'remove-scenario-main-scheme';
 export const EFFECT_ADD_ADDITIONAL_COST = 'add-additional-cost';
 export const EFFECT_ADD_KEYWORD = 'add-keyword';
 export const EFFECT_ACTIVATE = 'activate';

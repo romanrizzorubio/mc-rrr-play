@@ -46,6 +46,7 @@ export class ChooseAbilityEffect extends Effect {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_LIST,
                 hideOk: true,
+                targetPlayer: player,
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 title: 'Elige una opción',
                 data: {

@@ -46,7 +46,7 @@ export default {
                     'params': {
                         'name': 'Mover ficha',
                         'set': 'standard',
-                        'image': 'sets/standard/standard1.webp',
+                        'image': 'sets/standard/01186.png',
                         'boost': 0,
                         'abilities': [
                             {
@@ -72,7 +72,7 @@ export default {
                     'params': {
                         'name': 'Agresión',
                         'set': 'standard',
-                        'image': 'sets/standard/standard3.webp',
+                        'image': 'sets/standard/01187.png',
                         'boost': 0,
                         'abilities': [
                             {
@@ -107,7 +107,7 @@ export default {
                     'params': {
                         'name': 'Con la guardia baja',
                         'set': 'standard',
-                        'image': 'sets/standard/standard5.webp',
+                        'image': 'sets/standard/01188.png',
                         'boost': 1,
                         'abilities': [
                             {
@@ -143,7 +143,7 @@ export default {
                     'params': {
                         'name': 'Una sombra del pasado',
                         'set': 'standard',
-                        'image': 'sets/standard/standard7.webp',
+                        'image': 'sets/standard/01190.png',
                         'boost': 2,
                         'abilities': [
                             {
@@ -225,7 +225,7 @@ export default {
                     'params': {
                         'name': 'Agotamiento',
                         'set': 'expert',
-                        'image': 'sets/expert/expert1.webp',
+                        'image': 'sets/expert/01191.png',
                         'boost': 2,
                         'keywords': {
                             'surge': true
@@ -253,7 +253,7 @@ export default {
                     'params': {
                         'name': 'Plan Maestro',
                         'set': 'expert',
-                        'image': 'sets/expert/expert2.webp',
+                        'image': 'sets/expert/01192.png',
                         'boost': 2,
                         'abilities': [
                             {
@@ -288,7 +288,7 @@ export default {
                     'params': {
                         'name': 'Bajo fuego intenso',
                         'set': 'expert',
-                        'image': 'sets/expert/expert3.webp',
+                        'image': 'sets/expert/01193.png',
                         'boost': 3,
                         'keywords': {
                             'surge': true

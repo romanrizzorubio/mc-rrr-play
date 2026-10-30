@@ -18,6 +18,8 @@ export class McFormPlayer extends LitElement {
             deckId: {type: String},
             loadingDecks: {type: Boolean},
             hideButton: {type: Boolean, attribute: 'hide-button'},
+            hideName: {type: Boolean, attribute: 'hide-name'},
+            hideDeck: {type: Boolean, attribute: 'hide-deck'},
         };
     }
     constructor() {
@@ -30,6 +32,8 @@ export class McFormPlayer extends LitElement {
         this.deckId = 'precon';
         this.loadingDecks = false;
         this.hideButton = false;
+        this.hideName = false;
+        this.hideDeck = false;
     }
     dispatchChange() {
         const {name, hero, deckId} = this;
@@ -115,6 +119,10 @@ export class McFormPlayer extends LitElement {
         `;
     }
     renderName() {
+        if (this.hideName) {
+            return '';
+        }
+
         return html`
             <md-filled-text-field
                 label="Nombre"
@@ -140,7 +148,7 @@ export class McFormPlayer extends LitElement {
         return html`
             ${this.renderName()}
             ${this.renderSelect()}
-            ${this.renderDeckSelect()}
+            ${this.hideDeck ? '' : this.renderDeckSelect()}
             ${this.renderButton()}
         `;
     }

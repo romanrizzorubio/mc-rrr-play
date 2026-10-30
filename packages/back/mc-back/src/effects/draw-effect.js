@@ -14,7 +14,9 @@ export class DrawEffect extends Effect {
         this.count = count;
     }
     async execute(params) {
-        const {player} = params;
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
         const count = this.paramsCalc ?
             await this.calculate(params) :
             this.count;
@@ -23,12 +25,13 @@ export class DrawEffect extends Effect {
             throw new Error('El cálculo de cartas a robar no es válido.');
         }
 
-        const cards = await this.selectedTarget.deck.draw(count);
-        const addHandEffect = new AddHandEffect({
-            player,
-            match: this.match,
+        await this.promisesSequential(targets, async targetPlayer => {
+            const cards = await targetPlayer.deck.draw(count);
+            const addHandEffect = new AddHandEffect({
+                player: targetPlayer,
+                match: this.match,
+            });
+            await addHandEffect.runEffect({cards, player: targetPlayer});
         });
-
-        await addHandEffect.runEffect({cards, player});
     }
 }

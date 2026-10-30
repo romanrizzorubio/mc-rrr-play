@@ -1,5 +1,4 @@
-import {createServer} from 'node:http';
-
+import {createHttpsServiceServer} from 'mc-server-utils';
 import {MongoDataStore} from 'mc-data';
 import {createMatchCreationApp} from './src/match-creation-app.js';
 
@@ -7,11 +6,11 @@ const data = new MongoDataStore();
 await data.connect();
 
 const app = createMatchCreationApp({data});
-const server = createServer(app);
+const server = createHttpsServiceServer(app);
 const port = Number(process.env.PORT || 3001);
 
 server.listen(port, () => {
-    console.log(`match creation service running at http://localhost:${port}`);
+    console.log(`match creation service running at https://localhost:${port}`);
 });
 
 for (const signal of ['SIGINT', 'SIGTERM']) {

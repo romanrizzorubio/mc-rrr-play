@@ -206,6 +206,7 @@ export class HandComponent extends LitElement {
             statusCards,
         } = card;
         const isPlayerTarget = card.isPlayer === true;
+        const showPlayerHero = isPlayerTarget && card.showPlayerHero === true;
         const horizontal = isPlanCard(card);
         const rotated = rotatePlanCards && horizontal;
         const {abilityNames = []} = card;
@@ -236,7 +237,7 @@ export class HandComponent extends LitElement {
             <mc-card
                 class="${classes.join(' ')}"
                 name="${name}"
-                image="${isPlayerTarget ? BACK_CARD_PLAYER : image}"
+                image="${isPlayerTarget && !showPlayerHero ? BACK_CARD_PLAYER : image}"
                 .card="${card}"
                 .basicActivation="${this.getBasicActivationOption(card)}"
                 .activationActor="${card.isAlly ||

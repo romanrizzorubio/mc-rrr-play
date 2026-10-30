@@ -3,6 +3,7 @@ import {LitElement, html} from 'lit-element';
 import styles from './mc-defense.css.js';
 import '../../cards/mc-card-list/mc-card-list.js';
 import '../../common/mc-list/mc-list.js';
+import {getCardAssetUrl} from '../../../misc/cards.js';
 
 export class McDefense extends LitElement {
     static get is() {
@@ -15,6 +16,7 @@ export class McDefense extends LitElement {
         return {
             attack: {type: Object},
             defenders: {type: Array},
+            players: {type: Array},
             mustDefend: {type: Boolean},
         };
     }
@@ -23,6 +25,7 @@ export class McDefense extends LitElement {
 
         this.attack = {};
         this.defenders = [];
+        this.players = [];
         this.mustDefend = false;
     }
     getParameters() {
@@ -68,6 +71,36 @@ export class McDefense extends LitElement {
             detail: {card, cardIndex}
         }));
     }
+    handleRequestDefense(e, player) {
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent('request-defense', {
+            bubbles: true,
+            composed: true,
+            detail: {player},
+        }));
+    }
+    renderOtherPlayers() {
+        const players = this.players || [];
+        return players.length ? html`
+            <aside class="defense-requests" aria-label="Pedir a otro héroe que defienda">
+                <h3>Pedir a otro héroe que defienda</h3>
+                ${players.map(player => html`
+                    <button
+                        class="defense-player"
+                        type="button"
+                        @click="${event => this.handleRequestDefense(event, player)}"
+                    >
+                        <img
+                            class="hero-thumbnail"
+                            src="${getCardAssetUrl(player.image)}"
+                            alt=""
+                        >
+                        <span class="player-name">${player.name}</span>
+                    </button>
+                `)}
+            </aside>
+        ` : html``;
+    }
     renderDefenders() {
         const {defenders, mustDefend} = this;
         const prompt = mustDefend ?
@@ -79,6 +112,7 @@ export class McDefense extends LitElement {
             <mc-card-list
                 .cards="${defenders}"
                 .emphasizedStats="${['defense']}"
+                .selectOnClick="${true}"
                 show-basic-stats
                 show-life
                 show-generic
@@ -108,9 +142,14 @@ export class McDefense extends LitElement {
     }
     render() {
         return html`
-            ${this.renderEnemy()}
-            ${this.renderParameters()}
-            ${this.renderDefenders()}
+            <div class="defense-layout ${this.players?.length ? 'with-requests' : ''}">
+                <div class="defense-main">
+                    ${this.renderEnemy()}
+                    ${this.renderParameters()}
+                    ${this.renderDefenders()}
+                </div>
+                ${this.renderOtherPlayers()}
+            </div>
         `;
     }
 }

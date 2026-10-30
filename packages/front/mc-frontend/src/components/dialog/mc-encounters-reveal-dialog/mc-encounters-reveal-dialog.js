@@ -29,6 +29,15 @@ export class McEncountersRevealDialog extends McDialog {
     getTitle() {
         return this.title || 'Mostrando carta de Encuentro';
     }
+    getSubtitle() {
+        const shownType = this.data.isBoost ? 'Aumento mostrado' : 'Carta mostrada';
+        const playerText = this.targetPlayerName ?
+            `${shownType} por ${this.targetPlayerName}.` : '';
+        return [super.getSubtitle(), playerText].filter(Boolean).join(' ');
+    }
+    renderResponsiblePlayer() {
+        return html``;
+    }
     renderContent() {
         const {data: {card, horizontal, isBoost, hasBoostAbility}} = this;
         const isHorizontal = Boolean(horizontal || isPlanCard(card));
@@ -45,7 +54,7 @@ export class McEncountersRevealDialog extends McDialog {
                 name="${card.name}"
                 image="${card.image}"
                 .isFacedownCard="${card.isFacedownCard}"
-                .canPeekFacedown="${Boolean(card.isFacedownCard && card.image)}"
+                .canPeekFacedown="${Boolean(!this.readOnly && card.isFacedownCard && card.image)}"
                 .facedownImage="${BACK_CARD_ENCOUNTER}"
                 size="l"
                 ?horizontal="${isHorizontal}"

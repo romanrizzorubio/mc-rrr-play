@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "mc-data": "1.0.0",
-    "mc-endpoints": "1.0.0"
+    "mc-endpoints": "1.0.0",
+    "mc-server-utils": "1.0.0"
   }
 }

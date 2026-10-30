@@ -40,6 +40,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget = new Map();
+        this.defendingPlayersByTarget = new Map();
         this.defenseValues = new Map();
         this.originalAttackTarget = undefined;
         this.defenderConditions = [];
@@ -55,6 +56,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget.clear();
+        this.defendingPlayersByTarget.clear();
         this.defenseValues.clear();
         this.originalAttackTarget = undefined;
         this.defenderConditions = [];
@@ -64,52 +66,16 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.preventDamage = 0;
     }
     canContinueActivation() {
-        if (this.activationInterrupted || !this.enemy ||
-            this.match?.gameOverReason) {
+        const defenderEliminated = [...this.defendingPlayersByTarget.values()]
+            .some(player => player.defeated) ||
+            [...this.defendersByTarget.values(), this.defender].some(defender =>
+                (defender?.controller?.isPlayer ? defender.controller : defender?.owner)?.defeated);
+        if (defenderEliminated) {
             this.activationInterrupted = true;
             return false;
         }
 
-        const currentVillain = this.match?.villain;
-        if (this.enemy.isVillain && currentVillain) {
-            if (currentVillain !== this.enemy) {
-                if (currentVillain.name !== this.enemy.name) {
-                    this.activationInterrupted = true;
-                    return false;
-                }
-
-                this.enemy = currentVillain;
-            }
-
-            return true;
-        }
-
-        if (this.enemy.isInPlay === false) {
-            this.activationInterrupted = true;
-            return false;
-        }
-
-        return true;
-    }
-    isResolved() {
-        return !this.activationInterrupted;
-    }
-    checkTrigger() {
-        return super.checkTrigger() && this.canContinueActivation();
-    }
-    async resolvePrepared(effectParams, triggersParams) {
-        if (!this.canContinueActivation()) {
-            return;
-        }
-
-        await super.resolvePrepared(effectParams, triggersParams);
-    }
-    async triggerEnds(params, options) {
-        if (!this.canContinueActivation()) {
-            return;
-        }
-
-        await super.triggerEnds(params, options);
+        return super.canContinueActivation();
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
@@ -223,6 +189,13 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
         return false;
     }
+    getActivationDialogPlayer(params = {}) {
+        const target = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget[0] : this.selectedTarget;
+
+        return target ? this.getTargetPlayer(target) :
+            super.getActivationDialogPlayer(params);
+    }
     getTargetDialog() {
         const selectedTarget = Array.isArray(this.selectedTarget) ?
             this.selectedTarget[0] :
@@ -249,10 +222,18 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     getBoostTarget() {
         return this.originalAttackTarget || super.getBoostTarget();
     }
+    getTriggersParams(params) {
+        const triggerParams = super.getTriggersParams(params);
+
+        return !Array.isArray(this.selectedTarget) && this.defendingPlayersByTarget.size ?
+            {...triggerParams, player: this.getTargetPlayer(this.selectedTarget)} :
+            triggerParams;
+    }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
             'stunned',
-            `${this.character.name} estaba aturdido y no ataca.`
+            `${this.character.name} estaba aturdido y no ataca.`,
+            params,
         );
 
         return super.resolveStatus(params);
@@ -322,64 +303,131 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             [this.selectedTarget];
 
         for (const attackTarget of attackTargets) {
-            const requiredDefenders = this.getRequiredDefenders(attackTarget);
-            const mustDefend = requiredDefenders.length > 0;
-            const defenders = mustDefend ?
-                requiredDefenders :
-                this.getDefenders(attackTarget);
-            if (defenders.length) {
-                const targetPlayer = this.getTargetPlayer(attackTarget);
-                const attackValue = await this.getAttackValue(params);
-                const attack = this.toObj(arguments[0]);
-                attack.character.attack = attackValue;
-                const defenderCards = await Promise.all(defenders.map(async defender => {
-                    const stats = await defender.getEffectiveStats({
-                        player: targetPlayer,
-                    });
+            const defender = await this.selectAttackDefender(attackTarget, params);
+            if (!this.canContinueActivation()) {
+                return;
+            }
+            if (defender) {
+                await this.setDefender(defender, attackTarget, params);
 
-                    return {
-                        ...defender.toObj(params),
-                        ...stats,
-                    };
-                }));
+                if (defender.isSuperhero) {
+                    const selectedDefender = this.defendersByTarget.get(attackTarget);
+                    const defenseValue = await this.getDefenseValue(
+                        {...params, player: defender.owner},
+                        selectedDefender
+                    );
 
-                attack.target = attackTarget.toObj(arguments[0]);
-
-                const {defender} = await this.openDialog({
-                    dialogType: DIALOG_DEFENSE,
-                    hand: targetPlayer.hand.cards.map(card => card.toObj(arguments[0])),
-                    hideOk: mustDefend,
-                    data: {
-                        attack,
-                        defenders: defenderCards,
-                    },
-                });
-
-                const objDefender = defender &&
-                    defenders.find(d => d.id === defender.id);
-                if (mustDefend && !objDefender) {
-                    throw new Error('EnemyAttackEffect requires a qualifying defender.');
-                }
-
-                if (objDefender) {
-                    await this.setDefender(objDefender, attackTarget, params);
-
-                    if (objDefender.isSuperhero) {
-                        const selectedDefender = this.defendersByTarget.get(attackTarget);
-                        const defenseValue = await this.getDefenseValue(
-                            params,
-                            selectedDefender
-                        );
-
-                        if (Array.isArray(this.selectedTarget)) {
-                            this.defenseValues.set(attackTarget, defenseValue);
-                        } else {
-                            this.defValue = defenseValue;
-                        }
+                    if (Array.isArray(this.selectedTarget)) {
+                        this.defenseValues.set(attackTarget, defenseValue);
+                    } else {
+                        this.defValue = defenseValue;
                     }
                 }
             }
         }
+    }
+    getPlayerDefenders(player, attackTarget) {
+        if (player.defeated) {
+            return [];
+        }
+        if (player === this.getTargetPlayer(attackTarget)) {
+            return this.getDefenders(attackTarget);
+        }
+        if (this.getDefendingPlayerForTarget(attackTarget)) {
+            return [];
+        }
+
+        const defenders = player.defenders;
+        return this.getRequiredDefenders(attackTarget).length ?
+            defenders.filter(defender => this.defenderConditions.every(condition =>
+                checkCondition(defender, condition))) :
+            defenders;
+    }
+    getOtherDefendingPlayers(attackTarget) {
+        const targetPlayer = this.getTargetPlayer(attackTarget);
+
+        return (this.match.players || []).filter(player =>
+            player !== targetPlayer &&
+            this.getPlayerDefenders(player, attackTarget).length);
+    }
+    async openDefenseSelection(attackTarget, player, params, {allowRequests = false} = {}) {
+        const defenders = this.getPlayerDefenders(player, attackTarget);
+        const otherPlayers = allowRequests ? this.getOtherDefendingPlayers(attackTarget) : [];
+        if (!defenders.length && !otherPlayers.length) {
+            return {defender: null};
+        }
+
+        const attackValue = await this.getAttackValue(params);
+        const defenderCards = await Promise.all(defenders.map(async defender => {
+            const stats = await defender.getEffectiveStats({...params, player});
+
+            return {...defender.toObj({...params, player}), ...stats};
+        }));
+        const players = await Promise.all(otherPlayers.map(async otherPlayer => {
+            const stats = await otherPlayer.superhero.getEffectiveStats({...params, player: otherPlayer});
+
+            return {...otherPlayer.toTargetObj({...params, player: otherPlayer}), ...stats};
+        }));
+        const attack = this.toObj(params);
+        attack.character.attack = attackValue;
+        attack.target = attackTarget.toTargetObj?.(params) ?? attackTarget.toObj(params);
+        const mustDefend = allowRequests && this.getRequiredDefenders(attackTarget).length > 0;
+        const response = await this.openDialog({
+            dialogType: DIALOG_DEFENSE,
+            targetPlayer: player,
+            hand: player.hand.cards.map(card => card.toObj({...params, player})),
+            hideOk: mustDefend,
+            data: {
+                attack,
+                defenders: defenderCards,
+                ...(players.length ? {players} : {}),
+            },
+        });
+        if (!this.canContinueActivation()) {
+            return {defender: null};
+        }
+        if (response?.defendingPlayerId) {
+            if (response.defender ||
+                !otherPlayers.some(otherPlayer => otherPlayer.id === response.defendingPlayerId)) {
+                throw new Error('El jugador solicitado para defender no es válido.');
+            }
+            const requestedPlayer = otherPlayers.find(otherPlayer =>
+                otherPlayer.id === response.defendingPlayerId);
+            if (!this.getPlayerDefenders(requestedPlayer, attackTarget).length) {
+                throw new Error('El jugador solicitado ya no puede defender este ataque.');
+            }
+            return {requestedPlayer};
+        }
+        const defender = response?.defender &&
+            this.getPlayerDefenders(player, attackTarget)
+                .find(candidate => candidate.id === response.defender.id);
+        if (response?.defender && !defender) {
+            throw new Error('El defensor seleccionado no es válido.');
+        }
+        if (mustDefend && !defender) {
+            throw new Error('EnemyAttackEffect requires a qualifying defender.');
+        }
+
+        return {defender};
+    }
+    async selectAttackDefender(attackTarget, params) {
+        const targetPlayer = this.getTargetPlayer(attackTarget);
+        while (this.canContinueActivation()) {
+            const selection = await this.openDefenseSelection(
+                attackTarget, targetPlayer, params, {allowRequests: true}
+            );
+            if (!selection.requestedPlayer) {
+                return selection.defender;
+            }
+            const requestedSelection = await this.openDefenseSelection(
+                attackTarget, selection.requestedPlayer, params
+            );
+            if (requestedSelection.defender) {
+                return requestedSelection.defender;
+            }
+        }
+
+        return null;
     }
     getDefenders(target = this.selectedTarget) {
         if (Array.isArray(target)) {
@@ -431,6 +479,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         if (target.isPlayer) {
             return target;
         }
+        if (target.controller?.isPlayer) {
+            return target.controller;
+        }
         if (target.owner) {
             return target.owner;
         }
@@ -470,6 +521,14 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
         return Array.isArray(this.selectedTarget) ? undefined : this.defender;
     }
+    getDefendingPlayerForTarget(target) {
+        const defender = this.getDefenderForTarget(target);
+
+        return this.defendingPlayersByTarget.get(target) ||
+            (defender && this.getTargetPlayer(defender)) ||
+            (!Array.isArray(this.selectedTarget) ?
+                this.defendingPlayersByTarget.values().next().value : undefined);
+    }
     canUseDefenseAbility(player) {
         if (this.resolved || !player) {
             return false;
@@ -480,9 +539,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             return false;
         }
 
-        const defender = this.getDefenderForTarget(attackTarget);
+        const defendingPlayer = this.getDefendingPlayerForTarget(attackTarget);
 
-        return !defender || defender.owner === player;
+        return !defendingPlayer || defendingPlayer === player;
     }
     async setDefenderByAbility(player, params = {}) {
         if (this.resolved || !this.canUseDefenseAbility(player)) {
@@ -587,8 +646,10 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             const previousDefender = this.getDefenderForTarget(attackTarget);
             this.defender = defender.isSuperhero ? defender.currentSide : defender;
             this.defendersByTarget.set(attackTarget, this.defender);
+            const defendingPlayer = this.getTargetPlayer(this.defender);
+            this.defendingPlayersByTarget.set(attackTarget, defendingPlayer);
             if (!Array.isArray(this.selectedTarget)) {
-                this.selectedTarget = defender.owner;
+                this.selectedTarget = defendingPlayer;
             }
 
             if (exhaust) {
@@ -616,6 +677,18 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             }
         }
     }
+    removeDepartedDefenders() {
+        for (const [target, defender] of this.defendersByTarget) {
+            if (defender.isAlly && defender.isInPlay === false) {
+                this.defendersByTarget.delete(target);
+                this.defenseValues.delete(target);
+                if (this.defender === defender) {
+                    this.defender = null;
+                    this.defValue = 0;
+                }
+            }
+        }
+    }
     async execute(params) {
         const {selectedTarget} = this;
         const isMultiTarget = Array.isArray(selectedTarget);
@@ -640,12 +713,16 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             return;
         }
 
-        const boost = await this.resolveBoostCards(params);
+        const defenseParams = !isMultiTarget && this.defendingPlayersByTarget.size ?
+            {...params, player: this.getTargetPlayer(this.selectedTarget)} :
+            params;
+        const boost = await this.resolveBoostCards(defenseParams);
         if (!this.canContinueActivation()) {
             return;
         }
 
-        const atkValue = await this.getAttackValue(params);
+        this.removeDepartedDefenders();
+        const atkValue = await this.getAttackValue(defenseParams);
         if (!this.canContinueActivation()) {
             return;
         }
@@ -653,7 +730,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         const {character} = this;
         const attackedTargets = attackTargets.map(attackTarget =>
             this.defendersByTarget.get(attackTarget) ||
-                (isMultiTarget ? attackTarget : this.defender || attackTarget));
+                (isMultiTarget ?
+                    this.defendingPlayersByTarget.get(attackTarget) || attackTarget :
+                    this.defender || this.selectedTarget));
         const damages = attackTargets.map(attackTarget => {
             const defValue = isMultiTarget ?
                 this.defenseValues.get(attackTarget) || 0 :
@@ -675,14 +754,14 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             ability: this.ability,
         });
 
-        await dealDamageEffect.runEffect(params);
+        await dealDamageEffect.runEffect(defenseParams);
         if (!this.canContinueActivation()) {
             return;
         }
 
         this.activation.takenDamage = dealDamageEffect.takenDamage;
         await this.resolveDelayedEffects({
-            ...params,
+            ...defenseParams,
             effect: this,
         });
     }

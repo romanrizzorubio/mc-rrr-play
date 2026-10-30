@@ -7,7 +7,7 @@ import {
     MENU_OPTION_FLIP
 } from '../../components/cards/characters/mc-superhero-card/mc-superhero-card.js';
 import '../../components/views/mc-match/mc-match.js';
-import {ABILITY_ID, path} from '../../misc/utils.js';
+import {ABILITY_ID} from '../../misc/utils.js';
 import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../misc/card-menu.js';
 import {getEndTurnConfirmationReasons} from '../../utils/end-turn.js';
 import {
@@ -29,6 +29,7 @@ export class McMatchPage extends LitElement {
             match: {type: Object},
             player: {type: String},
             api: {type: Api},
+            firstPlayerTokenUrl: {type: String, attribute: 'first-player-token-url'},
             playCardPending: {type: Boolean},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
@@ -41,6 +42,7 @@ export class McMatchPage extends LitElement {
 
         this.match = null;
         this.player = '';
+        this.firstPlayerTokenUrl = '';
 
         this.api = null;
 
@@ -52,6 +54,50 @@ export class McMatchPage extends LitElement {
         this.deckTargetSelection = null;
         this.deckTargetDocumentClickHandler = null;
         this.deckTargetDocumentClickListenerAttached = false;
+    }
+    get actionRequest() {
+        return this.match?.actionRequest || null;
+    }
+    getPlayerIdentifier(player) {
+        return player?.id || player?.userId || player?.name || '';
+    }
+    static assertInitiatingPlayer(player, initiatingPlayer) {
+        if (player !== initiatingPlayer) {
+            throw new Error('El superhéroe seleccionado ha cambiado. Vuelve a iniciar la acción.');
+        }
+    }
+    get canInteract() {
+        if (this.match?.phase !== 'players' || !this.player) {
+            return false;
+        }
+
+        const request = this.actionRequest;
+        if (request?.status === 'pending') {
+            return false;
+        }
+        if (request?.status === 'accepted') {
+            return (request.targetId || request.target) === this.player;
+        }
+
+        return this.match.currentTurnPlayer === this.player;
+    }
+    get canRequestAction() {
+        return this.match?.phase === 'players' &&
+            this.match.currentTurnPlayer === this.player &&
+            !this.actionRequest;
+    }
+    get canUseOwnTurnOptions() {
+        return this.canInteract &&
+            this.match.currentTurnPlayer === this.player;
+    }
+    canActivateAbility(card, abilityIndex) {
+        return this.canInteract && (this.canUseOwnTurnOptions ||
+            card?.abilities?.[abilityIndex]?.isAction === true);
+    }
+    canPlayCard(card) {
+        return this.canInteract && (this.canUseOwnTurnOptions ||
+            (card?.isEvent === true &&
+                card.abilities?.some(ability => ability.isAction)));
     }
     async connectedCallback() {
         super.connectedCallback();
@@ -69,22 +115,27 @@ export class McMatchPage extends LitElement {
     handleActivationDragStart(e) {
         const {actor, options} = e.detail;
 
-        if (!actor || !options?.length) {
+        if (!this.canInteract || !actor || !options?.length) {
             return;
         }
 
-        this.dragActivation = {actor, options};
+        const allowedOptions = options.filter(option =>
+            this.canActivateAbility(actor, option.abilityIndex));
+        if (!allowedOptions.length) {
+            return;
+        }
+        this.dragActivation = {actor, options: allowedOptions};
     }
     handleActivationDragEnd() {
         this.dragActivation = null;
     }
     handlePlayCardDragStart(e) {
-        if (this.playCardPending) {
+        if (this.playCardPending || !this.canInteract) {
             return;
         }
 
         const {card} = e.detail;
-        if (card?.playable !== true || !card.id) {
+        if (card?.playable !== true || !card.id || !this.canPlayCard(card)) {
             return;
         }
 
@@ -92,6 +143,7 @@ export class McMatchPage extends LitElement {
             card,
             cardId: card.id,
             targetIds: card.playableTargetIds || [],
+            playablePlayerIds: card.playablePlayerIds || [],
             playableInGameZone: card.playableInGameZone === true,
         };
     }
@@ -99,7 +151,7 @@ export class McMatchPage extends LitElement {
         this.dragPlayCard = null;
     }
     handleResourcePaymentDragStart(e) {
-        if (this.playCardPending) {
+        if (this.playCardPending || !this.canInteract) {
             return;
         }
 
@@ -117,16 +169,52 @@ export class McMatchPage extends LitElement {
         this.clearDeckTargetSelection();
         super.disconnectedCallback();
     }
+    updated(changedProperties) {
+        if (changedProperties.has('player') &&
+            changedProperties.get('player') !== this.player) {
+            this.clearPlayerTargeting();
+        }
+    }
+    clearPlayerTargeting() {
+        this.clearDeckTargetSelection();
+        this.dragActivation = null;
+        this.dragPlayCard = null;
+        this.dragResourcePayment = null;
+    }
+    handleSelectControlledPlayer(event) {
+        const selectedPlayer = this.match?.players.find(player =>
+            this.getPlayerIdentifier(player) === event.detail?.player);
+        const currentPlayer = this.match?.players.find(player =>
+            this.getPlayerIdentifier(player) === this.player);
+        if (!selectedPlayer?.userId ||
+            selectedPlayer.userId !== currentPlayer?.userId ||
+            this.playCardPending) {
+            event.stopPropagation();
+            return;
+        }
+
+        this.clearPlayerTargeting();
+        this.player = this.getPlayerIdentifier(selectedPlayer);
+    }
     handlePlayCardDrop(e) {
         this.dragPlayCard = null;
+        if (!this.canInteract) {
+            return;
+        }
+
         return this.handleSelectCardHand({
             detail: {
                 card: e.detail.card,
                 targetCard: e.detail.targetCard,
+                targetId: e.detail.targetId,
             },
         });
     }
     async handleResourcePaymentDrop(e) {
+        if (!this.canInteract) {
+            return;
+        }
+
         const {card, targetCard, option} = e.detail;
 
         if (!card?.id || !targetCard?.id ||
@@ -136,6 +224,9 @@ export class McMatchPage extends LitElement {
         }
 
         try {
+            if (!this.canActivateAbility(targetCard, option.abilityIndex)) {
+                throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
+            }
             await this.apiPlayer.resolveAbility(
                 this.player,
                 targetCard.id,
@@ -153,6 +244,57 @@ export class McMatchPage extends LitElement {
                 detail: {
                     message: error.message,
                 },
+            }));
+        }
+    }
+    async handleRequestPlayerAction(event) {
+        const {targetPlayer} = event.detail || {};
+        if (!this.canRequestAction || !targetPlayer) {
+            return;
+        }
+
+        try {
+            await this.apiPlayer.requestAction(this.player, targetPlayer);
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {message: error.message},
+            }));
+        }
+    }
+    async handleRespondPlayerAction(event) {
+        if ((this.actionRequest?.targetId || this.actionRequest?.target) !== this.player ||
+            this.actionRequest?.status !== 'pending') {
+            return;
+        }
+
+        try {
+            await this.apiPlayer.respondToActionRequest(
+                this.player,
+                event.detail?.accept === true
+            );
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {message: error.message},
+            }));
+        }
+    }
+    async handleCompletePlayerAction() {
+        if ((this.actionRequest?.targetId || this.actionRequest?.target) !== this.player ||
+            this.actionRequest?.status !== 'accepted') {
+            return;
+        }
+
+        try {
+            await this.apiPlayer.completeRequestedAction(this.player);
+        } catch (error) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {message: error.message},
             }));
         }
     }
@@ -179,27 +321,24 @@ export class McMatchPage extends LitElement {
         }
     }
     updateCard(card) {
-        const {match, player} = this;
-
-        if (player) {
-            const _player = match.players.find(_p => _p.name === player);
-
-            if (this.updateSuperhero(_player, card)) {
-                return true;
-            }
-            if (this.updateVillain(card)) {
-                return true;
-            }
-            if (this.updateMainScheme(card)) {
-                return true;
-            }
-            if (this.updateScenarioZoneCard(card)) {
-                return true;
-            }
-            if (this.updateMinion(_player, card)) {
-                return true;
-            }
-            if (this.updateGameZoneCard(_player, card)) {
+        if (!this.match) {
+            return;
+        }
+        if (this.updateVillain(card) || this.updateMainScheme(card) ||
+            this.updateScenarioZoneCard(card)) {
+            return true;
+        }
+        const players = card.playerId ?
+            this.match.players.filter(player =>
+                this.getPlayerIdentifier(player) === card.playerId) :
+            this.match.players;
+        if (card.playerId && !players.length) {
+            throw new Error('No se encontró el jugador de la actualización de carta.');
+        }
+        for (const player of players) {
+            if (this.updateSuperhero(player, card) ||
+                this.updateMinion(player, card) ||
+                this.updateGameZoneCard(player, card)) {
                 return true;
             }
         }
@@ -278,12 +417,15 @@ export class McMatchPage extends LitElement {
 
         return false;
     }
-    updateHand(hand) {
-        const {match, player} = this;
-
-        if (match && player) {
-            const _player = match.players.find(_p => _p.name === player);
-
+    updateHand(update) {
+        if (this.match) {
+            const hand = Array.isArray(update) ? update : update.hand;
+            const playerId = Array.isArray(update) ? this.player : update.playerId;
+            const _player = this.match.players.find(player =>
+                this.getPlayerIdentifier(player) === playerId);
+            if (!_player) {
+                throw new Error('No se encontró el jugador de la actualización de mano.');
+            }
             this.changePlayer({
                 ..._player,
                 hand,
@@ -291,20 +433,28 @@ export class McMatchPage extends LitElement {
         }
     }
     updateMainScheme(card) {
-        const mainScheme = path(this, 'match.scenario.mainScheme');
+        const {scenario} = this.match;
+        const zoneIndex = (scenario.zones || []).findIndex(zone =>
+            zone.mainScheme?.id === card.id);
 
-        if (mainScheme) {
-            if (mainScheme.id === card.id) {
-                this.changeMatch({
-                    ...this.match,
-                    scenario: {
-                        ...this.match.scenario,
-                        mainScheme: card,
-                    }
-                });
+        if (zoneIndex >= 0) {
+            const zones = scenario.zones.slice();
+            zones[zoneIndex] = {...zones[zoneIndex], mainScheme: card};
+            this.changeMatch({
+                ...this.match,
+                scenario: {
+                    ...scenario,
+                    zones,
+                    ...(scenario.gameZone?.id === zones[zoneIndex].id ?
+                        {gameZone: {...scenario.gameZone, mainScheme: card}} :
+                        {}),
+                    ...(scenario.mainScheme?.id === card.id ?
+                        {mainScheme: card} :
+                        {}),
+                },
+            });
 
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -339,10 +489,14 @@ export class McMatchPage extends LitElement {
         }
     }
     updatePlayerZone(playerZone) {
-        const {match, player} = this;
+        const {match} = this;
 
         if (match) {
-            const _player = match.players.find(_p => _p.name === player);
+            const _player = match.players.find(player =>
+                player.gameZone.id === playerZone.id);
+            if (!_player) {
+                throw new Error('No se encontró el jugador de la actualización de zona.');
+            }
 
             this.changePlayer({
                 ..._player,
@@ -354,33 +508,52 @@ export class McMatchPage extends LitElement {
         const {match} = this;
 
         if (match) {
+            const zones = match.scenario.zones || [];
+            const zoneIndex = zones.findIndex(zone =>
+                zone.id === gameZone.id);
+            const updatedZones = zoneIndex < 0 ?
+                zones.concat(gameZone) :
+                zones.map((zone, index) =>
+                    index === zoneIndex ? gameZone : zone);
             this.changeMatch({
                 ...match,
                 scenario: {
                     ...match.scenario,
-                    gameZone,
+                    zones: updatedZones,
+                    ...(match.scenario.gameZone?.id === gameZone.id ||
+                        updatedZones.length === 1 ?
+                        {gameZone} :
+                        {}),
                 },
             });
         }
     }
     updateScenarioZoneCard(card) {
         const {match} = this;
-        const foundCard = match.scenario.gameZone.cards.find(_card => _card.id === card.id);
+        const zones = match.scenario.zones || [match.scenario.gameZone];
+        const zoneIndex = zones.findIndex(zone =>
+            zone?.cards?.some(_card => _card.id === card.id));
 
-        if (foundCard) {
-            const cards = match.scenario.gameZone.cards.slice();
+        if (zoneIndex >= 0) {
+            const zone = zones[zoneIndex];
+            const foundCard = zone.cards.find(_card => _card.id === card.id);
+            const cards = zone.cards.slice();
             const index = cards.indexOf(foundCard);
 
             cards[index] = card;
+            const updatedZone = {...zone, cards};
+            const updatedZones = zones.slice();
+            updatedZones[zoneIndex] = updatedZone;
 
             this.changeMatch({
                 ...match,
                 scenario: {
                     ...match.scenario,
-                    gameZone: {
-                        ...match.scenario.gameZone,
-                        cards,
-                    }
+                    zones: updatedZones,
+                    ...(match.scenario.gameZone?.id === zone.id ||
+                        updatedZones.length === 1 ?
+                        {gameZone: updatedZone} :
+                        {}),
                 }
             });
 
@@ -403,20 +576,28 @@ export class McMatchPage extends LitElement {
         return false;
     }
     updateVillain(card) {
-        const villain = path(this, 'match.scenario.villain');
+        const {scenario} = this.match;
+        const zoneIndex = (scenario.zones || []).findIndex(zone =>
+            zone.villain?.id === card.id);
 
-        if (villain) {
-            if (villain.id === card.id) {
-                this.changeMatch({
-                    ...this.match,
-                    scenario: {
-                        ...this.match.scenario,
-                        villain: card,
-                    }
-                });
+        if (zoneIndex >= 0) {
+            const zones = scenario.zones.slice();
+            zones[zoneIndex] = {...zones[zoneIndex], villain: card};
+            this.changeMatch({
+                ...this.match,
+                scenario: {
+                    ...scenario,
+                    zones,
+                    ...(scenario.gameZone?.id === zones[zoneIndex].id ?
+                        {gameZone: {...scenario.gameZone, villain: card}} :
+                        {}),
+                    ...(scenario.villain?.id === card.id ?
+                        {villain: card} :
+                        {}),
+                },
+            });
 
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -433,7 +614,10 @@ export class McMatchPage extends LitElement {
     changePlayer(player) {
         const {match} = this;
         const players = match.players.slice();
-        const index = players.findIndex(_player => _player.name === player.name);
+        const playerId = this.getPlayerIdentifier(player);
+        const index = players.findIndex(_player =>
+            this.getPlayerIdentifier(_player) === playerId
+        );
         if (index > -1) {
             players[index] = player;
         }
@@ -480,6 +664,12 @@ export class McMatchPage extends LitElement {
             .map(deck => deck.id);
     }
     resolveAbilityOrSelectDeck(card, abilityIndex) {
+        if (!this.canInteract) {
+            return;
+        }
+        if (!this.canActivateAbility(card, abilityIndex)) {
+            throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
+        }
         if (!card?.id) {
             throw new Error('La capacidad seleccionada no tiene una carta de origen.');
         }
@@ -491,6 +681,7 @@ export class McMatchPage extends LitElement {
 
         if (targetIds.length && Number.isSafeInteger(numericAbilityIndex)) {
             const selection = {
+                player: this.player,
                 cardId: card.id,
                 abilityIndex: numericAbilityIndex,
                 targetIds,
@@ -552,7 +743,6 @@ export class McMatchPage extends LitElement {
     }
     async handleDeckTargetSelect(event) {
         event.stopPropagation();
-
         const selection = this.deckTargetSelection;
         const {deckId} = event.detail || {};
         if (!selection || !selection.targetIds.includes(deckId)) {
@@ -561,8 +751,12 @@ export class McMatchPage extends LitElement {
 
         this.clearDeckTargetSelection();
         try {
+            McMatchPage.assertInitiatingPlayer(this.player, selection.player);
+            if (!this.canInteract) {
+                return;
+            }
             await this.apiPlayer.resolveAbility(
-                this.player,
+                selection.player,
                 selection.cardId,
                 selection.abilityIndex,
                 deckId
@@ -579,6 +773,9 @@ export class McMatchPage extends LitElement {
     }
     handleBasicActivation(e) {
         e.stopPropagation();
+        if (!this.canInteract) {
+            return;
+        }
 
         const {actor, card, option} = e.detail;
 
@@ -590,7 +787,7 @@ export class McMatchPage extends LitElement {
     }
     handleTargetedActivationSelection(card, option, actor) {
         const player = this.match?.players.find(_player =>
-            _player.name === this.player
+            this.getPlayerIdentifier(_player) === this.player
         );
 
         if (!player || !card || !option) {
@@ -627,8 +824,11 @@ export class McMatchPage extends LitElement {
         return this.resolveActivation(card, validOption, activator);
     }
     handleBasicActivationSelection(card, option, actor) {
+        if (!this.canUseOwnTurnOptions) {
+            return;
+        }
         const player = this.match?.players.find(_player =>
-            _player.name === this.player
+            this.getPlayerIdentifier(_player) === this.player
         );
 
         if (!player || !card || !option?.basicActivation) {
@@ -665,6 +865,7 @@ export class McMatchPage extends LitElement {
             return this.resolveActivation(card, option, activator);
         }
 
+        const initiatingPlayer = this.player;
         this.dispatchEvent(new CustomEvent('basic-activation-confirmation', {
             bubbles: true,
             composed: true,
@@ -678,6 +879,7 @@ export class McMatchPage extends LitElement {
                     if (!response?.confirmed) {
                         return;
                     }
+                    McMatchPage.assertInitiatingPlayer(this.player, initiatingPlayer);
                     if (response.skipBasicActivationConfirmation) {
                         this.rememberBasicActivationConfirmationChoice();
                     }
@@ -701,11 +903,16 @@ export class McMatchPage extends LitElement {
         }));
     }
     handleMenuOption(card) {
+        const initiatingPlayer = this.player;
         return response => {
             if (response === undefined) {
                 return;
             }
             const {selected} = response;
+            if (!selected) {
+                return;
+            }
+            McMatchPage.assertInitiatingPlayer(this.player, initiatingPlayer);
 
             if (selected.id === MENU_OPTION_VIEW_TUCKED_CARDS) {
                 this.dispatchEvent(new CustomEvent('view-tucked-cards', {
@@ -716,6 +923,9 @@ export class McMatchPage extends LitElement {
                         cards: card.tuckedCards || [],
                     },
                 }));
+                return;
+            }
+            if (!this.canInteract) {
                 return;
             }
             if (selected.basicActivation) {
@@ -738,7 +948,7 @@ export class McMatchPage extends LitElement {
     }
     getEndTurnReasons() {
         const currentPlayer = this.match?.players.find(_player =>
-            _player.name === this.player);
+            this.getPlayerIdentifier(_player) === this.player);
 
         if (!currentPlayer) {
             return [];
@@ -747,16 +957,24 @@ export class McMatchPage extends LitElement {
         return getEndTurnConfirmationReasons(currentPlayer);
     }
     endTurn() {
+        if (!this.canInteract || this.actionRequest) {
+            return;
+        }
         const reasons = this.getEndTurnReasons();
         if (reasons.length) {
+            const initiatingPlayer = this.player;
             this.dispatchEvent(new CustomEvent('turn-end-confirmation', {
                 bubbles: true,
                 composed: true,
                 detail: {
                     reasons,
-                    callback: response => response?.confirmed ?
-                        this.sendEndTurn() :
-                        undefined,
+                    callback: response => {
+                        if (!response?.confirmed) {
+                            return;
+                        }
+                        McMatchPage.assertInitiatingPlayer(this.player, initiatingPlayer);
+                        return this.sendEndTurn();
+                    },
                 },
             }));
 
@@ -766,6 +984,9 @@ export class McMatchPage extends LitElement {
         return this.sendEndTurn();
     }
     sendEndTurn() {
+        if (!this.canInteract || this.actionRequest) {
+            return Promise.resolve();
+        }
         return this.apiPlayer.endTurn(this.player).catch(error => {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -777,6 +998,9 @@ export class McMatchPage extends LitElement {
         });
     }
     async flipSuperhero() {
+        if (!this.canUseOwnTurnOptions) {
+            return;
+        }
         const {apiPlayer, player} = this;
 
         try {
@@ -795,16 +1019,31 @@ export class McMatchPage extends LitElement {
         return this.flipSuperhero();
     }
     async handleSelectCardHand(e) {
-        if (this.playCardPending) {
+        if (this.playCardPending || !this.canInteract) {
             return;
         }
 
         const {apiPlayer, player} = this;
-        const {card, targetCard} = e.detail;
+        const {card, targetCard, targetId} = e.detail;
+
+        if (!this.canPlayCard(card)) {
+            this.dispatchEvent(new CustomEvent('communication-error', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    message: 'Fuera de tu turno solo puedes jugar eventos con una capacidad de Acción.',
+                },
+            }));
+            return;
+        }
 
         this.playCardPending = true;
         try {
-            await apiPlayer.playCard(player, card.id, targetCard?.id);
+            await apiPlayer.playCard(
+                player,
+                card.id,
+                targetId || targetCard?.id,
+            );
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -819,12 +1058,18 @@ export class McMatchPage extends LitElement {
     }
     render() {
         const {match, player} = this;
-        const _player = match ? match.players.find(_p => _p.name === player) : null;
-
+        const _player = match ? match.players.find(_p =>
+            this.getPlayerIdentifier(_p) === player
+        ) : null;
         return html`
             <mc-match
                 .match="${match}"
                 .player="${_player}"
+                .boardPlayer="${_player}"
+                .interactive="${this.canInteract}"
+                .canRequestAction="${this.canRequestAction}"
+                .actionRequest="${this.actionRequest}"
+                .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
                 .playCardPending="${this.playCardPending}"
                 .deckSelectionTargetIds="${this.deckTargetSelection?.targetIds || []}"
                 .dragActivation="${this.dragActivation}"
@@ -845,14 +1090,24 @@ export class McMatchPage extends LitElement {
                 @deck-target-select="${this.handleDeckTargetSelect.bind(this)}"
                 @hand-select-card="${this.handleSelectCardHand.bind(this)}"
                 @player-end="${this.handlePlayerEnd.bind(this)}"
+                @request-player-action="${this.handleRequestPlayerAction.bind(this)}"
+                @respond-player-action="${this.handleRespondPlayerAction.bind(this)}"
+                @complete-player-action="${this.handleCompletePlayerAction.bind(this)}"
+                @select-controlled-player="${this.handleSelectControlledPlayer.bind(this)}"
             ></mc-match>
         `;
     }
     async resolveActivation(card, option, activator) {
         try {
+            if (!this.canInteract) {
+                return;
+            }
             if (!activator || !Number.isSafeInteger(option.abilityIndex) ||
                 !option.targetId) {
                 throw new Error('No se pudo iniciar la activación seleccionada.');
+            }
+            if (!this.canActivateAbility(activator, option.abilityIndex)) {
+                throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
             }
 
             await this.apiPlayer.resolveAbility(

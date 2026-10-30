@@ -48,6 +48,7 @@ import {
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_ENEMY,
+    TARGET_ANY_DECK,
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_SCHEMES,
     TARGET_EFFECT,
@@ -1082,6 +1083,7 @@ describe('Spiderwoman', () => {
         assert.equal(ability.name, 'Consultar la carta superior de un mazo');
         assert.equal(ability.toObj().name, 'Consultar la carta superior de un mazo');
         assert.equal(ability.effect.effectType, EFFECT_LOOK_AT_TOP_CARDS);
+        assert.equal(ability.effect.target, TARGET_ANY_DECK);
         assert.equal(ability.effect.getTargetSelectionMode(), 'deck');
         assert.equal(await ability.canRun({player}), true);
         const validDecks = await ability.effect.getValidTarget({player});

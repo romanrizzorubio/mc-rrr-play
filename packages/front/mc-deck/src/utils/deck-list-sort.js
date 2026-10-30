@@ -9,6 +9,7 @@ export function compareDeckListItems(left, right, column, direction = 'asc') {
             getAspectName(left.aspect),
             getAspectName(right.aspect),
         ),
+        creator: () => compareText(left.creatorName, right.creatorName),
         size: () => compareNumbers(left.validation.size, right.validation.size),
     };
     const comparison = (compareValues[column] || compareValues.name)();

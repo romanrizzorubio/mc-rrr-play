@@ -52,6 +52,12 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.canceled = false;
         this.defeated = false;
     }
+    getResolutionChildEffects() {
+        const effects = super.getResolutionChildEffects();
+        // The originating attack is context, not a child to reset during damage.
+        effects.delete(this.attackKeywordSource);
+        return effects;
+    }
     cancel({triggeredTarget} = {}) {
         const {selectedTarget} = this;
 

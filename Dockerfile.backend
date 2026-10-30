@@ -9,7 +9,7 @@ COPY . .
 RUN npm install
 
 # Exponer puerto
-EXPOSE 3000
+EXPOSE 3000 3001 3002 3003
 
 # Comando para iniciar el backend
 CMD ["npm", "run", "start:backend"]

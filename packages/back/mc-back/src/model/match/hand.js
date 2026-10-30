@@ -12,6 +12,7 @@ import {PlayCardEffect} from '../../effects/play-card-effect.js';
 import {getEffectTargetEntries} from '../../utils/effect-targets.js';
 import {getResourceIcons} from '../../utils/resource-requirements.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
+import {canPlayCardDuringTurn} from '../../utils/player-turn-permissions.js';
 
 export class Hand extends Engine {
     constructor(owner) {
@@ -59,6 +60,7 @@ export class Hand extends Engine {
         if (showDialog) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_DISCARD_RANDOM_HAND,
+                targetPlayer: this.owner,
                 data: {
                     cards: cards.map(_card => _card.toObj(arguments[0])),
                 }
@@ -137,7 +139,10 @@ export class Hand extends Engine {
         match.mc.mcSocket.send(
             match.name,
             REFRESH_EVENTS[objectToRefresh],
-            await this.toObjWithPlayability()
+            {
+                playerId: this.owner.id,
+                hand: await this.toObjWithPlayability(),
+            }
         );
     }
     toObj() {
@@ -149,7 +154,8 @@ export class Hand extends Engine {
         const {cards, owner} = this;
 
         return Promise.all(cards.map(async card => {
-            const playable = !card.card.isResource && await card.canPlay({
+            const playable = canPlayCardDuringTurn(card, owner) &&
+                !card.card.isResource && await card.canPlay({
                 player: owner,
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,
@@ -228,8 +234,14 @@ export class Hand extends Engine {
                 player,
                 playCardEffect,
             });
+            const playerTargets = targets.flat(Infinity).filter(target =>
+                target?.isPlayer
+            );
 
-            return targetInfo([], targets.length > 0);
+            return {
+                ...targetInfo([], playerTargets.length > 0),
+                playablePlayerIds: playerTargets.map(target => target.id),
+            };
         }
 
         if (card.isUpgrade) {

@@ -40,6 +40,7 @@ export class SelectAndOrderTopCardsEffect extends Effect {
         if (cards.length > 1) {
             const response = await this.openDialog({
                 dialogType: DIALOG_DISCARD_ORDER,
+                targetPlayer: params.player,
                 title: this.orderTitle,
                 subtitle: `${this.title}. La carta de la izquierda quedará en la parte superior del mazo.`,
                 data: {

@@ -7,11 +7,12 @@ export class DealEncounterEffect extends Effect {
         this.count = count;
     }
     async execute(_params) {
-        const {selectedTarget} = this;
-
-        const cards = await this.match.drawEncounterCards(this.count);
-
-        selectedTarget.gameZone.dealEncounterCard(cards);
-        await selectedTarget.gameZone.refresh();
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget : [this.selectedTarget];
+        for (const target of targets) {
+            const cards = await this.match.drawEncounterCards(this.count);
+            target.gameZone.dealEncounterCard(cards);
+            await target.gameZone.refresh();
+        }
     }
 }

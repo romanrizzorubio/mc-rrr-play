@@ -24,6 +24,7 @@ export class McDeckSelectedCards extends LitElement {
     static get properties() {
         return {
             cards: {type: Array},
+            readOnly: {type: Boolean},
             pendingRemoval: {type: Object},
             previewCard: {type: Object},
         };
@@ -35,10 +36,15 @@ export class McDeckSelectedCards extends LitElement {
         super();
 
         this.cards = [];
+        this.readOnly = false;
         this.pendingRemoval = null;
         this.previewCard = null;
     }
     handleCardRowClick(event, card) {
+        if (this.readOnly) {
+            return;
+        }
+
         const interactiveTarget = event.target.closest?.(
             'input, button, md-filled-button, md-text-button, md-filled-select',
         );
@@ -49,7 +55,7 @@ export class McDeckSelectedCards extends LitElement {
         this.pendingRemoval = card;
     }
     handleCardRowKeyDown(event, card) {
-        if (event.target !== event.currentTarget ||
+        if (this.readOnly || event.target !== event.currentTarget ||
             (event.key !== 'Enter' && event.key !== ' ')) {
             return;
         }
@@ -58,7 +64,7 @@ export class McDeckSelectedCards extends LitElement {
         this.pendingRemoval = card;
     }
     confirmRemoval() {
-        if (!this.pendingRemoval) {
+        if (this.readOnly || !this.pendingRemoval) {
             return;
         }
 
@@ -79,6 +85,10 @@ export class McDeckSelectedCards extends LitElement {
         this.previewCard = null;
     }
     handleCountChanged(event, cardId) {
+        if (this.readOnly) {
+            return;
+        }
+
         const input = event.target;
         const count = Number(input.value);
         if (!Number.isInteger(count) || count < 1) {
@@ -141,13 +151,18 @@ export class McDeckSelectedCards extends LitElement {
         const currentCount = Number(card.count);
         const maxCopies = Number(card.maxCopies) || 0;
         const inputMax = Math.max(maxCopies, currentCount);
+        const canRemoveCard = !this.readOnly && !card.fixed;
+        const canChangeCount = canRemoveCard &&
+            !(maxCopies <= 1 && currentCount === 1);
 
         return html`
             <li
-                class="selected-card ${getCardCategoryClass(card)}"
-                role="${card.fixed ? 'listitem' : 'button'}"
-                tabindex="${card.fixed ? '-1' : '0'}"
-                aria-label="${card.fixed ? card.name : `Quitar ${card.name} del mazo`}"
+                class="selected-card ${getCardCategoryClass(card)} ${this.readOnly ? 'read-only' : ''}"
+                role="${canRemoveCard ? 'button' : 'listitem'}"
+                tabindex="${canRemoveCard ? '0' : '-1'}"
+                aria-label="${canRemoveCard ?
+                    `Quitar ${card.name} del mazo` :
+                    `${card.name}, ${currentCount} copias`}"
                 @click="${event => this.handleCardRowClick(event, card)}"
                 @keydown="${event => this.handleCardRowKeyDown(event, card)}"
             >
@@ -169,13 +184,8 @@ export class McDeckSelectedCards extends LitElement {
                         .resources="${card.resources}"
                     ></mc-deck-card-economy>
                 </div>
-                ${card.fixed ? html`
-                    <span class="fixed-count">×${card.count}</span>
-                ` : html`
+                ${canChangeCount ? html`
                     <div class="selected-card-actions">
-                    ${maxCopies <= 1 && currentCount === 1 ? html`
-                        <span class="fixed-count">×${currentCount}</span>
-                    ` : html`
                         <input
                             class="copy-count"
                             type="number"
@@ -187,8 +197,9 @@ export class McDeckSelectedCards extends LitElement {
                             data-current-count="${currentCount}"
                             @change="${event => this.handleCountChanged(event, card.id)}"
                         >
-                    `}
                     </div>
+                ` : html`
+                    <span class="fixed-count">×${card.count}</span>
                 `}
             </li>
         `;

@@ -5,7 +5,6 @@ import '../../panels/mc-deck/mc-deck.js';
 import '../../cards/mc-card-list/mc-card-list.js';
 import '../../cards/characters/mc-villain-card/mc-villain-card.js';
 import '../../cards/schemes/mc-main-scheme-card/mc-main-scheme-card.js';
-import {path} from '../../../misc/utils.js';
 
 export class McScenario extends LitElement {
     static get is() {
@@ -59,8 +58,9 @@ export class McScenario extends LitElement {
             this.deckSelectionTargetIds.includes(deck.id)
         );
     }
-    renderVillain() {
-        const villain = path(this, 'scenario.villain');
+    renderVillain(zone = this.scenario?.gameZone) {
+        const villain = zone?.villain ??
+            (zone ? undefined : this.scenario?.villain);
 
         if (villain) {
             const {
@@ -113,8 +113,9 @@ export class McScenario extends LitElement {
 
         return '';
     }
-    renderMainScheme() {
-        const scheme = path(this, 'scenario.mainScheme');
+    renderMainScheme(zone = this.scenario?.gameZone) {
+        const scheme = zone?.mainScheme ??
+            (zone ? undefined : this.scenario?.mainScheme);
 
         if (scheme) {
             const {
@@ -172,13 +173,13 @@ export class McScenario extends LitElement {
             </div>
         `;
     }
-    renderSchemes() {
-        const {scenario: {gameZone: {cards}}} = this;
+    renderSchemes(zone = this.scenario?.gameZone) {
+        const cards = zone?.cards || [];
 
         return html`
             <div class="schemes">
                 <div class="main-scheme-decks">
-                    ${this.renderMainScheme()}
+                    ${this.renderMainScheme(zone)}
                 </div>
                 <mc-card-list
                     .cards="${cards.filter(card =>
@@ -196,8 +197,8 @@ export class McScenario extends LitElement {
             </div>
         `;
     }
-    renderEnvironments() {
-        const {scenario: {gameZone: {cards}}} = this;
+    renderEnvironments(zone = this.scenario?.gameZone, includeExtraDecks = true) {
+        const cards = zone?.cards || [];
 
         return html`
             <div class="environments">
@@ -209,7 +210,27 @@ export class McScenario extends LitElement {
                     show-generic
                     show-menu-abilities
                 ></mc-card-list>
-                ${this.renderExtraDecks()}
+            </div>
+            ${includeExtraDecks ? this.renderExtraDecks() : ''}
+        `;
+    }
+    renderZones(zones) {
+        return html`
+            <div class="scenario-zones">
+                ${zones.map((zone, index) => html`
+                    <section class="scenario-play-area">
+                        ${zones.length > 1 ? html`
+                            <header class="zone-players">
+                                ${(zone.players || []).join(', ')}
+                            </header>
+                        ` : ''}
+                        <div class="scenario-zone-cards">
+                            ${this.renderSchemes(zone)}
+                            ${this.renderEnvironments(zone, index === 0)}
+                            ${this.renderVillain(zone)}
+                        </div>
+                    </section>
+                `)}
             </div>
         `;
     }
@@ -231,12 +252,21 @@ export class McScenario extends LitElement {
     }
     render() {
         const {scenario} = this;
+        const zones = scenario?.zones?.length ?
+            scenario.zones :
+            [{
+                ...scenario?.gameZone,
+                villain: scenario?.villain,
+                mainScheme: scenario?.mainScheme,
+            }];
 
         return scenario ? html`
             ${this.renderDeck()}
-            ${this.renderSchemes()}
-            ${this.renderEnvironments()}
-            ${this.renderVillain()}
+            ${zones.length > 1 ? this.renderZones(zones) : html`
+                ${this.renderSchemes(zones[0])}
+                ${this.renderEnvironments(zones[0])}
+                ${this.renderVillain(zones[0])}
+            `}
         ` : '';
     }
 }

@@ -147,6 +147,22 @@ export default css`
     z-index: 1;
   }
 
+  .card-image-marker {
+    display: flex;
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 4px);
+    left: 0;
+    z-index: 2;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .card-image-marker slot {
+    display: flex;
+    justify-content: center;
+  }
+
   .facedown-peek-button {
     position: absolute;
     top: 4px;
@@ -344,7 +360,7 @@ export default css`
     padding: 2px 3px;
     border-radius: 3px;
     color: white;
-    font-weight: 600;
+    font-weight: 400;
   }
 
   .character-stats .character-stat {
@@ -371,6 +387,7 @@ export default css`
   .numeric-value,
   .facedown-count {
     font-family: var(--mc-font-numeric, sans-serif);
+    font-weight: 400;
   }
 
   .stat-attack {

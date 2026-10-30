@@ -61,6 +61,7 @@ export class AssignDamageEffect extends Effect {
 
         const {assigned} = await this.openDialog({
             dialogType: DIALOG_ASSIGN,
+            targetPlayer: player,
             title: `Reparte ${this.damage} de Daño indirecto`,
             hand: player.hand.cards.map(card => card.toObj(params)),
             data: {

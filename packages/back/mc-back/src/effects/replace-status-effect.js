@@ -49,6 +49,7 @@ export class ReplaceStatusEffect extends Effect {
 
         const response = await this.openDialog({
             dialogType: DIALOG_SELECT_TARGET,
+            targetPlayer: params.player,
             title: 'Elige un personaje con una carta de Estado',
             data: {
                 cards: validTargets.map(card => card.toObj(params)),
@@ -90,13 +91,14 @@ export class ReplaceStatusEffect extends Effect {
                 break;
         }
     }
-    async execute() {
+    async execute(params) {
         const card = this.selectedTarget;
         const available = this.getAvailableStatuses(card);
         this.selectedStatus = await selectStatusOption(
             this,
             available,
-            this.statusTitle
+            this.statusTitle,
+            {targetPlayer: params.player}
         );
 
         const replacements = STATUS_OPTIONS
@@ -107,7 +109,10 @@ export class ReplaceStatusEffect extends Effect {
             this,
             replacements,
             'Elige la nueva carta de Estado',
-            {alwaysDialog: true}
+            {
+                alwaysDialog: true,
+                targetPlayer: params.player,
+            }
         );
 
         this.removeStatus(card, this.selectedStatus);

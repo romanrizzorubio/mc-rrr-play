@@ -9,6 +9,7 @@ import {QuickstrikeAbility} from '../abilities/misc/quickstrike-ability.js';
 import {EndLastingAbility} from '../abilities/misc/end-lasting-ability.js';
 import {LastingAbility} from '../abilities/misc/lasting-ability.js';
 import {Activation} from '../activations/activation.js';
+import {Delayed} from '../engine/delayed.js';
 import {Effect} from '../effects/effect.js';
 import {Calc} from '../engine/calc.js';
 import {Engine} from '../engine/engine.js';
@@ -47,6 +48,7 @@ import {
     PLACE_SCENARIO_EXTRA_DECK,
 } from 'mc-shared';
 import {MatchFactory} from '../factory/match-factory.js';
+import {RestoreCardIdentities} from './restore-card-identities.js';
 
 export const VALID_TARGET_FILTER_MARKER = Symbol('valid-target-filter');
 
@@ -86,6 +88,7 @@ const modelTypes = [
     Card,
     CharacterGameCard,
     Deck,
+    Delayed,
     Effect,
     EndLastingAbility,
     Engine,
@@ -136,11 +139,37 @@ registerSnapshotType(Match, {
         match.initializing = false;
         new MatchFactory(match);
 
+        const scenario = match.scenario;
+        const scenarioZones = scenario?.zones?.length ?
+            scenario.zones :
+            [scenario?.gameZone].filter(Boolean);
+        scenarioZones.forEach(zone => {
+            zone.players = [];
+        });
+        (match.players ?? []).forEach(player => {
+            const zone = scenarioZones.find(candidate =>
+                candidate === player.scenarioZone) ??
+                (!scenario?.separatePlayAreas ?
+                    scenario?.gameZone :
+                    undefined);
+            zone?.addPlayer(player);
+        });
+
         if (typeof match.turnStartProcessed !== 'boolean') {
             match.turnStartProcessed = match.phase === 'players' &&
                 Boolean(match.currentTurnPlayer);
         }
     },
+});
+
+registerSnapshotType(Player, {
+    restore: player => {
+        player.id ??= player.userId || player.name;
+    },
+});
+
+registerSnapshotType(ScenarioZone, {
+    ignoredProperties: ['players'],
 });
 
 [
@@ -313,6 +342,7 @@ export const encodeSnapshotProperty = (value, propertyName, propertyValue, encod
 };
 
 export function restoreSnapshotTypes(objects, context) {
+    RestoreCardIdentities.restore(objects);
     objects.forEach(object => {
         getSnapshotType(object)?.restore?.(object, context);
     });

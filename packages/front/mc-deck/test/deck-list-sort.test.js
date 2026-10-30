@@ -9,6 +9,7 @@ const decks = [
         name: 'Rocket',
         heroName: 'Spider-Man',
         aspect: 'justice',
+        creatorName: 'Zed',
         validation: {size: 42},
     },
     {
@@ -16,6 +17,7 @@ const decks = [
         name: 'Alpha',
         heroName: 'Iron Man',
         aspect: 'leadership',
+        creatorName: 'RRR',
         validation: {size: 45},
     },
     {
@@ -23,6 +25,7 @@ const decks = [
         name: 'Bravo',
         heroName: 'Carol Danvers',
         aspect: 'aggression',
+        creatorName: 'Alice',
         validation: {size: 40},
     },
 ];
@@ -37,6 +40,7 @@ describe('deck list sorting', () => {
         assert.deepEqual(sortIds('name'), ['deck-a', 'deck-b', 'deck-c']);
         assert.deepEqual(sortIds('hero'), ['deck-b', 'deck-a', 'deck-c']);
         assert.deepEqual(sortIds('aspect'), ['deck-b', 'deck-c', 'deck-a']);
+        assert.deepEqual(sortIds('creator'), ['deck-b', 'deck-a', 'deck-c']);
         assert.deepEqual(sortIds('size'), ['deck-b', 'deck-c', 'deck-a']);
     });
 
@@ -44,6 +48,7 @@ describe('deck list sorting', () => {
         assert.deepEqual(sortIds('name', 'desc'), ['deck-c', 'deck-b', 'deck-a']);
         assert.deepEqual(sortIds('hero', 'desc'), ['deck-c', 'deck-a', 'deck-b']);
         assert.deepEqual(sortIds('aspect', 'desc'), ['deck-a', 'deck-c', 'deck-b']);
+        assert.deepEqual(sortIds('creator', 'desc'), ['deck-c', 'deck-a', 'deck-b']);
         assert.deepEqual(sortIds('size', 'desc'), ['deck-a', 'deck-c', 'deck-b']);
     });
 

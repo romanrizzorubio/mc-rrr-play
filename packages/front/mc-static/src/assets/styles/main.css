@@ -39,6 +39,9 @@
 }
 
 :root {
+  --mc-color-primary: #6750a4;
+  --md-sys-color-primary: var(--mc-color-primary);
+  --md-sys-color-on-primary: #ffffff;
   --mc-font-body: 'Avenir Next LT Pro', sans-serif;
   --mc-font-title: 'Exo 2', sans-serif;
   --mc-font-trait: 'Komika Title', sans-serif;

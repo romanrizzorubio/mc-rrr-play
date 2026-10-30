@@ -42,7 +42,7 @@ export class DiscardUntilEffect extends Effect {
         await deck.refresh();
 
         if (this.showSelectedCard && selectedCard) {
-            await this.openDialog({
+            await this.openPublicDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 title: this.title,
                 data: {
@@ -51,7 +51,7 @@ export class DiscardUntilEffect extends Effect {
                         selectedCard.isMainScheme || selectedCard.isSideScheme
                     ),
                 },
-            });
+            }, params.player);
         }
 
         if (discardedCards?.length) {

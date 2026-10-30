@@ -53,6 +53,10 @@ export default css`
     cursor: pointer;
   }
 
+  .selected-card.read-only {
+    cursor: default;
+  }
+
   .selected-card.card-basic {
     background-color: #f2f2f2;
   }

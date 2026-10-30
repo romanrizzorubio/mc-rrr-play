@@ -70,13 +70,14 @@ export class ResolveSpecialAbilityEffect extends Effect {
         return available;
     }
 
-    async selectAbility(available, closeOnResponse) {
+    async selectAbility(available, closeOnResponse, player) {
         let selectedIndex;
         if (available.length > 5) {
             const response = await this.openDialog({
                 closeOnResponse,
                 dialogType: DIALOG_LIST,
                 hideOk: true,
+                targetPlayer: player,
                 title: SELECT_SPECIAL_ABILITY_TITLE,
                 data: {
                     options: available.map(({gameCard}, index) => ({
@@ -91,6 +92,7 @@ export class ResolveSpecialAbilityEffect extends Effect {
                 closeOnResponse,
                 dialogType: DIALOG_SELECT_CARD,
                 hideOk: true,
+                targetPlayer: player,
                 title: SELECT_SPECIAL_ABILITY_TITLE,
                 data: {
                     cards: available.map(({gameCard}) => gameCard.toObj()),
@@ -139,7 +141,11 @@ export class ResolveSpecialAbilityEffect extends Effect {
                 }
             }
 
-            const selected = await this.selectAbility(available, isLastStep);
+            const selected = await this.selectAbility(
+                available,
+                isLastStep,
+                params.player
+            );
             params.selectedCard = selected.gameCard;
             params.selectedCards = [selected.gameCard];
 

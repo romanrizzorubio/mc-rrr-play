@@ -9,6 +9,7 @@ mc-monorepo/
 ├── packages/
 │   ├── front/
 │   │   ├── mc-frontend/    # Carcasa Lit y creación de partidas
+│   │   ├── mc-users/       # Remoto frontend de cuentas
 │   │   ├── mc-match/       # Remoto frontend para jugar
 │   │   ├── mc-deck/        # Remoto frontend del editor de mazos
 │   │   ├── mc-static/      # Remoto de imágenes, fuentes y estilos estáticos
@@ -16,7 +17,9 @@ mc-monorepo/
 │   ├── back/
 │   │   ├── mc-back/        # Microservicio de partidas: motor + Socket.IO
 │   │   ├── mc-match-creation-service/ # API de creación y catálogo
+│   │   ├── mc-user-service/ # API de cuentas y sesiones
 │   │   ├── mc-deck-service/ # API y persistencia de mazos
+│   │   ├── mc-server-utils/ # Utilidades HTTPS compartidas
 │   │   └── mc-data/        # Acceso a MongoDB y catálogo inicial
 │   └── core/
 │       ├── mc-endpoints/   # Contratos REST y eventos Socket.IO
@@ -30,17 +33,22 @@ mc-monorepo/
 ## Requisitos
 
 - Node.js 20+
-- Docker y Docker Compose (para MongoDB local en contenedor o el stack completo)
-- MongoDB 7+ con `mongod` en el `PATH` (para el modo `start:all:local`)
+- MongoDB 7+ con `mongod` en el `PATH` para el modo local, o una instancia MongoDB externa configurada en `MONGODB_URI`
+- Docker y Docker Compose (opcionales; solo para el modo Docker)
 
 ## Instalación Local
 
 ```bash
 # Instalar dependencias de todas las aplicaciones
 npm install
+
+# Instalar mkcert y preparar certificados HTTPS locales
+npm run https:setup
 ```
 
-Los servicios usan `MONGODB_URI` (por defecto `mongodb://localhost:27017`) y `MONGODB_DATABASE` (por defecto `mc`). `npm run start:all` usa MongoDB en Docker y ejecuta la carcasa, remotos y servicios en el host; es equivalente a `npm run start:all:docker`. Para iniciar MongoDB como proceso local usa `npm run start:all:local`, que reutiliza una instancia activa o ejecuta `mongod` con los datos en `.local/mongodb`. `MONGODB_DB_PATH` y `MONGOD_BIN` permiten cambiar la ruta de datos y el ejecutable. El contenedor Docker persiste en `mc-mongodb-data` y queda activo al cerrar la aplicación; usa `npm run mongo:down` para detenerlo. `npm run docker:up` levanta todos los servicios en contenedores.
+Ejecuta `npm run https:setup` una sola vez (o cuando necesites regenerar certificados). Este comando instala [mkcert](https://github.com/FiloSottile/mkcert) y añade su autoridad a la confianza del sistema; el navegador también debe confiar en ella. `start:all` solo comprueba que los certificados estén presentes y no vuelve a instalar la autoridad en cada arranque. Los certificados y las claves se guardan bajo `.local/certs/`, excluidos de Git.
+
+Los servicios usan `MONGODB_URI` (por defecto `mongodb://localhost:27017`) y `MONGODB_DATABASE` (por defecto `mc`). `npm run start:all` usa MongoDB en Docker y ejecuta la carcasa, remotos y servicios en el host; es equivalente a `npm run start:all:docker`. Para iniciar sin Docker usa `npm run start:all:local`: reutiliza una instancia Mongo local activa o ejecuta `mongod` con los datos en `.local/mongodb`, y arranca MailDev para capturar los correos de desarrollo. Si configuras `MONGODB_URI` con una instancia externa, el modo local no intenta iniciar `mongod`. `MONGODB_DB_PATH` y `MONGOD_BIN` permiten cambiar la ruta de datos y el ejecutable. El contenedor Docker persiste en `mc-mongodb-data` y queda activo al cerrar la aplicación; usa `npm run mongo:down` para detenerlo. `npm run docker:up` levanta todos los servicios en contenedores.
 
 Al arrancar, `mc-data` añade automáticamente los registros iniciales que falten. Para volver a aplicar el catálogo empaquetado manualmente:
 
@@ -55,6 +63,8 @@ En Docker, `docker-compose` inicia MongoDB con un volumen persistente; el backen
 ### Desarrollo Local
 
 ```bash
+# Prepara HTTPS una vez con: npm run https:setup
+
 # En una terminal, iniciar primero el remoto de recursos estáticos (puerto 8300)
 npm run start:mc-static
 
@@ -76,10 +86,10 @@ npm run start:match-creation
 # Iniciar servicio de mazos (puerto 3002)
 npm run start:mc-deck-service
 
-# MongoDB Docker y frontend/backend locales (modo predeterminado)
+# MongoDB Docker y frontend/backend locales
 npm run start:all
 
-# MongoDB local y frontend/backend locales
+# MongoDB local y frontend/backend locales, sin Docker
 npm run start:all:local
 
 # Seleccionar explícitamente MongoDB en Docker
@@ -88,6 +98,9 @@ npm run start:all:docker
 # Iniciar o detener solo MongoDB
 npm run mongo:up
 npm run mongo:down
+
+# Capturar correos localmente (SMTP 1025, bandeja web 8025; detener con Ctrl+C)
+npm run maildev
 ```
 
 ### Docker
@@ -122,7 +135,7 @@ npm run lint:fix
 - **Tecnología**: Lit-Element 4.0, Material Web
 - **Puerto**: 8000
 - **Responsabilidad**: lobby, creación de partidas, navegación y carga diferida de remotos
-- **URL**: http://localhost:8000
+- **URL**: https://localhost:8000
 
 ### Remotos frontend
 - `mc-match` (puerto 8100): interfaz completa de juego, cargada al abrir una partida mediante ES modules nativos.

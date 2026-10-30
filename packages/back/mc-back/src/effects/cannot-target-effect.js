@@ -42,7 +42,7 @@ export class CannotTargetEffect extends Effect {
 
         const matchesEffectType = this.blockedEffectTypes.includes(effect.effectType);
         const matchesEffectCategory = this.blockedEffectCategories.some(category =>
-            effect.effectCategories.includes(category));
+            effect.effectCategories?.includes(category));
         if (!matchesEffectType && !matchesEffectCategory) {
             return false;
         }
@@ -50,15 +50,25 @@ export class CannotTargetEffect extends Effect {
             return false;
         }
         if (this.condition) {
+            const sourceZone = this.match.getScenarioZoneForCard?.(
+                this.ability?.card
+            );
+            const zonePlayer = sourceZone?.players.find(player =>
+                !player.defeated) ?? sourceZone?.players[0];
+            const matchingCards = sourceZone && zonePlayer ?
+                this.match.searchCards(this.condition, zonePlayer) :
+                typeof this.match.searchCards === 'function' ?
+                    this.match.searchCards(this.condition) :
+                    [this.match.searchCard?.(this.condition)].filter(Boolean);
             if (this.conditionTargetMatch) {
                 const targetValue = path(targetCard, this.conditionTargetMatch);
                 if (targetValue === undefined ||
-                    !this.match.searchCards(this.condition).some(card =>
+                    !matchingCards.some(card =>
                         card !== targetCard &&
                         path(card, this.conditionTargetMatch) === targetValue)) {
                     return false;
                 }
-            } else if (!this.match.searchCard(this.condition)) {
+            } else if (!matchingCards.length) {
                 return false;
             }
         }

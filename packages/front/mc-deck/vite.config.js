@@ -2,6 +2,7 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {defineConfig} from 'vite';
+import {getDevelopmentHttpsOptions} from '../dev-https.js';
 
 const packageRoot = fileURLToPath(new URL('.', import.meta.url));
 
@@ -18,7 +19,7 @@ const remoteEntryDevRoute = {
     },
 };
 
-export default defineConfig({
+export default defineConfig(({command}) => ({
     plugins: [remoteEntryDevRoute],
     root: packageRoot,
     publicDir: false,
@@ -27,6 +28,7 @@ export default defineConfig({
         port: 8200,
         strictPort: true,
         cors: true,
+        ...(command === 'serve' ? {https: getDevelopmentHttpsOptions()} : {}),
     },
     build: {
         target: 'es2022',
@@ -41,4 +43,4 @@ export default defineConfig({
             },
         },
     },
-});
+}));

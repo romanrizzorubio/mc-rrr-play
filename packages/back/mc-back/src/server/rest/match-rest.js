@@ -6,6 +6,7 @@ import {
     restoreMatch,
     serializeMatch,
 } from '../../utils/match-serialization.js';
+import {AuthServiceClient} from '../../utils/auth-service-client.js';
 
 const hasCreationConfig = creationConfig =>
     Array.isArray(creationConfig?.players) &&
@@ -24,11 +25,31 @@ export class MatchRest {
     get mc() {
         return this.rest.mc;
     }
+    async getStartingLobby(match, cookie) {
+        const user = await AuthServiceClient.authenticate(cookie);
+        if (user.id !== match.creatorUserId) {
+            const error = new Error('Solo el creador puede configurar esta partida.');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        const lobby = await this.mc.data.getMatchLobby(match.lobbyId);
+        if (!lobby || lobby.status !== 'starting' ||
+            lobby.creatorId !== match.creatorUserId) {
+            const error = new Error('La sala ya no está disponible para iniciar.');
+            error.statusCode = 409;
+            throw error;
+        }
+
+        return lobby;
+    }
     async createMatchFromCreationConfig(currentMatch, creationConfig) {
         const match = new Match({
             mc: this.mc,
             name: currentMatch.name,
             id: currentMatch.id,
+            lobbyId: currentMatch.lobbyId,
+            creatorUserId: currentMatch.creatorUserId,
         });
         match.creationConfig = structuredClone(creationConfig);
         match.expert = currentMatch.expert ??
@@ -41,7 +62,12 @@ export class MatchRest {
             const superhero = matchFactory.createSuperhero(config);
 
             match.createPlayer({
+                id: playerConfig.id ??
+                    currentMatch.players.find(player =>
+                        player.name === playerConfig.name &&
+                        player.userId === playerConfig.userId)?.id,
                 name: playerConfig.name,
+                userId: playerConfig.userId,
                 superhero,
                 initial: playerConfig.initial,
                 config,
@@ -64,15 +90,39 @@ export class MatchRest {
         this.rest.post(INTERNAL_ENDPOINTS.MATCH.RESET, this.resetMatch.bind(this));
         this.rest.delete(INTERNAL_ENDPOINTS.MATCH.DELETE, this.deleteMatch.bind(this));
     }
-    createMatch({name}) {
-        if (this.mc.getMatch(name)) {
-            throw new Error(`Ya existe una partida llamada "${name}".`);
+    async createMatch({name, lobbyId, cookie}) {
+        let creatorUserId;
+        let startingMatch;
+        if (lobbyId) {
+            const user = await AuthServiceClient.authenticate(cookie);
+            const lobby = await this.mc.data.getMatchLobby(lobbyId);
+            startingMatch = lobby?.startingMatch;
+            if (!lobby || lobby.status !== 'starting' ||
+                lobby.creatorId !== user.id || startingMatch?.name !== name) {
+                const error = new Error('La sala no puede iniciar una partida con esta configuración.');
+                error.statusCode = 403;
+                throw error;
+            }
+            creatorUserId = user.id;
+        }
+        const existingMatch = this.mc.getMatch(name);
+        if (existingMatch) {
+            if (lobbyId && existingMatch.lobbyId === lobbyId &&
+                existingMatch.creatorUserId === creatorUserId &&
+                existingMatch.id === startingMatch.id) {
+                return existingMatch.toObj();
+            }
+
+            const error = new Error(`Ya existe una partida llamada "${name}".`);
+            error.statusCode = 409;
+            throw error;
         }
 
         const match = new Match({
             name,
-            id: randomUUID(),
+            id: lobbyId ? startingMatch.id : randomUUID(),
             mc: this.mc,
+            ...(lobbyId ? {lobbyId, creatorUserId} : {}),
         });
 
         this.mc.setMatch(match);
@@ -99,6 +149,12 @@ export class MatchRest {
             error.statusCode = 409;
             throw error;
         }
+        const user = await AuthServiceClient.authenticate(params.cookie);
+        if (currentMatch.creatorUserId !== user.id) {
+            const error = new Error('Solo el creador puede reiniciar esta partida.');
+            error.statusCode = 403;
+            throw error;
+        }
         if (this.resettingMatches.has(currentMatch.name)) {
             const error = new Error(`La partida "${currentMatch.name}" ya se está reiniciando.`);
             error.statusCode = 409;
@@ -122,12 +178,16 @@ export class MatchRest {
                     mc: this.mc,
                     name: currentMatch.name,
                     id: currentMatch.id,
+                    lobbyId: currentMatch.lobbyId,
+                    creatorUserId: currentMatch.creatorUserId,
                 });
                 const matchFactory = new MatchFactory(match);
                 currentMatch.players.forEach(player => {
                     const superhero = matchFactory.createSuperhero(player.config);
                     match.createPlayer({
+                        id: player.id,
                         name: player.name,
+                        userId: player.userId,
                         superhero,
                         initial: player.initial,
                         config: player.config,
@@ -176,6 +236,8 @@ export class MatchRest {
 
             match.id = currentMatch.id;
             match.name = currentMatch.name;
+            match.creatorUserId = currentMatch.creatorUserId;
+            match.lobbyId = currentMatch.lobbyId;
             match.expert = currentMatch.expert ??
                 currentMatch.creationConfig?.expert ??
                 match.expert ??
@@ -207,24 +269,61 @@ export class MatchRest {
             this.resettingMatches.delete(currentMatch.name);
         }
     }
-    getMatchesList() {
-        return Object.values(this.mc.matches).map(match => ({
-            ...(match.id ? {id: match.id} : {}),
-            name: match.name,
-            initialized: match.initialized,
-            initializing: match.initializing,
-            playing: match.playing,
-            scenario: match.scenario?.name ?? '',
-            players: match.players.map(player => ({
-                name: player.name,
-                hero: player.superhero.mainName,
-                aspect: player.config.aspect,
-            })),
-        }));
+    async getMatchesList({cookie}) {
+        const user = await AuthServiceClient.authenticate(cookie);
+        const scenarios = await this.mc.data.getScenariosList();
+        const scenarioNames = new Map(scenarios.map(scenario => [
+            scenario.folder,
+            scenario.name,
+        ]));
+
+        return Object.values(this.mc.matches)
+            .filter(match => match.creatorUserId === user.id ||
+                match.players.some(player => player.userId === user.id))
+            .map(match => ({
+                ...(match.id ? {id: match.id} : {}),
+                name: match.name,
+                ...(match.creatorUserId ? {creatorUserId: match.creatorUserId} : {}),
+                initialized: match.initialized,
+                initializing: match.initializing,
+                playing: match.playing,
+                scenario: match.scenario?.name ?? '',
+                scenarioName: scenarioNames.get(match.scenario?.name) ??
+                    match.scenario?.name ?? '',
+                players: match.players.map(player => ({
+                    ...(player.id ? {id: player.id} : {}),
+                    ...(player.userId ? {userId: player.userId} : {}),
+                    name: player.name,
+                    hero: player.superhero.mainName,
+                    aspect: player.config.aspect,
+                })),
+            }));
     }
-    async deleteMatch({name}) {
-        if (!name) {
-            throw new Error('Falta el nombre de la partida que se quiere eliminar.');
+    async deleteMatch({name, cookie}) {
+        if (typeof name !== 'string' || !name.trim()) {
+            const error = new Error('Falta el nombre de la partida que se quiere eliminar.');
+            error.statusCode = 400;
+            throw error;
+        }
+        const user = await AuthServiceClient.authenticate(cookie);
+        let match = this.mc.getMatch(name);
+        if (!match) {
+            const snapshot = await this.mc.data.getMatchSnapshot(name);
+            match = this.mc.getMatch(name) ||
+                (snapshot ? restoreMatch(snapshot, this.mc) : null);
+            if (!match) {
+                return {name};
+            }
+        }
+        if (match.name !== name) {
+            const error = new Error('El nombre no corresponde a la partida que se quiere eliminar.');
+            error.statusCode = 409;
+            throw error;
+        }
+        if (match.creatorUserId !== user.id) {
+            const error = new Error('Solo el creador puede eliminar esta partida.');
+            error.statusCode = 403;
+            throw error;
         }
 
         await this.mc.deleteMatch(name);
@@ -232,7 +331,7 @@ export class MatchRest {
         return {name};
     }
     async initMatch(params) {
-        const {match, expert} = params;
+        const {match} = params;
 
         if (match.initializing) {
             throw new Error(`La partida "${match.name}" ya se está inicializando.`);
@@ -240,7 +339,10 @@ export class MatchRest {
 
         match.initializing = true;
         try {
-            match.expert = expert ?? false;
+            const lobby = match.lobbyId ?
+                await this.getStartingLobby(match, params.cookie) :
+                null;
+            match.expert = lobby?.expert ?? params.expert ?? false;
             match.creationConfig ??= {players: [], scenario: null, expert: false};
             match.creationConfig.expert = match.expert;
             await match.initMatch(match.expert);

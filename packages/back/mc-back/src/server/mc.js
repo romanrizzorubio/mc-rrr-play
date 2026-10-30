@@ -1,8 +1,7 @@
-import {createServer} from 'node:http';
-
 import express from 'express';
 import {Server} from 'socket.io';
 import {MongoDataStore} from 'mc-data';
+import {createHttpsServiceServer} from 'mc-server-utils';
 
 import {restoreMatch, serializeMatch} from '../utils/match-serialization.js';
 import {McRest} from './rest/mc-rest.js';
@@ -117,11 +116,16 @@ export class Mc {
     async init() {
         await this.data.connect();
         this.app = express();
-        this.server = createServer(this.app);
+        this.server = createHttpsServiceServer(this.app);
+        const allowedOrigins = (
+            process.env.FRONTEND_ORIGINS ||
+            'https://localhost:8000,https://localhost:8100'
+        ).split(',').map(origin => origin.trim()).filter(Boolean);
         this.io = new Server(this.server, {
             connectionStateRecovery: {},
             cors: {
-                origin: '*'
+                origin: allowedOrigins,
+                credentials: true,
             }
         });
 
@@ -131,7 +135,7 @@ export class Mc {
 
         const port = Number(process.env.PORT || 3000);
         this.server.listen(port, () => {
-            console.log(`match service running at http://localhost:${port}`);
+            console.log(`match service running at https://localhost:${port}`);
         });
     }
     async close() {

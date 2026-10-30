@@ -1,6 +1,12 @@
 import {DIALOG_ACCELERATE,TARGET_MAIN_SCHEME} from 'mc-shared';
 
 import {Calc} from '../engine/calc.js';
+import {
+    getAccelerationIconsFor,
+    getAccelerationPlusFor,
+    getAccelerationTokensFor,
+    getMainSchemeFor,
+} from '../utils/match-zone-utils.js';
 import {Effect} from './effect.js';
 import {PlaceThreatEffect} from './place-threat-effect.js';
 
@@ -26,9 +32,15 @@ export class AccelerateSchemeEffect extends Effect {
         return value;
     }
     async prepare(params) {
-        const mainScheme = this.match.mainScheme;
+        const mainScheme = getMainSchemeFor(this.match, params.player);
+        if (!mainScheme) {
+            throw new Error('No hay un Plan principal en la zona del jugador.');
+        }
         this.accelerationBase = await this.getAccelerationBase(mainScheme, params);
-        const {accelerationIcons, accelerationTokens} = this.match;
+        const accelerationIcons =
+            getAccelerationIconsFor(this.match, params.player);
+        const accelerationTokens =
+            getAccelerationTokensFor(this.match, params.player);
         const accelerate = this.accelerationBase + accelerationIcons + accelerationTokens;
         await this.openDialog({
             dialogType: DIALOG_ACCELERATE,
@@ -48,7 +60,8 @@ export class AccelerateSchemeEffect extends Effect {
         const accelerationBase = Number.isFinite(this.accelerationBase) ?
             this.accelerationBase :
             await this.getAccelerationBase(selectedTarget, params);
-        const threat = accelerationBase + match.accelerationPlus;
+        const threat = accelerationBase +
+            getAccelerationPlusFor(match, params.player);
 
         const placeThreatEffect = new PlaceThreatEffect({
             isAccelerationThreat: true,

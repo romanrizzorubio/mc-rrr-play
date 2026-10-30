@@ -8,6 +8,10 @@ import {
 
 import {Activation} from './activation.js';
 import {RetaliateTrigger} from '../triggers/retaliate-trigger.js';
+import {
+    getEnemiesFor,
+    getVillainFor,
+} from '../utils/match-zone-utils.js';
 
 export class Attack extends Activation {
     constructor({}) {
@@ -16,14 +20,14 @@ export class Attack extends Activation {
         this.takenDamage = 0;
         this.attackedTargets = undefined;
     }
-    async applyOverkill(params) {
-        const selectedTarget = this.effect.attacked || this.selectedTarget;
+    async applyOverkill(params, effect = this.effect) {
+        const selectedTarget = effect.attacked || effect.selectedTarget;
 
         this.attackedTargets = Array.isArray(selectedTarget) ?
             selectedTarget.slice() :
             [selectedTarget];
 
-        const damage = this.effect.getEffectProperty('damage', params);
+        const damage = effect.getEffectProperty('damage', params);
 
         if (damage && selectedTarget) {
             const controller = this.getController(selectedTarget);
@@ -35,8 +39,8 @@ export class Attack extends Activation {
                 }
 
                 if (this.excessDamage > 0) {
-                    this.selectedTarget = [selectedTarget, controller];
-                    this.effect.setEffectProperty('damage', [damage, this.excessDamage], params);
+                    effect.selectedTarget = [selectedTarget, controller];
+                    effect.setEffectProperty('damage', [damage, this.excessDamage], params);
                 }
             }
         }
@@ -62,7 +66,15 @@ export class Attack extends Activation {
             return;
         }
 
-        const enemyIsInPlay = this.match.enemies.some(enemy =>
+        const player = character?.owner?.isPlayer ?
+            character.owner :
+            character?.controller?.isPlayer ?
+                character.controller :
+                undefined;
+        const enemies = player ?
+            getEnemiesFor(this.match, player) :
+            this.match.enemies;
+        const enemyIsInPlay = enemies.some(enemy =>
             enemy === target || enemy.currentSide === target);
         if (target.isEnemy && !enemyIsInPlay) {
             return;
@@ -127,7 +139,10 @@ export class Attack extends Activation {
     }
     getController(selectedTarget = this.selectedTarget) {
         if (selectedTarget.isMinion) {
-            return this.match.villain;
+            const player = selectedTarget.engaged ??
+                this.character?.owner ??
+                this.character?.controller;
+            return getVillainFor(this.match, player);
         } else if (selectedTarget.isAlly) {
             return selectedTarget.controller;
         }
@@ -148,7 +163,12 @@ export class Attack extends Activation {
             return changed ? targets : target;
         }
 
-        const currentVillain = this.match.villain;
+        const currentVillain = target?.scenarioZone ?
+            target.scenarioZone.currentVillain :
+            getVillainFor(
+                this.match,
+                this.character?.owner ?? this.character?.controller
+            );
 
         if (target?.isVillain &&
             !target.isInPlay &&
@@ -196,7 +216,7 @@ export class Attack extends Activation {
         };
     }
     getOverkill(params) {
-        return this.effect.getEffectProperty('keywords.overkill', params);
+        return this.effect.getEffectProperty('overkill', params);
     }
     resolveStatus() {
         const {character} = this;

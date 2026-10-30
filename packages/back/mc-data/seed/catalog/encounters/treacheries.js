@@ -26,7 +26,7 @@ export const gangUp = {
     type: CARD_TYPE_TREACHERY,
     params: {
         name: 'Todos a una',
-        image: 'sets/standard/standard6.webp',
+        image: 'sets/standard/01189.png',
         boost: 1,
         abilities: [
             {

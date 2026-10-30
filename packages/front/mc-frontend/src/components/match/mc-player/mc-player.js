@@ -18,6 +18,7 @@ export class McPlayer extends LitElement {
         return {
             player: {type: Object},
             canEndTurn: {type: Boolean},
+            firstPlayerTokenUrl: {type: String},
             deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
@@ -29,6 +30,7 @@ export class McPlayer extends LitElement {
 
         this.player = null;
         this.canEndTurn = false;
+        this.firstPlayerTokenUrl = '';
         this.deckSelectionTargetIds = [];
         this.dragActivation = null;
         this.dragPlayCard = null;
@@ -82,6 +84,7 @@ export class McPlayer extends LitElement {
                 handSize,
                 superhero,
                 gameZone,
+                initial,
             },
         } = this;
         const {
@@ -93,37 +96,42 @@ export class McPlayer extends LitElement {
         const obligations = gameZone?.cards?.filter(card => card.isObligation) || [];
 
         return html`
-            <mc-superhero-card
-                class="panel"
-                name="${name}"
-                image="${image}"
-                .activationActor="${superhero}"
-                .dragActivation="${this.dragActivation}"
-                .dragPlayCard="${this.dragPlayCard}"
-                .dragResourcePayment="${this.dragResourcePayment}"
-                .card="${superhero}"
-                .canEndTurn="${this.canEndTurn}"
-                .life="${life}"
-                .hitPoints="${hitPoints}"
-                .handSize="${handSize}"
-                .attack="${attack}"
-                .thwart="${thwart}"
-                .defense="${defense}"
-                .recovery="${recovery}"
-                .abilities="${abilities}"
-                .extraTraits="${extraTraits}"
-                .extraKeywords="${extraKeywords}"
-                .aspectMarkers="${aspectMarkers}"
-                .flipped="${flipped}"
-                .statusCards="${statusCards}"
-                .canFlip="${canFlip}"
-                .attached="${attachedCards}"
-                .tuckedCards="${tuckedCards}"
-                .obligations="${obligations}"
-                .exhausted="${exhausted}"
-                @change-menu="${this.handleChangeMenu.bind(this)}"
-                @superhero-ability="${this.handelSuperheroAbility.bind(this)}"
-            ></mc-superhero-card>
+            <div class="superhero-card-container">
+                <mc-superhero-card
+                    class="panel"
+                    name="${name}"
+                    image="${image}"
+                    .firstPlayerTokenUrl="${initial ?
+                        this.firstPlayerTokenUrl :
+                        ''}"
+                    .activationActor="${superhero}"
+                    .dragActivation="${this.dragActivation}"
+                    .dragPlayCard="${this.dragPlayCard}"
+                    .dragResourcePayment="${this.dragResourcePayment}"
+                    .card="${superhero}"
+                    .canEndTurn="${this.canEndTurn}"
+                    .life="${life}"
+                    .hitPoints="${hitPoints}"
+                    .handSize="${handSize}"
+                    .attack="${attack}"
+                    .thwart="${thwart}"
+                    .defense="${defense}"
+                    .recovery="${recovery}"
+                    .abilities="${abilities}"
+                    .extraTraits="${extraTraits}"
+                    .extraKeywords="${extraKeywords}"
+                    .aspectMarkers="${aspectMarkers}"
+                    .flipped="${flipped}"
+                    .statusCards="${statusCards}"
+                    .canFlip="${canFlip}"
+                    .attached="${attachedCards}"
+                    .tuckedCards="${tuckedCards}"
+                    .obligations="${obligations}"
+                    .exhausted="${exhausted}"
+                    @change-menu="${this.handleChangeMenu.bind(this)}"
+                    @superhero-ability="${this.handelSuperheroAbility.bind(this)}"
+                ></mc-superhero-card>
+            </div>
         `;
     }
     renderGameZone() {

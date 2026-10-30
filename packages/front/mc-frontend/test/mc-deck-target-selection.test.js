@@ -58,6 +58,9 @@ const createPage = ({scenarioDeck, players}) => {
         deckTargetDocumentClickHandler: null,
         deckTargetDocumentClickListenerAttached: false,
         match: {
+            phase: 'players',
+            currentTurnPlayer: 'Jessica Drew',
+            actionRequest: null,
             scenario: {deck: scenarioDeck},
             players,
         },
@@ -102,6 +105,7 @@ describe('deck target selection', () => {
         await flushMicrotasks();
 
         assert.deepEqual(page.deckTargetSelection, {
+            player: 'Jessica Drew',
             cardId: 'generic-look-action',
             abilityIndex: 0,
             targetIds: [
@@ -249,15 +253,18 @@ describe('deck target selection', () => {
             dragResourcePayment: null,
             match: null,
             playCardPending: false,
+            interactive: true,
             player,
         });
         const template = match.render();
         const handTemplate = template.values.find(value =>
             value?.strings?.join('').includes('<mc-hand')
         );
+        const handIndex = template.values.indexOf(handTemplate);
 
         assert.ok(handTemplate);
         assert.equal(handTemplate.values[0], player.hand);
-        assert.ok(template.strings[4].includes('</div>'));
+        assert.match(template.strings[handIndex], /<\/div>\s*$/u);
+        assert.equal(handIndex, template.values.length - 1);
     });
 });

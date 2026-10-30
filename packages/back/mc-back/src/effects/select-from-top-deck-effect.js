@@ -30,6 +30,7 @@ export class SelectFromTopDeckEffect extends Effect {
         if (cards.length > 0) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,
+                targetPlayer: player,
                 title: title,
                 data: {
                     cards: cards.map(card => card.toObj(arguments[0])),

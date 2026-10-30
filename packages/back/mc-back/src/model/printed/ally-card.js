@@ -52,6 +52,7 @@ export class AllyCard extends MixinFriendFrontCard(MixinCharacterCard(PlayerCard
 
             const response = await this.openDialog({
                 dialogType: DIALOG_MAX_CARDS,
+                targetPlayer: player,
                 title: 'Aliados',
                 showCancel: true,
                 data: {

@@ -23,6 +23,7 @@ export class McDefenseDialog extends McDialog {
             data: {
                 count: 0,
                 cards: [],
+                players: [],
             },
             _response: {
                 defender: null
@@ -51,15 +52,21 @@ export class McDefenseDialog extends McDialog {
 
         this.sendResponse();
     }
+    handleDefenseRequest(e) {
+        this._response = {defendingPlayerId: e.detail.player.id};
+        this.sendResponse();
+    }
     renderContent() {
-        const {data: {attack, defenders}, hideOk} = this;
+        const {data: {attack, defenders, players}, hideOk} = this;
 
         return attack ? html`
             <mc-defense
                 .attack="${attack}"
                 .defenders="${defenders}"
+                .players="${players}"
                 .mustDefend="${hideOk}"
                 @select-defender="${this.handleDefenseSelect.bind(this)}"
+                @request-defense="${this.handleDefenseRequest.bind(this)}"
             ></mc-defense>
         ` : html``;
     }

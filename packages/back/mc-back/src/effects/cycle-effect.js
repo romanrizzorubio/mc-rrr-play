@@ -1,9 +1,10 @@
 import {AddAccelerationTokenEffect} from './add-acceleration-token-effect.js';
 import {DealEncounterEffect} from './deal-encounter-effect.js';
 import {Effect} from './effect.js';
+import {getMainSchemeFor} from '../utils/match-zone-utils.js';
 
 export class CycleEffect extends Effect {
-    async execute(_params) {
+    async execute(params) {
         const {selectedTarget} = this;
 
         if (selectedTarget.isPlayerDeck) {
@@ -16,14 +17,17 @@ export class CycleEffect extends Effect {
                 player: selectedTarget.owner,
             });
         } else if (selectedTarget.isScenarioDeck) {
-            const addAccelerationTokenEffect = new AddAccelerationTokenEffect({
-                selectedTarget: this.match.mainScheme,
-                match: this.match,
-            });
+            const mainScheme = getMainSchemeFor(this.match, params.player);
+            if (mainScheme && !mainScheme.isPlayer) {
+                const addAccelerationTokenEffect = new AddAccelerationTokenEffect({
+                    selectedTarget: mainScheme,
+                    match: this.match,
+                });
 
-            await addAccelerationTokenEffect.runEffect({
-                player: selectedTarget.owner,
-            });
+                await addAccelerationTokenEffect.runEffect({
+                    player: params.player ?? this.match.initialPlayer,
+                });
+            }
         } else if (selectedTarget.isPlayerExtraDeck) {
             selectedTarget.cycle();
         }

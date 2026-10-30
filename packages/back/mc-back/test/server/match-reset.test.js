@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {describe, test} from 'node:test';
+import {afterEach, beforeEach, describe, test} from 'node:test';
 
 import {BSON} from 'mongodb';
 import {Match} from '../../src/model/match/match.js';
@@ -10,8 +10,23 @@ import {serializeMatch} from '../../src/utils/match-serialization.js';
 import {EVENTS} from 'mc-endpoints';
 import riskyBusiness from '../../../mc-data/seed/catalog/scenarios/risky-business.js';
 import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
+import {AuthServiceClient} from '../../src/utils/auth-service-client.js';
 
 describe('match reset', () => {
+    const authenticate = AuthServiceClient.authenticate;
+    beforeEach(() => {
+        AuthServiceClient.authenticate = async cookie => {
+            if (!cookie) {
+                const error = new Error('Debes iniciar sesión.');
+                error.statusCode = 401;
+                throw error;
+            }
+            return {id: cookie === 'session=creator' ? 'creator' : 'guest'};
+        };
+    });
+    afterEach(() => {
+        AuthServiceClient.authenticate = authenticate;
+    });
     test('Mc resolves a match by its stable ID', () => {
         const match = {id: 'stable-match-id', name: 'match-name'};
         const mc = Object.assign(Object.create(Mc.prototype), {
@@ -27,7 +42,7 @@ describe('match reset', () => {
         const id = 'stable-match-id';
         const initialMatch = new Match({mc: {}, name, id});
         initialMatch.expert = true;
-        const currentMatch = new Match({mc: {}, name, id});
+        const currentMatch = new Match({mc: {}, name, id, creatorUserId: 'creator'});
         currentMatch.creationSnapshot = serializeMatch(initialMatch);
         currentMatch.initialized = true;
         currentMatch.expert = true;
@@ -72,13 +87,14 @@ describe('match reset', () => {
         };
 
         try {
-            const params = {id, match: currentMatch};
+            const params = {id, match: currentMatch, cookie: 'session=creator'};
             const result = await matchRest.resetMatch(params);
             const resetMatch = mc.matches[name];
 
             assert.notEqual(resetMatch, currentMatch);
             assert.equal(resetMatch.id, id);
             assert.equal(resetMatch.name, name);
+            assert.equal(resetMatch.creatorUserId, 'creator');
             assert.equal(resetMatch.expert, true);
             assert.equal(params.match, resetMatch);
             assert.deepEqual(result, {id, name});
@@ -108,7 +124,7 @@ describe('match reset', () => {
                 },
             },
         };
-        const currentMatch = new Match({mc, name, id});
+        const currentMatch = new Match({mc, name, id, creatorUserId: 'creator'});
         const player = currentMatch.createPlayer({
             name: 'Peter',
             superhero: new MatchFactory(currentMatch).createSuperhero(playerConfig),
@@ -194,6 +210,7 @@ describe('match reset', () => {
             const result = await matchRest.resetMatch({
                 id,
                 match: currentMatch,
+                cookie: 'session=creator',
             });
 
             assert.deepEqual(result.players, [{
@@ -218,7 +235,7 @@ describe('match reset', () => {
         const name = 'legacy-match';
         const id = 'legacy-match-id';
         const playerConfig = {id: 'she-hulk', aspect: 'leadership'};
-        const currentMatch = new Match({mc: {}, name, id});
+        const currentMatch = new Match({mc: {}, name, id, creatorUserId: 'creator'});
         currentMatch.initialized = true;
         currentMatch.expert = true;
         currentMatch.players = [{
@@ -291,7 +308,7 @@ describe('match reset', () => {
         const matchRest = new MatchRest({mc});
 
         try {
-            await matchRest.resetMatch({id, match: currentMatch});
+            await matchRest.resetMatch({id, match: currentMatch, cookie: 'session=creator'});
 
             const resetMatch = mc.matches[name];
             assert.notEqual(resetMatch, currentMatch);
@@ -349,5 +366,49 @@ describe('match reset', () => {
         await oldMatch.refresh();
 
         assert.equal(sent, false);
+    });
+
+    test('rejects unauthenticated users, guests, and forged creator payloads before resetting', async () => {
+        const match = new Match({
+            name: 'private-reset',
+            id: 'private-reset-id',
+            creatorUserId: 'creator',
+        });
+        match.playing = true;
+        const rest = new MatchRest({
+            mc: {getMatchById: () => match},
+        });
+        await assert.rejects(
+            rest.resetMatch({id: match.id}),
+            error => error.statusCode === 401,
+        );
+        await assert.rejects(
+            rest.resetMatch({
+                id: match.id,
+                cookie: 'session=guest',
+                creatorUserId: 'guest',
+                userId: 'creator',
+                user: {id: 'creator'},
+            }),
+            error => error.statusCode === 403,
+        );
+        assert.equal(match.playing, true);
+        assert.equal(rest.resettingMatches.size, 0);
+    });
+
+    test('does not grant reset permission to matches with no recorded creator', async () => {
+        const match = new Match({name: 'legacy', id: 'legacy-id'});
+        const rest = new MatchRest({mc: {getMatchById: () => match}});
+        await assert.rejects(
+            rest.resetMatch({id: match.id, cookie: 'session=creator'}),
+            error => error.statusCode === 403,
+        );
+    });
+
+    test('publishes the recorded creator in match snapshots for both clients', () => {
+        const match = new Match({
+            name: 'creator-snapshot', creatorUserId: 'creator',
+        });
+        assert.equal(match.toObj().creatorUserId, 'creator');
     });
 });

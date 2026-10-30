@@ -61,8 +61,10 @@ test('RevealEncounterEffect only shows the supplied encounter card', async () =>
         match: {},
     });
     let revealedCard;
-    effect.openDialog = async ({data}) => {
+    effect.openDialog = async ({data, targetPlayer, showToAll}) => {
         revealedCard = data.card;
+        assert.strictEqual(targetPlayer, player);
+        assert.equal(showToAll, true);
     };
 
     assert.equal(await effect.canRun({player}), true);
@@ -602,6 +604,7 @@ test('nested reveals skip dealt cards already consumed by another reveal', async
     const revealed = [];
     const player = {
         encounters: [first, second, third],
+        match: {gameOverReason: null},
         async revealEncounterCard(card) {
             revealed.push(card);
             if (card === first) {

@@ -20,6 +20,7 @@ export class Lasting extends Engine {
         endEffect,
         useTriggerPlayer = false,
         condition,
+        triggerParams,
         selectedTarget,
         triggerCard = card,
         until = TIME_PHASE,
@@ -33,6 +34,7 @@ export class Lasting extends Engine {
         this.endEffect = endEffect;
         this.useTriggerPlayer = useTriggerPlayer;
         this.condition = condition;
+        this.triggerParams = triggerParams;
         this.selectedTarget = selectedTarget;
         this.triggerCard = triggerCard;
         this.until = until;
@@ -50,6 +52,11 @@ export class Lasting extends Engine {
             });
         } else {
             const trigger = TIME_TRIGGER_MAP[until] ?? until;
+            const isCardPlayEnd = [
+                TRIGGER_END_PLAY_CARD,
+                TRIGGER_THIS_END_PLAY_CARD,
+                TRIGGER_YOU_END_PLAY_CARD,
+            ].includes(trigger);
             const endLastingAbility = new EndLastingAbility({
                 card: this.card,
                 trigger,
@@ -59,13 +66,8 @@ export class Lasting extends Engine {
                 }),
                 match: this.match,
                 hideDialog: true,
-                condition: [
-                    TRIGGER_END_PLAY_CARD,
-                    TRIGGER_THIS_END_PLAY_CARD,
-                    TRIGGER_YOU_END_PLAY_CARD,
-                ].includes(trigger) ?
-                    this.condition :
-                    undefined,
+                condition: isCardPlayEnd ? this.condition : undefined,
+                triggerParams: isCardPlayEnd ? this.triggerParams : undefined,
             });
 
             endLastingAbility.initTriggers(triggerCard);

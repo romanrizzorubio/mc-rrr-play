@@ -60,6 +60,44 @@ describe('game zone', () => {
         );
     });
 
+    test('includes the local player id when dropping an assigned card on their zone', () => {
+        const card = {id: 'shared-upgrade'};
+        const zone = Object.assign(
+            Object.create(McGameZone.prototype),
+            {
+                player: {id: 'local-id'},
+                dragPlayCard: {
+                    card,
+                    playableInGameZone: true,
+                    playablePlayerIds: ['local-id'],
+                },
+            },
+        );
+        let dispatchedEvent;
+
+        zone.dispatchEvent = event => {
+            dispatchedEvent = event;
+        };
+        zone.handlePlayCardDrop({
+            preventDefault() {},
+            stopPropagation() {},
+        });
+
+        assert.equal(dispatchedEvent.type, 'play-card-drop');
+        assert.deepEqual(dispatchedEvent.detail, {
+            card,
+            targetId: 'local-id',
+        });
+
+        zone.dragPlayCard.playablePlayerIds = ['other-id'];
+        dispatchedEvent = undefined;
+        zone.handlePlayCardDrop({
+            preventDefault() {},
+            stopPropagation() {},
+        });
+        assert.equal(dispatchedEvent, undefined);
+    });
+
     test('shows an assigned encounter count only when multiple cards are present', () => {
         const renderEncounters = encounters => Object.assign(
             Object.create(McGameZone.prototype),

@@ -62,6 +62,7 @@ describe('discard until and engage effects', () => {
 
     test('DiscardUntilEffect can show only the matching card before it enters play', async () => {
         const dialogs = [];
+        const player = {id: 'resolving-player'};
         const environment = {
             id: 'environment',
             isEnvironment: true,
@@ -86,10 +87,12 @@ describe('discard until and engage effects', () => {
             title: 'Entorno que entra en juego',
         });
 
-        await effect.execute({});
+        await effect.execute({player});
 
         assert.deepEqual(dialogs, [{
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            targetPlayer: player,
+            showToAll: true,
             title: 'Entorno que entra en juego',
             data: {
                 card: {id: environment.id, name: 'Entorno'},
@@ -158,6 +161,8 @@ describe('discard until and engage effects', () => {
         assert.deepEqual(events, ['engage', 'refresh', 'dialog']);
         assert.deepEqual(dialogs, [{
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            targetPlayer: initialPlayer,
+            showToAll: true,
             title: 'Esbirro puesto en juego',
             data: {
                 card: {id: minion.id, name: minion.name},

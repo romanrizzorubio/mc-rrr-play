@@ -15,7 +15,14 @@ export class McRest {
         this.scenarioRest = new ScenarioRest(this);
     }
     createEndpoints() {
-        this.mc.app.use(cors());
+        const allowedOrigins = (
+            process.env.FRONTEND_ORIGINS ||
+            'https://localhost:8000,https://localhost:8100'
+        ).split(',').map(origin => origin.trim()).filter(Boolean);
+        this.mc.app.use(cors({
+            origin: allowedOrigins,
+            credentials: true,
+        }));
         this.mc.app.use(bodyParser.json()); // for parsing application/json
         this.mc.app.get('/healthz', (_req, res) => {
             res.json({status: 'ok'});
@@ -68,6 +75,7 @@ export class McRest {
             Promise.resolve()
                 .then(() => callback({
                     match: this.getMatch(req.headers.match),
+                    cookie: req.headers.cookie,
                 }))
                 .then(response => res.send(response))
                 .catch(next);
@@ -78,6 +86,7 @@ export class McRest {
             const params = {
                 ...req.body,
                 match: this.getMatch(req.headers.match),
+                cookie: req.headers.cookie,
             };
 
             Promise.resolve()
@@ -87,6 +96,12 @@ export class McRest {
                         (params.name && this.getMatch(params.name));
                     if (match && match.initialized) {
                         await this.mc.persistMatch(match);
+                        if (match.lobbyId) {
+                            await this.mc.data.markMatchLobbyStarted(
+                                match.lobbyId,
+                                {id: match.id, name: match.name},
+                            );
+                        }
                     }
                     res.send(response);
                 })
@@ -96,7 +111,7 @@ export class McRest {
     delete(endpoint, callback) {
         this.mc.app.delete(endpoint, (req, res, next) => {
             Promise.resolve()
-                .then(() => callback(req.body))
+                .then(() => callback({...req.body, cookie: req.headers.cookie}))
                 .then(response => res.send(response))
                 .catch(next);
         });

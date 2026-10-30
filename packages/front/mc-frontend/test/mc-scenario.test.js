@@ -30,6 +30,59 @@ const assertUnprintedStatsForwarded = (template, unprintedStats) => {
 };
 
 describe('Scenario component', () => {
+    test('keeps a single scenario area in the original top-level layout', () => {
+        const zone = {};
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {zones: [zone]},
+            renderDeck: () => 'encounter deck',
+            renderSchemes: () => 'main and side schemes',
+            renderEnvironments: () => 'environments',
+            renderVillain: () => 'villain',
+        });
+
+        const template = component.render();
+        const scenarioTemplate = template.values[1];
+
+        assert.equal(template.values[0], 'encounter deck');
+        assert.deepEqual(scenarioTemplate.values, [
+            'main and side schemes',
+            'environments',
+            'villain',
+        ]);
+        assert.doesNotMatch(scenarioTemplate.strings.join(''), /scenario-zones/);
+    });
+
+    test('groups split-zone cards horizontally beneath their player label', () => {
+        const zones = [
+            {id: 'zone-1', players: ['Hulka']},
+            {id: 'zone-2', players: ['Mapache Cohete']},
+        ];
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {zones},
+            renderSchemes: () => 'schemes',
+            renderEnvironments: () => 'environments',
+            renderVillain: () => 'villain',
+        });
+
+        const template = component.renderZones(zones);
+        const zoneTemplates = template.values[0];
+
+        assert.match(template.strings.join(''), /class="scenario-zones"/);
+        assert.equal(zoneTemplates.length, 2);
+        for (const zoneTemplate of zoneTemplates) {
+            assert.match(
+                zoneTemplate.values[0].strings.join(''),
+                /class="zone-players"/
+            );
+            assert.match(zoneTemplate.strings.join(''), /class="scenario-zone-cards"/);
+            assert.deepEqual(zoneTemplate.values.slice(1), [
+                'schemes',
+                'environments',
+                'villain',
+            ]);
+        }
+    });
+
     test('scenario environments render their generic counters', () => {
         const environment = {isEnvironment: true};
         const sideScheme = {isSideScheme: true};

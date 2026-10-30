@@ -1,7 +1,12 @@
-import {path} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 
 const MAX_OPERATOR = 'max';
 const MAX_CONDITION_KEYS = new Set(['operator', 'defaultValue']);
+
+export const filterTargetsByCondition = (targets, condition) =>
+    condition ?
+        targets.filter(target => checkCondition(target, condition)) :
+        targets;
 
 const getMaxCondition = (condition, property) => {
     if (!condition || typeof condition !== 'object' ||

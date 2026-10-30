@@ -3,6 +3,7 @@ import cors from 'cors';
 import express from 'express';
 
 import {ENDPOINTS, INTERNAL_ENDPOINTS} from 'mc-endpoints';
+import {MatchLobbyRest} from './match-lobby-rest.js';
 
 const proxyRoutes = new Map([
     [ENDPOINTS.MATCH.CREATE, INTERNAL_ENDPOINTS.MATCH.CREATE],
@@ -57,7 +58,8 @@ const sendError = (error, _req, res, next) => {
 
 export const createMatchCreationApp = ({
     data,
-    matchServiceUrl = process.env.MATCH_SERVICE_URL || 'http://localhost:3000',
+    matchServiceUrl = process.env.MATCH_SERVICE_URL || 'https://localhost:3000',
+    authServiceUrl = process.env.AUTH_SERVICE_URL || 'https://localhost:3003',
 }) => {
     const matchService = new URL(matchServiceUrl);
     if (!['http:', 'https:'].includes(matchService.protocol)) {
@@ -65,7 +67,14 @@ export const createMatchCreationApp = ({
     }
 
     const app = express();
-    app.use(cors());
+    const allowedOrigins = (
+        process.env.FRONTEND_ORIGINS ||
+        'https://localhost:8000,https://localhost:8100'
+    ).split(',').map(origin => origin.trim()).filter(Boolean);
+    app.use(cors({
+        origin: allowedOrigins,
+        credentials: true,
+    }));
     app.use(bodyParser.json());
     app.get('/healthz', (_req, res) => {
         res.json({status: 'ok'});
@@ -91,12 +100,19 @@ export const createMatchCreationApp = ({
             next(error);
         }
     });
+    new MatchLobbyRest({
+        app,
+        data,
+        matchService,
+        authServiceUrl,
+    }).createEndpoints();
 
     for (const [publicEndpoint, internalEndpoint] of proxyRoutes) {
         app.all(publicEndpoint, async (req, res, next) => {
             try {
                 const headers = {
                     match: req.headers.match || '',
+                    ...(req.headers.cookie ? {cookie: req.headers.cookie} : {}),
                 };
                 let body;
                 if (req.method !== 'GET' && req.method !== 'HEAD') {

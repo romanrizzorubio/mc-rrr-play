@@ -58,6 +58,7 @@ export class Api {
             reconnectionDelay: 500,
             reconnectionDelayMax: 5000,
             timeout: SOCKET_ACK_TIMEOUT,
+            withCredentials: true,
         });
         this.socket = this.manager.socket('/'); // main namespace
         this.socket.on('connect', () => {
@@ -75,6 +76,14 @@ export class Api {
         this.socket.on('connect_error', () => {
             this.setConnectionState('disconnected');
         });
+    }
+    disconnect() {
+        this.socket?.disconnect();
+        this.manager?.disconnect();
+        this.socket = null;
+        this.manager = null;
+        this.joinedMatch = '';
+        this.joinPromise = null;
     }
     markMatchReady() {
         this.matchReady = true;
@@ -233,7 +242,22 @@ export class Api {
     async request(params) {
         const {match} = this;
         const {endpoint} = params;
-        const service = MATCH_CREATION_ENDPOINTS.has(endpoint) ?
+        const [endpointPath] = endpoint.split('?');
+        const userEndpoints = Object.values(ENDPOINTS.USER || {});
+        const isUserServiceEndpoint = userEndpoints.some(userEndpoint =>
+            typeof userEndpoint === 'string' &&
+            (endpointPath === userEndpoint ||
+                endpointPath.startsWith(`${userEndpoint}/`))
+        );
+        const lobbyEndpoint = ENDPOINTS.MATCH.LOBBIES;
+        const isLobbyEndpoint = typeof lobbyEndpoint === 'string' &&
+            (endpointPath === lobbyEndpoint ||
+                endpointPath.startsWith(`${lobbyEndpoint}/`));
+        const isMatchCreationEndpoint =
+            MATCH_CREATION_ENDPOINTS.has(endpoint) || isLobbyEndpoint;
+        const service = isUserServiceEndpoint ?
+            this.services.users :
+            isMatchCreationEndpoint ?
             this.services.matchCreation :
             isDeckServiceEndpoint(endpoint) ?
                 this.services.deck :
@@ -241,6 +265,7 @@ export class Api {
         const options = {
             ...params,
             mode: 'cors',
+            credentials: service === this.services.deck ? 'same-origin' : 'include',
             headers: {
                 'Content-Type': 'application/json',
                 match,

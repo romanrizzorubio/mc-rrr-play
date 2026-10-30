@@ -40,6 +40,7 @@ export async function confirmPrePlay(effect, params, {
 }) {
     const response = await effect.openDialog({
         dialogType: 'confirm',
+        targetPlayer: params.player,
         title: title ?? effect.ability?.card?.name,
         subtitle,
         data,

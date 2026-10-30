@@ -22,6 +22,7 @@ export class SuperheroCardComponent extends LitElement {
         return {
             name: {type: String},
             image: {type: String},
+            firstPlayerTokenUrl: {type: String},
             card: {type: Object},
             activationActor: {type: Object},
             dragActivation: {type: Object},
@@ -53,6 +54,7 @@ export class SuperheroCardComponent extends LitElement {
 
         this.name = '';
         this.image = '';
+        this.firstPlayerTokenUrl = '';
         this.card = null;
         this.activationActor = null;
         this.dragActivation = null;
@@ -164,6 +166,7 @@ export class SuperheroCardComponent extends LitElement {
         const {
             image,
             card,
+            firstPlayerTokenUrl,
             life,
             activationActor,
             hitPoints,
@@ -209,7 +212,17 @@ export class SuperheroCardComponent extends LitElement {
                     .defense="${defense}"
                     .recovery="${recovery}"
                     @card-menu-click="${this.handleClickMenu}"
-                ></mc-card>
+                >
+                    ${firstPlayerTokenUrl ? html`
+                        <img
+                            class="first-player-token"
+                            slot="image-marker"
+                            src="${firstPlayerTokenUrl}"
+                            alt="Ficha del jugador inicial"
+                            title="Jugador inicial"
+                        >
+                    ` : ''}
+                </mc-card>
             </div>
         `;
     }

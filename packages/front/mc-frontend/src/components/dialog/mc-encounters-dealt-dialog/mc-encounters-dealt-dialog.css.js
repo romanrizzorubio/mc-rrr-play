@@ -8,6 +8,7 @@ export default css`
   .encounter-players {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-end;
     justify-content: center;
     gap: 24px;
   }
@@ -17,6 +18,18 @@ export default css`
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    width: 180px;
+  }
+
+  .player-name {
+    margin: 0;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .encounter-count {
+    font-size: 24px;
+    font-weight: bold;
   }
 
   .hazard-icons {
@@ -30,11 +43,4 @@ export default css`
     line-height: 1;
   }
 
-  .encounter-cards {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
 `;

@@ -7,7 +7,7 @@ import {CardsFactory} from './cards/cards-factory.js';
 export class MatchFactory {
     constructor(match) {
         this.match = match;
-        this.copyIndexesByCardId = new Map();
+        this.copyIndexesByCardId = match.copyIndexesByCardId ??= new Map();
 
         this.cardsFactory = new CardsFactory(this);
         this.match.activationsFactory = new ActivationsFactory(this.match);
@@ -78,6 +78,9 @@ export class MatchFactory {
             scenarioCards,
             setAsideCards,
             sets,
+            manualVillainProgression: params.manualVillainProgression,
+            manualMainSchemeProgression: params.manualMainSchemeProgression,
+            separatePlayAreas: params.separatePlayAreas,
             match: this.match,
         });
     }

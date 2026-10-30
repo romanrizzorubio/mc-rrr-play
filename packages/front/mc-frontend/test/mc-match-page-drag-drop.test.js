@@ -40,6 +40,11 @@ describe('match page card drag and drop', () => {
                 playableInGameZone: true,
             },
             player: 'TChalla',
+            match: {
+                phase: 'players',
+                currentTurnPlayer: 'TChalla',
+                actionRequest: null,
+            },
             playCardPending: false,
         });
 
@@ -58,5 +63,50 @@ describe('match page card drag and drop', () => {
         await request;
 
         assert.equal(page.playCardPending, false);
+    });
+
+    test('forwards a player-row target id to the play request', async () => {
+        const requests = [];
+        const card = {
+            id: 'shared-upgrade',
+            playable: true,
+            playableInGameZone: false,
+            playablePlayerIds: ['captain-player', 'marvel-player'],
+        };
+        const page = Object.assign(Object.create(McMatchPage.prototype), {
+            apiPlayer: {
+                async playCard(...params) {
+                    requests.push(params);
+                },
+            },
+            dragPlayCard: null,
+            player: 'TChalla',
+            match: {
+                phase: 'players',
+                currentTurnPlayer: 'TChalla',
+                actionRequest: null,
+            },
+            playCardPending: false,
+        });
+        page.handlePlayCardDragStart({detail: {card}});
+
+        assert.deepEqual(
+            page.dragPlayCard.playablePlayerIds,
+            card.playablePlayerIds,
+        );
+
+        await page.handlePlayCardDrop({
+            detail: {
+                card,
+                targetId: 'marvel-player',
+            },
+        });
+
+        assert.deepEqual(requests, [[
+            'TChalla',
+            'shared-upgrade',
+            'marvel-player',
+        ]]);
+        assert.equal(page.dragPlayCard, null);
     });
 });

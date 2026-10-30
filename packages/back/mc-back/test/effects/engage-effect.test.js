@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 import {
     DIALOG_ENCOUNTERS_REVEAL,
     TARGET_YOU,
@@ -11,6 +11,7 @@ import hydraPatrol from '../../../mc-data/seed/catalog/sets/hydra-patrol.js';
 import {EngageEffect} from '../../src/effects/engage-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
+describe('EngageEffect', () => {
 const createPlayer = () => ({
     gameZone: {
         minions: [],
@@ -101,6 +102,8 @@ for (const location of ['deck', 'discardPile']) {
         assert.equal(card.damage, 0);
         assert.deepEqual(dialogs, [{
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            targetPlayer: player,
+            showToAll: true,
             title: 'Esbirro puesto en juego',
             data: {
                 card: {name: 'Esclavo duende'},
@@ -242,4 +245,5 @@ test('EngageEffect triggers engagement, but not enter-play, when changing player
     assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), true);
     assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
     assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
+});
 });

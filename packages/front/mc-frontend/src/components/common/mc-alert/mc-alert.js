@@ -28,7 +28,7 @@ export class McAlert extends LitElement {
         const {msg, open} = this;
 
         return html`
-            <md-dialog type="alert" .open="${open}">
+            <md-dialog type="alert" .quick="${true}" .open="${open}">
                 <div slot="headline">${msg}</div>
                 <div slot="content">
                 </div>

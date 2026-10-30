@@ -29,7 +29,7 @@ export default {
                     'params': {
                         'name': 'Amenaza de bomba',
                         'set': 'bomb-scare',
-                        'image': 'sets/bomb-scare/bomb1.webp',
+                        'image': 'sets/bomb-scare/01109.png',
                         'boost': 2,
                         'icons': {
                             'acceleration': 1
@@ -66,7 +66,7 @@ export default {
                     'params': {
                         'name': 'Explosión',
                         'set': 'bomb-scare',
-                        'image': 'sets/bomb-scare/bomb4.webp',
+                        'image': 'sets/bomb-scare/01111.png',
                         'boost': 2,
                         'abilities': [
                             {
@@ -106,7 +106,7 @@ export default {
                     'params': {
                         'name': 'Falsa Alarma',
                         'set': 'bomb-scare',
-                        'image': 'sets/bomb-scare/bomb5.webp',
+                        'image': 'sets/bomb-scare/01112.png',
                         'boost': 1,
                         'abilities': [
                             {

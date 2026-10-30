@@ -1,22 +1,27 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {DIALOG_ENCOUNTERS_DEALT} from 'mc-shared';
+import {Delayed} from '../../src/engine/delayed.js';
+import {PlayPlayersPhaseEffect} from '../../src/effects/play-players-phase-effect.js';
 import {PlayVillainPhaseEffect} from '../../src/effects/play-villain-phase-effect.js';
+import {Match} from '../../src/model/match/match.js';
+import {Scenario} from '../../src/model/match/scenario.js';
 
-test('encounter dealt dialog reports extra cards from hazard icons', async () => {
+describe('PlayVillainPhaseEffect encounter dealing', () => {
+test('encounter dealt dialog reports player counts and hazard extras without serializing card identities', async () => {
     let dealtCards = 0;
     const dialogs = [];
     const knownCard = {
         id: 'encounter-1',
         toObj() {
-            return {id: this.id};
+            assert.fail('The dealing summary must not serialize an encounter card.');
         },
     };
     const unseenCard = {
         id: 'encounter-2',
         toObj() {
-            return {id: this.id};
+            assert.fail('The dealing summary must not serialize an encounter card.');
         },
     };
     const scenario = {
@@ -61,14 +66,10 @@ test('encounter dealt dialog reports extra cards from hazard icons', async () =>
         name: 'Hulka',
         count: 2,
         hazardIcons: 1,
-        cards: [
-            {id: 'encounter-1', isFacedownCard: true, canPeekFacedown: true},
-            {id: 'encounter-2', isFacedownCard: true, canPeekFacedown: false},
-        ],
     }]);
 });
 
-test('encounter dealt dialog assigns each hazard icon to the receiving player', async () => {
+test('global hazard icons deal one extra encounter each in player order', async () => {
     let dealtCards = 0;
     let dialog;
     const createPlayer = name => {
@@ -116,22 +117,154 @@ test('encounter dealt dialog assigns each hazard icon to the receiving player', 
     assert.deepEqual(dialog.data.encounters, [
         {
             name: 'Hulka',
-            count: 4,
-            hazardIcons: 3,
-            cards: [
-                {id: 'encounter-1', isFacedownCard: true, canPeekFacedown: false},
-                {id: 'encounter-3', isFacedownCard: true, canPeekFacedown: false},
-                {id: 'encounter-4', isFacedownCard: true, canPeekFacedown: false},
-                {id: 'encounter-5', isFacedownCard: true, canPeekFacedown: false},
-            ],
+            count: 3,
+            hazardIcons: 2,
         },
         {
             name: 'Mapache Cohete',
-            count: 1,
-            hazardIcons: 0,
-            cards: [
-                {id: 'encounter-2', isFacedownCard: true, canPeekFacedown: false},
-            ],
+            count: 2,
+            hazardIcons: 1,
         },
     ]);
+    assert.equal(dialog.data.hazardIcons, 3);
+});
+
+test('hazard icons are shared across zones and extras rotate across the global order', async () => {
+    const match = new Match({
+        mc: {mcSocket: {send() {}}},
+        name: 'global-hazard-test',
+    });
+    const scenario = new Scenario({
+        mainSchemes: [],
+        match,
+        name: 'scenario',
+        scenarioCards: [],
+        sets: [],
+        separatePlayAreas: true,
+        villains: [],
+    });
+    const firstZone = scenario.createZone({id: 'first-zone'});
+    const secondZone = scenario.createZone({id: 'second-zone'});
+    firstZone.cards.push({hazardIcons: 1});
+    scenario.deck = {knownCards: []};
+    let dealtCards = 0;
+    scenario.drawEncounterCards = async () => [{
+        id: `encounter-${++dealtCards}`,
+        toObj() {
+            return {id: this.id};
+        },
+    }];
+
+    const players = ['Hulka', 'Mapache Cohete'].map((name, index) => {
+        const player = {
+            defeated: false,
+            hazardIcons: 0,
+            initial: index === 0,
+            name,
+            superhero: {name},
+            encounters: [],
+            gameZone: {
+                dealEncounterCard(cards) {
+                    player.encounters.push(...cards);
+                },
+                async refresh() {},
+            },
+        };
+        (index === 0 ? firstZone : secondZone).addPlayer(player);
+        return player;
+    });
+    match.players = players;
+    match.currentPlayer = players[0];
+    match.scenario = scenario;
+    match.playing = true;
+    const dialogs = [];
+    match.openDialog = async dialog => dialogs.push(dialog);
+
+    await new PlayVillainPhaseEffect({match}).stepDealEncounters();
+
+    assert.deepEqual(players.map(player => player.encounters.length), [2, 1]);
+    assert.equal(dialogs[0].data.hazardIcons, 1);
+    assert.deepEqual(
+        dialogs[0].data.encounters.map(encounter => encounter.hazardIcons),
+        [1, 0]
+    );
+
+    match.players.forEach(player => {
+        player.encounters = [];
+    });
+    match.players[0].initial = false;
+    match.players[1].initial = true;
+    await new PlayVillainPhaseEffect({match}).stepDealEncounters();
+    assert.deepEqual(players.map(player => player.encounters.length), [1, 2]);
+});
+
+test('scenario delayed effects resolve after the player and villain phases', async () => {
+    for (const PhaseEffect of [
+        PlayPlayersPhaseEffect,
+        PlayVillainPhaseEffect,
+    ]) {
+        const match = new Match({
+            mc: {mcSocket: {send() {}}},
+            name: 'scenario-phase-delayed-effects-test',
+        });
+        const scenario = new Scenario({
+            mainSchemes: [],
+            match,
+            name: 'scenario',
+            scenarioCards: [],
+            sets: [],
+            villains: [],
+        });
+        match.scenario = scenario;
+        match.playing = true;
+        const player = {name: 'Hulka'};
+        let resolved = 0;
+        scenario.createDelayedEffect(new Delayed({
+            card: {id: 'source'},
+            player,
+            effect: {
+                async runEffect(params) {
+                    resolved++;
+                    assert.strictEqual(params.player, player);
+                    assert.strictEqual(params.match, match);
+                },
+            },
+        }));
+        const phase = new PhaseEffect({match});
+
+        await phase.triggerEnds({effect: phase, match, player});
+
+        assert.equal(resolved, 1);
+        assert.equal(scenario.delayedEffects.length, 0);
+    }
+});
+
+test('numbered steps do not expire delayed effects or emit the phase-end window', async () => {
+    const calls = [];
+    const match = {
+        playing: true,
+        triggerCards: {},
+        scenario: {
+            async resolveDelayedEffects() {
+                calls.push('scenario-delayed');
+            },
+        },
+    };
+    const phase = new PlayVillainPhaseEffect({match});
+    phase.resolveDelayedEffects = async () => calls.push('phase-delayed');
+    phase.trigger = async (_priority, triggers, params) => {
+        calls.push({triggers, step: params.step});
+        return true;
+    };
+    for (let step = 1; step <= 5; step++) {
+        await phase.triggerPhaseStep(step, {});
+    }
+
+    assert.equal(calls.includes('scenario-delayed'), false);
+    assert.equal(calls.includes('phase-delayed'), false);
+    assert.deepEqual([...new Set(calls.map(call => call.step))], [1, 2, 3, 4, 5]);
+    await phase.triggerEnds({effect: phase});
+    assert.ok(calls.includes('phase-delayed'));
+    assert.equal(calls.at(-1), 'scenario-delayed');
+});
 });

@@ -29,6 +29,7 @@ export default css`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 16px;
   }
 
@@ -53,12 +54,18 @@ export default css`
   }
 
   .deck-filter {
-    flex: 1;
-    min-width: 0;
+    flex: 2 1 260px;
+    min-width: 220px;
   }
 
-  .deck-filter md-filled-text-field {
+  .deck-filter md-filled-text-field,
+  .deck-list-toolbar > md-filled-select {
     width: 100%;
+  }
+
+  .deck-list-toolbar > md-filled-select {
+    flex: 1 1 180px;
+    max-width: 280px;
   }
 
   .deck-table {
@@ -72,6 +79,7 @@ export default css`
       minmax(0, 2fr)
       minmax(0, 1.5fr)
       minmax(0, 1fr)
+      minmax(0, 1.1fr)
       minmax(5rem, 0.6fr);
     align-items: center;
     gap: 16px;
@@ -82,6 +90,7 @@ export default css`
       minmax(0, 2fr)
       minmax(0, 1.5fr)
       minmax(0, 1fr)
+      minmax(0, 1.1fr)
       minmax(5rem, 0.6fr)
       max-content;
     padding: 12px 16px;
@@ -91,8 +100,8 @@ export default css`
     font-weight: 600;
   }
 
-  .deck-table-header span:last-child {
-    width: 80px;
+  .deck-table-header > span:last-child {
+    width: 150px;
   }
 
   .sort-button {
@@ -184,7 +193,7 @@ export default css`
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 80px;
+    min-width: 150px;
     padding: 0 8px;
   }
 

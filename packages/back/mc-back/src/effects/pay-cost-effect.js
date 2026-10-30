@@ -21,7 +21,11 @@ export class PayCostEffect extends Effect {
         }));
     }
     async payHand(params) {
-        const hand = await this.selectDiscardOrder(this.hand);
+        const hand = await this.selectDiscardOrder(
+            this.hand,
+            undefined,
+            {targetPlayer: params.player}
+        );
 
         return this.promisesSequential(hand, card => {
             const discardFromHandEffect = new DiscardFromHandEffect({

@@ -4,14 +4,28 @@ export const AttackEffect = BaseEffect => class extends BaseEffect {
 
         this.attackKeywordModifiers = [];
         this.usedAttackKeywords = new Set();
+        this.temporaryAttackKeywords = new Map();
     }
     resetResolutionData() {
         super.resetResolutionData();
         this.resetAttackKeywordData();
     }
     resetAttackKeywordData() {
+        this.temporaryAttackKeywords?.forEach((value, keyword) => {
+            this.keywords[keyword] = value;
+        });
+        this.temporaryAttackKeywords = new Map();
         this.attackKeywordModifiers = [];
         this.usedAttackKeywords.clear();
+    }
+    setTemporaryAttackKeywords(keywords) {
+        this.temporaryAttackKeywords ??= new Map();
+        Object.entries(keywords).forEach(([keyword, value]) => {
+            if (!this.temporaryAttackKeywords.has(keyword)) {
+                this.temporaryAttackKeywords.set(keyword, this.keywords[keyword]);
+            }
+            this.keywords[keyword] = value;
+        });
     }
     get overkill() {
         return this.getAttackKeyword('overkill');

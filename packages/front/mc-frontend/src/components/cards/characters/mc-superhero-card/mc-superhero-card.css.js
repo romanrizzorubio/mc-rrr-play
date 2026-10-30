@@ -14,6 +14,12 @@ export default css`
     position: relative;
   }
 
+  .first-player-token {
+    display: block;
+    width: 48px;
+    height: 48px;
+  }
+
   .obligations {
     display: flex;
     justify-content: center;

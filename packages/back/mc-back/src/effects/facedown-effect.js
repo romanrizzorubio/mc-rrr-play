@@ -1,5 +1,6 @@
 import {TARGET_CARD} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
+import {removeFromPlace} from '../utils/card-place-utils.js';
 
 import {Effect} from './effect.js';
 
@@ -7,11 +8,13 @@ export class FaceDownEffect extends Effect {
     constructor({
         cards,
         cardsTarget = TARGET_CARD,
+        from,
     }) {
         super(arguments[0]);
 
         this.cards = cards;
         this.cardsTarget = cardsTarget;
+        this.from = from;
     }
     async prepare(params) {
         await super.prepare(params);
@@ -30,14 +33,30 @@ export class FaceDownEffect extends Effect {
             });
         }
     }
-    async execute() {
+    async execute(params) {
         const {selectedTarget, cards} = this;
-        const selectedCards = Array.isArray(cards) ? cards : [cards];
+        const selectedCards = Array.isArray(cards) ?
+            cards :
+            cards ? [cards] : [];
+        if (!selectedCards.length) {
+            return;
+        }
         const owners = new Set();
+
+        if (this.from) {
+            const remove = removeFromPlace.get(this.from);
+            if (!remove) {
+                throw new Error(
+                    `Unsupported facedown card source: ${this.from}`
+                );
+            }
+
+            remove(this, selectedCards, params.player);
+        }
 
         selectedCards.forEach(card => {
             const owner = card.owner;
-            if (owner?.hand?.cards.includes(card)) {
+            if (!this.from && owner?.hand?.cards.includes(card)) {
                 owner.hand.discardHand(card);
                 owners.add(owner);
             }

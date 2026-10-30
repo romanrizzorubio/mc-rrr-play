@@ -66,6 +66,11 @@ export class Engine {
                         if (triggersPriority === priority) {
                             const filtered = await this.promisesSequentialFilter(trigger[triggersPriority], async _trigger =>
                                 !exclude.includes(_trigger) &&
+                                (typeof match.isScenarioZoneAbilityAllowed !== 'function' ||
+                                    match.isScenarioZoneAbilityAllowed(
+                                        _trigger.ability,
+                                        params
+                                    )) &&
                                 !(_trigger instanceof Trigger &&
                                     _trigger.hasTriggeredFor(params.effect) &&
                                     !_trigger.keepTriggering) &&
@@ -140,6 +145,7 @@ export class Engine {
         if (_shouldShow()) {
             const response = await this.openDialog({
                 dialogType: DIALOG_USE_CARD,
+                targetPlayer: player,
                 title,
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 hideOk: mandatory,
@@ -220,6 +226,7 @@ export class Engine {
         if (selectableOptions.length > 1) {
             const result = await this.openDialog({
                 dialogType: DIALOG_LIST,
+                targetPlayer: player,
                 hideOk: mandatory,
                 hand: player.hand.cards.map(card => card.toObj(arguments[0])),
                 title: 'Elige una opción',
@@ -270,7 +277,7 @@ export class Engine {
 
                 const filtered = await this
                     .promisesSequentialFilter(options,
-                            option => option.canRun(params));
+                            option => option.canRun(trigger.getAbilityParams(params)));
 
                 ret[cardId].triggers.push({
                     name,
@@ -438,10 +445,17 @@ export class Engine {
 
         return this.match.openDialog(params);
     }
+    openPublicDialog(params, player) {
+        return this.openDialog({
+            ...params,
+            targetPlayer: player ?? this.match.initialPlayer,
+            showToAll: true,
+        });
+    }
     async selectDiscardOrder(
         cards,
         title = 'Elige el orden de las cartas que se descartan',
-        {subtitle} = {}
+        {subtitle, targetPlayer} = {}
     ) {
         if (cards.length < 2 || this.match.skipDiscardOrderDialog) {
             return cards.slice();
@@ -449,6 +463,7 @@ export class Engine {
 
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_ORDER,
+            targetPlayer,
             title,
             ...(subtitle ? {subtitle} : {}),
             data: {

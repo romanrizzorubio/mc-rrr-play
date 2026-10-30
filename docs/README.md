@@ -74,6 +74,7 @@ MC RRR Play
 └─ packages
    ├─ front
    │  ├─ mc-frontend: carcasa y lobby (puerto 8000)
+   │  ├─ mc-users: remoto de registro y gestión de cuentas (puerto 8400)
    │  ├─ mc-match: juego remoto (puerto 8100)
    │  ├─ mc-deck: editor de mazos (puerto 8200)
    │  ├─ mc-static: recursos estáticos (puerto 8300)
@@ -81,7 +82,9 @@ MC RRR Play
    ├─ back
    │  ├─ mc-back: motor de partidas + Socket.IO (puerto 3000)
    │  ├─ mc-match-creation-service: creación y catálogo (puerto 3001)
+   │  ├─ mc-user-service: cuentas, activación y sesiones (puerto 3003)
    │  ├─ mc-deck-service: API y persistencia de mazos (puerto 3002)
+   │  ├─ mc-server-utils: utilidades HTTPS compartidas
    │  └─ mc-data: acceso al catálogo y partidas de MongoDB
    └─ core
       ├─ mc-endpoints: contratos REST y eventos
@@ -91,15 +94,18 @@ MC RRR Play
 ## 🚀 Inicio Rápido (2 minutos)
 
 ```bash
-# 1. Instalar dependencias
+# 1. Instalar dependencias (y mkcert previamente)
 npm install
 
-# 2. Iniciar aplicación
+# 2. Preparar certificados HTTPS locales (una sola vez)
+npm run https:setup
+
+# 3. Iniciar aplicación
 npm run start:all
 
-# 3. Abrir en navegador
-# Frontend: http://localhost:8000
-# Backend:  http://localhost:3000
+# 4. Abrir en navegador
+# Frontend: https://localhost:8000
+# Backend:  https://localhost:3000
 ```
 
 ## 🎯 Conceptos Clave
@@ -108,7 +114,7 @@ npm run start:all
 Una sesión de juego donde jugadores controlan superhéroes enfrentando un villano.
 
 ### Jugador
-Controla un superhéroe con su baraja de cartas personal.
+Cada puesto de juego corresponde a un superhéroe con su baraja personal. Una misma cuenta puede controlar varios puestos, hasta el máximo total de superhéroes de la partida.
 
 ### Recursos
 - **Física** - Usada para atacar
@@ -152,5 +158,7 @@ Si encuentras errores o tienes sugerencias para mejorar la documentación:
 - **Última Actualización**: Septiembre 2026
 
 ---
+
+El setup HTTPS instala la CA local en la confianza del sistema, así que se ejecuta manualmente una vez; `start:all` verifica los certificados y no vuelve a instalarla en cada arranque.
 
 **¿Listo para jugar?** → [Ir a 05-GETTING-STARTED.md](./05-GETTING-STARTED.md)

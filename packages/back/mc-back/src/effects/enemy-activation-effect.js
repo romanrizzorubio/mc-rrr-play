@@ -5,6 +5,7 @@ import {
     TRIGGER_ATTACHED_ACTIVATES,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
+import {getVillainFor} from '../utils/match-zone-utils.js';
 
 import {DealBoostEffect} from './deal-boost-effect.js';
 import {Effect} from './effect.js';
@@ -15,6 +16,7 @@ export class EnemyActivationEffect extends Effect {
         enemy,
         enemyType,
         giveBoost = true,
+        player,
     }) {
         super(arguments[0]);
 
@@ -22,14 +24,24 @@ export class EnemyActivationEffect extends Effect {
         this.configuredEnemy = enemy;
         this.enemyType = enemyType;
         this.giveBoost = giveBoost;
+        this.player = player;
 
         this.boostCards = [];
         this.canceled = false;
+        this.activationInterrupted = false;
+        this.resolvedBoostCards = new Set();
     }
     async runEffect(params) {
         try {
             await super.runEffect(params);
         } finally {
+            if (this.activationInterrupted) {
+                for (const card of this.boostCards) {
+                    if (!this.resolvedBoostCards.has(card) && !card.isInPlay) {
+                        await card.discard();
+                    }
+                }
+            }
             if (this.match?.limits) {
                 await this.endLimit(TARGET_ACTIVATION);
             }
@@ -48,7 +60,60 @@ export class EnemyActivationEffect extends Effect {
         return this.selectedTarget;
     }
     checkTrigger() {
-        return !this.canceled;
+        return !this.canceled && this.canContinueActivation();
+    }
+    canContinueActivation() {
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
+        const playerEliminated = this.isAttack &&
+            (this.player?.defeated || targets.some(target =>
+                (target?.isPlayer ? target : target?.owner)?.defeated));
+        if (this.activationInterrupted || !this.enemy ||
+            this.match?.gameOverReason || playerEliminated) {
+            this.activationInterrupted = true;
+            return false;
+        }
+
+        const currentVillain = this.enemy.scenarioZone ?
+            this.enemy.scenarioZone.currentVillain :
+            typeof this.match?.getVillainFor === 'function' ?
+                getVillainFor(this.match, this.player) :
+                this.match?.villain;
+        if (this.enemy.isVillain && currentVillain) {
+            if (currentVillain !== this.enemy) {
+                if (currentVillain.name !== this.enemy.name) {
+                    this.activationInterrupted = true;
+                    return false;
+                }
+                this.enemy = currentVillain;
+            }
+            return true;
+        }
+
+        if (this.enemy.isInPlay === false) {
+            this.activationInterrupted = true;
+            return false;
+        }
+
+        return true;
+    }
+    isResolved() {
+        return !this.activationInterrupted;
+    }
+    async resolvePrepared(effectParams, triggersParams) {
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
+        await super.resolvePrepared(effectParams, triggersParams);
+    }
+    async triggerEnds(params, options) {
+        if (!this.canContinueActivation()) {
+            return;
+        }
+
+        await super.triggerEnds(params, options);
     }
     async getEnemyTargetFilter(_params) {
         return undefined;
@@ -140,22 +205,28 @@ export class EnemyActivationEffect extends Effect {
         this.enemy = this.configuredEnemy;
         this.boostCards = [];
         this.canceled = false;
+        this.activationInterrupted = false;
+        this.resolvedBoostCards.clear();
         this._activation = undefined;
         this.delayedEffects = [];
         this.lastingEffects = [];
     }
-    showActivationSkippedDialog(statusType, statusMessage) {
-        return this.openDialog({
+    getActivationDialogPlayer(params = {}) {
+        return params.player ?? this.player;
+    }
+    showActivationSkippedDialog(statusType, statusMessage, params) {
+        return this.openPublicDialog({
             dialogType: DIALOG_ACTIVATE,
             title: 'Activación omitida',
             data: {
                 statusMessage,
                 statusType,
             },
-        });
+        }, this.getActivationDialogPlayer(params));
     }
     async prepare(params) {
         this.resetForResolution();
+        this.player = params.player;
         await super.prepare(params);
 
         const {enemy} = this;
@@ -172,7 +243,7 @@ export class EnemyActivationEffect extends Effect {
         const targetData = await this.getCharacterDialogData(target, params);
         const emphasizedStat = this.getDialogEmphasizedStat();
 
-        await this.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ACTIVATE,
             title: this.getTitleDialog(params),
             data: {
@@ -180,7 +251,7 @@ export class EnemyActivationEffect extends Effect {
                 target: targetData,
                 ...(emphasizedStat ? {emphasizedStat} : {}),
             },
-        });
+        }, this.getActivationDialogPlayer(params));
     }
     async getActivationCharacterData(params) {
         return this.getCharacterDialogData(this.character, params);
@@ -202,6 +273,9 @@ export class EnemyActivationEffect extends Effect {
         let totalBoost = 0;
 
         for (let cardIndex = 0; cardIndex < this.boostCards.length; cardIndex++) {
+            if (!this.canContinueActivation()) {
+                break;
+            }
             const card = this.boostCards[cardIndex];
             const resolveBoostEffect = new ResolveBoostEffect({
                 activation: this.activation,
@@ -220,6 +294,7 @@ export class EnemyActivationEffect extends Effect {
             if (!card.isInPlay) {
                 await card.discard();
             }
+            this.resolvedBoostCards.add(card);
         }
 
         return totalBoost;

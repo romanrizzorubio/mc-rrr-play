@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {EVENTS} from 'mc-endpoints';
 import {
@@ -8,7 +8,9 @@ import {
 
 import {CharacterGameCard} from '../../src/model/cards/character-game-card.js';
 import {Player} from '../../src/model/match/player.js';
+import {PlayerZone} from '../../src/model/match/player-zone.js';
 
+describe('player defeat', () => {
 function createPlayer(name, match) {
     const superhero = {
         controller: null,
@@ -20,7 +22,9 @@ function createPlayer(name, match) {
         },
     };
 
-    return new Player({name, superhero});
+    const player = new Player({name, superhero});
+    player.gameZone = new PlayerZone({owner: player});
+    return player;
 }
 
 test('defeating a superhero eliminates its player without discarding the identity', async () => {
@@ -103,4 +107,5 @@ test('the game is lost only after every superhero has been defeated', async () =
     assert.deepEqual(finished, [MATCH_END_REASON_ALL_HEROES_DEFEATED]);
     assert.deepEqual(refreshed, [true]);
     assert.equal(sent.length, 2);
+});
 });

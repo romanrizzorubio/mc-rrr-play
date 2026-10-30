@@ -43,6 +43,7 @@ export class Ability extends Engine {
         match,
         hideDialog = false,
         workInHand = false,
+        globalScope = false,
     }) {
         super(arguments[0]);
 
@@ -55,6 +56,7 @@ export class Ability extends Engine {
         this.card = card;
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
+        this.globalScope = globalScope;
         this.match = match;
         this.costs = new AbilityCosts({
             ability: this,

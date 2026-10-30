@@ -1,7 +1,6 @@
 import {LitElement, html} from 'lit-element';
 
 import styles from './mc-create-match.css.js';
-import '../../config/mc-form-player/mc-form-player.js';
 import '../../config/mc-form-scenario/mc-form-scenario.js';
 import '../../common/mc-panel/mc-panel.js';
 
@@ -20,15 +19,10 @@ export class McCreateMatch extends LitElement {
     static get properties() {
         return {
             name: {type: String},
+            maxPlayers: {type: Number},
             currentStep: {type: Number},
             expert: {type: Boolean},
-            player: {type: Object},
             scenario: {type: Object},
-            heroesList: {type: Array},
-            configMatch: {attribute: false},
-            decksList: {type: Array},
-            loadingDecks: {type: Boolean},
-            deckLoadError: {type: String},
             scenariosList: {type: Array},
             modularSetsList: {type: Array},
             selectedModularSets: {type: Array},
@@ -39,17 +33,10 @@ export class McCreateMatch extends LitElement {
         super();
 
         this.name = 'RRR';
+        this.maxPlayers = 4;
         this.currentStep = 1;
         this.expert = false;
-        this.player = {name: 'RRR'};
         this.scenario = {};
-        this.heroesList = [];
-        this.configMatch = null;
-        this.decksList = [];
-        this.loadingDecks = false;
-        this.deckLoadError = '';
-        this.deckListHero = '';
-        this.deckListRequestSequence = 0;
         this.scenariosList = [];
         this.modularSetsList = [];
         this.selectedModularSets = [];
@@ -58,9 +45,12 @@ export class McCreateMatch extends LitElement {
         return !this.validate();
     }
     validateFirstStep() {
-        const {name, player} = this;
+        const {name, maxPlayers} = this;
 
-        return Boolean(name && player.name && player.hero);
+        return Boolean(name) &&
+            Number.isInteger(maxPlayers) &&
+            maxPlayers >= 1 &&
+            maxPlayers <= 4;
     }
     validateSecondStep() {
         return Boolean(this.scenario.scenario);
@@ -69,33 +59,51 @@ export class McCreateMatch extends LitElement {
         return this.validateFirstStep() &&
             this.validateSecondStep();
     }
+    validateCurrentStep() {
+        switch (this.currentStep) {
+            case 1:
+                return this.validateFirstStep();
+            case 2:
+                return this.validateSecondStep();
+            default:
+                return false;
+        }
+    }
     handleNext() {
-        if (!this.validateFirstStep()) {
+        if (this.currentStep >= 2 || !this.validateCurrentStep()) {
             return;
         }
 
-        this.currentStep = 2;
+        this.currentStep++;
     }
     handleBack() {
-        this.currentStep = 1;
+        if (this.currentStep > 1) {
+            this.currentStep--;
+        }
     }
     handleClick() {
         if (this.currentStep !== 2 || !this.validate()) {
             return;
         }
 
-        const {name, expert, player, scenario} = this;
+        const {name, maxPlayers, expert, scenario} = this;
 
         this.dispatchEvent(new CustomEvent('create-match', {
             bubbles: true,
             composed: true,
             detail: {
-                name, expert, player, scenario
+                name, maxPlayers, expert, scenario
             }
         }));
     }
     handleNameChange(e) {
         this.name = e.target.value;
+    }
+    handleMaxPlayersChange(event) {
+        const value = Number(event.target.value);
+        if (Number.isInteger(value) && value >= 1 && value <= 4) {
+            this.maxPlayers = value;
+        }
     }
     handleExpertChange(e) {
         this.expert = e.target.checked;
@@ -168,48 +176,6 @@ export class McCreateMatch extends LitElement {
             modularSets: this.selectedModularSets,
         };
     }
-    async handlePlayerChanged(e) {
-        const {name, hero, deckId} = e.detail;
-
-        this.player = {
-            name,
-            hero,
-            ...(deckId ? {deckId} : {}),
-        };
-
-        if (hero !== this.deckListHero) {
-            this.deckListHero = hero;
-            this.deckListRequestSequence++;
-            const requestSequence = this.deckListRequestSequence;
-            this.decksList = [];
-            this.deckLoadError = '';
-            this.loadingDecks = Boolean(hero);
-            if (hero && this.configMatch) {
-                try {
-                    const decksList = await this.configMatch.getDecksList(hero, true);
-                    if (requestSequence === this.deckListRequestSequence) {
-                        this.decksList = decksList;
-                    }
-                } catch (error) {
-                    if (requestSequence === this.deckListRequestSequence) {
-                        this.deckLoadError = error.message;
-                        this.dispatchEvent(new CustomEvent('communication-error', {
-                            bubbles: true,
-                            composed: true,
-                            detail: {
-                                message: `No se pudieron cargar los mazos de este héroe: ${error.message}`,
-                            },
-                        }));
-                    }
-                } finally {
-                    if (requestSequence === this.deckListRequestSequence) {
-                        this.loadingDecks = false;
-                    }
-                }
-            }
-        }
-
-    }
     renderButton() {
         return html`
             <md-filled-button
@@ -222,12 +188,19 @@ export class McCreateMatch extends LitElement {
         `;
     }
     renderStepActions() {
-        if (this.currentStep === 1) {
+        if (this.currentStep < 2) {
             return html`
-                <div class="step-actions step-actions-next">
+                <div class="step-actions ${
+                    this.currentStep === 1 ? 'step-actions-next' : ''
+                }">
+                    ${this.currentStep > 1 ? html`
+                        <md-text-button @click="${this.handleBack.bind(this)}">
+                            Volver
+                        </md-text-button>
+                    ` : ''}
                     <md-filled-button
                         class="button"
-                        .disabled="${!this.validateFirstStep()}"
+                        .disabled="${!this.validateCurrentStep()}"
                         @click="${this.handleNext.bind(this)}"
                     >
                         Continuar
@@ -246,37 +219,28 @@ export class McCreateMatch extends LitElement {
         `;
     }
     renderMatch() {
-        const {name} = this;
+        const {name, maxPlayers} = this;
 
         return html`
             <mc-panel title="Partida">
                 <md-filled-text-field
                     class="field field-match-name"
+                    label="Nombre de la partida"
                     .value="${name}"
                     @change="${this.handleNameChange}"
                 ></md-filled-text-field>
-            </mc-panel>
-        `;
-    }
-    renderPlayer() {
-        const {heroesList, player} = this;
-
-        return html`
-            <mc-panel title="Jugador">
-                <mc-form-player
-                    hide-button
-                    .heroesList="${heroesList}"
-                    .decksList="${this.decksList}"
-                    .loadingDecks="${this.loadingDecks}"
-                    .name="${player.name || ''}"
-                    .hero="${player.hero || ''}"
-                    .deckId="${player.deckId || 'precon'}"
-                    @player-change="${this.handlePlayerChanged.bind(this)}"
+                <md-filled-select
+                    class="max-players"
+                    label="Máximo de superhéroes"
+                    value="${String(maxPlayers)}"
+                    @change="${this.handleMaxPlayersChange.bind(this)}"
                 >
-                </mc-form-player>
-                ${this.deckLoadError ? html`
-                    <p role="alert">No se pudieron cargar los mazos guardados: ${this.deckLoadError}</p>
-                ` : ''}
+                    ${[1, 2, 3, 4].map(count => html`
+                        <md-select-option value="${count}">
+                            <div slot="headline">${count}</div>
+                        </md-select-option>
+                    `)}
+                </md-filled-select>
             </mc-panel>
         `;
     }
@@ -365,18 +329,17 @@ export class McCreateMatch extends LitElement {
         `;
     }
     render() {
-        const firstStep = this.currentStep === 1;
-        const stepTitle = firstStep ?
-            'Partida y Jugador' :
-            'Escenario y Conjuntos modulares';
+        const stepTitles = {
+            1: 'Partida',
+            2: 'Escenario y conjuntos modulares',
+        };
 
         return html`
             <p class="step-status" role="status" aria-live="polite">
-                Paso ${this.currentStep} de 2: ${stepTitle}
+                Paso ${this.currentStep} de 2: ${stepTitles[this.currentStep]}
             </p>
-            ${firstStep ? html`
+            ${this.currentStep === 1 ? html`
                 ${this.renderMatch()}
-                ${this.renderPlayer()}
             ` : html`
                 ${this.renderScenario()}
                 ${this.renderModularSets()}

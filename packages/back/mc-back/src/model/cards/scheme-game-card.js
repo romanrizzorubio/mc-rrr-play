@@ -1,5 +1,6 @@
 import {EVENTS} from 'mc-endpoints';
 
+import {getScenarioZone} from '../../utils/match-zone-utils.js';
 import {GameCard} from './game-card.js';
 
 export class SchemeGameCard extends GameCard {
@@ -25,7 +26,8 @@ export class SchemeGameCard extends GameCard {
     }
     get gameZone() {
         if (this.isSideScheme) {
-            return this.match.scenario.gameZone;
+            return this.scenarioZone ??
+                getScenarioZone(this.match, this.controller ?? this.owner);
         }
     }
     get initial() {
@@ -60,7 +62,8 @@ export class SchemeGameCard extends GameCard {
     canRemoveThreat({ignoreCrisis = false} = {}) {
         if (this.threat > 0) {
             if (this.isMainScheme) {
-                if (ignoreCrisis || !this.match.hasCrisis) {
+                if (ignoreCrisis ||
+                    !(this.scenarioZone?.hasCrisis ?? this.match.hasCrisis)) {
                     return true;
                 }
             } else {

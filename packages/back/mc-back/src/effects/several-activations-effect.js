@@ -2,9 +2,15 @@ import {ValidTarget} from '../targets/valid-target.js';
 import {checkCondition} from '../engine/utils.js';
 
 import {ActivateEffect} from './activate-effect.js';
-import {PlayPhaseEffect} from './play-phase-effect.js';
+import {Effect} from './effect.js';
 
-export class SeveralActivationsEffect extends PlayPhaseEffect {
+export class SeveralActivationsEffect extends Effect {
+    static isSameEnemy(first, second) {
+        return first === second ||
+            (first.isVillain && second.isVillain &&
+                first.name === second.name &&
+                first.scenarioZone === second.scenarioZone);
+    }
     constructor({
         enemiesType,
         enemies,
@@ -15,11 +21,16 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
         this.enemiesType = enemiesType;
         this.enemies = enemies;
         this.enemiesCondition = enemiesCondition;
+        this.enemiesFromTarget = enemies === undefined;
     }
     async prepare(params) {
         await super.prepare(params);
 
-        if (!this.enemies) {
+        this.enemies = this.getEnemies(params);
+    }
+    getEnemies(params) {
+        let enemies = this.enemies || [];
+        if (this.enemiesFromTarget) {
             const {enemiesType} = this;
             const {player} = params;
 
@@ -29,7 +40,7 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
                 multipleTarget: true,
                 condition: this.condition,
             });
-            this.enemies = await validTarget.selectTarget({
+            enemies = validTarget.getValidTarget({
                 ...params,
                 ability: this.ability,
                 target: enemiesType,
@@ -38,9 +49,11 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
         }
 
         if (this.enemiesCondition) {
-            this.enemies = this.enemies.filter(enemy =>
+            enemies = enemies.filter(enemy =>
                 checkCondition(enemy, this.enemiesCondition));
         }
+
+        return enemies;
     }
     activate(enemy, params) {
         const activateEffect = new ActivateEffect({
@@ -56,10 +69,12 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
             ability: this.ability,
             effect: this,
         };
-        let enemies = [...(this.enemies || [])];
+        const activatedEnemies = new Set();
 
-        while (enemies.length) {
-            const availableEnemies = enemies.filter(enemy =>
+        while (!this.match.gameOverReason && !params.player?.defeated) {
+            const availableEnemies = this.getEnemies(selectionParams).filter(enemy =>
+                ![...activatedEnemies].some(activatedEnemy =>
+                    SeveralActivationsEffect.isSameEnemy(enemy, activatedEnemy)) &&
                 enemy.isInPlay !== false &&
                 this.validTarget.filter(enemy, selectionParams)
             );
@@ -77,7 +92,10 @@ export class SeveralActivationsEffect extends PlayPhaseEffect {
                 throw new Error('SeveralActivationsEffect requires a valid enemy selection.');
             }
 
-            enemies = enemies.filter(candidate => candidate !== enemy);
+            if (this.match.gameOverReason || params.player?.defeated) {
+                return;
+            }
+            activatedEnemies.add(enemy);
             await this.activate(enemy, params);
         }
     }

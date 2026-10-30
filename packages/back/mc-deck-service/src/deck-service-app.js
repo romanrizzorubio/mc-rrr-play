@@ -9,6 +9,7 @@ import {
 } from 'mc-data';
 import {ENDPOINTS} from 'mc-endpoints';
 import {validatePlayerDeck} from 'mc-shared';
+import {AuthServiceClient} from './auth-service-client.js';
 
 const createError = (message, statusCode) =>
     Object.assign(new Error(message), {statusCode});
@@ -73,13 +74,20 @@ const normalizeDeck = (body, catalog) => {
     };
 };
 
-const addValidation = (deck, catalog) => ({
-    ...deck,
-    heroName: catalog.hero.name,
-    validation: validatePlayerDeck(deck, catalog),
-});
+const addValidation = (deck, catalog, userId, favoriteDeckIds = []) => {
+    const publicDeck = {...deck};
+    delete publicDeck.creatorId;
 
-const addValidationByHero = async (decks, data) => {
+    return {
+        ...publicDeck,
+        canEdit: Boolean(userId && deck.creatorId === userId),
+        isFavorite: Boolean(userId && favoriteDeckIds.includes(deck.id)),
+        heroName: catalog.hero.name,
+        validation: validatePlayerDeck(deck, catalog),
+    };
+};
+
+const addValidationByHero = async (decks, data, userId, favoriteDeckIds) => {
     const heroIds = [...new Set(decks.map(({heroId}) => heroId))];
     const catalogs = new Map(await Promise.all(heroIds.map(async heroId => {
         const catalog = await data.getDeckEditorCatalog(heroId);
@@ -90,7 +98,8 @@ const addValidationByHero = async (decks, data) => {
         return [heroId, catalog];
     })));
 
-    return decks.map(deck => addValidation(deck, catalogs.get(deck.heroId)));
+    return decks.map(deck =>
+        addValidation(deck, catalogs.get(deck.heroId), userId, favoriteDeckIds));
 };
 
 const normalizeRepositoryDecks = async (decks, data) => {
@@ -139,11 +148,68 @@ const sendError = (error, _req, res, next) => {
 
 export const createDeckServiceApp = ({
     data,
+    authServiceUrl = process.env.AUTH_SERVICE_URL || 'https://localhost:3003',
+    authenticate = AuthServiceClient.authenticate,
     repositoryDeckSnapshotPath = REPOSITORY_DECK_SNAPSHOT_PATH,
 }) => {
     const app = express();
-    app.use(cors());
+    const allowedOrigins = (
+        process.env.FRONTEND_ORIGINS ||
+        'https://localhost:8000,https://localhost:8100'
+    ).split(',').map(origin => origin.trim()).filter(Boolean);
+    app.use(cors({
+        origin: allowedOrigins,
+        credentials: true,
+    }));
     app.use(express.json({limit: '100kb'}));
+    const authenticateRequest = req =>
+        authenticate(req.headers.cookie, authServiceUrl);
+    const authenticateAdminRequest = async req => {
+        const user = await authenticateRequest(req);
+        if (user.isAdmin !== true) {
+            throw createError('Solo un administrador puede realizar esta acción.', 403);
+        }
+
+        return user;
+    };
+    const authenticateOptionalRequest = async req => {
+        if (typeof req.headers.cookie !== 'string' || !req.headers.cookie.trim()) {
+            return null;
+        }
+
+        try {
+            return await authenticateRequest(req);
+        } catch (error) {
+            if (error.statusCode === 401) {
+                return null;
+            }
+            throw error;
+        }
+    };
+    const changeDeckFavorite = async (req, res, next, isFavorite) => {
+        try {
+            const user = await authenticateRequest(req);
+            const deck = await data.getDeck(req.params.id);
+            if (!deck) {
+                throw createError(`No se encontró el mazo "${req.params.id}".`, 404);
+            }
+            if (deck.creatorId === user.id) {
+                throw createError(
+                    'Solo puedes marcar como favorito un mazo de otro creador.',
+                    400,
+                );
+            }
+
+            const favorite = await data.setDeckFavorite(
+                user.id,
+                deck.id,
+                isFavorite,
+            );
+            res.json({isFavorite: favorite});
+        } catch (error) {
+            next(error);
+        }
+    };
 
     app.get('/healthz', (_req, res) => {
         res.json({status: 'ok'});
@@ -176,10 +242,19 @@ export const createDeckServiceApp = ({
 
     app.get(ENDPOINTS.DECK.LIST, async (req, res, next) => {
         try {
+            const user = await authenticateOptionalRequest(req);
+            const favoriteDeckIds = user ?
+                await data.getFavoriteDeckIds(user.id) :
+                [];
             const heroId = req.query.hero;
             if (heroId === undefined) {
                 const decks = await data.getDecksList();
-                const withValidation = await addValidationByHero(decks, data);
+                const withValidation = await addValidationByHero(
+                    decks,
+                    data,
+                    user?.id,
+                    favoriteDeckIds,
+                );
                 res.json(req.query.legal === 'true' ?
                     withValidation.filter(deck => deck.validation.legal) :
                     withValidation);
@@ -194,7 +269,8 @@ export const createDeckServiceApp = ({
                 throw createError(`No se encontró el superhéroe "${heroId}".`, 404);
             }
             const decks = await data.getDecksList(heroId);
-            const withValidation = decks.map(deck => addValidation(deck, catalog));
+            const withValidation = decks.map(deck =>
+                addValidation(deck, catalog, user?.id, favoriteDeckIds));
             res.json(req.query.legal === 'true' ?
                 withValidation.filter(deck => deck.validation.legal) :
                 withValidation);
@@ -203,8 +279,9 @@ export const createDeckServiceApp = ({
         }
     });
 
-    app.post(ENDPOINTS.DECK.SAVE_REPOSITORY, async (_req, res, next) => {
+    app.post(ENDPOINTS.DECK.SAVE_REPOSITORY, async (req, res, next) => {
         try {
+            await authenticateAdminRequest(req);
             const repositorySnapshot = parseRepositoryDeckSnapshot(
                 await readFile(repositoryDeckSnapshotPath, 'utf8'),
             );
@@ -217,8 +294,9 @@ export const createDeckServiceApp = ({
         }
     });
 
-    app.post(ENDPOINTS.DECK.RESTORE_REPOSITORY, async (_req, res, next) => {
+    app.post(ENDPOINTS.DECK.RESTORE_REPOSITORY, async (req, res, next) => {
         try {
+            const user = await authenticateAdminRequest(req);
             const snapshot = parseRepositoryDeckSnapshot(
                 await readFile(repositoryDeckSnapshotPath, 'utf8'),
             );
@@ -226,7 +304,7 @@ export const createDeckServiceApp = ({
             res.json(await data.restoreRepositoryDecks({
                 decks: repositoryDecks,
                 deletions: snapshot.deletions,
-            }));
+            }, user.id));
         } catch (error) {
             next(error);
         }
@@ -234,6 +312,10 @@ export const createDeckServiceApp = ({
 
     app.get(`${ENDPOINTS.DECK.LIST}/:id`, async (req, res, next) => {
         try {
+            const user = await authenticateOptionalRequest(req);
+            const favoriteDeckIds = user ?
+                await data.getFavoriteDeckIds(user.id) :
+                [];
             const deck = await data.getDeck(req.params.id);
             if (!deck) {
                 throw createError(`No se encontró el mazo "${req.params.id}".`, 404);
@@ -243,14 +325,23 @@ export const createDeckServiceApp = ({
             if (!catalog) {
                 throw createError(`No se encontró el superhéroe "${deck.heroId}".`, 404);
             }
-            res.json(addValidation(deck, catalog));
+            res.json(addValidation(deck, catalog, user?.id, favoriteDeckIds));
         } catch (error) {
             next(error);
         }
     });
 
+    app.post(ENDPOINTS.DECK.FAVORITE, (req, res, next) => {
+        changeDeckFavorite(req, res, next, true);
+    });
+
+    app.delete(ENDPOINTS.DECK.FAVORITE, (req, res, next) => {
+        changeDeckFavorite(req, res, next, false);
+    });
+
     app.post(ENDPOINTS.DECK.LIST, async (req, res, next) => {
         try {
+            const user = await authenticateRequest(req);
             const heroId = req.body?.heroId;
             if (typeof heroId !== 'string' || !heroId) {
                 throw createError('El mazo debe estar asociado a un superhéroe.', 400);
@@ -269,10 +360,18 @@ export const createDeckServiceApp = ({
                 if (existingDeck.heroId !== heroId) {
                     throw createError('No se puede cambiar el superhéroe de un mazo existente.', 400);
                 }
+                if (existingDeck.creatorId !== user.id) {
+                    throw createError('Solo el creador puede editar este mazo.', 403);
+                }
             }
 
-            const savedDeck = await data.saveDeck(deck);
-            res.status(deck.id ? 200 : 201).json(addValidation(savedDeck, catalog));
+            const savedDeck = await data.saveDeck({
+                ...deck,
+                creatorId: user.id,
+            });
+            res.status(deck.id ? 200 : 201).json(
+                addValidation(savedDeck, catalog, user.id),
+            );
         } catch (error) {
             next(error);
         }
@@ -280,7 +379,16 @@ export const createDeckServiceApp = ({
 
     app.delete(`${ENDPOINTS.DECK.LIST}/:id`, async (req, res, next) => {
         try {
-            const deleted = await data.deleteDeck(req.params.id);
+            const user = await authenticateRequest(req);
+            const deck = await data.getDeck(req.params.id);
+            if (!deck) {
+                throw createError(`No se encontró el mazo "${req.params.id}".`, 404);
+            }
+            if (deck.creatorId !== user.id) {
+                throw createError('Solo el creador puede eliminar este mazo.', 403);
+            }
+
+            const deleted = await data.deleteDeck(req.params.id, user.id);
             if (!deleted) {
                 throw createError(`No se encontró el mazo "${req.params.id}".`, 404);
             }

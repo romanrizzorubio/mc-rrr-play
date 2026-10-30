@@ -37,8 +37,18 @@ export class McGameZone extends LitElement {
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
     }
-    handlePlayCardDragOver(event) {
+    canPlayDraggedCardOnPlayer() {
         if (!this.dragPlayCard?.playableInGameZone) {
+            return false;
+        }
+
+        const playerIds = this.dragPlayCard.playablePlayerIds || [];
+        return playerIds.length ?
+            playerIds.includes(this.player?.id) :
+            true;
+    }
+    handlePlayCardDragOver(event) {
+        if (!this.canPlayDraggedCardOnPlayer()) {
             return;
         }
 
@@ -48,17 +58,19 @@ export class McGameZone extends LitElement {
         }
     }
     handlePlayCardDrop(event) {
-        if (!this.dragPlayCard?.playableInGameZone) {
+        if (!this.canPlayDraggedCardOnPlayer()) {
             return;
         }
 
         event.preventDefault();
         event.stopPropagation();
+        const playerIds = this.dragPlayCard.playablePlayerIds || [];
         this.dispatchEvent(new CustomEvent('play-card-drop', {
             bubbles: true,
             composed: true,
             detail: {
                 card: this.dragPlayCard.card,
+                ...(playerIds.length ? {targetId: this.player.id} : {}),
             },
         }));
     }
@@ -210,7 +222,7 @@ export class McGameZone extends LitElement {
     render() {
         return html`
             <div
-                class="play-card-drop-zone ${this.dragPlayCard?.playableInGameZone ?
+                class="play-card-drop-zone ${this.canPlayDraggedCardOnPlayer() ?
                     'available' : ''}"
                 @dragover="${this.handlePlayCardDragOver.bind(this)}"
                 @drop="${this.handlePlayCardDrop.bind(this)}"

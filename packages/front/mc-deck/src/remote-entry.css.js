@@ -21,6 +21,18 @@ export default css`
     border-radius: 8px;
   }
 
+  .login-required {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid #bdbdbd;
+    border-radius: 8px;
+  }
+
+  .login-required h2 {
+    margin-top: 0;
+    font-family: var(--mc-font-title, sans-serif);
+  }
+
   .hero-selection h2 {
     font-family: var(--mc-font-title, sans-serif);
     margin-top: 0;
@@ -38,6 +50,10 @@ export default css`
     }
 
     .hero-selection {
+      padding: 16px;
+    }
+
+    .login-required {
       padding: 16px;
     }
   }

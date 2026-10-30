@@ -16,7 +16,7 @@ export const hydraTerrorist = {
     type: CARD_TYPE_MINION,
     params: {
         name: 'Terrorista de Hydra',
-        image: 'sets/bomb-scare/bomb2.webp',
+        image: 'sets/bomb-scare/01110.png',
         traits: [TRAIT_HYDRA],
         boost: 1,
         scheme: 1,

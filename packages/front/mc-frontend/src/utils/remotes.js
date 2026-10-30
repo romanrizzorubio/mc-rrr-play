@@ -13,8 +13,9 @@ export const loadRuntimeConfig = () => {
             .then(config => {
                 if (!config.services?.match || !config.services?.matchCreation ||
                     !config.services?.deck ||
+                    !config.services?.users ||
                     !config.remotes?.mcMatch || !config.remotes?.mcDeck ||
-                    !config.remotes?.mcStatic) {
+                    !config.remotes?.mcStatic || !config.remotes?.mcUsers) {
                     throw new Error('app-config.json no contiene todas las URL de servicios y remotos.');
                 }
 

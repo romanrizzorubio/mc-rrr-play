@@ -11,6 +11,8 @@ export class McDialog extends LitElement {
             showCancel: {type: Boolean},
             hideOk: {type: Boolean},
             hand: {type: Array},
+            readOnly: {type: Boolean},
+            targetPlayerName: {type: String},
 
             _response: {type: Object},
             _showHand: {type: Boolean},
@@ -26,6 +28,8 @@ export class McDialog extends LitElement {
         this.showCancel = false;
         this.hideOk = false;
         this.hand = [];
+        this.readOnly = false;
+        this.targetPlayerName = '';
         this._showHand = false;
 
         this._response = {};
@@ -89,6 +93,9 @@ export class McDialog extends LitElement {
         this.initDefaultData(data, this.defaultProperties);
     }
     sendResponse() {
+        if (this.readOnly) {
+            return;
+        }
         const {_response} = this;
 
         this.dispatchEvent(new CustomEvent('dialog-ok', {
@@ -101,6 +108,9 @@ export class McDialog extends LitElement {
         return true;
     }
     handleCancel() {
+        if (this.readOnly) {
+            return;
+        }
         const {_response} = this;
 
         this.dispatchEvent(new CustomEvent('dialog-cancel', {
@@ -110,9 +120,15 @@ export class McDialog extends LitElement {
         }));
     }
     handleShowHand() {
+        if (this.readOnly) {
+            return;
+        }
         this._showHand = !this._showHand;
     }
     handleOk() {
+        if (this.readOnly) {
+            return;
+        }
         if (this.validate()) {
             this.sendResponse();
         }
@@ -124,18 +140,28 @@ export class McDialog extends LitElement {
         return html`
             ${this.renderTitle()}
             <div class="content">
+                ${this.renderResponsiblePlayer()}
                 ${this.renderSubtitle()}
-                ${this._showHand ? this.renderHand() : this.renderContent()}
+                ${this.readOnly ? html`
+                    <div inert>${this.renderContent()}</div>
+                ` : this._showHand ? this.renderHand() : this.renderContent()}
                 ${this.renderFooter()}
             </div>
         `;
     }
+    renderResponsiblePlayer() {
+        return this.targetPlayerName ? html`
+            <p class="dialog-responsible-player">
+                Héroe responsable: ${this.targetPlayerName}
+            </p>
+        ` : html``;
+    }
     renderFooter() {
         const footer = this.getFooter();
 
-        return html`
+        return footer ? html`
             <h3 class="footer">${footer}</h3>
-        `;
+        ` : html``;
     }
     renderHand() {
         const {hand} = this;
@@ -149,21 +175,21 @@ export class McDialog extends LitElement {
     renderSubtitle() {
         const subtitle = this.getSubtitle();
 
-        return html`
+        return subtitle ? html`
             <h3 class="subtitle">${subtitle}</h3>
-        `;
+        ` : html``;
     }
     renderTitle() {
         const {hand} = this;
 
         const title = this.getTitle();
 
-        return html`
+        return title || (!this.readOnly && hand?.length) ? html`
             <h2 class="title">
                 <span>${title}</span>
-                ${hand && hand.length ? this.renderButtonHand() : ''}
+                ${!this.readOnly && hand && hand.length ? this.renderButtonHand() : ''}
             </h2>
-        `;
+        ` : html``;
     }
     renderButtonCancel() {
         const {showCancel} = this;
@@ -193,6 +219,9 @@ export class McDialog extends LitElement {
         ` : html``;
     }
     renderButtons() {
+        if (this.readOnly) {
+            return html``;
+        }
         return html`
             ${this.renderButtonCancel()}
             ${this.renderButtonOk()}

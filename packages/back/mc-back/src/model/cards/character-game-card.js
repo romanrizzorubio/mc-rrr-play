@@ -145,7 +145,9 @@ export class CharacterGameCard extends GameCard {
         return defense;
     }
     get gameZone() {
-        if (this.isMinion) {
+        if (this.isVillain) {
+            return this.scenarioZone;
+        } else if (this.isMinion) {
             return this.engaged.gameZone;
         } else if (this.isAlly) {
             return this.controller.gameZone;
@@ -509,9 +511,15 @@ export class CharacterGameCard extends GameCard {
 
         return 0;
     }
+    async init() {
+        await super.init();
+        this.stunned = 0;
+        this.confused = 0;
+        this.tough = 0;
+    }
     async defeat(player) {
         if (this.isVillain) {
-            await this.match.scenario.selectVillain(player);
+            await this.match.scenario.selectVillain(player, this);
         } else if (this.isSuperhero) {
             this.stunned = 0;
             this.confused = 0;
@@ -644,7 +652,11 @@ export class CharacterGameCard extends GameCard {
         const player = controller?.isPlayer ? controller : match.initialPlayer;
         const card = await this.toObjWithAbilityAvailability(player);
 
-        match.mc.mcSocket.send(match.name, REFRESH_EVENTS[this.objectToRefresh], card);
+        match.mc.mcSocket.send(
+            match.name,
+            REFRESH_EVENTS[this.objectToRefresh],
+            GameCard.getRefreshPayload(this, card),
+        );
     }
     async toObjWithAbilityAvailability(player) {
         const abilityAvailability = await this.getAbilityAvailability(player);

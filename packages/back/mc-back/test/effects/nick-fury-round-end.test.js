@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {DIALOG_LIST, DIALOG_USE_CARD} from 'mc-shared';
 import basicAllies from '../../../mc-data/seed/catalog/aspects/basic/allies.js';
@@ -8,7 +8,7 @@ import {Engine} from '../../src/engine/engine.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {PutPlayEffect} from '../../src/effects/put-play-effect.js';
 
-test('Nick Fury is discarded at its match round end when another round is current', async () => {
+describe('Nick Fury round end', () => test('Nick Fury is discarded at its match round end when another round is current', async () => {
     const discardedCards = [];
     const player = {
         isPlayer: true,
@@ -78,7 +78,6 @@ test('Nick Fury is discarded at its match round end when another round is curren
         card: nickFuryCard,
         owner: player,
     });
-    nickFury.init = async () => {};
 
     const round = new PlayRoundEffect({match});
     const otherMatch = {
@@ -101,10 +100,16 @@ test('Nick Fury is discarded at its match round end when another round is curren
 
     assert.equal(round.delayedEffects.length, 0);
     assert.equal(match.lasting.length, 1);
+    nickFury.tough = 1;
+    nickFury.stunned = 1;
+    nickFury.confused = 1;
 
     await round.triggerEnds({player});
 
     assert.equal(player.gameZone.cards.includes(nickFury), false);
     assert.deepEqual(discardedCards, [nickFury]);
     assert.equal(match.lasting.length, 0);
-});
+    assert.equal(nickFury.tough, 0);
+    assert.equal(nickFury.stunned, 0);
+    assert.equal(nickFury.confused, 0);
+}));

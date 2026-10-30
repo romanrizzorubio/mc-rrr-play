@@ -51,6 +51,7 @@ export class MayEffect extends Effect {
         const response = await this.openDialog({
             dialogType: 'confirm',
             showCancel: true,
+            targetPlayer: player,
             title: this.title,
             subtitle,
             hand: player.hand.cards.map(card => card.toObj(params)),

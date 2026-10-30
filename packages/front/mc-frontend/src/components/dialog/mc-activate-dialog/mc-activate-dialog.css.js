@@ -5,7 +5,7 @@ export default css`
     display: block;
   }
 
-  .activate .content {
+  .activation-cards {
     box-sizing: border-box;
     display: flex;
     font-size: 2em;

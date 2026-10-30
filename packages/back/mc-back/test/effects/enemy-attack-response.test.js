@@ -47,7 +47,9 @@ import spiderman from '../../../mc-data/seed/catalog/heroes/spiderman.js';
 
 describe('enemy attack responses', () => {
     test('enemy attacks show a directly selected hero in the activation dialog', async () => {
+        const player = {id: 'affected-player', isPlayer: true};
         const hero = {
+            owner: player,
             name: 'Spider-Man',
             async getEffectiveStats() {
                 return {
@@ -92,9 +94,11 @@ describe('enemy attack responses', () => {
             dialog = params;
         };
 
-        await attack.prepare({player: hero});
+        await attack.prepare({player});
 
         assert.equal(dialog.dialogType, DIALOG_ACTIVATE);
+        assert.strictEqual(dialog.targetPlayer, player);
+        assert.equal(dialog.showToAll, true);
         assert.equal(dialog.title, 'Escorpión ataca a Spider-Man');
         assert.equal(dialog.data.target.name, 'Spider-Man');
         assert.equal(dialog.data.target.attack, 3);
@@ -518,12 +522,16 @@ describe('enemy attack responses', () => {
         const effect = new EffectsFactory({match}).parseEffect(ability.params.effect);
         const attack = effect.effects.find(_effect => _effect instanceof EnemyAttackEffect);
         let dialogTitle;
+        const player = {id: 'affected-player', isPlayer: true, superhero: hero};
+        hero.owner = player;
 
         assert.ok(attack);
-        attack.openDialog = async ({title}) => {
+        attack.openDialog = async ({title, targetPlayer, showToAll}) => {
             dialogTitle = title;
+            assert.strictEqual(targetPlayer, player);
+            assert.equal(showToAll, true);
         };
-        await attack.prepare({player: {superhero: hero}});
+        await attack.prepare({player});
 
         assert.equal(attack.enemyType, CHARACTER_VILLAIN);
         assert.equal(attack.character, villain);

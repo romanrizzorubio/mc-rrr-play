@@ -21,6 +21,10 @@ import {
 RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-shared';
 
 import {checkCondition, path} from './utils.js';
+import {
+    getMainSchemeFor,
+    getVillainFor,
+} from '../utils/match-zone-utils.js';
 
 const CALCULATION_MAP = {
     [CALC_BOOST_ICONS]: source => {
@@ -236,10 +240,12 @@ export class Calc {
         if (formula === CALC_STAGE) {
             switch (target) {
                 case TARGET_VILLAIN:
-                    source = path(params, 'match.villain');
+                    source = getVillainFor(params.match, params.player) ??
+                        path(params, 'match.villain');
                     break;
                 case TARGET_MAIN_SCHEME:
-                    source = path(params, 'match.mainScheme');
+                    source = getMainSchemeFor(params.match, params.player) ??
+                        path(params, 'match.mainScheme');
                     break;
                 default:
                     throw new Error(

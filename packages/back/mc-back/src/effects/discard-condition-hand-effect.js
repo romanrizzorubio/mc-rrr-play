@@ -31,7 +31,11 @@ export class DiscardConditionHandEffect extends Effect {
             super.canRun(params);
     }
     async execute(params) {
-        const cards = await this.selectDiscardOrder(this.cards);
+        const cards = await this.selectDiscardOrder(
+            this.cards,
+            undefined,
+            {targetPlayer: params.player}
+        );
 
         const discardFromHandEffect = new DiscardFromHandEffect({
             match: this.match,

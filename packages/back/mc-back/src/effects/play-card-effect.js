@@ -1,4 +1,5 @@
 import {
+    ABILITY_ACTION,
     DIALOG_MAX_CARDS,
     DIALOG_PAY_COST,
     PLACE_HAND,
@@ -123,6 +124,7 @@ export class PlayCardEffect extends Effect {
 
         const response = await this.openDialog({
             dialogType: DIALOG_MAX_CARDS,
+            targetPlayer: player,
             title: 'Cartas restringidas',
             showCancel: true,
             data: {
@@ -212,6 +214,12 @@ export class PlayCardEffect extends Effect {
             ...super.getTriggersParams(params),
             card: this.card,
         };
+    }
+    selectTarget(params) {
+        return super.selectTarget({
+            ...params,
+            targetPlayer: params.targetPlayer || params.player,
+        });
     }
     async preselectDroppedTarget(params) {
         const {card, targetId} = this;
@@ -426,6 +434,7 @@ export class PlayCardEffect extends Effect {
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
+            targetPlayer: player,
             data: {
                 cost: cost.amount,
                 requirement: card.requirement,
@@ -556,17 +565,24 @@ export class PlayCardEffect extends Effect {
             }
         }
     }
-    selectAbility() {
+    async selectAbility() {
+        const {card, abilityType} = this;
+        const abilities = card.isEvent && abilityType === ABILITY_ACTION ?
+            await card.getAbilitiesType(ABILITY_ACTION) :
+            card.abilities;
+        if (card.isEvent && !abilities.length) {
+            const error = new Error('El evento no tiene una capacidad disponible para esta jugada.');
+            error.statusCode = 409;
+            throw error;
+        }
         return new Promise(resolve => {
-            const {card} = this;
-
             if (card.isEvent) {
-                if (card.abilities.length > 1) {
+                if (abilities.length > 1) {
                     // TODO: Implement dialog to select ability when event has multiple abilities
                     console.error('ELEGIR CAPACIDAD (MULTIPLE ABILITIES NOT YET SUPPORTED)');
-                    return resolve(card.abilities[0]);
+                    return resolve(abilities[0]);
                 } else {
-                    return resolve(card.abilities[0]);
+                    return resolve(abilities[0]);
                 }
             } else {
                 return resolve();

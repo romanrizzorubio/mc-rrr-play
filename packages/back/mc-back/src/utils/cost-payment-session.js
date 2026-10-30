@@ -385,6 +385,7 @@ export class CostPaymentSession {
 
         const response = await effect.openDialog({
             dialogType: DIALOG_LIST,
+            targetPlayer: params.player,
             showCancel: true,
             hideOk: true,
             title: '¿Qué coste quieres pagar ahora?',

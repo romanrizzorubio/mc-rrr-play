@@ -25,6 +25,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         this.requiredForAvailability = requiredForAvailability;
         this.baseDamage = damage;
         this.damageModifier = 0;
+        this.modifyAttack = 0;
         this.targetCountCalc = params.targetCountCalc;
         this.selectCount = params.selectCount;
 
@@ -37,6 +38,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
     }
     resetResolutionData() {
         super.resetResolutionData();
+        this.modifyAttack = 0;
         this.dealtDamage = 0;
         this.preventDamage = 0;
         this.takenDamage = 0;
@@ -64,6 +66,9 @@ export class DealDamageEffect extends AttackEffect(Effect) {
                 return this.damage.some((d, index) => d > this.preventDamage[index]);
             }
             return this.damage.some(d => d > this.preventDamage);
+        }
+        if (Array.isArray(this.preventDamage)) {
+            return this.preventDamage.some(prevention => this.damage > prevention);
         }
         return this.damage > this.preventDamage;
     }
@@ -166,15 +171,19 @@ export class DealDamageEffect extends AttackEffect(Effect) {
 
         const {activation} = this;
         if (this.isAttack && activation?.getOverkill?.(params)) {
-            await activation.applyOverkill(params);
+            await activation.applyOverkill(params, this);
         }
 
-        const {selectedTarget, damage} = this;
-        const preventDamage = this.preventDamageAmount > 0 ?
-            Array.isArray(damage) ?
-                damage.map(amount => Math.min(amount, this.preventDamageAmount)) :
-                Math.min(damage, this.preventDamageAmount) :
-            0;
+        const {selectedTarget} = this;
+        const damage = Array.isArray(selectedTarget) &&
+            Array.isArray(this.preventDamage) && !Array.isArray(this.damage) ?
+            selectedTarget.map(() => this.damage) : this.damage;
+        const preventDamage = Array.isArray(damage) ?
+            damage.map((amount, index) => Math.min(amount,
+                (Array.isArray(this.preventDamage) ?
+                    this.preventDamage[index] ?? 0 : this.preventDamage ?? 0) +
+                this.preventDamageAmount)) :
+            Math.min(damage, (this.preventDamage ?? 0) + this.preventDamageAmount);
         const takeDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_TAKE_DAMAGE,
             selectedTarget,

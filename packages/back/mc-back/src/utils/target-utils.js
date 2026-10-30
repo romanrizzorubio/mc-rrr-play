@@ -23,10 +23,13 @@ export function getCurrentVillainStage(target, match) {
         return changed ? currentStages : target;
     }
 
+    const currentVillain = target?.scenarioZone?.currentVillain ??
+        match?.getVillainFor?.(target?.engaged) ??
+        match?.villain;
     if (target?.isVillain &&
         !target.isInPlay &&
-        match?.villain?.name === target.name) {
-        return match.villain;
+        currentVillain?.name === target.name) {
+        return currentVillain;
     }
 
     return target;

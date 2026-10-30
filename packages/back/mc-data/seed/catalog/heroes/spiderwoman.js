@@ -56,7 +56,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
-    TARGET_ALL_DECKS,
+    TARGET_ANY_DECK,
     TARGET_ALL_CHARACTERS,
     TARGET_ALL_SCHEMES,
     TARGET_ALTEREGO,
@@ -527,7 +527,7 @@ export default {
                                 'effect': {
                                     'type': EFFECT_LOOK_AT_TOP_CARDS,
                                     'params': {
-                                        'target': TARGET_ALL_DECKS,
+                                        'target': TARGET_ANY_DECK,
                                         'count': 1,
                                     },
                                 },

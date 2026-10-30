@@ -11,6 +11,13 @@ export default css`
     margin-right: 16px;
   }
 
+  .superhero-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: flex-end;
+  }
+
   .panel {
     display: flex;
     align-items: center;
@@ -26,10 +33,10 @@ export default css`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    align-self: flex-end;
     gap: 8px;
   }
 
-  mc-superhero-card.panel,
   mc-game-zone.panel {
     align-self: flex-end;
   }

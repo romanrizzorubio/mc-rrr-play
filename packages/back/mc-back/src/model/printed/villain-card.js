@@ -11,9 +11,11 @@ export class VillainCard extends MixinEnemyCard(MainScenarioCard) {
         hitPoints: _hitPoints, statusAvailable: _statusAvailable, toughness: _toughness, maxTough: _maxTough,
 // MixinEnemyCard
         scheme: _scheme,
+        final = false,
     }) {
         super(arguments[0]);
 
+        this.final = final;
         this.isVillain = true;
     }
     toObj() {

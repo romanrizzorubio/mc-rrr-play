@@ -23,12 +23,18 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
 - En objetivos de doble cara, el diálogo devuelve el `id` del lado mostrado y su `parentId`; la selección se resuelve contra el candidato de la partida usando el ID directo o el ID del padre.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_SCHEMES` y `TARGET_ALL_SIDE_SCHEMES`.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_DECKS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_PLAYERS`, `TARGET_ALL_SCHEMES`, `TARGET_ALL_SIDE_SCHEMES` y `TARGET_ALL_SUPPORTS`.
 - Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina durante la resolución o después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`, `EFFECT_EXHAUST` o `EFFECT_TOUGH`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
 
 Que un selector devuelva una colección de candidatos no significa por sí solo que el efecto se aplique a todos.
 
+Todos los selectores resolubles `TARGET_ALL_*` aplican el efecto al conjunto completo que cumpla `condition`, sin elegir uno. Sus equivalentes `ANY` o singulares (`TARGET_CHARACTER`, `TARGET_ENEMY`, `TARGET_MINION`, `TARGET_SCHEME`, `TARGET_SIDE_SCHEME`, `TARGET_ALLY_YOU_CONTROL`, etc.) seleccionan uno del conjunto filtrado. Una condición puede combinar propiedades, rutas, negaciones y alternativas OR; las condiciones agregadas conservan los empates después de comprobar la elegibilidad. `selectCount` o `selectUpTo` explícitos siguen permitiendo elegir un subconjunto incluso con un selector `ALL`.
+
+`TARGET_ALLY` significa un aliado, no un grupo `ALL`; es el alias de `TARGET_ALLY_YOU_CONTROL`. Ambos selectores de aliados controlados, singular y plural, usan el controlador de la fuente cuando existe. `TARGET_ANY`, empleado como comodín de recursos, no es un selector de objetivos registrado en `targetMap`.
+
 Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH` con `target` y, cuando corresponda, `condition`. Este efecto filtra los candidatos, conserva el orden del selector y el contexto del candidato actual; no aplica un orden especial según el tipo de selector.
+
+`TARGET_ALL_PLAYERS` aplica el efecto a todos los jugadores que cumplan `condition`, sin elegir un beneficiario. `TARGET_ANY_PLAYER` parte de ese mismo total filtrado, pero elige uno (automáticamente si solo queda uno). Ambos admiten condiciones sobre propiedades del jugador o rutas de su superhéroe, condiciones negativas y condiciones agregadas de selección. Un robo para todos se configura directamente como `EFFECT_DRAW_CARD` con `target: TARGET_ALL_PLAYERS`; no necesita `EFFECT_FOR_EACH`. Reserva este último para composiciones que deban ejecutarse con un contexto distinto por jugador, como búsquedas o elecciones independientes.
 
 Cuando una habilidad de carta identifica un objetivo por `condition.name`, el motor aplica automáticamente la regla de referencia a los candidatos válidos: primero la propia carta fuente, después las cartas asociadas al mismo superhéroe/conjunto y, por último, las cartas de la misma categoría que la fuente (jugador o encuentro). Solo permanecen las coincidencias del nivel más alto disponible, y se conservan todas las coincidencias de ese nivel. El conjunto asociado se obtiene de la carta fuente y su superhéroe; no lo repitas en la condición de la carta. Esta prioridad también se comprueba al validar objetivos preseleccionados.
 
@@ -65,7 +71,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ALL_FRIENDLY_CHARACTERS` | Los personajes amigos de todos los jugadores: superhéroes en su forma actual (héroe o alter ego) y aliados. |
 | `TARGET_ALL_HEROES` | Todos los jugadores cuyo superhéroe esté en forma de héroe; devuelve jugadores, no las cartas de héroe. |
 | `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes en forma de héroe y los aliados. |
-| `TARGET_ALL_PLAYERS` | Todos los jugadores. |
+| `TARGET_ALL_PLAYERS` | Todos los jugadores que cumplen `condition`; resuelve todos sin selección. |
 | `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
 | `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios; resuelve todos los resultados. |
 | `TARGET_ENVIRONMENT` | Los entornos en juego en la zona del escenario; selecciona uno si hay varios. |
@@ -156,14 +162,15 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 
 | Constante | Candidatos |
 | :--- | :--- |
-| `TARGET_ALL_DECKS` | El mazo de encuentros y el mazo de cada jugador. |
+| `TARGET_ALL_DECKS` | El mazo de encuentros y el mazo de cada jugador, incluidos los vacíos; resuelve todos los que cumplen `condition`. La elegibilidad específica, como tener una carta superior que mirar, la comprueba el efecto. |
+| `TARGET_ANY_DECK` | El mismo conjunto de mazos filtrado por `condition`, para elegir uno. Úsalo para mirar la carta superior de un mazo elegido, como la acción de Jessica Drew. |
 | `TARGET_ENCOUNTER_DECK` | El mazo de encuentros como objeto de mazo. |
 | `TARGET_ENCOUNTER_DECK_CARDS` | Las cartas del mazo de encuentros. |
 | `TARGET_ENCOUNTER_DISCARD` | Las cartas del descarte de encuentros. |
 | `TARGET_PLAYER_DISCARD` | Las cartas del descarte del jugador actual. |
 | `TARGET_PLAYER_EXTRA_DECK` | El mazo auxiliar del jugador actual identificado por `effect.deckId`. |
 | `TARGET_PLAYER_EXTRA_DECK_DISCARD` | Las cartas del descarte del mazo auxiliar del jugador actual identificado por `effect.deckId`. |
-| `TARGET_ANY_PLAYER` | Todos los jugadores, para seleccionar uno cuando corresponda. |
+| `TARGET_ANY_PLAYER` | Todos los jugadores que cumplen `condition`, para seleccionar uno cuando corresponda. |
 
 ### Selector especial (`targets/special.js`)
 

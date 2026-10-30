@@ -119,6 +119,7 @@ export class SelectDiscardToFindCardEffect extends Effect {
 
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_HAND,
+            targetPlayer: params.player,
             data: {
                 count,
                 upTo: true,
@@ -167,6 +168,7 @@ export class SelectDiscardToFindCardEffect extends Effect {
 
             const response = await this.openDialog({
                 dialogType: DIALOG_DISCARD_HAND,
+                targetPlayer: params.player,
                 data: {
                     count,
                     upTo: this.upTo,
@@ -227,6 +229,7 @@ export class SelectDiscardToFindCardEffect extends Effect {
                     'iconos de recursos';
                 const response = await this.openDialog({
                     dialogType: DIALOG_DISCARD_HAND,
+                    targetPlayer: params.player,
                     subtitle: this.resourceTypes?.length ?
                         'Cada icono de recurso impreso cuenta por separado.' :
                         undefined,

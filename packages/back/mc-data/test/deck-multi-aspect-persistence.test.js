@@ -301,11 +301,18 @@ describe('multi-aspect deck persistence', () => {
         let persistedDeck;
         const store = new MongoDataStore();
         store.database = {
-            collection: () => ({
+            collection: name => name === 'users' ? {
+                find: () => ({
+                    toArray: async () => [{
+                        _id: 'spiderwoman-owner',
+                        displayName: 'Spiderwoman owner',
+                    }],
+                }),
+            } : {
                 replaceOne: async (_query, deck) => {
                     persistedDeck = deck;
                 },
-            }),
+            },
         };
 
         const savedDeck = await store.saveDeck({
@@ -313,6 +320,7 @@ describe('multi-aspect deck persistence', () => {
             heroId: 'spiderwoman',
             aspect: ['aggression', 'justice'],
             cards: [{id: 'aggression-card', count: 2}],
+            creatorId: 'spiderwoman-owner',
         });
 
         assert.deepEqual(savedDeck.aspect, ['aggression', 'justice']);

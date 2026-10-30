@@ -30,6 +30,46 @@ export class ConfigMatch {
             params: {id},
         });
     }
+    createLobby(lobby) {
+        return this.api.post({
+            endpoint: ENDPOINTS.MATCH.LOBBIES,
+            params: lobby,
+        });
+    }
+    getLobbiesList() {
+        return this.api.get({
+            endpoint: ENDPOINTS.MATCH.LOBBIES,
+        });
+    }
+    getLobby(id) {
+        return this.api.get({
+            endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}`,
+        });
+    }
+    joinLobby(id, player) {
+        return this.api.post({
+            endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}/join`,
+            params: player,
+        });
+    }
+    leaveLobby(id) {
+        return this.api.post({
+            endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}/leave`,
+            params: {},
+        });
+    }
+    startLobby(id) {
+        return this.api.post({
+            endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}/start`,
+            params: {},
+        });
+    }
+    deleteLobby(id) {
+        return this.api.delete({
+            endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}`,
+            params: {},
+        });
+    }
     async createPlayer(player) {
         return await this.api.post({
             endpoint: ENDPOINTS.PLAYER.CREATE,

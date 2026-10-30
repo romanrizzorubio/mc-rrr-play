@@ -1,6 +1,7 @@
 import {spawn} from 'node:child_process';
-import {mkdir} from 'node:fs/promises';
+import {access, mkdir} from 'node:fs/promises';
 import {createConnection} from 'node:net';
+import {get} from 'node:https';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -8,6 +9,28 @@ const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const mode = process.argv[2] || 'docker';
 if (!['local', 'docker'].includes(mode)) {
     throw new Error(`Unknown startup mode "${mode}". Use "local" or "docker".`);
+}
+
+process.env.FRONTEND_ORIGIN ??= 'https://localhost:8000';
+process.env.AUTH_SERVICE_URL ??= 'https://localhost:3003';
+process.env.MATCH_SERVICE_URL ??= 'https://localhost:3000';
+process.env.SESSION_COOKIE_SECURE ??= 'true';
+process.env.TLS_CERT_PATH ??= resolve(projectRoot, '.local/certs/localhost.pem');
+process.env.TLS_KEY_PATH ??= resolve(projectRoot, '.local/certs/localhost-key.pem');
+process.env.NODE_EXTRA_CA_CERTS ??= resolve(projectRoot, '.local/certs/rootCA.pem');
+
+const hasSmtpConfiguration = [
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_FROM',
+    'SMTP_USER',
+    'SMTP_PASSWORD',
+].some(name => process.env[name]?.trim());
+const useLocalMailCapture = !hasSmtpConfiguration;
+if (useLocalMailCapture) {
+    process.env.SMTP_HOST = '127.0.0.1';
+    process.env.SMTP_PORT = '1025';
+    process.env.SMTP_FROM = 'MC RRR Play <noreply@localhost>';
 }
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
@@ -31,6 +54,7 @@ const connectionErrors = new Set([
 const serviceStartupTimeout = 60_000;
 const children = new Map();
 let mongoContainerStarted = false;
+let mailpitContainerStarted = false;
 let stopRequested = false;
 let exitCode = 0;
 let resolveStop;
@@ -115,11 +139,16 @@ const signalChild = (child, state, signal) => {
     child.kill(signal);
 };
 
-const startChild = (command, args, {name, processGroup = false}) => {
+const startChild = (
+    command,
+    args,
+    {name, processGroup = false, env = process.env},
+) => {
     const detached = processGroup && process.platform !== 'win32';
     const child = spawn(command, args, {
         cwd: projectRoot,
         detached,
+        env,
         shell: process.platform === 'win32' && command.endsWith('.cmd'),
         stdio: 'inherit',
     });
@@ -178,7 +207,20 @@ const waitForHttpEndpoint = async (url, child, serviceName) => {
             throw new Error(`${serviceName} exited before ${url} became available`);
         }
         try {
-            const response = await fetch(url, {signal: AbortSignal.timeout(2_000)});
+            const response = url.startsWith('https:') ?
+                await new Promise((resolve, reject) => {
+                    const request = get(url, {rejectUnauthorized: false}, response => {
+                        response.resume();
+                        resolve({ok: response.statusCode >= 200 && response.statusCode < 400});
+                    });
+                    request.setTimeout(2_000, () => {
+                        const error = new Error(`Timed out checking ${url}`);
+                        error.code = 'ETIMEDOUT';
+                        request.destroy(error);
+                    });
+                    request.once('error', reject);
+                }) :
+                await fetch(url, {signal: AbortSignal.timeout(2_000)});
             if (response.ok) {
                 console.log(`${serviceName} is ready at ${url}`);
                 return;
@@ -199,9 +241,13 @@ const waitForHttpEndpoint = async (url, child, serviceName) => {
 
 const startAndWaitForService = async (scriptName, serviceName, healthUrl) => {
     const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const env = scriptName === 'start:mc-user-service' ?
+        {...process.env, PORT: '3003'} :
+        process.env;
     const child = startChild(npmCommand, ['run', scriptName], {
         name: serviceName,
         processGroup: true,
+        env,
     });
 
     await waitForHttpEndpoint(healthUrl, child, serviceName);
@@ -209,10 +255,11 @@ const startAndWaitForService = async (scriptName, serviceName, healthUrl) => {
 
 const startLocalMongo = async () => {
     if (!localMongoHosts.has(mongoHost)) {
-        throw new Error('Local mode requires MONGODB_URI to point to localhost.');
+        console.log('MONGODB_URI points to an external host; skipping the local MongoDB process.');
+        return;
     }
     if (mongoUrl.protocol === 'mongodb+srv:') {
-        throw new Error('Local mode requires a mongodb:// URI, not mongodb+srv://.');
+        throw new Error('Local MongoDB requires a mongodb:// URI, not mongodb+srv://.');
     }
     if (await canConnectToMongo(mongoHost, mongoPort)) {
         console.log(`MongoDB is already listening at ${mongoHost}:${mongoPort}; reusing it.`);
@@ -298,35 +345,76 @@ const stopChildren = async () => {
 
 const main = async () => {
     try {
+        try {
+            await Promise.all([
+                access(process.env.TLS_CERT_PATH),
+                access(process.env.TLS_KEY_PATH),
+                access(process.env.NODE_EXTRA_CA_CERTS),
+            ]);
+        } catch (cause) {
+            throw new Error(
+                'Faltan los certificados HTTPS locales. Ejecuta npm run https:setup antes de iniciar la app.',
+                {cause},
+            );
+        }
         if (!stopRequested) {
             await startMongo();
+        }
+        if (!stopRequested && useLocalMailCapture && mode === 'local') {
+            const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+            const maildev = startChild(npmCommand, ['run', 'maildev'], {
+                name: 'Local MailDev',
+                processGroup: true,
+            });
+            await waitForHttpEndpoint('http://127.0.0.1:8025/index.html', maildev, 'MailDev inbox');
+            console.log('Captured development emails are available at http://localhost:8025.');
+        } else if (!stopRequested && useLocalMailCapture) {
+            try {
+                await runNpmScript('mailpit:up');
+            } catch (cause) {
+                throw new Error(
+                    'Could not start local Mailpit. Check Docker Compose or configure ' +
+                    'SMTP_HOST, SMTP_PORT, and SMTP_FROM before starting the application.',
+                    {cause},
+                );
+            }
+            mailpitContainerStarted = true;
+            console.log('Mailpit inbox is available at http://localhost:8025.');
+        }
+        if (!stopRequested) {
+            await startAndWaitForService(
+                'start:mc-user-service',
+                'User service',
+                'https://127.0.0.1:3003/healthz',
+            );
         }
         if (!stopRequested) {
             await startAndWaitForService(
                 'start:mc-static',
                 'mc-static remote',
-                'http://127.0.0.1:8300/remoteEntry.js',
+                'https://127.0.0.1:8300/remoteEntry.js',
             );
         }
         if (!stopRequested) {
             await startAndWaitForService(
                 'start:backend',
                 'Match service',
-                'http://127.0.0.1:3000/healthz',
+                'https://127.0.0.1:3000/healthz',
             );
         }
         if (!stopRequested) {
             await startAndWaitForService(
                 'start:match-creation',
                 'Match creation service',
-                'http://127.0.0.1:3001/healthz',
+                'https://127.0.0.1:3001/healthz',
             );
         }
         if (!stopRequested) {
             const remotesAndDeckService = [
-                ['start:mc-match', 'mc-match remote', 'http://127.0.0.1:8100/remoteEntry.js'],
-                ['start:mc-deck', 'mc-deck remote', 'http://127.0.0.1:8200/remoteEntry.js'],
-                ['start:mc-deck-service', 'mc-deck-service', 'http://127.0.0.1:3002/healthz'],
+                ['start:mc-match', 'mc-match remote', 'https://127.0.0.1:8100/remoteEntry.js'],
+                ['start:mc-deck', 'mc-deck remote', 'https://127.0.0.1:8200/remoteEntry.js'],
+                ['start:mc-users', 'mc-users remote', 'https://127.0.0.1:8400/remoteEntry.js'],
+                ['start:mc-deck-service', 'mc-deck-service', 'https://127.0.0.1:3002/healthz'],
             ].map(([scriptName, serviceName, healthUrl]) =>
                 startAndWaitForService(scriptName, serviceName, healthUrl));
 
@@ -336,7 +424,7 @@ const main = async () => {
             await startAndWaitForService(
                 'start:frontend',
                 'Frontend',
-                'http://127.0.0.1:8000/app-config.json',
+                'https://127.0.0.1:8000/app-config.json',
             );
             console.log('All applications and services are ready. Press Ctrl+C to stop managed processes.');
             await stopped;
@@ -347,6 +435,9 @@ const main = async () => {
     } finally {
         if (mongoContainerStarted) {
             console.log('MongoDB container remains running; stop it with npm run mongo:down.');
+        }
+        if (mailpitContainerStarted) {
+            console.log('Mailpit remains running; stop it with npm run mailpit:down.');
         }
         await stopChildren();
         process.exitCode = exitCode;

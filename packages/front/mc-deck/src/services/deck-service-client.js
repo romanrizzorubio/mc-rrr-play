@@ -12,6 +12,7 @@ export class DeckServiceClient {
         const options = {
             method,
             headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
         };
         if (body !== undefined) {
             options.body = JSON.stringify(body);
@@ -38,6 +39,11 @@ export class DeckServiceClient {
 
         return this.request(`${ENDPOINTS.DECK.LIST}${query}`);
     }
+    getDeck(deckId) {
+        return this.request(
+            `${ENDPOINTS.DECK.LIST}/${encodeURIComponent(deckId)}`,
+        );
+    }
     saveDeck(deck) {
         const {id, name, heroId, aspect, cards} = deck;
 
@@ -50,6 +56,26 @@ export class DeckServiceClient {
                 aspect,
                 cards,
             },
+        });
+    }
+    cloneDeck(deck) {
+        const {name, heroId, aspect, cards} = deck;
+
+        return this.saveDeck({
+            name: `Clon de ${name}`.slice(0, 100),
+            heroId,
+            aspect,
+            cards,
+        });
+    }
+    setDeckFavorite(deckId, isFavorite) {
+        const endpoint = ENDPOINTS.DECK.FAVORITE.replace(
+            ':id',
+            encodeURIComponent(deckId),
+        );
+
+        return this.request(endpoint, {
+            method: isFavorite ? 'POST' : 'DELETE',
         });
     }
     deleteDeck(deckId) {

@@ -147,14 +147,14 @@ export class RevealEncounterEffect extends Effect {
         this.player = player;
 
         if (!selectedTarget.isMainScheme) {
-            await this.openDialog({
+            await this.openPublicDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 ...(selectedTarget.isVillain ? {title: 'Mostrando al villano'} : {}),
                 data: {
                     card: selectedTarget.toObj(arguments[0]),
                     horizontal: Boolean(selectedTarget.isMainScheme || selectedTarget.isSideScheme),
                 },
-            });
+            }, player);
         }
     }
     async reveal(params) {

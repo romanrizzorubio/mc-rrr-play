@@ -128,7 +128,10 @@ export class DefeatEffect extends Effect {
         }
         this.defeated = true;
 
-        const currentVillain = this.match.villain;
+        const scenarioZone = selectedTarget.scenarioZone;
+        const currentVillain = scenarioZone ?
+            scenarioZone.currentVillain :
+            this.match.villain;
         if (selectedTarget.isVillain &&
             currentVillain !== selectedTarget &&
             currentVillain?.name === selectedTarget.name) {
@@ -149,8 +152,10 @@ export class DefeatEffect extends Effect {
             }
         }
 
-        if (selectedTarget.isVillain && this.match.villain) {
-            this.match.villain.refresh();
+        if (selectedTarget.isVillain && currentVillain) {
+            currentVillain.refresh();
+        } else if (selectedTarget.isVillain && scenarioZone) {
+            await scenarioZone.refresh();
         } else {
             if (gameZone) {
                 await gameZone.refresh();

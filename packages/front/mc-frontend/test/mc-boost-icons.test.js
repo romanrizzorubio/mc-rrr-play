@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 globalThis.HTMLElement = class {};
 globalThis.window = {
+    mcStaticRemote: {getAssetUrl: path => path},
     customElements: {
         define() {},
     },
@@ -18,6 +19,7 @@ const {McEncountersDealtDialog} = await import(
     '../src/components/dialog/mc-encounters-dealt-dialog/mc-encounters-dealt-dialog.js'
 );
 
+describe('boost icon and encounter card presentation', () => {
 const renderTemplate = value => {
     if (Array.isArray(value)) {
         return value.map(renderTemplate).join('');
@@ -32,20 +34,6 @@ const renderTemplate = value => {
     }
 
     return String(value);
-};
-
-const collectTemplates = value => {
-    if (Array.isArray(value)) {
-        return value.flatMap(collectTemplates);
-    }
-    if (value && Array.isArray(value.strings) && Array.isArray(value.values)) {
-        return [
-            value,
-            ...value.values.flatMap(collectTemplates),
-        ];
-    }
-
-    return [];
 };
 
 const getBoostIconCount = markup =>
@@ -134,7 +122,7 @@ test('boost dealt dialog lets players peek at future facedown boost cards', () =
     assert.doesNotMatch(markup, /Capacidad de aumento:/);
 });
 
-test('encounter dealt dialog only enables peeking at previously seen cards', () => {
+test('encounter dealt summary never exposes identities or enables peeking', () => {
     const dialog = Object.create(McEncountersDealtDialog.prototype);
     dialog.data = {
         encounters: [{
@@ -157,18 +145,11 @@ test('encounter dealt dialog only enables peeking at previously seen cards', () 
         }],
         hazardIcons: 0,
     };
-    const template = dialog.renderContent();
-    const cardTemplates = collectTemplates(template).filter(cardTemplate =>
-        cardTemplate.strings.join('').includes('<mc-card'));
-    const seenCard = cardTemplates.find(cardTemplate =>
-        cardTemplate.values[0] === 'Carta vista');
-    const unseenCard = cardTemplates.find(cardTemplate =>
-        cardTemplate.values[0] === 'Carta no vista');
-
-    assert.equal(seenCard.values[3], true);
-    assert.equal(seenCard.values[4], true);
-    assert.equal(unseenCard.values[3], true);
-    assert.equal(unseenCard.values[4], false);
+    const markup = renderTemplate(dialog.renderContent());
+    assert.match(markup, /Hulka/u);
+    assert.match(markup, /aria-label="2 cartas repartidas"/u);
+    assert.equal((markup.match(/<mc-card-image\b/gu) || []).length, 1);
+    assert.doesNotMatch(markup, /Carta vista|Carta no vista|seen\.png|unseen\.png|canPeek|<mc-card(?:\s|>)/u);
 });
 
 test('encounter reveal dialog renders boost icons and omits the label at zero', () => {
@@ -193,4 +174,5 @@ test('encounter reveal dialog renders boost icons and omits the label at zero', 
 
     assert.doesNotMatch(zeroBoostMarkup, /Iconos de aumento/);
     assert.equal(getBoostIconCount(zeroBoostMarkup), 0);
+});
 });

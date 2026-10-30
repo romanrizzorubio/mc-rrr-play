@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {Match} from '../../src/model/match/match.js';
 import {Player} from '../../src/model/match/player.js';
@@ -21,6 +21,7 @@ const iconCard = ({
     endTriggers() {},
 });
 
+describe('in-play icons', () => {
 test('match resolves icons from every in-play zone and the current scheme, villain, and hero', () => {
     const match = new Match({
         mc: {mcSocket: {send() {}}},
@@ -103,4 +104,65 @@ test('match resolves icons from every in-play zone and the current scheme, villa
     villain.hasCrisis = false;
     assert.equal(scenarioZone.hasCrisis, false);
     assert.equal(match.hasCrisis, true);
+});
+
+test('acceleration and Crisis are local while Hazard icons are global', () => {
+    const match = new Match({
+        mc: {mcSocket: {send() {}}},
+        name: 'scenario-zone-icons-test',
+    });
+    const scenario = new Scenario({
+        mainSchemes: [],
+        match,
+        name: 'zone-icons',
+        scenarioCards: [],
+        sets: [],
+        separatePlayAreas: true,
+        villains: [],
+    });
+    const firstZone = scenario.createZone({id: 'first-zone'});
+    const secondZone = scenario.createZone({id: 'second-zone'});
+    firstZone.cards.push(iconCard({
+        accelerationIcons: 1,
+        hazardIcons: 1,
+        hasCrisis: true,
+    }));
+    secondZone.cards.push(iconCard({
+        accelerationIcons: 2,
+        hazardIcons: 2,
+    }));
+    const firstPlayer = new Player({
+        name: 'First',
+        superhero: iconCard(),
+        match,
+    });
+    const secondPlayer = new Player({
+        name: 'Second',
+        superhero: iconCard(),
+        match,
+    });
+    firstPlayer.gameZone = new PlayerZone({owner: firstPlayer});
+    secondPlayer.gameZone = new PlayerZone({owner: secondPlayer});
+    firstPlayer.gameZone.cards.push(iconCard({
+        accelerationIcons: 3,
+        hazardIcons: 1,
+    }));
+    secondPlayer.gameZone.cards.push(iconCard({
+        accelerationIcons: 4,
+        hazardIcons: 2,
+    }));
+    firstZone.addPlayer(firstPlayer);
+    secondZone.addPlayer(secondPlayer);
+    scenario.gameZone = firstZone;
+    match.scenario = scenario;
+    match.players = [firstPlayer, secondPlayer];
+
+    assert.equal(match.getAccelerationIconsFor(firstPlayer), 4);
+    assert.equal(match.getAccelerationIconsFor(secondPlayer), 6);
+    assert.equal(match.hasCrisisFor(firstPlayer), true);
+    assert.equal(match.hasCrisisFor(secondPlayer), false);
+    assert.equal(scenario.hazardIcons, 3);
+    assert.equal(match.getHazardIconsFor(firstPlayer), 6);
+    assert.equal(match.getHazardIconsFor(secondPlayer), 6);
+});
 });

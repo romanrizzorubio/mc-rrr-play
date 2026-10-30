@@ -9,6 +9,7 @@ import {
     TARGET_UPGRADE_YOU_CONTROL,
 } from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
+import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
 
 const isLinkedToYourSuperhero = (upgrade, superhero) => {
     const {attachedTo} = upgrade;
@@ -25,26 +26,25 @@ const isLinkedToYourSuperhero = (upgrade, superhero) => {
         attachedTo.parent === superhero;
 };
 
-const filterByCondition = (characters, condition) =>
-    condition ?
-        characters.filter(character => checkCondition(character, condition)) :
-        characters;
-
 export const playerControlledTargets = {
-    [TARGET_ALL_ALLIES_YOU_CONTROL]: ({ability, player}) => {
+    [TARGET_ALL_ALLIES_YOU_CONTROL]: ({ability, player, condition}) => {
         const controller = ability?.card?.controller;
 
         // The trigger's player can differ from the controller of a persistent card.
-        return (controller?.isPlayer ? controller : player).allies;
+        return filterTargetsByCondition(
+            (controller?.isPlayer ? controller : player).allies, condition);
     },
     [TARGET_ALL_CHARACTERS_YOU_CONTROL]: ({player, condition}) => {
-        return filterByCondition(player.friends, condition);
+        return filterTargetsByCondition(player.friends, condition);
     },
-    [TARGET_ALLY]: ({player}) => player.allies,
-    [TARGET_ALL_ENGAGED_MINIONS]: ({player}) => player.minions,
+    [TARGET_ALLY]: params =>
+        playerControlledTargets[TARGET_ALL_ALLIES_YOU_CONTROL](params),
+    [TARGET_ALL_ENGAGED_MINIONS]: ({player, condition}) =>
+        filterTargetsByCondition(player.minions, condition),
     [TARGET_FRIENDLY_CHARACTER]: ({condition, player}) =>
-        filterByCondition(player.friends, condition),
-    [TARGET_SUPPORT_YOU_CONTROL]: ({player}) => player.supports,
+        filterTargetsByCondition(player.friends, condition),
+    [TARGET_SUPPORT_YOU_CONTROL]: ({player, condition}) =>
+        filterTargetsByCondition(player.supports, condition),
     [TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO]: ({condition, player}) => {
         const superhero = player?.superhero;
         if (!superhero) {

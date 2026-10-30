@@ -107,7 +107,7 @@ export default {
                 'params': {
                     'name': 'Carol Danvers',
                     'set': 'Captain Marvel',
-                    'image': 'heroes/captain-marvel/carol0a.webp',
+                    'image': 'heroes/captain-marvel/01010b.png',
                     'traits': [
                         TRAIT_SHIELD,
                         TRAIT_SOLDIER
@@ -142,7 +142,7 @@ export default {
                 'params': {
                     'name': 'Capitana Marvel',
                     'set': 'Captain Marvel',
-                    'image': 'heroes/captain-marvel/carol0b.webp',
+                    'image': 'heroes/captain-marvel/01010a.png',
                     'traits': [
                         TRAIT_AVENGER,
                         TRAIT_SOLDIER
@@ -205,7 +205,7 @@ export default {
                     'params': {
                         'name': 'Spider Woman',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol1.webp',
+                        'image': 'heroes/captain-marvel/01011.png',
                         'traits': [
                             TRAIT_AVENGER,
                             TRAIT_SPY
@@ -246,7 +246,7 @@ export default {
                     'params': {
                         'name': 'Evitar una crisis',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol2.webp',
+                        'image': 'heroes/captain-marvel/01012.png',
                         'traits': [
                             TRAIT_THWART
                         ],
@@ -307,7 +307,7 @@ export default {
                     'params': {
                         'name': 'Rayo fotónico',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol5.webp',
+                        'image': 'heroes/captain-marvel/01013.png',
                         'traits': [
                             TRAIT_ATTACK,
                             TRAIT_SUPERPOWER
@@ -366,7 +366,7 @@ export default {
                     'params': {
                         'name': 'Absorción de Energía',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol8.webp',
+                        'image': 'heroes/captain-marvel/01014.png',
                         'resources': [
                             RESOURCE_ENERGY,
                             RESOURCE_ENERGY,
@@ -383,7 +383,7 @@ export default {
                     'params': {
                         'name': 'Base orbital de Alpha Flight',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol10.webp',
+                        'image': 'heroes/captain-marvel/01015.png',
                         'traits': [
                             TRAIT_LOCATION,
                             TRAIT_SHIELD
@@ -444,7 +444,7 @@ export default {
                     'params': {
                         'name': 'Casco de la Capitana Marvel',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol11.webp',
+                        'image': 'heroes/captain-marvel/01016.png',
                         'traits': [
                             TRAIT_ARMOR,
                             TRAIT_TECH
@@ -517,7 +517,7 @@ export default {
                     'params': {
                         'name': 'Vuelo cósmico',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol12.webp',
+                        'image': 'heroes/captain-marvel/01017.png',
                         'traits': [
                             TRAIT_SUPERPOWER
                         ],
@@ -589,7 +589,7 @@ export default {
                     'params': {
                         'name': 'Canalizar energía',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/carol14.webp',
+                        'image': 'heroes/captain-marvel/01018.png',
                         'traits': [
                             TRAIT_SUPERPOWER
                         ],
@@ -721,7 +721,7 @@ export default {
                 'params': {
                     'name': 'Emergencia familiar',
                     'set': 'Captain Marvel',
-                    'image': 'heroes/captain-marvel/caroln0.webp',
+                    'image': 'heroes/captain-marvel/01175.png',
                     'boost': 2,
                     'giveToOwner': true,
                     'triggerInstant': true,
@@ -817,7 +817,7 @@ export default {
                     'params': {
                         'name': 'El psicomagnetrón',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/caroln1.webp',
+                        'image': 'heroes/captain-marvel/01176.png',
                         'boost': 3,
                         'icons': {
                             'hazard': 1
@@ -850,7 +850,7 @@ export default {
                     'params': {
                         'name': 'Yon-Rogg',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/caroln2.webp',
+                        'image': 'heroes/captain-marvel/01177.png',
                         'boost': 2,
                         'hitPoints': 5,
                         'attack': 3,
@@ -889,7 +889,7 @@ export default {
                     'params': {
                         'name': 'Manipulador kree',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/caroln3.webp',
+                        'image': 'heroes/captain-marvel/01178.png',
                         'keywords': {
                             'surge': true
                         },
@@ -940,7 +940,7 @@ export default {
                     'params': {
                         'name': 'La traición de Yon-Rogg',
                         'set': 'Captain Marvel',
-                        'image': 'heroes/captain-marvel/caroln5.webp',
+                        'image': 'heroes/captain-marvel/01179.png',
                         'boost': 1,
                         'abilities': [
                             {

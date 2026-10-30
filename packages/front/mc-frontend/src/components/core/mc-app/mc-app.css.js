@@ -12,4 +12,5 @@ export default css`
     font-family: var(--mc-font-title, sans-serif);
     text-align: center;
   }
+
 `;

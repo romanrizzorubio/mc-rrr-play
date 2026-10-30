@@ -92,6 +92,7 @@ export class SelectDiscardCardEffect extends Effect {
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_HAND,
             showCancel: true,
+            targetPlayer: params.player,
             title: this.title,
             data: {
                 count,
@@ -142,6 +143,7 @@ export class SelectDiscardCardEffect extends Effect {
 
             const response = await this.openDialog({
                 dialogType: DIALOG_DISCARD_HAND,
+                targetPlayer: params.player,
                 title: this.title,
                 data: {
                     count: dialogCount,

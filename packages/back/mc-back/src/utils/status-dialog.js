@@ -10,7 +10,7 @@ export async function selectStatusOption(
     effect,
     options,
     title,
-    {alwaysDialog = false} = {}
+    {alwaysDialog = false, targetPlayer} = {}
 ) {
     if (!options.length) {
         throw new Error('No hay cartas de Estado disponibles para seleccionar.');
@@ -22,6 +22,7 @@ export async function selectStatusOption(
     const response = await effect.openDialog({
         dialogType: DIALOG_LIST,
         hideOk: true,
+        targetPlayer,
         title,
         data: {
             options: options.map(([id, name]) => ({

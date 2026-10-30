@@ -47,12 +47,13 @@ export class RemoveStatusEffect extends Effect {
                 break;
         }
     }
-    async execute() {
+    async execute(params) {
         const available = this.getAvailableStatuses(this.selectedTarget);
         this.selectedStatus = await selectStatusOption(
             this,
             available,
-            this.statusTitle
+            this.statusTitle,
+            {targetPlayer: params.player}
         );
         this.removeStatus(this.selectedTarget, this.selectedStatus);
         await this.selectedTarget.refresh();

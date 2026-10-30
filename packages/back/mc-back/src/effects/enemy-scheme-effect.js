@@ -84,7 +84,8 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
             'confused',
-            `${this.character.name} estaba confundido y no ejecuta el plan.`
+            `${this.character.name} estaba confundido y no ejecuta el plan.`,
+            params,
         );
 
         return super.resolveStatus(params);
@@ -134,9 +135,21 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         const {preventThreat} = this;
 
         await this.dealBoostCards(schemeParams);
+        if (!this.canContinueActivation()) {
+            return;
+        }
         await this.showBoostCards();
+        if (!this.canContinueActivation()) {
+            return;
+        }
         const boost = await this.resolveBoostCards(schemeParams);
+        if (!this.canContinueActivation()) {
+            return;
+        }
         const schValue = await this.getSchemeValue(schemeParams);
+        if (!this.canContinueActivation()) {
+            return;
+        }
         let threat = schValue + boost - preventThreat;
         if (threat < 0) {
             threat = 0;

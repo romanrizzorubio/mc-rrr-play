@@ -3,7 +3,14 @@ import {describe, test} from 'node:test';
 
 import {ENDPOINTS} from 'mc-endpoints';
 import {CLASSIFICATION_BASIC} from 'mc-shared';
-import {createDeckServiceApp} from '../src/deck-service-app.js';
+import {
+    createDeckServiceApp as createDeckServiceAppWithoutTestAuth,
+} from '../src/deck-service-app.js';
+
+const createDeckServiceApp = options => createDeckServiceAppWithoutTestAuth({
+    ...options,
+    authenticate: async () => ({id: 'test-user', name: 'Test User'}),
+});
 
 const createCatalog = () => ({
     hero: {

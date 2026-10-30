@@ -920,6 +920,9 @@ export class CardComponent extends LitElement {
                                 this.renderTucked()}
                             <div class="${cardFrontClasses}">
                                 ${hiddenFacedown ? '' : this.renderStage()}
+                                <div class="card-image-marker">
+                                    <slot name="image-marker"></slot>
+                                </div>
                                 <mc-card-image
                                     id="card"
                                     class="${this.aspectMarkers?.length ?

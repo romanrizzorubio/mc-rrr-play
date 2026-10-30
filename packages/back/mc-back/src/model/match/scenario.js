@@ -1,6 +1,7 @@
 import {EVENTS} from 'mc-endpoints';
 import {
     DIALOG_ENCOUNTERS_REVEAL,
+    DIALOG_LIST,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
     PRIORITY_FORCED_RESPONSE,
@@ -25,22 +26,213 @@ export class Scenario extends Engine {
         scenarioCards,
         setAsideCards = [],
         sets,
+        manualVillainProgression = false,
+        manualMainSchemeProgression = false,
+        separatePlayAreas = false,
         match,
     }) {
         super();
 
         this.name = name;
         this.villains = villains;
+        this.allVillains = villains.slice();
         this.mainSchemes = mainSchemes;
+        this.allMainSchemes = mainSchemes.slice();
+        this.usedMainSchemes = new Set();
         this.scenarioCards = scenarioCards;
         this.sets = sets;
+        this.manualVillainProgression = manualVillainProgression;
+        this.manualMainSchemeProgression = manualMainSchemeProgression;
+        this.separatePlayAreas = separatePlayAreas;
         this.match = match;
 
         this.deck = null;
         this.extraDecks = {};
         this.gameZone = undefined;
+        this.zones = [];
         this.apart = [];
+        this.delayedEffects = [];
         this.addApart(setAsideCards);
+    }
+    createDelayedEffect(effect) {
+        this.delayedEffects ??= [];
+        this.delayedEffects.push(effect);
+    }
+    async resolveDelayedEffects(params) {
+        const scheduledEffects = (this.delayedEffects ?? []).slice();
+        for (const delayedEffect of scheduledEffects) {
+            await delayedEffect.resolve({
+                ...params,
+                match: this.match,
+            });
+            this.delayedEffects = (this.delayedEffects ?? []).filter(effect =>
+                effect !== delayedEffect);
+        }
+    }
+    createZone({id} = {}) {
+        const zone = new ScenarioZone({
+            id: id ?? `scenario-zone-${this.zones.length + 1}`,
+            owner: this,
+        });
+        this.zones.push(zone);
+        if (!this.gameZone) {
+            this.gameZone = zone;
+        }
+
+        return zone;
+    }
+    getZoneForPlayer(player) {
+        return player?.scenarioZone &&
+            this.zones.includes(player.scenarioZone) ?
+            player.scenarioZone :
+            this.gameZone;
+    }
+    removeZone(zone) {
+        if (!this.zones.includes(zone)) {
+            return false;
+        }
+
+        zone.players.slice().forEach(player => zone.removePlayer(player));
+        this.zones.splice(this.zones.indexOf(zone), 1);
+        if (this.gameZone === zone) {
+            this.gameZone = this.zones[0];
+        }
+
+        return true;
+    }
+    getMergeDestinations(sourceZone) {
+        const destinations = this.zones.filter(zone => zone !== sourceZone);
+        const onlyDestination = destinations.length === 1;
+        const stageTwoZone = destinations.find(zone =>
+            zone.currentScheme?.currentSide?.stage === 2);
+
+        return destinations.filter(zone =>
+            zone !== stageTwoZone || onlyDestination);
+    }
+    async selectMergeDestination(player, sourceZone) {
+        const destinations = this.getMergeDestinations(sourceZone);
+        if (!destinations.length) {
+            throw new Error('No hay otra zona de juego a la que unirse.');
+        }
+        if (destinations.length === 1) {
+            return destinations[0];
+        }
+
+        const {selected} = await this.match.openDialog({
+            dialogType: DIALOG_LIST,
+            title: 'Elige una zona de juego',
+            targetPlayer: player.id || player.userId || player.name,
+            targetPlayerName: player.name,
+            hand: player.hand.cards.map(card => card.toObj({player})),
+            data: {
+                card: player.superhero.toObj({player}),
+                options: destinations.map((zone, id) => ({
+                    id,
+                    text: zone.currentScheme?.currentSide?.name ??
+                        `Zona de juego ${id + 1}`,
+                })),
+            },
+        });
+        const destination = destinations[selected?.id];
+        if (!destination) {
+            throw new Error('No se pudo determinar la zona de juego elegida.');
+        }
+
+        return destination;
+    }
+    async mergeZone(zone) {
+        if (!this.zones.includes(zone)) {
+            return false;
+        }
+
+        const livingPlayers = zone.players.filter(player => !player.defeated);
+        if (!livingPlayers.length) {
+            for (const card of zone.inPlayCards) {
+                card.endTriggers?.();
+                await card.removeAttached?.();
+                await card.removeFaceDown?.();
+                this.match.removeCard(card);
+            }
+            this.removeZone(zone);
+            await this.match.refresh();
+            return true;
+        }
+
+        const firstPlayerIndex = this.match.players.indexOf(
+            this.match.initialPlayer
+        );
+        const orderedPlayers = firstPlayerIndex < 0 ?
+            livingPlayers :
+            this.match.players
+                .slice(firstPlayerIndex)
+                .concat(this.match.players.slice(0, firstPlayerIndex))
+                .filter(player => livingPlayers.includes(player));
+        const destinations = new Map();
+        for (const player of orderedPlayers) {
+            const destination = await this.selectMergeDestination(player, zone);
+            destinations.set(player, destination);
+            destination.addPlayer(player);
+        }
+
+        const globalFirstPlayer = this.match.initialPlayer;
+        if (!destinations.has(globalFirstPlayer)) {
+            destinations.set(
+                globalFirstPlayer,
+                await this.selectMergeDestination(globalFirstPlayer, zone)
+            );
+        }
+        const commonDestination = destinations.get(globalFirstPlayer);
+
+        for (const card of zone.cards.slice()) {
+            const linkedPlayer = card.engaged?.isPlayer ?
+                card.engaged :
+                card.controller?.isPlayer ?
+                    card.controller :
+                    card.owner?.isPlayer ?
+                        card.owner :
+                        undefined;
+            const destination = destinations.get(linkedPlayer) ??
+                commonDestination;
+            zone.remove(card);
+            destination.addToGameZone(card);
+            await card.initTriggers();
+        }
+
+        if (zone.currentVillain) {
+            zone.currentVillain.endTriggers();
+            await zone.currentVillain.removeAttached();
+            await zone.currentVillain.removeFaceDown();
+            this.match.removeCard(zone.currentVillain);
+            zone.currentVillain = null;
+        }
+        if (zone.currentScheme) {
+            zone.currentScheme.endTriggers(true);
+            await zone.currentScheme.currentSide.removeAttached();
+            await zone.currentScheme.removeFaceDown();
+            this.match.removeCard(zone.currentScheme);
+            zone.currentScheme = null;
+        }
+
+        this.removeZone(zone);
+        const livingMatchPlayers = this.match.players.filter(player =>
+            !player.defeated);
+        const stageTwoZone = this.zones.find(candidate =>
+            candidate.currentScheme?.currentSide?.stage === 2);
+        if (stageTwoZone && livingMatchPlayers.length &&
+            livingMatchPlayers.every(player =>
+                stageTwoZone.players.includes(player))) {
+            await this.advanceMainScheme(
+                stageTwoZone,
+                4,
+                this.match.initialPlayer,
+            );
+        }
+
+        await this.match.refresh();
+        return true;
+    }
+    get inPlayCards() {
+        return this.zones.flatMap(zone => zone.inPlayCards);
     }
     addApart(cards) {
         if (!Array.isArray(cards)) {
@@ -68,7 +260,12 @@ export class Scenario extends Engine {
         return this.gameZone.hasCrisis;
     }
     get hazardIcons() {
-        return this.gameZone.hazardIcons;
+        const zones = this.zones?.length ?
+            this.zones :
+            [this.gameZone].filter(Boolean);
+
+        return zones.reduce((total, zone) =>
+            total + (zone.hazardIcons ?? 0), 0);
     }
     get mainScheme() {
         return path(this, 'gameZone.currentScheme.currentSide');
@@ -196,20 +393,126 @@ export class Scenario extends Engine {
         return deck;
     }
     getCard(cardId) {
-        if (this.villain.id === cardId) {
-            return this.villain;
-        } else if (this.mainScheme.id === cardId) {
-            return this.mainScheme;
-        }
+        const activeCards = this.zones.flatMap(zone => [
+            zone.currentVillain,
+            zone.currentScheme,
+            ...zone.cards,
+        ]).filter(Boolean);
 
-        return this.gameZone.getCard(cardId) ||
-            this.villain?.getCard(cardId) ||
-            this.gameZone.cards
+        return activeCards.map(card =>
+            card.id === cardId ||
+            card.currentSide?.id === cardId ?
+                card : card.getCard?.(cardId)).find(Boolean) ||
+            this.gameZone?.cards
                 .map(card => card.getCard(cardId))
                 .find(Boolean);
     }
+    findVillain({name, stage}) {
+        const matchingVariants = this.allVillains.filter(villain =>
+            villain.name === name && villain.stage === stage);
+        const expertVariant = matchingVariants.find(villain =>
+            villain.card?.expert === true);
+
+        return this.match.expert ?
+            expertVariant ?? matchingVariants.find(villain =>
+                villain.card?.expert !== true) :
+            matchingVariants.find(villain => villain.card?.expert !== true);
+    }
+    findMainScheme(stage, {unused = true} = {}) {
+        return this.allMainSchemes.find(scheme =>
+            scheme.sides?.some(side => side.stage === stage) &&
+            (!unused || !this.usedMainSchemes.has(scheme)));
+    }
+    async advanceMainScheme(
+        zone,
+        stage,
+        player = this.match.initialPlayer,
+        selectedScheme,
+    ) {
+        const nextScheme = selectedScheme ?? this.findMainScheme(stage);
+        if (!nextScheme) {
+            throw new Error(
+                `No se encontró una etapa ${stage} sin utilizar del Plan principal.`
+            );
+        }
+        if (this.usedMainSchemes.has(nextScheme)) {
+            throw new Error(`La etapa ${stage} del Plan principal ya se utilizó.`);
+        }
+
+        const sideA = nextScheme.sides.find(side =>
+            side.isMainScheme && side.final === undefined);
+        const sideB = nextScheme.sides.find(side =>
+            side.isMainScheme && side.final !== undefined);
+        if (!sideA || !sideB) {
+            throw new Error(`La etapa ${stage} no tiene lados A y B.`);
+        }
+
+        const currentScheme = zone.currentScheme;
+        if (currentScheme) {
+            currentScheme.endTriggers(true);
+            await currentScheme.currentSide.removeAttached();
+            this.match.removeCard(currentScheme);
+        }
+
+        this.usedMainSchemes.add(nextScheme);
+        if (typeof zone.addScheme === 'function') {
+            zone.addScheme(nextScheme);
+        } else {
+            zone.currentScheme = nextScheme;
+            nextScheme.scenarioZone = zone;
+        }
+        nextScheme.selectedSide = nextScheme.sides.indexOf(sideA);
+        await this.match.refresh();
+        await this.openPublicDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: MAIN_SCHEME_REVEAL_TITLE,
+            data: {card: sideA.toObj({player}), horizontal: true},
+        }, player);
+        await this.revealMainSchemeSide(sideA, player);
+        await nextScheme.setup({player});
+        await nextScheme.flip({player, selectedFormTarget: sideB});
+        nextScheme.currentSide.initScheme();
+        await this.match.refresh();
+        await this.openPublicDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: MAIN_SCHEME_REVEAL_TITLE,
+            data: {
+                card: nextScheme.currentSide.toObj({player}),
+                horizontal: true,
+            },
+        }, player);
+        await this.revealMainSchemeSide(nextScheme.currentSide, player);
+
+        return nextScheme;
+    }
+    async addVillainToZone({zone, name, stage, player}) {
+        const villain = this.findVillain({name, stage});
+        if (!villain) {
+            throw new Error(
+                `No se encontró el Villano "${name}" en la etapa ${stage}.`
+            );
+        }
+
+        zone.addVillain(villain);
+        const revealEffect = new RevealEncounterEffect({
+            selectedTarget: villain,
+            match: this.match,
+        });
+        await revealEffect.runEffect({player});
+        const putPlayEffect = new PutPlayEffect({
+            card: villain,
+            controller: this,
+            match: this.match,
+        });
+        await putPlayEffect.runEffect({force: true, card: villain, player});
+
+        return villain;
+    }
     async initScenario(obligations, expert) {
-        this.gameZone = new ScenarioZone({owner: this});
+        this.zones = [];
+        this.gameZone = this.createZone({id: 'scenario-zone-1'});
+        (this.match.players ?? []).forEach(player =>
+            this.gameZone.addPlayer(player));
         this.deck = new Deck({
             owner: this,
             isScenarioDeck: true,
@@ -233,51 +536,81 @@ export class Scenario extends Engine {
             return card;
         });
 
-        this.gameZone.currentScheme = this.mainSchemes.shift();
+        const initialScheme = this.mainSchemes.shift();
+        this.usedMainSchemes = new Set([initialScheme]);
+        this.gameZone.addScheme(initialScheme);
 
         this.deck.initDeck(cards);
 
-        this.villains = expert ?
-            this.mainScheme.content.villainsExpert.map(stage => this.villains.find(villain => villain.stage === stage)) :
-            this.mainScheme.content.villains.map(stage => this.villains.find(villain => villain.stage === stage));
+        const stages = expert ?
+            this.mainScheme.content.villainsExpert :
+            this.mainScheme.content.villains;
+        const expertVariants = expert &&
+            this.allVillains.some(villain => villain.card?.expert === true);
+        const villainPool = expertVariants ?
+            this.allVillains.filter(villain => villain.card?.expert === true) :
+            this.allVillains.filter(villain => villain.card?.expert !== true);
+        this.villains = stages.map(stage => {
+            const villain = villainPool.find(candidate =>
+                candidate.stage === stage);
+            if (!villain) {
+                throw new Error(
+                    `No se encontró la etapa ${stage} del Villano para la dificultad seleccionada.`
+                );
+            }
+
+            return villain;
+        });
 
         await this.selectVillain();
 
         const currentScheme = this.gameZone.currentScheme;
         const player = this.match.initialPlayer;
 
-        await this.match.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: currentScheme.currentSide.toObj({player}),
                 horizontal: true,
             },
-        });
+        }, player);
         await currentScheme.setup({player});
         await currentScheme.flip();
         currentScheme.currentSide.initScheme();
-        await this.match.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: currentScheme.currentSide.toObj({player}),
                 horizontal: true,
             },
-        });
+        }, player);
     }
     async completeMainScheme(completedScheme, params) {
-        const currentScheme = this.gameZone.currentScheme;
-        const currentSide = currentScheme.currentSide;
+        const completedCard = completedScheme?.parent ?? completedScheme;
+        const zone = completedCard?.scenarioZone ??
+            completedScheme?.scenarioZone ??
+            this.gameZone;
+        const currentScheme = zone?.currentScheme;
+        const currentSide = currentScheme?.currentSide;
+        const zoneDefeated = Boolean(
+            this.separatePlayAreas &&
+            zone?.players.length &&
+            zone.players.every(player => player.defeated)
+        );
 
-        if (completedScheme !== currentSide ||
-            currentSide.threat < currentSide.value) {
+        if (!currentSide ||
+            (completedScheme !== currentSide && completedCard !== currentScheme) ||
+            (!zoneDefeated &&
+                (!Number.isFinite(currentSide.value) ||
+                    currentSide.threat < currentSide.value))) {
             return false;
         }
 
         const nextScheme = this.mainSchemes[0];
 
-        await this.match.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: this.getMainSchemeDialogTitle(currentSide, 'B'),
             subtitle: 'Etapa completada',
@@ -285,7 +618,7 @@ export class Scenario extends Engine {
                 card: currentSide.toObj(params),
                 horizontal: true,
             },
-        });
+        }, params.player);
 
         const completionParams = {
             ...params,
@@ -314,6 +647,10 @@ export class Scenario extends Engine {
             return false;
         }
 
+        if (this.manualMainSchemeProgression) {
+            return false;
+        }
+
         const nextSchemeASide = nextScheme.sides.find(side =>
             side.isMainScheme && side.final === undefined);
         const nextSchemeBSide = nextScheme.sides.find(side =>
@@ -328,19 +665,24 @@ export class Scenario extends Engine {
         await currentSide.removeAttached();
         this.match.removeCard(currentScheme);
 
-        this.gameZone.currentScheme = nextScheme;
+        if (typeof zone.addScheme === 'function') {
+            zone.addScheme(nextScheme);
+        } else {
+            zone.currentScheme = nextScheme;
+            nextScheme.scenarioZone = zone;
+        }
         nextScheme.selectedSide = nextScheme.sides.indexOf(nextSchemeASide);
 
         const player = params.player || this.match.initialPlayer;
         await this.match.refresh();
-        await this.match.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: nextSchemeASide.toObj(params),
                 horizontal: true,
             },
-        });
+        }, player);
         await this.revealMainSchemeSide(nextSchemeASide, player);
         await nextScheme.flip({
             player,
@@ -349,14 +691,14 @@ export class Scenario extends Engine {
         nextScheme.currentSide.initScheme();
         nextScheme.currentSide.accelerationTokens += accelerationTokens;
         await this.match.refresh();
-        await this.match.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: MAIN_SCHEME_REVEAL_TITLE,
             data: {
                 card: nextScheme.currentSide.toObj(params),
                 horizontal: true,
             },
-        });
+        }, player);
         await this.revealMainSchemeSide(nextScheme.currentSide, player);
         await this.match.refresh();
 
@@ -372,27 +714,54 @@ export class Scenario extends Engine {
     removeCardFromDeck(card) {
         this.deck.removeCardFromDeck(card);
     }
-    searchCard(condition) {
-        if (checkCondition(this.villain, condition)) {
-            return this.villain;
+    searchCard(condition, player) {
+        const zone = this.getZoneForPlayer(player);
+        const villain = zone?.currentVillain;
+        const mainScheme = zone?.currentScheme?.currentSide;
+        if (checkCondition(villain, condition)) {
+            return villain;
         }
-        if (checkCondition(this.mainScheme, condition)) {
-            return this.mainScheme;
+        if (checkCondition(mainScheme, condition)) {
+            return mainScheme;
         }
-        return this.gameZone
-            .searchCard(condition);
+        return zone?.searchCard(condition);
     }
-    async selectVillain(player) {
-        const currentVillain = this.gameZone.currentVillain;
+    searchCards(condition, player) {
+        const zones = player ?
+            [this.getZoneForPlayer(player)] :
+            this.zones;
+        return zones.flatMap(zone => zone?.searchCards(condition) ?? []);
+    }
+    async selectVillain(player, defeatedVillain) {
+        const zone = defeatedVillain?.scenarioZone ??
+            this.getZoneForPlayer(player);
+        const currentVillain = zone?.currentVillain;
 
         if (currentVillain) {
-            await this.match.openDialog({
+            await this.openPublicDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 title: `${currentVillain.name} ha sido derrotado`,
                 data: {
                     card: currentVillain.toObj({player}),
                 },
-            });
+            }, player);
+        }
+
+        if (!this.villains.length &&
+            this.manualVillainProgression &&
+            !this.isFinalVillain(currentVillain)) {
+            currentVillain?.endTriggers();
+            if (currentVillain) {
+                await currentVillain.removeAttached?.();
+                await currentVillain.removeFaceDown?.();
+                this.match.removeCard(currentVillain);
+            }
+            if (zone?.currentVillain === currentVillain) {
+                zone.currentVillain = null;
+                await zone.refresh();
+            }
+
+            return;
         }
 
         if (!this.villains.length) {
@@ -434,7 +803,12 @@ export class Scenario extends Engine {
             currentVillain.endTriggers();
         }
 
-        this.gameZone.currentVillain = nextVillain;
+        if (typeof zone.addVillain === 'function') {
+            zone.addVillain(nextVillain);
+        } else {
+            zone.currentVillain = nextVillain;
+            nextVillain.scenarioZone = zone;
+        }
 
         if (currentVillain) {
             const revealEncounterEffect = new RevealEncounterEffect({
@@ -453,6 +827,18 @@ export class Scenario extends Engine {
             card: nextVillain,
         });
     }
+    isFinalVillain(villain) {
+        if (villain?.card?.final) {
+            return true;
+        }
+
+        const highestStage = this.allVillains
+            .filter(candidate => candidate.name === villain?.name)
+            .reduce((highest, candidate) =>
+                Math.max(highest, candidate.stage ?? 0), 0);
+
+        return highestStage > 0 && villain?.stage === highestStage;
+    }
     toObj() {
         const {
             name,
@@ -462,6 +848,9 @@ export class Scenario extends Engine {
             extraDecks = {},
             gameZone,
         } = this;
+        const zones = this.zones?.length ?
+            this.zones :
+            [gameZone].filter(Boolean);
 
         return {
             ...super.toObj(),
@@ -474,17 +863,23 @@ export class Scenario extends Engine {
                 extraDeck.toObj(),
             ])),
             gameZone: gameZone?.toObj(),
+            zones: zones.map(zone => zone.toObj()),
         };
     }
     async toObjWithAbilityAvailability(player) {
-        const [villain, mainScheme, gameZone] = await Promise.all([
+        const scenarioZones = this.zones?.length ?
+            this.zones :
+            [this.gameZone].filter(Boolean);
+        const [villain, mainScheme, gameZone, zones] = await Promise.all([
             this.villain ?
             this.villain.toObjWithAbilityAvailability(player) :
             null,
-            this.gameZone.currentScheme ?
+            this.gameZone?.currentScheme ?
             this.gameZone.currentScheme.toObjWithAbilityAvailability(player) :
                 null,
-            this.gameZone.toObjWithAbilityAvailability(player),
+            this.gameZone?.toObjWithAbilityAvailability(player),
+                Promise.all(scenarioZones.map(zone =>
+                    zone.toObjWithAbilityAvailability(player))),
         ]);
 
         return {
@@ -492,6 +887,7 @@ export class Scenario extends Engine {
             villain,
             mainScheme,
             gameZone,
+            zones,
         };
     }
 }

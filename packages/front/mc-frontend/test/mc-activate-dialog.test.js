@@ -18,6 +18,58 @@ const {McActivateDialog} = await import(
 );
 
 describe('McActivateDialog', () => {
+    const renderTemplate = value => {
+        if (Array.isArray(value)) {
+            return value.map(renderTemplate).join('');
+        }
+        if (value?.strings && value?.values) {
+            return value.strings.map((part, index) =>
+                part + renderTemplate(value.values[index])).join('');
+        }
+        return typeof value === 'string' ? value : '';
+    };
+
+    test('only the affected player has buttons and can interact with the activation', () => {
+        for (const readOnly of [false, true]) {
+            const dialog = Object.assign(Object.create(McActivateDialog.prototype), {
+                readOnly,
+                title: 'Villano ataca a Héroe',
+                subtitle: 'Activación del villano',
+                targetPlayerName: 'Héroe',
+                showCancel: true,
+                hideOk: false,
+                hand: [{id: 'hand-card'}],
+                _showHand: false,
+                data: {
+                    character: {name: 'Villano', image: 'enemy.png', isFacedownCard: true},
+                    target: {name: 'Héroe', image: 'hero.png'},
+                },
+            });
+            const markup = renderTemplate(dialog.render());
+            const card = dialog.renderCharacterCard(dialog.data.character);
+            const peekIndex = card.strings.findIndex(part => part.endsWith('.canPeekFacedown="'));
+            assert.equal(card.values[peekIndex], !readOnly);
+            assert.match(markup, /Villano|Héroe/u);
+            assert.match(markup, /class="vs">VS/u);
+            assert.doesNotMatch(markup, /Héroe responsable/u);
+            assert.match(markup, /Activación del villano[\s\S]*class="activation-cards"/u);
+            if (readOnly) {
+                assert.doesNotMatch(markup, /<md-text-button|<button|Ver mano|Cancelar/u);
+                assert.match(markup, /<div inert>/u);
+                dialog.dispatchEvent = () => assert.fail('Observers cannot respond');
+                dialog.sendResponse();
+                dialog.handleOk();
+                dialog.handleCancel();
+                dialog.handleShowHand();
+                assert.equal(dialog._showHand, false);
+            } else {
+                assert.match(markup, />Ok<\/md-text-button>/u);
+                assert.match(markup, /Cancelar|Ver mano/u);
+                assert.doesNotMatch(markup, /<div inert>/u);
+            }
+        }
+    });
+
     test('shows standard stats for both characters', () => {
         const character = {
             name: 'Villano',
@@ -87,5 +139,22 @@ describe('McActivateDialog', () => {
             vsRule,
             /font-family:\s*var\(--mc-font-title,\s*sans-serif\)/
         );
+        assert.match(activateDialogStyles.cssText,
+            /\.activation-cards\s*\{[^}]*display:\s*flex;/u);
+        assert.doesNotMatch(activateDialogStyles.cssText,
+            /\.activate \.content\s*\{[^}]*display:\s*flex;/u);
+    });
+
+    test('skipped activations still identify the responsible hero when no target card is shown', () => {
+        const dialog = Object.assign(Object.create(McActivateDialog.prototype), {
+            title: 'Activación omitida', subtitle: '', footer: '',
+            targetPlayerName: 'Carol Danvers', readOnly: true, hand: [],
+            data: {target: {name: 'Carol Danvers'}, statusType: 'stunned',
+                statusMessage: 'El villano está aturdido.'},
+        });
+        const markup = renderTemplate(dialog.renderDialog());
+        assert.match(markup, /Héroe responsable: Carol Danvers/u);
+        assert.match(markup, /activation-status-image/u);
+        assert.doesNotMatch(markup, /activation-cards/u);
     });
 });

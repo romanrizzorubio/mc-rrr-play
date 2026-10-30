@@ -14,7 +14,9 @@ import {
     TRIGGER_PLAYER_CAN_THWART,
 } from 'mc-shared';
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
+import {randomUUID} from 'node:crypto';
 import {DiscardFromHandEffect} from '../../effects/discard-from-hand-effect.js';
+import {EngageEffect} from '../../effects/engage-effect.js';
 import {FillHandEffect} from '../../effects/fill-hand-effect.js';
 import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
 import {GetHandSizeEffect} from '../../effects/get-hand-size-effect.js';
@@ -32,6 +34,11 @@ import {
 } from '../../utils/resource-requirements.js';
 import {normalizeResourceTypes} from '../../utils/resource-types.js';
 import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
+import {
+    assertOwnTurnOption,
+    canPlayCardDuringTurn,
+    isOtherPlayerTurn,
+} from '../../utils/player-turn-permissions.js';
 
 import {Deck} from './deck.js';
 import {Hand} from './hand.js';
@@ -39,7 +46,9 @@ import {PlayerZone} from './player-zone.js';
 
 export class Player extends Engine {
     constructor({
+        id,
         name,
+        userId,
         superhero,
         initial = false,
         config = {}
@@ -47,7 +56,8 @@ export class Player extends Engine {
         super();
 
         this.name = name;
-        this.id = name;
+        this.id = id || (userId ? randomUUID() : name);
+        this.userId = userId;
         this.superhero = superhero;
         this.initial = initial;
         this.config = config;
@@ -56,6 +66,7 @@ export class Player extends Engine {
         this.extraDecks = {};
         this.hand = new Hand(this);
         this.gameZone = undefined;
+        this.scenarioZone = undefined;
 
         this.mulliganDone = false;
         this.played = false;
@@ -293,6 +304,45 @@ export class Player extends Engine {
         if (this.match.players.every(player => player.defeated)) {
             await this.match.finishGame(MATCH_END_REASON_ALL_HEROES_DEFEATED);
         } else {
+            const startIndex = this.match.players.indexOf(this);
+            const nextPlayers = this.match.players.slice(startIndex + 1)
+                .concat(this.match.players.slice(0, startIndex));
+            if (this.initial) {
+                this.initial = false;
+                nextPlayers.find(player => !player.defeated).initial = true;
+            }
+            const scenarioZone = this.scenarioZone;
+            for (const minion of this.minions.slice()) {
+                const nextPlayer = nextPlayers.find(player =>
+                    !player.defeated &&
+                    (!this.match.scenario?.separatePlayAreas ||
+                        player.scenarioZone === scenarioZone));
+                if (!nextPlayer || this.match.gameOverReason) {
+                    break;
+                }
+                const engageEffect = new EngageEffect({
+                    selectedTarget: nextPlayer,
+                    match: this.match,
+                });
+                await engageEffect.runEffect({card: minion, player: nextPlayer});
+            }
+            if (this.match.scenario?.separatePlayAreas &&
+                scenarioZone?.players.length &&
+                scenarioZone.players.every(player => player.defeated)) {
+                if (scenarioZone.currentScheme?.currentSide?.stage === 3) {
+                    await this.match.scenario.completeMainScheme(
+                        scenarioZone.currentScheme.currentSide,
+                        {
+                            player: this,
+                            card: scenarioZone.currentScheme,
+                            effect: {selectedTarget: scenarioZone.currentScheme},
+                            match: this.match,
+                        }
+                    );
+                } else {
+                    await this.match.scenario.mergeZone(scenarioZone);
+                }
+            }
             await this.match.refresh();
         }
     }
@@ -318,6 +368,9 @@ export class Player extends Engine {
         await fillHandEffect.runEffect({player: this});
     }
     async flip(own = false) {
+        if (own) {
+            assertOwnTurnOption(this);
+        }
         if (own && this.flipped) {
             return;
         }
@@ -524,6 +577,9 @@ export class Player extends Engine {
     async mulligan() {
         const response = await this.openDialog({
             dialogType: DIALOG_DISCARD_HAND,
+            targetPlayer: this,
+            isMulligan: true,
+            closeOnResponse: true,
             data: {
                 hand: await this.getHandSize(),
                 cards: this.hand.cards.map(card => card.toObj(arguments[0]))
@@ -552,6 +608,10 @@ export class Player extends Engine {
 
         if (!card) {
             return;
+        }
+
+        if (!canPlayCardDuringTurn(card, this)) {
+            assertOwnTurnOption(this);
         }
 
         const playCardEffect = new PlayCardEffect({
@@ -597,6 +657,13 @@ export class Player extends Engine {
         let card = this.getCard(cardId);
         if (!card) {
             card = this.match.scenario.getCard(cardId);
+        }
+
+        if (isOtherPlayerTurn(this)) {
+            const ability = (card?.currentSide?.abilities ?? card?.abilities)?.[abilityIndex];
+            if (!ability?.isAction) {
+                assertOwnTurnOption(this);
+            }
         }
 
         const params = {
@@ -662,7 +729,7 @@ export class Player extends Engine {
         });
     }
     async revealEncounterCards() {
-        while (this.encounters.length) {
+        while (!this.defeated && !this.match.gameOverReason && this.encounters.length) {
             const card = this.encounters.shift();
             await this.revealEncounterCard(card);
         }
@@ -676,6 +743,7 @@ export class Player extends Engine {
         if (this.hand.cards.length) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_DISCARD_HAND,
+                targetPlayer: this,
                 data: {
                     hand: await this.getHandSize(),
                     cards: this.hand.cards.map(card => card.toObj(arguments[0]))
@@ -725,6 +793,7 @@ export class Player extends Engine {
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
+            targetPlayer: this,
             showCancel,
             ...(differentTypes ? {title: 'Paga recursos de tipos distintos'} : {}),
             data: {
@@ -794,6 +863,7 @@ export class Player extends Engine {
 
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
+            targetPlayer: this,
             showCancel,
             title,
             data: {
@@ -852,6 +922,7 @@ export class Player extends Engine {
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
+            targetPlayer: this,
             showCancel: true,
             data: {
                 resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
@@ -900,22 +971,26 @@ export class Player extends Engine {
             paymentCancelled: playCardEffect.paymentCancelled,
         };
     }
-    toTargetObj() {
+    toTargetObj(params = {}) {
         return {
+            ...this.superhero.toObj(params),
             id: this.id,
             isPlayer: true,
-            name: this.name,
+            showPlayerHero: true,
         };
     }
     toObj() {
         const {
             id,
             name,
+            userId,
+            initial,
             defeated,
             deck,
             hand,
             superhero,
             gameZone,
+            scenarioZone,
             handSize,
         } = this;
 
@@ -923,7 +998,10 @@ export class Player extends Engine {
             id,
             isPlayer: true,
             name,
+            ...(userId ? {userId} : {}),
+            ...(initial !== undefined ? {initial} : {}),
             defeated,
+            scenarioZoneId: scenarioZone?.id,
             handSize,
             deck: deck ? deck.toObj(arguments[0]) : undefined,
             extraDecks: Object.fromEntries(
@@ -941,7 +1019,8 @@ export class Player extends Engine {
         const {superhero} = this;
         const effectiveTraits = await superhero.getEffectiveTraits();
         const stats = await superhero.getEffectiveStats();
-        const canFlip = await this.canFlip({card: superhero});
+        const canFlip = !isOtherPlayerTurn(this) &&
+            await this.canFlip({card: superhero});
         const handSize = await this.getHandSize();
         const abilities = await getAbilitiesWithAvailability(superhero, this);
         const attached = await Promise.all(superhero.getAttachedCards().map(card =>

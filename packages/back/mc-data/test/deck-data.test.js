@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CARD_TYPE_ALTEREGO,
@@ -127,6 +127,7 @@ const makeDeckStore = (additionalAspectCards = []) => {
     return {store, deck};
 };
 
+describe('deck data', () => {
 test('catalog exposes fixed hero cards and custom deck config expands only saved references', async () => {
     const {store, deck} = makeDeckStore();
     const catalog = await store.getDeckEditorCatalog('hero');
@@ -285,6 +286,7 @@ test('restores repository deck versions only when they are the latest', async ()
             name: 'Local antigua',
             heroId: 'hero',
             aspect: 'justice',
+            creatorId: 'local-owner',
             cards: [],
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: '2026-01-02T00:00:00.000Z',
@@ -312,6 +314,7 @@ test('restores repository deck versions only when they are the latest', async ()
             name: 'Borrado local antiguo',
             heroId: 'hero',
             aspect: 'justice',
+            creatorId: 'local-owner',
             cards: [],
             createdAt: '2026-01-01T00:00:00.000Z',
             updatedAt: '2026-01-02T00:00:00.000Z',
@@ -330,7 +333,9 @@ test('restores repository deck versions only when they are the latest', async ()
         },
     };
     const store = new MongoDataStore();
-    store.database = {collection: () => collection};
+    store.database = {
+        collection: () => collection,
+    };
 
     const result = await store.restoreRepositoryDecks({
         decks: [
@@ -363,7 +368,7 @@ test('restores repository deck versions only when they are the latest', async ()
             },
         ],
         deletions: [{id: 'repo-deleted', deletedAt: '2026-01-03T00:00:00.000Z'}],
-    });
+    }, 'local-owner');
 
     assert.deepEqual(result, {total: 4, restored: 2, deleted: 1, keptLocal: 1});
     assert.deepEqual(replacements.map(({filter, replacement, options}) => ({
@@ -371,22 +376,35 @@ test('restores repository deck versions only when they are the latest', async ()
         replacement: {
             name: replacement.name,
             deletedAt: replacement.deletedAt,
+            creatorId: replacement.creatorId,
         },
         options,
     })), [
         {
             id: 'shared-newer-repo',
-            replacement: {name: 'Repo reciente', deletedAt: undefined},
+            replacement: {
+                name: 'Repo reciente',
+                deletedAt: undefined,
+                creatorId: 'local-owner',
+            },
             options: {upsert: true},
         },
         {
             id: 'repo-only',
-            replacement: {name: 'Solo repo', deletedAt: undefined},
+            replacement: {
+                name: 'Solo repo',
+                deletedAt: undefined,
+                creatorId: 'local-owner',
+            },
             options: {upsert: true},
         },
         {
             id: 'repo-deleted',
-            replacement: {name: undefined, deletedAt: '2026-01-03T00:00:00.000Z'},
+            replacement: {
+                name: undefined,
+                deletedAt: '2026-01-03T00:00:00.000Z',
+                creatorId: undefined,
+            },
             options: {upsert: true},
         },
     ]);
@@ -399,15 +417,20 @@ test('deletes decks with a tombstone and excludes them from reads', async () => 
         name: 'Mazo',
         heroId: 'hero',
         aspect: 'justice',
+        creatorId: 'owner-id',
         cards: [],
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-03T00:00:00.000Z',
     };
     let listFilter;
     const collection = {
-        findOne: async ({_id}) => _id === storedDeck._id ? storedDeck : null,
+        findOne: async ({_id, creatorId}) =>
+            _id === storedDeck._id && creatorId === storedDeck.creatorId ?
+                storedDeck :
+                null,
         updateOne: async (filter, update) => {
             assert.equal(filter._id, storedDeck._id);
+            assert.equal(filter.creatorId, storedDeck.creatorId);
             assert.equal(filter.updatedAt, storedDeck.updatedAt);
             storedDeck = {...storedDeck, ...update.$set};
             return {modifiedCount: 1};
@@ -425,7 +448,7 @@ test('deletes decks with a tombstone and excludes them from reads', async () => 
     const store = new MongoDataStore();
     store.database = {collection: () => collection};
 
-    assert.equal(await store.deleteDeck('deck-to-delete'), true);
+    assert.equal(await store.deleteDeck('deck-to-delete', 'owner-id'), true);
     assert.ok(Date.parse(storedDeck.deletedAt) > Date.parse(storedDeck.updatedAt));
     assert.equal(await store.getDeck('deck-to-delete'), null);
     assert.deepEqual(await store.getDecksList(), []);
@@ -441,4 +464,5 @@ test('custom deck config rejects another hero and illegal saved drafts', async (
     });
     await assert.rejects(store.getDeckConfig('deck-1', 'hero'), error =>
         error.statusCode === 400 && error.message.includes('al menos 40 cartas'));
+});
 });

@@ -1,5 +1,6 @@
 import {INTERNAL_ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
+import {AuthServiceClient} from '../../utils/auth-service-client.js';
 
 export class ScenarioRest {
     constructor(rest) {
@@ -15,7 +16,32 @@ export class ScenarioRest {
         );
     }
     async createScenario(params) {
-        const {match, scenario, modularSets} = params;
+        const {match} = params;
+        let {scenario, modularSets} = params;
+
+        if (match?.lobbyId) {
+            const user = await AuthServiceClient.authenticate(params.cookie);
+            if (user.id !== match.creatorUserId) {
+                const error = new Error('Solo el creador puede configurar esta partida.');
+                error.statusCode = 403;
+                throw error;
+            }
+
+            const lobby = await this.mc.data.getMatchLobby(match.lobbyId);
+            if (!lobby || lobby.status !== 'starting' ||
+                lobby.creatorId !== match.creatorUserId) {
+                const error = new Error('La sala ya no está disponible para configurar el escenario.');
+                error.statusCode = 409;
+                throw error;
+            }
+
+            scenario = lobby.scenario.id;
+            modularSets = lobby.scenario.modularSets;
+        }
+
+        if (match?.lobbyId && match.scenario) {
+            return match.scenario.toObj();
+        }
 
         const matchFactory = new MatchFactory(match);
 

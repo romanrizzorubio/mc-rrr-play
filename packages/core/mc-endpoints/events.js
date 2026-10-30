@@ -7,6 +7,7 @@ export const EVENTS = {
         REFRESH: 'deck-refresh',
     },
     DIALOG: {
+        COMPLETE: 'dialog-complete',
         OPEN: 'open-dialog',
         RESPONSE: 'dialog-response',
     },
@@ -16,6 +17,7 @@ export const EVENTS = {
     MATCH: {
         CREATED: 'match-created',
         JOIN: 'join-match',
+        MULLIGAN_COMPLETE: 'mulligan-complete',
         REFRESH: 'match-refresh',
     },
     PLAYER: {

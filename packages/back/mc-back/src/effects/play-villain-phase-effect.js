@@ -1,5 +1,6 @@
 import {
     DIALOG_ENCOUNTERS_DEALT,
+    TARGET_ALL_ENGAGED_MINIONS,
     TRIGGER_VILLAIN_PHASE_STEP,
 } from 'mc-shared';
 
@@ -9,8 +10,24 @@ import {DealEncounterEffect} from './deal-encounter-effect.js';
 import {PlayPhaseEffect} from './play-phase-effect.js';
 import {SeveralActivationsEffect} from './several-activations-effect.js';
 import {logGameTrace} from '../utils/game-trace.js';
+import {
+    getScenarioZone,
+    getVillainFor,
+} from '../utils/match-zone-utils.js';
 
 export class PlayVillainPhaseEffect extends PlayPhaseEffect {
+    async triggerEnds(params, options) {
+        if (!this.canContinuePhase()) {
+            return;
+        }
+        await super.triggerEnds(params, options);
+        if (this.canContinuePhase()) {
+            await this.match.scenario?.resolveDelayedEffects?.(params);
+        }
+    }
+    canContinuePhase() {
+        return this.match.playing !== false && !this.match.gameOverReason;
+    }
     async runTracedStep(step, action) {
         const details = {
             match: this.match.name,
@@ -31,107 +48,146 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         }
     }
     stepAccelerateScheme(params) {
-        const accelerationSchemeEffect = new AccelerateSchemeEffect({
-            match: this.match,
-        });
+        const players = this.getPlayersInVillainPhase();
+        const zoneFor = player => getScenarioZone(this.match, player);
+        const zones = [...new Set(players.map(zoneFor))];
 
-        return accelerationSchemeEffect.runEffect(params);
+        return this.promisesSequential(zones, async zone => {
+            if (!this.canContinuePhase()) {
+                return;
+            }
+            const player = players.find(zonePlayer =>
+                !zonePlayer.defeated && zoneFor(zonePlayer) === zone);
+            if (!player) {
+                return;
+            }
+            const accelerationSchemeEffect = new AccelerateSchemeEffect({
+                match: this.match,
+            });
+
+            await accelerationSchemeEffect.runEffect({
+                ...params,
+                player,
+            });
+        });
     }
     stepActivations(params) {
-        const players = this.match.orderedPlayers;
+        const players = this.getPlayersInVillainPhase();
 
         return this.promisesSequential(players, async player => {
+            if (!this.canContinuePhase() || player.defeated) {
+                return;
+            }
+            const playerParams = {...params, player};
             const activateEffect = new ActivateEffect({
-                selectedTarget: this.match.villain,
+                selectedTarget: getVillainFor(this.match, player),
                 match: this.match,
             });
-            await activateEffect.runEffect({
-                player
-            });
+            await activateEffect.runEffect(playerParams);
+
+            if (!this.canContinuePhase() || player.defeated) {
+                return;
+            }
 
             const severalActivationsEffect = new SeveralActivationsEffect({
-                enemies: player.minions.slice(),
+                enemiesType: TARGET_ALL_ENGAGED_MINIONS,
                 match: this.match,
             });
-            await severalActivationsEffect.runEffect(params);
+            await severalActivationsEffect.runEffect(playerParams);
         });
     }
     async stepDealEncounters() {
-        const players = this.match.orderedPlayers;
-        const hazardIcons = this.match.hazardIcons;
-        const encountersCount = players.length + hazardIcons;
-        const knownEncounterCards = new Set(
-            this.match.scenario.deck.knownCards
+        const players = this.getPlayersInVillainPhase();
+        const globalHazardIcons = Math.max(
+            0,
+            this.match.hazardIcons ?? this.match.scenario?.hazardIcons ?? 0
         );
-        const hazardIconsByPlayer = new Map(
-            players.map(player => [player, 0])
-        );
+        const hazardIconsByPlayer = new Map(players.map(player => [player, 0]));
 
-        let i = 0;
-        let index = i;
-        while(i < encountersCount) {
-            const player = players[index];
-            if (i >= players.length) {
-                hazardIconsByPlayer.set(
-                    player,
-                    hazardIconsByPlayer.get(player) + 1
-                );
+        const dealToPlayer = async player => {
+            if (!this.canContinuePhase() || player.defeated) {
+                return false;
             }
-
             const dealEncounterEffect = new DealEncounterEffect({
                 selectedTarget: player,
                 match: this.match,
             });
 
-            await dealEncounterEffect.runEffect({
-                player
-            });
-
-            i++;
-            if (i < players.length) {
-                index = i;
-            } else {
-                index = 0;
-            }
+            await dealEncounterEffect.runEffect({player});
+            return true;
+        };
+        for (const player of players) {
+            await dealToPlayer(player);
         }
+
+        let nextPlayerIndex = 0;
+        for (let count = 0; count < globalHazardIcons; count++) {
+            const player = players.slice(nextPlayerIndex)
+                .concat(players.slice(0, nextPlayerIndex))
+                .find(player => !player.defeated);
+            if (!this.canContinuePhase() || !player) {
+                return;
+            }
+            if (await dealToPlayer(player)) {
+                hazardIconsByPlayer.set(player, hazardIconsByPlayer.get(player) + 1);
+            }
+            nextPlayerIndex = (players.indexOf(player) + 1) % players.length;
+        }
+
+        if (!this.canContinuePhase()) {
+            return;
+        }
+        const hazardIcons = [...hazardIconsByPlayer.values()]
+            .reduce((total, count) => total + count, 0);
 
         await this.openDialog({
             dialogType: DIALOG_ENCOUNTERS_DEALT,
             data: {
                 hazardIcons,
-                encounters: players.map(player => ({
+                encounters: players.filter(player => !player.defeated).map(player => ({
                     name: player.superhero.name,
                     count: player.encounters.length,
                     hazardIcons: hazardIconsByPlayer.get(player),
-                    cards: player.encounters.map(card => ({
-                        ...card.toObj({player}),
-                        isFacedownCard: true,
-                        canPeekFacedown: knownEncounterCards.has(card),
-                    })),
                 })),
             },
         });
     }
     async stepRevealEncounters() {
-        const players = this.match.orderedPlayers;
+        const players = this.getPlayersInVillainPhase();
 
-        while(this.match.hasEncounters) {
-            await this.promisesSequential(players, player => player.revealEncounterCards());
+        while (this.canContinuePhase() &&
+            players.some(player => !player.defeated && player.encounters.length)) {
+            await this.promisesSequential(players, player => {
+                if (this.canContinuePhase() && !player.defeated) {
+                    return player.revealEncounterCards();
+                }
+            });
         }
     }
-    runEndVillainPhase() {
-        let index = this.match.players.findIndex(player => {
-            if (player.initial) {
-                player.initial = false;
-                return true;
-            }
-            return false;
-        });
-        index++;
-        if (index >= this.match.players.length) {
-            index = 0;
+    getPlayersInVillainPhase() {
+        const players = this.match.orderedPlayers.filter(player => !player.defeated);
+        if (!this.match.scenario?.separatePlayAreas) {
+            return players;
         }
-        this.match.players[index].initial = true;
+
+        return players.filter(player =>
+            player.scenarioZone);
+    }
+    runEndVillainPhase() {
+        const {players} = this.match;
+        const initialIndex = players.findIndex(player => player.initial);
+        const startIndex = initialIndex >= 0 ? initialIndex : 0;
+        for (let offset = 0; offset < players.length; offset++) {
+            const player = players[(startIndex + offset) % players.length];
+            player.initial = false;
+        }
+        for (let offset = 1; offset <= players.length; offset++) {
+            const player = players[(startIndex + offset) % players.length];
+            if (!player.defeated) {
+                player.initial = true;
+                break;
+            }
+        }
     }
     async triggerPhaseStep(step, params) {
         const triggerTypes = [TRIGGER_VILLAIN_PHASE_STEP];
@@ -144,7 +200,10 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             step,
         };
 
-        await this.triggerEnds(triggerParams, {triggerTypes});
+        await super.triggerEnds(triggerParams, {
+            triggerTypes,
+            resolveDelayedEffects: false,
+        });
     }
 
     async execute(params) {
@@ -161,6 +220,9 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         ];
 
         for (let i = this.match.villainPhaseStep ; i < steps.length ; i++) {
+            if (!this.canContinuePhase()) {
+                return;
+            }
             const [name, action] = steps[i];
             await this.runTracedStep(name, action);
             if (this.match.playing) {

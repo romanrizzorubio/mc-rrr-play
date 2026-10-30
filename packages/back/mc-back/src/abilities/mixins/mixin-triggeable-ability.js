@@ -1,3 +1,5 @@
+import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
+
 function getDefenseAttackEffect(params) {
     const triggeringEffect = params.triggeredEffect || params.effect;
     const enemyActivation = triggeringEffect?.enemyActivation;
@@ -78,6 +80,13 @@ export const MixinTriggeableAbility = C => class extends C {
         }
     }
     canTrigger(params) {
-        return this.canRun(params);
+        const player = this.card ?
+            getTriggerCardPlayer(this.card, params.player) :
+            params.player;
+        const abilityParams = player?.isPlayer && player !== params.player ?
+            {...params, player} :
+            params;
+
+        return this.canRun(abilityParams);
     }
 };

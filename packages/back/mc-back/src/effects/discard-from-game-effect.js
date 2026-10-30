@@ -7,20 +7,19 @@ export class DiscardFromGameEffect extends Effect {
         return [EFFECT_CATEGORY_LEAVE_PLAY];
     }
     async execute(_params) {
-        const {selectedTarget} = this;
-
-        const {attachedTo, controller} = selectedTarget;
-
-        await selectedTarget.discard();
-
-        if (attachedTo) {
-            attachedTo.refresh();
-        } else {
-            if (controller) {
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget : [this.selectedTarget];
+        for (const target of targets) {
+            const {attachedTo, controller} = target;
+            await target.discard();
+            if (attachedTo) {
+                await attachedTo.refresh();
+            } else if (controller) {
                 await controller.gameZone.refresh();
             }
+            if (controller) {
+                await controller.deck.refresh();
+            }
         }
-
-        controller && controller.deck.refresh();
     }
 }

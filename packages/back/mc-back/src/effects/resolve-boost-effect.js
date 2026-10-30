@@ -89,7 +89,7 @@ export class ResolveBoostEffect extends Effect {
                 };
             });
 
-            await this.openDialog({
+            await this.openPublicDialog({
                 dialogType: DIALOG_BOOST_DEALT,
                 title: showUpdatedBoost ?
                     'Aumento actualizado' :
@@ -101,14 +101,14 @@ export class ResolveBoostEffect extends Effect {
                     cards,
                     cumulativeBoost,
                 },
-            });
+            }, params.player);
 
             return;
         }
 
         const cardData = card.toObj(params);
 
-        await this.openDialog({
+        await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             title: showUpdatedBoost ? 'Aumento actualizado' : 'Aumento',
             subtitle: showUpdatedBoost ?
@@ -122,7 +122,7 @@ export class ResolveBoostEffect extends Effect {
                 isBoost: true,
                 hasBoostAbility: Boolean(card.boostAbility),
             },
-        });
+        }, params.player);
     }
     async prepare(params) {
         await super.prepare(params);

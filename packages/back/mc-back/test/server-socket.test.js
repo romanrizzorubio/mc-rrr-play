@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
+import {EVENTS} from 'mc-endpoints';
 import {Mc} from '../src/server/mc.js';
 import {DialogSocket} from '../src/server/socket/dialog-socket.js';
 import {McSocket} from '../src/server/socket/mc-socket.js';
@@ -104,7 +105,10 @@ test('deleting a match during initialization cancels pending and future dialogs'
     assert.deepEqual(calls, ['snapshot']);
     assert.equal(mc.getMatch(match.name), undefined);
     assert.equal(mcSocket.dialogSocket.pending.size, 0);
-    assert.equal(sent.length, 1);
+    assert.deepEqual(sent.map(({endpoint}) => endpoint), [
+        EVENTS.DIALOG.OPEN,
+        EVENTS.DIALOG.COMPLETE,
+    ]);
 });
 
 test('deleting a match clears its pending dialogs after deleting the snapshot', async () => {

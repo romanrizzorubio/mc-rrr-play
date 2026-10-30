@@ -103,9 +103,10 @@ export class ChooseEffect extends Effect {
                     hideOk: true,
                     hand: player.hand.cards.map(card => card.toObj(playerParams)),
                     title: 'Elige una opción',
-                    ...(this.playersTarget === TARGET_ALL_PLAYERS ?
-                        {targetPlayer: player.name} :
-                        {}),
+                    targetPlayer: player.id ||
+                        player.userId ||
+                        player.name,
+                    targetPlayerName: player.name,
                     data: {
                         card: card.toObj(playerParams),
                         options: options.map((option, index) => ({

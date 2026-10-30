@@ -1,16 +1,35 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {ABILITY_ACTION} from 'mc-shared';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {PlayerRest} from '../../src/server/rest/player-rest.js';
+import {AuthServiceClient} from '../../src/utils/auth-service-client.js';
 
-test('playCard reuses the player snapshot sent by match.refresh', async () => {
+const withAccount = async callback => {
+    const authenticate = AuthServiceClient.authenticate;
+    AuthServiceClient.authenticate = async () => ({
+        id: 'account-1',
+        name: 'TChalla',
+    });
+    try {
+        return await callback();
+    } finally {
+        AuthServiceClient.authenticate = authenticate;
+    }
+};
+
+describe('PlayerRest', () => {
+test('playCard reuses the player snapshot sent by match.refresh', async () =>
+    withAccount(async () => {
     const sent = [];
-    const refreshedPlayer = {name: 'TChalla'};
+    const refreshedPlayer = {name: 'TChalla', userId: 'account-1'};
     const matchState = {
-        players: [refreshedPlayer],
+        players: [
+            {name: 'TChalla', userId: 'account-2'},
+            refreshedPlayer,
+        ],
     };
     const match = new Match({
         mc: {
@@ -22,16 +41,22 @@ test('playCard reuses the player snapshot sent by match.refresh', async () => {
     });
     const player = {
         name: 'TChalla',
+        userId: 'account-1',
         playCard: async () => {},
         toObjWithPlayableHand: async () => {
             throw new Error('The player should not be serialized a second time.');
         },
     };
+    match.players.push({name: player.name, userId: 'account-2'}, player);
+    match.initialized = true;
+    match.phase = 'players';
+    match.currentTurnPlayer = player;
     match.getPlayer = () => player;
     match.toObjWithPlayableHands = async () => matchState;
 
     const result = await new PlayerRest({}).playCard({
         cardId: 'wakanda-forever',
+        cookie: 'session=verified',
         match,
         player: player.name,
     });
@@ -39,25 +64,29 @@ test('playCard reuses the player snapshot sent by match.refresh', async () => {
     assert.equal(result, refreshedPlayer);
     assert.equal(sent.length, 1);
     assert.equal(sent[0][2], matchState);
-});
+}));
 
-test('playCard forwards the optional preselected target id', async () => {
+test('playCard forwards the optional preselected target id', async () =>
+    withAccount(async () => {
     let playParams;
-    const refreshedPlayer = {name: 'TChalla'};
+    const refreshedPlayer = {name: 'TChalla', userId: 'account-1'};
     const player = {
         name: 'TChalla',
+        userId: 'account-1',
         async playCard(params) {
             playParams = params;
         },
         toObjWithPlayableHand: async () => ({}),
     };
     const match = {
+        players: [player],
         getPlayer: () => player,
         refresh: async () => ({players: [refreshedPlayer]}),
     };
 
     await new PlayerRest({}).playCard({
         cardId: 'damage-event',
+        cookie: 'session=verified',
         match,
         player: player.name,
         targetId: 'villain-1',
@@ -68,18 +97,21 @@ test('playCard forwards the optional preselected target id', async () => {
         abilityType: ABILITY_ACTION,
         targetId: 'villain-1',
     });
-});
+}));
 
-test('resolveAbility forwards a direct resource payment', async () => {
+test('resolveAbility forwards a direct resource payment', async () =>
+    withAccount(async () => {
     let abilityParams;
-    const refreshedPlayer = {name: 'TChalla'};
+    const refreshedPlayer = {name: 'TChalla', userId: 'account-1'};
     const player = {
         name: 'TChalla',
+        userId: 'account-1',
         async resolveAbility(...params) {
             abilityParams = params;
         },
     };
     const match = {
+        players: [player],
         getPlayer: () => player,
         refresh: async () => ({players: [refreshedPlayer]}),
     };
@@ -87,6 +119,7 @@ test('resolveAbility forwards a direct resource payment', async () => {
     await new PlayerRest({}).resolveAbility({
         ability: 0,
         card: 'energy-channel',
+        cookie: 'session=verified',
         match,
         player: player.name,
         resourcePayment: {
@@ -104,19 +137,22 @@ test('resolveAbility forwards a direct resource payment', async () => {
             source: 'hand',
         },
     ]);
-});
+}));
 
-test('flip changes identity once and returns the refreshed player snapshot', async () => {
+test('flip changes identity once and returns the refreshed player snapshot', async () =>
+    withAccount(async () => {
     const flipCalls = [];
-    const refreshedPlayer = {name: 'TChalla'};
+    const refreshedPlayer = {name: 'TChalla', userId: 'account-1'};
     const player = {
         name: 'TChalla',
+        userId: 'account-1',
         flip: async own => flipCalls.push(own),
         toObjWithPlayableHand: async () => {
             throw new Error('The player should not be serialized a second time.');
         },
     };
     const match = {
+        players: [player],
         getPlayer: () => player,
         refresh: async () => ({
             players: [refreshedPlayer],
@@ -125,12 +161,13 @@ test('flip changes identity once and returns the refreshed player snapshot', asy
 
     const result = await new PlayerRest({}).flip({
         match,
+        cookie: 'session=verified',
         player: player.name,
     });
 
     assert.deepEqual(flipCalls, [true]);
     assert.equal(result, refreshedPlayer);
-});
+}));
 
 test('createPlayer replaces the precon with the selected legal deck', async () => {
     const customDeck = [{count: 2, card: {type: 'event', params: {name: 'Carta'}}}];
@@ -160,6 +197,7 @@ test('createPlayer replaces the precon with the selected legal deck', async () =
             expert: false,
         },
         createPlayer: config => ({
+            id: 'seat-1',
             toObj: () => config,
         }),
     };
@@ -185,6 +223,7 @@ test('createPlayer replaces the precon with the selected legal deck', async () =
         assert.deepEqual(result.config.precon, customDeck);
         assert.equal(result.config.aspect, 'justice');
         assert.deepEqual(match.creationConfig.players, [{
+            id: 'seat-1',
             name: 'Player',
             initial: false,
             config: {
@@ -205,4 +244,5 @@ test('createPlayer replaces the precon with the selected legal deck', async () =
     } finally {
         MatchFactory.prototype.createSuperhero = originalCreateSuperhero;
     }
+});
 });

@@ -6,8 +6,9 @@
 
 - **Node.js 20+** - [Descargar](https://nodejs.org/)
 - **npm** - Incluido con Node.js
-- **Docker y Docker Compose** (para MongoDB local en contenedor o el stack completo)
-- **MongoDB 7+ con `mongod` en el `PATH`** (solo para `start:all:local`)
+- **Docker y Docker Compose** (opcionales; solo para ejecutar servicios en contenedores)
+- **mkcert** (para los certificados HTTPS de desarrollo)
+- **MongoDB 7+ con `mongod` en el `PATH`**, o una instancia MongoDB externa configurada con `MONGODB_URI`
 - **Git** (para clonar el repositorio)
 
 ### Instalación Local
@@ -27,26 +28,52 @@ npm install
 
 Esto instala dependencias para todos los packages del monorepo:
 - `packages/front/mc-frontend`
+- `packages/front/mc-users`
 - `packages/front/mc-match`
 - `packages/front/mc-deck`
 - `packages/front/mc-static`
 - `packages/front/mc-components`
 - `packages/back/mc-back`
 - `packages/back/mc-match-creation-service`
+- `packages/back/mc-user-service`
 - `packages/back/mc-deck-service`
+- `packages/back/mc-server-utils`
 - `packages/back/mc-data`
 - `packages/core/mc-endpoints`
 - `packages/core/mc-shared`
 
-#### 3. Preparar MongoDB
+#### 3. Preparar HTTPS local
+
+Instala [mkcert](https://github.com/FiloSottile/mkcert) y ejecuta:
+
+```bash
+npm run https:setup
+```
+
+Ejecuta este comando una sola vez (o cuando necesites regenerar certificados). Instala la autoridad certificadora local, genera un certificado para `localhost` y los nombres de servicio Docker, y guarda los ficheros en `.local/certs/` (excluido de Git). Confía en esa autoridad en el navegador; `npm run start:all` y Docker usan los mismos certificados. No se ejecuta en cada arranque porque `mkcert -install` modifica la confianza de certificados del sistema y volver a generar los certificados no aporta nada. `start:all` comprueba que estén presentes e indica cómo prepararlos si faltan. No copies certificados ni claves privadas al repositorio.
+
+#### 4. Preparar MongoDB
 
 Elige cómo ejecutar MongoDB:
 
 - `npm run start:all` (igual que `npm run start:all:docker`) usa el contenedor Docker y ejecuta la carcasa, los remotos y servicios en el host. Los datos persisten en `mc-mongodb-data`; `npm run mongo:down` lo detiene.
-- `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`. Requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
+- `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`; si `MONGODB_URI` apunta a un host externo, no inicia una base local. Para MongoDB local, requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
 - `npm run docker:up` ejecuta los frontends, microservicios y MongoDB en contenedores.
 
-Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
+Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Si ejecutas procesos individuales, define las rutas del certificado y la autoridad para que Node confíe en los servicios locales:
+
+```bash
+export TLS_CERT_PATH="$PWD/.local/certs/localhost.pem"
+export TLS_KEY_PATH="$PWD/.local/certs/localhost-key.pem"
+export NODE_EXTRA_CA_CERTS="$PWD/.local/certs/rootCA.pem"
+export SESSION_COOKIE_SECURE=true
+export FRONTEND_ORIGIN=https://localhost:8000
+export FRONTEND_ORIGINS=https://localhost:8000,https://localhost:8100
+export AUTH_SERVICE_URL=https://localhost:3003
+export MATCH_SERVICE_URL=https://localhost:3000
+```
+
+`start:all` y Docker configuran esas variables automáticamente. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
 
 ```bash
 npm run seed:data
@@ -54,9 +81,27 @@ npm run seed:data
 
 El seed solo actualiza las colecciones del catálogo y no modifica los mazos guardados en `decks`. `./mc-monorepo.sh clean` y `docker-compose down` conservan el volumen `mc-mongodb-data`. No uses `docker-compose down -v` salvo que quieras borrar explícitamente todos los datos de MongoDB, incluidos los mazos guardados.
 
-El hook `pre-commit` solo ejecuta las pruebas; no guarda ni añade el backup de mazos al commit. Para actualizar el fichero físico `packages/back/mc-data/seed/catalog/decks.json`, usa el botón **Guardar copia en el catálogo** del editor. La opción **Restaurar del repositorio** aplica el evento más reciente por ID (`updatedAt` para mazos y `deletedAt` para borrados), conserva los mazos locales ausentes del snapshot y propaga los borrados para que no reaparezcan en otra instalación.
+El servicio de usuarios necesita un origen HTTPS válido del frontend en `FRONTEND_ORIGIN` (el stack local lo establece como `https://localhost:8000`) y usa cookies `Secure`.
 
-#### 4. Iniciar la Aplicación
+Para desarrollo, `start:all:local` inicia MailDev como servidor SMTP local sin Docker. Captura los mensajes —no los envía a direcciones reales— para que puedas abrir los enlaces de activación y recuperación desde http://localhost:8025; SMTP escucha en `127.0.0.1:1025`. `start:all` y `docker:up` usan Mailpit en Docker. Para iniciar MailDev por separado usa `npm run maildev` y detenlo con `Ctrl+C`; al iniciar solo el servicio de usuarios, ejecuta MailDev en otra terminal y configura `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025` y `SMTP_FROM='MC RRR Play <noreply@localhost>'`.
+
+Para usar un proveedor SMTP real, configura sus valores antes de iniciar `start:all`:
+
+```bash
+export SMTP_HOST=smtp.example.com
+export SMTP_PORT=587
+export SMTP_USER=usuario-smtp
+export SMTP_PASSWORD=contraseña-smtp
+export SMTP_FROM='MC RRR Play <noreply@example.com>'
+```
+
+`SMTP_USER` y `SMTP_PASSWORD` deben configurarse juntos o dejarse ambos vacíos si el servidor permite envío sin autenticación. Docker Compose también lee estas variables de un archivo `.env` local y permite reemplazar los valores predeterminados de Mailpit. No guardes credenciales SMTP en el repositorio.
+
+Los permisos de administrador se guardan en el campo `isAdmin` de cada usuario en MongoDB. Para promover una cuenta existente, ejecuta `npm run promote-admin --workspace=packages/back/mc-user-service -- correo@ejemplo.com`; el correo debe pertenecer a una cuenta existente y no eliminada. La pestaña de usuarios y las operaciones de catálogo comprueban el rol en el backend.
+
+El hook `pre-commit` solo ejecuta las pruebas; no guarda ni añade el backup de mazos al commit. Para actualizar el fichero físico `packages/back/mc-data/seed/catalog/decks.json`, un administrador usa el botón **Guardar copia en el catálogo** del editor. **Restaurar del repositorio** también está reservado a administradores; aplica el evento más reciente por ID (`updatedAt` para mazos y `deletedAt` para borrados), conserva los mazos locales ausentes del snapshot y propaga los borrados para que no reaparezcan en otra instalación. Para respetar la propiedad, los cambios y borrados del snapshot solo se aplican a mazos del usuario que ejecuta la restauración; los mazos nuevos importados se asignan a esa cuenta.
+
+#### 5. Iniciar la Aplicación
 
 ##### Opción A: MongoDB en Docker y aplicación local
 
@@ -64,24 +109,26 @@ El hook `pre-commit` solo ejecuta las pruebas; no guarda ni añade el backup de 
 npm run start:all
 ```
 
-Esto inicia MongoDB en Docker y los frontends/microservicios en el host. Pulsa `Ctrl+C` para detenerlos; el contenedor de MongoDB queda activo. La aplicación queda disponible en:
-- Carcasa en `http://localhost:8000`
-- Servicio de partidas en `http://localhost:3000`
-- Servicio de creación en `http://localhost:3001`
-- Servicio de mazos en `http://localhost:3002`
-- Remoto de juego en `http://localhost:8100`
-- Remoto de mazos en `http://localhost:8200`
-- Recursos estáticos en `http://localhost:8300`
+Esto inicia MongoDB y Mailpit en Docker, y los frontends/microservicios en el host. Pulsa `Ctrl+C` para detenerlos; los contenedores quedan activos. La aplicación queda disponible en:
+- Carcasa en `https://localhost:8000`
+- Servicio de partidas en `https://localhost:3000`
+- Servicio de creación en `https://localhost:3001`
+- Servicio de mazos en `https://localhost:3002`
+- Servicio de usuarios en `https://localhost:3003`
+- Remoto de juego en `https://localhost:8100`
+- Remoto de mazos en `https://localhost:8200`
+- Recursos estáticos en `https://localhost:8300`
+- Remoto de cuentas en `https://localhost:8400`
 
 ##### Opción B: MongoDB local
 
-Si tienes MongoDB Community Server instalado y `mongod` en el `PATH`, inicia MongoDB local junto con frontend/backend:
+Inicia frontend/backend y MailDev sin Docker. Necesitas MongoDB Community Server con `mongod` en el `PATH`, o una instancia MongoDB externa configurada con `MONGODB_URI`:
 
 ```bash
 npm run start:all:local
 ```
 
-Los datos locales se guardan en `.local/mongodb`. Para depurar frontend y backend por separado desde el IDE, usa `npm run mongo:up` y luego inicia cada aplicación individualmente. Al ejecutar la carcasa por separado, inicia también `npm run start:mc-static` en otra terminal.
+Con MongoDB local, los datos se guardan en `.local/mongodb`; el correo de activación queda en http://localhost:8025. Para depurar frontend y backend por separado desde el IDE, inicia MongoDB y MailDev en terminales separadas con `npm run mongo:up` y `npm run maildev`, y después inicia cada aplicación individualmente. Al ejecutar la carcasa por separado, inicia también `npm run start:mc-static` en otra terminal.
 
 ### Instalación con Docker
 
@@ -98,8 +145,9 @@ npm run docker:up
 ```
 
 Esto inicia frontend, backend y MongoDB, todos en Docker. El backend carga el catálogo cuando MongoDB está saludable. La aplicación queda disponible en:
-- Frontend en `http://localhost:8000`
-- Backend en `http://localhost:3000`
+- Frontend en `https://localhost:8000`
+- Backend en `https://localhost:3000`
+- Usuarios en `https://localhost:3003` y remoto de cuentas en `https://localhost:8400`
 - MongoDB en `mongodb://localhost:27017` (los datos persisten en el volumen `mc-mongodb-data`)
 - Sincronización automática de cambios (hot-reload)
 
@@ -120,35 +168,31 @@ npm run docker:down
 Una vez iniciada la aplicación:
 
 ### Frontend
-- **URL**: http://localhost:8000
+- **URL**: https://localhost:8000
 - **Descripción**: Interfaz de usuario para jugar
 
 ### Backend
-- **URL**: http://localhost:3000
+- **URL**: https://localhost:3000
 - **Descripción**: API REST + WebSocket
-- **Verificar estado**: http://localhost:3000 debería mostrar conectado
+- **Verificar estado**: https://localhost:3000/healthz
 
 ## Primer Juego
 
-### Paso 1: Crear o Unirse a Partida
+### Paso 1: Crear una cuenta e iniciar sesión
 
-1. Abre http://localhost:8000
-2. Haz clic en "Nueva Partida" o "Unirse"
-3. Ingresa un nombre para la partida
+1. Abre https://localhost:8000 y selecciona **Crear un nuevo usuario**.
+2. Introduce email y nombre visible.
+3. Abre el enlace de activación recibido por correo y establece una contraseña segura. La activación inicia sesión automáticamente.
+4. Si SMTP no está configurado, el servicio de usuarios no puede entregar los enlaces.
 
-### Paso 2: Seleccionar Superhéroe
+### Paso 2: Crear o Unirse a Partida
 
-1. Se muestra lista de Superhéroes disponibles
-2. Haz clic en el que desees
-3. Se muestra información del Superhéroe
+1. Haz clic en **Nueva partida** o elige una sala de espera disponible.
+2. Si creas la partida, completa el asistente: **Paso 1**, nombre y máximo de jugadores; **Paso 2**, tu superhéroe y mazo, con la tabla de aspecto y filtros usada por los invitados; **Paso 3**, escenario, dificultad y conjuntos modulares.
+3. Al crearla entrarás en la sala de espera. Cada invitado elige allí su superhéroe y mazo; el creador puede iniciar con las plazas disponibles.
+4. Si te unes a una sala, selecciona tu superhéroe y mazo en esa sala.
 
-### Paso 3: Seleccionar Escenario
-
-1. Se muestra lista de villanos/escenarios
-2. Selecciona dificultad
-3. Confirma selección
-
-### Paso 4: ¡Jugar!
+### Inicio de la partida: ¡Jugar!
 
 1. Se inicializa la partida
 2. Comienza el primer turno
@@ -230,12 +274,14 @@ mc-rrr-play/
 ├── packages/
 │   ├── front/
 │   │   ├── mc-frontend/    # 🎨 Carcasa, lobby y creación
+│   │   ├── mc-users/       # 👤 Remoto de gestión de usuarios
 │   │   ├── mc-match/       # 🎮 Remoto de juego
 │   │   ├── mc-deck/        # 🃏 Editor de mazos
 │   │   ├── mc-static/      # 🖼️ Remoto de recursos estáticos
 │   │   └── mc-components/  # 🧩 Paquete npm de componentes Lit compartidos
 │   ├── back/
 │   │   ├── mc-match-creation-service/ # Creación y catálogo
+│   │   ├── mc-user-service/ # 👤 Cuentas y sesiones
 │   │   ├── mc-deck-service/ # API y persistencia de mazos
 │   │   ├── mc-back/        # 🎮 Motor de juego
 │   │   │   ├── src/
@@ -271,8 +317,14 @@ npm run start:all
 # Remoto estático (en una terminal)
 npm run start:mc-static
 
+# Remoto de usuarios (puerto 8400, en otra terminal)
+npm run start:mc-users
+
 # Carcasa (en otra terminal)
 npm run start:frontend
+
+# Servicio de usuarios (puerto 3003)
+npm run start:mc-user-service
 
 # Backend solo
 npm run start:backend

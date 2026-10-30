@@ -5,16 +5,16 @@
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                            PRESENTACIÓN                                      │
-│       Carcasa mc-frontend + remotos mc-match, mc-deck y mc-static            │
-│               (Lobby, juego, mazos y recursos compartidos)                  │
+│   Carcasa mc-frontend + remotos mc-users, mc-match, mc-deck y mc-static      │
+│          (Lobby, cuentas, juego, mazos y recursos compartidos)               │
 └─────────────────────────────────┬────────────────────────────────────────────┘
                       │
-                      │ HTTP REST + WebSocket (Socket.IO)
+                      │ HTTPS REST + WSS (Socket.IO)
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                    MICROSERVICIOS                            │
-│ mc-match-creation-service │ mc-back │ mc-deck-service        │
-│   (catálogo/creación)     │ (motor) │ (mazos)                 │
+│ mc-match-creation-service │ mc-back │ mc-deck-service │ mc-user-service │
+│ (catálogo/lobby)          │ (motor) │ (mazos)         │ (cuentas)       │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
@@ -32,19 +32,26 @@
 
 ### Packages compartidos y catálogo de juego
 
-- `packages/front/` contiene `mc-frontend` (carcasa y creación), `mc-match` (remoto de juego), `mc-deck` (editor de mazos), `mc-static` (imágenes, fuentes, favicons y CSS público) y `mc-components` (paquete npm de componentes Lit reutilizables).
-- `packages/back/` contiene `mc-back`, los servicios `mc-match-creation-service` y `mc-deck-service`, y `mc-data`, que conecta con MongoDB para los catálogos, mazos e instantáneas de partidas.
+- `packages/front/` contiene `mc-frontend` (carcasa y lobby), `mc-users` (remoto de cuentas), `mc-match` (remoto de juego), `mc-deck` (editor de mazos), `mc-static` (recursos públicos) y `mc-components` (componentes Lit reutilizables).
+- `packages/back/` contiene `mc-back`, los servicios `mc-match-creation-service`, `mc-deck-service` y `mc-user-service`, `mc-server-utils` para los servidores HTTPS compartidos y `mc-data`, que conecta con MongoDB para los catálogos, mazos, cuentas e instantáneas de partidas.
 - `packages/core/mc-endpoints` publica las rutas REST y eventos Socket.IO usados por frontend y backend.
 - `packages/core/mc-shared` publica identificadores de capacidades, efectos, objetivos, rasgos, tipos de carta y otros valores del dominio. Las configuraciones de MongoDB almacenan estos valores como strings.
-- `mc-frontend` conserva el lobby y la creación. Carga `mc-static` para resolver recursos; los componentes Lit compartidos se instalan como dependencia npm en `mc-frontend`, `mc-match` y `mc-deck`, y quedan incluidos al compilar cada consumidor. El setup de una partida puede solicitar diálogos, por lo que `mc-match` se carga antes de inicializarla; `mc-deck` se carga al abrir la sección de mazos. La carcasa registra Material Web una sola vez para que los remotos compartan sus elementos. Las URL de los remotos se configuran en `packages/front/mc-frontend/public/app-config.json`.
+- `mc-frontend` conserva la navegación, el lobby de partidas y las salas multijugador. Carga `mc-static` para resolver recursos y `mc-users` para las vistas de cuenta; los componentes Lit compartidos se instalan como dependencia npm en `mc-frontend`, `mc-match` y `mc-deck`. El setup de una partida puede solicitar diálogos, por lo que `mc-match` se carga antes de inicializarla; `mc-deck` se carga al abrir la sección de mazos. La carcasa registra Material Web antes de cargar los remotos, que usan esos elementos compartidos. Las URL de los remotos se configuran en `packages/front/mc-frontend/public/app-config.json`.
+- `mc-users` mantiene una página Lit independiente para cada ruta de cuenta, y `mc-users-app` solo coordina el estado compartido y selecciona la página activa.
 - `mc-static` almacena los recursos públicos en `src/assets/` y los publica bajo `/images/`, `/font/` y `/styles/`; el remoto expone `getAssetUrl()` para resolverlos desde la carcasa y el juego.
 - `mc-components` exporta componentes Lit reutilizables, como `mc-card-image-dialog`; los consumidores los importan directamente como dependencia y los registran en `customElements`.
 - `mc-match-creation-service` sirve los catálogos y las rutas públicas de creación, orquestando mediante endpoints internos las operaciones que requieren el motor de `mc-back`.
+- En `mc-match-creation-service`, `match-lobby-rest.js` registra las rutas, `match-lobby-service.js` aplica las reglas de sala y `match-lobby-start-service.js` prepara el motor; `auth-service-client.js` valida la sesión.
+- `mc-user-service` almacena usuarios y sesiones, valida credenciales y entrega enlaces de activación/restablecimiento mediante SMTP. El campo booleano `users.isAdmin` es la única fuente del rol de administrador; `/me` lo devuelve desde la base de datos. Las rutas de gestión de usuarios usan `/users` y sus subrutas habituales, pero todas requieren una sesión administradora y el backend responde HTTP 403 cuando faltan permisos. El primer administrador se asigna a una cuenta existente mediante el comando `npm run promote-admin --workspace=packages/back/mc-user-service -- <email>`.
+- Los frontends, remotos y servicios HTTP exponen HTTPS; Socket.IO usa WSS. El certificado de desarrollo de `mkcert` se configura mediante `TLS_CERT_PATH` y `TLS_KEY_PATH`, y `SESSION_COOKIE_SECURE=true` marca las cookies de sesión como seguras.
+- La carcasa comprueba el protocolo antes de cargar el módulo de la aplicación y redirige las URL `http:` a `https:`, conservando host, ruta, parámetros y fragmento.
 - `mc-back` es el servicio de partidas: mantiene el motor, el estado persistido y Socket.IO. Sus endpoints internos de creación están bajo `/internal/`.
-- `mc-deck-service` valida las reglas de construcción y persiste los mazos en la colección `decks`. Cada documento guarda el héroe, un único campo `aspect` (texto para un aspecto o lista para varios), referencias `{id, count}` a las cartas editables y las fechas `createdAt`/`updatedAt`; las restricciones específicas de cada héroe, incluidas las cantidades equilibradas entre aspectos, se aplican al validar el mazo. Las cartas fijas del héroe siguen viniendo del catálogo. Solo el botón **Guardar copia en el catálogo** sincroniza el evento más reciente por ID entre MongoDB y `packages/back/mc-data/seed/catalog/decks.json`; el hook `pre-commit` no modifica el backup. Los borrados explícitos se conservan como tombstones con `deletedAt`, para que no reaparezcan al restaurar en otra instalación. La restauración desde `mc-deck` compara las fechas de actualización y borrado por ID, conserva los mazos exclusivamente locales y aplica los eventos más recientes del repositorio. `GET /decks` entrega la biblioteca completa con nombre del héroe y tamaño validado para el listado principal.
+- `mc-deck-service` valida las reglas de construcción y persiste los mazos en la colección `decks`. Cada documento guarda el héroe, el `creatorId` de la cuenta en `users`, un único campo `aspect` (texto para un aspecto o lista para varios), referencias `{id, count}` a las cartas editables y las fechas `createdAt`/`updatedAt`; las restricciones específicas de cada héroe, incluidas las cantidades equilibradas entre aspectos, se aplican al validar el mazo. El servicio obtiene el creador de la sesión autenticada y resuelve su nombre desde `users` al devolver mazos. Los mazos existentes ya tienen su creador asignado; el arranque no usa una cuenta predeterminada ni reasigna mazos. Solo el creador puede actualizar un mazo; la respuesta calcula `canEdit` para la sesión actual sin exponer el `creatorId`. Las operaciones para guardar y restaurar el catálogo requieren `isAdmin === true` obtenido directamente desde `mc-user-service`; a cualquier otro usuario autenticado se le responde HTTP 403 antes de acceder al snapshot o modificar datos. Las cuentas y sesiones se guardan en MongoDB mediante `mc-user-service`; los mazos también se conservan en MongoDB en la colección `decks`. Las cartas fijas del héroe siguen viniendo del catálogo. Solo el botón **Guardar copia en el catálogo** sincroniza el evento más reciente por ID entre MongoDB y `packages/back/mc-data/seed/catalog/decks.json`; el hook `pre-commit` no modifica el backup. Los borrados explícitos se conservan como tombstones con `deletedAt`, para que no reaparezcan al restaurar en otra instalación. La restauración desde `mc-deck` compara las fechas de actualización y borrado por ID y conserva los mazos exclusivamente locales; los eventos del repositorio solo se aplican a mazos cuyo creador sea el usuario autenticado, y los mazos nuevos importados quedan atribuidos a quien solicita la restauración. `GET /decks` entrega la biblioteca completa con nombre del héroe, creador y tamaño validado para el listado principal.
+- Los favoritos se persisten en `users.favoriteDeckIds`. Las lecturas de mazos incluyen `canEdit` e `isFavorite` para la sesión actual; `POST` y `DELETE /decks/:id/favorite` requieren sesión y solo permiten marcar mazos de otro creador. La edición y eliminación verifican el `creatorId` tanto en `mc-deck-service` como en la operación de borrado de `mc-data`.
 - El remoto `mc-deck` separa la selección de héroe, la lista de mazos y el editor (incluidas las listas de cartas) en componentes Lit independientes; `mc-deck-app` coordina el estado y `DeckServiceClient` encapsula las llamadas al servicio.
 - Las vistas de `mc-deck` se enrutan desde `mc-frontend`: `/decks`, `/decks/create`, `/decks/edit` y `/decks/edit/:id`. La carcasa mantiene el remoto montado y le comunica la ruta activa y sus parámetros para admitir navegación directa e historial del navegador.
 - En desarrollo, `npm run start:all` (o `npm run start:all:docker`) inicia MongoDB en Docker y ejecuta la carcasa, los remotos y servicios en el host; `npm run start:all:local` usa `mongod` local. `npm run docker:up` ejecuta todos los servicios en contenedores.
+- Antes del primer arranque local o Docker, instala `mkcert` y ejecuta una vez `npm run https:setup`; `mkcert -install` añade la autoridad local a la confianza del sistema. `start:all` solo verifica que existan los certificados y no repite la instalación en cada arranque. El navegador también debe confiar en esa autoridad; los certificados se guardan en `.local/certs/`, fuera del control de versiones.
 - El catálogo inicial está separado en `packages/back/mc-data/seed/catalog/{heroes,scenarios,sets,aspects}/`: hay un módulo JavaScript por héroe, escenario y set; los archivos de `aspects/` están organizados en subcarpetas por aspecto y agrupan las cartas por tipo (por ejemplo, `aspects/aggression/allies.js`). Las cartas básicas se identifican con `classification: 'basic'`, no con un aspecto. Estos módulos pueden importar identificadores de `mc-shared`; sus valores se guardan como strings al persistirlos en MongoDB. Al conectar, `mc-data` inserta solo los documentos ausentes en las colecciones `heroes`, `scenarios`, `sets` y `aspects`. Antes de arrancar el backend mediante `npm run start:backend` (incluyendo `start:all` y `docker:up`), se ejecuta `npm run seed:data`, que reemplaza los documentos del catálogo empaquetado por los valores exportados por sus módulos.
 - Los documentos usan `_id` como identificador estable. Héroes, escenarios y sets guardan su configuración en `config`; cada documento de `aspects` contiene una carta. Los precon de héroe guardan referencias ordenadas a esas cartas, que `getHeroConfig()` expande al cargar la configuración. Si el precon no define un aspecto distinto de Básica, la configuración del héroe se carga sin un aspecto predeterminado.
 - El seed normaliza las cartas al formato `{type, params}` que consume `CardsFactory`, conservando dentro de `params` sus capacidades y efectos. Una cara puede declarar un `id` explícito; si no lo hace, `Card` mantiene el ID generado a partir del nombre y el conjunto.
@@ -116,8 +123,12 @@ class Match extends Engine {
 ```
 
 #### Player
+Un `Player` representa un puesto de superhéroe, no una cuenta: `id` identifica ese puesto y `userId` la cuenta que puede controlarlo. Varios puestos pueden compartir `userId`, pero conservan turnos, cartas, recursos y estado propios. El frontend mantiene como jugador seleccionado el ID del puesto y permite cambiarlo desde el listado sin modificar el turno del motor.
+
 ```javascript
 class Player {
+  id: string
+  userId: string
   name: string
   hero: Superhero
   hand: Hand
@@ -256,7 +267,7 @@ class Effect {
 
 **Ubicación:** `packages/back/mc-back/src/server/`
 
-Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que escucha en el puerto `3000`. El servicio de creación escucha en `3001` y consume los catálogos en MongoDB.
+Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que escucha en el puerto `3000`. El servicio de creación escucha en `3001`, el de mazos en `3002` y el de usuarios en `3003`.
 
 #### McRest
 - Define rutas GET, POST y DELETE, analiza cuerpos JSON y obtiene la partida a partir de la cabecera HTTP `match` para las acciones de juego.
@@ -276,9 +287,25 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 | `POST` | `/create-player` | Añadir jugador vía servicio de creación |
 | `POST` | `/create-scenario` | Añadir escenario vía servicio de creación |
 | `POST` | `/init-match` | Inicializar vía servicio de creación |
+| `GET` | `/match-lobbies` | Listar salas multijugador en espera con plazas disponibles |
+| `POST` | `/match-lobbies` | Crear sala multijugador |
+| `GET` | `/match-lobbies/:id` | Consultar detalles de sala con sesión iniciada |
+| `POST` | `/match-lobbies/:id/join` | Unirse a una sala en espera |
+| `POST` | `/match-lobbies/:id/leave` | Abandonar una sala en espera |
+| `POST` | `/match-lobbies/:id/start` | Preparar la partida como creador, sin inicializar |
+| `DELETE` | `/match-lobbies/:id` | Eliminar una sala en espera como creador |
 | `POST` | `/player-flip` | Cambiar identidad directamente en `mc-back` |
 | `POST` | `/play-card` | Jugar carta directamente en `mc-back` |
 | `POST` | `/resolve-ability` | Resolver capacidad directamente en `mc-back` |
+| `POST` | `/request-action` | Solicitar una acción a otro jugador durante el turno propio |
+| `POST` | `/respond-action` | Aceptar o rechazar una solicitud recibida |
+| `POST` | `/complete-action` | Finalizar la acción concedida |
+
+`mc-user-service` ofrece en `3003` las rutas `/register`, `/activate`, `/login`, `/logout`, `/me`, `/profile`, `/password/change`, `/password-reset/request` y `/password-reset`; los emails pendientes se consultan con GET en `/activation` y `/password-reset`, y las solicitudes de correo requieren SMTP configurado.
+
+Las respuestas de sala (incluidas las listas) tienen la forma `{id,name,status,maxPlayers,ownerId,players:[{userId,name,hero,heroName,aspect,deckId}],scenarioName,expert,modularSetNames,matchId}`; `matchId` es `null` mientras no haya comenzado la preparación. El endpoint de colección usa `ENDPOINTS.MATCH.LOBBIES`.
+
+`/match-lobbies/:id/start` crea el match, sus jugadores en orden de registro y el escenario, y persiste la sala en estado `starting`; no llama a `/init-match`. Devuelve `{lobby,matchId,matchName,expert}`. El cliente carga el match, se une primero a Socket.IO con `join-match`, y luego llama al `/init-match` existente para que los diálogos interactivos del setup sean accionables. Si la preparación se reintenta, devuelve la identidad/configuración persistidas del mismo match. La sala no permite join, leave ni delete mientras está en `starting`; una inicialización completada cambia el estado a `started`.
 
 #### McSocket
 - Gestiona los eventos Socket.IO definidos en `packages/core/mc-endpoints/events.js`.
@@ -287,12 +314,14 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 - La instantánea `match-refresh` incluye la fase y el jugador activo para que la interfaz solo ofrezca finalizar el turno a quien corresponda.
 - Tras una reconexión, el cliente vuelve a unirse; si el setup terminó, recibe una instantánea completa y, si hay un diálogo pendiente, este se vuelve a emitir.
 - El fin de turno y las respuestas de diálogo requieren acknowledgement; la interfaz informa de desconexiones, fallos y expiraciones.
+- Las conexiones y acciones de juego autentican la cookie mediante `GET ${AUTH_SERVICE_URL}/me` (por defecto `https://localhost:3003`); `mc-back` guarda el ID verificado en cada jugador y solo acepta acciones del propietario de esa identidad.
+- El `id` interno de `Player` usa el ID de cuenta cuando está disponible; `name` se conserva como etiqueta visible, por lo que varios jugadores pueden compartirla sin mezclar tableros, turnos o diálogos dirigidos.
 
 **Eventos principales:** `join-match`, `end-turn`, `open-dialog`, `dialog-response` y los eventos `*-refresh` descritos en [Comunicación](#comunicación).
 
 ## Componentes del Frontend
 
-La carcasa `mc-frontend` ofrece el lobby, la creación y la navegación. Al iniciar, carga `mc-static` para resolver los recursos; los componentes compartidos están incluidos en los bundles de sus consumidores. Al entrar a una partida carga `mc-match` como ES module y al abrir "Mazos" carga `mc-deck`. El bundle del juego no se descarga al abrir el lobby.
+La carcasa `mc-frontend` ofrece el lobby, la creación y la navegación. Al iniciar, carga `mc-static` para resolver los recursos; al abrir una ruta de cuenta carga `mc-users` y, al abrir "Mazos", carga `mc-deck`. Al entrar a una partida carga `mc-match` como ES module. El bundle del juego no se descarga al abrir el lobby.
 
 ### 1. Estructura de Componentes
 
@@ -418,11 +447,11 @@ Diálogos: el backend emite `open-dialog` con un identificador de solicitud; el 
 
 Se usa para obtener listas de héroes, escenarios, conjuntos modulares y partidas activas, crear e inicializar partidas y ejecutar acciones de juego. El servicio de creación sirve el catálogo y enruta las operaciones de creación al servicio de partidas; `mc-back` conserva las acciones de juego y Socket.IO. Las rutas públicas e internas están centralizadas en `packages/core/mc-endpoints/endpoints.js`.
 
-Las peticiones llevan JSON; las rutas de partida usan la cabecera `match`. `Api.request()` dirige las rutas públicas de creación y catálogo al servicio `matchCreation` y las acciones de juego a `match`, según `public/app-config.json`. Por defecto, `/create-match` se solicita a `http://localhost:3001/create-match`; las acciones de juego y Socket.IO usan `http://localhost:3000`.
+Las peticiones llevan JSON; las rutas de partida usan la cabecera `match`. `Api.request()` dirige las rutas públicas de creación y catálogo al servicio `matchCreation`, las cuentas a `users` y las acciones de juego a `match`, según `public/app-config.json`. Las peticiones de usuario incluyen credenciales para transportar la cookie de sesión entre puertos; Socket.IO también se conecta con credenciales.
 
 Los errores REST se devuelven como JSON con `{error: {message, status}}` y un estado HTTP adecuado; las rutas desconocidas responden `404` y los errores inesperados responden `500` sin exponer detalles internos. `Api.request()` convierte las respuestas fallidas en errores con el mensaje del servidor para que la interfaz los muestre al usuario.
 
-### WebSocket (Socket.IO)
+### WSS (Socket.IO)
 
 Se usa para el fin de turno, los diálogos interactivos y las actualizaciones de estado en tiempo real.
 

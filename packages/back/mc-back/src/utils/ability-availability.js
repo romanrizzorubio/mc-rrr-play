@@ -1,3 +1,5 @@
+import {isOtherPlayerTurn} from './player-turn-permissions.js';
+
 async function getResourcePaymentAvailability(ability, card, player, canRun) {
     if (!canRun || !player?.getCardsToPay) {
         return undefined;
@@ -60,7 +62,8 @@ export async function getAbilitiesWithAvailability(card, player) {
                 player,
                 card,
             };
-            const canRun = await ability.canRun(availabilityParams);
+            const canRun = (!isOtherPlayerTurn(player) || ability.isAction) &&
+                await ability.canRun(availabilityParams);
             const availableTargetIds = isDragActivation &&
                 canRun &&
                 ability.effect &&

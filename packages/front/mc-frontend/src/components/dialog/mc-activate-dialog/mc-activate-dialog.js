@@ -44,13 +44,18 @@ export class McActivateDialog extends McDialog {
             },
         };
     }
+    renderResponsiblePlayer() {
+        return this.data.target && !this.data.statusMessage ?
+            html`` :
+            super.renderResponsiblePlayer();
+    }
     renderCharacterCard(character, emphasizedStat) {
         return html`
             <mc-card
                 .name="${character.name}"
                 .image="${character.image}"
                 .isFacedownCard="${character.isFacedownCard}"
-                .canPeekFacedown="${Boolean(character.isFacedownCard && character.image)}"
+                .canPeekFacedown="${Boolean(!this.readOnly && character.isFacedownCard && character.image)}"
                 .life="${character.life}"
                 .hitPoints="${character.hitPoints}"
                 .attack="${character.attack}"
@@ -98,9 +103,11 @@ export class McActivateDialog extends McDialog {
         }
 
         return html`
-            ${this.renderCharacterCard(character, emphasizedStat)}
-            <div class="vs">VS</div>
-            ${this.renderCharacterCard(target)}
+            <div class="activation-cards">
+                ${this.renderCharacterCard(character, emphasizedStat)}
+                <div class="vs">VS</div>
+                ${this.renderCharacterCard(target)}
+            </div>
         `;
     }
 }

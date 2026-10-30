@@ -130,6 +130,7 @@ export class SearchCardAndRevealEffect extends Effect {
                 } else {
                     const response = await this.openDialog({
                         dialogType: DIALOG_SELECT_PLACES,
+                        targetPlayer: params.player,
                         title: this.title || 'Elige tu objetivo',
                         data: {
                             places: keys.reduce((ret, place) => {

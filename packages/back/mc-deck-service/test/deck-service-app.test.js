@@ -6,7 +6,28 @@ import {describe, test} from 'node:test';
 
 import {ENDPOINTS} from 'mc-endpoints';
 import {CLASSIFICATION_BASIC, TARGET_DECK} from 'mc-shared';
-import {createDeckServiceApp} from '../src/deck-service-app.js';
+import {AuthServiceClient} from '../src/auth-service-client.js';
+import {
+    createDeckServiceApp as createDeckServiceAppWithoutTestAuth,
+} from '../src/deck-service-app.js';
+
+const createDeckServiceApp = options => createDeckServiceAppWithoutTestAuth({
+    ...options,
+    authenticate: async () => ({
+        id: 'test-user',
+        name: 'Test User',
+        isAdmin: false,
+    }),
+});
+
+const createAdminDeckServiceApp = options => createDeckServiceAppWithoutTestAuth({
+    ...options,
+    authenticate: async () => ({
+        id: 'test-user',
+        name: 'Test User',
+        isAdmin: true,
+    }),
+});
 
 const listen = async app => {
     const server = await new Promise((resolve, reject) => {
@@ -55,6 +76,7 @@ const createLegalCardList = () => [
 
 const createData = (catalog, ...otherCatalogs) => {
     const decks = new Map();
+    const favorites = new Map();
     const catalogs = new Map([catalog, ...otherCatalogs]
         .map(item => [item.hero.id, item]));
     let deckSequence = 0;
@@ -70,17 +92,109 @@ const createData = (catalog, ...otherCatalogs) => {
         getDecksList: async heroId => [...decks.values()]
             .filter(deck => heroId === undefined || deck.heroId === heroId),
         getDeck: async id => decks.get(id) || null,
+        getFavoriteDeckIds: async userId => [
+            ...(favorites.get(userId) || new Set()),
+        ],
+        setDeckFavorite: async (userId, deckId, isFavorite) => {
+            const userFavorites = new Set(favorites.get(userId) || []);
+            if (isFavorite) {
+                userFavorites.add(deckId);
+            } else {
+                userFavorites.delete(deckId);
+            }
+            favorites.set(userId, userFavorites);
+
+            return isFavorite;
+        },
         saveDeck: async deck => {
             const id = deck.id || `deck-${++deckSequence}`;
-            const savedDeck = {...deck, id};
+            const savedDeck = {...deck, id, creatorName: 'Test User'};
             decks.set(id, savedDeck);
             return savedDeck;
         },
         deleteDeck: async id => decks.delete(id),
+        favorites,
     };
 };
 
 describe('deck service app', () => {
+test('accepts administrator status only from the authentication service', async () => {
+    const originalFetch = globalThis.fetch;
+    let responseUser = {id: 'admin-user', name: 'Admin', isAdmin: true};
+    globalThis.fetch = async (endpoint, options) => {
+        assert.equal(new URL(endpoint).pathname, '/me');
+        assert.equal(options.headers.cookie, 'mc_user_session=valid');
+
+        return new Response(JSON.stringify({user: responseUser}), {
+            status: 200,
+            headers: {'Content-Type': 'application/json'},
+        });
+    };
+
+    try {
+        assert.deepEqual(
+            await AuthServiceClient.authenticate(
+                'mc_user_session=valid',
+                'https://auth.example',
+            ),
+            {id: 'admin-user', name: 'Admin', isAdmin: true},
+        );
+
+        responseUser = {id: 'regular-user', name: 'Player'};
+        assert.deepEqual(
+            await AuthServiceClient.authenticate(
+                'mc_user_session=valid',
+                'https://auth.example',
+            ),
+            {id: 'regular-user', name: 'Player', isAdmin: false},
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test('allows public deck reads but rejects mutations without a session', async () => {
+    const data = createData(createCatalog());
+    const service = await listen(createDeckServiceAppWithoutTestAuth({data}));
+
+    try {
+        const publicResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.LIST}`,
+            {headers: {Origin: 'https://localhost:8000'}},
+        );
+        assert.equal(publicResponse.status, 200);
+        assert.equal(
+            publicResponse.headers.get('access-control-allow-origin'),
+            'https://localhost:8000',
+        );
+        assert.equal(
+            publicResponse.headers.get('access-control-allow-credentials'),
+            'true',
+        );
+
+        const saveResponse = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: 'Mazo sin sesión',
+                heroId: 'hero',
+                aspect: 'justice',
+                cards: createLegalCardList(),
+            }),
+        });
+        const favoriteResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.FAVORITE.replace(':id', 'public-deck')}`,
+            {method: 'POST'},
+        );
+
+        assert.equal(saveResponse.status, 401);
+        assert.equal(favoriteResponse.status, 401);
+        assert.equal(data.decks.size, 0);
+    } finally {
+        await service.close();
+    }
+});
+
 test('lists heroes with their face image for deck creation', async () => {
     const service = await listen(createDeckServiceApp({data: createData(createCatalog())}));
 
@@ -141,6 +255,361 @@ test('saves card references as a legal deck and filters drafts from match select
         assert.equal(draftResponse.status, 201);
         assert.equal(draft.validation.legal, false);
         assert.deepEqual((await matchDecksResponse.json()).map(deck => deck.id), [legalDeck.id]);
+    } finally {
+        await service.close();
+    }
+});
+
+test('assigns new decks to the authenticated user instead of trusting creator fields from the client', async () => {
+    const data = createData(createCatalog());
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const response = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: 'Mazo de RRR',
+                heroId: 'hero',
+                aspect: 'justice',
+                cards: createLegalCardList(),
+                creatorId: 'forged-user-id',
+                creatorName: 'Usuario falso',
+            }),
+        });
+        const deck = await response.json();
+
+        assert.equal(response.status, 201);
+        assert.equal(deck.creatorId, undefined);
+        assert.equal(deck.creatorName, 'Test User');
+        assert.equal(data.decks.get(deck.id).creatorId, 'test-user');
+    } finally {
+        await service.close();
+    }
+});
+
+test('allows only the creator to update an existing deck', async () => {
+    const data = createData(createCatalog());
+    const foreignDeck = {
+        id: 'foreign-deck',
+        name: 'Mazo compartido',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'another-user',
+        creatorName: 'Another User',
+    };
+    data.decks.set(foreignDeck.id, foreignDeck);
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const response = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                ...foreignDeck,
+                name: 'Mazo modificado por otro usuario',
+            }),
+        });
+
+        assert.equal(response.status, 403);
+        assert.equal((await response.json()).error.message,
+            'Solo el creador puede editar este mazo.');
+        assert.equal(data.decks.get(foreignDeck.id).name, 'Mazo compartido');
+    } finally {
+        await service.close();
+    }
+});
+
+test('allows a creator to update their deck and marks it as editable', async () => {
+    const data = createData(createCatalog());
+    data.decks.set('owned-deck', {
+        id: 'owned-deck',
+        name: 'Mazo original',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'test-user',
+    });
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const response = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                id: 'owned-deck',
+                name: 'Mazo actualizado',
+                heroId: 'hero',
+                aspect: 'justice',
+                cards: createLegalCardList(),
+            }),
+        });
+        const deck = await response.json();
+
+        assert.equal(response.status, 200);
+        assert.equal(deck.canEdit, true);
+        assert.equal(deck.creatorId, undefined);
+        assert.equal(data.decks.get('owned-deck').creatorId, 'test-user');
+        assert.equal(data.decks.get('owned-deck').name, 'Mazo actualizado');
+    } finally {
+        await service.close();
+    }
+});
+
+test('creates a clone of a shared deck with the current user as creator', async () => {
+    const data = createData(createCatalog());
+    const sourceDeck = {
+        id: 'source-deck',
+        name: 'Mazo compartido',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'another-user',
+        creatorName: 'Another User',
+    };
+    data.decks.set(sourceDeck.id, sourceDeck);
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const response = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: sourceDeck.name,
+                heroId: sourceDeck.heroId,
+                aspect: sourceDeck.aspect,
+                cards: sourceDeck.cards,
+            }),
+        });
+        const clonedDeck = await response.json();
+
+        assert.equal(response.status, 201);
+        assert.notEqual(clonedDeck.id, sourceDeck.id);
+        assert.equal(clonedDeck.name, sourceDeck.name);
+        assert.deepEqual(clonedDeck.cards, sourceDeck.cards);
+        assert.equal(clonedDeck.creatorName, 'Test User');
+        assert.equal(data.decks.get(clonedDeck.id).creatorId, 'test-user');
+        assert.equal(data.decks.get(sourceDeck.id).creatorId, 'another-user');
+    } finally {
+        await service.close();
+    }
+});
+
+test('stores favorites per user and only permits favoriting a different creator deck', async () => {
+    const data = createData(createCatalog());
+    data.decks.set('shared-deck', {
+        id: 'shared-deck',
+        name: 'Mazo compartido',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'another-user',
+    });
+    data.decks.set('owned-deck', {
+        id: 'owned-deck',
+        name: 'Mazo propio',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'test-user',
+    });
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const favoriteEndpoint = ENDPOINTS.DECK.FAVORITE.replace(
+            ':id',
+            'shared-deck',
+        );
+        const favoriteResponse = await fetch(`${service.url}${favoriteEndpoint}`, {
+            method: 'POST',
+        });
+        const favoriteResult = await favoriteResponse.json();
+        const listResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.LIST}`,
+            {headers: {Cookie: 'session=valid'}},
+        );
+        const listedDecks = await listResponse.json();
+        const ownFavoriteResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.FAVORITE.replace(':id', 'owned-deck')}`,
+            {method: 'POST'},
+        );
+        const unFavoriteResponse = await fetch(
+            `${service.url}${favoriteEndpoint}`,
+            {method: 'DELETE'},
+        );
+
+        assert.equal(favoriteResponse.status, 200);
+        assert.deepEqual(favoriteResult, {isFavorite: true});
+        assert.equal(
+            listedDecks.find(deck => deck.id === 'shared-deck').isFavorite,
+            true,
+        );
+        assert.equal(
+            listedDecks.find(deck => deck.id === 'owned-deck').isFavorite,
+            false,
+        );
+        assert.equal(ownFavoriteResponse.status, 400);
+        assert.equal(unFavoriteResponse.status, 200);
+        assert.deepEqual(await unFavoriteResponse.json(), {isFavorite: false});
+    } finally {
+        await service.close();
+    }
+});
+
+test('only marks favorites belonging to the authenticated user', async () => {
+    const data = createData(createCatalog());
+    data.decks.set('rrr-favorite', {
+        id: 'rrr-favorite',
+        name: 'Favorito de RRR',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'deck-owner',
+    });
+    data.decks.set('other-favorite', {
+        id: 'other-favorite',
+        name: 'Favorito de otra cuenta',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'deck-owner',
+    });
+    await data.setDeckFavorite('other-user', 'other-favorite', true);
+    const service = await listen(createDeckServiceAppWithoutTestAuth({
+        data,
+        authenticate: async cookie => cookie === 'session=rrr' ?
+            {id: 'rrr-user', name: 'RRR'} :
+            {id: 'other-user', name: 'Other User'},
+    }));
+
+    try {
+        const rrrList = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+            headers: {Cookie: 'session=rrr'},
+        });
+        const rrrDecks = await rrrList.json();
+        assert.equal(
+            rrrDecks.find(deck => deck.id === 'other-favorite').isFavorite,
+            false,
+        );
+
+        const favoriteResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.FAVORITE.replace(
+                ':id',
+                'rrr-favorite',
+            )}`,
+            {
+                method: 'POST',
+                headers: {Cookie: 'session=rrr'},
+            },
+        );
+        assert.equal(favoriteResponse.status, 200);
+
+        const [updatedRrrList, otherUserList] = await Promise.all([
+            fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+                headers: {Cookie: 'session=rrr'},
+            }),
+            fetch(`${service.url}${ENDPOINTS.DECK.LIST}`, {
+                headers: {Cookie: 'session=other'},
+            }),
+        ]);
+        const [updatedRrrDecks, otherUserDecks] = await Promise.all([
+            updatedRrrList.json(),
+            otherUserList.json(),
+        ]);
+
+        assert.equal(
+            updatedRrrDecks.find(deck => deck.id === 'rrr-favorite').isFavorite,
+            true,
+        );
+        assert.equal(
+            updatedRrrDecks.find(deck => deck.id === 'other-favorite').isFavorite,
+            false,
+        );
+        assert.equal(
+            otherUserDecks.find(deck => deck.id === 'rrr-favorite').isFavorite,
+            false,
+        );
+        assert.equal(
+            otherUserDecks.find(deck => deck.id === 'other-favorite').isFavorite,
+            true,
+        );
+    } finally {
+        await service.close();
+    }
+});
+
+test('marks deck ownership for the current session without exposing creator IDs', async () => {
+    const data = createData(createCatalog());
+    data.decks.set('owned-deck', {
+        id: 'owned-deck',
+        name: 'Mazo propio',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'test-user',
+    });
+    data.decks.set('shared-deck', {
+        id: 'shared-deck',
+        name: 'Mazo de otro usuario',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'another-user',
+    });
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const authenticatedResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.LIST}`,
+            {headers: {Cookie: 'session=valid'}},
+        );
+        const authenticatedDecks = await authenticatedResponse.json();
+        const guestResponse = await fetch(`${service.url}${ENDPOINTS.DECK.LIST}`);
+        const guestDecks = await guestResponse.json();
+
+        assert.deepEqual(authenticatedDecks.map(deck => deck.canEdit), [true, false]);
+        assert.ok(authenticatedDecks.every(deck => deck.creatorId === undefined));
+        assert.ok(guestDecks.every(deck => deck.canEdit === false));
+    } finally {
+        await service.close();
+    }
+});
+
+test('only allows the deck creator to delete a deck', async () => {
+    const data = createData(createCatalog());
+    data.decks.set('foreign-deck', {
+        id: 'foreign-deck',
+        name: 'Mazo ajeno',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'another-user',
+    });
+    data.decks.set('owned-deck', {
+        id: 'owned-deck',
+        name: 'Mazo propio',
+        heroId: 'hero',
+        aspect: 'justice',
+        cards: createLegalCardList(),
+        creatorId: 'test-user',
+    });
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const foreignResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.LIST}/foreign-deck`,
+            {method: 'DELETE'},
+        );
+        const ownedResponse = await fetch(
+            `${service.url}${ENDPOINTS.DECK.LIST}/owned-deck`,
+            {method: 'DELETE'},
+        );
+
+        assert.equal(foreignResponse.status, 403);
+        assert.equal(data.decks.has('foreign-deck'), true);
+        assert.equal(ownedResponse.status, 204);
+        assert.equal(data.decks.has('owned-deck'), false);
     } finally {
         await service.close();
     }
@@ -223,8 +692,10 @@ test('restores timestamped decks from the repository snapshot', async () => {
 
     const data = createData(createCatalog());
     let restoredSnapshot;
-    data.restoreRepositoryDecks = async snapshot => {
+    let restoringUserId;
+    data.restoreRepositoryDecks = async (snapshot, userId) => {
         restoredSnapshot = snapshot;
+        restoringUserId = userId;
         return {
             total: snapshot.decks.length + snapshot.deletions.length,
             restored: snapshot.decks.length,
@@ -232,7 +703,7 @@ test('restores timestamped decks from the repository snapshot', async () => {
             keptLocal: 0,
         };
     };
-    const service = await listen(createDeckServiceApp({
+    const service = await listen(createAdminDeckServiceApp({
         data,
         repositoryDeckSnapshotPath,
     }));
@@ -254,9 +725,45 @@ test('restores timestamped decks from the repository snapshot', async () => {
             decks: [repositoryDeck],
             deletions: [{id: 'deleted-deck', deletedAt: '2026-01-03T00:00:00.000Z'}],
         });
+        assert.equal(restoringUserId, 'test-user');
     } finally {
         await service.close();
         await rm(temporaryDirectory, {recursive: true, force: true});
+    }
+});
+
+test('rejects repository save and restore for non-admin users with 403', async () => {
+    const data = createData(createCatalog());
+    let protectedOperations = 0;
+    data.saveRepositoryDeckSnapshot = async () => {
+        protectedOperations++;
+    };
+    data.restoreRepositoryDecks = async () => {
+        protectedOperations++;
+    };
+    const service = await listen(createDeckServiceApp({data}));
+
+    try {
+        const [saveResponse, restoreResponse] = await Promise.all([
+            fetch(`${service.url}${ENDPOINTS.DECK.SAVE_REPOSITORY}`, {
+                method: 'POST',
+            }),
+            fetch(`${service.url}${ENDPOINTS.DECK.RESTORE_REPOSITORY}`, {
+                method: 'POST',
+            }),
+        ]);
+        const [saveBody, restoreBody] = await Promise.all([
+            saveResponse.json(),
+            restoreResponse.json(),
+        ]);
+
+        assert.equal(saveResponse.status, 403);
+        assert.equal(restoreResponse.status, 403);
+        assert.equal(saveBody.error.status, 403);
+        assert.equal(restoreBody.error.status, 403);
+        assert.equal(protectedOperations, 0);
+    } finally {
+        await service.close();
     }
 });
 
@@ -293,7 +800,7 @@ test('saves the physical repository deck backup on demand', async () => {
             deletions: snapshot.deletions.length,
         };
     };
-    const service = await listen(createDeckServiceApp({
+    const service = await listen(createAdminDeckServiceApp({
         data,
         repositoryDeckSnapshotPath,
     }));

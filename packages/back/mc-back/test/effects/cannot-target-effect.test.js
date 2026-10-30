@@ -124,3 +124,38 @@ test('CannotTargetEffect matches another minion engaged with the same player and
     minions = [edison, {engaged: player, isMinion: true}];
     assert.equal(validation.isInvalidTarget({effect, targetCard: edison}), false);
 });
+
+test('CannotTargetEffect checks scenario conditions in the source card zone', () => {
+    const sourcePlayer = {};
+    const otherPlayer = {};
+    const sourceZone = {players: [sourcePlayer]};
+    const sourceCard = {scenarioZone: sourceZone};
+    let minions = [{isMinion: true, scenarioZone: sourceZone}];
+    const validation = new CannotTargetEffect({
+        condition: {isMinion: true},
+        effectCategories: [EFFECT_CATEGORY_DAMAGE],
+        match: {
+            getScenarioZoneForCard(card) {
+                return card.scenarioZone;
+            },
+            searchCards(_condition, player) {
+                const zone = player === sourcePlayer ?
+                    sourceZone :
+                    {players: [otherPlayer]};
+                return minions.filter(card => card.scenarioZone === zone);
+            },
+        },
+        targetCondition: {isVillain: true},
+    });
+    validation.ability = {card: sourceCard};
+
+    assert.equal(validation.isInvalidTarget({
+        effect: {effectCategories: [EFFECT_CATEGORY_DAMAGE]},
+        targetCard: {isVillain: true},
+    }), true);
+    minions = [{isMinion: true, scenarioZone: {players: [otherPlayer]}}];
+    assert.equal(validation.isInvalidTarget({
+        effect: {effectCategories: [EFFECT_CATEGORY_DAMAGE]},
+        targetCard: {isVillain: true},
+    }), false);
+});

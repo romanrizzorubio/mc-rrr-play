@@ -235,6 +235,7 @@ export class PutPlayEffect extends Effect {
 
         await this.removeFromOwnerHand(card);
         await this.removeFromOwnerDeck(card);
+        this.removeFromScenarioAside(card);
 
         if (isEnteringPlay && this.resetsDamageOnEntry(card)) {
             card.damage = 0;
@@ -244,6 +245,20 @@ export class PutPlayEffect extends Effect {
             controller.gameZone.addToGameZone(card);
         }
         card.controller = controller;
+    }
+    removeFromScenarioAside(card) {
+        const scenario = this.match?.scenario;
+        const asideIndex = scenario?.apart?.indexOf(card) ?? -1;
+        if (asideIndex >= 0) {
+            scenario.apart.splice(asideIndex, 1);
+        }
+
+        this.match?.players?.forEach(player => {
+            const nemesisIndex = player.superhero?.nemesis?.indexOf(card) ?? -1;
+            if (nemesisIndex >= 0) {
+                player.superhero.nemesis.splice(nemesisIndex, 1);
+            }
+        });
     }
     async removeFromOwnerHand(card) {
         const ownerHand = card.owner?.hand;

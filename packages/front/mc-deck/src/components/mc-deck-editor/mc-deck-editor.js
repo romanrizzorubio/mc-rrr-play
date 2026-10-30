@@ -23,6 +23,9 @@ export class McDeckEditor extends LitElement {
             availableCards: {type: Array},
             search: {type: String},
             saving: {type: Boolean},
+            cloning: {type: Boolean},
+            readOnly: {type: Boolean},
+            canClone: {type: Boolean},
         };
     }
     static get styles() {
@@ -38,6 +41,9 @@ export class McDeckEditor extends LitElement {
         this.availableCards = [];
         this.search = '';
         this.saving = false;
+        this.cloning = false;
+        this.readOnly = false;
+        this.canClone = false;
     }
     handleNameChange(event) {
         dispatchComponentEvent(this, 'deck-update', {
@@ -65,6 +71,13 @@ export class McDeckEditor extends LitElement {
     handleSave() {
         dispatchComponentEvent(this, 'save-deck');
     }
+    handleClone() {
+        dispatchComponentEvent(this, 'clone-deck');
+    }
+    handleLoginClick(event) {
+        event.preventDefault();
+        dispatchComponentEvent(this, 'navigate-route', {route: '/login'});
+    }
     handleClose() {
         dispatchComponentEvent(this, 'close-deck');
     }
@@ -83,7 +96,40 @@ export class McDeckEditor extends LitElement {
             </div>
         `;
     }
+    renderCloneAction() {
+        if (!this.deck.id) {
+            return '';
+        }
+        if (!this.canClone) {
+            return html`
+                <md-text-button
+                    href="/login"
+                    @click="${this.handleLoginClick.bind(this)}"
+                >
+                    Iniciar sesión para clonar
+                </md-text-button>
+            `;
+        }
+
+        return html`
+            <md-filled-button
+                type="button"
+                ?disabled="${this.saving}"
+                @click="${this.handleClone.bind(this)}"
+            >
+                ${this.cloning ? 'Clonando...' : 'Clonar'}
+            </md-filled-button>
+        `;
+    }
     renderAspectSelector() {
+        if (this.readOnly) {
+            const aspects = getSelectedDeckAspects(this.deck)
+                .map(getAspectName)
+                .join(', ');
+
+            return html`<p><strong>Aspecto:</strong> ${aspects || 'Sin seleccionar'}</p>`;
+        }
+
         const aspectCount = this.catalog.hero.deckBuildingRules?.aspectCount ?? 1;
         if (aspectCount <= 1) {
             return html`
@@ -138,32 +184,51 @@ export class McDeckEditor extends LitElement {
             this.selectedCards,
             getSelectedDeckAspects(this.deck),
         );
+        const cloneAction = this.renderCloneAction();
+        const sectionActions = this.readOnly ? html`
+            <md-text-button type="button" @click="${this.handleClose.bind(this)}">
+                Volver a mazos
+            </md-text-button>
+            ${cloneAction}
+        ` : html`
+            <md-text-button type="button" @click="${this.handleClose.bind(this)}">
+                Cerrar
+            </md-text-button>
+            ${cloneAction}
+            <md-filled-button
+                type="button"
+                class="save-button"
+                ?disabled="${this.saving}"
+                @click="${this.handleSave.bind(this)}"
+            >
+                ${this.saving ? 'Guardando...' : 'Guardar'}
+            </md-filled-button>
+        `;
 
         return html`
             <section class="editor" aria-labelledby="editor-title">
                 <div class="section-heading">
-                    <h2 id="editor-title">${this.deck.id ? 'Editar mazo' : 'Nuevo mazo'}</h2>
-                    <div class="section-actions">
-                        <md-text-button type="button" @click="${this.handleClose.bind(this)}">
-                            Cerrar
-                        </md-text-button>
-                        <md-filled-button
-                            type="button"
-                            class="save-button"
-                            ?disabled="${this.saving}"
-                            @click="${this.handleSave.bind(this)}"
-                        >
-                            ${this.saving ? 'Guardando...' : 'Guardar'}
-                        </md-filled-button>
-                    </div>
+                    <h2 id="editor-title">${this.readOnly ?
+                        'Ver mazo' :
+                        this.deck.id ? 'Editar mazo' : 'Nuevo mazo'}</h2>
+                    <div class="section-actions">${sectionActions}</div>
                 </div>
+                ${this.deck.id ? html`
+                    <p class="deck-creator">
+                        <strong>Creador:</strong> ${this.deck.creatorName || 'Desconocido'}
+                    </p>
+                ` : ''}
                 <div class="field">
-                    <md-filled-text-field
-                        label="Nombre del mazo"
-                        maxlength="100"
-                        .value="${this.deck.name}"
-                        @input="${this.handleNameChange.bind(this)}"
-                    ></md-filled-text-field>
+                    ${this.readOnly ? html`
+                        <p><strong>Nombre:</strong> ${this.deck.name}</p>
+                    ` : html`
+                        <md-filled-text-field
+                            label="Nombre del mazo"
+                            maxlength="100"
+                            .value="${this.deck.name}"
+                            @input="${this.handleNameChange.bind(this)}"
+                        ></md-filled-text-field>
+                    `}
                 </div>
                 <div class="field">
                     ${this.renderAspectSelector()}
@@ -173,16 +238,23 @@ export class McDeckEditor extends LitElement {
                     Incluye las ${this.catalog.hero.baseCardCount} cartas fijas del héroe;
                     estas no se guardan en el mazo editable.
                 </p>
-                <p class="draft-help">
-                    Puedes guardar borradores; solo los mazos legales aparecen al crear partidas.
-                </p>
+                ${this.readOnly ? '' : html`
+                    <p class="draft-help">
+                        Puedes guardar borradores; solo los mazos legales aparecen al crear partidas.
+                    </p>
+                `}
                 ${this.renderValidation()}
                 <div class="deck-editor-grid">
-                    <mc-deck-selected-cards .cards="${this.selectedCards}"></mc-deck-selected-cards>
+                    <mc-deck-selected-cards
+                        .cards="${this.selectedCards}"
+                        .readOnly="${this.readOnly}"
+                    ></mc-deck-selected-cards>
                     <div
                         class="deck-editor-middle"
                         role="group"
-                        aria-label="Resumen y acciones del mazo"
+                        aria-label="${this.readOnly ?
+                            'Resumen del mazo' :
+                            'Resumen y acciones del mazo'}"
                     >
                         <div class="deck-editor-middle-counts">
                             <p>Mazo actual: <strong>${this.deckSize}</strong> cartas</p>
@@ -196,28 +268,32 @@ export class McDeckEditor extends LitElement {
                                 </p>
                             ` : ''}
                         </div>
-                        <div class="section-actions">
-                            <md-text-button
-                                type="button"
-                                @click="${this.handleClose.bind(this)}"
-                            >
-                                Cancelar
-                            </md-text-button>
-                            <md-filled-button
-                                type="button"
-                                class="save-button"
-                                ?disabled="${this.saving}"
-                                @click="${this.handleSave.bind(this)}"
-                            >
-                                ${this.saving ? 'Guardando...' : 'Guardar'}
-                            </md-filled-button>
-                        </div>
+                        ${this.readOnly ? '' : html`
+                            <div class="section-actions">
+                                <md-text-button
+                                    type="button"
+                                    @click="${this.handleClose.bind(this)}"
+                                >
+                                    Cancelar
+                                </md-text-button>
+                                <md-filled-button
+                                    type="button"
+                                    class="save-button"
+                                    ?disabled="${this.saving}"
+                                    @click="${this.handleSave.bind(this)}"
+                                >
+                                    ${this.saving ? 'Guardando...' : 'Guardar'}
+                                </md-filled-button>
+                            </div>
+                        `}
                     </div>
-                    <mc-deck-card-pool
-                        .cards="${this.availableCards}"
-                        .search="${this.search}"
-                        .deckAspects="${getSelectedDeckAspects(this.deck)}"
-                    ></mc-deck-card-pool>
+                    ${this.readOnly ? '' : html`
+                        <mc-deck-card-pool
+                            .cards="${this.availableCards}"
+                            .search="${this.search}"
+                            .deckAspects="${getSelectedDeckAspects(this.deck)}"
+                        ></mc-deck-card-pool>
+                    `}
                 </div>
             </section>
         `;

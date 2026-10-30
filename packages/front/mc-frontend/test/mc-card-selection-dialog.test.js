@@ -28,8 +28,111 @@ const {HandComponent: McCardList} = await import(
 const {McSelectTargetDialog} = await import(
     '../src/components/dialog/mc-select-target-dialog/mc-select-target-dialog.js'
 );
+const {McListDialog} = await import(
+    '../src/components/dialog/mc-list-dialog/mc-list-dialog.js'
+);
+const {McDefenseDialog} = await import(
+    '../src/components/dialog/mc-defense-dialog/mc-defense-dialog.js'
+);
+const {McDefense} = await import(
+    '../src/components/panels/mc-defense/mc-defense.js'
+);
 
 describe('card selection dialogs', () => {
+    test('a defense dialog sends a player request separately from selecting a defender card', () => {
+        const player = {id: 'other-seat', name: 'Steve Rogers'};
+        const responses = [];
+        const dialog = Object.assign(Object.create(McDefenseDialog.prototype), {
+            data: {attack: {target: {name: 'Carol Danvers'}}, defenders: [], players: [player]},
+            hideOk: false, sendResponse() { responses.push(this._response); },
+        });
+        const template = dialog.renderContent();
+        const bindingIndex = template.strings.findIndex(part => part.endsWith('.players="'));
+        assert.deepEqual(template.values[bindingIndex], [player]);
+        dialog.handleDefenseRequest({detail: {player}});
+        dialog.handleDefenseSelect({detail: {card: {id: 'hero-card'}}});
+        assert.deepEqual(responses, [
+            {defendingPlayerId: 'other-seat'}, {defender: {id: 'hero-card'}},
+        ]);
+        assert.match(dialog.getTitle(), /Carol Danvers/u);
+    });
+
+    test('the defense panel offers selectable player portraits and dispatches the exact hero seat', () => {
+        const player = {id: 'other-seat', name: 'Steve Rogers', image: 'hero.png'};
+        const events = [];
+        const panel = Object.assign(Object.create(McDefense.prototype), {
+            players: [player], defenders: [], mustDefend: false,
+            attack: {character: {attack: 5}, boostCards: []},
+            dispatchEvent(event) { events.push(event); },
+        });
+        const template = panel.renderOtherPlayers();
+        assert.match(template.strings.join(''), /Pedir a otro héroe que defienda/u);
+        assert.match(template.strings.join(''), /<aside class="defense-requests"/u);
+        const entry = template.values[0][0];
+        assert.match(entry.strings.join(''), /<button[\s\S]*class="hero-thumbnail"/u);
+        const bindingIndex = entry.strings.findIndex(part => part.endsWith('@click="'));
+        let stopped = false;
+        entry.values[bindingIndex]({stopPropagation() { stopped = true; }});
+        assert.equal(stopped, true);
+        assert.equal(events[0].type, 'request-defense');
+        assert.deepEqual(events[0].detail, {player});
+        const layout = panel.render();
+        assert.equal(layout.values[0], 'with-requests');
+        assert.match(layout.strings.join(''), /class="defense-main"/u);
+        assert.match(McDefense.styles.cssText, /\.defense-layout\.with-requests\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) 220px;/u);
+        assert.match(McDefense.styles.cssText, /\.hero-thumbnail\s*\{[^}]*width:\s*42px;[^}]*height:\s*58px;/u);
+        panel.players = [];
+        assert.equal(panel.renderOtherPlayers().strings.join(''), '');
+        assert.equal(panel.render().values[0], '');
+    });
+
+    test('the responsible hero follows the title inside the dialog with a compact gap', () => {
+        const renderText = value => {
+            if (Array.isArray(value)) {
+                return value.map(renderText).join('');
+            }
+            if (value?.strings && value?.values) {
+                return value.strings.reduce((text, part, index) =>
+                    text + part + renderText(value.values[index]), '');
+            }
+            return typeof value === 'string' ? value : '';
+        };
+        const dialog = Object.assign(Object.create(McSelectTargetDialog.prototype), {
+            title: 'Elige tu objetivo', subtitle: '', footer: '', hand: [],
+            targetPlayerName: 'Carol Danvers', readOnly: false,
+            data: {cards: []}, _marked: [],
+        });
+        const markup = renderText(dialog.renderDialog());
+        assert.match(markup, /Elige tu objetivo[\s\S]*class="content"[\s\S]*Héroe responsable: Carol Danvers[\s\S]*<mc-card-list/u);
+        assert.equal(markup.match(/Héroe responsable:/gu).length, 1);
+        assert.match(McSelectTargetDialog.styles[0].cssText, /\.title\s*\{[^}]*margin:\s*0 0 8px;/u);
+        assert.match(McSelectTargetDialog.styles[0].cssText, /\.dialog-responsible-player\s*\{[^}]*margin:\s*0 0 12px;/u);
+        dialog.readOnly = true;
+        assert.match(renderText(dialog.renderDialog()), /Carol Danvers[\s\S]*<div inert>/u);
+        dialog.targetPlayerName = '';
+        assert.doesNotMatch(renderText(dialog.renderDialog()), /dialog-responsible-player/u);
+    });
+
+    test('an action menu omits empty headings between the responsible hero and its card', () => {
+        const dialog = Object.assign(Object.create(McListDialog.prototype), {
+            title: '', subtitle: '', footer: '', hand: [], readOnly: false,
+        });
+        for (const template of [dialog.renderTitle(), dialog.renderSubtitle(), dialog.renderFooter()]) {
+            assert.equal(template.strings.join(''), '');
+        }
+        dialog.title = 'Elige una capacidad';
+        dialog.subtitle = 'Selecciona una opción';
+        dialog.footer = 'Información';
+        assert.match(dialog.renderTitle().strings.join(''), /class="title"/u);
+        assert.match(dialog.renderSubtitle().strings.join(''), /class="subtitle"/u);
+        assert.match(dialog.renderFooter().strings.join(''), /class="footer"/u);
+        dialog.title = '';
+        dialog.hand = [{id: 'hand-card'}];
+        assert.match(dialog.renderTitle().strings.join(''), /class="title"/u);
+        dialog.readOnly = true;
+        assert.equal(dialog.renderTitle().strings.join(''), '');
+    });
+
     test('target selection dialog configures cards to select on click', () => {
         const dialog = Object.assign(
             Object.create(McSelectTargetDialog.prototype),

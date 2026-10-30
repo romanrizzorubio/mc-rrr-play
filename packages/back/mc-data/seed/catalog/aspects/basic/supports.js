@@ -197,12 +197,15 @@ export default [
                             'effect': {
                                 'type': EFFECT_LASTING,
                                 'params': {
-                                    'target': TARGET_PLAYER,
+                                    'target': TARGET_ANY_PLAYER,
                                     'until': [
                                         TRIGGER_END_PLAY_CARD,
                                         TRIGGER_PHASE_ENDS
                                     ],
                                     'triggerType': TRIGGER_PLAY_CARD,
+                                    'triggerParams': {
+                                        'player': 'ability.lasting.selectedTarget'
+                                    },
                                     'hideDialog': true,
                                     'effect': {
                                         'type': EFFECT_MODIFY_COST,
@@ -228,6 +231,7 @@ export default [
             'type': CARD_TYPE_SUPPORT,
             'params': {
                 'name': 'Quintransporte',
+                'unique': true,
                 'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/08023.png',
                 'traits': [

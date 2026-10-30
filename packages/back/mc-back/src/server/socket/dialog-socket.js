@@ -19,8 +19,37 @@ export class DialogSocket {
         }
 
         const requestId = `${match.name}:${++this.requestSequence}`;
+        const targetPlayerIdentifier = typeof params.targetPlayer === 'string' ?
+            params.targetPlayer :
+            params.targetPlayer?.id ??
+            params.targetPlayer?.userId ??
+            params.targetPlayer?.name;
+        if (params.showToAll && !targetPlayerIdentifier) {
+            return Promise.reject(new Error(
+                'Un diálogo público necesita un jugador responsable.',
+            ));
+        }
+        const targetPlayer = targetPlayerIdentifier ?
+            match.getPlayer(targetPlayerIdentifier) :
+            undefined;
+        if (targetPlayerIdentifier && !targetPlayer) {
+            return Promise.reject(new Error(
+                'No se encontró al jugador destinatario del diálogo.',
+            ));
+        }
+        const targetPlayerName = params.targetPlayerName ||
+            targetPlayer?.name ||
+            targetPlayerIdentifier;
+        const targetHeroName = targetPlayer?.superhero?.mainName ||
+            targetPlayer?.superhero?.name;
         const dialog = {
             ...params,
+            ...(targetPlayerIdentifier ? {
+                targetPlayer: targetPlayer?.id || targetPlayerIdentifier,
+                targetPlayerName,
+                targetUserId: targetPlayer.userId,
+                ...(targetHeroName ? {targetHeroName} : {}),
+            } : {}),
             match: match.name,
             requestId,
         };
@@ -30,6 +59,8 @@ export class DialogSocket {
                 match,
                 matchName: match.name,
                 dialog,
+                targetPlayerName,
+                targetUserId: targetPlayer?.userId,
                 resolve,
                 reject,
             });
@@ -42,14 +73,19 @@ export class DialogSocket {
             }
         });
     }
-    respond(matchName, params) {
+    respond(matchName, params, userId) {
         const {requestId, response} = params ?? {};
         const pending = this.pending.get(requestId);
 
         if (!pending || pending.matchName !== matchName) {
             return false;
         }
+        if (pending.targetPlayerName &&
+            (!pending.targetUserId || pending.targetUserId !== userId)) {
+            return false;
+        }
 
+        this.mcSocket.send(matchName, EVENTS.DIALOG.COMPLETE, {requestId});
         this.pending.delete(requestId);
         pending.resolve(response);
 
@@ -68,6 +104,7 @@ export class DialogSocket {
 
         for (const [requestId, pending] of this.pending) {
             if (pending.matchName === matchName) {
+                this.mcSocket.send(matchName, EVENTS.DIALOG.COMPLETE, {requestId});
                 this.pending.delete(requestId);
                 const error = createMatchUnavailableError(matchName);
                 error.message = `La partida "${matchName}" se ha eliminado mientras esperaba una respuesta.`;

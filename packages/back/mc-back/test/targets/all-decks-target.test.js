@@ -25,11 +25,13 @@ describe('TARGET_ALL_DECKS', () => {
             encounterDeck,
             firstPlayerDeck,
             secondPlayerDeck,
+            emptyDeck,
         ]);
         assert.deepEqual(targetMap[TARGET_ALL_DECKS]({match}), [
             encounterDeck,
             firstPlayerDeck,
             secondPlayerDeck,
+            emptyDeck,
         ]);
     });
 });

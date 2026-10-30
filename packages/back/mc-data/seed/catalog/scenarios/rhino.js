@@ -275,7 +275,9 @@ export default {
                                                     'params': {
                                                         'target': TARGET_EFFECT,
                                                         'modify': {
-                                                            'overkill': true
+                                                            'keywords': {
+                                                                'overkill': true
+                                                            }
                                                         }
                                                     }
                                                 },

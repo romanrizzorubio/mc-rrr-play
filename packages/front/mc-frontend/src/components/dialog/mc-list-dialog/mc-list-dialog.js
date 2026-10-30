@@ -54,11 +54,14 @@ export class McListDialog extends McDialog {
             renderTextWithFormatting(option.text) :
             option.text;
         const content = option.image ? html`
-            <img
-                class="option-image"
-                src="${getCardAssetUrl(option.image)}"
-                alt="${option.text || ''}"
-            >
+            <div class="option-content">
+                <img
+                    class="option-image"
+                    src="${getCardAssetUrl(option.image)}"
+                    alt=""
+                >
+                <span class="option-text">${text}</span>
+            </div>
         ` : text;
 
         if (option.triggers) {

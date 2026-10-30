@@ -76,6 +76,7 @@ import {
     TRIGGER_YOU_BASIC_THWART,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_WOULD_PLACE_THREAT,
+    TRIGGER_WOULD_ADD_ACCELERATION_TOKEN,
     TRIGGER_YOU_PLAY_CARD,
     TRIGGER_YOU_END_PLAY_CARD,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
@@ -159,6 +160,9 @@ import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigg
 import {VillainActivatesTrigger} from '../../triggers/villain-activates-trigger.js';
 import {VillainSchemesTrigger} from '../../triggers/villain-schemes-trigger.js';
 import {WouldPlaceThreatTrigger} from '../../triggers/would-place-threat-trigger.js';
+import {
+    WouldAddAccelerationTokenTrigger
+} from '../../triggers/would-add-acceleration-token-trigger.js';
 import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
@@ -263,6 +267,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_MOVE_DAMAGE]: Trigger,
     [TRIGGER_MOVE_THREAT]: Trigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
+    [TRIGGER_WOULD_ADD_ACCELERATION_TOKEN]: WouldAddAccelerationTokenTrigger,
     [TRIGGER_PLAY_CARD]: PlayCardTrigger,
     [TRIGGER_YOU_PLAY_CARD]: YouPlayCardTrigger,
     [TRIGGER_YOU_END_PLAY_CARD]: YouEndPlayCardTrigger,

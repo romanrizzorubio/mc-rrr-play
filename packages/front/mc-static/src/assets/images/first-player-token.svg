@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
+  <title id="title">Ficha del jugador inicial</title>
+  <defs>
+    <linearGradient id="blue-rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4d9de0"/>
+      <stop offset="0.5" stop-color="#1b5b9e"/>
+      <stop offset="1" stop-color="#0a2b59"/>
+    </linearGradient>
+    <linearGradient id="red-rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6877"/>
+      <stop offset="0.5" stop-color="#d62c43"/>
+      <stop offset="1" stop-color="#a31631"/>
+    </linearGradient>
+    <linearGradient id="number-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#68b8ff"/>
+      <stop offset="0.48" stop-color="#2877c7"/>
+      <stop offset="1" stop-color="#123b79"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="48" cy="50" rx="46" ry="34" fill="#08254c"/>
+  <ellipse cx="48" cy="46" rx="45" ry="33" fill="url(#blue-rim)" stroke="#ffffff" stroke-width="1.5"/>
+  <ellipse cx="48" cy="45" rx="38" ry="27" fill="url(#red-rim)" stroke="#8f1428" stroke-width="1.4"/>
+  <ellipse cx="48" cy="44" rx="32" ry="21" fill="#ffffff" stroke="#ffffff" stroke-width="1.5"/>
+  <path
+    fill="#0a2b59"
+    transform="translate(52 47) scale(0.05472 -0.05472) translate(-379.5 -365.5)"
+    d="M399 0 L212 0 L316 491 L227 460 L205 618 L554 731 Z"
+  />
+  <path
+    fill="#d62c43"
+    transform="translate(50 45) scale(0.05472 -0.05472) translate(-379.5 -365.5)"
+    d="M399 0 L212 0 L316 491 L227 460 L205 618 L554 731 Z"
+  />
+  <path
+    id="first-player-mark"
+    fill="url(#number-face)"
+    stroke="#ffffff"
+    stroke-width="18"
+    stroke-linejoin="round"
+    transform="translate(48 43) scale(0.05472 -0.05472) translate(-379.5 -365.5)"
+    d="M399 0 L212 0 L316 491 L227 460 L205 618 L554 731 Z"
+  />
+</svg>

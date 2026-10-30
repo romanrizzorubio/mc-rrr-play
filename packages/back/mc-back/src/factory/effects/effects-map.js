@@ -1,5 +1,11 @@
 import {
     EFFECT_ADD_ACCELERATION_TOKEN,
+    EFFECT_ADVANCE_MAIN_SCHEME_STAGE,
+    EFFECT_ADD_SCENARIO_VILLAIN,
+    EFFECT_START_SCENARIO_SPLIT,
+    EFFECT_MERGE_SCENARIO_ZONE,
+    EFFECT_REVEAL_FACEDOWN_UNDER,
+    EFFECT_REMOVE_SCENARIO_MAIN_SCHEME,
     EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_BLANK_TEXT,
     EFFECT_ADD_KEYWORD,
@@ -130,6 +136,16 @@ import {
 } from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
+import {AdvanceMainSchemeStageEffect} from '../../effects/advance-main-scheme-stage-effect.js';
+import {AddScenarioVillainEffect} from '../../effects/add-scenario-villain-effect.js';
+import {StartScenarioSplitEffect} from '../../effects/start-scenario-split-effect.js';
+import {MergeScenarioZoneEffect} from '../../effects/merge-scenario-zone-effect.js';
+import {
+    RevealFacedownUnderEffect
+} from '../../effects/reveal-facedown-under-effect.js';
+import {
+    RemoveScenarioMainSchemeEffect
+} from '../../effects/remove-scenario-main-scheme-effect.js';
 import {AddAdditionalCostEffect} from '../../effects/add-additional-cost-effect.js';
 import {BlankTextEffect} from '../../effects/blank-text-effect.js';
 import {AddKeywordEffect} from '../../effects/add-keyword-effect.js';
@@ -259,6 +275,12 @@ import {ReplaceStatusEffect} from '../../effects/replace-status-effect.js';
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
+    [EFFECT_ADVANCE_MAIN_SCHEME_STAGE]: AdvanceMainSchemeStageEffect,
+    [EFFECT_ADD_SCENARIO_VILLAIN]: AddScenarioVillainEffect,
+    [EFFECT_START_SCENARIO_SPLIT]: StartScenarioSplitEffect,
+    [EFFECT_MERGE_SCENARIO_ZONE]: MergeScenarioZoneEffect,
+    [EFFECT_REVEAL_FACEDOWN_UNDER]: RevealFacedownUnderEffect,
+    [EFFECT_REMOVE_SCENARIO_MAIN_SCHEME]: RemoveScenarioMainSchemeEffect,
     [EFFECT_ADD_ADDITIONAL_COST]: AddAdditionalCostEffect,
     [EFFECT_ACTIVATE]: ActivateEffect,
     [EFFECT_BLANK_TEXT]: BlankTextEffect,

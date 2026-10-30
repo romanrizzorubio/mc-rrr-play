@@ -1,5 +1,6 @@
 import {
     TARGET_ALL_DECKS,
+    TARGET_ANY_DECK,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENCOUNTER_DECK_CARDS,
     TARGET_ENCOUNTER_DISCARD,
@@ -9,6 +10,7 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_TOP_CARD,
 } from 'mc-shared';
+import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
 
 const getPlayerExtraDeck = ({player, effect, targetEffect}) => {
     const target = targetEffect || effect;
@@ -23,10 +25,12 @@ const getPlayerExtraDeck = ({player, effect, targetEffect}) => {
 };
 
 export const deckAndDeckTargets = {
-    [TARGET_ALL_DECKS]: ({match}) => [
+    [TARGET_ALL_DECKS]: ({match, condition}) => filterTargetsByCondition([
         match.scenario?.deck,
         ...match.players.map(player => player.deck),
-    ].filter(deck => deck?.cards?.length > 0),
+    ].filter(Boolean), condition),
+    [TARGET_ANY_DECK]: params =>
+        deckAndDeckTargets[TARGET_ALL_DECKS](params),
     [TARGET_ENCOUNTER_DECK]: ({match}) => [match.scenario.deck],
     [TARGET_ENCOUNTER_DECK_CARDS]: ({match}) => match.scenario.deck.cards,
     [TARGET_ENCOUNTER_DISCARD]: ({match}) => match.scenario.deck.discardPile,
@@ -52,5 +56,6 @@ export const deckAndDeckTargets = {
 
         return deck?.discardPile || [];
     },
-    [TARGET_ANY_PLAYER]: ({match}) => match.players,
+    [TARGET_ANY_PLAYER]: ({match, condition}) =>
+        filterTargetsByCondition(match.players, condition),
 };

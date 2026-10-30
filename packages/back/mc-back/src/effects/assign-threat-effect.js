@@ -111,6 +111,7 @@ export class AssignThreatEffect extends Effect {
         )?.id;
         const response = await this.openDialog({
             dialogType: DIALOG_ASSIGN,
+            targetPlayer: player,
             title: `Quita un total de ${this.threat} de Amenaza`,
             hand: player.hand.cards.map(card => card.toObj(params)),
             data: {

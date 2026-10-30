@@ -21,80 +21,74 @@ import {
     TARGET_YOUR_HERO,
 } from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
-
-const resolveCharacterCondition = (
-    character,
-    condition,
-    matchActiveNameOnly
-) => {
-    const {name, ...otherConditions} = condition;
-
-    if ((name !== undefined &&
-            character.name !== name &&
-            (matchActiveNameOnly || character.mainName !== name)) ||
-        !checkCondition(character, otherConditions)) {
-        return undefined;
-    }
-
-    if (name !== undefined && character.sides?.length) {
-        return matchActiveNameOnly ?
-            character.currentSide ?? character :
-            character.sides.find(side => side.name === name) || character;
-    }
-
-    return character;
-};
-const filterCharactersByCondition = (
-    characters,
-    condition,
-    matchActiveNameOnly
-) =>
-    characters.flatMap(character => {
-        const target = resolveCharacterCondition(
-            character,
-            condition,
-            matchActiveNameOnly
-        );
-
-        return target ? [target] : [];
-    });
+import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
+import {filterCharacterTargets} from '../utils/character-target-utils.js';
+import {
+    getCharactersFor,
+    getEnemiesFor,
+    getFriendsFor,
+    getHeroesFor,
+    getMinionsFor,
+    getPlayersFor,
+    getScenarioZone,
+    getSideSchemesFor,
+    getVillainFor,
+} from '../utils/match-zone-utils.js';
 
 export const groupTargets = {
-    [TARGET_ALL_SUPPORTS]: ({match}) =>
-        match.searchCards({isSupport: true}),
-    [TARGET_ALL_CARDS]: ({cards}) => cards,
-    [TARGET_ALL_ALLIES]: ({match}) =>
-        match.players.flatMap(player => player.allies),
-    [TARGET_ALL_CHARACTERS]: ({match, condition, playCardEffect}) => {
-        const characters = match.enemies.concat(match.friends);
+    [TARGET_ALL_SUPPORTS]: ({match, player, condition}) =>
+        filterTargetsByCondition(
+            match.searchCards({isSupport: true}, player), condition),
+    [TARGET_ALL_CARDS]: ({cards, condition}) =>
+        filterTargetsByCondition(cards, condition),
+    [TARGET_ALL_ALLIES]: ({match, player, condition}) =>
+        filterTargetsByCondition(
+            getPlayersFor(match, player).flatMap(zonePlayer => zonePlayer.allies),
+            condition),
+    [TARGET_ALL_CHARACTERS]: ({match, condition, playCardEffect, player}) => {
+        const characters = getCharactersFor(match, player);
 
         return condition ?
-            filterCharactersByCondition(
+            filterCharacterTargets(
                 characters,
                 condition,
                 Boolean(playCardEffect)
             ) :
             characters;
     },
-    [TARGET_ALL_ENEMIES]: ({match}) => match.enemies,
+    [TARGET_ALL_ENEMIES]: ({match, player, condition}) =>
+        filterTargetsByCondition(getEnemiesFor(match, player), condition),
     [TARGET_ALL_FRIENDLY_CHARACTERS]: ({
         match,
         condition,
         playCardEffect,
+        player,
     }) => {
-        const characters = match.friends;
+        const characters = getFriendsFor(match, player);
 
         return condition ?
-            filterCharactersByCondition(
+            filterCharacterTargets(
                 characters,
                 condition,
                 Boolean(playCardEffect)
             ) :
             characters;
     },
-    [TARGET_ALL_HEROES]: ({match}) => match.heroes,
-    [TARGET_ALL_HEROES_ALLIES]: ({match}) => match.heroesAndAllies,
-    [TARGET_ALL_MINIONS]: ({match}) => match.minions,
+    [TARGET_ALL_HEROES]: ({match, player, condition}) =>
+        filterTargetsByCondition(getHeroesFor(match, player), condition),
+    [TARGET_ALL_HEROES_ALLIES]: ({match, player, condition}) => {
+        const heroes = new Set(getHeroesFor(match, player));
+        const characters = getPlayersFor(match, player).reduce((characters, zonePlayer) => {
+            if (heroes.has(zonePlayer)) {
+                characters.push(zonePlayer.superhero?.currentSide ??
+                    zonePlayer.superhero);
+            }
+            return characters.concat(zonePlayer.allies);
+        }, []);
+        return filterTargetsByCondition(characters, condition);
+    },
+    [TARGET_ALL_MINIONS]: ({match, player, condition}) =>
+        filterTargetsByCondition(getMinionsFor(match, player), condition),
     [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {
         const {targetPlayer} = params;
 
@@ -104,41 +98,48 @@ export const groupTargets = {
 
         return targetPlayer.friends.map(character => character.currentSide);
     },
-    [TARGET_ALL_PLAYERS]: ({match}) => match.players,
-    [TARGET_PLAYER_LOWEST_HERO_LIFE]: ({match}) => {
-        const heroes = match.players.filter(player => player.isHero);
+    [TARGET_ALL_PLAYERS]: ({match, condition}) =>
+        filterTargetsByCondition(match.players, condition),
+    [TARGET_PLAYER_LOWEST_HERO_LIFE]: ({match, player}) => {
+        const heroes = getHeroesFor(match, player);
         if (!heroes.length) {
             return [];
         }
 
-        const lowestLife = Math.min(...heroes.map(player => player.superhero.life));
+        const lowestLife = Math.min(...heroes.map(zonePlayer =>
+            zonePlayer.superhero.life));
 
-        return heroes.filter(player => player.superhero.life === lowestLife);
+        return heroes.filter(zonePlayer =>
+            zonePlayer.superhero.life === lowestLife);
     },
-    [TARGET_ALL_SIDE_SCHEMES]: ({match}) => match.sideSchemes,
-    [TARGET_ENVIRONMENT]: ({condition, match}) =>
-        match.scenario.gameZone.cards.filter(card =>
+    [TARGET_ALL_SIDE_SCHEMES]: ({match, player, condition}) =>
+        filterTargetsByCondition(getSideSchemesFor(match, player), condition),
+    [TARGET_ENVIRONMENT]: ({condition, match, player}) =>
+        (getScenarioZone(match, player)?.cards ?? []).filter(card =>
             card.isEnvironment && (!condition || checkCondition(card, condition))),
-    [TARGET_CHARACTER]: ({match}) => match.characters,
-    [TARGET_ENEMY]: ({match}) => match.enemies,
-    [TARGET_HERO]: ({condition, match, playCardEffect}) => {
-        const heroes = match.heroes.map(player => player.superhero.currentSide);
-
-        if (Array.isArray(condition)) {
-            return heroes.filter(hero =>
-                condition.some(alternative => checkCondition(hero, alternative)));
-        }
+    [TARGET_CHARACTER]: ({match, player, condition, playCardEffect}) =>
+        filterCharacterTargets(
+            getCharactersFor(match, player), condition, Boolean(playCardEffect)),
+    [TARGET_ENEMY]: ({match, player, condition}) =>
+        filterTargetsByCondition(getEnemiesFor(match, player), condition),
+    [TARGET_HERO]: ({condition, match, playCardEffect, player}) => {
+        const heroes = getHeroesFor(match, player)
+            .map(zonePlayer => zonePlayer.superhero.currentSide);
 
         return condition ?
-            filterCharactersByCondition(
+            filterCharacterTargets(
                 heroes,
                 condition,
                 Boolean(playCardEffect)
             ) :
             heroes;
     },
-    [TARGET_MINION]: ({match}) => match.minions,
-    [TARGET_VILLAIN]: ({match}) => [match.villain],
+    [TARGET_MINION]: ({match, player, condition}) =>
+        filterTargetsByCondition(getMinionsFor(match, player), condition),
+    [TARGET_VILLAIN]: ({match, player}) => {
+        const villain = getVillainFor(match, player);
+        return villain ? [villain] : [];
+    },
     [TARGET_YOUR_HERO]: ({player}) =>
         player.isHero ? [player.superhero.currentSide] : [],
 };

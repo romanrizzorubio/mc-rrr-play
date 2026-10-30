@@ -41,12 +41,14 @@ function createCharacter() {
 describe('enemy activation effects', () => {
     test('stunned enemy attack shows why it was skipped before consuming stun', async () => {
         const character = createCharacter();
+        const player = {id: 'affected-player', isPlayer: true};
         character.stunned = 1;
         character.isStunned = true;
 
         const effect = new EnemyAttackEffect({
             enemy: character,
             match: {},
+            selectedTarget: player,
         });
         effect.activation = new Attack({effect});
         effect.trigger = async () => true;
@@ -67,10 +69,12 @@ describe('enemy activation effects', () => {
             return dialogResponse;
         };
 
-        const activation = effect.triggerWould({});
+        const activation = effect.triggerWould({player: {id: 'initiating-player'}});
         await dialogOpened;
 
         assert.equal(openedDialogs[0].dialogType, DIALOG_ACTIVATE);
+        assert.strictEqual(openedDialogs[0].targetPlayer, player);
+        assert.equal(openedDialogs[0].showToAll, true);
         assert.equal(openedDialogs[0].title, 'Activación omitida');
         assert.equal(openedDialogs[0].data.statusType, 'stunned');
         assert.equal(openedDialogs[0].data.statusMessage, 'Klaw estaba aturdido y no ataca.');
@@ -84,6 +88,7 @@ describe('enemy activation effects', () => {
 
     test('confused enemy scheme shows why it was skipped before consuming confusion', async () => {
         const character = createCharacter();
+        const player = {id: 'affected-player', isPlayer: true};
         character.confused = 1;
         character.isConfused = true;
 
@@ -110,10 +115,12 @@ describe('enemy activation effects', () => {
             return dialogResponse;
         };
 
-        const activation = effect.triggerWould({});
+        const activation = effect.triggerWould({player});
         await dialogOpened;
 
         assert.equal(openedDialogs[0].dialogType, DIALOG_ACTIVATE);
+        assert.strictEqual(openedDialogs[0].targetPlayer, player);
+        assert.equal(openedDialogs[0].showToAll, true);
         assert.equal(openedDialogs[0].title, 'Activación omitida');
         assert.equal(openedDialogs[0].data.statusType, 'confused');
         assert.equal(openedDialogs[0].data.statusMessage, 'Klaw estaba confundido y no ejecuta el plan.');

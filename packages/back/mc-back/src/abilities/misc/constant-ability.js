@@ -62,6 +62,9 @@ export class ConstantAbility extends MixinTriggeableAbility(Ability) {
             card
         });
     }
+    canTrigger(params) {
+        return this.canRun(params);
+    }
     async resolveAbility(params) {
         await super.resolveAbility(params);
 

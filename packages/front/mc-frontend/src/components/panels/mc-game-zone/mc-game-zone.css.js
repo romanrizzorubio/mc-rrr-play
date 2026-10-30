@@ -32,6 +32,7 @@ export default css`
 
   .count {
     font-family: var(--mc-font-numeric, sans-serif);
+    font-weight: 400;
     text-align: center;
   }
   

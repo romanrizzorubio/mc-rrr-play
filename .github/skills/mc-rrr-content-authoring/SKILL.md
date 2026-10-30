@@ -72,6 +72,18 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 - Map a printed Crisis icon on a side scheme (`[c]`) to `icons: {crisis: true}`.
 - Test the scenario's normalized config and actual scenario-creation path. Verify its own cards are included once and only valid registered encounter sets are loaded.
 
+### Split scenario play areas
+
+- For scenarios that separate players into distinct play areas, use the generic `ScenarioZone` runtime and enable `separatePlayAreas`; do not change game-rule documents or introduce card-specific zone branches.
+- Keep the encounter deck and phase sequence shared. Main schemes, Villains, encounter cards, Crisis/acceleration icons, searches, and non-global triggers resolve in the acting player's zone. Hazard icons are global because all zones draw from the shared encounter deck.
+- Use `EFFECT_START_SCENARIO_SPLIT` to assign unused main-scheme stages to players in first-player order, and `EFFECT_ADVANCE_MAIN_SCHEME_STAGE` to reveal a later stage in a specified zone. Keep per-player stages in `allMainSchemes` and mark selected or unused stages so they cannot be reused.
+- Use `EFFECT_MERGE_SCENARIO_ZONE` at the printed timing window. Each surviving player in a completed zone chooses a destination; player-linked cards follow their player, common cards follow the global first player's destination, and an all-defeated zone transfers nobody and is removed.
+- A hub main scheme can prohibit joining through zone-destination filtering. Once all living players have joined the hub, advance its main scheme; do not make split-zone main-scheme threat values per-player unless the printed value includes the per-player symbol.
+- A card ability should affect other zones only when its text is explicitly global. Set `globalScope: true` for that ability and test both local and cross-zone timing. Constant validations such as `EFFECT_CANNOT_TARGET` must evaluate their condition in the source card's zone.
+- When a scenario redirects acceleration tokens, use the generic `TRIGGER_WOULD_ADD_ACCELERATION_TOKEN` window and `EFFECT_REPLACE_EFFECT`; set `countFromEffect: true` on the replacement to preserve a calculated token count. Filter the trigger to other schemes when the text says “another scheme.”
+- If setup removes player Obligations from the encounter deck, configure a setup ability on the initial main scheme that searches for and removes each player's Obligation; do not add an `excludeObligations` scenario property. For per-player Nemesis Minions, search the affected player's Nemesis collection when needed and then engage the exact selected minion; do not cache Nemesis Minions on the player.
+- Test isolated scheme/villain lookup, local and global triggers, random stage assignment without reuse, individual destination choices, common-card routing, all-defeated cleanup, hub convergence, and the exact fixed/scaled threat values.
+
 ### Scenario auxiliary decks
 
 - Put a required auxiliary-deck set in `config.sets`, not `config.defaultSets`; do not use `config.extraDecks` to reference it. Add an `ABILITY_SETUP` to the appropriate main-scheme side and use `EFFECT_CREATE_EXTRA_DECK` with that set's ID to move its cards from the encounter deck into a runtime auxiliary deck.

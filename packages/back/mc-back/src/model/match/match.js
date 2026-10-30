@@ -1,4 +1,5 @@
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
+import {DIALOG_LIST} from 'mc-shared';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, path} from '../../engine/utils.js';
@@ -12,12 +13,17 @@ export class Match extends Engine {
         mc,
         name,
         id = name,
+        lobbyId,
+        creatorUserId,
     }) {
         super(arguments[0]);
 
         this.mc = mc;
         this.name = name;
         this.id = id;
+        this.lobbyId = lobbyId;
+        this.creatorUserId = creatorUserId;
+        this.actionRequest = null;
         this.expert = false;
         this.creationConfig = {
             players: [],
@@ -47,6 +53,7 @@ export class Match extends Engine {
         this.lasting = [];
         this.limits = {};
         this.triggerCards = {};
+        this.copyIndexesByCardId = new Map();
     }
     get accelerationIcons() {
         let count = this.scenario.accelerationIcons;
@@ -143,7 +150,9 @@ export class Match extends Engine {
 
         addCard(this.scenario?.villain);
         addCard(this.mainScheme);
-        (this.scenario?.gameZone?.inPlayCards ?? []).forEach(addCard);
+        (this.scenario?.zones ?? [this.scenario?.gameZone])
+            .filter(Boolean)
+            .forEach(zone => zone.inPlayCards.forEach(addCard));
         this.players.forEach(player => {
             addCard(player.superhero);
             (player.gameZone?.inPlayCards ?? []).forEach(addCard);
@@ -154,6 +163,149 @@ export class Match extends Engine {
     }
     get mainScheme() {
         return path(this, 'scenario.mainScheme');
+    }
+    getScenarioZone(player) {
+        return this.scenario?.getZoneForPlayer?.(player) ??
+            player?.scenarioZone ??
+            this.scenario?.gameZone;
+    }
+    getScenarioZoneForCard(card) {
+        return card?.scenarioZone ??
+            card?.controller?.scenarioZone ??
+            card?.owner?.scenarioZone ??
+            card?.engaged?.scenarioZone ??
+            card?.attachedTo?.scenarioZone ??
+            card?.parent?.scenarioZone;
+    }
+    isScenarioZoneAbilityAllowed(ability, params = {}) {
+        if (!this.scenario?.separatePlayAreas || ability?.globalScope) {
+            return true;
+        }
+
+        const sourceZone = this.getScenarioZoneForCard(ability?.card);
+        const eventPlayer = params.player ??
+            params.effect?.player ??
+            params.effect?.enemy?.owner;
+        const eventZone = eventPlayer?.scenarioZone ??
+            params.card?.scenarioZone ??
+            params.effect?.selectedTarget?.scenarioZone ??
+            params.effect?.enemy?.scenarioZone;
+
+        return !sourceZone || !eventZone || sourceZone === eventZone;
+    }
+    getMainSchemeFor(player) {
+        const zone = this.getScenarioZone(player);
+        return zone?.currentScheme?.currentSide ??
+            zone?.mainScheme?.currentSide ??
+            zone?.mainScheme ??
+            this.scenario?.mainScheme?.currentSide ??
+            this.scenario?.mainScheme ??
+            this.scenario?.schemes?.find(scheme => scheme.isMainScheme);
+    }
+    getVillainFor(player) {
+        const zone = this.getScenarioZone(player);
+        return zone?.currentVillain ??
+            zone?.villain ??
+            this.scenario?.villain;
+    }
+    getSchemesFor(player) {
+        const zone = this.getScenarioZone(player);
+        if (Array.isArray(zone?.schemes)) {
+            return zone.schemes;
+        }
+
+        return zone && this.scenario?.separatePlayAreas ?
+            [] :
+            this.scenario?.schemes ?? [];
+    }
+    getSideSchemesFor(player) {
+        const zone = this.getScenarioZone(player);
+        if (Array.isArray(zone?.sideSchemes)) {
+            return zone.sideSchemes;
+        }
+        if (zone?.cards) {
+            return zone.cards.filter(card => card.isSideScheme);
+        }
+
+        return zone && this.scenario?.separatePlayAreas ?
+            [] :
+            this.scenario?.sideSchemes ?? [];
+    }
+    getPlayersFor(player) {
+        if (!player) {
+            return this.players;
+        }
+
+        const zone = this.getScenarioZone(player);
+        return zone?.players?.length ?
+            zone.players :
+            this.scenario?.separatePlayAreas ?
+                [player] :
+                this.players;
+    }
+    getMinionsFor(player) {
+        return this.getPlayersFor(player).flatMap(zonePlayer =>
+            zonePlayer.minions ?? []);
+    }
+    getEnemiesFor(player) {
+        if (!this.scenario?.separatePlayAreas) {
+            return this.enemies;
+        }
+
+        return [
+            ...this.getMinionsFor(player),
+            this.getVillainFor(player),
+        ].filter(Boolean);
+    }
+    getFriendsFor(player) {
+        return this.getPlayersFor(player).flatMap(zonePlayer =>
+            zonePlayer.friends ?? []);
+    }
+    getCharactersFor(player) {
+        return this.getEnemiesFor(player).concat(this.getFriendsFor(player));
+    }
+    getInPlayCardsFor(player) {
+        if (!player) {
+            return this.inPlayCards;
+        }
+
+        const zone = this.getScenarioZone(player);
+        const cards = [
+            ...(zone?.inPlayCards ?? []),
+            ...this.getPlayersFor(player).flatMap(zonePlayer => [
+                zonePlayer.superhero,
+                ...(zonePlayer.gameZone?.inPlayCards ?? []),
+                ...(zonePlayer.minions ?? []),
+            ]),
+        ];
+
+        return [...new Set(cards.filter(Boolean))];
+    }
+    getHazardIconsFor() {
+        return this.hazardIcons;
+    }
+    getAccelerationIconsFor(player) {
+        return (this.getScenarioZone(player)?.accelerationIcons ?? 0) +
+            this.getPlayersFor(player).reduce((total, zonePlayer) =>
+                total + zonePlayer.accelerationIcons, 0);
+    }
+    getAccelerationTokensFor(player) {
+        return (this.getScenarioZone(player)?.accelerationTokens ?? 0) +
+            this.getPlayersFor(player).reduce((total, zonePlayer) =>
+                total + zonePlayer.accelerationTokens, 0);
+    }
+    getAccelerationPlusFor(player) {
+        return this.getAccelerationIconsFor(player) +
+            this.getAccelerationTokensFor(player);
+    }
+    getAmplificationIconsFor(player) {
+        return (this.getScenarioZone(player)?.amplificationIcons ?? 0) +
+            this.getPlayersFor(player).reduce((total, zonePlayer) =>
+                total + zonePlayer.amplificationIcons, 0);
+    }
+    hasCrisisFor(player) {
+        return Boolean(this.getScenarioZone(player)?.hasCrisis) ||
+            this.getPlayersFor(player).some(zonePlayer => zonePlayer.hasCrisis);
     }
     get match() {
         return this;
@@ -204,6 +356,7 @@ export class Match extends Engine {
 
         this.playing = false;
         this.gameOverReason = reason;
+        this.actionRequest = null;
 
         if (this.phase === 'players' && this.currentTurnPlayer) {
             this.mc.mcSocket.dispatch(
@@ -217,23 +370,16 @@ export class Match extends Engine {
         await this.refresh();
     }
     get orderedPlayers() {
-        const players = [];
-        let i = this.players.indexOf(this.currentPlayer);
-        let player = this.players[i];
-        while (player) {
-            players.push(player);
-
-            player = this.players[++i];
-            if (!player) {
-                i = 0;
-                player = this.players[i];
-            }
-            if (player.initial) {
-                break;
-            }
+        const startIndex = this.players.indexOf(
+            this.initialPlayer || this.currentPlayer
+        );
+        if (startIndex < 0) {
+            return [];
         }
 
-        return players;
+        return this.players.slice(startIndex).concat(
+            this.players.slice(0, startIndex)
+        );
     }
     get schemes() {
         return this.scenario.schemes;
@@ -268,13 +414,17 @@ export class Match extends Engine {
         return obligations;
     }
     createPlayer({
+        id,
         name,
+        userId,
         superhero,
         initial = false,
         config = {}
     }) {
         const player = new Player({
+            id,
             name,
+            userId,
             superhero,
             initial,
             config,
@@ -303,7 +453,66 @@ export class Match extends Engine {
         });
     }
     getPlayer(player) {
-        return this.players.find(_player => _player.name === player);
+        const playerById = this.players.find(_player => _player.id === player);
+        if (playerById) {
+            return playerById;
+        }
+
+        const playersByName = this.players.filter(_player =>
+            _player.name === player || _player.userId === player
+        );
+
+        return playersByName.length === 1 ? playersByName[0] : undefined;
+    }
+    async selectInitialPlayer() {
+        if (this.players.length < 2) {
+            return this.initialPlayer;
+        }
+
+        if (!this.creatorUserId) {
+            if (this.lobbyId) {
+                throw new Error(
+                    `No se encontró la cuenta creadora de la partida "${this.name}".`
+                );
+            }
+
+            return this.initialPlayer;
+        }
+
+        const creator = this.players.find(player => player.userId === this.creatorUserId);
+        if (!creator) {
+            throw new Error(
+                `No se encontró al creador de la partida "${this.name}" entre sus jugadores.`
+            );
+        }
+
+        const {selected} = await this.openDialog({
+            dialogType: DIALOG_LIST,
+            targetPlayer: creator,
+            targetPlayerName: creator.name,
+            title: 'Elige al jugador inicial',
+            subtitle: 'Selecciona quién comenzará la partida.',
+            hideOk: true,
+            data: {
+                options: this.players.map(player => ({
+                    text: `${player.name} - ${player.superhero.name}`,
+                    image: player.superhero.image,
+                    playerId: player.id,
+                })),
+            },
+        });
+        const initialPlayer = this.getPlayer(selected?.playerId);
+        if (!initialPlayer) {
+            throw new Error(
+                'No se recibió un jugador válido para comenzar la partida.'
+            );
+        }
+
+        this.players.forEach(player => {
+            player.initial = player === initialPlayer;
+        });
+
+        return initialPlayer;
     }
     async initMatch(expert = false) {
         // Obligation
@@ -312,7 +521,7 @@ export class Match extends Engine {
         this.initNemesis();
         // Shuffle Player decks
         this.initPlayers();
-        // Select first player after initPlayers assigns the default.
+        await this.selectInitialPlayer();
         const player = this.initialPlayer;
         // Put Villain and Scheme &
         // Create Encounter Deck and Shuffle &
@@ -376,11 +585,16 @@ export class Match extends Engine {
         await this.scenario.initScenario(obligations, expert);
     }
     isUniqueCard(card) {
+        const zone = card.scenarioZone ??
+            card.controller?.scenarioZone ??
+            card.owner?.scenarioZone ??
+            this.getScenarioZone();
+        const zonePlayers = zone?.players ?? this.players;
         const cardsInPlay = [
-            this.scenario.villain,
-            this.scenario.gameZone.currentScheme,
-            ...this.scenario.gameZone.cards,
-            ...this.players.flatMap(player => [
+            zone?.currentVillain,
+            zone?.currentScheme,
+            ...(zone?.cards ?? []),
+            ...zonePlayers.flatMap(player => [
                 player.superhero,
                 ...player.gameZone.cards,
                 ...player.gameZone.minions,
@@ -395,11 +609,19 @@ export class Match extends Engine {
     listen(endpoint, callback, once) {
         this.mc.mcSocket.listen(this.name, endpoint, callback, once);
     }
-    mulligan() {
-        return Promise
+    async mulligan() {
+        const results = await Promise
             .all(this.players
                 .map(player => player
                     .mulligan()));
+
+        this.mc.mcSocket.send(
+            this.name,
+            EVENTS.MATCH.MULLIGAN_COMPLETE,
+            {match: this.name},
+        );
+
+        return results;
     }
     openDialog(params) {
         const {mc} = this;
@@ -416,31 +638,37 @@ export class Match extends Engine {
         return this.mc.persistMatch(this);
     }
     async resolveWhenReveal(player) {
-        await this.scenario.gameZone.resolveWhenReveal(player);
+        await this.getScenarioZone(player).resolveWhenReveal(player);
     }
-    searchCard(condition) {
-        let card = this.scenario.searchCard(condition);
+    searchCard(condition, player) {
+        let card = this.scenario.searchCard(condition, player);
         if (card) {
             return card;
         }
 
-        this.players.find(player => {
-            card = player.searchCard(condition);
+        this.getPlayersFor(player).find(zonePlayer => {
+            card = zonePlayer.searchCard(condition);
 
             return card;
         });
 
         return card;
     }
-    searchCards(condition) {
-        const cards = this.scenario.gameZone.searchCards(condition);
-
+    searchCards(condition, player) {
+        const zones = player ?
+            [this.getScenarioZone(player)] :
+            this.scenario.zones;
+        const cards = zones.flatMap(zone => zone.searchCards(condition));
+        const zonePlayers = this.getPlayersFor(player);
         const cardsInPlayerZones = cards
-            .concat(this.players.reduce((ret, player) =>
-                ret.concat(player.gameZone.searchCards(condition)),
+            .concat(zonePlayers.reduce((ret, zonePlayer) =>
+                ret.concat(zonePlayer.gameZone.searchCards(condition)),
                 []));
 
-        return cardsInPlayerZones.concat(this.minions.filter(minion =>
+        const minions = zonePlayers.flatMap(zonePlayer =>
+            zonePlayer.minions ?? []);
+
+        return cardsInPlayerZones.concat(minions.filter(minion =>
             !cardsInPlayerZones.includes(minion) &&
             checkCondition(minion, condition)));
     }
@@ -506,12 +734,29 @@ export class Match extends Engine {
 
         return {
             ...super.toObj(),
-            currentTurnPlayer: currentTurnPlayer?.name ?? null,
+            currentTurnPlayer: currentTurnPlayer?.id ??
+                currentTurnPlayer?.userId ??
+                currentTurnPlayer?.name ??
+                null,
             id,
             name,
+            ...(this.creatorUserId ? {creatorUserId: this.creatorUserId} : {}),
             phase,
             playing,
             gameOverReason,
+            ...(this.actionRequest ? {actionRequest: {
+                requester: this.actionRequest.requester,
+                ...(this.actionRequest.requesterUserId ? {
+                    requesterId: this.actionRequest.requesterId ??
+                        this.actionRequest.requesterUserId,
+                } : {}),
+                target: this.actionRequest.target,
+                ...(this.actionRequest.targetUserId ? {
+                    targetId: this.actionRequest.targetId ??
+                        this.actionRequest.targetUserId,
+                } : {}),
+                status: this.actionRequest.status,
+            }} : {}),
             players: players.map(player => player.toObj()),
             scenario: scenario && scenario.toObj(),
         };

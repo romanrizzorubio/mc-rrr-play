@@ -14,6 +14,14 @@ export class PreventPlaceDamageEffect extends Effect {
     async execute(params) {
         const {damage, selectedTarget} = this;
         const {effect, card} = params;
+        const targetIndex = Array.isArray(effect.selectedTarget) ?
+            effect.selectedTarget.indexOf(params.triggeredTarget ?? selectedTarget) :
+            0;
+        if (targetIndex < 0) {
+            throw new Error('PreventPlaceDamageEffect could not find the damage target.');
+        }
+        const previousPrevention = (Array.isArray(effect.preventDamage) ?
+            effect.preventDamage[targetIndex] : effect.preventDamage) ?? 0;
 
         const preventDamageEffect = new PreventDamageEffect({
             selectedTarget,
@@ -22,8 +30,10 @@ export class PreventPlaceDamageEffect extends Effect {
         });
         await preventDamageEffect.runEffect(params);
 
+        const prevention = Array.isArray(effect.preventDamage) ?
+            effect.preventDamage[targetIndex] : effect.preventDamage;
         const placeDamageEffect = new PlaceDamageEffect({
-            damage: effect.preventDamage,
+            damage: prevention - previousPrevention,
             selectedTarget: card,
             match: this.match,
         });

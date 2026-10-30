@@ -2592,6 +2592,14 @@ describe('Cráneo Rojo scenario', () => {
         const {factory, scenario, match} = await createScenario({
             includeSideScheme: true,
         });
+        match.players.forEach(player => {
+            player.deck = {
+                async discardTopCards() {
+                    return [];
+                },
+                async refresh() {},
+            };
+        });
         const villainStages = redSkull.config.villains.map(villain =>
             factory.cardsFactory.createGameCardFromConfig(
                 structuredClone(villain)

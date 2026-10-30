@@ -4,8 +4,8 @@ import styles from './mc-create-match-page.css.js';
 import '../../components/views/mc-create-match/mc-create-match.js';
 import {Api} from '../../components/api/api.js';
 import {ConfigMatch} from '../../components/api/config-match.js';
-import {EVENTS} from 'mc-endpoints';
 import {translateAspect} from 'mc-shared';
+import {getMatchLobbyPath} from '../../utils/app-routes.js';
 
 export class McCreateMatchPage extends LitElement {
     static get is() {
@@ -18,12 +18,13 @@ export class McCreateMatchPage extends LitElement {
         return {
             active: {type: Boolean},
             api: {type: Api},
+            user: {type: Object},
             creatingGame: {type: Boolean},
             creatingMatch: {type: Boolean},
             deletingMatch: {type: String},
-            heroesList: {type: Array},
             loadingCatalog: {type: Boolean},
             loadingMatches: {type: Boolean},
+            lobbies: {type: Array},
             matches: {type: Array},
             prepareMatch: {attribute: false},
             resumingMatch: {type: String},
@@ -38,15 +39,17 @@ export class McCreateMatchPage extends LitElement {
 
         this.active = false;
         this.api = null;
+        this.user = null;
         this.apiConfigMatch = null;
         this.creatingGame = false;
         this.creatingMatch = false;
         this.deletingMatch = '';
-        this.heroesList = [];
         this.loadingCatalog = false;
         this.loadingMatches = false;
+        this.lobbies = [];
         this.matches = [];
         this.matchListRequestSequence = 0;
+        this.matchListRefreshTimer = null;
         this.prepareMatch = null;
         this.resumingMatch = '';
         this.resettingMatch = '';
@@ -62,7 +65,21 @@ export class McCreateMatchPage extends LitElement {
     updated(changedProperties) {
         if (changedProperties.has('active') && this.active) {
             this.loadMatches();
+            this.matchListRefreshTimer = globalThis.setInterval(
+                () => this.loadMatches(),
+                5000,
+            );
+        } else if (changedProperties.has('active')) {
+            globalThis.clearInterval(this.matchListRefreshTimer);
+            this.matchListRefreshTimer = null;
+        } else if (changedProperties.has('user') && this.active) {
+            this.loadMatches();
         }
+    }
+    disconnectedCallback() {
+        globalThis.clearInterval(this.matchListRefreshTimer);
+        this.matchListRefreshTimer = null;
+        super.disconnectedCallback();
     }
     async loadMatches() {
         if (!this.apiConfigMatch) {
@@ -72,9 +89,18 @@ export class McCreateMatchPage extends LitElement {
         const requestSequence = ++this.matchListRequestSequence;
         this.loadingMatches = true;
         try {
-            const matches = await this.apiConfigMatch.getMatchesList();
+            const [matches, lobbies] = await Promise.all([
+                this.user ?
+                    this.apiConfigMatch.getMatchesList() :
+                    Promise.resolve([]),
+                this.apiConfigMatch.getLobbiesList(),
+            ]);
             if (requestSequence === this.matchListRequestSequence) {
-                this.matches = matches;
+                this.matches = matches.filter(match =>
+                    match.creatorUserId === this.user?.id ||
+                    match.players.some(player => player.userId === this.user?.id)
+                );
+                this.lobbies = lobbies;
             }
         } catch (error) {
             if (requestSequence === this.matchListRequestSequence) {
@@ -91,13 +117,11 @@ export class McCreateMatchPage extends LitElement {
         this.loadingCatalog = true;
 
         try {
-            const [heroesList, scenariosList, modularSetsList] = await Promise.all([
-                this.apiConfigMatch.getHeroesList(),
+            const [scenariosList, modularSetsList] = await Promise.all([
                 this.apiConfigMatch.getScenariosList(),
                 this.apiConfigMatch.getModularSetsList(),
             ]);
 
-            this.heroesList = heroesList;
             this.scenariosList = scenariosList;
             this.modularSetsList = modularSetsList;
         } catch (error) {
@@ -112,8 +136,9 @@ export class McCreateMatchPage extends LitElement {
             return;
         }
 
-        const {name, expert, player, scenario} = e.detail;
-        if (this.matches.some(match => match.name === name)) {
+        const {name, maxPlayers, expert, scenario} = e.detail;
+        if (this.matches.some(match => match.name === name) ||
+            this.lobbies.some(lobby => lobby.name === name)) {
             this.reportCommunicationError(new Error('Ya existe una partida con ese nombre.'));
             return;
         }
@@ -122,23 +147,18 @@ export class McCreateMatchPage extends LitElement {
 
         try {
             const {apiConfigMatch} = this;
-            if (typeof this.prepareMatch !== 'function') {
-                throw new Error('No se configuró la preparación del remoto mc-match.');
-            }
-            await this.prepareMatch();
-            await apiConfigMatch.createMatch({name});
-            const createdPlayer = await apiConfigMatch.createPlayer(player);
-            await apiConfigMatch.createScenario(scenario);
-            const match = await apiConfigMatch.initMatch(expert);
+            const lobby = await apiConfigMatch.createLobby({
+                name,
+                maxPlayers,
+                scenario,
+                expert,
+            });
 
             this.creatingMatch = false;
-            this.dispatchEvent(new CustomEvent(EVENTS.MATCH.CREATED, {
+            this.dispatchEvent(new CustomEvent('navigate-route', {
                 bubbles: true,
                 composed: true,
-                detail: {
-                    match,
-                    player: createdPlayer,
-                }
+                detail: {route: getMatchLobbyPath(lobby.id)},
             }));
             this.loadMatches();
         } catch (error) {
@@ -150,6 +170,12 @@ export class McCreateMatchPage extends LitElement {
         }
     }
     async resetMatch(match) {
+        if (!this.isCreator(match.creatorUserId)) {
+            this.reportCommunicationError(
+                new Error('Solo el creador puede reiniciar esta partida.')
+            );
+            return;
+        }
         if (this.resettingMatch || this.deletingMatch || this.resumingMatch) {
             return;
         }
@@ -159,8 +185,11 @@ export class McCreateMatchPage extends LitElement {
             return;
         }
 
-        const player = this.selectedPlayers[match.name] || match.players[0]?.name;
-        if (!player) {
+        const player = match.players.find(item =>
+            item.userId === this.user?.id
+        );
+        const playerId = player?.id || player?.userId || player?.name;
+        if (!playerId) {
             this.reportCommunicationError(
                 new Error('La partida no tiene un jugador para iniciar el reinicio.')
             );
@@ -178,7 +207,7 @@ export class McCreateMatchPage extends LitElement {
                 composed: true,
                 detail: {
                     matchName: match.name,
-                    player,
+                    player: playerId,
                 },
             }));
             const joined = await this.api.joinMatch(true);
@@ -193,7 +222,7 @@ export class McCreateMatchPage extends LitElement {
                 composed: true,
                 detail: {
                     matchName: match.name,
-                    player,
+                    player: playerId,
                     match: resetMatch,
                 },
             }));
@@ -212,8 +241,11 @@ export class McCreateMatchPage extends LitElement {
             return;
         }
 
-        const player = this.selectedPlayers[match.name] || match.players[0]?.name;
-        if (!player || (!match.initialized && !match.initializing)) {
+        const player = match.players.find(item =>
+            item.userId === this.user?.id
+        );
+        const playerId = player?.id || player?.userId || player?.name;
+        if (!playerId || (!match.initialized && !match.initializing)) {
             this.reportCommunicationError(
                 new Error('La partida todavía no está lista para continuar.')
             );
@@ -229,7 +261,7 @@ export class McCreateMatchPage extends LitElement {
                 composed: true,
                 detail: {
                     matchName: match.name,
-                    player,
+                    player: playerId,
                 },
             }));
             const joined = await this.api.joinMatch(true);
@@ -242,42 +274,55 @@ export class McCreateMatchPage extends LitElement {
                 composed: true,
                 detail: {
                     matchName: match.name,
-                    player,
+                    player: playerId,
                 },
             }));
         } finally {
             this.resumingMatch = '';
         }
     }
-    async deleteMatch(match) {
+    deleteMatch(match) {
+        return this.deleteEntry(match, {
+            ownerId: match.creatorUserId,
+            remove: () => this.apiConfigMatch.deleteMatch(match.name),
+            listProperty: 'matches',
+        });
+    }
+    deleteLobby(lobby) {
+        return this.deleteEntry(lobby, {
+            ownerId: lobby.ownerId,
+            remove: () => this.apiConfigMatch.deleteLobby(lobby.id),
+            listProperty: 'lobbies',
+        });
+    }
+    async deleteEntry(entry, {ownerId, remove, listProperty}) {
         if (this.deletingMatch || this.resumingMatch || this.resettingMatch) {
             return;
         }
+        if (!this.isCreator(ownerId)) {
+            this.reportCommunicationError(new Error('Solo el creador puede eliminar esta partida.'));
+            return;
+        }
         if (!window.confirm(
-            `¿Eliminar la partida "${match.name}"? Esta acción no se puede deshacer.`
+            `¿Eliminar la partida "${entry.name}"? Esta acción no se puede deshacer.`
         )) {
             return;
         }
 
-        this.deletingMatch = match.name;
+        this.deletingMatch = entry.name;
         try {
-            await this.apiConfigMatch.deleteMatch(match.name);
+            await remove();
             this.matchListRequestSequence++;
-            this.matches = this.matches.filter(item => item.name !== match.name);
+            this.loadingMatches = false;
+            this[listProperty] = this[listProperty].filter(item => item.name !== entry.name);
         } catch (error) {
             this.reportCommunicationError(
                 error,
-                `No se pudo eliminar la partida "${match.name}"`
+                `No se pudo eliminar la partida "${entry.name}"`
             );
         } finally {
             this.deletingMatch = '';
         }
-    }
-    handlePlayerChange(matchName, e) {
-        this.selectedPlayers = {
-            ...this.selectedPlayers,
-            [matchName]: e.target.value,
-        };
     }
     reportCommunicationError(error, prefix = '') {
         const message = prefix ? `${prefix}: ${error.message}` : error.message;
@@ -301,13 +346,16 @@ export class McCreateMatchPage extends LitElement {
 
         return `${player.name}${hero}${aspect}`;
     }
+    isCreator(ownerId) {
+        return Boolean(this.user?.id && ownerId === this.user.id);
+    }
     renderMatch(match) {
         const {players} = match;
-        const player = this.selectedPlayers[match.name] || players[0]?.name || '';
+        const organizingOnly = this.isCreator(match.creatorUserId) &&
+            !players.some(player => player.userId === this.user?.id);
         const canResume = players.length > 0 &&
             (match.initialized || match.initializing);
         const resuming = this.resumingMatch === match.name;
-        const deleting = this.deletingMatch === match.name;
         const resetting = this.resettingMatch === match.id;
 
         return html`
@@ -315,55 +363,63 @@ export class McCreateMatchPage extends LitElement {
                 <article class="match-card">
                     <h2>${match.name}</h2>
                     <p><strong>Estado:</strong> ${this.getMatchStatus(match)}</p>
-                    <p><strong>Escenario:</strong> ${match.scenario || 'Pendiente'}</p>
+                    <p><strong>Escenario:</strong> ${match.scenarioName || match.scenario || 'Pendiente'}</p>
                     <p><strong>Jugadores:</strong>
                         ${players.length ? players
                             .map(item => this.getPlayerSummary(item))
                             .join(', ') : 'Ninguno'}
                     </p>
-                    ${players.length ? html`
-                        <md-filled-select
-                            label="Continuar como"
-                            .value="${player}"
-                            @change="${e => this.handlePlayerChange(match.name, e)}"
-                        >
-                            ${players.map(item => html`
-                                <md-select-option value="${item.name}">
-                                    <div slot="headline">${item.name}</div>
-                                </md-select-option>
-                            `)}
-                        </md-filled-select>
-                    ` : ''}
                     <div class="match-actions">
                         <md-filled-button
                             .disabled="${!canResume || resuming ||
                                 Boolean(this.deletingMatch) || Boolean(this.resettingMatch)}"
-                            @click="${() => this.resumeMatch(match)}"
+                            @click="${() => organizingOnly ?
+                                this.openLobby(match.id) : this.resumeMatch(match)}"
                         >
-                            ${resuming ? 'Conectando...' : 'Continuar partida'}
+                            ${resuming ? 'Conectando...' : organizingOnly ?
+                                'Ver sala' : 'Continuar partida'}
                         </md-filled-button>
-                        <md-text-button
+                        ${this.isCreator(match.creatorUserId) ? html`
+                        ${!organizingOnly ? html`<md-text-button
                             class="reset-button"
                             .disabled="${Boolean(this.deletingMatch) ||
                                 Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
                             @click="${() => this.resetMatch(match)}"
                         >
                             ${resetting ? 'Reiniciando...' : 'Reiniciar partida'}
-                        </md-text-button>
-                        <md-text-button
-                            class="delete-button"
-                            .disabled="${Boolean(this.deletingMatch) ||
-                                Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
-                            @click="${() => this.deleteMatch(match)}"
-                        >
-                            ${deleting ? 'Eliminando...' : 'Eliminar partida'}
-                        </md-text-button>
+                        </md-text-button>` : ''}
+                            <md-text-button
+                                class="delete-button"
+                                .disabled="${Boolean(this.deletingMatch) ||
+                                    Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
+                                @click="${() => this.deleteMatch(match)}"
+                            >${this.deletingMatch === match.name ?
+                                'Eliminando...' : 'Eliminar partida'}</md-text-button>
+                        ` : ''}
                     </div>
                 </article>
             </li>
         `;
     }
     renderMatchList() {
+        if (!this.user) {
+            return html`
+                <p>Inicia sesión para ver tus partidas iniciadas.</p>
+                <md-text-button
+                    href="/login"
+                    @click="${event => {
+                        event.preventDefault();
+                        this.dispatchEvent(new CustomEvent('navigate-route', {
+                            bubbles: true,
+                            composed: true,
+                            detail: {route: 'login'},
+                        }));
+                    }}"
+                >
+                    Iniciar sesión
+                </md-text-button>
+            `;
+        }
         if (this.loadingMatches) {
             return html`<p role="status">Cargando partidas...</p>`;
         }
@@ -375,6 +431,58 @@ export class McCreateMatchPage extends LitElement {
             <ul class="match-list">
                 ${this.matches.map(match => this.renderMatch(match))}
             </ul>
+        `;
+    }
+    openLobby(lobbyId) {
+        this.dispatchEvent(new CustomEvent('navigate-route', {
+            bubbles: true,
+            composed: true,
+            detail: {route: getMatchLobbyPath(lobbyId)},
+        }));
+    }
+    renderLobbyList() {
+        if (!this.lobbies.length) {
+            return html`<p>No hay partidas esperando jugadores.</p>`;
+        }
+
+        return html`
+            <div class="lobby-table-wrap">
+                <table class="lobby-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Partida</th>
+                            <th scope="col">Escenario</th>
+                            <th scope="col">Dificultad</th>
+                            <th scope="col">Superhéroes</th>
+                            <th scope="col"><span class="visually-hidden">Acción</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.lobbies.map(lobby => html`
+                            <tr>
+                                <th scope="row">${lobby.name}</th>
+                                <td>${lobby.scenarioName}</td>
+                                <td>${lobby.expert ? 'Experto' : 'Normal'}</td>
+                                <td>${lobby.players.length}/${lobby.maxPlayers}</td>
+                                <td class="lobby-action">
+                                    <md-filled-button
+                                        @click="${() => this.openLobby(lobby.id)}"
+                                    >Ver partida</md-filled-button>
+                                    ${this.isCreator(lobby.ownerId) ? html`
+                                        <md-text-button
+                                            class="delete-button"
+                                            .disabled="${Boolean(this.deletingMatch) ||
+                                                Boolean(this.resumingMatch) || Boolean(this.resettingMatch)}"
+                                            @click="${() => this.deleteLobby(lobby)}"
+                                        >${this.deletingMatch === lobby.name ?
+                                            'Eliminando...' : 'Eliminar partida'}</md-text-button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `)}
+                    </tbody>
+                </table>
+            </div>
         `;
     }
     renderCreateForm() {
@@ -390,13 +498,11 @@ export class McCreateMatchPage extends LitElement {
                     </md-text-button>
                 </div>
                 ${this.creatingGame ? html`
-                    <p role="status">Creando partida y preparando el setup...</p>
+                    <p role="status">Creando sala de espera...</p>
                 ` : this.loadingCatalog ? html`
-                    <p role="status">Cargando héroes, escenarios y conjuntos modulares...</p>
+                    <p role="status">Cargando escenarios y conjuntos modulares...</p>
                 ` : html`
                     <mc-create-match
-                        .heroesList="${this.heroesList}"
-                        .configMatch="${this.apiConfigMatch}"
                         .scenariosList="${this.scenariosList}"
                         .modularSetsList="${this.modularSetsList}"
                         @create-match="${this.handleCreate.bind(this)}"
@@ -408,7 +514,7 @@ export class McCreateMatchPage extends LitElement {
     renderLobby() {
         return html`
             <div class="section-heading">
-                <h1>Partidas creadas</h1>
+                <h1>Partidas</h1>
                 <div class="actions">
                     <md-text-button
                         .disabled="${this.loadingMatches || Boolean(this.deletingMatch) ||
@@ -426,7 +532,14 @@ export class McCreateMatchPage extends LitElement {
                     </md-filled-button>
                 </div>
             </div>
-            ${this.renderMatchList()}
+            <section aria-labelledby="waiting-matches-title">
+                <h2 id="waiting-matches-title">Esperando jugadores</h2>
+                ${this.renderLobbyList()}
+            </section>
+            <section aria-labelledby="active-matches-title">
+                <h2 id="active-matches-title">Mis partidas iniciadas</h2>
+                ${this.renderMatchList()}
+            </section>
         `;
     }
     render() {

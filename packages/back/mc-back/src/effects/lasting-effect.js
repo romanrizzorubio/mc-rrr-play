@@ -79,6 +79,7 @@ export class LastingEffect extends Effect {
             endEffect,
             useTriggerPlayer,
             condition: this.condition,
+            triggerParams,
             player,
             card: ability.card,
             triggerCard: lastingTriggerCard,

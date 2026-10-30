@@ -1,11 +1,13 @@
 import {
     DIALOG_SELECT_CARD,
+    PLACE_ASIDE_MATCH,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_HAND,
     PLACE_IN_PLAY,
+    PLACE_OUTSIDE_NEMESIS,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
 } from 'mc-shared';
@@ -221,6 +223,7 @@ export class SearchCardsEffect extends Effect {
         await this.markKnownDeckOptions(options, player);
         const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
+                targetPlayer: player,
                 showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
                 data: {
@@ -260,7 +263,11 @@ export class SearchCardsEffect extends Effect {
     }
 
     getCardsAtLocation(player, location) {
-        if (location === PLACE_DISCARD_PILE) {
+        if (location === PLACE_ASIDE_MATCH) {
+            return this.match.scenario.apart;
+        } else if (location === PLACE_OUTSIDE_NEMESIS) {
+            return player.superhero.nemesis;
+        } else if (location === PLACE_DISCARD_PILE) {
             return player.deck.discardPile;
         } else if (location === PLACE_DECK) {
             return player.deck.cards;
@@ -355,6 +362,7 @@ export class SearchCardsEffect extends Effect {
             undefined :
             await this.openDialog({
                 dialogType: DIALOG_SELECT_CARD,
+                targetPlayer: player,
                 showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
                 data: {

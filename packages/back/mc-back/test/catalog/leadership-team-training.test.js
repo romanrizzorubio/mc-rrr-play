@@ -136,8 +136,8 @@ describe('Entrenamiento en equipo', () => {
                 isPlayer,
             })),
             [
-                {id: owner.id, name: owner.name, isPlayer: true},
-                {id: controller.id, name: controller.name, isPlayer: true},
+                {id: owner.id, name: owner.superhero.name, isPlayer: true},
+                {id: controller.id, name: controller.superhero.name, isPlayer: true},
             ],
         );
         assert.equal('deck' in targetDialog.data.cards[0], false);

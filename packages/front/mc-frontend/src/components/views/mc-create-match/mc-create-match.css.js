@@ -18,6 +18,12 @@ export default css`
     font-weight: 600;
   }
 
+  .max-players {
+    display: block;
+    width: min(100%, 320px);
+    margin-top: 16px;
+  }
+
   .step-actions {
     display: flex;
     align-items: center;
@@ -70,8 +76,10 @@ export default css`
     padding: 0;
     overflow-y: auto;
     list-style: none;
-    border: 1px solid #bdbdbd;
-    border-radius: 4px;
+    border: 1px solid #d5d2dc;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
   }
 
   .modular-set-list button {
@@ -79,21 +87,23 @@ export default css`
     width: 100%;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px;
+    min-height: 48px;
+    padding: 10px 16px;
     border: 0;
-    background: transparent;
+    background: #fff;
     color: inherit;
     text-align: left;
     cursor: pointer;
+    font: inherit;
   }
 
   .modular-set-list button:hover,
   .modular-set-list button:focus-visible {
-    background: #eeeeee;
+    background: #f2eff7;
   }
 
   .modular-set-list li + li {
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #e4e0ea;
   }
 
   .empty-list {
@@ -107,6 +117,10 @@ export default css`
     }
 
     .step-actions .button {
+      width: 100%;
+    }
+
+    .max-players {
       width: 100%;
     }
 

@@ -21,7 +21,9 @@ La aplicación existe para:
 ## Características Principales
 
 ### Para Jugadores
+- ✅ Crear y administrar una cuenta con email verificado
 - ✅ Crear y unirse a partidas
+- ✅ Inscribirse en salas multijugador de hasta cuatro jugadores
 - ✅ Elegir Superhéroes y escenarios
 - ✅ Jugar cartas y ejecutar acciones
 - ✅ Ver estado actualizado en tiempo real
@@ -38,14 +40,14 @@ La aplicación existe para:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ mc-frontend │ mc-match │ mc-deck │ mc-static       │
-│    8000     │   8100   │  8200   │   8300          │
-│   carcasa   │  juego   │  mazos  │ recursos        │
+│ mc-frontend │ mc-users │ mc-match │ mc-deck │ mc-static │
+│    8000     │   8400   │   8100   │  8200   │   8300    │
+│   carcasa   │ cuentas  │  juego   │ mazos   │ recursos  │
 └──────────────────────────┬──────────────────────────┘
                            │ REST + Socket.IO
 ┌──────────────────────────▼──────────────────────────┐
-│ mc-match-creation-service (3001) │ mc-back (3000)   │
-│ catálogo y creación             │ motor de partidas│
+│ mc-match-creation-service (3001) │ mc-back (3000)   │ mc-user-service (3003) │
+│ catálogo, creación y lobby       │ motor de partidas│ cuentas y sesiones     │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -60,6 +62,7 @@ La aplicación existe para:
 
 ### 2. **Frontend**
 - `mc-frontend`: interfaz de usuario, lobby y creación de partidas
+- `mc-users`: remoto de registro, inicio de sesión, activación y perfil
 - `mc-match`: remoto de juego cargado cuando se abre una partida
 - `mc-deck`: remoto editor para crear, editar y guardar mazos de jugador
 - `mc-static`: remoto que sirve imágenes, fuentes, favicons y CSS público compartido
@@ -72,6 +75,7 @@ La aplicación existe para:
 
 ### 3. **Servicios de creación y mazos**
 - `mc-match-creation-service` sirve el catálogo y orquesta el setup de partidas.
+- `mc-user-service` gestiona cuentas activadas, sesiones y correo de activación/restablecimiento.
 - `mc-deck-service` expone el catálogo de construcción, valida mazos y persiste los mazos editados.
 
 ### 4. **Sistema de Endpoints**
@@ -128,9 +132,9 @@ Una ronda de juego sigue este flujo estructurado:
 
 ## Acceso a la Aplicación
 
-- **Frontend**: http://localhost:8000
-- **Backend**: http://localhost:3000
-- **WebSocket**: ws://localhost:3000 (automático)
+- **Frontend**: https://localhost:8000
+- **Backend**: https://localhost:3000
+- **WebSocket**: wss://localhost:3000 (automático)
 
 ## Próximos Pasos
 

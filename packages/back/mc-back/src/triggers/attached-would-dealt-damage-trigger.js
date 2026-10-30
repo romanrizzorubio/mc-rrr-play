@@ -1,20 +1,33 @@
-import {Trigger} from './base/trigger.js';
-import {MixinAttachedTrigger} from './mixins/mixin-attached-trigger.js';
-import {getCharacterForDamageTarget} from './utils/character-for-damage-target.js';
+import {TARGET_ATTACHED} from 'mc-shared';
+import {CharacterWouldTakeDamageTrigger} from './character-would-take-damage-trigger.js';
 
-export class AttachedWouldDealtDamageTrigger extends MixinAttachedTrigger(Trigger) {
-    getInterruptName({effect}) {
-        const selectedTarget = Array.isArray(effect.selectedTarget) ?
-            effect.selectedTarget[0] :
-            effect.selectedTarget;
-        const target = getCharacterForDamageTarget(selectedTarget);
-
-        return `${target.name} va a sufrir ${effect.damage} de Daño.`;
+export class AttachedWouldDealtDamageTrigger extends CharacterWouldTakeDamageTrigger {
+    constructor(params) {
+        super({...params, target: TARGET_ATTACHED});
     }
-    async canTrigger(params) {
-        const {card} = this;
-        const {effect} = params;
+    getTarget(params) {
+        return this.card?.attachedTo ? super.getTarget(params) : undefined;
+    }
+    getInterruptName(params) {
+        return super.getInterruptName({
+            ...params,
+            triggeredTargetDamage: params.triggeredTarget ?
+                params.triggeredTargetDamage : undefined,
+        });
+    }
+    getTargetDamage(params, target = this.getTarget(params)) {
+        if (!target) {
+            return 0;
+        }
 
-        return card.attachedTo.id === effect.selectedTarget.id;
+        const {effect} = params;
+        const targetIndex = Array.isArray(effect.selectedTarget) ?
+            effect.selectedTarget.indexOf(target) : 0;
+        const damage = Array.isArray(effect.damage) ?
+            effect.damage[targetIndex] : effect.damage;
+        const prevention = Array.isArray(effect.preventDamage) ?
+            effect.preventDamage[targetIndex] : effect.preventDamage;
+
+        return Math.max(0, (damage ?? 0) - (prevention ?? 0));
     }
 }

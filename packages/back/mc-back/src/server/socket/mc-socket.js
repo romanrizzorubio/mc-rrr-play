@@ -1,4 +1,6 @@
 import {EVENTS} from 'mc-endpoints';
+import {AuthServiceClient} from '../../utils/auth-service-client.js';
+import {findPlayerSeat} from '../../utils/player-seat.js';
 
 import {DialogSocket} from './dialog-socket.js';
 
@@ -12,6 +14,15 @@ export class McSocket {
     }
     init(io) {
         this.io = io;
+        io.use((socket, next) => {
+            AuthServiceClient.authenticate(socket.handshake.headers.cookie).then(
+                user => {
+                    socket.data.user = {id: user.id, name: user.name};
+                    next();
+                },
+                next,
+            );
+        });
         io.on('connection', socket => this.handleConnection(socket));
     }
     roomName(matchName) {
@@ -42,15 +53,22 @@ export class McSocket {
         });
     }
     async joinMatch(socket, params) {
-        const matchName = params?.match;
-        if (!matchName) {
+        const requestedMatch = params?.match;
+        if (!requestedMatch) {
             throw new Error('Falta el identificador de la partida al unirse al socket.');
         }
 
-        const match = this.mc.getMatch(matchName);
+        const match = this.mc.getMatch(requestedMatch);
         if (!match) {
-            throw new Error(`No existe la partida "${matchName}" en el backend.`);
+            throw new Error(`No existe la partida "${requestedMatch}" en el backend.`);
         }
+        const userId = socket.data.user?.id;
+        if (!userId || !match.players.some(player => player.userId === userId)) {
+            const error = new Error('No tienes un jugador en esta partida.');
+            error.statusCode = 403;
+            throw error;
+        }
+        const matchName = match.name;
 
         const previousMatch = socket.data.match;
         if (previousMatch && previousMatch !== matchName) {
@@ -124,9 +142,28 @@ export class McSocket {
             if (!socket.rooms.has(this.roomName(matchName))) {
                 throw new Error('El socket no está unido a esa partida.');
             }
+            const match = this.mc.getMatch(matchName);
+            const userId = socket.data.user?.id;
+            if (!match || !userId ||
+                !match.players.some(player => player.userId === userId)) {
+                throw new Error('No tienes un jugador en esta partida.');
+            }
 
+            if (endpoint === EVENTS.TURN.END) {
+                const ownedPlayers = match.players.filter(player => player.userId === userId);
+                const player = params.player ?
+                    findPlayerSeat(match.players, params.player) :
+                    (ownedPlayers.length === 1 ? ownedPlayers[0] : undefined);
+                if (!player || player.userId !== userId ||
+                    player !== match.currentTurnPlayer) {
+                    throw new Error('Solo el jugador del turno puede finalizarlo.');
+                }
+            }
+            if (endpoint === EVENTS.TURN.END && match.actionRequest) {
+                throw new Error('No se puede finalizar el turno mientras haya una solicitud de acción activa.');
+            }
             const handled = endpoint === EVENTS.DIALOG.RESPONSE ?
-                this.dialogSocket.respond(matchName, params) :
+                this.dialogSocket.respond(matchName, params, userId) :
                 this.dispatch(matchName, endpoint, params);
             if (!handled) {
                 throw new Error(endpoint === EVENTS.TURN.END ?

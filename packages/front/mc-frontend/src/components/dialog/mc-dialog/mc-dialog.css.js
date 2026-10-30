@@ -42,8 +42,14 @@ export default css`
   .title {
     display: flex;
     justify-content: space-between;
+    margin: 0 0 8px;
     font-family: var(--mc-font-title, sans-serif);
     font-size: 24px;
+  }
+
+  .dialog-responsible-player {
+    margin: 0 0 12px;
+    font-family: var(--mc-font-title, sans-serif);
   }
 
   .subtitle,

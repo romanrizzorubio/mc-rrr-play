@@ -63,7 +63,7 @@ export default css`
     color: white;
     font-size: 0.85rem;
     font-family: var(--mc-font-numeric, sans-serif);
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1;
     text-align: center;
   }
