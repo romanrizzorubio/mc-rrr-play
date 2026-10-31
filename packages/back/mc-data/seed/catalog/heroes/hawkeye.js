@@ -272,6 +272,7 @@ const mockingbirdCard = {
                         'type': EFFECT_PREVENT_DAMAGE,
                         'params': {
                             'target': TARGET_YOU,
+                            'preventAll': true,
                         },
                     },
                 },

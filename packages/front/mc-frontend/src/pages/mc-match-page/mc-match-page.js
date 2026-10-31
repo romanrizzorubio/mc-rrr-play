@@ -28,6 +28,8 @@ export class McMatchPage extends LitElement {
         return {
             match: {type: Object},
             player: {type: String},
+            dialogBoardPlayerId: {type: String},
+            tableConsultationMode: {type: Boolean},
             api: {type: Api},
             firstPlayerTokenUrl: {type: String, attribute: 'first-player-token-url'},
             playCardPending: {type: Boolean},
@@ -42,6 +44,8 @@ export class McMatchPage extends LitElement {
 
         this.match = null;
         this.player = '';
+        this.dialogBoardPlayerId = '';
+        this.tableConsultationMode = false;
         this.firstPlayerTokenUrl = '';
 
         this.api = null;
@@ -67,7 +71,8 @@ export class McMatchPage extends LitElement {
         }
     }
     get canInteract() {
-        if (this.match?.phase !== 'players' || !this.player) {
+        if (this.tableConsultationMode ||
+            this.match?.phase !== 'players' || !this.player) {
             return false;
         }
 
@@ -82,7 +87,8 @@ export class McMatchPage extends LitElement {
         return this.match.currentTurnPlayer === this.player;
     }
     get canRequestAction() {
-        return this.match?.phase === 'players' &&
+        return !this.tableConsultationMode &&
+            this.match?.phase === 'players' &&
             this.match.currentTurnPlayer === this.player &&
             !this.actionRequest;
     }
@@ -170,6 +176,10 @@ export class McMatchPage extends LitElement {
         super.disconnectedCallback();
     }
     updated(changedProperties) {
+        if (changedProperties.has('tableConsultationMode') &&
+            this.tableConsultationMode) {
+            this.clearPlayerTargeting();
+        }
         if (changedProperties.has('player') &&
             changedProperties.get('player') !== this.player) {
             this.clearPlayerTargeting();
@@ -1066,6 +1076,8 @@ export class McMatchPage extends LitElement {
                 .match="${match}"
                 .player="${_player}"
                 .boardPlayer="${_player}"
+                .dialogBoardPlayerId="${this.dialogBoardPlayerId}"
+                .tableConsultationMode="${this.tableConsultationMode}"
                 .interactive="${this.canInteract}"
                 .canRequestAction="${this.canRequestAction}"
                 .actionRequest="${this.actionRequest}"

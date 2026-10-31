@@ -101,6 +101,471 @@ import {hydraSoldier} from '../encounters/minions.js';
 import {hailHydra} from '../encounters/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
+const agent13 = {
+    'type': CARD_TYPE_ALLY,
+    'params': {
+        'name': 'Agente 13',
+        'subtitle': 'Sharon Carter',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03002.png',
+        'traits': [
+            TRAIT_SHIELD
+        ],
+        'unique': true,
+        'cost': 3,
+        'resources': [
+            RESOURCE_MENTAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'thwart': 2,
+        'attack': 1,
+        'thwartConsequential': 1,
+        'attackConsequential': 1,
+        'hitPoints': 3,
+        'abilities': [
+            {
+                'type': ABILITY_RESPONSE,
+                'params': {
+                    'trigger': TRIGGER_CARD_ENTER_PLAY,
+                    'effect': {
+                        'type': EFFECT_REMOVE_THREAT,
+                        'params': {
+                            'target': TARGET_SCHEME,
+                            'threat': 2
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const boldDetermination = {
+    'type': CARD_TYPE_EVENT,
+    'params': {
+        'name': 'Determinación audaz',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03003.png',
+        'traits': [
+            TRAIT_SUPERPOWER
+        ],
+        'cost': 0,
+        'resources': [
+            RESOURCE_MENTAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_HERO_ACTION,
+                'params': {
+                    'effect': {
+                        'type': EFFECT_CHAINED,
+                        'params': {
+                            'effects': [
+                                {
+                                    'type': EFFECT_LASTING,
+                                    'params': {
+                                        'target': TARGET_YOUR_HERO,
+                                        'until': TIME_PHASE,
+                                        'effect': {
+                                            'type': EFFECT_MODIFY_THWART_VALUE,
+                                            'params': {
+                                                'target': TARGET_YOUR_HERO,
+                                                'count': 1
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    'type': EFFECT_DRAW_CARD,
+                                    'params': {
+                                        'target': TARGET_YOU,
+                                        'count': 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const heroicStrike = {
+    'type': CARD_TYPE_EVENT,
+    'params': {
+        'name': 'Golpe heroico',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03004.png',
+        'traits': [
+            TRAIT_ATTACK
+        ],
+        'cost': 3,
+        'resources': [
+            RESOURCE_PHYSICAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_HERO_ACTION,
+                'params': {
+                    'labels': [
+                        LABEL_ATTACK
+                    ],
+                    'effect': {
+                        'type': EFFECT_CHAINED,
+                        'params': {
+                            'target': TARGET_ENEMY,
+                            'effects': [
+                                {
+                                    'type': EFFECT_DEAL_DAMAGE,
+                                    'params': {
+                                        'target': TARGET_ENEMY,
+                                        'damage': 6
+                                    }
+                                },
+                                {
+                                    'type': EFFECT_DO_IF_HAS_PAID,
+                                    'params': {
+                                        'target': TARGET_ENEMY,
+                                        'resources': [
+                                            RESOURCE_PHYSICAL
+                                        ],
+                                        'effect': {
+                                            'type': EFFECT_STUN,
+                                            'params': {
+                                                'target': TARGET_ENEMY
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const shieldBlock = {
+    'type': CARD_TYPE_EVENT,
+    'params': {
+        'name': 'Bloqueo de escudo',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03005.png',
+        'traits': [
+            TRAIT_DEFENSE
+        ],
+        'cost': 0,
+        'resources': [
+            RESOURCE_MENTAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_INTERRUPT,
+                'params': {
+                    'labels': [
+                        LABEL_DEFENSE
+                    ],
+                    'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                    'triggerParams': {
+                        'target': TARGET_YOUR_SUPERHERO
+                    },
+                    'arrow': {
+                        'type': EFFECT_EXHAUST,
+                        'params': {
+                            'target': TARGET_UPGRADE_YOU_CONTROL,
+                            'condition': {
+                                'name': 'Escudo del Capitán América'
+                            }
+                        }
+                    },
+                    'effect': {
+                        'type': EFFECT_PREVENT_DAMAGE,
+                        'params': {
+                            'requiresPrePlayConfirmation': true,
+                            'preventAll': true,
+                            'target': TARGET_YOUR_SUPERHERO
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const shieldToss = {
+    'type': CARD_TYPE_EVENT,
+    'params': {
+        'name': 'Lanzamiento de escudo',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03006.png',
+        'traits': [
+            TRAIT_ATTACK,
+            TRAIT_SUPERPOWER
+        ],
+        'cost': 0,
+        'resources': [
+            RESOURCE_ENERGY
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_HERO_ACTION,
+                'params': {
+                    'labels': [
+                        LABEL_ATTACK
+                    ],
+                    'arrow': {
+                        'type': EFFECT_CHAINED,
+                        'params': {
+                            'effects': [
+                                {
+                                    'type': EFFECT_SELECT_DISCARD_CARD,
+                                    'params': {
+                                        'target': TARGET_YOU,
+                                        'paramsCalc': {
+                                            'target': 'player.match.enemies',
+                                            'formula': CALC_COUNT
+                                        },
+                                        'upTo': true,
+                                        'minCount': 0,
+                                        'title': 'Descarta cualquier número de cartas de tu mano'
+                                    }
+                                },
+                                {
+                                    'type': EFFECT_RETURN_HAND,
+                                    'params': {
+                                        'target': TARGET_UPGRADE_YOU_CONTROL,
+                                        'condition': {
+                                            'name': 'Escudo del Capitán América'
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    'effect': {
+                        'type': EFFECT_DEAL_DAMAGE,
+                        'params': {
+                            'target': TARGET_ENEMY,
+                            'damage': 4,
+                            'multipleTarget': true,
+                            'targetCountCalc': {
+                                'target': 'effect.ability.arrow.cost.effects.0.cards',
+                                'formula': CALC_COUNT
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const steveApartment = {
+    'type': CARD_TYPE_SUPPORT,
+    'params': {
+        'name': 'Apartamento de Steve',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03007.png',
+        'traits': [
+            TRAIT_LOCATION
+        ],
+        'unique': true,
+        'cost': 1,
+        'resources': [
+            RESOURCE_ENERGY
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_ALTEREGO_ACTION,
+                'params': {
+                    'arrow': {
+                        'type': EFFECT_EXHAUST,
+                        'params': {
+                            'target': TARGET_THIS
+                        }
+                    },
+                    'effect': {
+                        'type': EFFECT_SIMULTANEOUS,
+                        'params': {
+                            'effects': [
+                                {
+                                    'type': EFFECT_DRAW_CARD,
+                                    'params': {
+                                        'target': TARGET_YOU,
+                                        'count': 1
+                                    }
+                                },
+                                {
+                                    'type': EFFECT_HEAL,
+                                    'params': {
+                                        'target': TARGET_ALTEREGO,
+                                        'damage': 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const captainAmericaHelmet = {
+    'type': CARD_TYPE_UPGRADE,
+    'params': {
+        'name': 'Casco del Capitán América',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03008.png',
+        'traits': [
+            TRAIT_ARMOR
+        ],
+        'unique': true,
+        'cost': 1,
+        'resources': [
+            RESOURCE_PHYSICAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_INTERRUPT,
+                'params': {
+                    'trigger': TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
+                    'condition': {
+                        'effect.selectedTarget.name': 'Capitán América'
+                    },
+                    'effect': {
+                        'type': EFFECT_CHAINED,
+                        'params': {
+                            'effects': [
+                                {
+                                    'type': EFFECT_PREVENT_DEFEAT,
+                                    'params': {
+                                        'target': TARGET_EFFECT
+                                    }
+                                },
+                                {
+                                    'type': EFFECT_SET_LIFE,
+                                    'params': {
+                                        'target': TARGET_YOUR_SUPERHERO,
+                                        'life': 1
+                                    }
+                                }
+                            ],
+                            'thenEffect': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const captainAmericaShield = {
+    'type': CARD_TYPE_UPGRADE,
+    'params': {
+        'name': 'Escudo del Capitán América',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03009.png',
+        'traits': [
+            TRAIT_ITEM
+        ],
+        'unique': true,
+        'cost': 1,
+        'resources': [
+            RESOURCE_WILD
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'keywords': {
+            'restricted': true
+        },
+        'abilities': [
+            {
+                'type': ABILITY_CONSTANT,
+                'params': {
+                    'hideDialog': true,
+                    'trigger': TRIGGER_CARD_ENTER_PLAY,
+                    'effect': {
+                        'type': EFFECT_ADD_KEYWORD,
+                        'params': {
+                            'target': TARGET_ALL_CHARACTERS,
+                            'condition': {
+                                'name': 'Capitán América'
+                            },
+                            'keyword': {
+                                'retaliate': 1
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                'type': ABILITY_CONSTANT,
+                'params': {
+                    'hideDialog': true,
+                    'trigger': TRIGGER_CONDITION_GET_DEFENSE,
+                    'triggerParams': {
+                        'conditionTrigger': {
+                            'name': 'Capitán América'
+                        },
+                        'conditionSource': 'effect.selectedTarget'
+                    },
+                    'effect': {
+                        'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                        'params': {
+                            'target': TARGET_EFFECT,
+                            'count': 1
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
+const superSoldierSerum = {
+    'type': CARD_TYPE_UPGRADE,
+    'params': {
+        'name': 'Suero de supersoldado',
+        'set': 'Captain America',
+        'image': 'heroes/captain-america/03010.png',
+        'traits': [
+            TRAIT_ITEM
+        ],
+        'cost': 2,
+        'resources': [
+            RESOURCE_PHYSICAL
+        ],
+        'classification': CLASSIFICATION_HERO,
+        'abilities': [
+            {
+                'type': ABILITY_RESOURCE,
+                'params': {
+                    'resource': RESOURCE_PHYSICAL,
+                    'arrow': {
+                        'type': EFFECT_EXHAUST,
+                        'params': {
+                            'target': TARGET_THIS
+                        }
+                    }
+                }
+            }
+        ]
+    }
+};
+
 export default {
     '_id': 'captain-america',
     'order': 5,
@@ -231,485 +696,39 @@ export default {
         'cards': [
             {
                 'count': 1,
-                'card': {
-                    'type': CARD_TYPE_ALLY,
-                    'params': {
-                        'name': 'Agente 13',
-                        'subtitle': 'Sharon Carter',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03002.png',
-                        'traits': [
-                            TRAIT_SHIELD
-                        ],
-                        'unique': true,
-                        'cost': 3,
-                        'resources': [
-                            RESOURCE_MENTAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'thwart': 2,
-                        'attack': 1,
-                        'thwartConsequential': 1,
-                        'attackConsequential': 1,
-                        'hitPoints': 3,
-                        'abilities': [
-                            {
-                                'type': ABILITY_RESPONSE,
-                                'params': {
-                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
-                                    'effect': {
-                                        'type': EFFECT_REMOVE_THREAT,
-                                        'params': {
-                                            'target': TARGET_SCHEME,
-                                            'threat': 2
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': agent13
             },
             {
                 'count': 2,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': 'Determinación audaz',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03003.png',
-                        'traits': [
-                            TRAIT_SUPERPOWER
-                        ],
-                        'cost': 0,
-                        'resources': [
-                            RESOURCE_MENTAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_LASTING,
-                                                    'params': {
-                                                        'target': TARGET_YOUR_HERO,
-                                                        'until': TIME_PHASE,
-                                                        'effect': {
-                                                            'type': EFFECT_MODIFY_THWART_VALUE,
-                                                            'params': {
-                                                                'target': TARGET_YOUR_HERO,
-                                                                'count': 1
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_DRAW_CARD,
-                                                    'params': {
-                                                        'target': TARGET_YOU,
-                                                        'count': 1
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': boldDetermination
             },
             {
                 'count': 3,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': 'Golpe heroico',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03004.png',
-                        'traits': [
-                            TRAIT_ATTACK
-                        ],
-                        'cost': 3,
-                        'resources': [
-                            RESOURCE_PHYSICAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'labels': [
-                                        LABEL_ATTACK
-                                    ],
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'target': TARGET_ENEMY,
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_DEAL_DAMAGE,
-                                                    'params': {
-                                                        'target': TARGET_ENEMY,
-                                                        'damage': 6
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_DO_IF_HAS_PAID,
-                                                    'params': {
-                                                        'target': TARGET_ENEMY,
-                                                        'resources': [
-                                                            RESOURCE_PHYSICAL
-                                                        ],
-                                                        'effect': {
-                                                            'type': EFFECT_STUN,
-                                                            'params': {
-                                                                'target': TARGET_ENEMY
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': heroicStrike
             },
             {
                 'count': 2,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': 'Bloqueo de escudo',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03005.png',
-                        'traits': [
-                            TRAIT_DEFENSE
-                        ],
-                        'cost': 0,
-                        'resources': [
-                            RESOURCE_MENTAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_INTERRUPT,
-                                'params': {
-                                    'labels': [
-                                        LABEL_DEFENSE
-                                    ],
-                                    'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
-                                    'triggerParams': {
-                                        'target': TARGET_YOUR_SUPERHERO
-                                    },
-                                    'arrow': {
-                                        'type': EFFECT_EXHAUST,
-                                        'params': {
-                                            'target': TARGET_UPGRADE_YOU_CONTROL,
-                                            'condition': {
-                                                'name': 'Escudo del Capitán América'
-                                            }
-                                        }
-                                    },
-                                    'effect': {
-                                        'type': EFFECT_PREVENT_DAMAGE,
-                                        'params': {
-                                            'requiresPrePlayConfirmation': true,
-                                            'target': TARGET_YOUR_SUPERHERO
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': shieldBlock
+            },
+            {
+                'count': 20,
+                'card': shieldToss
+            },
+            {
+                'count': 1,
+                'card': steveApartment
+            },
+            {
+                'count': 1,
+                'card': captainAmericaHelmet
+            },
+            {
+                'count': 1,
+                'card': captainAmericaShield
             },
             {
                 'count': 2,
-                'card': {
-                    'type': CARD_TYPE_EVENT,
-                    'params': {
-                        'name': 'Lanzamiento de escudo',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03006.png',
-                        'traits': [
-                            TRAIT_ATTACK,
-                            TRAIT_SUPERPOWER
-                        ],
-                        'cost': 0,
-                        'resources': [
-                            RESOURCE_ENERGY
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_HERO_ACTION,
-                                'params': {
-                                    'labels': [
-                                        LABEL_ATTACK
-                                    ],
-                                    'arrow': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_SELECT_DISCARD_CARD,
-                                                    'params': {
-                                                        'target': TARGET_YOU,
-                                                        'paramsCalc': {
-                                                            'target': 'player.match.enemies',
-                                                            'formula': CALC_COUNT
-                                                        },
-                                                        'upTo': true,
-                                                        'minCount': 0,
-                                                        'title': 'Descarta cualquier número de cartas de tu mano'
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_RETURN_HAND,
-                                                    'params': {
-                                                        'target': TARGET_UPGRADE_YOU_CONTROL,
-                                                        'condition': {
-                                                            'name': 'Escudo del Capitán América'
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    'effect': {
-                                        'type': EFFECT_DEAL_DAMAGE,
-                                        'params': {
-                                            'target': TARGET_ENEMY,
-                                            'damage': 4,
-                                            'multipleTarget': true,
-                                            'targetCountCalc': {
-                                                'target': 'effect.ability.arrow.cost.effects.0.cards',
-                                                'formula': CALC_COUNT
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_SUPPORT,
-                    'params': {
-                        'name': 'Apartamento de Steve',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03007.png',
-                        'traits': [
-                            TRAIT_LOCATION
-                        ],
-                        'unique': true,
-                        'cost': 1,
-                        'resources': [
-                            RESOURCE_ENERGY
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_ALTEREGO_ACTION,
-                                'params': {
-                                    'arrow': {
-                                        'type': EFFECT_EXHAUST,
-                                        'params': {
-                                            'target': TARGET_THIS
-                                        }
-                                    },
-                                    'effect': {
-                                        'type': EFFECT_SIMULTANEOUS,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_DRAW_CARD,
-                                                    'params': {
-                                                        'target': TARGET_YOU,
-                                                        'count': 1
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_HEAL,
-                                                    'params': {
-                                                        'target': TARGET_ALTEREGO,
-                                                        'damage': 1
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_UPGRADE,
-                    'params': {
-                        'name': 'Casco del Capitán América',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03008.png',
-                        'traits': [
-                            TRAIT_ARMOR
-                        ],
-                        'unique': true,
-                        'cost': 1,
-                        'resources': [
-                            RESOURCE_PHYSICAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_INTERRUPT,
-                                'params': {
-                                    'trigger': TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
-                                    'condition': {
-                                        'effect.selectedTarget.name': 'Capitán América'
-                                    },
-                                    'effect': {
-                                        'type': EFFECT_CHAINED,
-                                        'params': {
-                                            'effects': [
-                                                {
-                                                    'type': EFFECT_PREVENT_DEFEAT,
-                                                    'params': {
-                                                        'target': TARGET_EFFECT
-                                                    }
-                                                },
-                                                {
-                                                    'type': EFFECT_SET_LIFE,
-                                                    'params': {
-                                                        'target': TARGET_YOUR_SUPERHERO,
-                                                        'life': 1
-                                                    }
-                                                }
-                                            ],
-                                            'thenEffect': {
-                                                'type': EFFECT_DISCARD_GAME,
-                                                'params': {
-                                                    'target': TARGET_THIS
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                'count': 1,
-                'card': {
-                    'type': CARD_TYPE_UPGRADE,
-                    'params': {
-                        'name': 'Escudo del Capitán América',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03009.png',
-                        'traits': [
-                            TRAIT_ITEM
-                        ],
-                        'unique': true,
-                        'cost': 1,
-                        'resources': [
-                            RESOURCE_WILD
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'keywords': {
-                            'restricted': true
-                        },
-                        'abilities': [
-                            {
-                                'type': ABILITY_CONSTANT,
-                                'params': {
-                                    'hideDialog': true,
-                                    'trigger': TRIGGER_CARD_ENTER_PLAY,
-                                    'effect': {
-                                        'type': EFFECT_ADD_KEYWORD,
-                                        'params': {
-                                            'target': TARGET_ALL_CHARACTERS,
-                                            'condition': {
-                                                'name': 'Capitán América'
-                                            },
-                                            'keyword': {
-                                                'retaliate': 1
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                'type': ABILITY_CONSTANT,
-                                'params': {
-                                    'hideDialog': true,
-                                    'trigger': TRIGGER_CONDITION_GET_DEFENSE,
-                                    'triggerParams': {
-                                        'conditionTrigger': {
-                                            'name': 'Capitán América'
-                                        },
-                                        'conditionSource': 'effect.selectedTarget'
-                                    },
-                                    'effect': {
-                                        'type': EFFECT_MODIFY_DEFENSE_VALUE,
-                                        'params': {
-                                            'target': TARGET_EFFECT,
-                                            'count': 1
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                'count': 2,
-                'card': {
-                    'type': CARD_TYPE_UPGRADE,
-                    'params': {
-                        'name': 'Suero de supersoldado',
-                        'set': 'Captain America',
-                        'image': 'heroes/captain-america/03010.png',
-                        'traits': [
-                            TRAIT_ITEM
-                        ],
-                        'cost': 2,
-                        'resources': [
-                            RESOURCE_PHYSICAL
-                        ],
-                        'classification': CLASSIFICATION_HERO,
-                        'abilities': [
-                            {
-                                'type': ABILITY_RESOURCE,
-                                'params': {
-                                    'resource': RESOURCE_PHYSICAL,
-                                    'arrow': {
-                                        'type': EFFECT_EXHAUST,
-                                        'params': {
-                                            'target': TARGET_THIS
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': superSoldierSerum
             }
         ],
         'precon': [

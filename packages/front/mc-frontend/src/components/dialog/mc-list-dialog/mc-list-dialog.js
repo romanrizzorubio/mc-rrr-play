@@ -66,14 +66,14 @@ export class McListDialog extends McDialog {
 
         if (option.triggers) {
             return html`
-                <md-list-item>
+                ${option.text ? html`<md-list-item>
                     <div 
                         slot="headline" 
                         class="title-menu"
                     >${content}</div>
-                </md-list-item>
+                </md-list-item>` : ''}
                 ${option.triggers.map(trigger => 
-                    this.renderItem(trigger, true)
+                    this.renderItem(trigger, Boolean(option.text))
                 )}
             `;
         } else {

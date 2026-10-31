@@ -23,7 +23,7 @@ const {CardComponent} = await import(
     '../src/components/cards/mc-card/mc-card.js'
 );
 
-describe('side-scheme tucked-card presentation', () => {
+describe('tucked and facedown card presentation', () => {
     test('shows face-up tucked cards below the scheme and labels below them', () => {
         const tuckedTab = {};
         const counters = {};
@@ -96,6 +96,59 @@ describe('side-scheme tucked-card presentation', () => {
         assert.match(
             CardComponent.styles.cssText,
             /\.tucked-card-peek\s*\{[^}]*height: 16px/s
+        );
+    });
+
+    test('shows facedown cards under any host as small card-back peeks, not linked cards', () => {
+        const counters = {};
+        const card = Object.assign(Object.create(CardComponent.prototype), {
+            activationActor: {abilities: []},
+            card: {isObligation: true},
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            exhausted: false,
+            faceDown: [{isEncounterCard: true}],
+            horizontal: false,
+            image: 'obligation.png',
+            isFacedownCard: false,
+            name: 'Obligation',
+            rotated: false,
+            size: 'm',
+            tuckedCards: [],
+            renderHeader: () => '',
+            renderStats: () => '',
+            renderStage: () => '',
+            renderFacedownPeekButton: () => '',
+            renderCounters: () => counters,
+            renderBottomStats: () => '',
+            renderAcquiredTraits: () => '',
+            renderAcquiredKeywords: () => '',
+            renderAttached: () => '',
+            renderMenu: () => '',
+        });
+        const renderTucked = card.renderTucked.bind(card);
+        let tuckedTab;
+        card.renderTucked = () => {
+            tuckedTab = renderTucked();
+
+            return tuckedTab;
+        };
+        const template = card.renderCard();
+        const previews = tuckedTab.values.find(Array.isArray);
+        const countersIndex = template.values.indexOf(counters);
+
+        assert.ok(template.values.includes(tuckedTab));
+        assert.equal(tuckedTab.values[0], 'facedown-host');
+        assert.deepEqual(
+            previews.map(preview => preview.values[0]),
+            ['images/cards/back/encounter.jpg']
+        );
+        assert.ok(template.values.indexOf(tuckedTab) < countersIndex);
+        assert.equal(card.renderFaceDown().strings.join(''), '');
+        assert.match(
+            CardComponent.styles.cssText,
+            /\.tucked\.facedown-host\s*\{[^}]*position: static;[^}]*height: 16px;/s
         );
     });
 });

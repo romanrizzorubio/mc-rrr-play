@@ -9,6 +9,7 @@ import {checkCondition} from '../../engine/utils.js';
 import {FaceDown} from '../match/facedown.js';
 import {getAbilitiesWithAvailability} from '../../utils/ability-availability.js';
 import {canPlayCardDuringTurn} from '../../utils/player-turn-permissions.js';
+import {getPlayerCardPlayFromLocation} from '../../utils/player-card-play-from.js';
 import {REFRESH_EVENTS} from 'mc-endpoints';
 
 export class GameCard extends Engine {
@@ -675,6 +676,15 @@ export class GameCard extends Engine {
             }
         }
 
+        if (params.checkPlayRestrictions &&
+            typeof params.player?.canPlayCard === 'function' &&
+            !await params.player.canPlayCard({
+                card: this,
+                playCardEffect: params.playCardEffect,
+            })) {
+            return false;
+        }
+
         return true;
     }
     defeat() {
@@ -839,8 +849,7 @@ export class GameCard extends Engine {
             this.engaged.removeEngaged(this);
         }
 
-        await this.removeFaceDown();
-        await this.removeTuckedCards();
+        await this.discardCardsUnder();
         await this.removeAttached();
 
         this.reset();
@@ -859,8 +868,7 @@ export class GameCard extends Engine {
 
         if (previousName !== this.name && this.isEncounterCard && wasInPlay) {
             if (!this.sameCard) {
-                await this.removeFaceDown();
-                await this.removeTuckedCards();
+                await this.discardCardsUnder();
                 await this.removeAttached();
                 this.reset();
                 if (this.isCharacter) {
@@ -982,9 +990,28 @@ export class GameCard extends Engine {
         return heal;
     }
     async removeFaceDown() {
-        await this.promisesSequential(this.faceDown, f => f.discard());
+        const playerDecks = new Set();
+
+        await this.promisesSequential(this.faceDown, async facedown => {
+            const {card} = facedown;
+
+            if (card.isPlayerCard && !card.controller) {
+                const deck = card.owner?.deck;
+                if (!deck) {
+                    throw new Error('A facedown player card has no owner deck.');
+                }
+
+                await card.init();
+                await deck.discard(card);
+                playerDecks.add(deck);
+            } else {
+                await facedown.discard();
+            }
+        });
 
         this.faceDown = [];
+
+        await this.promisesSequential([...playerDecks], deck => deck.refresh());
     }
     async removeTuckedCards() {
         const tuckedCards = this.tuckedCards;
@@ -1009,6 +1036,10 @@ export class GameCard extends Engine {
         });
 
         await this.promisesSequential([...playerDecks], deck => deck.refresh());
+    }
+    async discardCardsUnder() {
+        await this.removeFaceDown();
+        await this.removeTuckedCards();
     }
     removeCounters(count) {
         this.counters -= count;
@@ -1168,15 +1199,29 @@ export class GameCard extends Engine {
     }
     async toObjWithAbilityAvailability(player) {
         const abilityAvailability = await this.getAbilityAvailability(player);
-        const tuckedCards = await Promise.all(this.tuckedCards.map(async card => ({
-            ...card.toObj({player}),
-            playable: Boolean(player && canPlayCardDuringTurn(card, player) &&
-                card.isPlayerCard && await card.canPlay({
-                player,
-                abilityType: ABILITY_ACTION,
-                checkOnly: true,
-            })),
-        })));
+        const tuckedCards = await Promise.all(this.tuckedCards.map(async card => {
+            const source = player && getPlayerCardPlayFromLocation(
+                card,
+                card.card.playFrom,
+                player
+            );
+            const playable = Boolean(
+                source &&
+                canPlayCardDuringTurn(card, player) &&
+                card.isPlayerCard &&
+                await card.canPlay({
+                    player,
+                    abilityType: ABILITY_ACTION,
+                    checkOnly: true,
+                    checkPlayRestrictions: true,
+                })
+            );
+
+            return {
+                ...card.toObj({player}),
+                playable,
+            };
+        }));
 
         return {
             ...this.toObj(),

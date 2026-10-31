@@ -8,6 +8,7 @@ import {
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_YOU_BASIC_DEFENSE,
     TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU
@@ -20,6 +21,7 @@ import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {AttackEffect} from './attack-effect.js';
 import {ExhaustEffect} from './exhaust-effect.js';
 import {ValidTarget} from '../targets/valid-target.js';
+import {getScenarioZone} from '../utils/match-zone-utils.js';
 import {
     filterTargetCandidates,
     splitTargetCondition,
@@ -40,6 +42,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget = new Map();
+        this.basicDefendersByTarget = new Map();
         this.defendingPlayersByTarget = new Map();
         this.defenseValues = new Map();
         this.originalAttackTarget = undefined;
@@ -56,6 +59,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget.clear();
+        this.basicDefendersByTarget.clear();
         this.defendingPlayersByTarget.clear();
         this.defenseValues.clear();
         this.originalAttackTarget = undefined;
@@ -330,7 +334,13 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         if (player.defeated) {
             return [];
         }
-        if (player === this.getTargetPlayer(attackTarget)) {
+        const targetPlayer = this.getTargetPlayer(attackTarget);
+        if (this.match?.scenario?.separatePlayAreas &&
+            getScenarioZone(this.match, player) !==
+                getScenarioZone(this.match, targetPlayer)) {
+            return [];
+        }
+        if (player === targetPlayer) {
             return this.getDefenders(attackTarget);
         }
         if (this.getDefendingPlayerForTarget(attackTarget)) {
@@ -538,6 +548,11 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         if (!attackTarget) {
             return false;
         }
+        if (this.match?.scenario?.separatePlayAreas &&
+            getScenarioZone(this.match, player) !==
+                getScenarioZone(this.match, this.getTargetPlayer(attackTarget))) {
+            return false;
+        }
 
         const defendingPlayer = this.getDefendingPlayerForTarget(attackTarget);
 
@@ -562,7 +577,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             player.superhero,
             attackTarget,
             params,
-            {exhaust: false}
+            {exhaust: false, isBasicDefense: false}
         );
     }
     changeAttackTargets(targets) {
@@ -630,22 +645,43 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         });
     }
     getTriggersEnds(params) {
-        return super.getTriggersEnds(params)
+        const triggers = super.getTriggersEnds(params)
             .concat([
                 TRIGGER_VILLAIN_ATTACKS_YOU,
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
+        if ([...this.basicDefendersByTarget.values()].some(Boolean)) {
+            triggers.push(TRIGGER_YOU_BASIC_DEFENSE);
+        }
+
+        return triggers;
+    }
+    hasBasicDefenseFor(player) {
+        for (const [target, isBasicDefense] of this.basicDefendersByTarget) {
+            const defender = this.getDefenderForTarget(target);
+            if (isBasicDefense &&
+                defender?.isHero &&
+                this.getTargetPlayer(defender) === player) {
+                return true;
+            }
+        }
+
+        return false;
     }
     async setDefender(
         defender,
         attackTarget = this.selectedTarget,
         params = {},
-        {exhaust = true} = {}
+        {exhaust = true, isBasicDefense = true} = {}
     ) {
         if (defender) {
             const previousDefender = this.getDefenderForTarget(attackTarget);
             this.defender = defender.isSuperhero ? defender.currentSide : defender;
             this.defendersByTarget.set(attackTarget, this.defender);
+            this.basicDefendersByTarget.set(
+                attackTarget,
+                Boolean(isBasicDefense && this.defender.isHero)
+            );
             const defendingPlayer = this.getTargetPlayer(this.defender);
             this.defendingPlayersByTarget.set(attackTarget, defendingPlayer);
             if (!Array.isArray(this.selectedTarget)) {

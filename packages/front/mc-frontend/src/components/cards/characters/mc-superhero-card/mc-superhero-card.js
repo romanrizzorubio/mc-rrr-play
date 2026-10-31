@@ -41,7 +41,6 @@ export class SuperheroCardComponent extends LitElement {
             exhausted: {type: Boolean},
             attached: {type: Array},
             tuckedCards: {type: Array},
-            obligations: {type: Array},
             abilities: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
@@ -73,7 +72,6 @@ export class SuperheroCardComponent extends LitElement {
         this.exhausted = false;
         this.attached = [];
         this.tuckedCards = [];
-        this.obligations = [];
         this.abilities = [];
         this.extraTraits = [];
         this.extraKeywords = [];
@@ -149,19 +147,6 @@ export class SuperheroCardComponent extends LitElement {
         }
     }
 
-    renderObligations() {
-        const obligations = this.obligations || [];
-
-        return obligations.length ? html`
-            <div class="obligations">
-                <mc-card-list
-                    .cards="${obligations}"
-                    size="s"
-                ></mc-card-list>
-            </div>
-        ` : '';
-    }
-
     render() {
         const {
             image,
@@ -185,7 +170,6 @@ export class SuperheroCardComponent extends LitElement {
 
         return html`
             <div class="panel">
-                ${this.renderObligations()}
                 <mc-card
                     image="${image}"
                     .card="${card}"

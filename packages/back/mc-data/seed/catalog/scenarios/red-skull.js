@@ -233,10 +233,6 @@ const mainScheme = ({
             image: `scenarios/red-skull/${imageA}.png`,
             stage,
             ...(stage === 1 ? {
-                content: {
-                    villains: [1, 2],
-                    villainsExpert: [2, 3],
-                },
             } : {}),
             ...(abilitiesA.length ? {abilities: abilitiesA} : {}),
         },
@@ -895,51 +891,54 @@ const infinitePower = {
     },
 };
 
+const villainCards = [
+    redSkull({
+        stage: 1,
+        attack: 0,
+        scheme: 2,
+        hitPoints: 12,
+        image: '04125',
+    }),
+    redSkull({
+        stage: 2,
+        attack: 1,
+        scheme: 3,
+        hitPoints: 16,
+        image: '04126',
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: dealEncounterCardToEachPlayer,
+                },
+            },
+        ],
+    }),
+    redSkull({
+        stage: 3,
+        attack: 2,
+        scheme: 3,
+        hitPoints: 20,
+        image: '04127',
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: dealEncounterCardToEachPlayer,
+                },
+            },
+        ],
+    }),
+];
+
 export default {
     _id: 'red-skull',
     name: 'Cráneo Rojo',
     folder: 'red-skull',
     config: {
         name: 'Cráneo Rojo',
-        villains: [
-            redSkull({
-                stage: 1,
-                attack: 0,
-                scheme: 2,
-                hitPoints: 12,
-                image: '04125',
-            }),
-            redSkull({
-                stage: 2,
-                attack: 1,
-                scheme: 3,
-                hitPoints: 16,
-                image: '04126',
-                abilities: [
-                    {
-                        type: ABILITY_WHEN_REVEALED,
-                        params: {
-                            effect: dealEncounterCardToEachPlayer,
-                        },
-                    },
-                ],
-            }),
-            redSkull({
-                stage: 3,
-                attack: 2,
-                scheme: 3,
-                hitPoints: 20,
-                image: '04127',
-                abilities: [
-                    {
-                        type: ABILITY_WHEN_REVEALED,
-                        params: {
-                            effect: dealEncounterCardToEachPlayer,
-                        },
-                    },
-                ],
-            }),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             mainScheme({
                 name: 'La tiranía de Cráneo Rojo',

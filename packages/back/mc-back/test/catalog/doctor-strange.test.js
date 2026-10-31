@@ -28,6 +28,7 @@ import {
     TARGET_CARD,
     TARGET_ENEMY,
     TARGET_PLAYER_EXTRA_DECK,
+    TARGET_PARENT,
     TRAIT_AERIAL,
     TRAIT_SPELL,
     TRIGGER_CARD_ENTER_PLAY,
@@ -542,6 +543,8 @@ describe('Doctor Strange', () => {
             effectType === EFFECT_STUN);
         const damageEffect = simultaneousEffect.effects.find(({effectType}) =>
             effectType === EFFECT_DEAL_DAMAGE);
+        assert.equal(stunEffect.target, TARGET_PARENT);
+        assert.equal(damageEffect.target, TARGET_PARENT);
 
         await effect.runEffect({
             player,
@@ -557,8 +560,8 @@ describe('Doctor Strange', () => {
             'enemy-one',
             'enemy-two',
         ]);
-        assert.strictEqual(stunEffect.selectedTarget, enemies[1]);
-        assert.strictEqual(damageEffect.selectedTarget, enemies[1]);
+        assert.deepEqual(stunEffect.selectedTarget, [enemies[1]]);
+        assert.deepEqual(damageEffect.selectedTarget, [enemies[1]]);
         assert.equal(damageEffect.takenDamage, 7);
         assert.equal(enemies[0].damage, 0);
         assert.equal(enemies[1].damage, 7);

@@ -271,7 +271,7 @@ export class Engine {
                 };
             }
 
-            if (trigger.isChoose || trigger.isChooseAbility) {
+            if (trigger.isChooseAbility) {
                 const options = path(trigger, 'ability.effect.options');
                 const name = path(trigger, 'ability.name');
 
@@ -326,6 +326,16 @@ export class Engine {
     async _openTriggersDialog(triggers, priority, params) {
         const {cards, cardsTriggers} = await this._getCardTriggers(triggers, params);
 
+        const players = this._getPlayersTriggers(triggers);
+        const player = players[0];
+        if (!params.player) {
+            params.player = player;
+        }
+        const dialogPlayer = players.find(_player => _player.isPlayer) || params.player;
+        const dialogParams = dialogPlayer && params.player !== dialogPlayer ?
+            {...params, player: dialogPlayer} :
+            params;
+
         const cardTriggers = cards.length === 1 ?
             cardsTriggers[this._getTriggerCardId(cards[0])]?.triggers :
             undefined;
@@ -333,24 +343,18 @@ export class Engine {
             cardTriggers[0] :
             undefined;
         const title = (informationalTrigger instanceof Trigger ?
-            informationalTrigger.getDialogTitle(params) :
+            informationalTrigger.getDialogTitle(dialogParams) :
             undefined) ?? this._getDialogTitle(priority, cards.length === 1);
         const mandatory = Engine.isMandatory(priority);
         const showCounters = priority === PRIORITY_FORCED_INTERRUPT ||
             priority === PRIORITY_INTERRUPT;
-
-        const players = this._getPlayersTriggers(triggers);
-        const player = players[0];
-        if (!params.player) {
-            params.player = player;
-        }
 
         const selectedCard = await this._openTriggersDialogCard(
             cards,
             cardsTriggers,
             title,
             mandatory,
-            params,
+            dialogParams,
             priority,
             showCounters
         );
@@ -359,7 +363,7 @@ export class Engine {
             const selectedTrigger = await this._openTriggersDialogTriggers(
                 selectedCard,
                 mandatory,
-                params,
+                dialogParams,
                 showCounters
             );
 

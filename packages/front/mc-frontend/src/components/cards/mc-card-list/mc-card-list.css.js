@@ -6,6 +6,10 @@ export default css`
     justify-content: center;
     flex-wrap: wrap;
   }
+
+  :host(.obligations) {
+    justify-content: flex-start;
+  }
   
   mc-card.marked {
     border: solid 3px #111;

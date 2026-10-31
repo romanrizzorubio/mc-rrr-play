@@ -97,6 +97,99 @@ const discardUntilMinion = () => ({
     },
 });
 
+const villainCards = [
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Klaw',
+            'set': 'klaw',
+            'image': 'scenarios/klaw/01113.png',
+            'traits': [
+                TRAIT_MASTERS_OF_EVIL,
+            ],
+            'unique': true,
+            'stage': 1,
+            'scheme': 2,
+            'attack': 0,
+            'hitPoints': [12, true],
+            'abilities': [
+                klawAttackInterrupt(),
+            ],
+        },
+    },
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Klaw',
+            'set': 'klaw',
+            'image': 'scenarios/klaw/01114.png',
+            'traits': [
+                TRAIT_MASTERS_OF_EVIL,
+            ],
+            'unique': true,
+            'stage': 2,
+            'scheme': 2,
+            'attack': 1,
+            'hitPoints': [18, true],
+            'abilities': [
+                {
+                    'type': ABILITY_WHEN_REVEALED,
+                    'params': {
+                        'effect': {
+                            'type': EFFECT_CHAINED,
+                            'params': {
+                                'effects': [
+                                    {
+                                        'type': EFFECT_SEARCH_CARD_REVEAL,
+                                        'params': {
+                                            'condition': {
+                                                'name': 'Klaw "el inmortal"',
+                                            },
+                                            'places': [
+                                                PLACE_ENCOUNTER_DECK_CARDS,
+                                                PLACE_ENCOUNTER_DISCARD,
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        'type': EFFECT_SHUFFLE_DECK,
+                                        'params': {
+                                            'target': TARGET_SCENARIO,
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+                klawAttackInterrupt(),
+            ],
+        },
+    },
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Klaw',
+            'set': 'klaw',
+            'image': 'scenarios/klaw/01115.png',
+            'traits': [
+                TRAIT_MASTERS_OF_EVIL,
+            ],
+            'unique': true,
+            'stage': 3,
+            'scheme': 3,
+            'attack': 2,
+            'hitPoints': [22, true],
+            'keywords': {
+                'toughness': true,
+            },
+            'abilities': [
+                klawAttackInterrupt(),
+            ],
+        },
+    },
+];
+
 export default {
     '_id': 'klaw',
     'order': 1,
@@ -104,98 +197,8 @@ export default {
     'folder': 'klaw',
     'config': {
         'name': 'klaw',
-        'villains': [
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Klaw',
-                    'set': 'klaw',
-                    'image': 'scenarios/klaw/01113.png',
-                    'traits': [
-                        TRAIT_MASTERS_OF_EVIL,
-                    ],
-                    'unique': true,
-                    'stage': 1,
-                    'scheme': 2,
-                    'attack': 0,
-                    'hitPoints': [12, true],
-                    'abilities': [
-                        klawAttackInterrupt(),
-                    ],
-                },
-            },
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Klaw',
-                    'set': 'klaw',
-                    'image': 'scenarios/klaw/01114.png',
-                    'traits': [
-                        TRAIT_MASTERS_OF_EVIL,
-                    ],
-                    'unique': true,
-                    'stage': 2,
-                    'scheme': 2,
-                    'attack': 1,
-                    'hitPoints': [18, true],
-                    'abilities': [
-                        {
-                            'type': ABILITY_WHEN_REVEALED,
-                            'params': {
-                                'effect': {
-                                    'type': EFFECT_CHAINED,
-                                    'params': {
-                                        'effects': [
-                                            {
-                                                'type': EFFECT_SEARCH_CARD_REVEAL,
-                                                'params': {
-                                                    'condition': {
-                                                        'name': 'Klaw "el inmortal"',
-                                                    },
-                                                    'places': [
-                                                        PLACE_ENCOUNTER_DECK_CARDS,
-                                                        PLACE_ENCOUNTER_DISCARD,
-                                                    ],
-                                                },
-                                            },
-                                            {
-                                                'type': EFFECT_SHUFFLE_DECK,
-                                                'params': {
-                                                    'target': TARGET_SCENARIO,
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            },
-                        },
-                        klawAttackInterrupt(),
-                    ],
-                },
-            },
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Klaw',
-                    'set': 'klaw',
-                    'image': 'scenarios/klaw/01115.png',
-                    'traits': [
-                        TRAIT_MASTERS_OF_EVIL,
-                    ],
-                    'unique': true,
-                    'stage': 3,
-                    'scheme': 3,
-                    'attack': 2,
-                    'hitPoints': [22, true],
-                    'keywords': {
-                        'toughness': true,
-                    },
-                    'abilities': [
-                        klawAttackInterrupt(),
-                    ],
-                },
-            },
-        ],
+        'villains': [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         'mainSchemes': [
             [
                 {
@@ -205,10 +208,6 @@ export default {
                         'set': 'klaw',
                         'image': 'scenarios/klaw/01116b.png',
                         'stage': 1,
-                        'content': {
-                            'villains': [1, 2],
-                            'villainsExpert': [2, 3],
-                        },
                         'abilities': [
                             {
                                 'type': ABILITY_SETUP,

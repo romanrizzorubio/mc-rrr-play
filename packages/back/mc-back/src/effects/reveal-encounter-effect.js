@@ -312,6 +312,15 @@ export class RevealEncounterEffect extends Effect {
                     controller = selectedTarget.owner;
                     target = TARGET_PLAYER;
                     params.player = selectedTarget.owner;
+                } else if (selectedTarget.isObligation) {
+                    if (!params.player?.isPlayer) {
+                        throw new TypeError(
+                            'Revealing an Obligation requires a revealing player.'
+                        );
+                    }
+
+                    controller = params.player;
+                    target = TARGET_PLAYER;
                 }
 
                 if (!skipPutPlay) {

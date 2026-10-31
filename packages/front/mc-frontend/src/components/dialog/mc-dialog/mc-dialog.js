@@ -1,5 +1,4 @@
 import {LitElement, html} from 'lit-element';
-import '../../cards/mc-card-list/mc-card-list.js';
 
 export class McDialog extends LitElement {
     static get properties() {
@@ -10,12 +9,11 @@ export class McDialog extends LitElement {
             footer: {type: String},
             showCancel: {type: Boolean},
             hideOk: {type: Boolean},
-            hand: {type: Array},
             readOnly: {type: Boolean},
+            viewOnly: {type: Boolean},
             targetPlayerName: {type: String},
 
             _response: {type: Object},
-            _showHand: {type: Boolean},
         };
     }
     constructor() {
@@ -27,10 +25,9 @@ export class McDialog extends LitElement {
         this.footer = '';
         this.showCancel = false;
         this.hideOk = false;
-        this.hand = [];
         this.readOnly = false;
+        this.viewOnly = false;
         this.targetPlayerName = '';
-        this._showHand = false;
 
         this._response = {};
     }
@@ -93,7 +90,7 @@ export class McDialog extends LitElement {
         this.initDefaultData(data, this.defaultProperties);
     }
     sendResponse() {
-        if (this.readOnly) {
+        if (this.readOnly || this.viewOnly) {
             return;
         }
         const {_response} = this;
@@ -108,7 +105,7 @@ export class McDialog extends LitElement {
         return true;
     }
     handleCancel() {
-        if (this.readOnly) {
+        if (this.readOnly || this.viewOnly) {
             return;
         }
         const {_response} = this;
@@ -119,14 +116,20 @@ export class McDialog extends LitElement {
             detail: _response
         }));
     }
-    handleShowHand() {
-        if (this.readOnly) {
-            return;
-        }
-        this._showHand = !this._showHand;
+    handleViewTable() {
+        this.dispatchEvent(new CustomEvent('dialog-view-table', {
+            bubbles: true,
+            composed: true,
+        }));
+    }
+    handleCloseViewer() {
+        this.dispatchEvent(new CustomEvent('dialog-viewer-close', {
+            bubbles: true,
+            composed: true,
+        }));
     }
     handleOk() {
-        if (this.readOnly) {
+        if (this.readOnly || this.viewOnly) {
             return;
         }
         if (this.validate()) {
@@ -142,9 +145,9 @@ export class McDialog extends LitElement {
             <div class="content">
                 ${this.renderResponsiblePlayer()}
                 ${this.renderSubtitle()}
-                ${this.readOnly ? html`
+                ${this.readOnly || this.viewOnly ? html`
                     <div inert>${this.renderContent()}</div>
-                ` : this._showHand ? this.renderHand() : this.renderContent()}
+                ` : this.renderContent()}
                 ${this.renderFooter()}
             </div>
         `;
@@ -163,15 +166,6 @@ export class McDialog extends LitElement {
             <h3 class="footer">${footer}</h3>
         ` : html``;
     }
-    renderHand() {
-        const {hand} = this;
-
-        return html`
-            <mc-card-list
-                .cards="${hand}"
-            ></mc-card-list>
-        `;
-    }
     renderSubtitle() {
         const subtitle = this.getSubtitle();
 
@@ -180,16 +174,14 @@ export class McDialog extends LitElement {
         ` : html``;
     }
     renderTitle() {
-        const {hand} = this;
-
         const title = this.getTitle();
 
-        return title || (!this.readOnly && hand?.length) ? html`
+        return html`
             <h2 class="title">
-                <span>${title}</span>
-                ${!this.readOnly && hand && hand.length ? this.renderButtonHand() : ''}
+                ${title ? html`<span>${title}</span>` : ''}
+                ${this.renderButtonTable()}
             </h2>
-        ` : html``;
+        `;
     }
     renderButtonCancel() {
         const {showCancel} = this;
@@ -200,13 +192,18 @@ export class McDialog extends LitElement {
             >Cancelar</md-text-button>
         ` : html``;
     }
-    renderButtonHand() {
-        const title = this._showHand ? 'Ocultar mano' : 'Ver mano';
-
+    renderButtonTable() {
         return html`
             <md-text-button 
-                @click="${this.handleShowHand.bind(this)}"
-            >${title}</md-text-button>
+                @click="${this.handleViewTable.bind(this)}"
+            >Ver mesa</md-text-button>
+        `;
+    }
+    renderButtonViewerClose() {
+        return html`
+            <md-text-button
+                @click="${this.handleCloseViewer.bind(this)}"
+            >Cerrar</md-text-button>
         `;
     }
     renderButtonOk() {
@@ -219,6 +216,9 @@ export class McDialog extends LitElement {
         ` : html``;
     }
     renderButtons() {
+        if (this.viewOnly) {
+            return this.renderButtonViewerClose();
+        }
         if (this.readOnly) {
             return html``;
         }

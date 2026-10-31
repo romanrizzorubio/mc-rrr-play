@@ -171,6 +171,7 @@ export class SearchCardsEffect extends Effect {
                         !await canPlayCard(card, {
                             ...params,
                             player: targetPlayer,
+                            checkPlayRestrictions: true,
                         })) {
                         continue;
                     }

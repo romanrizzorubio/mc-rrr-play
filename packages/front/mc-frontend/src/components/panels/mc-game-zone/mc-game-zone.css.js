@@ -19,6 +19,12 @@ export default css`
       0 0 0 3px rgba(0, 200, 83, 0.85),
       0 0 16px rgba(0, 200, 83, 0.6);
   }
+
+  .minions-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
   
   .panel:first-child {
     margin-right: 16px;

@@ -1,4 +1,5 @@
 import {targetMap} from '../targets/index.js';
+import {getTriggerCardPlayer} from '../utils/trigger-card-player.js';
 
 import {Trigger} from './base/trigger.js';
 
@@ -23,13 +24,16 @@ export class GetHandSizeTrigger extends Trigger {
     canTrigger(params) {
         if (this.target) {
             const targetFn = targetMap[this.target];
+            const triggerPlayer = getTriggerCardPlayer(this.card, params.player);
             const candidates = targetFn ? targetFn({
                 ...params,
                 card: this.card,
                 effect: params.effect,
                 match: params.match,
                 params,
-                player: params.player,
+                player: triggerPlayer?.isPlayer ?
+                    triggerPlayer :
+                    params.player,
                 targetEffect: params.effect,
             }) : [];
             const selectedTarget = params.effect?.selectedTarget;

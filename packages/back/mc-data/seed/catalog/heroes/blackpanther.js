@@ -7,6 +7,7 @@ import {
     ABILITY_SETUP,
     ABILITY_SPECIAL,
     ABILITY_WHEN_REVEALED,
+    CALC_BOOST_ICONS,
     CARD_TYPE_ALLY,
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_EVENT,
@@ -18,6 +19,7 @@ import {
     CARD_TYPE_SUPPORT,
     CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
+    CLASSIFICATION_HERO,
     EFFECT_CHAINED,
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_CANNOT_TARGET,
@@ -85,6 +87,7 @@ const wakandaForeverCard = {
     'type': CARD_TYPE_EVENT,
     'params': {
         'name': '¡Wakanda por siempre!',
+        'classification': CLASSIFICATION_HERO,
         'traits': [
             TRAIT_TACTIC
         ],
@@ -214,6 +217,7 @@ export default {
                     'type': CARD_TYPE_ALLY,
                     'params': {
                         'name': 'Shuri',
+                        'classification': CLASSIFICATION_HERO,
                         'traits': [
                             TRAIT_GENIUS,
                             TRAIT_WAKANDA
@@ -271,6 +275,7 @@ export default {
                     'type': CARD_TYPE_EVENT,
                     'params': {
                         'name': 'Sabiduría ancestral',
+                        'classification': CLASSIFICATION_HERO,
                         'resources': [
                             RESOURCE_MENTAL
                         ],
@@ -321,6 +326,7 @@ export default {
                     'type': CARD_TYPE_RESOURCE,
                     'params': {
                         'name': 'Vibránium',
+                        'classification': CLASSIFICATION_HERO,
                         'resources': [
                             RESOURCE_WILD,
                             RESOURCE_WILD
@@ -336,6 +342,7 @@ export default {
                     'type': CARD_TYPE_SUPPORT,
                     'params': {
                         'name': 'La Ciudad Dorada',
+                        'classification': CLASSIFICATION_HERO,
                         'unique': true,
                         'traits': [
                             TRAIT_LOCATION,
@@ -375,6 +382,7 @@ export default {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
                         'name': 'Dagas de energía',
+                        'classification': CLASSIFICATION_HERO,
                         'traits': [
                             TRAIT_BLACK_PANTHER,
                             TRAIT_WEAPON
@@ -424,6 +432,7 @@ export default {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
                         'name': 'Garras de pantera',
+                        'classification': CLASSIFICATION_HERO,
                         'traits': [
                             TRAIT_BLACK_PANTHER,
                             TRAIT_WEAPON
@@ -462,6 +471,7 @@ export default {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
                         'name': 'Ingenio táctico',
+                        'classification': CLASSIFICATION_HERO,
                         'traits': [
                             TRAIT_BLACK_PANTHER,
                             TRAIT_SKILL
@@ -500,6 +510,7 @@ export default {
                     'type': CARD_TYPE_UPGRADE,
                     'params': {
                         'name': 'Traje de vibránium',
+                        'classification': CLASSIFICATION_HERO,
                         'traits': [
                             TRAIT_BLACK_PANTHER,
                             TRAIT_ARMOR
@@ -827,7 +838,9 @@ export default {
                                                                                     'target': TARGET_YOUR_SUPERHERO,
                                                                                     'damage': 0,
                                                                                     'paramsCalc': {
-                                                                                        'damage': '1 + effects.0.card.boost'
+                                                                                        'target': 'effects.0.cards',
+                                                                                        'formula': CALC_BOOST_ICONS,
+                                                                                        'plus': 1
                                                                                     }
                                                                                 }
                                                                             }
@@ -843,7 +856,9 @@ export default {
                                                                                     'target': TARGET_MAIN_SCHEME,
                                                                                     'threat': 0,
                                                                                     'paramsCalc': {
-                                                                                        'threat': '1 + effects.0.card.boost'
+                                                                                        'target': 'effects.0.cards',
+                                                                                        'formula': CALC_BOOST_ICONS,
+                                                                                        'plus': 1
                                                                                     }
                                                                                 }
                                                                             }

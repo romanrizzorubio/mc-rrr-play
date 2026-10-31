@@ -9,6 +9,8 @@ Esta guía describe los selectores de objetivo disponibles para las capacidades 
 - Los `params.target` de capacidades y efectos requieren un resolver en `targetMap`. `limit.target` y `maximum.target` son metadatos de ámbito y no requieren resolver; `limit` se aplica a la instancia de su capacidad y `maximum` agrupa todas las cartas con el mismo nombre.
 - Las constantes declaradas en `packages/core/mc-shared/constants/targets.js` no son necesariamente selectores resolubles. El motor solo reconoce como `params.target` los valores registrados en `targetMap`, compuesto en `packages/back/mc-back/src/targets/index.js`.
 - Cada resolver devuelve una lista de candidatos. Un resultado vacío significa que no hay objetivo disponible.
+- En escenarios con zonas separadas, los planes secundarios revelados o puestos en juego pertenecen a la zona del jugador que resuelve la entrada, no a la zona central del controlador del escenario. Las caras del Plan principal heredan la zona de su carta principal; solo su cara activa está en juego. La Crisis y los objetivos de intervención se calculan en esa zona.
+- En escenarios con zonas separadas, los objetivos de Villano, enemigo, esbirro y plan, los cálculos de sus colecciones y los defensores ofrecidos durante un ataque se limitan a la zona del jugador afectado. Una zona general visible no convierte su Villano en objetivo de otra zona.
 - Las validaciones de las capacidades constantes se aplican a cada candidato antes de mostrar o resolver objetivos, incluidos los objetivos múltiples y preseleccionados. Se consultan tanto las validaciones de la propia carta objetivo como las de capacidades constantes de cartas en juego; así, una carta fuente puede prohibir que otras cartas sean objetivos mientras permanezca en juego. `EFFECT_CANNOT_TARGET` puede filtrar por tipo/categoría de efecto, presencia de cartas en juego y propiedades de la carta objetivo.
 - `TARGET_CARD` es la carta recibida en el contexto de resolución; `TARGET_TRIGGERED_CARD` es la carta del evento que activó la capacidad; `TARGET_THIS` es `ability.card`. No son intercambiables.
 - `TARGET_PARENT` usa los candidatos resueltos por el efecto compuesto que contiene al efecto actual. Úsalo en los efectos hijos cuando comparten el objetivo definido por el grupo; el contexto se conserva al calcular objetivos de arrastre y al atravesar efectos anidados. Si se amplía a otro wrapper compuesto, pásale los candidatos validados del padre y haz que sus hijos usen esta misma referencia, en lugar de duplicar el selector.
@@ -34,7 +36,7 @@ Todos los selectores resolubles `TARGET_ALL_*` aplican el efecto al conjunto com
 
 Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH` con `target` y, cuando corresponda, `condition`. Este efecto filtra los candidatos, conserva el orden del selector y el contexto del candidato actual; no aplica un orden especial según el tipo de selector.
 
-`TARGET_ALL_PLAYERS` aplica el efecto a todos los jugadores que cumplan `condition`, sin elegir un beneficiario. `TARGET_ANY_PLAYER` parte de ese mismo total filtrado, pero elige uno (automáticamente si solo queda uno). Ambos admiten condiciones sobre propiedades del jugador o rutas de su superhéroe, condiciones negativas y condiciones agregadas de selección. Un robo para todos se configura directamente como `EFFECT_DRAW_CARD` con `target: TARGET_ALL_PLAYERS`; no necesita `EFFECT_FOR_EACH`. Reserva este último para composiciones que deban ejecutarse con un contexto distinto por jugador, como búsquedas o elecciones independientes.
+`TARGET_ALL_PLAYERS` aplica el efecto a todos los jugadores que cumplan `condition`, sin elegir un beneficiario. `TARGET_ANY_PLAYER` parte de ese mismo total filtrado, pero elige uno (automáticamente si solo queda uno). Ambos admiten condiciones sobre propiedades del jugador o rutas de su superhéroe, condiciones negativas y condiciones agregadas de selección. En escenarios con zonas de juego separadas, ambos selectores se limitan a los jugadores de la zona del jugador que inicia el efecto, incluso si la capacidad procede de una carta de la zona común del escenario o tiene `globalScope: true`. Un robo para todos se configura directamente como `EFFECT_DRAW_CARD` con `target: TARGET_ALL_PLAYERS`; no necesita `EFFECT_FOR_EACH`. Reserva este último para composiciones que deban ejecutarse con un contexto distinto por jugador, como búsquedas o elecciones independientes.
 
 Cuando una habilidad de carta identifica un objetivo por `condition.name`, el motor aplica automáticamente la regla de referencia a los candidatos válidos: primero la propia carta fuente, después las cartas asociadas al mismo superhéroe/conjunto y, por último, las cartas de la misma categoría que la fuente (jugador o encuentro). Solo permanecen las coincidencias del nivel más alto disponible, y se conservan todas las coincidencias de ese nivel. El conjunto asociado se obtiene de la carta fuente y su superhéroe; no lo repitas en la condición de la carta. Esta prioridad también se comprueba al validar objetivos preseleccionados.
 
@@ -50,7 +52,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_CARD` | La carta de `params.card`. |
 | `TARGET_EFFECT` | El efecto de `params.effect`. |
 | `TARGET_EFFECT_PLAY_CARD` | El efecto de jugar una carta (`params.playCardEffect`). |
-| `TARGET_INITIAL_PLAYER` | El jugador inicial de la partida. |
+| `TARGET_INITIAL_PLAYER` | El jugador inicial de la partida, solo si está en la zona del jugador que inicia el efecto. |
 | `TARGET_PARENT` | Los objetivos validados por el efecto compuesto superior. |
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
@@ -58,6 +60,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta debe producir una colección de candidatos; si se configura `condition`, solo devuelve los elementos que la cumplen. |
 | `TARGET_THIS` | La carta de la capacidad: `ability.card`. |
 | `TARGET_TRIGGERED_CARD` | La carta del evento que activó la capacidad, aunque `params.card` se reemplace por la carta que la posee. |
+| `TARGET_TRIGGERED_TARGET` | El objetivo concreto del evento (`params.triggeredTarget`), conservado por el disparador; permite afectar al personaje que realmente sufrió daño, incluido el daño sobrante de Brutalidad. |
 | `TARGET_YOU` | El jugador actual. |
 
 ### Grupos (`targets/groups.js`)
@@ -69,13 +72,13 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ALL_CHARACTERS` | Enemigos y personajes amigos de la partida. |
 | `TARGET_ALL_ENEMIES` | Todos los enemigos. |
 | `TARGET_ALL_FRIENDLY_CHARACTERS` | Los personajes amigos de todos los jugadores: superhéroes en su forma actual (héroe o alter ego) y aliados. |
-| `TARGET_ALL_HEROES` | Todos los jugadores cuyo superhéroe esté en forma de héroe; devuelve jugadores, no las cartas de héroe. |
-| `TARGET_ALL_HEROES_ALLIES` | Todos los superhéroes en forma de héroe y los aliados. |
-| `TARGET_ALL_PLAYERS` | Todos los jugadores que cumplen `condition`; resuelve todos sin selección. |
-| `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
+| `TARGET_ALL_HEROES` | Los jugadores de la zona del jugador que inicia el efecto cuyo superhéroe esté en forma de héroe; devuelve jugadores, no las cartas de héroe. |
+| `TARGET_ALL_HEROES_ALLIES` | Los superhéroes en forma de héroe y los aliados de los jugadores de la zona del jugador que inicia el efecto. |
+| `TARGET_ALL_PLAYERS` | Los jugadores de la zona del jugador que inicia el efecto que cumplen `condition`; resuelve todos sin selección. |
+| `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores de la zona del jugador que inicia el efecto en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
 | `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios; resuelve todos los resultados. |
 | `TARGET_ENVIRONMENT` | Los entornos en juego en la zona del escenario; selecciona uno si hay varios. |
-| `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos. |
+| `TARGET_SELECTED_PLAYER_CHARACTERS` | Los personajes controlados por el jugador elegido previamente con `TARGET_ANY_PLAYER` dentro de una cadena de efectos, si ese jugador está en la misma zona. |
 | `TARGET_CHARACTER` | Todos los personajes. |
 | `TARGET_ENEMY` | Todos los enemigos. |
 | `TARGET_HERO` | Los lados de héroe de todos los jugadores que estén en forma de héroe; selecciona uno si hay varios. Úsalo cuando la condición deba leer los atributos de la carta de héroe. |
@@ -170,7 +173,7 @@ En modificadores persistentes del personaje, usa `TARGET_YOUR_SUPERHERO` para am
 | `TARGET_PLAYER_DISCARD` | Las cartas del descarte del jugador actual. |
 | `TARGET_PLAYER_EXTRA_DECK` | El mazo auxiliar del jugador actual identificado por `effect.deckId`. |
 | `TARGET_PLAYER_EXTRA_DECK_DISCARD` | Las cartas del descarte del mazo auxiliar del jugador actual identificado por `effect.deckId`. |
-| `TARGET_ANY_PLAYER` | Todos los jugadores que cumplen `condition`, para seleccionar uno cuando corresponda. |
+| `TARGET_ANY_PLAYER` | Los jugadores de la zona del jugador que inicia el efecto que cumplen `condition`, para seleccionar uno cuando corresponda. |
 
 ### Selector especial (`targets/special.js`)
 

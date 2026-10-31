@@ -94,9 +94,8 @@ import {
     TRAIT_THWART,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
-    TRIGGER_END_PLAY_CARD,
     TRIGGER_INSTANT,
-    TRIGGER_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
 
@@ -183,7 +182,7 @@ export default {
                             'type': ABILITY_RESPONSE,
                             'params': {
                                 'name': 'Morfogenética',
-                                'trigger': TRIGGER_END_PLAY_CARD,
+                                'trigger': TRIGGER_YOU_END_PLAY_CARD,
                                 'condition': {
                                     'effect.card.isEvent': true,
                                     'effect.card.traits': [
@@ -664,7 +663,7 @@ export default {
                             {
                                 'type': ABILITY_HERO_INTERRUPT,
                                 'params': {
-                                    'trigger': TRIGGER_PLAY_CARD,
+                                    'trigger': TRIGGER_YOU_PLAY_CARD,
                                     'condition': {
                                         'effect.card.isEvent': true,
                                         'effect.card.traits': TRAIT_ATTACK
@@ -712,7 +711,7 @@ export default {
                             {
                                 'type': ABILITY_HERO_INTERRUPT,
                                 'params': {
-                                    'trigger': TRIGGER_PLAY_CARD,
+                                    'trigger': TRIGGER_YOU_PLAY_CARD,
                                     'condition': {
                                         'effect.card.isEvent': true,
                                         'effect.card.traits': TRAIT_THWART

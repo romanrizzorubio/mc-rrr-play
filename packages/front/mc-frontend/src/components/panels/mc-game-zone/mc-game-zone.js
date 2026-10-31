@@ -192,6 +192,25 @@ export class McGameZone extends LitElement {
             dragResourcePayment: this.dragResourcePayment,
         });
     }
+    renderObligations() {
+        const obligations = this.cards.filter(card => card.isObligation);
+
+        return obligations.length ? this.renderCards({
+            cards: obligations,
+            type: 'obligations',
+            dragActivation: this.dragActivation,
+            dragPlayCard: this.dragPlayCard,
+            dragResourcePayment: this.dragResourcePayment,
+        }) : '';
+    }
+    renderMinionsRow() {
+        return html`
+            <div class="minions-row">
+                ${this.renderObligations()}
+                ${this.renderMinions()}
+            </div>
+        `;
+    }
 
     renderUpgrades() {
         const {attachedUpgrades, cards} = this;
@@ -228,7 +247,7 @@ export class McGameZone extends LitElement {
                 @drop="${this.handlePlayCardDrop.bind(this)}"
             >
                 ${this.renderEncounters()}
-                ${this.renderMinions()}
+                ${this.renderMinionsRow()}
                 ${this.renderAllies()}
                 <div class="upgrades-supports">
                     ${this.renderUpgrades()}

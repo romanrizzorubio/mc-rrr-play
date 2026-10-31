@@ -270,10 +270,6 @@ const mainSchemeA = {
         set: SET,
         image: 'scenarios/absorbing-man/04079b.png',
         stage: 1,
-        content: {
-            villains: [1, 2],
-            villainsExpert: [2, 3],
-        },
         abilities: [
             {
                 type: ABILITY_SETUP,
@@ -941,6 +937,32 @@ const ballAndChain = {
     },
 };
 
+const villainCards = [
+    villain({
+        attack: 2,
+        hitPoints: 14,
+        image: '04076',
+        scheme: 1,
+        stage: 1,
+    }),
+    villain({
+        abilities: [absorbingManStageTwoReveal],
+        attack: 2,
+        hitPoints: 15,
+        image: '04077',
+        scheme: 2,
+        stage: 2,
+    }),
+    villain({
+        abilities: absorbingManStageThreeResponses,
+        attack: 3,
+        hitPoints: 16,
+        image: '04078',
+        scheme: 2,
+        stage: 3,
+    }),
+];
+
 export default {
     _id: SET,
     order: 4,
@@ -948,31 +970,8 @@ export default {
     folder: SET,
     config: {
         name: SET,
-        villains: [
-            villain({
-                attack: 2,
-                hitPoints: 14,
-                image: '04076',
-                scheme: 1,
-                stage: 1,
-            }),
-            villain({
-                abilities: [absorbingManStageTwoReveal],
-                attack: 2,
-                hitPoints: 15,
-                image: '04077',
-                scheme: 2,
-                stage: 2,
-            }),
-            villain({
-                abilities: absorbingManStageThreeResponses,
-                attack: 3,
-                hitPoints: 16,
-                image: '04078',
-                scheme: 2,
-                stage: 3,
-            }),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             [mainSchemeA, mainSchemeB],
         ],

@@ -22,6 +22,7 @@ export class Scenario extends Engine {
 // Scenario
         name,
         villains,
+        expertVillains,
         mainSchemes,
         scenarioCards,
         setAsideCards = [],
@@ -35,13 +36,14 @@ export class Scenario extends Engine {
 
         this.name = name;
         this.villains = villains;
-        this.allVillains = villains.slice();
+        this.expertVillains = expertVillains ?? villains;
         this.mainSchemes = mainSchemes;
         this.allMainSchemes = mainSchemes.slice();
         this.usedMainSchemes = new Set();
         this.scenarioCards = scenarioCards;
         this.sets = sets;
         this.manualVillainProgression = manualVillainProgression;
+        this.finalVillainDefeated = false;
         this.manualMainSchemeProgression = manualMainSchemeProgression;
         this.separatePlayAreas = separatePlayAreas;
         this.match = match;
@@ -150,7 +152,7 @@ export class Scenario extends Engine {
             for (const card of zone.inPlayCards) {
                 card.endTriggers?.();
                 await card.removeAttached?.();
-                await card.removeFaceDown?.();
+                await card.discardCardsUnder?.();
                 this.match.removeCard(card);
             }
             this.removeZone(zone);
@@ -183,7 +185,9 @@ export class Scenario extends Engine {
         }
         const commonDestination = destinations.get(globalFirstPlayer);
 
-        for (const card of zone.cards.slice()) {
+        const zoneCards = zone.cards.filter(card =>
+            card !== zone.currentVillain && card !== zone.currentScheme);
+        for (const card of zoneCards) {
             const linkedPlayer = card.engaged?.isPlayer ?
                 card.engaged :
                 card.controller?.isPlayer ?
@@ -201,14 +205,14 @@ export class Scenario extends Engine {
         if (zone.currentVillain) {
             zone.currentVillain.endTriggers();
             await zone.currentVillain.removeAttached();
-            await zone.currentVillain.removeFaceDown();
+            await zone.currentVillain.discardCardsUnder?.();
             this.match.removeCard(zone.currentVillain);
             zone.currentVillain = null;
         }
         if (zone.currentScheme) {
             zone.currentScheme.endTriggers(true);
             await zone.currentScheme.currentSide.removeAttached();
-            await zone.currentScheme.removeFaceDown();
+            await zone.currentScheme.discardCardsUnder?.();
             this.match.removeCard(zone.currentScheme);
             zone.currentScheme = null;
         }
@@ -407,16 +411,12 @@ export class Scenario extends Engine {
                 .map(card => card.getCard(cardId))
                 .find(Boolean);
     }
+    getVillains() {
+        return this.match.expert ? this.expertVillains : this.villains;
+    }
     findVillain({name, stage}) {
-        const matchingVariants = this.allVillains.filter(villain =>
+        return this.getVillains().find(villain =>
             villain.name === name && villain.stage === stage);
-        const expertVariant = matchingVariants.find(villain =>
-            villain.card?.expert === true);
-
-        return this.match.expert ?
-            expertVariant ?? matchingVariants.find(villain =>
-                villain.card?.expert !== true) :
-            matchingVariants.find(villain => villain.card?.expert !== true);
     }
     findMainScheme(stage, {unused = true} = {}) {
         return this.allMainSchemes.find(scheme =>
@@ -448,9 +448,12 @@ export class Scenario extends Engine {
         }
 
         const currentScheme = zone.currentScheme;
+        const accelerationTokens =
+            currentScheme?.currentSide?.accelerationTokens ?? 0;
         if (currentScheme) {
             currentScheme.endTriggers(true);
             await currentScheme.currentSide.removeAttached();
+            await currentScheme.discardCardsUnder?.();
             this.match.removeCard(currentScheme);
         }
 
@@ -472,6 +475,7 @@ export class Scenario extends Engine {
         await nextScheme.setup({player});
         await nextScheme.flip({player, selectedFormTarget: sideB});
         nextScheme.currentSide.initScheme();
+        nextScheme.currentSide.accelerationTokens += accelerationTokens;
         await this.match.refresh();
         await this.openPublicDialog({
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
@@ -508,7 +512,8 @@ export class Scenario extends Engine {
 
         return villain;
     }
-    async initScenario(obligations, expert) {
+    async initScenario(obligations, expert = false) {
+        this.match.expert = expert;
         this.zones = [];
         this.gameZone = this.createZone({id: 'scenario-zone-1'});
         (this.match.players ?? []).forEach(player =>
@@ -542,25 +547,10 @@ export class Scenario extends Engine {
 
         this.deck.initDeck(cards);
 
-        const stages = expert ?
-            this.mainScheme.content.villainsExpert :
-            this.mainScheme.content.villains;
-        const expertVariants = expert &&
-            this.allVillains.some(villain => villain.card?.expert === true);
-        const villainPool = expertVariants ?
-            this.allVillains.filter(villain => villain.card?.expert === true) :
-            this.allVillains.filter(villain => villain.card?.expert !== true);
-        this.villains = stages.map(stage => {
-            const villain = villainPool.find(candidate =>
-                candidate.stage === stage);
-            if (!villain) {
-                throw new Error(
-                    `No se encontró la etapa ${stage} del Villano para la dificultad seleccionada.`
-                );
-            }
-
-            return villain;
-        });
+        this.finalVillainDefeated = false;
+        if (!this.getVillains().length) {
+            throw new Error('El escenario no define una secuencia de Villanos para la dificultad seleccionada.');
+        }
 
         await this.selectVillain();
 
@@ -600,7 +590,7 @@ export class Scenario extends Engine {
             zone.players.every(player => player.defeated)
         );
 
-        if (!currentSide ||
+        if (!currentSide || currentSide.completed ||
             (completedScheme !== currentSide && completedCard !== currentScheme) ||
             (!zoneDefeated &&
                 (!Number.isFinite(currentSide.value) ||
@@ -608,6 +598,7 @@ export class Scenario extends Engine {
             return false;
         }
 
+        currentSide.completed = true;
         const nextScheme = this.mainSchemes[0];
 
         await this.openPublicDialog({
@@ -663,6 +654,7 @@ export class Scenario extends Engine {
         this.mainSchemes.shift();
         currentScheme.endTriggers(true);
         await currentSide.removeAttached();
+        await currentScheme.discardCardsUnder?.();
         this.match.removeCard(currentScheme);
 
         if (typeof zone.addScheme === 'function') {
@@ -732,28 +724,59 @@ export class Scenario extends Engine {
             this.zones;
         return zones.flatMap(zone => zone?.searchCards(condition) ?? []);
     }
-    async selectVillain(player, defeatedVillain) {
+    async announceVillainDefeat(villain, player) {
+        await this.openPublicDialog({
+            dialogType: DIALOG_ENCOUNTERS_REVEAL,
+            title: `${villain.name} ha sido derrotado`,
+            data: {
+                card: villain.toObj({player}),
+            },
+        }, player);
+    }
+    async selectVillain(player, defeatedVillain, {defeatAnnounced = false} = {}) {
+        if (this.match.gameOverReason) {
+            return;
+        }
         const zone = defeatedVillain?.scenarioZone ??
             this.getZoneForPlayer(player);
         const currentVillain = zone?.currentVillain;
-
-        if (currentVillain) {
-            await this.openPublicDialog({
-                dialogType: DIALOG_ENCOUNTERS_REVEAL,
-                title: `${currentVillain.name} ha sido derrotado`,
-                data: {
-                    card: currentVillain.toObj({player}),
-                },
-            }, player);
+        if (defeatedVillain && defeatedVillain !== currentVillain) {
+            return;
+        }
+        const villains = this.getVillains();
+        const currentIndex = currentVillain ? villains.indexOf(currentVillain) : -1;
+        if (currentVillain && currentIndex < 0) {
+            throw new Error('El Villano actual no pertenece a la lista de la dificultad seleccionada.');
         }
 
-        if (!this.villains.length &&
-            this.manualVillainProgression &&
-            !this.isFinalVillain(currentVillain)) {
+        if (currentVillain && !defeatAnnounced) {
+            await this.announceVillainDefeat(currentVillain, player);
+        }
+
+        const hasOtherVillains = this.zones.some(candidate =>
+            candidate !== zone && candidate.currentVillain?.isInPlay);
+        if (currentVillain && this.isFinalVillain(currentVillain)) {
+            this.finalVillainDefeated = true;
+        }
+        if ((hasOtherVillains && this.finalVillainDefeated) ||
+            (currentVillain && this.manualVillainProgression &&
+                !this.finalVillainDefeated)) {
             currentVillain?.endTriggers();
             if (currentVillain) {
                 await currentVillain.removeAttached?.();
-                await currentVillain.removeFaceDown?.();
+                const nextVillain = this.manualVillainProgression &&
+                    !this.finalVillainDefeated ?
+                    villains[currentIndex + 1] :
+                    undefined;
+                if (nextVillain?.name === currentVillain.name) {
+                    nextVillain.faceDown = currentVillain.faceDown;
+                    nextVillain.faceDown.forEach(faceDown => {
+                        faceDown.attached = nextVillain;
+                    });
+                    nextVillain.tuckedCards = currentVillain.tuckedCards;
+                } else {
+                    await currentVillain.discardCardsUnder?.();
+                }
                 this.match.removeCard(currentVillain);
             }
             if (zone?.currentVillain === currentVillain) {
@@ -764,17 +787,15 @@ export class Scenario extends Engine {
             return;
         }
 
-        if (!this.villains.length) {
-            await this.match.finishGame(MATCH_END_REASON_VILLAIN_DEFEATED);
-            this.match.mc.mcSocket.send(
-                this.match.name,
-                EVENTS.SCENARIO.DEFEAT,
-                this.toObj()
-            );
+        if (this.finalVillainDefeated) {
+            await this.winGame();
             return;
         }
 
-        const nextVillain = this.villains.shift();
+        const nextVillain = villains[currentIndex + 1];
+        if (!nextVillain) {
+            throw new Error('El escenario no define un Villano inicial para la dificultad seleccionada.');
+        }
 
         if (currentVillain) {
             if (currentVillain.sides?.length &&
@@ -788,6 +809,10 @@ export class Scenario extends Engine {
                 nextVillain.confused = currentVillain.confused;
                 nextVillain.tough = currentVillain.tough;
                 nextVillain.faceDown = currentVillain.faceDown;
+                nextVillain.faceDown.forEach(faceDown => {
+                    faceDown.attached = nextVillain;
+                });
+                nextVillain.tuckedCards = currentVillain.tuckedCards;
                 nextVillain.attached = currentVillain.attached;
                 nextVillain.attached.forEach(attached => {
                     attached.attachedTo = nextVillain;
@@ -798,6 +823,8 @@ export class Scenario extends Engine {
                 if (currentVillain.modifyHitPoints !== undefined) {
                     nextVillain.modifyHitPoints = currentVillain.modifyHitPoints;
                 }
+            } else {
+                await currentVillain.discardCardsUnder?.();
             }
 
             currentVillain.endTriggers();
@@ -827,17 +854,23 @@ export class Scenario extends Engine {
             card: nextVillain,
         });
     }
+    async winGame() {
+        if (this.match.gameOverReason) {
+            return;
+        }
+        await this.match.finishGame(MATCH_END_REASON_VILLAIN_DEFEATED);
+        this.match.mc.mcSocket.send(
+            this.match.name,
+            EVENTS.SCENARIO.DEFEAT,
+            this.toObj()
+        );
+    }
     isFinalVillain(villain) {
         if (villain?.card?.final) {
             return true;
         }
 
-        const highestStage = this.allVillains
-            .filter(candidate => candidate.name === villain?.name)
-            .reduce((highest, candidate) =>
-                Math.max(highest, candidate.stage ?? 0), 0);
-
-        return highestStage > 0 && villain?.stage === highestStage;
+        return Boolean(villain) && this.getVillains().at(-1) === villain;
     }
     toObj() {
         const {

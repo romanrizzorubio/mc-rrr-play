@@ -9,6 +9,50 @@ import {
 } from '../utils/target-condition-utils.js';
 
 export class SelectDiscardCardEffect extends Effect {
+    static getTargetParams(effect, params) {
+        return {
+            ...params,
+            ability: effect.ability,
+            effect,
+            source: effect.source ?? params.source,
+            target: effect.target,
+        };
+    }
+    static getTargetCandidates(effect, params) {
+        return effect.validTarget.getValidTarget(
+            SelectDiscardCardEffect.getTargetParams(effect, params)
+        );
+    }
+    static resetInvalidSelectedTarget(effect, params) {
+        const {selectedTarget} = effect;
+        if (!selectedTarget) {
+            return true;
+        }
+
+        const selectedTargets = Array.isArray(selectedTarget) ?
+            selectedTarget :
+            [selectedTarget];
+        const validTargets = effect.validTarget.resolveSelectedTargets(
+            selectedTarget,
+            SelectDiscardCardEffect.getTargetParams(effect, params)
+        );
+        if (validTargets.length === selectedTargets.length &&
+            validTargets.every(Boolean)) {
+            effect.selectedTarget = Array.isArray(selectedTarget) ?
+                validTargets :
+                validTargets[0];
+
+            return true;
+        }
+
+        if (params.preselectedEffectTargets?.has(effect)) {
+            return false;
+        }
+
+        effect.selectedTarget = undefined;
+
+        return true;
+    }
     constructor({
         count = 1,
         showDialog = true,
@@ -27,6 +71,16 @@ export class SelectDiscardCardEffect extends Effect {
         this.cardFilter = filter;
 
         this.cards = [];
+    }
+    async prepare(params) {
+        if (!SelectDiscardCardEffect.resetInvalidSelectedTarget(this, params)) {
+            return;
+        }
+
+        return super.prepare({
+            ...params,
+            selectCount: this.selectCount,
+        });
     }
     getEligibleCards(player) {
         const {condition, selectionConditions} =
@@ -54,15 +108,26 @@ export class SelectDiscardCardEffect extends Effect {
     }
     async canRun(params) {
         const resolvedParams = await this.resolveParams(params);
+        if (!SelectDiscardCardEffect.resetInvalidSelectedTarget(
+            this,
+            resolvedParams
+        )) {
+            return false;
+        }
         if (!await super.canRun(resolvedParams)) {
             return false;
         }
 
         const count = resolvedParams.selectCount ?? this.count;
+        const targets = this.selectedTarget ?
+            (Array.isArray(this.selectedTarget) ?
+                this.selectedTarget :
+                [this.selectedTarget]) :
+            SelectDiscardCardEffect.getTargetCandidates(this, resolvedParams);
+
         return this.upTo || this.countFromHand ||
-            count <= this.getEligibleCards(
-                this.selectedTarget || resolvedParams.player
-            ).length;
+            targets.some(target =>
+                count <= this.getEligibleCards(target).length);
     }
     getCostPaymentEffects(params) {
         return this.shouldPromptForPayment(params) ? [this] : [];

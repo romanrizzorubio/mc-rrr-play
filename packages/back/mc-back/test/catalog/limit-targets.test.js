@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     TARGET_ACTIVATION,
     TARGET_DECK,
+    TARGET_EFFECT,
     TARGET_PHASE,
     TARGET_PLAYER,
     TARGET_ROUND,
@@ -16,6 +17,7 @@ describe('catalog limit targets', () => {
         const targets = new Set([
             TARGET_ACTIVATION,
             TARGET_DECK,
+            TARGET_EFFECT,
             TARGET_PHASE,
             TARGET_PLAYER,
             TARGET_ROUND,

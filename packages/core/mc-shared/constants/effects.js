@@ -33,6 +33,7 @@ export const EFFECT_STORE_BOOST = 'store-boost';
 export const EFFECT_DEAL_DAMAGE = 'deal-damage';
 export const EFFECT_DEAL_ENCOUNTER = 'deal-encounter';
 export const EFFECT_DEFEAT = 'defeat';
+export const EFFECT_WIN_GAME = 'win-game';
 export const EFFECT_DELAYED = 'delayed';
 export const EFFECT_DISCARD_CONDITION_HAND = 'discard-condition-hand';
 export const EFFECT_DISCARD_DRAW = 'discard-draw';

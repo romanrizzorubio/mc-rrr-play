@@ -101,3 +101,4 @@ export const TARGET_VILLAIN = CHARACTER_VILLAIN;
 export const TARGET_YOU = 'you';
 export const TARGET_YOUR_HERO = 'your-hero';
 export const TARGET_YOUR_SUPERHERO = 'your-superhero';
+export const TARGET_TRIGGERED_TARGET = 'TRIGGERED_TARGET';

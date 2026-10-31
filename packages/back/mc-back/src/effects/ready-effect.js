@@ -1,6 +1,49 @@
+import {TRIGGER_CHARACTER_WOULD_READY} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class ReadyEffect extends Effect {
+    constructor(params) {
+        super(params);
+        this.canceledTargets = new Set();
+        this.readiedTargets = [];
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.canceledTargets.clear();
+        this.readiedTargets = [];
+    }
+    getSelectedTargets() {
+        return Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            this.selectedTarget ? [this.selectedTarget] : [];
+    }
+    isTargetCanceled(target) {
+        return this.canceledTargets.has(target);
+    }
+    cancel({triggeredTarget} = {}) {
+        const targets = this.getSelectedTargets();
+        if (triggeredTarget && !targets.includes(triggeredTarget)) {
+            throw new Error('ReadyEffect could not find the replaced ready target.');
+        }
+        for (const target of triggeredTarget ? [triggeredTarget] : targets) {
+            this.canceledTargets.add(target);
+        }
+    }
+    checkTrigger(params) {
+        return this.isActivationActive(params) &&
+            this.getSelectedTargets().some(target =>
+                target.exhausted && !this.isTargetCanceled(target));
+    }
+    getTriggersWould(params) {
+        return super.getTriggersWould(params).concat([TRIGGER_CHARACTER_WOULD_READY]);
+    }
+    isResolved() {
+        return this.readiedTargets.length > 0;
+    }
+    isFullResolved() {
+        return this.isResolved() &&
+            this.readiedTargets.length === this.getSelectedTargets().length;
+    }
     filterTarget(card) {
         return card.exhausted &&
             super.filterTarget.apply(this, arguments);
@@ -32,18 +75,24 @@ export class ReadyEffect extends Effect {
         return this.promisesSequentialSome(targets, target =>
             this.canReadyTarget(target, params));
     }
+    async prepare(params) {
+        await super.prepare(params);
+        const targets = await this.promisesSequentialFilter(
+            this.getSelectedTargets(),
+            target => target.exhausted && this.canReadyTarget(target, params),
+        );
+        this.selectedTarget = Array.isArray(this.selectedTarget) ?
+            targets : targets[0];
+    }
     async execute(params) {
-        const {selectedTarget} = this;
-        const selectedTargets = Array.isArray(selectedTarget) ?
-            selectedTarget :
-            selectedTarget ? [selectedTarget] : [];
-
-        for (const target of selectedTargets) {
-            if (!await this.canReadyTarget(target, params)) {
+        for (const target of this.getSelectedTargets()) {
+            if (this.isTargetCanceled(target) ||
+                !await this.canReadyTarget(target, params)) {
                 continue;
             }
 
             await target.ready();
+            this.readiedTargets.push(target);
             await target.refresh();
         }
     }

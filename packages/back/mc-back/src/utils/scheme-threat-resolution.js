@@ -1,7 +1,7 @@
 import {EFFECT_DEFEAT} from 'mc-shared';
 
 export async function completeMainSchemeIfThresholdReached(scheme, match, params) {
-    if (!scheme.isMainScheme || scheme.threat < scheme.value) {
+    if (!scheme.isMainScheme || scheme.completed || scheme.threat < scheme.value) {
         return false;
     }
 

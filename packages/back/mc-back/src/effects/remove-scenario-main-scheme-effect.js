@@ -16,6 +16,7 @@ export class RemoveScenarioMainSchemeEffect extends Effect {
 
         scheme.endTriggers(true);
         await scheme.currentSide.removeAttached();
+        await scheme.discardCardsUnder?.();
         this.match.removeCard(scheme);
         zone.currentScheme = null;
         await zone.refresh();

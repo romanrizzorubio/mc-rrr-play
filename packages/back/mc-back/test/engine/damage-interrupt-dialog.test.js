@@ -251,6 +251,59 @@ describe('damage interrupt dialog', () => {
         assert.equal(dialogs[0].data.card.image, card.image);
     });
 
+    test('a missing damage player context resolves your superhero from the event owner', async () => {
+        const flexibility = msMarvel.config.cards.find(({card}) =>
+            card.params.name === 'Flexibilidad');
+        assert.ok(flexibility);
+
+        const player = {
+            isPlayer: true,
+            superhero: {name: 'Ms. Marvel'},
+        };
+        const card = {
+            isEvent: true,
+            name: 'Flexibilidad',
+            owner: player,
+        };
+        const trigger = new CharacterWouldTakeDamageTrigger({
+            ability: {
+                effect: {
+                    isChoose: false,
+                    isChooseAbility: false,
+                },
+            },
+            card,
+            target: flexibility.card.params.abilities[0].params.triggerParams.target,
+            trigger: TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+        });
+        const mockingbird = {
+            isTough: true,
+            name: 'Pájaro Burlón',
+        };
+        const effect = {
+            damage: 1,
+            selectedTarget: mockingbird,
+            takenDamage: 1,
+        };
+        const params = {
+            effect,
+            player: undefined,
+        };
+
+        assert.equal(trigger.getTarget(params), undefined);
+        assert.equal(Boolean(await trigger.canTrigger(params)), false);
+        assert.strictEqual(trigger.getAbilityParams(params).player, player);
+        assert.strictEqual(effect.selectedTarget, mockingbird);
+        assert.strictEqual(
+            trigger.getTarget({
+                effect: {
+                    selectedTarget: player.superhero,
+                },
+            }),
+            player.superhero
+        );
+    });
+
     test('Energy Barrier pays its interrupt cost without a pre-play confirmation dialog', async () => {
         const barrier = protectionUpgrades.find(({_id}) =>
             _id === 'protection-barrera-de-energia');
@@ -307,6 +360,7 @@ describe('damage interrupt dialog', () => {
             },
         };
         await ability.resolveAbility({
+            effect: {takenDamage: 4},
             player: {},
             triggeredTargetCharacter: damagedCharacter,
             triggeredTargetDamage: 4,

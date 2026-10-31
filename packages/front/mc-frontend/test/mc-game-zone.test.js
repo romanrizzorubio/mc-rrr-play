@@ -60,6 +60,34 @@ describe('game zone', () => {
         );
     });
 
+    test('renders obligations before minions in their shared row', () => {
+        const obligation = {id: 'obligation', isObligation: true};
+        const minion = {id: 'minion', isMinion: true};
+        const zone = Object.assign(
+            Object.create(McGameZone.prototype),
+            {
+                cards: [obligation],
+                minions: [minion],
+                player: {},
+                dragActivation: null,
+                dragPlayCard: null,
+                dragResourcePayment: null,
+            }
+        );
+        const row = zone.renderMinionsRow();
+        const obligationList = row.values[0];
+        const minionList = row.values[1];
+        const renderedObligations = obligationList.values.find(Array.isArray);
+
+        assert.match(row.strings[0], /class="minions-row"/);
+        assert.deepEqual(renderedObligations, [obligation]);
+        assert.ok(minionList.values.includes(zone.minions));
+        assert.match(
+            styles.cssText,
+            /\.minions-row\s*\{[^}]*display:\s*flex;/s
+        );
+    });
+
     test('includes the local player id when dropping an assigned card on their zone', () => {
         const card = {id: 'shared-upgrade'};
         const zone = Object.assign(

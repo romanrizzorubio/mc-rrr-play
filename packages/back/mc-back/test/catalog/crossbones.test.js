@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     ABILITY_SETUP,
@@ -21,6 +21,8 @@ import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.j
 import {ResolveBoostEffect} from '../../src/effects/resolve-boost-effect.js';
 import {RemoveCountersEffect} from '../../src/effects/remove-counters-effect.js';
 import {restoreMatch, serializeMatch} from '../../src/utils/match-serialization.js';
+
+describe('crossbones', () => {
 
 const createScenario = async (numPlayers = 1) => {
     const {scenarios, sets} = await loadCatalog();
@@ -60,7 +62,7 @@ const createScenario = async (numPlayers = 1) => {
 test('Calavera catalog defines stages, scheme thresholds, counts, and separate sets', () => {
     const {config} = crossbones;
 
-    assert.deepEqual(config.villains.map(({params}) => [
+    assert.deepEqual([config.villains[0], ...config.expertVillains].map(({params}) => [
         params.stage,
         params.attack,
         params.scheme,
@@ -410,4 +412,5 @@ test('Armadura de Calavera discards after it has absorbed five damage', () => {
     assert.equal(damageThreshold.checkCondition({
         effects: [{selectedTarget: {damage: 4}}],
     }), false);
+});
 });

@@ -1,3 +1,5 @@
+import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
+
 export const MixinYouTrigger = C => class extends C {
     constructor(params) {
         super(params);
@@ -15,6 +17,13 @@ export const MixinYouTrigger = C => class extends C {
             character === player.superhero.currentSide;
     }
     canTrigger(params) {
+        const cardPlayer = this.card ?
+            getTriggerCardPlayer(this.card, params.player) :
+            undefined;
+        if (cardPlayer?.isPlayer && cardPlayer !== params.player) {
+            return false;
+        }
+
         if (this.isSuperhero(this.getYou(params), params)) {
             return super.canTrigger(params);
         }

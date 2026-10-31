@@ -921,6 +921,34 @@ const searchAndShuffle = effect => ({
     },
 });
 
+const villainCards = [
+    villain(1, '04109', 2, 1, 12),
+    villain(2, '04110', 2, 2, 14, [
+        {
+            type: ABILITY_WHEN_REVEALED,
+            params: {
+                effect: searchAndShuffle(searchForTestSubjects),
+            },
+        },
+    ]),
+    villain(3, '04111', 3, 2, 16, [
+        {
+            type: ABILITY_WHEN_REVEALED,
+            params: {
+                effect: {
+                    type: EFFECT_CHAINED,
+                    params: {
+                        effects: [
+                            searchAndRevealMinionForEachPlayer,
+                            shuffleEncounterDeck,
+                        ],
+                    },
+                },
+            },
+        },
+    ]),
+];
+
 export default {
     _id: SET,
     order: 6,
@@ -928,33 +956,8 @@ export default {
     folder: SET,
     config: {
         name: SET,
-        villains: [
-            villain(1, '04109', 2, 1, 12),
-            villain(2, '04110', 2, 2, 14, [
-                {
-                    type: ABILITY_WHEN_REVEALED,
-                    params: {
-                        effect: searchAndShuffle(searchForTestSubjects),
-                    },
-                },
-            ]),
-            villain(3, '04111', 3, 2, 16, [
-                {
-                    type: ABILITY_WHEN_REVEALED,
-                    params: {
-                        effect: {
-                            type: EFFECT_CHAINED,
-                            params: {
-                                effects: [
-                                    searchAndRevealMinionForEachPlayer,
-                                    shuffleEncounterDeck,
-                                ],
-                            },
-                        },
-                    },
-                },
-            ]),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             mainScheme({
                 name: 'La isla del doctor Zola',
@@ -964,10 +967,6 @@ export default {
                 startingThreat: 0,
                 acceleration: [1, true],
                 value: [6, true],
-                content: {
-                    villains: [1, 2],
-                    villainsExpert: [2, 3],
-                },
                 abilitiesA: [mainSchemeSetup],
                 abilitiesB: [testCounterResponse()],
             }),

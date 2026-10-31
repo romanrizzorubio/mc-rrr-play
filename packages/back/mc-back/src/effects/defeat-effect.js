@@ -98,6 +98,9 @@ export class DefeatEffect extends Effect {
         const {player} = params;
         const {gameZone} = selectedTarget;
 
+        if (selectedTarget.isVillain) {
+            await this.match.scenario.announceVillainDefeat(selectedTarget, player);
+        }
         this.defeatedCharacter = selectedTarget;
         await this.defeat(params);
 
@@ -124,7 +127,9 @@ export class DefeatEffect extends Effect {
             }
         );
         if (selectedTarget.isInPlay !== false) {
-            await selectedTarget.defeat(player);
+            await selectedTarget.defeat(player, {
+                defeatAnnounced: selectedTarget.isVillain,
+            });
         }
         this.defeated = true;
 

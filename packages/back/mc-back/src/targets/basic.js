@@ -1,4 +1,5 @@
 import {checkCondition, path} from '../engine/utils.js';
+import {getPlayersFor} from '../utils/match-zone-utils.js';
 import {
     TARGET_ACTIVATION,
     TARGET_CARD,
@@ -13,6 +14,7 @@ import {
     TARGET_SOURCE,
     TARGET_THIS,
     TARGET_TRIGGERED_CARD,
+    TARGET_TRIGGERED_TARGET,
     TARGET_YOU,
 } from 'mc-shared';
 
@@ -21,7 +23,16 @@ export const basicTargets = {
     [TARGET_CARD]: ({card}) => [card],
     [TARGET_EFFECT]: ({effect}) => [effect],
     [TARGET_EFFECT_PLAY_CARD]: ({playCardEffect}) => [playCardEffect],
-    [TARGET_INITIAL_PLAYER]: ({match}) => match.initialPlayer ? [match.initialPlayer] : [],
+    [TARGET_INITIAL_PLAYER]: ({match, player}) => {
+        const initialPlayer = match.initialPlayer;
+
+        if (!initialPlayer ||
+            !getPlayersFor(match, player).includes(initialPlayer)) {
+            return [];
+        }
+
+        return [initialPlayer];
+    },
     [TARGET_PARENT]: ({params}) => params.parentTargets || [],
     [TARGET_PLAYER]: ({player}) => [player],
     [TARGET_REVEALED_ABILITY]: ({params}) => {
@@ -44,5 +55,7 @@ export const basicTargets = {
     },
     [TARGET_THIS]: ({ability}) => [path(ability, 'card')],
     [TARGET_TRIGGERED_CARD]: ({triggeredCard}) => [triggeredCard],
+    [TARGET_TRIGGERED_TARGET]: ({params}) =>
+        params.triggeredTarget ? [params.triggeredTarget] : [],
     [TARGET_YOU]: ({player}) => [player],
 };

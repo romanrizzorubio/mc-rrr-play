@@ -259,7 +259,7 @@ describe('Cráneo Rojo scenario', () => {
     test('catalog configures villain stages, main schemes, setup, and only registered encounter sets', () => {
         const {config} = redSkull;
 
-        assert.deepEqual(config.villains.map(({params}) => [
+        assert.deepEqual([config.villains[0], ...config.expertVillains].map(({params}) => [
             params.stage,
             params.attack,
             params.scheme,
@@ -300,10 +300,8 @@ describe('Cráneo Rojo scenario', () => {
                 '04144.png',
             ]
         );
-        assert.deepEqual(config.mainSchemes[0][0].params.content, {
-            villains: [1, 2],
-            villainsExpert: [2, 3],
-        });
+        assert.deepEqual(config.villains.map(({params}) => params.stage), [1, 2]);
+        assert.deepEqual(config.expertVillains.map(({params}) => params.stage), [2, 3]);
         assert.deepEqual(config.sets, ['standard']);
         assert.deepEqual(config.defaultSets, ['hydra-assault', 'hydra-patrol']);
         assert.equal(config.sets.includes(redSkull._id), false);
@@ -337,7 +335,7 @@ describe('Cráneo Rojo scenario', () => {
             redHouse.params.abilities[1].params.effect.params.paramsCalc.formula,
             CALC_ATTACK
         );
-        for (const villain of config.villains) {
+        for (const villain of [config.villains[0], ...config.expertVillains]) {
             assert.equal(villain.params.abilities[0].type, ABILITY_CONSTANT);
             assert.equal(
                 villain.params.abilities.some(({params}) => params.validation),
@@ -2553,8 +2551,8 @@ describe('Cráneo Rojo scenario', () => {
         const standard = await createScenario();
         const expert = await createScenario({expert: true});
 
-        assert.deepEqual(standard.scenario.villains.map(({stage}) => stage), [1, 2]);
-        assert.deepEqual(expert.scenario.villains.map(({stage}) => stage), [2, 3]);
+        assert.deepEqual(standard.scenario.getVillains().map(({stage}) => stage), [1, 2]);
+        assert.deepEqual(expert.scenario.getVillains().map(({stage}) => stage), [2, 3]);
     });
 
     test('stage II and III give one encounter card to each player when revealed', async () => {
@@ -2565,7 +2563,7 @@ describe('Cráneo Rojo scenario', () => {
         }];
 
         for (const stage of [2, 3]) {
-            const villainConfig = redSkull.config.villains.find(({params}) =>
+            const villainConfig = redSkull.config.expertVillains.find(({params}) =>
                 params.stage === stage);
             const villain = factory.cardsFactory.createGameCardFromConfig(
                 structuredClone(villainConfig)
@@ -2600,7 +2598,7 @@ describe('Cráneo Rojo scenario', () => {
                 async refresh() {},
             };
         });
-        const villainStages = redSkull.config.villains.map(villain =>
+        const villainStages = [redSkull.config.villains[0], ...redSkull.config.expertVillains].map(villain =>
             factory.cardsFactory.createGameCardFromConfig(
                 structuredClone(villain)
             ));

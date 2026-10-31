@@ -830,6 +830,32 @@ const cruelAmbition = encounterCard(CARD_TYPE_TREACHERY, {
     ],
 });
 
+const villainCards = [
+    villainStage({
+        stage: 1,
+        attack: 2,
+        scheme: 1,
+        hitPoints: 16,
+        threat: 1,
+    }),
+    villainStage({
+        stage: 2,
+        attack: 2,
+        scheme: 2,
+        hitPoints: 18,
+        threat: 1,
+        encounterCards: 2,
+    }),
+    villainStage({
+        stage: 3,
+        attack: 3,
+        scheme: 2,
+        hitPoints: 20,
+        threat: 2,
+        encounterCards: 3,
+    }),
+];
+
 export default {
     _id: 'mutagen-formula',
     order: 4,
@@ -837,31 +863,8 @@ export default {
     folder: 'mutagen-formula',
     config: {
         name: 'mutagen-formula',
-        villains: [
-            villainStage({
-                stage: 1,
-                attack: 2,
-                scheme: 1,
-                hitPoints: 16,
-                threat: 1,
-            }),
-            villainStage({
-                stage: 2,
-                attack: 2,
-                scheme: 2,
-                hitPoints: 18,
-                threat: 1,
-                encounterCards: 2,
-            }),
-            villainStage({
-                stage: 3,
-                attack: 3,
-                scheme: 2,
-                hitPoints: 20,
-                threat: 2,
-                encounterCards: 3,
-            }),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             mainSchemeCard({
                 name: 'Liberar el mutágeno',
@@ -872,10 +875,6 @@ export default {
                 value: [7, true],
                 abilitiesA: [stageOneSetup],
                 abilitiesB: [firstSchemeCompleted],
-                content: {
-                    villains: [1, 2],
-                    villainsExpert: [2, 3],
-                },
             }),
             mainSchemeCard({
                 name: 'Nube de mutágeno',

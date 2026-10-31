@@ -9,241 +9,274 @@ import {
 
 import hydraPatrol from '../../../mc-data/seed/catalog/sets/hydra-patrol.js';
 import {EngageEffect} from '../../src/effects/engage-effect.js';
+import {PutPlayEffect} from '../../src/effects/put-play-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
 describe('EngageEffect', () => {
-const createPlayer = () => ({
-    gameZone: {
-        minions: [],
+    for (const EffectClass of [PutPlayEffect, EngageEffect]) {
+        test(`${EffectClass.name} skips an empty explicit card source without using an unrelated context card`, async () => {
+            const player = createPlayer();
+            const unrelatedMinion = {isMinion: true};
+            for (const source of [undefined, null, [], [{isMinion: false}]]) {
+                const effect = new EffectClass({
+                    match: {},
+                    target: TARGET_YOU,
+                    selectedTarget: player,
+                    cardSource: 'selectedCard',
+                    cardCondition: {isMinion: true},
+                });
+                const params = {player, card: unrelatedMinion, selectedCard: source};
+
+                assert.equal(effect.getCard(params), undefined);
+                assert.equal(await effect.canRun(params), false);
+                assert.deepEqual(effect.getTriggersEnds(params), []);
+                assert.deepEqual(player.gameZone.minions, []);
+            }
+        });
+
+        test(`${EffectClass.name} still rejects invalid non-card sources`, () => {
+            const effect = new EffectClass({cardSource: 'selectedCard', match: {}});
+            for (const source of ['not-a-card', 1, false]) {
+                assert.throws(() => effect.getCard({selectedCard: source}), {
+                    name: 'TypeError',
+                    message: 'PutPlayEffect cardSource must resolve to a card or card list.',
+                });
+            }
+        });
+    }
+
+    const createPlayer = () => ({
+        gameZone: {
+            minions: [],
+            engage(minion) {
+                this.minions.push(minion);
+            },
+            removeEngaged(minion) {
+                const index = this.minions.indexOf(minion);
+                if (index > -1) {
+                    this.minions.splice(index, 1);
+                }
+            },
+        },
         engage(minion) {
-            this.minions.push(minion);
+            this.gameZone.engage(minion);
         },
         removeEngaged(minion) {
-            const index = this.minions.indexOf(minion);
-            if (index > -1) {
-                this.minions.splice(index, 1);
-            }
-        },
-    },
-    engage(minion) {
-        this.gameZone.engage(minion);
-    },
-    removeEngaged(minion) {
-        this.gameZone.removeEngaged(minion);
-    },
-    async refresh() {},
-});
-
-const createScenarioDeck = (location, card) => {
-    const deck = {
-        isScenarioDeck: true,
-        cards: location === 'deck' ? [card] : [],
-        discardPile: location === 'discardPile' ? [card] : [],
-        removeCardFromDeck(cardToRemove) {
-            this.cards = this.cards.filter(candidate => candidate !== cardToRemove);
-        },
-        searchDiscard(cardToRemove) {
-            this.discardPile = this.discardPile.filter(candidate => candidate !== cardToRemove);
+            this.gameZone.removeEngaged(minion);
         },
         async refresh() {},
-    };
+    });
 
-    return deck;
-};
-
-for (const location of ['deck', 'discardPile']) {
-    test(`EngageEffect moves a searched minion from the encounter ${location} into play`, async () => {
-        const card = {
-            damage: 2,
-            isMinion: true,
-            get isInPlay() {
-                return Boolean(this.controller);
+    const createScenarioDeck = (location, card) => {
+        const deck = {
+            isScenarioDeck: true,
+            cards: location === 'deck' ? [card] : [],
+            discardPile: location === 'discardPile' ? [card] : [],
+            removeCardFromDeck(cardToRemove) {
+                this.cards = this.cards.filter(candidate => candidate !== cardToRemove);
             },
-            isPlayerCard: false,
-            name: 'Esclavo duende',
-            async initTriggers() {},
-            toObj() {
-                return {name: this.name};
-            },
-        };
-        const scenario = {deck: createScenarioDeck(location, card)};
-        card.owner = scenario;
-        const dialogs = [];
-
-        const player = {
-            gameZone: {
-                minions: [],
-                engage(minion) {
-                    this.minions.push(minion);
-                },
-            },
-            engage(minion) {
-                this.gameZone.engage(minion);
+            searchDiscard(cardToRemove) {
+                this.discardPile = this.discardPile.filter(candidate => candidate !== cardToRemove);
             },
             async refresh() {},
         };
-        const effect = new EngageEffect({
-            match: {
-                scenario,
-                async openDialog(dialog) {
-                    dialogs.push(dialog);
+
+        return deck;
+    };
+
+    for (const location of ['deck', 'discardPile']) {
+        test(`EngageEffect moves a searched minion from the encounter ${location} into play`, async () => {
+            const card = {
+                damage: 2,
+                isMinion: true,
+                get isInPlay() {
+                    return Boolean(this.controller);
                 },
+                isPlayerCard: false,
+                name: 'Esclavo duende',
+                async initTriggers() {},
+                toObj() {
+                    return {name: this.name};
+                },
+            };
+            const scenario = {deck: createScenarioDeck(location, card)};
+            card.owner = scenario;
+            const dialogs = [];
+
+            const player = {
+                gameZone: {
+                    minions: [],
+                    engage(minion) {
+                        this.minions.push(minion);
+                    },
+                },
+                engage(minion) {
+                    this.gameZone.engage(minion);
+                },
+                async refresh() {},
+            };
+            const effect = new EngageEffect({
+                match: {
+                    scenario,
+                    async openDialog(dialog) {
+                        dialogs.push(dialog);
+                    },
+                },
+            });
+            effect.selectedTarget = player;
+
+            await effect.execute({player, selectedCard: card});
+
+            assert.equal(scenario.deck.cards.includes(card), false);
+            assert.equal(scenario.deck.discardPile.includes(card), false);
+            assert.deepEqual(player.gameZone.minions, [card]);
+            assert.equal(card.controller, player);
+            assert.equal(card.engaged, player);
+            assert.equal(card.damage, 0);
+            assert.deepEqual(dialogs, [{
+                dialogType: DIALOG_ENCOUNTERS_REVEAL,
+                targetPlayer: player,
+                showToAll: true,
+                title: 'Esbirro puesto en juego',
+                data: {
+                    card: {name: 'Esclavo duende'},
+                },
+            }]);
+        });
+    }
+
+    test('EngageEffect puts Tropa de Hydra into play without resolving Incite', async () => {
+        const cardConfig = hydraPatrol.config.cards.find(({card}) =>
+            card.params.name === 'Tropa de Hydra').card;
+        const dialogs = [];
+        const mainScheme = {
+            isMainScheme: true,
+            isScheme: true,
+            threat: 0,
+        };
+        const scenario = {
+            deck: {
+                isScenarioDeck: true,
+                cards: [],
+                discardPile: [],
+                removeCardFromDeck(card) {
+                    this.cards = this.cards.filter(candidate => candidate !== card);
+                },
+                searchDiscard(card) {
+                    this.discardPile = this.discardPile.filter(candidate => candidate !== card);
+                },
+                async refresh() {},
             },
+        };
+        const match = {
+            limits: {},
+            mainScheme,
+            scenario,
+            triggerCards: {},
+            async openDialog(dialog) {
+                dialogs.push(dialog);
+            },
+        };
+        const cardsFactory = new CardsFactory({match});
+        const minion = cardsFactory.createGameCardFromConfig(cardConfig, {
+            owner: scenario,
+        });
+        scenario.deck.cards.push(minion);
+        const player = createPlayer();
+        const effect = new EngageEffect({
+            card: minion,
+            controller: scenario,
+            match,
+            target: TARGET_YOU,
         });
         effect.selectedTarget = player;
 
-        await effect.execute({player, selectedCard: card});
+        assert.equal(minion.incite, 1);
+        await effect.runEffect({match, player, selectedCard: minion});
 
-        assert.equal(scenario.deck.cards.includes(card), false);
-        assert.equal(scenario.deck.discardPile.includes(card), false);
-        assert.deepEqual(player.gameZone.minions, [card]);
-        assert.equal(card.controller, player);
-        assert.equal(card.engaged, player);
-        assert.equal(card.damage, 0);
-        assert.deepEqual(dialogs, [{
-            dialogType: DIALOG_ENCOUNTERS_REVEAL,
-            targetPlayer: player,
-            showToAll: true,
-            title: 'Esbirro puesto en juego',
-            data: {
-                card: {name: 'Esclavo duende'},
-            },
-        }]);
+        assert.equal(minion.isInPlay, true);
+        assert.equal(minion.engaged, player);
+        assert.equal(mainScheme.threat, 0);
+        assert.equal(dialogs[0].title, 'Esbirro puesto en juego');
     });
-}
 
-test('EngageEffect puts Tropa de Hydra into play without resolving Incite', async () => {
-    const cardConfig = hydraPatrol.config.cards.find(({card}) =>
-        card.params.name === 'Tropa de Hydra').card;
-    const dialogs = [];
-    const mainScheme = {
-        isMainScheme: true,
-        isScheme: true,
-        threat: 0,
-    };
-    const scenario = {
-        deck: {
-            isScenarioDeck: true,
-            cards: [],
-            discardPile: [],
-            removeCardFromDeck(card) {
-                this.cards = this.cards.filter(candidate => candidate !== card);
-            },
-            searchDiscard(card) {
-                this.discardPile = this.discardPile.filter(candidate => candidate !== card);
-            },
-            async refresh() {},
-        },
-    };
-    const match = {
-        limits: {},
-        mainScheme,
-        scenario,
-        triggerCards: {},
-        async openDialog(dialog) {
-            dialogs.push(dialog);
-        },
-    };
-    const cardsFactory = new CardsFactory({match});
-    const minion = cardsFactory.createGameCardFromConfig(cardConfig, {
-        owner: scenario,
+    test('EngageEffect does not re-engage a minion with its current player', async () => {
+        const player = createPlayer();
+        const minion = {
+            engaged: player,
+            isInPlay: true,
+            isMinion: true,
+        };
+        player.engage(minion);
+        const triggerCalls = [];
+        const match = {};
+        const effect = new EngageEffect({
+            cardSource: 'effects.0.selectedTarget',
+            match,
+            selectedTarget: player,
+            target: TARGET_YOU,
+        });
+        effect.trigger = async (priority, triggerTypes) => {
+            triggerCalls.push({priority, triggerTypes});
+
+            return true;
+        };
+
+        const params = {
+            effects: [{selectedTarget: minion}],
+            match,
+            player,
+        };
+        assert.equal(await effect.canRun(params), false);
+        await effect.runEffect(params);
+
+        const triggeredTypes = triggerCalls.flatMap(({triggerTypes}) =>
+            Array.isArray(triggerTypes) ? triggerTypes : [triggerTypes]);
+        assert.equal(effect.resolved, false);
+        assert.deepEqual(player.gameZone.minions, [minion]);
+        assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), false);
     });
-    scenario.deck.cards.push(minion);
-    const player = createPlayer();
-    const effect = new EngageEffect({
-        card: minion,
-        controller: scenario,
-        match,
-        target: TARGET_YOU,
+
+    test('EngageEffect triggers engagement, but not enter-play, when changing players', async () => {
+        const previousPlayer = createPlayer();
+        const player = createPlayer();
+        const minion = {
+            controller: previousPlayer,
+            engaged: previousPlayer,
+            isInPlay: true,
+            isMinion: true,
+        };
+        previousPlayer.engage(minion);
+        const triggerCalls = [];
+        const match = {};
+        const effect = new EngageEffect({
+            cardSource: 'effects.0.selectedTarget',
+            match,
+            selectedTarget: player,
+            target: TARGET_YOU,
+        });
+        effect.trigger = async (priority, triggerTypes) => {
+            triggerCalls.push({priority, triggerTypes});
+
+            return true;
+        };
+
+        const params = {
+            effects: [{selectedTarget: minion}],
+            match,
+            player,
+        };
+        assert.equal(await effect.canRun(params), true);
+        await effect.runEffect(params);
+
+        const triggeredTypes = triggerCalls.flatMap(({triggerTypes}) =>
+            Array.isArray(triggerTypes) ? triggerTypes : [triggerTypes]);
+        assert.deepEqual(previousPlayer.gameZone.minions, []);
+        assert.deepEqual(player.gameZone.minions, [minion]);
+        assert.equal(minion.controller, player);
+        assert.equal(minion.engaged, player);
+        assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), true);
+        assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
+        assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
     });
-    effect.selectedTarget = player;
-
-    assert.equal(minion.incite, 1);
-    await effect.runEffect({match, player, selectedCard: minion});
-
-    assert.equal(minion.isInPlay, true);
-    assert.equal(minion.engaged, player);
-    assert.equal(mainScheme.threat, 0);
-    assert.equal(dialogs[0].title, 'Esbirro puesto en juego');
-});
-
-test('EngageEffect does not re-engage a minion with its current player', async () => {
-    const player = createPlayer();
-    const minion = {
-        engaged: player,
-        isInPlay: true,
-        isMinion: true,
-    };
-    player.engage(minion);
-    const triggerCalls = [];
-    const match = {};
-    const effect = new EngageEffect({
-        cardSource: 'effects.0.selectedTarget',
-        match,
-        selectedTarget: player,
-        target: TARGET_YOU,
-    });
-    effect.trigger = async (priority, triggerTypes) => {
-        triggerCalls.push({priority, triggerTypes});
-
-        return true;
-    };
-
-    const params = {
-        effects: [{selectedTarget: minion}],
-        match,
-        player,
-    };
-    assert.equal(await effect.canRun(params), false);
-    await effect.runEffect(params);
-
-    const triggeredTypes = triggerCalls.flatMap(({triggerTypes}) =>
-        Array.isArray(triggerTypes) ? triggerTypes : [triggerTypes]);
-    assert.equal(effect.resolved, false);
-    assert.deepEqual(player.gameZone.minions, [minion]);
-    assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), false);
-});
-
-test('EngageEffect triggers engagement, but not enter-play, when changing players', async () => {
-    const previousPlayer = createPlayer();
-    const player = createPlayer();
-    const minion = {
-        controller: previousPlayer,
-        engaged: previousPlayer,
-        isInPlay: true,
-        isMinion: true,
-    };
-    previousPlayer.engage(minion);
-    const triggerCalls = [];
-    const match = {};
-    const effect = new EngageEffect({
-        cardSource: 'effects.0.selectedTarget',
-        match,
-        selectedTarget: player,
-        target: TARGET_YOU,
-    });
-    effect.trigger = async (priority, triggerTypes) => {
-        triggerCalls.push({priority, triggerTypes});
-
-        return true;
-    };
-
-    const params = {
-        effects: [{selectedTarget: minion}],
-        match,
-        player,
-    };
-    assert.equal(await effect.canRun(params), true);
-    await effect.runEffect(params);
-
-    const triggeredTypes = triggerCalls.flatMap(({triggerTypes}) =>
-        Array.isArray(triggerTypes) ? triggerTypes : [triggerTypes]);
-    assert.deepEqual(previousPlayer.gameZone.minions, []);
-    assert.deepEqual(player.gameZone.minions, [minion]);
-    assert.equal(minion.controller, player);
-    assert.equal(minion.engaged, player);
-    assert.equal(triggeredTypes.includes(TRIGGER_ENGAGE_HERO), true);
-    assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
-    assert.equal(triggeredTypes.includes(TRIGGER_CARD_ENTER_PLAY), false);
-});
 });

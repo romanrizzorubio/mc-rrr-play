@@ -517,9 +517,9 @@ export class CharacterGameCard extends GameCard {
         this.confused = 0;
         this.tough = 0;
     }
-    async defeat(player) {
+    async defeat(player, {defeatAnnounced = false} = {}) {
         if (this.isVillain) {
-            await this.match.scenario.selectVillain(player, this);
+            await this.match.scenario.selectVillain(player, this, {defeatAnnounced});
         } else if (this.isSuperhero) {
             this.stunned = 0;
             this.confused = 0;

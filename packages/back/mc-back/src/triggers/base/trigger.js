@@ -55,7 +55,11 @@ export class Trigger {
             return true;
         }
 
-        return ability.canTrigger(params);
+        return ability.canTrigger({
+            ...params,
+            triggeredCard: params.card,
+            triggeredEffect: params.effect,
+        });
     }
     canTrigger(params) {
         return this.canRun(params);

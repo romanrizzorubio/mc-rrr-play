@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
-    TARGET_CARD,
+    TARGET_THIS,
     TARGET_YOU,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_THIS_ATTACK,
@@ -35,8 +35,9 @@ const cases = [
     },
 ];
 
-for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
-    test(`cancelling a ${name} payment prompt leaves costs unapplied and offers it again`, async () => {
+describe('triggered cost cancellation', () => {
+    for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
+        test(`cancelling a ${name} payment prompt leaves costs unapplied and offers it again`, async () => {
         const calls = {
             costPrompts: 0,
             effectResolutions: 0,
@@ -53,7 +54,15 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
         const player = {
             isPlayer: true,
             async getCardsToPay() {
-                return {generators: [], hand: []};
+                return {
+                    generators: [{
+                        abilities: [
+                            {isResource: true, resource: RESOURCE_MENTAL},
+                            {isResource: true, resource: RESOURCE_PHYSICAL},
+                        ],
+                    }],
+                    hand: [],
+                };
             },
             async spendResources() {
                 calls.costPrompts++;
@@ -124,7 +133,7 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
         const cost = new ChainedEffect({
             effects: [
                 new ExhaustEffect({
-                    target: TARGET_CARD,
+                    target: TARGET_THIS,
                     selectedTarget: card,
                     match,
                 }),
@@ -188,10 +197,10 @@ for (const {name, AbilityClass, priority, trigger: triggerType} of cases) {
         assert.equal(calls.effectResolutions, 1);
         assert.equal(card.exhausted, true);
         assert.equal(trigger.triggered, true);
-    });
-}
+        });
+    }
 
-test('cancelling an event interrupt cost offers the event again', async () => {
+    test('cancelling an event interrupt cost offers the event again', async () => {
     const calls = {
         offers: 0,
         plays: 0,
@@ -248,4 +257,5 @@ test('cancelling an event interrupt cost offers the event again', async () => {
     assert.equal(calls.offers, 2);
     assert.equal(calls.plays, 2);
     assert.equal(trigger.triggered, true);
+});
 });

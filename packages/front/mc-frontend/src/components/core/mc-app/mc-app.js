@@ -49,6 +49,29 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 width: 100%;
               }
 
+              .match-shell {
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                inset: 0;
+                overflow: hidden;
+              }
+
+              .match-shell .match-account-bar {
+                flex: 0 0 auto;
+              }
+
+              .match-shell mc-main.match-main {
+                box-sizing: border-box;
+                display: flex;
+                flex: 1 1 auto;
+                flex-direction: column;
+                min-height: 0;
+                min-width: 0;
+                overflow: hidden;
+              }
+
               .match-actions {
                 box-sizing: border-box;
                 display: flex;
@@ -88,7 +111,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
               .match-account-bar {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+                grid-template-columns: max-content minmax(0, 1fr) max-content;
                 max-width: none;
                 min-height: 60px;
                 padding: 4px 8px;
@@ -112,9 +135,18 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 overflow-wrap: anywhere;
               }
 
-              .match-status {
+              .match-status-group {
                 grid-column: 2;
                 grid-row: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                min-width: 0;
+              }
+
+              .match-status {
+                flex: 1 1 auto;
                 min-width: 0;
                 margin: 0;
                 padding: 10px 16px;
@@ -127,6 +159,15 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 overflow-wrap: anywhere;
               }
 
+              .return-dialog {
+                flex: 0 0 auto;
+                --md-filled-button-container-shape: 100px;
+                --md-filled-button-container-color: var(--mc-color-primary, #6750a4);
+                --md-filled-button-label-text-color: #ffffff;
+                --md-filled-button-label-text-weight: 700;
+                --md-filled-button-label-text-size: 1rem;
+              }
+
               @media (max-width: 1000px) {
                 .match-account-bar {
                   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -137,9 +178,10 @@ class McApp extends router(navigator(outlet(LitElement))) {
                   grid-column: 2;
                 }
 
-                .match-status {
+                .match-status-group {
                   grid-column: 1 / -1;
                   grid-row: 2;
+                  flex-wrap: wrap;
                 }
               }
 
@@ -180,6 +222,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             player: {type: String, attribute: 'player'},
             dialog: {type: Object},
             dialogQueue: {attribute: false},
+            tableConsultationMode: {type: Boolean},
+            tableViewDialog: {attribute: false},
             alert: {type: Object},
             connectionState: {type: String},
             loadedRemotes: {type: Object},
@@ -210,6 +254,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         this.dialog = null;
         this.dialogQueue = [];
+        this.tableConsultationMode = false;
+        this.tableViewDialog = null;
         this.completedDialogRequestIds = new Set();
         this.respondingDialogRequestIds = new Set();
         this.alert = null;
@@ -365,6 +411,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
         if (route !== 'match') {
             this.dialog = null;
             this.dialogQueue = [];
+            this.tableConsultationMode = false;
+            this.tableViewDialog = null;
             this.completedDialogRequestIds?.clear();
             this.respondingDialogRequestIds?.clear();
             this.waitingForResponse = '';
@@ -492,7 +540,6 @@ class McApp extends router(navigator(outlet(LitElement))) {
        data,
        showCancel,
        hideOk,
-       hand,
        title,
        subtitle,
        closeOnResponse,
@@ -504,6 +551,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
        requestId,
        isMulligan,
        callback,
+       tableInspection = false,
    }) {
         if (requestId && (this.completedDialogRequestIds?.has(requestId) ||
             this.respondingDialogRequestIds?.has(requestId) ||
@@ -535,7 +583,6 @@ class McApp extends router(navigator(outlet(LitElement))) {
             callback: readOnly ? undefined : callback,
             showCancel: readOnly ? false : showCancel,
             hideOk: readOnly || hideOk,
-            hand: readOnly ? [] : hand,
             readOnly,
             targetPlayer,
             targetUserId,
@@ -544,7 +591,12 @@ class McApp extends router(navigator(outlet(LitElement))) {
             requestId,
             closeOnResponse: closeOnResponse ?? !requestId,
             isMulligan,
+            viewOnly: tableInspection && this.tableConsultationMode,
         };
+        if (dialog.viewOnly) {
+            this.tableViewDialog = dialog;
+            return;
+        }
         this.dialogQueue ??= [];
         if (this.dialog) {
             this.dialogQueue = [...this.dialogQueue, dialog];
@@ -554,6 +606,9 @@ class McApp extends router(navigator(outlet(LitElement))) {
     }
     displayDialog(dialog) {
         this.dialog = dialog;
+        if (!dialog && !this.tableViewDialog) {
+            this.tableConsultationMode = false;
+        }
         this.waitingForResponse = dialog?.readOnly ?
             `Esperando la respuesta de ${dialog.targetPlayerName}...` : '';
         this.waitingDialogRequestId = dialog?.readOnly ? dialog.requestId || '' : '';
@@ -601,12 +656,17 @@ class McApp extends router(navigator(outlet(LitElement))) {
     handleViewDiscard(e) {
         const {cards, title, isPlayerDeck} = e.detail;
         const player = this.player;
-        const playFromPlace = isPlayerDeck ? PLACE_DISCARD_PILE : null;
+        const tableInspection = this.tableConsultationMode;
+        const playFromPlace = !tableInspection && isPlayerDeck ?
+            PLACE_DISCARD_PILE :
+            null;
 
         this.openDialog({
             dialogType: DIALOG_REVEAL_CARDS,
             title,
-            subtitle: isPlayerDeck ?
+            subtitle: tableInspection ?
+                'Consulta las cartas del descarte.' :
+                isPlayerDeck ?
                 'Ordenadas desde la carta superior hacia abajo. Selecciona una carta que puedas jugar desde el descarte.' :
                 'Ordenadas desde la carta superior hacia abajo.',
             data: {
@@ -614,7 +674,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 rotatePlanCards: true,
                 playFromPlace,
             },
-            callback: async response => {
+            callback: tableInspection ? () => {} : async response => {
                 if (response?.selected?.playFrom?.includes(playFromPlace)) {
                     await new Player(this.api).playCard(
                         player,
@@ -622,6 +682,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                     );
                 }
             },
+            tableInspection,
         });
     }
     handleViewTuckedCards(e) {
@@ -632,17 +693,20 @@ class McApp extends router(navigator(outlet(LitElement))) {
             return;
         }
 
+        const tableInspection = this.tableConsultationMode;
         this.openDialog({
             dialogType: DIALOG_REVEAL_CARDS,
             title: card?.name ?
                 `Cartas metidas debajo de ${card.name}` :
                 'Cartas metidas debajo',
-            subtitle: 'Selecciona una carta jugable para jugarla desde aquí.',
+            subtitle: tableInspection ?
+                'Consulta las cartas metidas debajo de esta carta.' :
+                'Selecciona una carta jugable para jugarla desde aquí.',
             data: {
                 cards,
-                playFromPlace: PLACE_TUCKED,
+                playFromPlace: tableInspection ? null : PLACE_TUCKED,
             },
-            callback: async response => {
+            callback: tableInspection ? () => {} : async response => {
                 if (response?.selected?.playable === true) {
                     await new Player(this.api).playCard(
                         player,
@@ -650,6 +714,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                     );
                 }
             },
+            tableInspection,
         });
     }
     handleViewKnownCards(e) {
@@ -664,6 +729,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
             subtitle: 'Estas son las cartas del mazo que has visto.',
             data: {cards},
             callback: () => {},
+            tableInspection: this.tableConsultationMode,
         });
     }
     showAlert(msg) {
@@ -738,9 +804,36 @@ class McApp extends router(navigator(outlet(LitElement))) {
             callback,
         });
     }
+    handleViewTable() {
+        if (this.tableViewDialog) {
+            this.handleTableViewDialogClose();
+            return;
+        }
+        if (!this.dialog) {
+            return;
+        }
+
+        if (this.dialogBoardPlayerId) {
+            this.player = this.dialogBoardPlayerId;
+        }
+        this.tableConsultationMode = true;
+    }
+    handleReturnToDialog() {
+        this.tableViewDialog = null;
+        this.tableConsultationMode = false;
+    }
+    handleTableViewDialogClose() {
+        this.tableViewDialog = null;
+        if (!this.dialog) {
+            this.tableConsultationMode = false;
+        }
+    }
+    handleTableViewDialogClosed() {
+        this.handleTableViewDialogClose();
+    }
     handleCloseDialog() {
-        if (this.dialog) {
-            this.shadowRoot.getElementById('dialog').show();
+        if (this.dialog && !this.tableConsultationMode) {
+            this.shadowRoot.getElementById('dialog')?.show();
         }
     }
     handleCloseMulliganWaitDialog() {
@@ -822,6 +915,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             this.match = null;
             this.dialog = null;
             this.dialogQueue = [];
+            this.tableConsultationMode = false;
+            this.tableViewDialog = null;
             this.completedDialogRequestIds?.clear();
             this.respondingDialogRequestIds?.clear();
             this.waitingForResponse = '';
@@ -850,6 +945,14 @@ class McApp extends router(navigator(outlet(LitElement))) {
     getMatchPlayer(identifier) {
         return this.match?.players?.find(player =>
             (player.id || player.userId || player.name) === identifier);
+    }
+    get dialogBoardPlayerId() {
+        const identifier = this.dialog?.targetPlayer;
+        const player = this.getMatchPlayer(identifier);
+
+        return player && this.ownsMatchPlayer(identifier, this.dialog?.targetUserId) ?
+            player.id || player.userId || player.name || '' :
+            '';
     }
     ownsMatchPlayer(identifier, targetUserId) {
         if (!this.user?.id) {
@@ -923,6 +1026,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
         return player?.superhero?.name || player?.name || fallback;
     }
     get matchStatusText() {
+        const consultingTable = this.tableConsultationMode && this.dialog;
+
         if (this.resettingMatch) {
             return 'Reiniciando la partida...';
         }
@@ -935,16 +1040,18 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 '¡Victoria! Partida finalizada' :
                 'Derrota. Partida finalizada';
         }
-        if (this.dialog?.isMulligan) {
+        if (this.dialog?.isMulligan && !consultingTable) {
             return 'Elige tu mulligan';
         }
-        if (this.mulliganWaiting && !this.hasPendingOwnMulligan) {
+        if (this.mulliganWaiting &&
+            !this.hasPendingOwnMulligan &&
+            !consultingTable) {
             return 'Mulligan completado. Esperando a los demás jugadores...';
         }
-        if (this.waitingForResponse) {
+        if (this.waitingForResponse && !consultingTable) {
             return this.waitingForResponse;
         }
-        if (this.dialog) {
+        if (this.dialog && !consultingTable) {
             return 'Esperando tu respuesta...';
         }
         if (!match) {
@@ -1111,8 +1218,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
     handleExitMatch() {
         this.navigate(getNavigationPath('matches'));
     }
-    renderDialog() {
-        const {dialog} = this;
+    renderDialogElement(dialog, id, open) {
         let dialogElement = html``;
         let dialogClass = '';
 
@@ -1122,11 +1228,11 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 data,
                 showCancel,
                 hideOk,
-                hand,
                 title,
                 subtitle,
                 readOnly,
                 targetPlayerName,
+                viewOnly,
             } = dialog;
 
             const tag = unsafeStatic(`mc-${dialogType}-dialog`);
@@ -1140,29 +1246,51 @@ class McApp extends router(navigator(outlet(LitElement))) {
                     .data="${data}"
                     .showCancel="${showCancel}"
                     .hideOk="${hideOk}"
-                    .hand="${hand}"
                     .readOnly="${readOnly}"
+                    .viewOnly="${viewOnly}"
                     .targetPlayerName="${targetPlayerName}"
-                    @dialog-ok="${this.handleDialogOk.bind(this)}"
-                    @dialog-cancel="${this.handleCancelDialog.bind(this)}"
+                    @dialog-ok="${viewOnly ?
+                        this.handleTableViewDialogClose.bind(this) :
+                        this.handleDialogOk.bind(this)}"
+                    @dialog-cancel="${viewOnly ?
+                        this.handleTableViewDialogClose.bind(this) :
+                        this.handleCancelDialog.bind(this)}"
+                    @dialog-view-table="${this.handleViewTable.bind(this)}"
+                    @dialog-viewer-close="${this.handleTableViewDialogClose.bind(this)}"
                 ></${tag}>`);
         }
 
         return html`
             <md-dialog
-                id="dialog"
+                id="${id}"
                 .quick="${true}"
                 class="dialog ${dialogClass}"
-                ?open="${Boolean(dialog)}"
+                ?open="${Boolean(dialog && open)}"
                 @cancel="${event => {
-                    if (this.dialog?.readOnly) {
+                    if (dialog?.readOnly && !dialog?.viewOnly) {
                         event.preventDefault();
                     }
                 }}"
-                @closed="${this.handleCloseDialog.bind(this)}"
+                @closed="${id === 'table-view-dialog' ?
+                    this.handleTableViewDialogClosed.bind(this) :
+                    this.handleCloseDialog.bind(this)}"
             >
                 ${dialogElement}
             </md-dialog>
+        `;
+    }
+    renderDialog() {
+        return html`
+            ${this.renderDialogElement(
+                this.dialog,
+                'dialog',
+                !this.tableConsultationMode,
+            )}
+            ${this.tableViewDialog ? this.renderDialogElement(
+                this.tableViewDialog,
+                'table-view-dialog',
+                true,
+            ) : ''}
         `;
     }
     renderAlert() {
@@ -1213,9 +1341,18 @@ class McApp extends router(navigator(outlet(LitElement))) {
                             Salir de la partida
                         </md-text-button>
                     </div>
-                    <p class="match-status" role="status" aria-live="polite" aria-atomic="true">
-                        ${this.matchStatusText}
-                    </p>
+                    <div class="match-status-group">
+                        ${this.dialog && this.tableConsultationMode ? html`
+                        <md-filled-button
+                            class="return-dialog"
+                            type="button"
+                            @click="${this.handleReturnToDialog.bind(this)}"
+                        >Volver al diálogo</md-filled-button>
+                        ` : ''}
+                        <p class="match-status" role="status" aria-live="polite" aria-atomic="true">
+                            ${this.matchStatusText}
+                        </p>
+                    </div>
                 ` : ''}
                 <div class="account-menu">
                     ${this.user ? html`
@@ -1243,96 +1380,107 @@ class McApp extends router(navigator(outlet(LitElement))) {
         const {api, match, player} = this;
 
         return html`
-          ${this.renderAccountBar()}
-          ${this.route !== 'match' ? this.renderConnectionStatus() : ''}
-          ${this.route !== 'match' ? html`
-              <mc-primary-navigation
-                  .activeRoute="${this.route}"
-                  .user="${this.user}"
-                  @navigate-route="${this.handleNavigation.bind(this)}"
-              ></mc-primary-navigation>
-          ` : ''}
+          <div class="${this.route === 'match' ? 'match-shell' : ''}">
+              ${this.renderAccountBar()}
+              ${this.route !== 'match' ? this.renderConnectionStatus() : ''}
+              ${this.route !== 'match' ? html`
+                  <mc-primary-navigation
+                      .activeRoute="${this.route}"
+                      .user="${this.user}"
+                      @navigate-route="${this.handleNavigation.bind(this)}"
+                  ></mc-primary-navigation>
+              ` : ''}
 
-          ${this.appReady ? html`<mc-main .activeRoute="${this.route}">
-              <div route='matches'>
-                  <mc-create-match-page
-                      .api="${api}"
-                      .user="${this.user}"
-                      .active="${this.route === 'matches'}"
-                      .prepareMatch="${this.prepareMatch.bind(this)}"
-                      @match-resume-requested="${this.handleMatchResumeRequested.bind(this)}"
-                      @match-resumed="${this.handleMatchResumed.bind(this)}"
-                      @communication-error="${this.handleCommunicationError.bind(this)}"
-                      @navigate-route="${this.handleNavigation.bind(this)}"
-                  ></mc-create-match-page>
-              </div>
-              <div route='match-lobby'>
-                  <mc-match-lobby-page
-                      .api="${api}"
-                      .user="${this.user}"
-                      .id="${this.params?.id || ''}"
-                      .routeQuery="${this.query}"
-                      .active="${this.route === 'match-lobby'}"
-                      .prepareMatch="${this.prepareMatch.bind(this)}"
-                      @match-resumed="${this.handleMatchResumed.bind(this)}"
-                      @navigate-route="${this.handleNavigation.bind(this)}"
-                  ></mc-match-lobby-page>
-              </div>
-              <div route='match'>
-                  ${this.renderRemote('mcMatch', html`
-                      <mc-match-page
-                          .api="${api}"
-                          .match="${match}"
-                          .user="${this.user}"
-                          player="${player}"
-                          @select-controlled-player="${this.handleSelectControlledPlayer.bind(this)}"
-                          .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
-                          @change-menu="${this.handleChangeMenu.bind(this)}"
-                          @basic-activation-confirmation="${this.handleBasicActivationConfirmation.bind(this)}"
-                          @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
-                          @change-match="${this.handleMatchChanged.bind(this)}"
-                          @view-discard="${this.handleViewDiscard.bind(this)}"
-                          @view-known-cards="${this.handleViewKnownCards.bind(this)}"
-                          @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
-                          @communication-error="${this.handleCommunicationError.bind(this)}"
-                      ></mc-match-page>
-                  `)}
-              </div>
-              <div route='login register activate forgot-password reset-password profile change-password users user-detail'>
-                  ${this.renderRemote('mcUsers', html`
-                      <mc-users-app
-                          .serviceUrl="${this.runtimeConfig?.services?.users}"
-                          .pageRoute="${this.route}"
-                          .routeParams="${this.params}"
-                          .routeQuery="${this.query}"
-                          .user="${this.user}"
-                          @navigate-route="${this.handleNavigation.bind(this)}"
-                          @user-authenticated="${this.handleUserAuthenticated.bind(this)}"
-                          @user-updated="${this.handleUserUpdated.bind(this)}"
-                          @user-session-invalidated="${this.handleUserSessionInvalidated.bind(this)}"
-                      ></mc-users-app>
-                  `)}
-              </div>
-              <div route='decks decks-create decks-edit-new decks-edit'>
-                  ${this.renderRemote('mcDeck', html`
-                      <mc-deck-app
-                          .serviceUrl="${this.runtimeConfig?.services?.deck}"
-                          .pageRoute="${this.route}"
-                          .routeParams="${this.params}"
-                          .routeQuery="${this.query}"
-                          .user="${this.user}"
-                          @navigate-route="${this.handleNavigation.bind(this)}"
-                      ></mc-deck-app>
-                  `)}
-              </div>
-              <h1 route='not-found'>Not Found </h1>
-          </mc-main>` : html`
-              <p role="${this.configurationError ? 'alert' : 'status'}">
-                  ${this.configurationError ?
-        `No se pudo cargar la configuración: ${this.configurationError}` :
-        'Cargando la configuración de la aplicación...'}
-              </p>
-          `}
+              ${this.appReady ? html`
+                  <mc-main
+                      class="${this.route === 'match' ? 'match-main' : ''}"
+                      .activeRoute="${this.route}"
+                  >
+                      <div route='matches'>
+                          <mc-create-match-page
+                              .api="${api}"
+                              .user="${this.user}"
+                              .active="${this.route === 'matches'}"
+                              .prepareMatch="${this.prepareMatch.bind(this)}"
+                              @match-resume-requested="${this.handleMatchResumeRequested.bind(this)}"
+                              @match-resumed="${this.handleMatchResumed.bind(this)}"
+                              @communication-error="${this.handleCommunicationError.bind(this)}"
+                              @navigate-route="${this.handleNavigation.bind(this)}"
+                          ></mc-create-match-page>
+                      </div>
+                      <div route='match-lobby'>
+                          <mc-match-lobby-page
+                              .api="${api}"
+                              .user="${this.user}"
+                              .id="${this.params?.id || ''}"
+                              .routeQuery="${this.query}"
+                              .active="${this.route === 'match-lobby'}"
+                              .prepareMatch="${this.prepareMatch.bind(this)}"
+                              @match-resumed="${this.handleMatchResumed.bind(this)}"
+                              @navigate-route="${this.handleNavigation.bind(this)}"
+                          ></mc-match-lobby-page>
+                      </div>
+                      <div route='match'>
+                          ${this.renderRemote('mcMatch', html`
+                              <mc-match-page
+                                  .api="${api}"
+                                  .match="${match}"
+                                  .user="${this.user}"
+                                  .dialogBoardPlayerId="${this.tableConsultationMode ?
+                                      '' :
+                                      this.dialogBoardPlayerId}"
+                                  .tableConsultationMode="${this.tableConsultationMode}"
+                                  player="${player}"
+                                  @select-controlled-player="${this.handleSelectControlledPlayer.bind(this)}"
+                                  .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
+                                  @change-menu="${this.handleChangeMenu.bind(this)}"
+                                  @basic-activation-confirmation="${this.handleBasicActivationConfirmation.bind(this)}"
+                                  @turn-end-confirmation="${this.handleTurnEndConfirmation.bind(this)}"
+                                  @change-match="${this.handleMatchChanged.bind(this)}"
+                                  @view-discard="${this.handleViewDiscard.bind(this)}"
+                                  @view-known-cards="${this.handleViewKnownCards.bind(this)}"
+                                  @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
+                                  @communication-error="${this.handleCommunicationError.bind(this)}"
+                              ></mc-match-page>
+                          `)}
+                      </div>
+                      <div route='login register activate forgot-password reset-password profile change-password users user-detail'>
+                          ${this.renderRemote('mcUsers', html`
+                              <mc-users-app
+                                  .serviceUrl="${this.runtimeConfig?.services?.users}"
+                                  .pageRoute="${this.route}"
+                                  .routeParams="${this.params}"
+                                  .routeQuery="${this.query}"
+                                  .user="${this.user}"
+                                  @navigate-route="${this.handleNavigation.bind(this)}"
+                                  @user-authenticated="${this.handleUserAuthenticated.bind(this)}"
+                                  @user-updated="${this.handleUserUpdated.bind(this)}"
+                                  @user-session-invalidated="${this.handleUserSessionInvalidated.bind(this)}"
+                              ></mc-users-app>
+                          `)}
+                      </div>
+                      <div route='decks decks-create decks-edit-new decks-edit'>
+                          ${this.renderRemote('mcDeck', html`
+                              <mc-deck-app
+                                  .serviceUrl="${this.runtimeConfig?.services?.deck}"
+                                  .pageRoute="${this.route}"
+                                  .routeParams="${this.params}"
+                                  .routeQuery="${this.query}"
+                                  .user="${this.user}"
+                                  @navigate-route="${this.handleNavigation.bind(this)}"
+                              ></mc-deck-app>
+                          `)}
+                      </div>
+                      <h1 route='not-found'>Not Found </h1>
+                  </mc-main>
+              ` : html`
+                  <p role="${this.configurationError ? 'alert' : 'status'}">
+                      ${this.configurationError ?
+            `No se pudo cargar la configuración: ${this.configurationError}` :
+            'Cargando la configuración de la aplicación...'}
+                  </p>
+              `}
+          </div>
           ${this.renderDialog()}
           ${this.renderMulliganWaitingDialog()}
           ${this.renderAlert()}

@@ -245,6 +245,7 @@ export default {
                         'resources': [
                             RESOURCE_PHYSICAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_HERO_ACTION,
@@ -297,6 +298,7 @@ export default {
                         'resources': [
                             RESOURCE_ENERGY
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_HERO_ACTION,
@@ -344,6 +346,7 @@ export default {
                         'resources': [
                             RESOURCE_ENERGY
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_HERO_ACTION,
@@ -398,6 +401,7 @@ export default {
                         'resources': [
                             RESOURCE_ENERGY
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_HERO_ACTION,
@@ -438,6 +442,7 @@ export default {
                         'resources': [
                             RESOURCE_MENTAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_CONSTANT,
@@ -472,6 +477,7 @@ export default {
                         'resources': [
                             RESOURCE_PHYSICAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_HERO_ACTION,
@@ -525,6 +531,7 @@ export default {
                         'resources': [
                             RESOURCE_MENTAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_CONSTANT,
@@ -596,6 +603,7 @@ export default {
                         'resources': [
                             RESOURCE_MENTAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_ALTEREGO_ACTION,
@@ -659,6 +667,7 @@ export default {
                         'resources': [
                             RESOURCE_PHYSICAL
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_RESOURCE,

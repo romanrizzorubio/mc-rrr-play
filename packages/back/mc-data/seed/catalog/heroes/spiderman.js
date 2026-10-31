@@ -248,6 +248,7 @@ export default {
                                         'type': EFFECT_PREVENT_DAMAGE,
                                         'params': {
                                             'requiresPrePlayConfirmation': true,
+                                            'preventAll': true,
                                             'target': TARGET_YOUR_SUPERHERO
                                         }
                                     }

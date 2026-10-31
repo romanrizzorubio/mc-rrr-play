@@ -994,6 +994,7 @@ describe('Hombre Hormiga', () => {
         match.isUniqueCard = () => false;
         match.activationsFactory = {
             createActivation: () => ({
+                canRun: async () => false,
                 filterTarget: () => true,
             }),
         };
@@ -1033,7 +1034,6 @@ describe('Hombre Hormiga', () => {
             }),
             true,
         );
-        assert.equal(minionDamage.isRequiredForAbilityAvailability, false);
         assert.equal(enemyDamage.baseDamage, 8);
         assert.equal(enemyDamage.isAttack, true);
 

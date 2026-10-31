@@ -60,6 +60,11 @@ export class Cost extends Engine {
     }
     async canPay(params, preparedEffect) {
         const effect = preparedEffect || await this.getEffect(params);
+        effect?.resetResolutionState({
+            preserveSelectedTarget:
+                params.preselectedEffectTargets?.has(effect),
+            preselectedEffectTargets: params.preselectedEffectTargets,
+        });
 
         return !effect || effect.canRun({
             ...params,

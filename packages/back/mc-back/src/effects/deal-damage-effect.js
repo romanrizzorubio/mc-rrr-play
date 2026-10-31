@@ -16,13 +16,11 @@ export class DealDamageEffect extends AttackEffect(Effect) {
             damage,
             ignoreTough = false,
             preventDamage = 0,
-            requiredForAvailability,
         } = params;
 
         this._character = character;
         this.ignoreTough = ignoreTough;
         this.preventDamageAmount = preventDamage;
-        this.requiredForAvailability = requiredForAvailability;
         this.baseDamage = damage;
         this.damageModifier = 0;
         this.modifyAttack = 0;
@@ -51,14 +49,13 @@ export class DealDamageEffect extends AttackEffect(Effect) {
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
     }
-    get isRequiredForAbilityAvailability() {
-        return this.requiredForAvailability ??
-            (this.isAttack &&
-                !this.validTarget.isAllTarget({target: this.target}));
-    }
     checkTrigger(params) {
         if (!this.isActivationActive(params)) {
             return false;
+        }
+
+        if (this.isAttack) {
+            return true;
         }
 
         if (Array.isArray(this.damage)) {

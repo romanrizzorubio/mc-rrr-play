@@ -113,24 +113,39 @@ describe('card selection dialogs', () => {
         assert.doesNotMatch(renderText(dialog.renderDialog()), /dialog-responsible-player/u);
     });
 
-    test('an action menu omits empty headings between the responsible hero and its card', () => {
+    test('an action menu omits empty optional headings and keeps its table button', () => {
+        const renderTemplate = value => {
+            if (Array.isArray(value)) {
+                return value.map(renderTemplate).join('');
+            }
+            if (value?.strings && value?.values) {
+                return value.strings.reduce((text, part, index) =>
+                    text + part + renderTemplate(value.values[index]), '');
+            }
+
+            return typeof value === 'string' ? value : '';
+        };
         const dialog = Object.assign(Object.create(McListDialog.prototype), {
+            data: {options: [], card: {}, showCounters: false},
             title: '', subtitle: '', footer: '', hand: [], readOnly: false,
         });
-        for (const template of [dialog.renderTitle(), dialog.renderSubtitle(), dialog.renderFooter()]) {
-            assert.equal(template.strings.join(''), '');
-        }
+        let markup = renderTemplate(dialog.renderDialog());
+        assert.doesNotMatch(markup, /<h[23]\b[^>]*>\s*<\/h[23]>/u);
+        assert.match(markup, /Ver mesa/u);
         dialog.title = 'Elige una capacidad';
         dialog.subtitle = 'Selecciona una opción';
         dialog.footer = 'Información';
-        assert.match(dialog.renderTitle().strings.join(''), /class="title"/u);
-        assert.match(dialog.renderSubtitle().strings.join(''), /class="subtitle"/u);
-        assert.match(dialog.renderFooter().strings.join(''), /class="footer"/u);
+        markup = renderTemplate(dialog.renderDialog());
+        assert.match(markup, /<h2 class="title">[\s\S]*Elige una capacidad/u);
+        assert.match(markup, /<h3 class="subtitle">[\s\S]*Selecciona una opción/u);
+        assert.match(markup, /<h3 class="footer">[\s\S]*Información/u);
         dialog.title = '';
         dialog.hand = [{id: 'hand-card'}];
-        assert.match(dialog.renderTitle().strings.join(''), /class="title"/u);
+        markup = renderTemplate(dialog.renderDialog());
+        assert.doesNotMatch(markup, /<h[23]\b[^>]*>\s*<\/h[23]>/u);
         dialog.readOnly = true;
-        assert.equal(dialog.renderTitle().strings.join(''), '');
+        markup = renderTemplate(dialog.renderDialog());
+        assert.doesNotMatch(markup, /<h[23]\b[^>]*>\s*<\/h[23]>/u);
     });
 
     test('target selection dialog configures cards to select on click', () => {

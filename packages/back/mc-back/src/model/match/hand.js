@@ -159,6 +159,7 @@ export class Hand extends Engine {
                 player: owner,
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,
+                checkPlayRestrictions: true,
             });
             const playTargets = playable ?
                 await this.getPlayTargets(card) :

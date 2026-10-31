@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     ABILITY_SETUP,
@@ -35,6 +35,8 @@ import {PlayerZone} from '../../src/model/match/player-zone.js';
 import {Scenario} from '../../src/model/match/scenario.js';
 import {ScenarioZone} from '../../src/model/match/scenario-zone.js';
 
+describe('klaw', () => {
+
 test('Klaw scenario includes its stages, scheme progression, and encounter cards', async () => {
     const {scenarios} = await loadCatalog();
     const klaw = scenarios.find(({_id}) => _id === 'klaw');
@@ -44,7 +46,7 @@ test('Klaw scenario includes its stages, scheme progression, and encounter cards
     assert.deepEqual(klaw.config.sets, ['standard']);
     assert.deepEqual(klaw.config.defaultSets, ['masters-of-evil']);
     assert.deepEqual(
-        klaw.config.villains.map(({type, params}) => [
+        [klaw.config.villains[0], ...klaw.config.expertVillains].map(({type, params}) => [
             type,
             params.stage,
             params.attack,
@@ -171,7 +173,7 @@ test('Klaw setup engages only one minion from the first main scheme', async () =
     });
 
     const cardsFactory = matchFactory.cardsFactory;
-    const villains = klaw.config.villains.map(card =>
+    const villains = [klaw.config.villains[0], ...klaw.config.expertVillains].map(card =>
         cardsFactory.createGameCardFromConfig(card));
     const mainSchemes = klaw.config.mainSchemes.map(sides =>
         cardsFactory.createCardSides(cardsFactory.createSides(sides)));
@@ -318,4 +320,5 @@ test('Klaw el inmortal adds its constant health bonus only while in play', async
     await scenarioZone.refresh();
     assert.equal(refreshedCards.at(-1).card.hitPoints, 12);
     assert.equal(refreshedCards.at(-1).card.life, 7);
+});
 });

@@ -130,6 +130,7 @@ La pantalla se divide en varias áreas:
 - Contador de amenaza del villano
 - Contador de vida del villano
 - Efectos activos en juego
+- En escenarios con zonas separadas, muestra la zona general y solo la zona de escenario del jugador seleccionado; la zona general puede contener el Plan principal común mientras la zona local muestra su Villano y plan.
 
 **Zona del Jugador (Player Area)**
 - Superhéroe con contador de vida
@@ -152,7 +153,9 @@ La pantalla se divide en varias áreas:
 - Información de todos los jugadores
 - Contador de aceleración
 
-El listado **Jugadores** permite cambiar entre los héroes que controla tu cuenta. Solo se muestra el tablero y la mano del héroe propio seleccionado, tanto durante su turno como durante el de otro héroe o la fase del villano. Cambiar de vista no cambia el turno ni concede acciones fuera de las permitidas. Las decisiones dirigidas a cualquiera de tus héroes siguen llegando a tu cuenta; durante la preparación, sus mulligans se presentan uno a uno. Con un único jugador y superhéroe no aparece el listado.
+El listado **Jugadores** permite cambiar entre los héroes que controla tu cuenta. Solo se muestra el tablero y la mano del héroe propio seleccionado, tanto durante su turno como durante el de otro héroe o la fase del villano. En escenarios con zonas separadas, también cambia la zona local visible: se muestra el Villano y el plan de ese jugador junto a la zona general, sin revelar las demás zonas. Cambiar de vista no cambia el turno ni concede acciones fuera de las permitidas. Las decisiones dirigidas a cualquiera de tus héroes siguen llegando a tu cuenta; durante la preparación, sus mulligans se presentan uno a uno. Con un único jugador y superhéroe no aparece el listado.
+
+Los diálogos de decisión incluyen **Ver mesa**, que oculta el diálogo sin cancelar la decisión y permite consultar el tablero y la mano, cambiar entre las mesas del listado de jugadores y abrir los descartes o las cartas metidas debajo. En esta vista se bloquean las acciones de juego; un botón superior vuelve a mostrar el diálogo. Salir o reiniciar la partida siguen disponibles.
 
 Al comenzar cada fase de jugadores, si controlas varios héroes se muestra automáticamente el jugador inicial si pertenece a tu cuenta; en otro caso, el primer héroe propio superviviente en el orden desde el jugador inicial. Esta selección se realiza una sola vez al entrar en la fase: después puedes cambiar de vista manualmente sin que las actualizaciones normales la reemplacen. Cuando termina el turno del héroe propio seleccionado, la vista pasa al siguiente héroe de tu cuenta que aún tenga su turno pendiente, siguiendo ese mismo orden y omitiendo héroes derrotados. Esto también funciona si entre ambos debe jugar otra cuenta: solo cambia el tablero visible, no el turno real. Si todos tus héroes han terminado, se conserva la última vista.
 
@@ -319,7 +322,7 @@ Al finalizar el turno, se pide confirmación si el superhéroe o algún aliado e
 - Puedes ejecutar activaciones
 - Continúa hasta presionar "Fin de Turno"
 
-Al terminar todos los turnos, el cierre de fase incluye a todos los jugadores en orden de jugador inicial, no solo al último que actuó. Los jugadores con cartas reciben su diálogo de descarte; una mano vacía no necesita ese diálogo. Cada jugador repone hasta su tamaño de mano actual y prepara sus cartas antes de continuar con el villano.
+Al terminar todos los turnos, el cierre de fase incluye a todos los jugadores en orden de jugador inicial, no solo al último que actuó. Los jugadores con cartas reciben su diálogo de descarte; los diálogos se muestran simultáneamente entre cuentas distintas y, si una cuenta controla varios héroes, de uno en uno para esa cuenta. Una mano vacía no necesita ese diálogo. Cada jugador repone hasta su tamaño de mano actual y prepara sus cartas antes de continuar con el villano.
 
 **Fase de Activación (Enemigos)**
 - Primero se coloca la amenaza del Plan principal, incluidos los iconos y fichas de aceleración.

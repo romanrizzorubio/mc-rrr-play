@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     ABILITY_FORCED_RESPONSE,
@@ -20,6 +20,8 @@ import {
     TRIGGER_VILLAIN_ATTACKS_YOU,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
+
+describe('ultron', () => {
 
 const findValues = (value, predicate, found = []) => {
     if (!value || typeof value !== 'object') {
@@ -42,7 +44,8 @@ test('Ultron scenario is available with the expected encounter cards and modular
     assert.ok(ultron);
     assert.deepEqual(ultron.config.sets, ['standard']);
     assert.deepEqual(ultron.config.defaultSets, ['under-attack']);
-    assert.equal(ultron.config.villains.length, 3);
+    assert.equal(ultron.config.villains.length, 2);
+    assert.equal(ultron.config.expertVillains.length, 2);
     assert.equal(ultron.config.mainSchemes.length, 3);
     assert.equal(
         ultron.config.cards.reduce((count, {count: copies}) => count + copies, 0),
@@ -127,4 +130,5 @@ test('Ultron scenario is available with the expected encounter cards and modular
             title: 'Gasta 1 recurso físico',
         },
     ]);
+});
 });

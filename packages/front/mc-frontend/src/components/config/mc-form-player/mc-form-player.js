@@ -91,10 +91,13 @@ export class McFormPlayer extends LitElement {
         return html`
               <md-filled-select
                   label="Héroe"
-                  value="${this.hero}"
+                  .value="${this.hero}"
                   required
                   @change="${this.handleHeroChange.bind(this)}"
               >
+                  <md-select-option value="">
+                      <div slot="headline">Selecciona un héroe</div>
+                  </md-select-option>
                   ${this.renderSelectOptions()}
               </md-filled-select>
         `;

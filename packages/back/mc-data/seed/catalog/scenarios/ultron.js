@@ -125,10 +125,6 @@ const mainSchemeCard = ({
             image: image.a,
             stage,
             ...(stage === 1 ? {
-                content: {
-                    villains: [1, 2],
-                    villainsExpert: [2, 3],
-                },
             } : {}),
             ...(abilities?.a ? {abilities: abilities.a} : {}),
         },
@@ -397,6 +393,59 @@ const efficacyCard = (id, resource) => ({
     },
 });
 
+const villainCards = [
+    {
+        type: CARD_TYPE_VILLAIN,
+        params: {
+            name: 'Ultrón',
+            set: 'ultron',
+            image: 'scenarios/ultron/01134.png',
+            traits: [TRAIT_DROID],
+            unique: true,
+            stage: 1,
+            scheme: 1,
+            attack: 2,
+            hitPoints: [17, true],
+            abilities: [stageOneAttackResponse],
+        },
+    },
+    {
+        type: CARD_TYPE_VILLAIN,
+        params: {
+            name: 'Ultrón',
+            set: 'ultron',
+            image: 'scenarios/ultron/01135.png',
+            traits: [TRAIT_DROID],
+            unique: true,
+            stage: 2,
+            scheme: 2,
+            attack: 2,
+            hitPoints: [22, true],
+            abilities: [stageTwoAttackInterrupt],
+        },
+    },
+    {
+        type: CARD_TYPE_VILLAIN,
+        params: {
+            name: 'Ultrón',
+            set: 'ultron',
+            image: 'scenarios/ultron/01136.png',
+            traits: [TRAIT_DROID],
+            unique: true,
+            stage: 3,
+            scheme: 2,
+            attack: 4,
+            hitPoints: [27, true],
+            abilities: [
+                stageThreeWhenRevealed,
+                stageThreeDroneAttackBonus,
+                stageThreeDroneHealthBonus,
+                stageThreeCannotTakeDamage,
+            ],
+        },
+    },
+];
+
 export default {
     _id: 'ultron',
     order: 2,
@@ -404,58 +453,8 @@ export default {
     folder: 'ultron',
     config: {
         name: 'ultron',
-        villains: [
-            {
-                type: CARD_TYPE_VILLAIN,
-                params: {
-                    name: 'Ultrón',
-                    set: 'ultron',
-                    image: 'scenarios/ultron/01134.png',
-                    traits: [TRAIT_DROID],
-                    unique: true,
-                    stage: 1,
-                    scheme: 1,
-                    attack: 2,
-                    hitPoints: [17, true],
-                    abilities: [stageOneAttackResponse],
-                },
-            },
-            {
-                type: CARD_TYPE_VILLAIN,
-                params: {
-                    name: 'Ultrón',
-                    set: 'ultron',
-                    image: 'scenarios/ultron/01135.png',
-                    traits: [TRAIT_DROID],
-                    unique: true,
-                    stage: 2,
-                    scheme: 2,
-                    attack: 2,
-                    hitPoints: [22, true],
-                    abilities: [stageTwoAttackInterrupt],
-                },
-            },
-            {
-                type: CARD_TYPE_VILLAIN,
-                params: {
-                    name: 'Ultrón',
-                    set: 'ultron',
-                    image: 'scenarios/ultron/01136.png',
-                    traits: [TRAIT_DROID],
-                    unique: true,
-                    stage: 3,
-                    scheme: 2,
-                    attack: 4,
-                    hitPoints: [27, true],
-                    abilities: [
-                        stageThreeWhenRevealed,
-                        stageThreeDroneAttackBonus,
-                        stageThreeDroneHealthBonus,
-                        stageThreeCannotTakeDamage,
-                    ],
-                },
-            },
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             mainSchemeCard({
                 name: 'La Capucha Carmesí',

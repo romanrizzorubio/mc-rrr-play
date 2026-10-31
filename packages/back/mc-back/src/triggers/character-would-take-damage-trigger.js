@@ -1,5 +1,6 @@
 import {TARGET_CARD} from 'mc-shared';
 import {targetMap} from '../targets/index.js';
+import {getTriggerCardPlayer} from '../utils/trigger-card-player.js';
 import {Trigger} from './base/trigger.js';
 import {getCharacterForDamageTarget} from './utils/character-for-damage-target.js';
 
@@ -14,6 +15,10 @@ export class CharacterWouldTakeDamageTrigger extends Trigger {
         return getCharacterForDamageTarget(target);
     }
     getTarget(params) {
+        const player = getTriggerCardPlayer(
+            this.card,
+            params.player ?? this.card.owner
+        );
         const {effect} = params;
         const selectedTargets = Array.isArray(effect?.selectedTarget) ?
             effect.selectedTarget :
@@ -26,6 +31,7 @@ export class CharacterWouldTakeDamageTrigger extends Trigger {
 
         const triggerTargets = resolveTarget({
             ...params,
+            player,
             ability: this.ability,
             card: this.card,
             condition: this.condition,
@@ -64,13 +70,21 @@ export class CharacterWouldTakeDamageTrigger extends Trigger {
             super.canTrigger(abilityParams);
     }
     getAbilityParams(params) {
-        const target = this.getTarget(params);
+        const player = getTriggerCardPlayer(
+            this.card,
+            params.player ?? this.card.owner
+        );
+        const triggerParams = {
+            ...params,
+            player,
+        };
+        const target = this.getTarget(triggerParams);
 
         return {
-            ...super.getAbilityParams(params),
+            ...super.getAbilityParams(triggerParams),
             triggeredTarget: target,
             triggeredTargetCharacter: this.normalizeTarget(target),
-            triggeredTargetDamage: this.getTargetDamage(params, target),
+            triggeredTargetDamage: this.getTargetDamage(triggerParams, target),
         };
     }
     getName(params) {

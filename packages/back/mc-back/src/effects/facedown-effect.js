@@ -1,4 +1,4 @@
-import {TARGET_CARD} from 'mc-shared';
+import {PLACE_DECK, TARGET_CARD} from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 import {removeFromPlace} from '../utils/card-place-utils.js';
 
@@ -7,17 +7,42 @@ import {Effect} from './effect.js';
 export class FaceDownEffect extends Effect {
     constructor({
         cards,
+        count,
         cardsTarget = TARGET_CARD,
         from,
     }) {
         super(arguments[0]);
 
         this.cards = cards;
+        this.count = count;
         this.cardsTarget = cardsTarget;
         this.from = from;
+        this.topDeckCards = undefined;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.topDeckCards = undefined;
     }
     async prepare(params) {
         await super.prepare(params);
+
+        if (this.from === PLACE_DECK && this.count !== undefined) {
+            if (!Number.isSafeInteger(this.count) || this.count < 0) {
+                throw new TypeError(
+                    'FaceDownEffect deck count must be a non-negative integer.'
+                );
+            }
+
+            const deckCards = params.player?.deck?.cards;
+            if (!Array.isArray(deckCards)) {
+                throw new TypeError(
+                    'FaceDownEffect from PLACE_DECK requires a player deck.'
+                );
+            }
+
+            this.topDeckCards = deckCards.slice(0, this.count);
+            return;
+        }
 
         const {cardsTarget} = this;
         const validTarget = new ValidTarget({
@@ -34,7 +59,8 @@ export class FaceDownEffect extends Effect {
         }
     }
     async execute(params) {
-        const {selectedTarget, cards} = this;
+        const {selectedTarget} = this;
+        const cards = this.topDeckCards ?? this.cards;
         const selectedCards = Array.isArray(cards) ?
             cards :
             cards ? [cards] : [];
@@ -51,7 +77,10 @@ export class FaceDownEffect extends Effect {
                 );
             }
 
-            remove(this, selectedCards, params.player);
+            await remove(this, selectedCards, params.player);
+            if (this.from === PLACE_DECK) {
+                await params.player.deck.refresh();
+            }
         }
 
         selectedCards.forEach(card => {
@@ -62,7 +91,7 @@ export class FaceDownEffect extends Effect {
             }
         });
 
-        selectedTarget.addFaceDown(cards);
+        selectedTarget.addFaceDown(selectedCards);
 
         await this.promisesSequential([...owners], owner => owner.hand.refresh());
         const refreshTarget = selectedTarget.gameZone || selectedTarget;

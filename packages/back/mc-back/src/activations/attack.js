@@ -1,5 +1,6 @@
 import {
     TRIGGER_THIS_ATTACK,
+    TRIGGER_CHARACTER_ATTACKED,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOU_BASIC_ATTACK,
@@ -71,13 +72,15 @@ export class Attack extends Activation {
             character?.controller?.isPlayer ?
                 character.controller :
                 undefined;
-        const enemies = player ?
-            getEnemiesFor(this.match, player) :
-            this.match.enemies;
-        const enemyIsInPlay = enemies.some(enemy =>
-            enemy === target || enemy.currentSide === target);
-        if (target.isEnemy && !enemyIsInPlay) {
-            return;
+        if (target.isEnemy) {
+            const enemies = player ?
+                getEnemiesFor(this.match, player) :
+                this.match.enemies;
+            const enemyIsInPlay = enemies.some(enemy =>
+                enemy && (enemy === target || enemy.currentSide === target));
+            if (!enemyIsInPlay) {
+                return;
+            }
         }
         if (this.effect.ranged) {
             this.effect.markAttackKeywordUsed?.('ranged');
@@ -120,7 +123,10 @@ export class Attack extends Activation {
             return triggers;
         }
 
-        const attackTriggers = triggers.concat(TRIGGER_THIS_ATTACK);
+        const attackTriggers = triggers.concat(
+            TRIGGER_THIS_ATTACK,
+            TRIGGER_CHARACTER_ATTACKED
+        );
         const playerAttackTriggers = effect?.ability?.card ?
             attackTriggers.concat(TRIGGER_YOU_ATTACK) :
             attackTriggers;
@@ -194,6 +200,7 @@ export class Attack extends Activation {
 
         const triggers = [
             TRIGGER_THIS_ATTACK,
+            TRIGGER_CHARACTER_ATTACKED,
             TRIGGER_YOU_ATTACK,
             TRIGGER_YOU_ANY_ATTACK,
         ];

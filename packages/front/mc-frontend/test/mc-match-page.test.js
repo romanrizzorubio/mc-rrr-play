@@ -344,6 +344,29 @@ describe('mc-match-page actions', () => {
         assert.equal(template.values[boardIndex], local);
     });
 
+    test('passes the dialog target separately from the active player board', () => {
+        const players = [
+            {id: 'seat-1', userId: 'local'},
+            {id: 'seat-2', userId: 'local'},
+        ];
+        const page = Object.assign(Object.create(McMatchPage.prototype), {
+            dialogBoardPlayerId: 'seat-2',
+            match: {
+                phase: 'players',
+                currentTurnPlayer: 'seat-1',
+                players,
+                actionRequest: null,
+            },
+            player: 'seat-1',
+        });
+        const template = page.render();
+        const dialogBoardIndex = template.strings.findIndex(part =>
+            part.includes('.dialogBoardPlayerId='));
+
+        assert.notEqual(dialogBoardIndex, -1);
+        assert.equal(template.values[dialogBoardIndex], 'seat-2');
+    });
+
     test('an accepted request permits Actions but blocks own-turn options, clicks and drags', async () => {
         const requests = [];
         const errors = [];
@@ -584,5 +607,19 @@ describe('mc-match-page actions', () => {
 
         page.match.actionRequest.status = 'pending';
         assert.equal(page.canInteract, false);
+    });
+
+    test('table consultation disables both game actions and action requests', async () => {
+        const {page, requests} = createTwoHeroPage();
+        page.tableConsultationMode = true;
+
+        assert.equal(page.canInteract, false);
+        assert.equal(page.canRequestAction, false);
+        assert.equal(page.canUseOwnTurnOptions, false);
+
+        await page.handleRequestPlayerAction({
+            detail: {targetPlayer: 'seat-2'},
+        });
+        assert.deepEqual(requests, []);
     });
 });

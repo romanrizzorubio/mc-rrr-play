@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {EVENTS} from 'mc-endpoints';
 import {Engine} from '../../src/engine/engine.js';
@@ -10,6 +10,7 @@ import {
     serializeMatch,
 } from '../../src/utils/match-serialization.js';
 
+describe('play round phase refresh', () => {
 test('ending a player turn runs the villain phase before the next round', async () => {
     let finishTurn;
     let signalTurnListenerReady;
@@ -20,6 +21,9 @@ test('ending a player turn runs the villain phase before the next round', async 
     const villainSteps = [];
     const player = {
         name: 'Hulka',
+        async selectEndPlayersPhaseDiscards() {
+            return [];
+        },
         async runEndPlayersPhase() {},
     };
     const match = {
@@ -152,4 +156,5 @@ test('restoring a match in the villain phase resumes from its saved villain step
     assert.equal(playersPhaseRuns, 0);
     assert.equal(match.phase, 'round-complete');
     assert.equal(match.villainPhaseStep, 0);
+});
 });

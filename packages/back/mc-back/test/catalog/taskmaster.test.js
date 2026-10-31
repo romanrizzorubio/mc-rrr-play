@@ -235,7 +235,7 @@ describe('Taskmaster', () => {
 
         assert.equal(taskmaster.name, 'Supervisor');
         assert.equal(taskmaster.folder, 'taskmaster');
-        assert.deepEqual(taskmaster.config.villains.map(({type, params}) => [
+        assert.deepEqual([taskmaster.config.villains[0], ...taskmaster.config.expertVillains].map(({type, params}) => [
             type,
             params.name,
             params.stage,
@@ -251,7 +251,7 @@ describe('Taskmaster', () => {
             [CARD_TYPE_VILLAIN, 'Supervisor', 3, 3, 3, [17, true], 'scenarios/taskmaster/04095.png', 0, true],
         ]);
         assert.deepEqual(
-            taskmaster.config.villains.map(({params}) => params.traits),
+            [taskmaster.config.villains[0], ...taskmaster.config.expertVillains].map(({params}) => params.traits),
             [
                 [TRAIT_HYDRA, TRAIT_MERCENARY],
                 [TRAIT_HYDRA, TRAIT_MERCENARY],
@@ -457,10 +457,8 @@ describe('Taskmaster', () => {
         assert.equal(stage1A.params.name, 'A la caza del héroe');
         assert.equal(stage1A.params.image, 'scenarios/taskmaster/04096a.png');
         assert.equal(stage1A.params.stage, 1);
-        assert.deepEqual(stage1A.params.content, {
-            villains: [1, 2],
-            villainsExpert: [2, 3],
-        });
+        assert.deepEqual(taskmaster.config.villains.map(({params}) => params.stage), [1, 2]);
+        assert.deepEqual(taskmaster.config.expertVillains.map(({params}) => params.stage), [2, 3]);
         assert.equal(stage1B.type, CARD_TYPE_MAIN_SCHEME_B_CARD);
         assert.equal(stage1B.params.name, 'A la caza del héroe');
         assert.equal(stage1B.params.image, 'scenarios/taskmaster/04096b.png');
@@ -920,7 +918,7 @@ describe('Taskmaster', () => {
             target: 'effects.0.cards',
         });
 
-        taskmaster.config.villains.slice(1).forEach(({params}) => {
+        taskmaster.config.expertVillains.forEach(({params}) => {
             const [response, reveal] = params.abilities;
             assert.equal(response.type, ABILITY_FORCED_RESPONSE);
             assert.equal(reveal.type, ABILITY_WHEN_REVEALED);
@@ -930,18 +928,19 @@ describe('Taskmaster', () => {
             assert.equal(reveal.params.effect.params.effect.params.target, TARGET_ALL_PLAYERS);
         });
 
-        assert.equal(scenario.villains.length, 3);
+        const villains = [...new Set([...scenario.villains, ...scenario.expertVillains])];
+        assert.equal(villains.length, 3);
         assert.equal(scenario.mainSchemes.length, 1);
-        [...scenario.villains, ...scenario.mainSchemes].forEach(card => {
+        [...villains, ...scenario.mainSchemes].forEach(card => {
             const sides = card.sides.length ? card.sides : [card];
             sides.forEach(side => side.abilities.forEach(ability => {
                 assert.ok(ability.effect);
                 assert.equal(typeof ability.effect.canRun, 'function');
             }));
         });
-        assert.ok(scenario.villains.every(villain =>
+        assert.ok(villains.every(villain =>
             villain.abilities[0] instanceof ForcedResponseAbility));
-        assert.ok(scenario.villains.slice(1).every(villain =>
+        assert.ok(scenario.expertVillains.every(villain =>
             villain.abilities[1] instanceof WhenRevealedAbility));
     });
 
@@ -1287,12 +1286,15 @@ describe('Taskmaster', () => {
 
         const {match, scenario} = await createTaskmasterScenario([player]);
         player.match = match;
+        player.deck = {
+            async refresh() {},
+        };
         match.refresh = async () => {};
         match.persist = async () => {};
 
         await scenario.initScenario([], false);
 
-        const villain = scenario.villains[0];
+        const villain = scenario.gameZone.currentVillain;
         const sword = scenario.deck.cards.find(card =>
             card.name === 'Espada del Supervisor');
         const shield = scenario.deck.cards.find(card =>
@@ -1311,6 +1313,7 @@ describe('Taskmaster', () => {
             villain.attached.push(card);
             card.attachedTo = villain;
         });
+        reflexes.controller = player;
         await Promise.all([
             sword.initTriggers(),
             shield.initTriggers(),
@@ -1344,7 +1347,7 @@ describe('Taskmaster', () => {
         await villainAttack.runEffect({match, player});
         assert.equal(villainAttack.piercing, true);
         assert.equal(heroSide.isTough, false);
-        assert.equal(player.damage, 2);
+        assert.equal(player.damage, 3);
         const damageAfterPiercingAttack = player.damage;
 
         await sword.discard();
@@ -1601,12 +1604,15 @@ describe('Taskmaster', () => {
         const encounterDeck = drawnEncounterCards.slice();
         match.drawEncounterCards = async count => encounterDeck.splice(0, count);
 
-        for (const villain of scenario.villains.slice(1)) {
+        for (const villain of scenario.expertVillains) {
             const ability = villain.abilities[1];
 
             assert.ok(ability instanceof WhenRevealedAbility);
             assert.equal(typeof ability.effect.canRun, 'function');
-            await ability.effect.runEffect({match, player: players[0]});
+            await new RevealEncounterEffect({
+                selectedTarget: villain,
+                match,
+            }).runEffect({player: players[0]});
         }
 
         assert.deepEqual(players.map(({gameZone}) => gameZone.encounterCards), [

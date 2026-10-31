@@ -168,6 +168,22 @@ registerSnapshotType(Player, {
     },
 });
 
+registerSnapshotType(Scenario, {
+    restore: scenario => {
+        const villains = scenario.getVillains();
+        if (scenario.match?.playing &&
+            (!Array.isArray(villains) ||
+                (scenario.zones ?? [scenario.gameZone]).some(zone =>
+                    zone?.currentVillain && !villains.includes(zone.currentVillain)))) {
+            throw new Error('La partida guardada usa una configuración antigua de Villanos; inicia una nueva partida.');
+        }
+        delete scenario.allVillains;
+        delete scenario.villainSequence;
+        delete scenario.remainingVillains;
+        delete scenario.nextVillainIndex;
+    },
+});
+
 registerSnapshotType(ScenarioZone, {
     ignoredProperties: ['players'],
 });

@@ -20,10 +20,4 @@ export default css`
     height: 48px;
   }
 
-  .obligations {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 4px;
-  }
-
 `;

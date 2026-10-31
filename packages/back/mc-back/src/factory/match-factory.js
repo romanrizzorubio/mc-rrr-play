@@ -57,9 +57,10 @@ export class MatchFactory {
     }
     async createScenario(params) {
         const {name} = params;
-        const villains = params.villains.map(cardConfig => {
-            return this.cardsFactory.createGameCardFromConfig(cardConfig);
-        });
+        const sequences = MatchFactory.getVillainConfigs(params);
+        const villainCards = new Map();
+        const villains = this._createVillains(sequences.villains, villainCards);
+        const expertVillains = this._createVillains(sequences.expertVillains, villainCards);
         const mainSchemes = params.mainSchemes.map(side => {
             const sides = this.cardsFactory.createSides(side);
 
@@ -74,6 +75,7 @@ export class MatchFactory {
         return new Scenario({
             name,
             villains,
+            expertVillains,
             mainSchemes,
             scenarioCards,
             setAsideCards,
@@ -83,6 +85,56 @@ export class MatchFactory {
             separatePlayAreas: params.separatePlayAreas,
             match: this.match,
         });
+    }
+    _createVillains(configs, cards) {
+        return configs.map(config => {
+            const contextParams = new Set([
+                config.params,
+                ...(config.params.sides ?? []).map(side => side.params),
+            ]);
+            // Card factories attach the runtime match to printed card parameters.
+            const key = JSON.stringify(config, function(name, value) {
+                return name === 'match' && contextParams.has(this) ? undefined : value;
+            });
+            if (!cards.has(key)) {
+                cards.set(key, this.cardsFactory.createGameCardFromConfig(config));
+            }
+            return cards.get(key);
+        });
+    }
+    static getVillainConfigs(params) {
+        if (params.villainsExpert !== undefined || params.extraVillains !== undefined) {
+            throw new Error('Actualiza el catálogo: configura los Villanos únicamente en villains y expertVillains.');
+        }
+        if (!Array.isArray(params.villains) ||
+            (params.expertVillains !== undefined && !Array.isArray(params.expertVillains))) {
+            throw new TypeError('Las secuencias de Villanos deben ser listas de cartas.');
+        }
+        const legacyContent = params.mainSchemes?.[0]?.[0]?.params?.content;
+        if (params.expertVillains === undefined && legacyContent?.villains) {
+            if (params.manualVillainProgression) {
+                throw new Error('Actualiza el catálogo: la progresión manual requiere villains y expertVillains en el escenario.');
+            }
+            const resolveStages = (stages, expert) => stages.map(stage => {
+                const variants = params.villains.filter(config =>
+                    (config.params.stage ?? config.params.sides?.[0]?.params.stage) === stage);
+                const card = (expert ?
+                    variants.find(config => config.params.expert === true) :
+                    undefined) ?? variants.find(config => config.params.expert !== true);
+                if (!card) {
+                    throw new Error(`No se encontró la etapa ${stage} del Villano en la configuración antigua.`);
+                }
+                return card;
+            });
+            return {
+                villains: resolveStages(legacyContent.villains, false),
+                expertVillains: resolveStages(legacyContent.villainsExpert ?? legacyContent.villains, true),
+            };
+        }
+        return {
+            villains: params.villains,
+            expertVillains: params.expertVillains ?? params.villains,
+        };
     }
     createSuperhero(params) {
         const sides = this.cardsFactory.createSides(params.sides);

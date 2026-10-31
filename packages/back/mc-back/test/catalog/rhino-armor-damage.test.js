@@ -54,6 +54,7 @@ describe('Rhino armor before Tough', () => {
             {owner: player},
         );
         await new PutPlayEffect({card: shield, match, selectedTarget: player}).runEffect({player});
+        assert.ok(player.upgrades.includes(shield));
         const event = factory.cardsFactory.createGameCardFromConfig(
             captainAmerica.config.cards.find(({card}) => card.params.name === 'Lanzamiento de escudo').card,
             {owner: player},
@@ -74,15 +75,22 @@ describe('Rhino armor before Tough', () => {
             factory.cardsFactory.createGameCardFromConfig({
                 type: CARD_TYPE_RESOURCE, params: {name: `Discarded card ${index}`},
             }, {owner: player}));
-        player.hand.cards.push(event, ...discardedCards);
+        player.hand.cards.push(...discardedCards);
         match.openDialog = async dialog => {
             if (dialog.dialogType === DIALOG_DISCARD_HAND) {
                 return {selected: discardedCards.map(card => ({id: card.id}))};
             }
             if (dialog.dialogType === DIALOG_SELECT_TARGET) {
+                const availableIds = new Set(dialog.data.cards.map(({id}) => id));
+                const selected = selectedTargets.filter(target =>
+                    availableIds.has(target.id));
+                const cards = selected.length ?
+                    selected :
+                    dialog.data.cards.slice(0, 1);
+
                 return {selected: dialog.data.count === undefined ?
-                    {id: selectedTargets[0].id} :
-                    selectedTargets.map(target => ({id: target.id}))};
+                    {id: cards[0].id} :
+                    cards.map(({id}) => ({id}))};
             }
             return {};
         };

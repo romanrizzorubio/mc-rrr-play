@@ -206,6 +206,11 @@ export default css`
     height: 16px;
   }
 
+  .tucked.facedown-host {
+    position: static;
+    height: 16px;
+  }
+
   .tucked.side-scheme-tucked {
     position: static;
     height: 16px;

@@ -29,7 +29,7 @@ describe('Risky Business unprinted stats', () => {
         });
         const factory = new MatchFactory(match);
 
-        for (const villainConfig of scenario.config.villains) {
+        for (const villainConfig of [scenario.config.villains[0], ...scenario.config.expertVillains]) {
             const villain = factory.cardsFactory.createGameCardFromConfig(villainConfig);
 
             for (const [sideIndex, stat] of [[0, 'attack'], [1, 'scheme']]) {

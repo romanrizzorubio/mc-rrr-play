@@ -114,6 +114,7 @@ export class ForEachEffect extends Effect {
         for (const target of targets) {
             const effect = this.createTargetEffect();
             const targetParams = this.getTargetParams(params, target);
+            targetParams.forEachResults = [...this.results];
             if (effect.target === this.target) {
                 effect.selectedTarget = target;
                 effect.refreshTarget = false;

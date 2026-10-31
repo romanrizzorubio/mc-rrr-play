@@ -11,10 +11,40 @@ export class PlayPlayersPhaseEffect extends PlayPhaseEffect {
     }
     async runEndPlayersPhase(params) {
         const players = this.match.orderedPlayers;
+        const startIndex = this.match.endPlayerIndex;
+        const discardPromptsByUser = new Map();
+        const discardSelections = new Map();
 
-        for (let i = this.match.endPlayerIndex ; i < players.length ; i++) {
+        for (let i = startIndex ; i < players.length ; i++) {
+            const player = players[i];
+            if (player.defeated) {
+                continue;
+            }
+
+            const user = player.userId || player;
+            const playerIndexes = discardPromptsByUser.get(user) || [];
+            playerIndexes.push(i);
+            discardPromptsByUser.set(user, playerIndexes);
+        }
+
+        await Promise.all(Array.from(
+            discardPromptsByUser.values(),
+            async playerIndexes => {
+                for (const index of playerIndexes) {
+                    discardSelections.set(
+                        index,
+                        await players[index].selectEndPlayersPhaseDiscards(params)
+                    );
+                }
+            }
+        ));
+
+        for (let i = startIndex ; i < players.length ; i++) {
             if (!players[i].defeated) {
-                await players[i].runEndPlayersPhase(params);
+                await players[i].runEndPlayersPhase(
+                    params,
+                    discardSelections.get(i)
+                );
             }
             this.match.endPlayerIndex = i + 1;
             await this.match.persist();

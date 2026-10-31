@@ -44,6 +44,10 @@ export class McRevealCardsDialog extends McDialog {
         `;
     }
     handleSelectCard(e) {
+        if (this.viewOnly) {
+            return;
+        }
+
         const {data: {playFromPlace}} = this;
         const {card} = e.detail;
 
@@ -55,6 +59,10 @@ export class McRevealCardsDialog extends McDialog {
         this.sendResponse();
     }
     renderButtons() {
+        if (this.viewOnly) {
+            return super.renderButtons();
+        }
+
         return html`
             <md-text-button
                 @click="${this.handleOk.bind(this)}"

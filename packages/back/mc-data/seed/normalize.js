@@ -153,6 +153,7 @@ const normalizeScenario = scenario => ({
     config: {
         ...scenario.config,
         villains: scenario.config.villains.map(normalizeCard),
+        expertVillains: scenario.config.expertVillains?.map(normalizeCard),
         mainSchemes: scenario.config.mainSchemes.map(side => side.map(normalizeCard)),
         cards: normalizeEntries(scenario.config.cards),
         setAsideCards: normalizeEntries(scenario.config.setAsideCards || []),

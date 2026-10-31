@@ -35,12 +35,6 @@ export class McHand extends LitElement {
         this.dragResourcePayment = null;
     }
 
-    getButton() {
-        const {showPanel} = this;
-
-        return showPanel ? 'v' : '^';
-    }
-
     getClass() {
         const {showPanel} = this;
 
@@ -84,7 +78,12 @@ export class McHand extends LitElement {
                     aria-expanded="${this.showPanel}"
                     aria-controls="hand-cards"
                     @click="${this.handleToggle.bind(this)}"
-                >${this.getButton()}</md-elevated-button>
+                >
+                    <span
+                        class="panel-chevron ${this.showPanel ? 'open' : ''}"
+                        aria-hidden="true"
+                    ></span>
+                </md-elevated-button>
                 <mc-card-list
                     id="hand-cards"
                     ?inert="${!this.interactive || this.playCardPending}"

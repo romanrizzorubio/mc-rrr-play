@@ -198,6 +198,63 @@ describe('match lobby page permissions', () => {
         assert.equal(page.renderJoinForm(), '');
     });
 
+    test('clears the hero selector after successfully adding a hero', async () => {
+        const joins = [];
+        const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
+            user: {id: 'host-1'},
+            id: 'lobby-1',
+            lobby: {
+                ownerId: 'host-1',
+                status: 'waiting',
+                maxPlayers: 3,
+                players: [{userId: 'host-1', hero: 'antman'}],
+            },
+            heroesList: [
+                {id: 'antman', name: 'Ant-Man'},
+                {id: 'ironman', name: 'Iron Man'},
+                {id: 'spiderman', name: 'Spider-Man'},
+            ],
+            playerSelection: {hero: 'ironman', deckId: ''},
+            decksList: [],
+            deckListHero: 'ironman',
+            deckListRequestSequence: 0,
+            busy: false,
+            apiConfigMatch: {
+                joinLobby: async (id, selection) => {
+                    joins.push({id, selection: {...selection}});
+                    page.lobby.players.push({
+                        userId: 'host-1',
+                        hero: selection.hero,
+                    });
+                },
+            },
+            loadLobby: async () => {},
+        });
+
+        await page.joinLobby();
+
+        assert.deepEqual(joins, [{
+            id: 'lobby-1',
+            selection: {hero: 'ironman', deckId: ''},
+        }]);
+        assert.deepEqual(page.playerSelection, {hero: '', deckId: ''});
+        assert.deepEqual(
+            page.availableHeroes.map(hero => hero.id),
+            ['spiderman'],
+        );
+
+        const form = Object.assign(Object.create(McFormPlayer.prototype), {
+            hero: page.playerSelection.hero,
+            heroesList: page.availableHeroes,
+        });
+        const markup = templateText(form.renderSelect());
+        assert.match(markup, /\.value=""/u);
+        assert.match(
+            markup,
+            /<md-select-option value="">[\s\S]*Selecciona un héroe/u,
+        );
+    });
+
     test('an unregistered player can join only while a waiting room has space', () => {
         const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
             user: {id: 'guest-1'},

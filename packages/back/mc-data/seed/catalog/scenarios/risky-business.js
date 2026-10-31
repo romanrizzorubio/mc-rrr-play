@@ -323,10 +323,6 @@ const mainSchemeCard = ({
             image: images.a,
             stage,
             ...(stage === 1 ? {
-                content: {
-                    villains: [1, 2],
-                    villainsExpert: [2, 3],
-                },
             } : {}),
             ...(abilitiesA.length ? {abilities: abilitiesA} : {}),
         },
@@ -657,6 +653,42 @@ const criminalEnterprise = {
     },
 };
 
+const villainCards = [
+    villainCard({
+        stage: 1,
+        normanImage: 'scenarios/risky-business/02001a.png',
+        goblinImage: 'scenarios/risky-business/02001b.png',
+        hitPoints: 14,
+        normanScheme: 2,
+        goblinAttack: 3,
+        infamyPerAttack: 1,
+        madnessPerScheme: 1,
+        goblinRevealDamage: 1,
+    }),
+    villainCard({
+        stage: 2,
+        normanImage: 'scenarios/risky-business/02002a.png',
+        goblinImage: 'scenarios/risky-business/02002b.png',
+        hitPoints: 18,
+        normanScheme: 2,
+        goblinAttack: 4,
+        infamyPerAttack: 2,
+        madnessPerScheme: 1,
+        goblinRevealDamage: 2,
+    }),
+    villainCard({
+        stage: 3,
+        normanImage: 'scenarios/risky-business/02003a.png',
+        goblinImage: 'scenarios/risky-business/02003b.png',
+        hitPoints: 22,
+        normanScheme: 3,
+        goblinAttack: 4,
+        infamyPerAttack: 3,
+        madnessPerScheme: 2,
+        goblinRevealDamage: 3,
+    }),
+];
+
 export default {
     _id: 'risky-business',
     order: 3,
@@ -664,41 +696,8 @@ export default {
     folder: 'risky-business',
     config: {
         name: 'risky-business',
-        villains: [
-            villainCard({
-                stage: 1,
-                normanImage: 'scenarios/risky-business/02001a.png',
-                goblinImage: 'scenarios/risky-business/02001b.png',
-                hitPoints: 14,
-                normanScheme: 2,
-                goblinAttack: 3,
-                infamyPerAttack: 1,
-                madnessPerScheme: 1,
-                goblinRevealDamage: 1,
-            }),
-            villainCard({
-                stage: 2,
-                normanImage: 'scenarios/risky-business/02002a.png',
-                goblinImage: 'scenarios/risky-business/02002b.png',
-                hitPoints: 18,
-                normanScheme: 2,
-                goblinAttack: 4,
-                infamyPerAttack: 2,
-                madnessPerScheme: 1,
-                goblinRevealDamage: 2,
-            }),
-            villainCard({
-                stage: 3,
-                normanImage: 'scenarios/risky-business/02003a.png',
-                goblinImage: 'scenarios/risky-business/02003b.png',
-                hitPoints: 22,
-                normanScheme: 3,
-                goblinAttack: 4,
-                infamyPerAttack: 3,
-                madnessPerScheme: 2,
-                goblinRevealDamage: 3,
-            }),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [
             mainSchemeCard({
                 name: 'OPA hostil',

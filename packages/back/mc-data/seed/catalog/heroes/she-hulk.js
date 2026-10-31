@@ -86,6 +86,7 @@ import {
     TRAIT_LOCATION,
     TRAIT_SKILL,
     TRAIT_SUPERPOWER,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_INSTANT,
     TRIGGER_THIS_FLIP,
     TRIGGER_WOULD_PLACE_THREAT,
@@ -386,6 +387,7 @@ export default {
                         'resources': [
                             RESOURCE_ENERGY
                         ],
+                        'classification': CLASSIFICATION_HERO,
                         'abilities': [
                             {
                                 'type': ABILITY_ACTION,
@@ -807,6 +809,7 @@ export default {
                                 'type': ABILITY_CONSTANT,
                                 'params': {
                                     'name': 'Mejora genética',
+                                    'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
                                     'effect': {
                                         'type': EFFECT_MODIFY_HIT_POINTS,
                                         'params': {

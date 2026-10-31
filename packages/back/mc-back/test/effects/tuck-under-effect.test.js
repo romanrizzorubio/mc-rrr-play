@@ -118,6 +118,92 @@ describe('Tuck-under effects', () => {
         assert.equal(deckRefreshes.length, 1);
     });
 
+    test('tucking an in-play card discards its attached and tucked cards as it leaves play', async () => {
+        const discardedCards = [];
+        const discardedFromGame = [];
+        const deck = {
+            cards: [],
+            discardPile: [],
+            async discard(card) {
+                this.discardPile.push(card);
+                discardedCards.push(card);
+            },
+            async refresh() {},
+        };
+        const gameZone = {
+            cards: [],
+            remove(card) {
+                this.cards.splice(this.cards.indexOf(card), 1);
+            },
+            discard(card) {
+                discardedFromGame.push(card);
+            },
+            async refresh() {},
+        };
+        const player = {deck, gameZone};
+        const selectedCard = new GameCard({
+            card: {
+                id: 'selected-in-play-card',
+                isPlayerCard: true,
+                toObj() {
+                    return {id: this.id};
+                },
+            },
+            owner: player,
+        });
+        const attachedCard = new GameCard({
+            card: {
+                id: 'attached-card',
+                isPlayerCard: true,
+                toObj() {
+                    return {id: this.id};
+                },
+            },
+            owner: player,
+        });
+        const tuckedCard = new GameCard({
+            card: {
+                id: 'already-tucked-card',
+                isPlayerCard: true,
+                toObj() {
+                    return {id: this.id};
+                },
+            },
+            owner: player,
+        });
+        selectedCard.controller = player;
+        selectedCard.damage = 2;
+        attachedCard.controller = player;
+        attachedCard.attachedTo = selectedCard;
+        selectedCard.attached.push(attachedCard);
+        selectedCard.tuckedCards.push(tuckedCard);
+        gameZone.cards.push(selectedCard);
+
+        const host = {
+            tuckedCards: [],
+            async refresh() {},
+        };
+        const ability = {card: host};
+        const effect = new TuckUnderEffect({
+            cards: [selectedCard],
+            match: {triggerCards: {}, players: [player]},
+            target: TARGET_THIS,
+        });
+        effect.ability = ability;
+
+        await effect.runEffect({ability, player});
+
+        assert.deepEqual(host.tuckedCards, [selectedCard]);
+        assert.deepEqual(gameZone.cards, []);
+        assert.deepEqual(discardedCards, [tuckedCard, attachedCard]);
+        assert.deepEqual(discardedFromGame, [attachedCard]);
+        assert.deepEqual(selectedCard.tuckedCards, []);
+        assert.deepEqual(selectedCard.attached, []);
+        assert.equal(selectedCard.damage, 0);
+        assert.equal(selectedCard.controller, undefined);
+        assert.equal(attachedCard.attachedTo, undefined);
+    });
+
     test('Bruno automatically tucks the only available hand card', async () => {
         const handCards = [];
         const discardedFromHand = [];
@@ -200,8 +286,9 @@ describe('Tuck-under effects', () => {
         assert.equal(hostRefreshes, 1);
     });
 
-    test('tucked cards are discarded when their host leaves play', async () => {
+    test('tucked and facedown cards are discarded when their host leaves play', async () => {
         const discardPile = [];
+        const encounterDiscardPile = [];
         const deckRefreshes = [];
         const owner = {
             deck: {
@@ -223,6 +310,23 @@ describe('Tuck-under effects', () => {
             },
             owner,
         });
+        const facedownPlayerCard = new GameCard({
+            card: {
+                id: 'facedown-player-card',
+                isPlayerCard: true,
+                toObj() {
+                    return {id: this.id};
+                },
+            },
+            owner,
+        });
+        const facedownEncounterCard = {
+            id: 'facedown-encounter-card',
+            isEncounterCard: true,
+            async discard() {
+                encounterDiscardPile.push(this);
+            },
+        };
         const tuckedCard = new GameCard({
             card: {
                 id: 'tucked-support',
@@ -233,6 +337,7 @@ describe('Tuck-under effects', () => {
             },
             owner,
         });
+        host.addFaceDown([facedownPlayerCard, facedownEncounterCard]);
         host.tuckedCards.push(tuckedCard);
 
         assert.deepEqual(
@@ -242,8 +347,10 @@ describe('Tuck-under effects', () => {
 
         await host.init();
 
-        assert.deepEqual(discardPile, [tuckedCard]);
-        assert.deepEqual(deckRefreshes, [true]);
+        assert.deepEqual(discardPile, [facedownPlayerCard, tuckedCard]);
+        assert.deepEqual(encounterDiscardPile, [facedownEncounterCard]);
+        assert.deepEqual(deckRefreshes, [true, true]);
+        assert.deepEqual(host.faceDown, []);
         assert.deepEqual(host.tuckedCards, []);
     });
 

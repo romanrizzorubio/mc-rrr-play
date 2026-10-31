@@ -59,6 +59,11 @@ export class CostGroup extends Cost {
     }
     async canPay(params) {
         const effect = await this.getEffect(params);
+        effect?.resetResolutionState({
+            preserveSelectedTarget:
+                params.preselectedEffectTargets?.has(effect),
+            preselectedEffectTargets: params.preselectedEffectTargets,
+        });
 
         return !effect || effect.canRun({
             ...params,

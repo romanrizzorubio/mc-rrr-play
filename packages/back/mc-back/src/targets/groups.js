@@ -89,17 +89,18 @@ export const groupTargets = {
     },
     [TARGET_ALL_MINIONS]: ({match, player, condition}) =>
         filterTargetsByCondition(getMinionsFor(match, player), condition),
-    [TARGET_SELECTED_PLAYER_CHARACTERS]: ({params}) => {
+    [TARGET_SELECTED_PLAYER_CHARACTERS]: ({match, params, player}) => {
         const {targetPlayer} = params;
 
-        if (!targetPlayer) {
+        if (!targetPlayer ||
+            (player && !getPlayersFor(match, player).includes(targetPlayer))) {
             return [];
         }
 
         return targetPlayer.friends.map(character => character.currentSide);
     },
-    [TARGET_ALL_PLAYERS]: ({match, condition}) =>
-        filterTargetsByCondition(match.players, condition),
+    [TARGET_ALL_PLAYERS]: ({match, player, condition}) =>
+        filterTargetsByCondition(getPlayersFor(match, player), condition),
     [TARGET_PLAYER_LOWEST_HERO_LIFE]: ({match, player}) => {
         const heroes = getHeroesFor(match, player);
         if (!heroes.length) {

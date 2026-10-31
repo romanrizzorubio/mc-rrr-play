@@ -39,9 +39,13 @@ export function getVillainFor(match, player) {
         return match.getVillainFor(player);
     }
 
-    return getScenarioZone(match, player)?.currentVillain ??
-        match?.villain ??
-        match?.scenario?.villain;
+    const zone = getScenarioZone(match, player);
+    const villain = zone?.currentVillain ?? zone?.villain;
+    if (villain || match?.scenario?.separatePlayAreas) {
+        return villain;
+    }
+
+    return match?.villain ?? match?.scenario?.villain;
 }
 
 export function getSchemesFor(match, player) {
@@ -167,6 +171,11 @@ export function getMinionsFor(match, player) {
         return match.getMinionsFor(player);
     }
 
+    if (match?.scenario?.separatePlayAreas) {
+        return getPlayersFor(match, player).flatMap(zonePlayer =>
+            zonePlayer.minions ?? zonePlayer.gameZone?.minions ?? []);
+    }
+
     if (Array.isArray(match?.minions)) {
         return match.minions;
     }
@@ -177,10 +186,16 @@ export function getMinionsFor(match, player) {
 
 export function getEnemiesFor(match, player) {
     if (typeof match?.getEnemiesFor === 'function') {
-        return match.getEnemiesFor(player);
+        return match.getEnemiesFor(player).filter(Boolean);
+    }
+    if (match?.scenario?.separatePlayAreas) {
+        return [
+            ...getMinionsFor(match, player),
+            getVillainFor(match, player),
+        ].filter(Boolean);
     }
     if (Array.isArray(match?.enemies)) {
-        return match.enemies;
+        return match.enemies.filter(Boolean);
     }
 
     return [

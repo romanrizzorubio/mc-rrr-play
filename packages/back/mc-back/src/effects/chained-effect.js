@@ -74,10 +74,10 @@ export class ChainedEffect extends Effect {
         return this.effects.every(effect => effect.activationEnd);
     }
     isResolved() {
-        return this.effects.some(effect => effect.isResolved());
+        return this.effects.some(effect => effect.resolved);
     }
     isFullResolved() {
-        return this.effects.every(effect => effect.isFullResolved());
+        return this.effects.every(effect => effect.fullResolved);
     }
     async getCostPaymentEffects(params) {
         const newParams = this.getEffectParams(params);
@@ -124,6 +124,7 @@ export class ChainedEffect extends Effect {
         const effectParams = this.getEffectParams(params);
         for (const effect of this.effects) {
             if (typeof effect.confirmBeforeResolve === 'function' &&
+                await effect.canRun(effectParams) &&
                 !await effect.confirmBeforeResolve(effectParams)) {
                 return false;
             }
@@ -134,8 +135,7 @@ export class ChainedEffect extends Effect {
     requiresAll(params) {
         return Boolean(
             params.isCost ||
-            params.costPaymentSession?.requireAllCosts ||
-            this.thenEffect
+            params.costPaymentSession?.requireAllCosts
         );
     }
     canRun(params) {
@@ -143,14 +143,6 @@ export class ChainedEffect extends Effect {
 
         if (this.requiresAll(params)) {
             return this.promisesSequentialEvery(this.effects, effect =>
-                effect.canRun(newParams));
-        }
-
-        const requiredEffects = this.effects.filter(effect =>
-            effect.isRequiredForAbilityAvailability);
-
-        if (requiredEffects.length) {
-            return this.promisesSequentialEvery(requiredEffects, effect =>
                 effect.canRun(newParams));
         }
 

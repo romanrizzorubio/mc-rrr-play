@@ -183,6 +183,12 @@ export class Match extends Engine {
         }
 
         const sourceZone = this.getScenarioZoneForCard(ability?.card);
+        if (!sourceZone ||
+            (sourceZone === this.scenario.gameZone &&
+                sourceZone.players?.length === 0)) {
+            return true;
+        }
+
         const eventPlayer = params.player ??
             params.effect?.player ??
             params.effect?.enemy?.owner;
@@ -191,7 +197,7 @@ export class Match extends Engine {
             params.effect?.selectedTarget?.scenarioZone ??
             params.effect?.enemy?.scenarioZone;
 
-        return !sourceZone || !eventZone || sourceZone === eventZone;
+        return !eventZone || sourceZone === eventZone;
     }
     getMainSchemeFor(player) {
         const zone = this.getScenarioZone(player);
@@ -204,9 +210,12 @@ export class Match extends Engine {
     }
     getVillainFor(player) {
         const zone = this.getScenarioZone(player);
-        return zone?.currentVillain ??
-            zone?.villain ??
-            this.scenario?.villain;
+        const villain = zone?.currentVillain ?? zone?.villain;
+        if (villain || this.scenario?.separatePlayAreas) {
+            return villain;
+        }
+
+        return this.scenario?.villain;
     }
     getSchemesFor(player) {
         const zone = this.getScenarioZone(player);

@@ -18,6 +18,15 @@ export class DiscardRandomEffect extends Effect {
         super.resetResolutionData();
         this.cards = [];
     }
+    async canRun(params) {
+        const targets = await this.getValidTarget(params);
+
+        return targets.some(target =>
+            Array.isArray(target) ?
+                target.length > 0 :
+                Boolean(target?.hand?.cards?.length)
+        );
+    }
     async execute(params) {
         const {selectedTarget, count, showDialog} = this;
 

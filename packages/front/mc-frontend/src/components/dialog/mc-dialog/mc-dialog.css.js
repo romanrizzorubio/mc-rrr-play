@@ -41,6 +41,7 @@ export default css`
   
   .title {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     margin: 0 0 8px;
     font-family: var(--mc-font-title, sans-serif);

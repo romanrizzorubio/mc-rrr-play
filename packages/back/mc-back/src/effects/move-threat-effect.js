@@ -133,6 +133,7 @@ export class MoveThreatEffect extends Effect {
     }
     filterDestinationTarget(card, params) {
         return typeof card?.placeThreat === 'function' &&
+            card.canPlaceThreat?.() !== false &&
             Effect.prototype.filterTarget.call(this, card, params);
     }
     getValidDestination(params) {
@@ -217,8 +218,10 @@ export class MoveThreatEffect extends Effect {
         const destinationTargets = Array.isArray(this.selectedDestination) ?
             this.selectedDestination :
             [this.selectedDestination];
+        const validDestinations = destinationTargets.filter(target =>
+            this.filterDestinationTarget(target, params));
 
-        if (!sourceTargets.length || !destinationTargets.length) {
+        if (!sourceTargets.length || !validDestinations.length) {
             return;
         }
 
@@ -226,7 +229,7 @@ export class MoveThreatEffect extends Effect {
         for (const sourceTarget of sourceTargets) {
             const source = this.getThreatSource(sourceTarget, params);
             if (!source ||
-                source.threat < destinationTargets.length ||
+                source.threat < validDestinations.length ||
                 !source.canRemoveThreat()) {
                 continue;
             }
@@ -241,7 +244,7 @@ export class MoveThreatEffect extends Effect {
         const amountPerDestination = Math.min(
             this.threat,
             Math.floor(Math.min(...sources.map(source => source.threat)) /
-                destinationTargets.length)
+                validDestinations.length)
         );
         if (amountPerDestination <= 0) {
             return;
@@ -249,12 +252,12 @@ export class MoveThreatEffect extends Effect {
         this._threat = amountPerDestination + this.preventThreat;
         this.movedThreat = amountPerDestination *
             sources.length *
-            destinationTargets.length;
-        sources.forEach(source => destinationTargets.forEach(destination => {
+            validDestinations.length;
+        sources.forEach(source => validDestinations.forEach(destination => {
             moveThreatTokens(source, destination, amountPerDestination);
         }));
 
-        const refreshedTargets = new Set([...sources, ...destinationTargets]);
+        const refreshedTargets = new Set([...sources, ...validDestinations]);
         await Promise.all([...refreshedTargets].map(target => target.refresh?.()));
 
         for (const source of sources) {
@@ -266,7 +269,7 @@ export class MoveThreatEffect extends Effect {
             );
         }
 
-        for (const destination of destinationTargets) {
+        for (const destination of validDestinations) {
             await completeMainSchemeIfThresholdReached(
                 destination,
                 this.match,

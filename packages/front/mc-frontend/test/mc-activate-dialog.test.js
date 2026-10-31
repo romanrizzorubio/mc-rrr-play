@@ -38,8 +38,7 @@ describe('McActivateDialog', () => {
                 targetPlayerName: 'Héroe',
                 showCancel: true,
                 hideOk: false,
-                hand: [{id: 'hand-card'}],
-                _showHand: false,
+                hand: readOnly ? [] : [{id: 'hand-card'}],
                 data: {
                     character: {name: 'Villano', image: 'enemy.png', isFacedownCard: true},
                     target: {name: 'Héroe', image: 'hero.png'},
@@ -54,17 +53,19 @@ describe('McActivateDialog', () => {
             assert.doesNotMatch(markup, /Héroe responsable/u);
             assert.match(markup, /Activación del villano[\s\S]*class="activation-cards"/u);
             if (readOnly) {
-                assert.doesNotMatch(markup, /<md-text-button|<button|Ver mano|Cancelar/u);
+                assert.doesNotMatch(markup, />Ok<\/md-text-button>|>Cancelar<\/md-text-button>|Ver mano/u);
+                assert.match(markup, /Ver mesa/u);
                 assert.match(markup, /<div inert>/u);
-                dialog.dispatchEvent = () => assert.fail('Observers cannot respond');
+                const events = [];
+                dialog.dispatchEvent = event => events.push(event);
                 dialog.sendResponse();
                 dialog.handleOk();
                 dialog.handleCancel();
-                dialog.handleShowHand();
-                assert.equal(dialog._showHand, false);
+                dialog.handleViewTable();
+                assert.deepEqual(events.map(event => event.type), ['dialog-view-table']);
             } else {
                 assert.match(markup, />Ok<\/md-text-button>/u);
-                assert.match(markup, /Cancelar|Ver mano/u);
+                assert.match(markup, /Cancelar|Ver mesa/u);
                 assert.doesNotMatch(markup, /<div inert>/u);
             }
         }

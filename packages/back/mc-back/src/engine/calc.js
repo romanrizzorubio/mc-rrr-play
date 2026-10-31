@@ -22,7 +22,11 @@ RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-sha
 
 import {checkCondition, path} from './utils.js';
 import {
+    getEnemiesFor,
     getMainSchemeFor,
+    getMinionsFor,
+    getSchemesFor,
+    getSideSchemesFor,
     getVillainFor,
 } from '../utils/match-zone-utils.js';
 
@@ -233,16 +237,67 @@ export class Calc {
                 sum + resources[resource],
                 0);
     }
+    getTargetSource(params) {
+        const {target} = this;
+        const match = params.match ?? params.player?.match;
+        const player = params.player;
+        if (!player ||
+            !match?.scenario?.separatePlayAreas ||
+            typeof target !== 'string') {
+            return path(params, target);
+        }
+
+        const prefix = [
+            'player.match.',
+            'effect.match.',
+            'match.',
+        ].find(pathPrefix => target.startsWith(pathPrefix));
+        if (!prefix) {
+            return path(params, target);
+        }
+
+        const [property, ...segments] = target.slice(prefix.length).split('.');
+        let source;
+        switch (property) {
+            case 'enemies':
+                source = getEnemiesFor(match, player);
+                break;
+            case 'mainScheme':
+                source = getMainSchemeFor(match, player);
+                break;
+            case 'minions':
+                source = getMinionsFor(match, player);
+                break;
+            case 'schemes':
+                source = getSchemesFor(match, player);
+                break;
+            case 'sideSchemes':
+                source = getSideSchemesFor(match, player);
+                break;
+            case 'villain':
+                source = getVillainFor(match, player);
+                break;
+            default:
+                return path(params, target);
+        }
+
+        return segments.length ?
+            path({[property]: source}, `${property}.${segments.join('.')}`) :
+            source;
+    }
     calculateFormula(params) {
         const {target, formula} = this;
 
         let source;
         if (formula === CALC_STAGE) {
             switch (target) {
-                case TARGET_VILLAIN:
-                    source = getVillainFor(params.match, params.player) ??
-                        path(params, 'match.villain');
+                case TARGET_VILLAIN: {
+                    source = getVillainFor(params.match, params.player);
+                    if (!source && !params.match?.scenario?.separatePlayAreas) {
+                        source = path(params, 'match.villain');
+                    }
                     break;
+                }
                 case TARGET_MAIN_SCHEME:
                     source = getMainSchemeFor(params.match, params.player) ??
                         path(params, 'match.mainScheme');
@@ -253,7 +308,7 @@ export class Calc {
                     );
             }
         } else {
-            source = path(params, target);
+            source = this.getTargetSource(params);
         }
 
         if (Object.hasOwn(CALCULATION_MAP, formula)) {

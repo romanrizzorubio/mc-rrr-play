@@ -49,7 +49,10 @@ export class AbilitiesFactory {
             throw new Error(`Unknown ability type: ${type}`);
         }
 
-        return new AbilityClass(params);
+        return new AbilityClass({
+            ...params,
+            abilityType: type,
+        });
     }
     _createArrow(arrow) {
         return new Arrow({

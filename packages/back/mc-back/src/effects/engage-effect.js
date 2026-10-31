@@ -20,7 +20,7 @@ export class EngageEffect extends PutPlayEffect {
     }
     getCard(params = {}) {
         return super.getCard(params) ||
-            (params.card?.isMinion ? params.card : undefined);
+            (!this.cardSource && params.card?.isMinion ? params.card : undefined);
     }
     getController(params) {
         return this.controller || this.selectedTarget || params.player;

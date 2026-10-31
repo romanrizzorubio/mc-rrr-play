@@ -314,9 +314,6 @@ export class Effect extends Engine {
     get usesActivationTargetFilter() {
         return true;
     }
-    get isRequiredForAbilityAvailability() {
-        return false;
-    }
     calculate(params) {
         const {paramsCalc} = this;
 
@@ -660,9 +657,10 @@ export class Effect extends Engine {
         return true;
     }
     async prepareCost(params, session) {
-        this.resolved = false;
-        this.fullResolved = false;
-        this.paymentCancelled = false;
+        this.resetResolutionState({
+            preserveSelectedTarget: params.preselectedEffectTargets?.has(this),
+            preselectedEffectTargets: params.preselectedEffectTargets,
+        });
 
         this.saveDataCard();
 

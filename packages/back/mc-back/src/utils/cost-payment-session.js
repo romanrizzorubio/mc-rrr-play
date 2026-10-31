@@ -291,7 +291,7 @@ export class CostPaymentSession {
         this.requireAllCosts = requireAllCosts;
         const effectParams = {
             ...params,
-            effect,
+            effect: requireAllCosts ? effect : params.effect ?? effect,
             costPaymentSession: this,
             ...(requireAllCosts ? {matchAll: true} : {}),
         };

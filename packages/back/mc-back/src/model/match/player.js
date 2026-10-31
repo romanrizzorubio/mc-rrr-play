@@ -9,7 +9,9 @@ import {
     RESOURCE_WILD,
     RESOURCES_X,
     TARGET_CARD,
+    TRIGGER_PLAYER_CAN_USE_ABILITY,
     TRIGGER_PLAYER_CAN_FLIP,
+    TRIGGER_PLAYER_CAN_PLAY,
     TRIGGER_PLAYER_CAN_READY,
     TRIGGER_PLAYER_CAN_THWART,
 } from 'mc-shared';
@@ -241,6 +243,26 @@ export class Player extends Engine {
     canDefend(_params) {
         return true;
     }
+    async canUseAbility(params = {}) {
+        const {abilityType} = params;
+        if (typeof abilityType !== 'string' || abilityType.length === 0) {
+            return true;
+        }
+
+        const restrictions = {[abilityType]: true};
+        await this.trigger(
+            PRIORITY_CONSTANT,
+            [TRIGGER_PLAYER_CAN_USE_ABILITY],
+            {
+                ...params,
+                player: this,
+                effect: restrictions,
+                restrictions,
+            }
+        );
+
+        return restrictions[abilityType];
+    }
     async canThwart(params = {}) {
         const restrictions = {thwart: true};
         await this.trigger(
@@ -255,6 +277,21 @@ export class Player extends Engine {
         );
 
         return restrictions.thwart;
+    }
+    async canPlayCard(params = {}) {
+        const restrictions = {play: true};
+        await this.trigger(
+            PRIORITY_CONSTANT,
+            [TRIGGER_PLAYER_CAN_PLAY],
+            {
+                ...params,
+                player: this,
+                effect: restrictions,
+                restrictions,
+            }
+        );
+
+        return restrictions.play;
     }
     async canReady(params = {}) {
         const restrictions = {ready: true};
@@ -739,29 +776,38 @@ export class Player extends Engine {
 
         return card.resolveResourceAbility({card, cardPaid, player: this});
     }
-    async runEndPlayersPhase(_params) {
-        if (this.hand.cards.length) {
-            const {selected} = await this.openDialog({
-                dialogType: DIALOG_DISCARD_HAND,
-                targetPlayer: this,
-                data: {
-                    hand: await this.getHandSize(),
-                    cards: this.hand.cards.map(card => card.toObj(arguments[0]))
-                },
-            });
-
-            await this.promisesSequential(selected, card => {
-                const discardFromHandEffect = new DiscardFromHandEffect({
-                    target: TARGET_CARD,
-                    match: this.match,
-                });
-
-                return discardFromHandEffect.runEffect({
-                    card: this.hand.getCard(card.id),
-                    player: this,
-                });
-            });
+    async selectEndPlayersPhaseDiscards(params) {
+        if (!this.hand.cards.length) {
+            return [];
         }
+
+        const {selected} = await this.openDialog({
+            dialogType: DIALOG_DISCARD_HAND,
+            targetPlayer: this,
+            data: {
+                hand: await this.getHandSize(),
+                cards: this.hand.cards.map(card => card.toObj(params))
+            },
+        });
+
+        return selected;
+    }
+    async runEndPlayersPhase(params, selected) {
+        if (selected === undefined) {
+            selected = await this.selectEndPlayersPhaseDiscards(params);
+        }
+
+        await this.promisesSequential(selected, card => {
+            const discardFromHandEffect = new DiscardFromHandEffect({
+                target: TARGET_CARD,
+                match: this.match,
+            });
+
+            return discardFromHandEffect.runEffect({
+                card: this.hand.getCard(card.id),
+                player: this,
+            });
+        });
 
         const fillHandEffect = new FillHandEffect({
             match: this.match,

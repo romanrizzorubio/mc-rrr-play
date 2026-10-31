@@ -29,6 +29,7 @@ const {SuperheroCardComponent} = await import(
     '../src/components/cards/characters/mc-superhero-card/mc-superhero-card.js'
 );
 const {BACK_CARD_PLAYER} = await import('../src/misc/cards.js');
+const {MENU_OPTION_VIEW_TUCKED_CARDS} = await import('../src/misc/card-menu.js');
 const [
     matchStyles,
     playerStyles,
@@ -52,6 +53,10 @@ const [
     )));
 const firstPlayerToken = await readFile(
     new URL('../../mc-static/src/assets/images/first-player-token.svg', import.meta.url),
+    'utf8',
+);
+const matchPageStyles = await readFile(
+    new URL('../src/pages/mc-match-page/mc-match-page.css.js', import.meta.url),
     'utf8',
 );
 
@@ -122,6 +127,29 @@ describe('multiplayer player boards', () => {
         assert.equal(directive.update(part, binding.values), false);
     });
 
+    test('shows the controlled dialog target board temporarily without changing the active player', () => {
+        const players = [
+            {id: 'seat-1', userId: 'account'},
+            {id: 'seat-2', userId: 'account'},
+        ];
+        const component = Object.assign(Object.create(MatchComponent.prototype), {
+            boardPlayer: players[0],
+            dialogBoardPlayerId: 'seat-2',
+            focusedPlayerId: '',
+            interactive: true,
+            match: {players},
+            player: players[0],
+        });
+
+        assert.equal(component.displayedPlayer, players[1]);
+        assert.equal(component.boardInteractive, false);
+        assert.equal(component.player, players[0]);
+
+        component.dialogBoardPlayerId = '';
+        assert.equal(component.displayedPlayer, players[0]);
+        assert.equal(component.boardInteractive, true);
+    });
+
     test('leaves foreign-player accordion opening and closing to the native toggle', () => {
         const players = [
             {id: 'local', userId: 'account'},
@@ -154,6 +182,49 @@ describe('multiplayer player boards', () => {
         component.match.players = players;
         assert.match(templateText(component.renderPlayerAccordions()), /aria-label="Jugadores"/u);
         assert.match(templateText(component.renderPlayerAccordions()), /Ana \(2\) \(tú\)/u);
+    });
+
+    test('collapses the player panel to a Ver jugadores control and reopens it', () => {
+        const initializedComponent = new MatchComponent();
+        assert.equal(initializedComponent.playersPanelOpen, false);
+
+        const players = [
+            {id: 'seat-1', userId: 'account', name: 'Ana (1)', superhero: {image: 'one.png'}},
+            {id: 'seat-2', userId: 'account', name: 'Ana (2)', superhero: {image: 'two.png'}},
+        ];
+        const component = Object.assign(initializedComponent, {
+            player: players[0],
+            focusedPlayerId: '',
+            match: {players},
+            playersPanelOpen: false,
+        });
+
+        let panel = component.renderPlayerAccordions();
+        let expandedIndex = panel.strings.findIndex(part => part.includes('aria-expanded="'));
+        let hiddenIndex = panel.strings.findIndex(part => part.includes('?hidden="'));
+        const collapsedMarkup = templateText(panel);
+        assert.equal(panel.values[expandedIndex], false);
+        assert.equal(panel.values[hiddenIndex], true);
+        assert.match(collapsedMarkup, /Ver jugadores/u);
+        assert.match(collapsedMarkup, /player-sidebar-chevron/u);
+
+        component.togglePlayersPanel();
+        panel = component.renderPlayerAccordions();
+        expandedIndex = panel.strings.findIndex(part => part.includes('aria-expanded="'));
+        hiddenIndex = panel.strings.findIndex(part => part.includes('?hidden="'));
+        assert.equal(panel.values[expandedIndex], true);
+        assert.equal(panel.values[hiddenIndex], false);
+        assert.doesNotMatch(templateText(panel), /Ver jugadores/u);
+        assert.match(templateText(panel), /<h2>Jugadores<\/h2>/u);
+
+        component.togglePlayersPanel();
+        panel = component.renderPlayerAccordions();
+        expandedIndex = panel.strings.findIndex(part => part.includes('aria-expanded="'));
+        hiddenIndex = panel.strings.findIndex(part => part.includes('?hidden="'));
+        assert.equal(panel.values[expandedIndex], false);
+        assert.equal(panel.values[hiddenIndex], true);
+        assert.match(templateText(panel), /Ver jugadores/u);
+        assert.match(templateText(panel), /player-sidebar collapsed/u);
     });
 
     test('selecting an owned hero changes the controlling seat without changing the turn', () => {
@@ -223,6 +294,50 @@ describe('multiplayer player boards', () => {
                 },
             ]},
             dispatchEvent: event => events.push(event),
+        });
+
+        test('consultation mode blocks gameplay menus but opens tucked-card inspection', () => {
+            const events = [];
+            const player = {id: 'seat-1', userId: 'account'};
+            const component = Object.assign(Object.create(MatchComponent.prototype), {
+                player,
+                boardPlayer: player,
+                dialogBoardPlayerId: '',
+                tableConsultationMode: true,
+                interactive: false,
+                focusedPlayerId: '',
+                match: {players: [player], scenario: {}},
+                actionRequest: {
+                    status: 'pending',
+                    targetId: 'seat-1',
+                    requester: 'Other',
+                },
+                dispatchEvent: event => events.push(event),
+            });
+            let stopped = false;
+            component.guardBoardInteraction({
+                type: 'change-menu',
+                detail: {
+                    card: {
+                        id: 'host',
+                        tuckedCards: [{id: 'tucked-card'}],
+                    },
+                    menuOptions: [
+                        {id: 'attack'},
+                        {id: MENU_OPTION_VIEW_TUCKED_CARDS},
+                    ],
+                },
+                stopPropagation() {
+                    stopped = true;
+                },
+            });
+
+            assert.equal(stopped, true);
+            assert.equal(events.length, 1);
+            assert.equal(events[0].type, 'view-tucked-cards');
+            assert.equal(events[0].detail.cards[0].id, 'tucked-card');
+            assert.equal(component.renderActionRequest(), '');
+            assert.match(templateText(component.renderScenario()), /class="consultation"/u);
         });
         const markup = templateText(component.renderPlayerAccordions());
         assert.ok(markup.indexOf('Pedir una acción') > markup.indexOf('</details>'));
@@ -465,7 +580,7 @@ describe('multiplayer player boards', () => {
         const markup = templateText(component.render());
         const playerRow = markup.indexOf('class="player-board-row ');
         const playerBoard = markup.indexOf('<mc-player', playerRow);
-        const sidebar = markup.indexOf('<aside class="player-sidebar"', playerRow);
+        const sidebar = markup.indexOf('class="player-sidebar ', playerRow);
         const hand = markup.indexOf('<mc-hand');
         assert.ok(playerRow >= 0);
         assert.ok(playerBoard > playerRow);
@@ -473,7 +588,28 @@ describe('multiplayer player boards', () => {
         assert.ok(hand > sidebar);
         assert.match(matchStyles,
             /\.player-board-row\s*\{[^}]*display:\s*grid;[^}]*align-items:\s*end;/su);
+        assert.match(matchStyles,
+            /\.match-layout\s*\{[^}]*flex:\s*1 1 0;[^}]*overflow-y:\s*auto;/su);
+        assert.match(matchStyles,
+            /\.match-layout\s*\{[^}]*border:\s*1px solid #e4e0ea;[^}]*padding:\s*16px 16px 0;/su);
+        assert.match(matchStyles,
+            /\.match-board\s*\{[^}]*display:\s*flex;[^}]*min-height:\s*100%;/su);
+        assert.match(matchStyles,
+            /\.player-board-row\s*\{[^}]*margin-top:\s*auto;/su);
+        assert.match(matchStyles,
+            /\.player-board-row\s*\{[^}]*padding:\s*16px 0;/su);
+        assert.match(matchStyles,
+            /:host\s*\{[^}]*background-color:\s*transparent;/su);
+        assert.match(matchStyles,
+            /\.match-layout\s*\{[^}]*background-color:\s*#f7f5fb;/su);
+        assert.match(matchStyles,
+            /:host\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*overflow:\s*hidden;/su);
         assert.doesNotMatch(matchStyles, /\.read-only mc-hand/u);
+    });
+
+    test('keeps the game area 16px below the top bar without double padding', () => {
+        assert.match(matchPageStyles, /:host\s*\{[^}]*padding:\s*16px 0 0;/su);
+        assert.match(matchStyles, /:host\s*\{[^}]*padding:\s*0 16px;/su);
     });
 
     test('shows the initial-player token before the resolved hero image in the player list', () => {
@@ -660,7 +796,10 @@ describe('multiplayer player boards', () => {
                 firstPlayerTokenUrl: '/first-player-token.svg',
                 match: {
                     currentTurnPlayer: 'first-player',
-                    players: [{id: 'first-player', ...component.player}],
+                    players: [
+                        {id: 'first-player', ...component.player},
+                        {id: 'second-player', name: 'Segundo jugador'},
+                    ],
                 },
             },
         );
@@ -683,6 +822,51 @@ describe('multiplayer player boards', () => {
         );
         assert.match(
             templateText(matchComponent.renderPlayer()),
+            /\.firstPlayerTokenUrl="\/first-player-token\.svg"/u,
+        );
+    });
+
+    test('hides the first-player token for a solo match but keeps it for multiple heroes of one account', () => {
+        const player = {
+            id: 'first-player',
+            userId: 'same-account',
+            name: 'Jugador inicial',
+            initial: true,
+            superhero: {image: 'heroes/captain-marvel/01010a.png'},
+            gameZone: {cards: []},
+        };
+        const component = Object.assign(
+            Object.create(MatchComponent.prototype),
+            {
+                player,
+                firstPlayerTokenUrl: '/first-player-token.svg',
+                match: {players: [player], currentTurnPlayer: player.id},
+            },
+        );
+        assert.match(templateText(component.renderPlayer()), /\.firstPlayerTokenUrl=""/u);
+        assert.equal(component.renderPlayerAccordions(), '');
+
+        const soloPlayer = Object.assign(Object.create(McPlayer.prototype), {
+            player,
+            firstPlayerTokenUrl: '',
+        });
+        assert.match(templateText(soloPlayer.renderSuperhero()), /\.firstPlayerTokenUrl=""/u);
+        const soloHero = Object.assign(Object.create(SuperheroCardComponent.prototype), {
+            firstPlayerTokenUrl: '',
+            card: {},
+            abilities: [],
+            tuckedCards: [],
+            obligations: [],
+            canEndTurn: false,
+        });
+        assert.doesNotMatch(templateText(soloHero.render()), /class="first-player-token"/u);
+
+        component.match = {
+            ...component.match,
+            players: [player, {...player, id: 'second-player', initial: false}],
+        };
+        assert.match(
+            templateText(component.renderPlayer()),
             /\.firstPlayerTokenUrl="\/first-player-token\.svg"/u,
         );
     });

@@ -83,6 +83,59 @@ describe('Scenario component', () => {
         }
     });
 
+    test('shows the general zone and only the selected player scenario zone', () => {
+        const generalZone = {id: 'zone-1', players: []};
+        const selectedZone = {id: 'zone-2', players: ['Mapache Cohete']};
+        const hiddenZone = {id: 'zone-3', players: ['Hulka']};
+        const zones = [generalZone, selectedZone, hiddenZone];
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                gameZone: generalZone,
+                zones,
+            },
+            player: {
+                name: 'Mapache Cohete',
+                scenarioZoneId: selectedZone.id,
+            },
+            renderDeck: () => 'encounter deck',
+            renderZones: visibleZones => visibleZones,
+        });
+
+        const template = component.render();
+
+        assert.deepEqual(template.values[1], [generalZone, selectedZone]);
+    });
+
+    test('shows only the general zone when no player zone is selected', () => {
+        const generalZone = {id: 'zone-1', players: []};
+        const hiddenZone = {id: 'zone-2', players: ['Hulka']};
+        const renderedZones = [];
+        const renderZone = zone => {
+            renderedZones.push(zone);
+
+            return '';
+        };
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                gameZone: generalZone,
+                zones: [generalZone, hiddenZone],
+            },
+            player: null,
+            renderDeck: () => 'encounter deck',
+            renderSchemes: renderZone,
+            renderEnvironments: renderZone,
+            renderVillain: renderZone,
+        });
+
+        component.render();
+
+        assert.deepEqual(renderedZones, [
+            generalZone,
+            generalZone,
+            generalZone,
+        ]);
+    });
+
     test('scenario environments render their generic counters', () => {
         const environment = {isEnvironment: true};
         const sideScheme = {isSideScheme: true};

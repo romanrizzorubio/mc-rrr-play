@@ -408,6 +408,53 @@ describe('simultaneous effects', () => {
         assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHOOSE_ABILITY);
     });
 
+    test('Combate ritual calculates damage and threat from discarded boost icons', async () => {
+        const discardedCard = {
+            boost: 2,
+            toObj() {
+                return {id: 'discarded-encounter-card'};
+            },
+        };
+        const encounterDeck = {
+            cards: [discardedCard],
+            discardPile: [],
+            async discardTopCards(count) {
+                const cards = this.cards.splice(0, count);
+                this.discardPile.push(...cards);
+
+                return cards;
+            },
+            refresh() {},
+        };
+        const match = {
+            openDialog: async () => ({}),
+            triggerCards: {},
+        };
+        const factory = new AbilitiesFactory({match});
+        const effectConfig = blackPanther.config.nemesis[3].card.params.abilities[0]
+            .params.effect;
+        const effect = factory.effectsFactory.parseEffect(effectConfig);
+        const [discardEffect] = effect.effects;
+        const player = {hand: {cards: []}};
+        const params = {
+            effects: effect.effects,
+            match,
+            player,
+        };
+        discardEffect.selectedTarget = encounterDeck;
+
+        await discardEffect.execute(params);
+
+        const [damageOption, threatOption] = discardEffect.thenEffect.options;
+        assert.deepEqual(discardEffect.cards, [discardedCard]);
+        assert.deepEqual(encounterDeck.discardPile, [discardedCard]);
+        assert.equal(
+            (await damageOption.effect.resolveParams(params)).damage,
+            3,
+        );
+        assert.equal(threatOption.effect.getThreat(params), 3);
+    });
+
     test('Envuelto en telaraña resolves cancellation and discard together, then stuns', () => {
         const match = {triggerCards: {}};
         const factory = new AbilitiesFactory({match});

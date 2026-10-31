@@ -372,7 +372,7 @@ export default {
                             RESOURCE_ENERGY,
                             RESOURCE_ENERGY
                         ],
-                        'classification': 'Captain Marvel'
+                        'classification': CLASSIFICATION_HERO
                     }
                 }
             },

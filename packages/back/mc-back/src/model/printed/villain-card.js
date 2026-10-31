@@ -12,10 +12,12 @@ export class VillainCard extends MixinEnemyCard(MainScenarioCard) {
 // MixinEnemyCard
         scheme: _scheme,
         final = false,
+        expert = false,
     }) {
         super(arguments[0]);
 
         this.final = final;
+        this.expert = expert;
         this.isVillain = true;
     }
     toObj() {

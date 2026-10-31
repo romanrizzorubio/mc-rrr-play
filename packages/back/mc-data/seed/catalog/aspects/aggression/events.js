@@ -613,7 +613,6 @@ export default [
                                                     'isInPlay': true
                                                 },
                                                 'damage': 5,
-                                                'requiredForAvailability': false,
                                             }
                                         }
                                     ]

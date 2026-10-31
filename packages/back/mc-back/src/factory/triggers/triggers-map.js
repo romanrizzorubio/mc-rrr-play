@@ -12,6 +12,7 @@ import {
     TRIGGER_ABILITY_COST,
     TRIGGER_ABILITY_RESOLVED,
     TRIGGER_CHARACTER_DEFEATED,
+    TRIGGER_CHARACTER_ATTACKED,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL,
@@ -21,6 +22,7 @@ import {
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
+    TRIGGER_CHARACTER_WOULD_READY,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
@@ -40,6 +42,7 @@ import {
     TRIGGER_PLAYER_CAN_THWART,
     TRIGGER_PLAYER_CAN_READY,
     TRIGGER_PLAYER_CAN_FLIP,
+    TRIGGER_PLAYER_CAN_PLAY,
     TRIGGER_SUPERHERO_FLIPS,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
     TRIGGER_PLAYER_TURN_START,
@@ -73,6 +76,7 @@ import {
     TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOU_BASIC_ATTACK,
+    TRIGGER_YOU_BASIC_DEFENSE,
     TRIGGER_YOU_BASIC_THWART,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_WOULD_PLACE_THREAT,
@@ -94,6 +98,8 @@ import {AttachedDefeatTrigger} from '../../triggers/attached-defeat-trigger.js';
 import {AttachedGetTraitsTrigger} from '../../triggers/attached-get-traits-trigger.js';
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
 import {CharacterDefeatedTrigger} from '../../triggers/character-defeated-trigger.js';
+import {CharacterAttackedTrigger} from '../../triggers/character-attacked-trigger.js';
+import {CharacterWouldReadyTrigger} from '../../triggers/character-would-ready-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
 import {AttachedTakesDamageTrigger} from '../../triggers/attached-takes-damage-trigger.js';
 import {AttachedWouldAttackTrigger} from '../../triggers/attached-would-attack-trigger.js';
@@ -167,6 +173,7 @@ import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
+import {YouBasicDefenseTrigger} from '../../triggers/you-basic-defense-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
 import {YouDefeatMinionTrigger} from '../../triggers/you-defeat-minion-trigger.js';
 import {YouPlayCardTrigger} from '../../triggers/you-play-card-trigger.js';
@@ -195,6 +202,7 @@ import {
 import {YourSuperheroFlipsTrigger} from '../../triggers/your-superhero-flips-trigger.js';
 
 export const TRIGGER_MAP = {
+    [TRIGGER_CHARACTER_WOULD_READY]: CharacterWouldReadyTrigger,
     [TRIGGER_ATTACHED_ACTIVATES]: AttachedActivatesTrigger,
     [TRIGGER_ABILITY_COST]: InstantTrigger,
     [TRIGGER_ABILITY_RESOLVED]: AbilityResolvedTrigger,
@@ -210,6 +218,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
     [TRIGGER_BOOST_REVEALED]: Trigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
+    [TRIGGER_CHARACTER_ATTACKED]: CharacterAttackedTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
     [TRIGGER_SCHEME_GET_THWART]: SchemeGetThwartTrigger,
@@ -240,6 +249,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,
+    [TRIGGER_YOU_BASIC_DEFENSE]: YouBasicDefenseTrigger,
     [TRIGGER_YOU_ANY_ATTACK]: YouAnyAttackTrigger,
     [TRIGGER_YOU_ANY_THWART]: YouAnyThwartTrigger,
     [TRIGGER_YOU_BASIC_THWART]: YouBasicThwartTrigger,
@@ -274,6 +284,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_PLAYER_CAN_THWART]: Trigger,
     [TRIGGER_PLAYER_CAN_READY]: Trigger,
     [TRIGGER_PLAYER_CAN_FLIP]: Trigger,
+    [TRIGGER_PLAYER_CAN_PLAY]: Trigger,
     [TRIGGER_SUPERHERO_FLIPS]: Trigger,
     [TRIGGER_YOUR_SUPERHERO_FLIPS]: YourSuperheroFlipsTrigger,
     [TRIGGER_PLAYER_TURN_START]: PlayerTurnStartTrigger,

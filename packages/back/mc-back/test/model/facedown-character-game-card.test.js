@@ -30,7 +30,7 @@ describe('Facedown character game cards', () => {
         const context = await createUltronTestContext();
         const {drone, player} = await putDroneInPlay(context);
         const villain = context.cardsFactory.createGameCard({
-            card: context.cardsFactory.createCard(context.ultron.config.villains[2]),
+            card: context.cardsFactory.createCard(context.ultron.config.expertVillains[1]),
         });
 
         context.match.villain = villain;

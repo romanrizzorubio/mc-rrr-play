@@ -51,6 +51,104 @@ import {
 import {hydraMercenary} from '../encounters/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
+const villainCards = [
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Rino',
+            'set': 'rhino',
+            'image': 'scenarios/rhino/01094.png',
+            'traits': [
+                TRAIT_BRUTE,
+                TRAIT_CRIMINAL
+            ],
+            'unique': true,
+            'stage': 1,
+            'scheme': 1,
+            'attack': 2,
+            'hitPoints': [
+                14,
+                true
+            ]
+        }
+    },
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Rino',
+            'set': 'rhino',
+            'image': 'scenarios/rhino/01095.png',
+            'traits': [
+                TRAIT_BRUTE,
+                TRAIT_CRIMINAL
+            ],
+            'unique': true,
+            'stage': 2,
+            'scheme': 1,
+            'attack': 3,
+            'hitPoints': [
+                15,
+                true
+            ],
+            'abilities': [
+                {
+                    'type': ABILITY_WHEN_REVEALED,
+                    'params': {
+                        'effect': {
+                            'type': EFFECT_SEARCH_CARD_REVEAL,
+                            'params': {
+                                'condition': {
+                                    'name': 'Arramblar con todo'
+                                },
+                                'places': [
+                                    PLACE_ENCOUNTER_DECK_CARDS,
+                                    PLACE_ENCOUNTER_DISCARD
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    {
+        'type': CARD_TYPE_VILLAIN,
+        'params': {
+            'name': 'Rino',
+            'set': 'rhino',
+            'image': 'scenarios/rhino/01096.png',
+            'traits': [
+                TRAIT_BRUTE,
+                TRAIT_CRIMINAL
+            ],
+            'unique': true,
+            'stage': 3,
+            'scheme': 1,
+            'attack': 4,
+            'hitPoints': [
+                16,
+                true
+            ],
+            'keywords': {
+                'toughness': true
+            },
+            'abilities': [
+                {
+                    'type': ABILITY_WHEN_REVEALED,
+                    'params': {
+                        'effect': {
+                            'type': EFFECT_STUN,
+                            'params': {
+                                'target': TARGET_ALL_PLAYERS
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+];
+
 export default {
     '_id': 'rhino',
     'order': 0,
@@ -58,103 +156,8 @@ export default {
     'folder': 'rhino',
     'config': {
         'name': 'rhino',
-        'villains': [
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Rino',
-                    'set': 'rhino',
-                    'image': 'scenarios/rhino/01094.png',
-                    'traits': [
-                        TRAIT_BRUTE,
-                        TRAIT_CRIMINAL
-                    ],
-                    'unique': true,
-                    'stage': 1,
-                    'scheme': 1,
-                    'attack': 2,
-                    'hitPoints': [
-                        14,
-                        true
-                    ]
-                }
-            },
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Rino',
-                    'set': 'rhino',
-                    'image': 'scenarios/rhino/01095.png',
-                    'traits': [
-                        TRAIT_BRUTE,
-                        TRAIT_CRIMINAL
-                    ],
-                    'unique': true,
-                    'stage': 2,
-                    'scheme': 1,
-                    'attack': 3,
-                    'hitPoints': [
-                        15,
-                        true
-                    ],
-                    'abilities': [
-                        {
-                            'type': ABILITY_WHEN_REVEALED,
-                            'params': {
-                                'effect': {
-                                    'type': EFFECT_SEARCH_CARD_REVEAL,
-                                    'params': {
-                                        'condition': {
-                                            'name': 'Arramblar con todo'
-                                        },
-                                        'places': [
-                                            PLACE_ENCOUNTER_DECK_CARDS,
-                                            PLACE_ENCOUNTER_DISCARD
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                'type': CARD_TYPE_VILLAIN,
-                'params': {
-                    'name': 'Rino',
-                    'set': 'rhino',
-                    'image': 'scenarios/rhino/01096.png',
-                    'traits': [
-                        TRAIT_BRUTE,
-                        TRAIT_CRIMINAL
-                    ],
-                    'unique': true,
-                    'stage': 3,
-                    'scheme': 1,
-                    'attack': 4,
-                    'hitPoints': [
-                        16,
-                        true
-                    ],
-                    'keywords': {
-                        'toughness': true
-                    },
-                    'abilities': [
-                        {
-                            'type': ABILITY_WHEN_REVEALED,
-                            'params': {
-                                'effect': {
-                                    'type': EFFECT_STUN,
-                                    'params': {
-                                        'target': TARGET_ALL_PLAYERS
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-        ],
+        'villains': [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         'mainSchemes': [
             [
                 {
@@ -164,16 +167,6 @@ export default {
                         'set': 'rhino',
                         'image': 'scenarios/rhino/01097a.png',
                         'stage': 1,
-                        'content': {
-                            'villains': [
-                                1,
-                                2
-                            ],
-                            'villainsExpert': [
-                                2,
-                                3
-                            ]
-                        }
                     }
                 },
                 {
@@ -226,6 +219,7 @@ export default {
                                         'type': EFFECT_PREVENT_PLACE_DAMAGE,
                                         'params': {
                                             'target': TARGET_ATTACHED,
+                                            'preventAll': true,
                                             'thenEffect': {
                                                 'type': EFFECT_DO_IF,
                                                 'params': {

@@ -1,5 +1,5 @@
 import {DIALOG_SELECT_PLACES} from 'mc-shared';
-import {checkCondition} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {
     removeFromPlace,
@@ -12,12 +12,25 @@ import {RevealEncounterEffect} from './reveal-encounter-effect.js';
 export class SearchCardAndRevealEffect extends Effect {
     constructor({
         condition,
+        excludeNames,
         places,
         revealAll = false,
     }) {
         super(arguments[0]);
         this.condition = condition;
-        this.condition = condition;
+        this.excludeNames = excludeNames === undefined ?
+            [] :
+            Array.isArray(excludeNames) ? excludeNames : [excludeNames];
+        if (!this.excludeNames.length ||
+            !this.excludeNames.every(excludePath =>
+                typeof excludePath === 'string' &&
+                excludePath.length > 0)) {
+            if (excludeNames !== undefined) {
+                throw new TypeError(
+                    'SearchCardAndRevealEffect excludeNames must be a path or a list of paths.'
+                );
+            }
+        }
         this.places = places;
         this.revealAll = revealAll;
 
@@ -33,10 +46,20 @@ export class SearchCardAndRevealEffect extends Effect {
         this.hasResolvedCard = false;
         this.location = undefined;
     }
-    checkCondition(card, _player) {
+    getExcludedNames(params) {
+        return new Set(this.excludeNames.flatMap(excludePath => {
+            const values = path(params, excludePath);
+
+            return Array.isArray(values) ?
+                values.flat(Infinity) :
+                values === undefined ? [] : [values];
+        }).filter(name => typeof name === 'string'));
+    }
+    checkCondition(card, _player, excludedNames) {
         const {condition} = this;
 
-        return checkCondition(card, condition);
+        return !excludedNames.has(card.name) &&
+            checkCondition(card, condition);
     }
     removeRevealed(place, cards, player) {
         const remove = removeFromPlace.get(place);
@@ -47,10 +70,12 @@ export class SearchCardAndRevealEffect extends Effect {
 
         remove(this, cards, player);
     }
-    search(place, player) {
+    search(place, player, params = {}) {
+        const excludedNames = this.getExcludedNames(params);
         const validTarget = new ValidTarget({
             match: this.match,
-            filter: this.checkCondition.bind(this),
+            filter: card =>
+                this.checkCondition(card, player, excludedNames),
         });
 
         return validTarget.getValidTarget({
@@ -73,6 +98,7 @@ export class SearchCardAndRevealEffect extends Effect {
         });
         this.location = place;
         this.hasResolvedCard = true;
+        this.cards.push(card);
         if (SET_ASIDE_PLACES.has(place)) {
             this.hasEnteredGame = true;
         }
@@ -85,7 +111,7 @@ export class SearchCardAndRevealEffect extends Effect {
         this.hasResolvedCard = false;
         if (revealAll) {
             const cards = places.reduce((ret, place) => {
-                const searched = this.search(place, player);
+                const searched = this.search(place, player, params);
 
                 this.removeRevealed(place, searched, player);
 
@@ -99,7 +125,7 @@ export class SearchCardAndRevealEffect extends Effect {
         } else {
             const seenNames = new Set();
             const cardPlaces = places.reduce((ret, place) => {
-                const cardsPlace = this.search(place, player);
+                const cardsPlace = this.search(place, player, params);
                 const distinctNames = cardsPlace.filter(card => {
                     if (typeof card.name !== 'string' || !card.name) {
                         return true;

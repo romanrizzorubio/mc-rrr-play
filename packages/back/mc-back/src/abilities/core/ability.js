@@ -40,6 +40,7 @@ export class Ability extends Engine {
         condition,
         validation,
         card,
+        abilityType,
         match,
         hideDialog = false,
         workInHand = false,
@@ -54,6 +55,7 @@ export class Ability extends Engine {
         this.condition = condition;
         this.validation = validation;
         this.card = card;
+        this.abilityType = abilityType;
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
         this.globalScope = globalScope;
@@ -198,6 +200,23 @@ export class Ability extends Engine {
             return false;
         }
 
+        const controller = this.card?.controller;
+        if (this.isAction &&
+            controller?.isPlayer &&
+            controller.id !== player?.id) {
+            return false;
+        }
+
+        if (this.isAction && player?.canUseAbility &&
+            !await player.canUseAbility({
+                ...params,
+                ability: this,
+                abilityType: this.abilityType,
+                card: params.card ?? this.card,
+            })) {
+            return false;
+        }
+
         if (this.isAttack) {
             if (! player.canAttack(params)) {
                 return false;
@@ -218,7 +237,7 @@ export class Ability extends Engine {
                 return false;
             }
         }
-        if (this.maximum && !this.maximum.canUse()) {
+        if (this.maximum && !this.maximum.canUse(params)) {
             return false;
         }
         if (!params.arrowPaid && !await this.costs.canPay({
@@ -439,7 +458,7 @@ export class Ability extends Engine {
                 const costsPaid = arrowPaid || await this.payCosts(params);
 
                 if (costsPaid) {
-                    this.maximum?.use();
+                    this.maximum?.use(resolutionParams);
                     await this.onResolutionStart(params);
 
                     if (resolutionEffect) {

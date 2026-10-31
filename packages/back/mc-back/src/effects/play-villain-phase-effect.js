@@ -12,6 +12,7 @@ import {SeveralActivationsEffect} from './several-activations-effect.js';
 import {logGameTrace} from '../utils/game-trace.js';
 import {
     getScenarioZone,
+    getMainSchemeFor,
     getVillainFor,
 } from '../utils/match-zone-utils.js';
 
@@ -61,6 +62,9 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             if (!player) {
                 return;
             }
+            if (getMainSchemeFor(this.match, player)?.completed) {
+                return;
+            }
             const accelerationSchemeEffect = new AccelerateSchemeEffect({
                 match: this.match,
             });
@@ -75,7 +79,8 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         const players = this.getPlayersInVillainPhase();
 
         return this.promisesSequential(players, async player => {
-            if (!this.canContinuePhase() || player.defeated) {
+            if (!this.canContinuePhase() || player.defeated ||
+                getMainSchemeFor(this.match, player)?.completed) {
                 return;
             }
             const playerParams = {...params, player};
@@ -85,12 +90,16 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             });
             await activateEffect.runEffect(playerParams);
 
-            if (!this.canContinuePhase() || player.defeated) {
+            if (!this.canContinuePhase() || player.defeated ||
+                getMainSchemeFor(this.match, player)?.completed) {
                 return;
             }
 
             const severalActivationsEffect = new SeveralActivationsEffect({
                 enemiesType: TARGET_ALL_ENGAGED_MINIONS,
+                enemiesCondition: {
+                    not: {'engaged.scenarioZone.currentScheme.currentSide.completed': true},
+                },
                 match: this.match,
             });
             await severalActivationsEffect.runEffect(playerParams);

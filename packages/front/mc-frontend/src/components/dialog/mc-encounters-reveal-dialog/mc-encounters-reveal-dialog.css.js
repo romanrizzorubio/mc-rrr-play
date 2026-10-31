@@ -5,6 +5,11 @@ export default css`
     display: block;
   }
 
+  .card-preview {
+    display: flex;
+    justify-content: center;
+  }
+
   .boost-icons {
     margin-bottom: 12px;
   }

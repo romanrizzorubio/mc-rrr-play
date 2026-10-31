@@ -29,7 +29,7 @@ describe('multiplayer phase order', () => {
         }
     });
 
-    const createMatch = () => {
+    const createMatch = (userIds = ['shared-account', 'shared-account']) => {
         const match = new Match({name: 'multiplayer-refill'});
         const dialogs = [];
         const draws = [];
@@ -40,7 +40,7 @@ describe('multiplayer phase order', () => {
             const player = new Player({
                 id: `player-${index}`,
                 name,
-                userId: 'shared-account',
+                userId: userIds[index],
                 initial: index === 1,
                 superhero: {
                     match,
@@ -121,6 +121,85 @@ describe('multiplayer phase order', () => {
             ['player-1', 'player-0']
         );
         assert.deepEqual(match.players.map(player => player.hand.cards.length), [5, 6]);
+    });
+
+    test('opens discard dialogs concurrently for different accounts', async () => {
+        const {match, dialogs, ready} = createMatch(['account-a', 'account-b']);
+        match.players[1].hand.cards.push({
+            id: 'marvel-kept-card',
+            toObj() {
+                return {id: this.id};
+            },
+        });
+        const responses = new Map();
+        for (const player of match.players) {
+            player.openDialog = dialog => {
+                dialogs.push(dialog);
+
+                return new Promise(resolve => {
+                    responses.set(player.id, resolve);
+                });
+            };
+        }
+
+        const endPhase = new PlayPlayersPhaseEffect({match})
+            .runEndPlayersPhase({});
+        await new Promise(resolve => setImmediate(resolve));
+
+        assert.deepEqual(
+            dialogs.map(dialog => dialog.targetPlayer.id),
+            ['player-1', 'player-0']
+        );
+        assert.equal(responses.size, 2);
+
+        responses.get('player-0')({selected: []});
+        responses.get('player-1')({selected: []});
+        await endPhase;
+
+        assert.deepEqual(ready, [
+            'player-1', 'player-1-cards',
+            'player-0', 'player-0-cards',
+        ]);
+    });
+
+    test('opens discard dialogs sequentially for heroes controlled by one account', async () => {
+        const {match, dialogs} = createMatch();
+        match.players[1].hand.cards.push({
+            id: 'marvel-kept-card',
+            toObj() {
+                return {id: this.id};
+            },
+        });
+        const responses = [];
+        for (const player of match.players) {
+            player.openDialog = dialog => {
+                dialogs.push(dialog);
+
+                return new Promise(resolve => {
+                    responses.push(resolve);
+                });
+            };
+        }
+
+        const endPhase = new PlayPlayersPhaseEffect({match})
+            .runEndPlayersPhase({});
+        await new Promise(resolve => setImmediate(resolve));
+
+        assert.deepEqual(
+            dialogs.map(dialog => dialog.targetPlayer.id),
+            ['player-1']
+        );
+
+        responses[0]({selected: []});
+        await new Promise(resolve => setImmediate(resolve));
+
+        assert.deepEqual(
+            dialogs.map(dialog => dialog.targetPlayer.id),
+            ['player-1', 'player-0']
+        );
+
+        responses[1]({selected: []});
+        await endPhase;
     });
 
     test('resumes end-of-phase work without skipping or repeating players', async () => {

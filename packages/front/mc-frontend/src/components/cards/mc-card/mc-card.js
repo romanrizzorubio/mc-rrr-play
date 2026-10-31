@@ -67,15 +67,15 @@ export class CardComponent extends LitElement {
         }
     }
     getFaceDownPeekCards() {
-        return this.card?.isSideScheme ?
-            (this.faceDown || []).filter(card => this.getFaceDownType(card)) :
-            [];
+        return (this.faceDown || []).filter(card => this.getFaceDownType(card));
     }
     renderTucked() {
         const tuckedCards = this.tuckedCards || [];
         const faceDownCards = this.getFaceDownPeekCards();
         const tuckedClass = faceDownCards.length ?
-            'side-scheme-facedown' :
+            this.card?.isSideScheme ?
+                'side-scheme-facedown' :
+                'facedown-host' :
             this.card?.isSideScheme && tuckedCards.length ?
                 'side-scheme-tucked' :
                 '';
@@ -863,11 +863,11 @@ export class CardComponent extends LitElement {
             rotated,
         } = this;
         const hiddenFacedown = this.isFacedownHidden();
-        const sideSchemeFaceDown = this.getFaceDownPeekCards().length > 0;
+        const hasFaceDownPeeks = this.getFaceDownPeekCards().length > 0;
         const sideSchemeFaceUpTucked = !hiddenFacedown &&
             this.card?.isSideScheme === true &&
             this.tuckedCards?.length > 0 &&
-            !sideSchemeFaceDown;
+            !hasFaceDownPeeks;
         const imageSrc = hiddenFacedown ?
             getCardAssetUrl(this.facedownImage || BACK_CARD_PLAYER) :
             getCardAssetUrl(image);
@@ -907,14 +907,14 @@ export class CardComponent extends LitElement {
                         this.renderStats()}
                     <div class="card ${
                         this.tuckedCards?.length &&
-                            !sideSchemeFaceDown &&
+                            !hasFaceDownPeeks &&
                             !sideSchemeFaceUpTucked ?
                             'has-tucked-cards' :
                             ''
                     }">
                         <div class="card-face">
                             ${hiddenFacedown ||
-                                sideSchemeFaceDown ||
+                                hasFaceDownPeeks ||
                                 sideSchemeFaceUpTucked ?
                                 '' :
                                 this.renderTucked()}
@@ -945,7 +945,7 @@ export class CardComponent extends LitElement {
                                 ></mc-card-image>
                                 ${this.renderFacedownPeekButton()}
                                 ${hiddenFacedown ||
-                                    sideSchemeFaceDown ||
+                                    hasFaceDownPeeks ||
                                     sideSchemeFaceUpTucked ?
                                     '' :
                                     this.renderCounters()}
@@ -953,10 +953,10 @@ export class CardComponent extends LitElement {
                                     '' :
                                     this.renderBottomStats()}
                             </div>
-                            ${sideSchemeFaceDown || sideSchemeFaceUpTucked ?
+                            ${hasFaceDownPeeks || sideSchemeFaceUpTucked ?
                                 this.renderTucked() :
                                 ''}
-                            ${sideSchemeFaceDown || sideSchemeFaceUpTucked ?
+                            ${hasFaceDownPeeks || sideSchemeFaceUpTucked ?
                                 this.renderCounters() :
                                 ''}
                             ${sideSchemeFaceUpTucked ?

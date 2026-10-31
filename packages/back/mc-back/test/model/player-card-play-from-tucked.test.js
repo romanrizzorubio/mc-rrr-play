@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
-import {PLACE_TUCKED, TRAIT_ARROW} from 'mc-shared';
+import {PLACE_TUCKED, RESOURCE_PHYSICAL, TRAIT_ARROW} from 'mc-shared';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {GameCard} from '../../src/model/cards/game-card.js';
 import {PlayerCard} from '../../src/model/printed/player-card.js';
+import {ResourceCard} from '../../src/model/printed/resource-card.js';
 import {
     findPlayerCardToPlayFrom,
     getPlayerCardLocation,
@@ -103,6 +104,31 @@ describe('playing cards from tucked locations', () => {
             hostView.tuckedCards.find(({id}) => id === ordinaryEvent.id).playable,
             false
         );
+    });
+
+    test('a resource tucked under Bruno is serialized as unplayable', async () => {
+        const player = createPlayer();
+        const bruno = createGameCard({
+            name: 'Bruno Carrelli',
+        }, player, 'bruno');
+        const resource = new GameCard({
+            card: new ResourceCard({
+                name: 'El poder de la agresividad',
+                resources: [RESOURCE_PHYSICAL],
+            }),
+            owner: player,
+        });
+        resource.id = 'bruno-resource';
+        bruno.tuckedCards.push(resource);
+        player.gameZone.cards.push(bruno);
+
+        const view = await bruno.toObjWithAbilityAvailability(player);
+
+        assert.equal(findPlayerCardToPlayFrom(player, resource.id), undefined);
+        assert.equal(view.tuckedCards[0].id, resource.id);
+        assert.equal(view.tuckedCards[0].isResource, true);
+        assert.equal(view.tuckedCards[0].playable, false);
+        assert.deepEqual(bruno.tuckedCards, [resource]);
     });
 
     test('a cancelled play returns the card to the same tucked host and position', async () => {

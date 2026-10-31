@@ -8,17 +8,36 @@ import {
 const MAX_PREVENTABLE_DAMAGE = Number.MAX_SAFE_INTEGER;
 
 export class PreventDamageEffect extends Effect {
+    static isPendingAttack(effect) {
+        return Boolean(effect?.isAttack && !effect.resolved &&
+            ((effect.damage === undefined &&
+                typeof effect.getAttackValue === 'function') ||
+                (effect.takenDamage === 0 &&
+                    effect.activation?.effect === effect)));
+    }
+
     constructor({
         damage = 0,
+        preventAll = false,
         requiresPrePlayConfirmation = false,
         prePlayConfirmation,
     }) {
         super(arguments[0]);
 
         this.damage = damage;
+        this.preventAll = preventAll;
         this.requiresPrePlayConfirmation =
             requiresPrePlayConfirmation;
         this.prePlayConfirmation = prePlayConfirmation;
+    }
+    async getPreventionDamage(params) {
+        const damage = this.getLastStepParam('damage', params) ??
+            (this.paramsCalc ? await this.calculate(params) : this.damage);
+        if (!Number.isSafeInteger(damage) || damage < 0) {
+            throw new TypeError('La cantidad de daño a evitar debe ser un entero no negativo.');
+        }
+
+        return damage;
     }
     async confirmBeforeResolve(params) {
         const confirmation = this.prePlayConfirmation;
@@ -34,9 +53,10 @@ export class PreventDamageEffect extends Effect {
             );
         }
         const triggeredDamage = params.triggeredTargetDamage;
-        const calculatedDamage = this.damage > 0 ?
-            Math.min(triggeredDamage, this.damage) :
-            triggeredDamage;
+        const damage = await this.getPreventionDamage(params);
+        const calculatedDamage = this.preventAll ?
+            triggeredDamage :
+            Math.min(triggeredDamage, damage);
         const configuredDamage = confirmation?.countPath ?
             path(params, confirmation.countPath) :
             calculatedDamage;
@@ -74,11 +94,10 @@ export class PreventDamageEffect extends Effect {
             },
         });
     }
-    canRun(params) {
+    async canRun(params) {
         const {effect} = params;
-        const isPendingAttack = effect?.isAttack &&
-            effect.damage === undefined &&
-            typeof effect.getAttackValue === 'function';
+        const damage = await this.getPreventionDamage(params);
+        const isPendingAttack = PreventDamageEffect.isPendingAttack(effect);
         const takenDamage = params.triggeredTarget ?
             params.triggeredTargetDamage :
             effect.takenDamage;
@@ -86,17 +105,19 @@ export class PreventDamageEffect extends Effect {
             takenDamage.some(damage => damage > 0) :
             takenDamage > 0;
 
-        return (isPendingAttack || canPreventDamage) && super.canRun(params);
+        return (this.preventAll || damage > 0) &&
+            (isPendingAttack || canPreventDamage) && super.canRun(params);
     }
-    execute(params) {
+    async execute(params) {
         const {effect} = params;
+        const damage = await this.getPreventionDamage(params);
 
         if (effect?.isAttack &&
             effect.damage === undefined &&
             typeof effect.getAttackValue === 'function') {
-            const preventDamage = this.damage > 0 ?
-                this.damage :
-                MAX_PREVENTABLE_DAMAGE;
+            const preventDamage = this.preventAll ?
+                MAX_PREVENTABLE_DAMAGE :
+                damage;
             effect.preventDamage = Math.min(
                 MAX_PREVENTABLE_DAMAGE,
                 (effect.preventDamage || 0) + preventDamage
@@ -120,12 +141,14 @@ export class PreventDamageEffect extends Effect {
                 effect.preventDamage.slice() :
                 targets.map(() => effect.preventDamage || 0);
 
-            if (this.damage) {
-                prevention[targetIndex] += this.damage;
-            } else {
-                prevention[targetIndex] = Array.isArray(effect.damage) ?
+            if (this.preventAll) {
+                prevention[targetIndex] = PreventDamageEffect.isPendingAttack(effect) ?
+                    MAX_PREVENTABLE_DAMAGE :
+                    Array.isArray(effect.damage) ?
                     effect.damage[targetIndex] :
                     effect.damage;
+            } else {
+                prevention[targetIndex] += damage;
             }
 
             effect.preventDamage = Array.isArray(effect.selectedTarget) ?
@@ -134,10 +157,10 @@ export class PreventDamageEffect extends Effect {
             return;
         }
 
-        if (this.damage) {
-            effect.preventDamage += this.damage;
-        } else {
+        if (this.preventAll) {
             effect.preventDamage = effect.damage;
+        } else {
+            effect.preventDamage += damage;
         }
     }
 }

@@ -84,6 +84,7 @@ import {
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_PLAYER_EXTRA_DECK,
+    TARGET_PARENT,
     TARGET_SCHEME,
     TARGET_SOURCE,
     TARGET_THIS,
@@ -242,19 +243,19 @@ const invocationCards = [
                                     {
                                         type: EFFECT_STUN,
                                         params: {
-                                            target: TARGET_ENEMY,
+                                            target: TARGET_PARENT,
                                         },
                                     },
                                     {
                                         type: EFFECT_DEAL_DAMAGE,
                                         params: {
-                                            target: TARGET_ENEMY,
+                                            target: TARGET_PARENT,
                                             damage: 7,
                                         },
                                     },
                                 ], TARGET_ENEMY),
                                 discardResolvedInvocation(),
-                            ], {target: TARGET_ENEMY}),
+                            ]),
                         },
                     },
                 ],

@@ -1,5 +1,6 @@
 import {
     PLACE_ASIDE_MATCH,
+    PLACE_DECK,
     PLACE_ENCOUNTER_DECK_CARDS,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_OUTSIDE_NEMESIS,
@@ -22,6 +23,11 @@ export const removeFromPlace = new Map([
         PLACE_ASIDE_MATCH,
         (effect, cards) => cards.forEach(card =>
             removeCardFrom(effect.match.scenario.apart, card)),
+    ],
+    [
+        PLACE_DECK,
+        (_effect, cards, player) => cards.forEach(card =>
+            player.deck.removeCardFromDeck(card)),
     ],
     [
         PLACE_ENCOUNTER_DECK_CARDS,

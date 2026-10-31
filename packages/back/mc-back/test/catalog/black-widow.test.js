@@ -272,7 +272,7 @@ test('Black Widow multi-attack event resolves three separate attack effects', as
     ]);
 });
 
-test('Acrobatic Combat requires boost icons and a legal villain attack target', async () => {
+test('Acrobatic Combat can initiate when boost cancellation or its attack is available', async () => {
     const catalog = await loadCatalog();
     const blackWidow = catalog.heroes.find(({_id}) => _id === 'black-widow');
     const match = new Match({
@@ -313,11 +313,12 @@ test('Acrobatic Combat requires boost icons and a legal villain attack target', 
         player,
     });
 
-    assert.equal(await ability.canRun(getParams(1)), false);
+    assert.equal(await ability.canRun(getParams(1)), true);
+    assert.equal(await ability.canRun(getParams(0)), false);
 
     player.gameZone.removeEngaged(guardMinion);
 
-    assert.equal(await ability.canRun(getParams(0)), false);
+    assert.equal(await ability.canRun(getParams(0)), true);
     assert.equal(await ability.canRun(getParams(1)), true);
 });
 

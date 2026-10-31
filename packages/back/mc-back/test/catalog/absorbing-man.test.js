@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     CARD_TYPE_VILLAIN,
@@ -18,6 +18,8 @@ import {Match} from '../../src/model/match/match.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Scenario} from '../../src/model/match/scenario.js';
 import {ScenarioZone} from '../../src/model/match/scenario-zone.js';
+
+describe('absorbing-man', () => {
 
 const getScenario = async () => {
     const {scenarios} = await loadCatalog();
@@ -94,7 +96,7 @@ test('Absorbing Man catalog defines the printed stages, sets, and copies', async
     assert.deepEqual(scenario.config.sets, ['standard']);
     assert.deepEqual(scenario.config.defaultSets, ['hydra-patrol']);
     assert.deepEqual(
-        scenario.config.villains.map(({type, params}) => [
+        [scenario.config.villains[0], ...scenario.config.expertVillains].map(({type, params}) => [
             type,
             params.stage,
             params.attack,
@@ -310,4 +312,5 @@ test('main scheme discards every previous environment when one enters play', asy
             .length,
         1
     );
+});
 });

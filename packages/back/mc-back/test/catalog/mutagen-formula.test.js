@@ -152,7 +152,7 @@ describe('Mutagen Formula', () => {
         assert.equal(scenario.name, 'La fórmula mutagénica');
         assert.deepEqual(config.sets, ['standard']);
         assert.deepEqual(config.defaultSets, ['goblin-gimmicks']);
-        assert.deepEqual(config.villains.map(({params}) => [
+        assert.deepEqual([config.villains[0], ...config.expertVillains].map(({params}) => [
             params.name,
             params.stage,
             params.attack,
@@ -180,10 +180,8 @@ describe('Mutagen Formula', () => {
             CARD_TYPE_MAIN_SCHEME_B_CARD,
             CARD_TYPE_MAIN_SCHEME_B_CARD,
         ]);
-        assert.deepEqual(config.mainSchemes[0][0].params.content, {
-            villains: [1, 2],
-            villainsExpert: [2, 3],
-        });
+        assert.deepEqual(config.villains.map(({params}) => params.stage), [1, 2]);
+        assert.deepEqual(config.expertVillains.map(({params}) => params.stage), [2, 3]);
         assert.deepEqual(config.mainSchemes[1][1].params.accelerationCalc, {
             target: 'match.enemies',
             formula: CALC_TRAITS_COUNT,
@@ -526,7 +524,7 @@ describe('Mutagen Formula', () => {
         };
         scenario.gameZone.currentVillain =
             factory.cardsFactory.createGameCardFromConfig(
-                scenarioData.config.villains[2],
+                scenarioData.config.expertVillains[1],
                 {owner: scenario}
             );
         const card = factory.cardsFactory.createGameCardFromConfig(
@@ -616,7 +614,7 @@ describe('Mutagen Formula', () => {
         match.openDialog = async dialog => dialogs.push(dialog);
         scenario.gameZone.currentVillain =
             factory.cardsFactory.createGameCardFromConfig(
-                scenarioData.config.villains[2],
+                scenarioData.config.expertVillains[1],
                 {owner: scenario}
             );
         const card = factory.cardsFactory.createGameCardFromConfig(
@@ -1048,7 +1046,7 @@ describe('Mutagen Formula', () => {
         const {factory, match, players, scenario} =
             await createRuntime(scenarioData, 1);
         const villain = factory.cardsFactory.createGameCardFromConfig(
-            scenarioData.config.villains[2],
+            scenarioData.config.expertVillains[1],
             {owner: scenario}
         );
         scenario.gameZone.currentVillain = villain;

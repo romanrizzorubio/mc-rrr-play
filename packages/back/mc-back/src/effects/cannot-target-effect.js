@@ -36,6 +36,11 @@ export class CannotTargetEffect extends Effect {
         if (!effect || !targetCard) {
             return false;
         }
+        const sourceCard = this.ability?.card;
+        if (!this.targetCondition && sourceCard &&
+            (sourceCard.parent ?? sourceCard) !== (targetCard.parent ?? targetCard)) {
+            return false;
+        }
         if (this.ability?.card?.printedTextBlank) {
             return false;
         }

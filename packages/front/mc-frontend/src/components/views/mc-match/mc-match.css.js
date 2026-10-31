@@ -2,11 +2,16 @@ import { css } from 'lit-element';
 
 export default css`
   :host {
-    display: block;
-    border: solid 1px #e4e0ea;
-    padding: 16px;
-    margin: 0 auto;
-    background-color: #f7f5fb;
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0 16px;
+    width: 100%;
+    background-color: transparent;
     --md-sys-color-primary: var(--mc-color-primary, #6750a4);
     --md-sys-color-on-primary: #ffffff;
     --md-sys-color-surface-container-low: #f7f5fb;
@@ -19,7 +24,22 @@ export default css`
   }
 
   .match-layout {
+    box-sizing: border-box;
     display: block;
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #e4e0ea;
+    padding: 16px 16px 0;
+    background-color: #f7f5fb;
+  }
+
+  .match-board {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
   }
 
   .player-board-row {
@@ -27,7 +47,8 @@ export default css`
     grid-template-columns: minmax(0, 1fr) 240px;
     align-items: end;
     gap: 16px;
-    margin-top: 16px;
+    margin-top: auto;
+    padding: 16px 0;
   }
 
   .board-player-heading {
@@ -40,6 +61,10 @@ export default css`
 
   .player-board-row.single-player {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .player-board-row.players-collapsed {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .player-sidebar {
@@ -58,6 +83,74 @@ export default css`
   .player-sidebar h2 {
     margin: 0;
     font-size: 1.1rem;
+  }
+
+  .player-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .player-sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .player-sidebar-toggle:hover {
+    background: #ece8f4;
+  }
+
+  .player-sidebar-toggle:focus-visible {
+    outline: 2px solid var(--mc-color-primary, #6750a4);
+    outline-offset: 2px;
+  }
+
+  .player-sidebar-chevron {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 0.55rem;
+    height: 0.55rem;
+    align-self: center;
+    vertical-align: middle;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .player-sidebar-chevron.open {
+    transform: rotate(225deg);
+  }
+
+  .player-sidebar-content {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .player-sidebar-content[hidden] {
+    display: none;
+  }
+
+  .player-sidebar.collapsed {
+    display: flex;
+    width: max-content;
+    max-width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: 4px 8px;
   }
 
   .player-accordion {
@@ -213,9 +306,17 @@ export default css`
       grid-template-columns: minmax(0, 1fr);
     }
 
+    .player-board-row.players-collapsed {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .player-sidebar {
       position: static;
       max-height: 320px;
+    }
+
+    .player-sidebar.collapsed {
+      justify-self: end;
     }
   }
 `;

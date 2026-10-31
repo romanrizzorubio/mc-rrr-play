@@ -4,6 +4,7 @@ import {
 } from 'mc-shared';
 
 import {Calc} from '../engine/calc.js';
+import {getMainSchemeFor} from '../utils/match-zone-utils.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {PlaceThreatEffect} from './place-threat-effect.js';
 
@@ -46,6 +47,24 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         }
 
         return player;
+    }
+    canRun(params) {
+        const scheme = this.selectedTarget ??
+            getMainSchemeFor(this.match, this.getSchemePlayer(params));
+        return scheme?.completed ? false : super.canRun(params);
+    }
+    filterTarget(card, params) {
+        return card.canScheme?.() !== false &&
+            super.filterTarget(card, params);
+    }
+    canContinueActivation() {
+        const scheme = this.selectedTarget ??
+            getMainSchemeFor(this.match, this.player);
+        if (scheme?.completed && !this.threatPlaced) {
+            this.activationInterrupted = true;
+            return false;
+        }
+        return super.canContinueActivation();
     }
     resolveParams(params = {}) {
         return {

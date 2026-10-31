@@ -697,10 +697,6 @@ const mainScheme = () => [
             set: SET,
             image: 'scenarios/taskmaster/04096a.png',
             stage: 1,
-            content: {
-                villains: [1, 2],
-                villainsExpert: [2, 3],
-            },
             abilities: [mainSchemeSetup()],
         },
     },
@@ -720,35 +716,38 @@ const mainScheme = () => [
     },
 ];
 
+const villainCards = [
+    villain({
+        attack: 2,
+        hitPoints: 13,
+        image: '04093',
+        scheme: 1,
+        stage: 1,
+    }),
+    villain({
+        attack: 2,
+        hitPoints: 16,
+        image: '04094',
+        scheme: 2,
+        stage: 2,
+    }),
+    villain({
+        attack: 3,
+        hitPoints: 17,
+        image: '04095',
+        scheme: 3,
+        stage: 3,
+    }),
+];
+
 export default {
     _id: 'taskmaster',
     name: 'Supervisor',
     folder: 'taskmaster',
     config: {
         name: 'taskmaster',
-        villains: [
-            villain({
-                attack: 2,
-                hitPoints: 13,
-                image: '04093',
-                scheme: 1,
-                stage: 1,
-            }),
-            villain({
-                attack: 2,
-                hitPoints: 16,
-                image: '04094',
-                scheme: 2,
-                stage: 2,
-            }),
-            villain({
-                attack: 3,
-                hitPoints: 17,
-                image: '04095',
-                scheme: 3,
-                stage: 3,
-            }),
-        ],
+        villains: [villainCards[0], villainCards[1]],
+        expertVillains: [villainCards[1], villainCards[2]],
         mainSchemes: [mainScheme()],
         sets: ['standard', 'hydra-patrol'],
         defaultSets: ['weapon-master'],

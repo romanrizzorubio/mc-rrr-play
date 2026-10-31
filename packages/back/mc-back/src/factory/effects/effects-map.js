@@ -34,6 +34,7 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DEFEAT,
+    EFFECT_WIN_GAME,
     EFFECT_DELAYED,
     EFFECT_DISCARD_CONDITION_HAND,
     EFFECT_DISCARD_DRAW,
@@ -172,6 +173,7 @@ import {StoreBoostEffect} from '../../effects/store-boost-effect.js';
 import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
 import {DealEncounterEffect} from '../../effects/deal-encounter-effect.js';
 import {DefeatEffect} from '../../effects/defeat-effect.js';
+import {WinGameEffect} from '../../effects/win-game-effect.js';
 import {DelayedEffect} from '../../effects/delayed-effect.js';
 import {DiscardConditionHandEffect} from '../../effects/discard-condition-hand-effect.js';
 import {DiscardDrawEffect} from '../../effects/discard-draw-effect.js';
@@ -313,6 +315,7 @@ export const EFFECT_MAP = {
     [EFFECT_DEAL_DAMAGE]: DealDamageEffect,
     [EFFECT_DEAL_ENCOUNTER]: DealEncounterEffect,
     [EFFECT_DEFEAT]: DefeatEffect,
+    [EFFECT_WIN_GAME]: WinGameEffect,
     [EFFECT_DISCARD_FROM_DECK]: DiscardFromDeckEffect,
     [EFFECT_DISCARD_DRAW]: DiscardDrawEffect,
     [EFFECT_DISCARD_GAME]: DiscardFromGameEffect,

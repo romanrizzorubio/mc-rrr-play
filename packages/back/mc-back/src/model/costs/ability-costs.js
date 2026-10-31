@@ -2,6 +2,7 @@ import {
     PRIORITY_CONSTANT,
     TRIGGER_ABILITY_COST,
 } from 'mc-shared';
+import {createEffectInstance} from '../../utils/create-effect-instance.js';
 import {CostGroup} from './cost-group.js';
 import {COST_TYPE_ABILITY, COST_TYPE_ARROW} from './cost-constants.js';
 
@@ -44,8 +45,41 @@ export class AbilityCosts extends CostGroup {
         const [cost] = this.costs;
         if (this.costs.length === 1 &&
             cost.type === COST_TYPE_ARROW) {
-            return cost.canPay(params, effect);
+            const effectInstance = createEffectInstance(effect, {
+                ability: params.ability || this.ability,
+            });
+            const preselectedEffectTargets = params.preselectedEffectTargets &&
+                new Set([...params.preselectedEffectTargets].map(
+                    preselectedEffect => {
+                        const instance = effectInstance.effectInstances.get(
+                            preselectedEffect
+                        );
+                        if (instance) {
+                            instance.selectedTarget =
+                                preselectedEffect.selectedTarget;
+                        }
+
+                        return instance || preselectedEffect;
+                    }
+                ));
+            const availabilityEffect = cost.markEffectAsCost(
+                effectInstance.effect,
+                params.ability || this.ability
+            );
+
+            return cost.canPay({
+                ...params,
+                ...(preselectedEffectTargets ?
+                    {preselectedEffectTargets} :
+                    {}),
+            }, availabilityEffect);
         }
+
+        effect.resetResolutionState({
+            preserveSelectedTarget:
+                params.preselectedEffectTargets?.has(effect),
+            preselectedEffectTargets: params.preselectedEffectTargets,
+        });
 
         return effect.canRun({
             ...params,

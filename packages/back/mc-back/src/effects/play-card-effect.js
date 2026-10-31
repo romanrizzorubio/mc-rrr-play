@@ -95,11 +95,20 @@ export class PlayCardEffect extends Effect {
             return false;
         }
 
-        if (!ability && !await card.canPlay({
+        if (ability) {
+            if (typeof player?.canPlayCard === 'function' &&
+                !await player.canPlayCard({
+                    card,
+                    playCardEffect: this,
+                })) {
+                return false;
+            }
+        } else if (!await card.canPlay({
             player,
             abilityType,
             card,
             playCardEffect: this,
+            checkPlayRestrictions: true,
         })) {
             return false;
         }

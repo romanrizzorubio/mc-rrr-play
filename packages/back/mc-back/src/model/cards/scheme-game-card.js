@@ -11,6 +11,20 @@ export class SchemeGameCard extends GameCard {
         super(arguments[0]);
 
         this.threat = 0;
+        this.completed = false;
+    }
+    get scenarioZone() {
+        return this.parent?.scenarioZone ?? this._scenarioZone;
+    }
+    set scenarioZone(zone) {
+        this._scenarioZone = zone;
+    }
+    get isInPlay() {
+        if (this.parent?.sides?.includes(this)) {
+            return this.parent.currentSide === this && this.parent.isInPlay;
+        }
+
+        return super.isInPlay;
     }
     get accelerationValue() {
         return this.card.acceleration;
@@ -60,6 +74,9 @@ export class SchemeGameCard extends GameCard {
         this.placeThreat(value, match.numPlayers);
     }
     canRemoveThreat({ignoreCrisis = false} = {}) {
+        if (this.completed) {
+            return false;
+        }
         if (this.threat > 0) {
             if (this.isMainScheme) {
                 if (ignoreCrisis ||
@@ -74,7 +91,12 @@ export class SchemeGameCard extends GameCard {
         return false;
     }
     canScheme() {
-        return true;
+        return this.sides.length ?
+            this.currentSide.canScheme() :
+            !this.completed;
+    }
+    canPlaceThreat() {
+        return this.canScheme();
     }
     canThwart(player, {ignoreCrisis = false} = {}) {
         if (this.canRemoveThreat({ignoreCrisis})) {
@@ -97,9 +119,13 @@ export class SchemeGameCard extends GameCard {
         return super.defeat();
     }
     initScheme() {
+        this.completed = false;
         this.threat = this.initial;
     }
     placeThreat(threat) {
+        if (!this.canPlaceThreat()) {
+            return;
+        }
         const value = this.calcPerPlayer(threat);
 
         this.threat += value > 0 ? value : 0;
@@ -132,7 +158,7 @@ export class SchemeGameCard extends GameCard {
 
         return {
             ...super.toObj(arguments[0]),
-            ...(this.isMainScheme ? {value: this.value} : {}),
+            ...(this.isMainScheme ? {value: this.value, completed: this.completed} : {}),
             threat
         };
     }

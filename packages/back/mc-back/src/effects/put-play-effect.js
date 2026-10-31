@@ -16,6 +16,7 @@ import {canPlayCard} from '../utils/card-play-utils.js';
 import {checkCondition, path} from '../engine/utils.js';
 import {defeatCharacterIfLethal} from '../utils/damage-resolution.js';
 import {getAlliesCountingTowardLimit} from '../utils/ally-utils.js';
+import {getScenarioZone} from '../utils/match-zone-utils.js';
 
 
 export class PutPlayEffect extends Effect {
@@ -46,6 +47,10 @@ export class PutPlayEffect extends Effect {
 
         if (this.cardSource) {
             const sourceCards = path(params, this.cardSource);
+            if (sourceCards === undefined || sourceCards === null) {
+                return undefined;
+            }
+
             if (Array.isArray(sourceCards)) {
                 return sourceCards.find(card =>
                     !this.cardCondition || checkCondition(card, this.cardCondition));
@@ -72,7 +77,10 @@ export class PutPlayEffect extends Effect {
         }
 
         if (typeof this.controller === 'string') {
-            const controller = path(params, this.controller);
+            const controller = path({
+                ...params,
+                match: params.match ?? this.match,
+            }, this.controller);
             if (!controller) {
                 throw new TypeError(
                     `PutPlayEffect controller path "${this.controller}" did not resolve.`
@@ -103,7 +111,7 @@ export class PutPlayEffect extends Effect {
     }
     async canRun(params) {
         const card = this.getCard(params);
-        if (this.cardSource && !card) {
+        if ((this.cardSource || this.requirePlayable) && !card) {
             return false;
         }
 
@@ -212,13 +220,14 @@ export class PutPlayEffect extends Effect {
         return true;
     }
     async resolvePutPlay(card, controller, selectedTarget, isEnteringPlay, params) {
-        await this.addToController(card, controller, isEnteringPlay);
+        const gameZone = this.getControllerZone(card, controller, params);
+        await this.addToController(card, controller, isEnteringPlay, gameZone);
         await card.initTriggers(params);
         this.initializeCardState(card);
         await this.attachCard(card, controller, selectedTarget, params);
         await this.enforceRestrictedCardLimit(card, controller);
         this.initializeSideScheme(card);
-        await this.refreshControllerZone(card, controller);
+        await this.refreshControllerZone(card, controller, gameZone);
 
         if (card.isAlly) {
             await this.resolveMaxAllies(card, params);
@@ -228,7 +237,15 @@ export class PutPlayEffect extends Effect {
             await this.trigger(PRIORITY_CONSTANT, TRIGGER_INSTANT, params);
         }
     }
-    async addToController(card, controller, isEnteringPlay) {
+    getControllerZone(card, controller, params) {
+        if (controller && controller === this.match?.scenario) {
+            return (card.isMain ? card.scenarioZone : undefined) ??
+                getScenarioZone(this.match, params.player);
+        }
+
+        return controller?.gameZone;
+    }
+    async addToController(card, controller, isEnteringPlay, gameZone = controller?.gameZone) {
         if (!controller) {
             return;
         }
@@ -242,7 +259,7 @@ export class PutPlayEffect extends Effect {
         }
 
         if (!card.isMinion) {
-            controller.gameZone.addToGameZone(card);
+            gameZone.addToGameZone(card);
         }
         card.controller = controller;
     }
@@ -324,9 +341,9 @@ export class PutPlayEffect extends Effect {
             card.initScheme();
         }
     }
-    async refreshControllerZone(card, controller) {
-        if (!card.isMinion && !card.attachedTo && controller?.gameZone) {
-            await controller.gameZone.refresh();
+    async refreshControllerZone(card, controller, gameZone = controller?.gameZone) {
+        if (!card.isMinion && !card.attachedTo && gameZone) {
+            await gameZone.refresh();
         }
     }
     async resolveMaxAllies(card, params) {

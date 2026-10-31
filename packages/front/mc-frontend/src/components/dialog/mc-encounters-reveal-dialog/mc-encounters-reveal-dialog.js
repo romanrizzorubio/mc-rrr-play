@@ -50,15 +50,17 @@ export class McEncountersRevealDialog extends McDialog {
                     <span class="boost-icon-list">${boostIcons}</span>
                 </div>
             ` : ''}
-            <mc-card
-                name="${card.name}"
-                image="${card.image}"
-                .isFacedownCard="${card.isFacedownCard}"
-                .canPeekFacedown="${Boolean(!this.readOnly && card.isFacedownCard && card.image)}"
-                .facedownImage="${BACK_CARD_ENCOUNTER}"
-                size="l"
-                ?horizontal="${isHorizontal}"
-            ></mc-card>
+            <div class="card-preview">
+                <mc-card
+                    name="${card.name}"
+                    image="${card.image}"
+                    .isFacedownCard="${card.isFacedownCard}"
+                    .canPeekFacedown="${Boolean(!this.readOnly && card.isFacedownCard && card.image)}"
+                    .facedownImage="${BACK_CARD_ENCOUNTER}"
+                    size="l"
+                    ?horizontal="${isHorizontal}"
+                ></mc-card>
+            </div>
             ${isBoost && hasBoostAbility ? html`
                 <div class="boost-ability">
                     <strong>Capacidad de aumento:</strong> Sí

@@ -304,7 +304,7 @@ export class McPayCostDialog extends McDialog {
         super.handleOk();
     }
     renderTitle() {
-        const {data: {card}, hand} = this;
+        const {data: {card}} = this;
 
         return html`
             <h2 class="title" slot="headline">
@@ -321,7 +321,7 @@ export class McPayCostDialog extends McDialog {
                     ` : ''}
                     <span>${this.getTitle()}</span>
                 </span>
-                ${hand && hand.length ? this.renderButtonHand() : ''}
+                ${this.renderButtonTable()}
             </h2>
         `;
     }

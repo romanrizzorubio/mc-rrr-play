@@ -11,6 +11,7 @@ import {
     TARGET_TOP_CARD,
 } from 'mc-shared';
 import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
+import {getPlayersFor} from '../utils/match-zone-utils.js';
 
 const getPlayerExtraDeck = ({player, effect, targetEffect}) => {
     const target = targetEffect || effect;
@@ -56,6 +57,6 @@ export const deckAndDeckTargets = {
 
         return deck?.discardPile || [];
     },
-    [TARGET_ANY_PLAYER]: ({match, condition}) =>
-        filterTargetsByCondition(match.players, condition),
+    [TARGET_ANY_PLAYER]: ({match, player, condition}) =>
+        filterTargetsByCondition(getPlayersFor(match, player), condition),
 };

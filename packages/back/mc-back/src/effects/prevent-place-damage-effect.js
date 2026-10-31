@@ -6,10 +6,12 @@ export class PreventPlaceDamageEffect extends Effect {
     constructor({
 // PreventPlaceDamageEffect
         damage = 0,
+        preventAll = false,
     }) {
         super(arguments[0]);
 
         this.damage = damage;
+        this.preventAll = preventAll;
     }
     async execute(params) {
         const {damage, selectedTarget} = this;
@@ -22,18 +24,29 @@ export class PreventPlaceDamageEffect extends Effect {
         }
         const previousPrevention = (Array.isArray(effect.preventDamage) ?
             effect.preventDamage[targetIndex] : effect.preventDamage) ?? 0;
+        const incomingDamage = Array.isArray(effect.damage) ?
+            effect.damage[targetIndex] : effect.damage;
 
         const preventDamageEffect = new PreventDamageEffect({
             selectedTarget,
             damage,
+            preventAll: this.preventAll,
+            paramsCalc: this.paramsCalc,
+            paramsLastStep: this.paramsLastStep,
             match: this.match,
         });
         await preventDamageEffect.runEffect(params);
 
         const prevention = Array.isArray(effect.preventDamage) ?
             effect.preventDamage[targetIndex] : effect.preventDamage;
+        const preventedDamage = Math.max(0,
+            Math.min(incomingDamage, prevention) -
+            Math.min(incomingDamage, previousPrevention));
+        if (preventedDamage === 0) {
+            return;
+        }
         const placeDamageEffect = new PlaceDamageEffect({
-            damage: prevention - previousPrevention,
+            damage: preventedDamage,
             selectedTarget: card,
             match: this.match,
         });

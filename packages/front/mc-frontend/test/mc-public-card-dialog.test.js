@@ -42,8 +42,6 @@ describe('public card dialogs', () => {
             readOnly,
             showCancel: true,
             hideOk: false,
-            hand: [{id: 'private-card'}],
-            _showHand: false,
             _response: {},
             data: {
                 card: {
@@ -96,7 +94,8 @@ describe('public card dialogs', () => {
         for (const Component of [McEncountersRevealDialog, McBoostDealtDialog]) {
             const dialog = createDialog(Component, true);
             const markup = renderTemplate(dialog.render());
-            assert.doesNotMatch(markup, /<md-text-button|<button|<input|Ver mano|Cancelar/u);
+            assert.doesNotMatch(markup, />Ok<\/md-text-button>|>Cancelar<\/md-text-button>|<input|Ver mano/u);
+            assert.match(markup, /Ver mesa/u);
             assert.deepEqual(getBindings(dialog.renderContent(), 'canPeekFacedown'), [false]);
             assert.match(markup, /Capitana Marvel[\s\S]*<div inert>/u);
             assert.match(markup, /<\/div>[\s\S]*Información pública/u);
@@ -109,7 +108,7 @@ describe('public card dialogs', () => {
             const markup = renderTemplate(dialog.render());
             assert.match(markup, />Ok<\/md-text-button>/u);
             assert.match(markup, />Cancelar<\/md-text-button>/u);
-            assert.match(markup, /Ver mano/u);
+            assert.match(markup, /Ver mesa/u);
             assert.doesNotMatch(markup, /<div inert>/u);
             assert.deepEqual(getBindings(dialog.renderContent(), 'canPeekFacedown'), [true]);
             if (Component === McBoostDealtDialog) {
@@ -118,15 +117,16 @@ describe('public card dialogs', () => {
         }
     });
 
-    test('readonly handlers never dispatch responses or reveal the hand', () => {
+    test('read-only handlers block responses but allow opening the table view', () => {
         for (const Component of [McEncountersRevealDialog, McBoostDealtDialog]) {
             const dialog = createDialog(Component, true);
-            dialog.dispatchEvent = () => assert.fail('Observers cannot respond');
+            const events = [];
+            dialog.dispatchEvent = event => events.push(event);
             dialog.sendResponse();
             dialog.handleOk();
             dialog.handleCancel();
-            dialog.handleShowHand();
-            assert.equal(dialog._showHand, false);
+            dialog.handleViewTable();
+            assert.deepEqual(events.map(event => event.type), ['dialog-view-table']);
         }
     });
 });

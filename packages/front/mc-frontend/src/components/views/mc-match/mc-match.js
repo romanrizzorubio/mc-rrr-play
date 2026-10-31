@@ -7,6 +7,7 @@ import '../../match/mc-player/mc-player.js';
 import '../../panels/mc-hand/mc-hand.js';
 import {DECK_TYPES} from '../../panels/mc-deck/mc-deck.js';
 import {getCardAssetUrl} from '../../../misc/cards.js';
+import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
 
 export class MatchComponent extends LitElement {
     static get is() {
@@ -20,6 +21,9 @@ export class MatchComponent extends LitElement {
             match: {type: Object},
             player: {type: Object},
             boardPlayer: {type: Object},
+            dialogBoardPlayerId: {type: String},
+            tableConsultationMode: {type: Boolean},
+            playersPanelOpen: {type: Boolean},
             interactive: {type: Boolean},
             canRequestAction: {type: Boolean},
             actionRequest: {type: Object},
@@ -38,6 +42,9 @@ export class MatchComponent extends LitElement {
         this.match = null;
         this.player = null;
         this.boardPlayer = null;
+        this.dialogBoardPlayerId = '';
+        this.tableConsultationMode = false;
+        this.playersPanelOpen = false;
         this.interactive = true;
         this.canRequestAction = false;
         this.actionRequest = null;
@@ -146,6 +153,21 @@ export class MatchComponent extends LitElement {
     }
     guardBoardInteraction(event) {
         if (!this.boardInteractive) {
+            if (this.tableConsultationMode && event.type === 'change-menu') {
+                const {card, menuOptions = []} = event.detail || {};
+                const canViewTuckedCards = menuOptions.some(option =>
+                    option.id === MENU_OPTION_VIEW_TUCKED_CARDS
+                );
+                const cards = card?.tuckedCards || [];
+
+                if (canViewTuckedCards && cards.length) {
+                    this.dispatchEvent(new CustomEvent('view-tucked-cards', {
+                        bubbles: true,
+                        composed: true,
+                        detail: {card, cards},
+                    }));
+                }
+            }
             event.stopPropagation();
         }
     }
@@ -157,6 +179,9 @@ export class MatchComponent extends LitElement {
         if (this.focusedPlayerId === playerId) {
             this.focusedPlayerId = '';
         }
+    }
+    togglePlayersPanel() {
+        this.playersPanelOpen = !this.isPlayersPanelOpen;
     }
     handlePlayerSummaryClick(event, playerId) {
         const selectedPlayer = this.match?.players.find(player =>
@@ -202,10 +227,16 @@ export class MatchComponent extends LitElement {
         const players = this.match?.players || [];
 
         return players.find(player =>
+                this.getPlayerIdentifier(player) === this.dialogBoardPlayerId
+            ) ||
+            players.find(player =>
                 this.getPlayerIdentifier(player) === this.focusedPlayerId
             ) ||
             this.player ||
             this.boardPlayer;
+    }
+    get isPlayersPanelOpen() {
+        return this.playersPanelOpen !== false;
     }
     get boardInteractive() {
         return this.interactive &&
@@ -223,7 +254,7 @@ export class MatchComponent extends LitElement {
     }
     renderActionRequest() {
         const actionRequest = this.actionRequest;
-        if (!actionRequest) {
+        if (!actionRequest || this.tableConsultationMode) {
             return '';
         }
 
@@ -276,92 +307,120 @@ export class MatchComponent extends LitElement {
             return '';
         }
 
+        const playersPanelOpen = this.isPlayersPanelOpen;
         const displayPlayer = this.displayedPlayer;
         const otherPlayers = match.players.filter(otherPlayer =>
             this.getPlayerIdentifier(otherPlayer) !==
                 this.getPlayerIdentifier(player));
 
         return html`
-            <aside class="player-sidebar" aria-label="Jugadores">
-                <h2>Jugadores</h2>
-                <div class="local-player-summary">
-                    <span class="player-name">${player.name} (tú)</span>
-                </div>
-                ${this.renderActionRequest()}
-                ${this.getPlayerIdentifier(displayPlayer) !==
-                    this.getPlayerIdentifier(player) ? html`
-                    <md-text-button
-                        class="request-action"
+            <aside
+                class="player-sidebar ${playersPanelOpen ? '' : 'collapsed'}"
+                aria-label="Jugadores"
+            >
+                <div class="player-sidebar-header">
+                    ${playersPanelOpen ? html`<h2>Jugadores</h2>` : ''}
+                    <button
+                        class="player-sidebar-toggle"
                         type="button"
-                        @click="${() =>
-                            this.showPlayerBoard(this.getPlayerIdentifier(player))}"
-                    >Ver mi mesa</md-text-button>
-                ` : ''}
-                ${otherPlayers.map(otherPlayer => html`
-                    <div class="player-list-entry">
-                    <details
-                        class="player-accordion
-                            ${this.isPlayerPlayCardDropTarget(otherPlayer) ?
-                            'play-card-drop-target' :
-                            ''}"
-                        .open="${live(this.getPlayerIdentifier(displayPlayer) ===
-                            this.getPlayerIdentifier(otherPlayer))}"
-                        @dragover="${event =>
-                            this.handlePlayerPlayCardDragOver(event, otherPlayer)}"
-                        @drop="${event =>
-                            this.handlePlayerPlayCardDrop(event, otherPlayer)}"
-                        @toggle="${event =>
-                            this.handlePlayerAccordionToggle(
-                                event,
-                                this.getPlayerIdentifier(otherPlayer),
-                            )}"
+                        aria-label="${playersPanelOpen ?
+                            'Ocultar jugadores' :
+                            'Ver jugadores'}"
+                        aria-expanded="${playersPanelOpen}"
+                        aria-controls="player-sidebar-content"
+                        @click="${this.togglePlayersPanel.bind(this)}"
                     >
-                        <summary
-                            @click="${event => this.handlePlayerSummaryClick(
-                                event, this.getPlayerIdentifier(otherPlayer),
-                            )}"
-                        >
-                            ${otherPlayer.initial && this.firstPlayerTokenUrl ? html`
-                                <img
-                                    class="first-player-token"
-                                    src="${this.firstPlayerTokenUrl}"
-                                    alt="Ficha del jugador inicial"
-                                    title="Jugador inicial"
-                                >
-                            ` : ''}
-                            <img
-                                class="hero-thumbnail"
-                                src="${getCardAssetUrl(otherPlayer.superhero.image)}"
-                                alt=""
-                            >
-                            <span class="player-name">${otherPlayer.name}${otherPlayer.userId &&
-                                otherPlayer.userId === player.userId ? ' (tú)' : ''}</span>
-                        </summary>
-                        ${this.canRequestAction && !this.actionRequest &&
-                            (!otherPlayer.userId || otherPlayer.userId !== player.userId) ? html`
-                            <md-filled-button
-                                class="request-action"
-                                type="button"
-                                @click="${() =>
-                                    this.requestPlayerAction(
-                                        this.getPlayerIdentifier(otherPlayer),
-                                    )}"
-                            >Pedir una acción</md-filled-button>
-                        ` : ''}
-                    </details>
-                    ${otherPlayer.userId && otherPlayer.userId === player.userId &&
-                        this.canRequestAction && !this.actionRequest ? html`
+                        ${playersPanelOpen ? '' : 'Ver jugadores'}
+                        <span
+                            class="player-sidebar-chevron ${playersPanelOpen ? 'open' : ''}"
+                            aria-hidden="true"
+                        ></span>
+                    </button>
+                </div>
+                <div
+                    class="player-sidebar-content"
+                    id="player-sidebar-content"
+                    ?hidden="${!playersPanelOpen}"
+                >
+                    <div class="local-player-summary">
+                        <span class="player-name">${player.name} (tú)</span>
+                    </div>
+                    ${this.renderActionRequest()}
+                    ${this.getPlayerIdentifier(displayPlayer) !==
+                        this.getPlayerIdentifier(player) ? html`
                         <md-text-button
                             class="request-action"
                             type="button"
-                            @click="${event => this.requestControlledPlayerAction(
-                                event,
-                                this.getPlayerIdentifier(otherPlayer),
-                            )}"
-                        >Pedir una acción</md-text-button>
+                            @click="${() =>
+                                this.showPlayerBoard(this.getPlayerIdentifier(player))}"
+                        >Ver mi mesa</md-text-button>
                     ` : ''}
-                    </div>
-                `)}
+                    ${otherPlayers.map(otherPlayer => html`
+                        <div class="player-list-entry">
+                        <details
+                            class="player-accordion
+                                ${this.isPlayerPlayCardDropTarget(otherPlayer) ?
+                                'play-card-drop-target' :
+                                ''}"
+                            .open="${live(this.getPlayerIdentifier(displayPlayer) ===
+                                this.getPlayerIdentifier(otherPlayer))}"
+                            @dragover="${event =>
+                                this.handlePlayerPlayCardDragOver(event, otherPlayer)}"
+                            @drop="${event =>
+                                this.handlePlayerPlayCardDrop(event, otherPlayer)}"
+                            @toggle="${event =>
+                                this.handlePlayerAccordionToggle(
+                                    event,
+                                    this.getPlayerIdentifier(otherPlayer),
+                                )}"
+                        >
+                            <summary
+                                @click="${event => this.handlePlayerSummaryClick(
+                                    event, this.getPlayerIdentifier(otherPlayer),
+                                )}"
+                            >
+                                ${otherPlayer.initial && this.firstPlayerTokenUrl ? html`
+                                    <img
+                                        class="first-player-token"
+                                        src="${this.firstPlayerTokenUrl}"
+                                        alt="Ficha del jugador inicial"
+                                        title="Jugador inicial"
+                                    >
+                                ` : ''}
+                                <img
+                                    class="hero-thumbnail"
+                                    src="${getCardAssetUrl(otherPlayer.superhero.image)}"
+                                    alt=""
+                                >
+                                <span class="player-name">${otherPlayer.name}${otherPlayer.userId &&
+                                    otherPlayer.userId === player.userId ? ' (tú)' : ''}</span>
+                            </summary>
+                            ${this.canRequestAction && !this.actionRequest &&
+                                (!otherPlayer.userId || otherPlayer.userId !== player.userId) ? html`
+                                <md-filled-button
+                                    class="request-action"
+                                    type="button"
+                                    @click="${() =>
+                                        this.requestPlayerAction(
+                                            this.getPlayerIdentifier(otherPlayer),
+                                        )}"
+                                >Pedir una acción</md-filled-button>
+                            ` : ''}
+                        </details>
+                        ${otherPlayer.userId && otherPlayer.userId === player.userId &&
+                            this.canRequestAction && !this.actionRequest ? html`
+                            <md-text-button
+                                class="request-action"
+                                type="button"
+                                @click="${event => this.requestControlledPlayerAction(
+                                    event,
+                                    this.getPlayerIdentifier(otherPlayer),
+                                )}"
+                            >Pedir una acción</md-text-button>
+                        ` : ''}
+                        </div>
+                    `)}
+                </div>
             </aside>
         `;
     }
@@ -379,7 +438,9 @@ export class MatchComponent extends LitElement {
             <mc-scenario
                 .scenario="${match.scenario}"
                 .player="${player}"
-                class="${this.boardInteractive ? '' : 'read-only'}"
+                class="${this.tableConsultationMode ?
+                    'consultation' :
+                    this.boardInteractive ? '' : 'read-only'}"
                 .deckSelectionTargetIds="${this.deckSelectionTargetIds}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
@@ -401,9 +462,11 @@ export class MatchComponent extends LitElement {
             <div class="player-board">
             <mc-player
                 .player="${player}"
-                class="${this.boardInteractive ? '' : 'read-only'}"
+                class="${this.tableConsultationMode ?
+                    'consultation' :
+                    this.boardInteractive ? '' : 'read-only'}"
                 .canEndTurn="${canEndTurn}"
-                .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
+                .firstPlayerTokenUrl="${match?.players?.length > 1 ? this.firstPlayerTokenUrl : ''}"
                 .deckSelectionTargetIds="${this.deckSelectionTargetIds}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
@@ -494,7 +557,8 @@ export class MatchComponent extends LitElement {
                     ${this.renderOtherPlayerDiscards()}
                     ${this.renderScenario()}
                     <div class="player-board-row ${this.match?.players?.length === 1 ?
-                        'single-player' : ''}">
+                        'single-player' : ''} ${this.match?.players?.length > 1 &&
+                            !this.isPlayersPanelOpen ? 'players-collapsed' : ''}">
                         ${this.renderPlayer()}
                         ${this.renderPlayerAccordions()}
                     </div>

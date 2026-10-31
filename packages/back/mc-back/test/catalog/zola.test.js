@@ -163,7 +163,7 @@ describe('Zola scenario', () => {
         assert.deepEqual(zola.config.sets, ['standard']);
         assert.deepEqual(zola.config.defaultSets, ['under-attack']);
         assert.deepEqual(
-            zola.config.villains.map(({type, params}) => [
+            [zola.config.villains[0], ...zola.config.expertVillains].map(({type, params}) => [
                 type,
                 params.name,
                 params.image,
@@ -227,10 +227,8 @@ describe('Zola scenario', () => {
         assert.equal(stageOneA.params.name, 'La isla del doctor Zola');
         assert.equal(stageOneA.params.image, 'scenarios/zola/04112a.png');
         assert.equal(stageOneA.params.stage, 1);
-        assert.deepEqual(stageOneA.params.content, {
-            villains: [1, 2],
-            villainsExpert: [2, 3],
-        });
+        assert.deepEqual(zola.config.villains.map(({params}) => params.stage), [1, 2]);
+        assert.deepEqual(zola.config.expertVillains.map(({params}) => params.stage), [2, 3]);
         assert.equal(stageOneB.type, CARD_TYPE_MAIN_SCHEME_B_CARD);
         assert.equal(stageOneB.params.image, 'scenarios/zola/04112b.png');
         assert.equal(stageOneB.params.startingThreat, 0);
@@ -1455,7 +1453,7 @@ describe('Zola scenario', () => {
         const {config} = scenarios.find(({_id}) => _id === 'zola');
         const stageTwoAbility = config.villains[1].params.abilities[0];
         const stageTwoEffects = stageTwoAbility.params.effect.params.effects;
-        const stageThreeAbility = config.villains[2].params.abilities[0];
+        const stageThreeAbility = config.expertVillains[1].params.abilities[0];
         const stageThreeEffects = stageThreeAbility.params.effect.params.effects;
         const stageThreeReveal = stageThreeEffects[0].params.effect;
 
@@ -1673,7 +1671,7 @@ describe('Zola scenario', () => {
 
         assert.deepEqual(loadedSetIds, ['standard', 'under-attack']);
         assert.equal(scenario.name, 'zola');
-        assert.equal(scenario.villains.length, 3);
+        assert.equal(new Set([...scenario.villains, ...scenario.expertVillains]).size, 3);
         assert.equal(scenario.mainSchemes.length, 2);
         assert.equal(scenario.mainSchemes[0].sides.length, 2);
         assert.equal(scenario.mainSchemes[1].sides.length, 2);

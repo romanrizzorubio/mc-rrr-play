@@ -221,7 +221,9 @@ export class McScenario extends LitElement {
                     <section class="scenario-play-area">
                         ${zones.length > 1 ? html`
                             <header class="zone-players">
-                                ${(zone.players || []).join(', ')}
+                                ${zone.id === this.scenario?.gameZone?.id ?
+                                    'General' :
+                                    (zone.players || []).join(', ')}
                             </header>
                         ` : ''}
                         <div class="scenario-zone-cards">
@@ -233,6 +235,16 @@ export class McScenario extends LitElement {
                 `)}
             </div>
         `;
+    }
+    getVisibleZones(zones) {
+        const generalZone = zones.find(zone =>
+            zone.id === this.scenario?.gameZone?.id) ?? zones[0];
+        const playerZone = zones.find(zone =>
+            zone.id === this.player?.scenarioZoneId) ??
+            zones.find(zone => zone.players?.includes(this.player?.name));
+        const visibleZones = new Set([generalZone, playerZone].filter(Boolean));
+
+        return zones.filter(zone => visibleZones.has(zone));
     }
     renderDeck() {
         const {deck} = this.scenario;
@@ -259,13 +271,14 @@ export class McScenario extends LitElement {
                 villain: scenario?.villain,
                 mainScheme: scenario?.mainScheme,
             }];
+        const visibleZones = this.getVisibleZones(zones);
 
         return scenario ? html`
             ${this.renderDeck()}
-            ${zones.length > 1 ? this.renderZones(zones) : html`
-                ${this.renderSchemes(zones[0])}
-                ${this.renderEnvironments(zones[0])}
-                ${this.renderVillain(zones[0])}
+            ${visibleZones.length > 1 ? this.renderZones(visibleZones) : html`
+                ${this.renderSchemes(visibleZones[0])}
+                ${this.renderEnvironments(visibleZones[0])}
+                ${this.renderVillain(visibleZones[0])}
             `}
         ` : '';
     }

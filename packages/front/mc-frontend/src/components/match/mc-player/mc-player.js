@@ -83,7 +83,6 @@ export class McPlayer extends LitElement {
             player: {
                 handSize,
                 superhero,
-                gameZone,
                 initial,
             },
         } = this;
@@ -93,7 +92,6 @@ export class McPlayer extends LitElement {
             extraKeywords = [], attached = [], tuckedCards = [], aspectMarkers = []
         } = superhero;
         const attachedCards = attached.filter(card => !card.isUpgrade);
-        const obligations = gameZone?.cards?.filter(card => card.isObligation) || [];
 
         return html`
             <div class="superhero-card-container">
@@ -126,7 +124,6 @@ export class McPlayer extends LitElement {
                     .canFlip="${canFlip}"
                     .attached="${attachedCards}"
                     .tuckedCards="${tuckedCards}"
-                    .obligations="${obligations}"
                     .exhausted="${exhausted}"
                     @change-menu="${this.handleChangeMenu.bind(this)}"
                     @superhero-ability="${this.handelSuperheroAbility.bind(this)}"

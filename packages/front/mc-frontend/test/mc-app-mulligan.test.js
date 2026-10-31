@@ -37,7 +37,9 @@ describe('app match controls and mulligan lifecycle', () => {
             msg: 'Aviso', open: true,
         });
         for (const template of [
-            app.renderDialog(), app.renderMulliganWaitingDialog(), alert.render(),
+            app.renderDialogElement(null, 'dialog', true),
+            app.renderMulliganWaitingDialog(),
+            alert.render(),
         ]) {
             const quickIndex = template.strings.findIndex(part => part.endsWith('.quick="'));
             assert.notEqual(quickIndex, -1);
@@ -58,6 +60,12 @@ describe('app match controls and mulligan lifecycle', () => {
         }
         return '';
     };
+    const getBinding = (template, name) => {
+        const index = template.strings.findIndex(part =>
+            part.endsWith(`?${name}="`));
+
+        return index === -1 ? undefined : template.values[index];
+    };
     const createApp = (overrides = {}) => Object.assign(Object.create(McApp.prototype), {
         api: {match: 'partida'},
         match: null,
@@ -66,6 +74,8 @@ describe('app match controls and mulligan lifecycle', () => {
         waitingForResponse: 'Esperando al resto...',
         waitingDialogRequestId: 'mulligan-request',
         dialogQueue: [],
+        tableConsultationMode: false,
+        tableViewDialog: null,
         completedDialogRequestIds: new Set(),
         ...overrides,
     });
@@ -90,6 +100,119 @@ describe('app match controls and mulligan lifecycle', () => {
             ],
         },
         ...overrides,
+    });
+
+    test('dialog board follows a controlled target hero only while its dialog is open', () => {
+        const app = createStatusApp({player: 'seat-a'});
+        app.match.players = [
+            {id: 'seat-a', userId: 'local', superhero: {name: 'Hero A'}},
+            {id: 'seat-b', userId: 'local', superhero: {name: 'Hero B'}},
+            {id: 'guest', userId: 'guest', superhero: {name: 'Hero C'}},
+        ];
+
+        app.openDialog({
+            dialogType: 'select-target',
+            targetPlayer: 'seat-b',
+            targetUserId: 'local',
+        });
+        assert.equal(app.dialogBoardPlayerId, 'seat-b');
+        assert.equal(app.player, 'seat-a');
+        app.finishDialog(app.dialog);
+        assert.equal(app.dialogBoardPlayerId, '');
+
+        app.openDialog({
+            dialogType: 'select-target',
+            targetPlayer: 'guest',
+            targetUserId: 'guest',
+            showToAll: true,
+        });
+        assert.equal(app.dialogBoardPlayerId, '');
+    });
+
+    test('hides a pending dialog for table consultation and restores the current queued choice', () => {
+        const app = createStatusApp({player: 'seat-a'});
+        app.match.players = [
+            {id: 'seat-a', userId: 'local', superhero: {name: 'Hero A'}},
+            {id: 'seat-b', userId: 'local', superhero: {name: 'Hero B'}},
+        ];
+        app.match.currentTurnPlayer = 'seat-b';
+        const current = {
+            dialogType: 'select-target',
+            requestId: 'current-choice',
+            targetPlayer: 'seat-b',
+            targetUserId: 'local',
+        };
+        const next = {dialogType: 'confirm', requestId: 'next-choice'};
+        app.dialog = current;
+        app.dialogQueue = [next];
+
+        app.handleViewTable();
+
+        assert.equal(app.tableConsultationMode, true);
+        assert.equal(app.player, 'seat-b');
+        assert.strictEqual(app.dialog, current);
+        const toolbar = templateText(app.renderAccountBar());
+        assert.match(toolbar, /<md-filled-button\s+class="return-dialog"/u);
+        assert.ok(toolbar.indexOf('Volver al diálogo') <
+            toolbar.indexOf('class="match-status"'));
+        assert.ok(toolbar.indexOf('class="match-status"') <
+            toolbar.indexOf('Tu turno'));
+        assert.ok(toolbar.indexOf('Tu turno') <
+            toolbar.indexOf('class="account-menu"'));
+        assert.doesNotMatch(toolbar, /Esperando tu respuesta/u);
+        assert.equal(app.matchStatusText, 'Tu turno');
+        app.tableConsultationMode = false;
+        assert.equal(app.matchStatusText, 'Esperando tu respuesta...');
+        app.tableConsultationMode = true;
+        assert.equal(getBinding(app.renderDialog().values[0], 'open'), false);
+
+        app.handleDialogComplete({requestId: 'current-choice'});
+
+        assert.strictEqual(app.dialog, next);
+        assert.equal(app.tableConsultationMode, true);
+
+        app.handleReturnToDialog();
+
+        assert.equal(app.tableConsultationMode, false);
+        assert.strictEqual(app.dialog, next);
+        assert.equal(getBinding(app.renderDialog().values[0], 'open'), true);
+    });
+
+    test('discard and tucked-card inspection dialogs are read-only and preserve the pending choice', () => {
+        const app = createStatusApp({
+            player: 'local',
+            tableConsultationMode: true,
+        });
+        const pending = {dialogType: 'select-target', requestId: 'pending'};
+        app.dialog = pending;
+
+        app.handleViewTuckedCards({
+            detail: {
+                card: {name: 'Anfitrión'},
+                cards: [{
+                    id: 'tucked-card',
+                    playable: true,
+                    playFrom: ['tucked'],
+                }],
+            },
+        });
+        assert.strictEqual(app.dialog, pending);
+        assert.equal(app.tableViewDialog.viewOnly, true);
+        assert.equal(app.tableViewDialog.data.playFromPlace, null);
+        app.handleTableViewDialogClose();
+        assert.equal(app.tableConsultationMode, true);
+
+        app.handleViewDiscard({
+            detail: {
+                cards: [{id: 'discard-card', playable: true}],
+                title: 'Descarte',
+                isPlayerDeck: true,
+            },
+        });
+        assert.strictEqual(app.dialog, pending);
+        assert.equal(app.tableViewDialog.viewOnly, true);
+        assert.equal(app.tableViewDialog.data.playFromPlace, null);
+        assert.equal(app.tableViewDialog.subtitle, 'Consulta las cartas del descarte.');
     });
 
     test('server dialog answers remain bound to the requested hero across queued dialogs and selection changes', async () => {
@@ -234,7 +357,6 @@ describe('app match controls and mulligan lifecycle', () => {
             showToAll: true,
             requestId: 'partida:1',
             showCancel: true,
-            hand: [{id: 'private-card'}],
             callback: () => responses++,
             data: {card: {name: 'Agresión'}},
         });
@@ -245,13 +367,13 @@ describe('app match controls and mulligan lifecycle', () => {
         assert.equal(app.dialog.callback, undefined);
         assert.equal(app.dialog.showCancel, false);
         assert.equal(app.dialog.hideOk, true);
-        assert.deepEqual(app.dialog.hand, []);
+        assert.equal('hand' in app.dialog, false);
         assert.match(app.waitingForResponse, /Capitana Marvel/u);
         await app.handleDialogOk({detail: {}});
         await app.handleCancelDialog();
         assert.equal(responses, 0);
         assert.ok(app.dialog);
-        const template = app.renderDialog();
+        const template = app.renderDialogElement(app.dialog, 'dialog', true);
         const cancel = template.values.find(value => typeof value === 'function' &&
             !value.name.startsWith('bound'));
         let prevented = false;
@@ -481,13 +603,12 @@ describe('app match controls and mulligan lifecycle', () => {
                 showToAll,
                 requestId: 'decision-b',
                 callback: async () => { responses++; },
-                hand: [{id: 'private-card'}],
             });
             assert.equal(app.dialog.readOnly, false);
             assert.equal(app.dialog.initiatingPlayer, 'seat-b');
             assert.equal(app.dialog.targetPlayerName, 'Hero B');
             assert.doesNotMatch(templateText(app.renderDialog()), /dialog-responsible-player/u);
-            assert.deepEqual(app.dialog.hand, [{id: 'private-card'}]);
+            assert.equal('hand' in app.dialog, false);
             await app.handleDialogOk({detail: {}});
             assert.equal(responses, 1);
             assert.equal(app.player, 'local');
@@ -701,7 +822,10 @@ describe('app match controls and mulligan lifecycle', () => {
     test('places the highlighted match state between the match actions and account menu', () => {
         const app = createStatusApp();
         const toolbar = templateText(app.renderAccountBar());
-        assert.ok(toolbar.indexOf('match-actions') < toolbar.indexOf('class="match-status"'));
+        assert.ok(toolbar.indexOf('match-actions') <
+            toolbar.indexOf('class="match-status-group"'));
+        assert.ok(toolbar.indexOf('class="match-status-group"') <
+            toolbar.indexOf('class="account-menu"'));
         assert.ok(toolbar.indexOf('class="match-status"') < toolbar.indexOf('class="account-menu"'));
         assert.match(toolbar, /role="status" aria-live="polite" aria-atomic="true"/u);
         assert.match(toolbar, /Tu turno/u);
@@ -709,7 +833,9 @@ describe('app match controls and mulligan lifecycle', () => {
         assert.doesNotMatch(templateText(app.renderAccountBar()), /class="match-status"/u);
         const styles = McApp.styles.map(style => style.cssText).join('');
         assert.match(styles, /\.match-account-bar\s*\{[^}]*display:\s*grid;[^}]*max-width:\s*none/su);
-        assert.match(styles, /\.match-status\s*\{[^}]*font-weight:\s*700/su);
+        assert.match(styles, /\.match-account-bar\s*\{[^}]*grid-template-columns:\s*max-content minmax\(0, 1fr\) max-content/su);
+        assert.match(styles, /\.match-status-group\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center;[^}]*gap:\s*8px/su);
+        assert.match(styles, /\.match-status\s*\{[^}]*flex:\s*1 1 auto;[^}]*font-weight:\s*700/su);
         assert.match(styles, /@media \(max-width: 1000px\)[\s\S]*grid-column:\s*1 \/ -1;[\s\S]*grid-row:\s*2/u);
     });
 

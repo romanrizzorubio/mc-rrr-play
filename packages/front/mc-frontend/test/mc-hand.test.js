@@ -21,6 +21,7 @@ const styles = await readFile(
 describe('hand panel controls', () => {
     test('allows closing and reopening the hand while waiting for another player', () => {
         const hand = Object.assign(Object.create(McHand.prototype), {
+            cards: [],
             showPanel: true,
             interactive: false,
         });
@@ -29,11 +30,17 @@ describe('hand panel controls', () => {
         hand.handleToggle(event);
         assert.equal(hand.showPanel, false);
         assert.equal(hand.getClass(), 'hide');
-        assert.equal(hand.getButton(), '^');
+        let template = hand.render();
+        let chevronIndex = template.strings.findIndex(part =>
+            part.includes('class="panel-chevron '));
+        assert.equal(template.values[chevronIndex], '');
         hand.handleToggle(event);
         assert.equal(hand.showPanel, true);
         assert.equal(hand.getClass(), 'show');
-        assert.equal(hand.getButton(), 'v');
+        template = hand.render();
+        chevronIndex = template.strings.findIndex(part =>
+            part.includes('class="panel-chevron '));
+        assert.equal(template.values[chevronIndex], 'open');
         assert.equal(stops, 2);
     });
 
@@ -74,11 +81,17 @@ describe('hand panel controls', () => {
         assert.deepEqual(template.values[disabledIndex], []);
     });
 
-    test('keeps the collapsed toggle on screen and stacks the hand above board buttons', () => {
+    test('anchors the hand below the game scroll area', () => {
         assert.match(styles,
-            /:host\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*auto 0 0;[^}]*z-index:\s*20;/su);
+            /:host\s*\{[^}]*position:\s*relative;[^}]*flex:\s*0 0 auto;[^}]*z-index:\s*20;/su);
+        assert.match(styles, /width:\s*calc\(100% \+ 32px\);/u);
+        assert.match(styles, /margin:\s*0 -16px;/u);
+        assert.match(styles, /:host\s*\{[^}]*padding:\s*16px 0 0;/su);
+        assert.doesNotMatch(styles, /position:\s*fixed/u);
+        assert.match(styles, /\.panel\s*\{[^}]*padding:\s*16px;/su);
+        assert.match(styles, /\.panel\s*\{[^}]*overflow-y:\s*auto;/su);
         assert.match(styles, /\.panel.hide mc-card-list\s*\{[^}]*display:\s*none;/su);
-        assert.doesNotMatch(styles, /bottom:\s*-\d/u);
         assert.match(styles, /mc-card-list\[inert\]\s*\{[^}]*pointer-events:\s*none;/su);
+        assert.match(styles, /\.panel-chevron\.open\s*\{[^}]*transform:\s*rotate\(225deg\);/su);
     });
 });

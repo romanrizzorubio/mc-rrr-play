@@ -87,7 +87,7 @@ const createRiskyBusinessGame = async ({
         card.params.name === 'Empresa criminal').card;
     const environment = factory.cardsFactory.createGameCardFromConfig(environmentConfig);
     const villain = factory.cardsFactory.createGameCardFromConfig(
-        scenarioData.config.villains[villainStage - 1]
+        [scenarioData.config.villains[0], ...scenarioData.config.expertVillains][villainStage - 1]
     );
     environment.selectedSide = environmentSide;
     environment.counters = 2;
@@ -116,13 +116,13 @@ describe('Risky Business', () => {
         assert.equal(scenario.name, 'Negocios arriesgados');
         assert.deepEqual(config.sets, ['standard']);
         assert.deepEqual(config.defaultSets, ['goblin-gimmicks']);
-        assert.deepEqual(config.villains.map(({params}) =>
+        assert.deepEqual([config.villains[0], ...config.expertVillains].map(({params}) =>
             params.sides.map(({params: side}) => side.name)), [
             ['Norman Osborn', 'Duende Verde'],
             ['Norman Osborn', 'Duende Verde'],
             ['Norman Osborn', 'Duende Verde'],
         ]);
-        assert.deepEqual(config.villains.map(({params}) =>
+        assert.deepEqual([config.villains[0], ...config.expertVillains].map(({params}) =>
             params.sides.map(({params: side}) => side.hitPoints)), [
             [[14, true], [14, true]],
             [[18, true], [18, true]],
@@ -224,7 +224,7 @@ describe('Risky Business', () => {
         const {factory} = createMatchFactory();
         const cards = scenario.config.cards.map(({card}) =>
             factory.cardsFactory.createGameCardFromConfig(card));
-        const villains = scenario.config.villains.map(card =>
+        const villains = [scenario.config.villains[0], ...scenario.config.expertVillains].map(card =>
             factory.cardsFactory.createGameCardFromConfig(card));
         const schemes = scenario.config.mainSchemes.flat()
             .map(card => factory.cardsFactory.createGameCardFromConfig(card));
