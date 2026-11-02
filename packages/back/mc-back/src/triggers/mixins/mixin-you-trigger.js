@@ -14,7 +14,8 @@ export const MixinYouTrigger = C => class extends C {
 
         return character === player ||
             character === player.superhero ||
-            character === player.superhero.currentSide;
+            character === player.superhero.currentSide ||
+            player.superhero.sides?.includes(character);
     }
     canTrigger(params) {
         const cardPlayer = this.card ?

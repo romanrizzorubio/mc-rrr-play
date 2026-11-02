@@ -29,22 +29,35 @@ export class Attack extends Activation {
             [selectedTarget];
 
         const damage = effect.getEffectProperty('damage', params);
-
+        await this.calculateExcessDamage(params, effect);
         if (damage && selectedTarget) {
             const controller = this.getController(selectedTarget);
 
-            if (controller) {
-                this.excessDamage = damage - await selectedTarget.getLife();
-                if (this.excessDamage < 0) {
-                    this.excessDamage = 0;
-                }
-
-                if (this.excessDamage > 0) {
-                    effect.selectedTarget = [selectedTarget, controller];
-                    effect.setEffectProperty('damage', [damage, this.excessDamage], params);
-                }
+            if (controller && this.excessDamage > 0) {
+                effect.selectedTarget = [selectedTarget, controller];
+                effect.setEffectProperty('damage', [damage, this.excessDamage], params);
             }
         }
+    }
+    async calculateExcessDamage(params, effect = this.effect) {
+        const selectedTarget = effect.attacked || effect.selectedTarget;
+        this.excessDamage = 0;
+
+        if (!selectedTarget ||
+            Array.isArray(selectedTarget) ||
+            (!selectedTarget.isAlly && !selectedTarget.isMinion) ||
+            typeof selectedTarget.getLife !== 'function') {
+            return this.excessDamage;
+        }
+
+        const damage = effect.getEffectProperty('damage', params);
+        const life = await selectedTarget.getLife();
+        if (Number.isFinite(damage) && Number.isFinite(life)) {
+            this.attackedTargets = [selectedTarget];
+            this.excessDamage = Math.max(0, damage - life);
+        }
+
+        return this.excessDamage;
     }
     async applyRetaliate(target, params) {
         const dealDamageEffect = await this.getRetaliateDamageEffect(target, params);

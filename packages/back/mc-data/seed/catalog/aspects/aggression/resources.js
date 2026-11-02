@@ -21,6 +21,7 @@ export default [
                         'condition': {
                             'card.set': 'aggression'
                         },
+                        'costOnly': true,
                         'resources': [
                             RESOURCE_WILD,
                             RESOURCE_WILD

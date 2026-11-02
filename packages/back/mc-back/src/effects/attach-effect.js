@@ -12,6 +12,7 @@ export class AttachEffect extends Effect {
         super(arguments[0]);
 
         this.card = card;
+        this.referenceCard = card;
         this.fallbackCondition = fallbackCondition;
         this.fallbackTarget = fallbackTarget;
         this.usingFallbackTarget = false;

@@ -1331,15 +1331,15 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 aria-label="Cuenta de usuario">
                 ${this.route === 'match' ? html`
                     <div class="match-actions" role="group" aria-label="Acciones de partida">
+                        <md-text-button @click="${this.handleExitMatch.bind(this)}">
+                            Salir de la partida
+                        </md-text-button>
                         ${this.canResetMatch ? html`
                         <md-text-button
                             .disabled="${this.resettingMatch || !this.match?.id}"
                             @click="${this.handleResetMatch.bind(this)}"
                         >${this.resettingMatch ? 'Reiniciando...' : 'Reiniciar partida'}</md-text-button>
                         ` : ''}
-                        <md-text-button @click="${this.handleExitMatch.bind(this)}">
-                            Salir de la partida
-                        </md-text-button>
                     </div>
                     <div class="match-status-group">
                         ${this.dialog && this.tableConsultationMode ? html`

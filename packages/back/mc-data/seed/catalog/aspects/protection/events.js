@@ -3,6 +3,7 @@ import {
     ABILITY_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_ACTION,
+    ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
     CALC_ALL,
     CALC_ATTACK,
@@ -39,10 +40,12 @@ import {
     TRAIT_ATTACK,
     TRAIT_AVENGER,
     TRAIT_DEFENSE,
+    TRAIT_TACTIC,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
 
 export default [
@@ -491,6 +494,41 @@ export default [
                                         'target': 'match.villain.stage',
                                         'max': 3
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'protection-perseverancia',
+        'aspect': 'protection',
+        'order': 130,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Perseverancia',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/13033.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_SUPERHERO_FLIPS,
+                            'effect': {
+                                'type': EFFECT_TOUGH,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO
                                 }
                             }
                         }

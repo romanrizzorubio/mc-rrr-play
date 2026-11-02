@@ -20,7 +20,7 @@ import {
     TRIGGER_THIS_ATTACK,
 } from 'mc-shared';
 
-import {gangUp} from '../encounters/treacheries.js';
+import {gangUp} from '../shared/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {

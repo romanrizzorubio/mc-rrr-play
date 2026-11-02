@@ -1,4 +1,5 @@
 import {
+    STATUS_CONFUSED,
     TARGET_MAIN_SCHEME,
     TRIGGER_CHARACTER_SCHEMES,
 } from 'mc-shared';
@@ -102,7 +103,7 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
     }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
-            'confused',
+            STATUS_CONFUSED,
             `${this.character.name} estaba confundido y no ejecuta el plan.`,
             params,
         );

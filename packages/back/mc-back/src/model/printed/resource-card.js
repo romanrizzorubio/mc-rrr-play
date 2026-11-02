@@ -45,6 +45,42 @@ export class ResourceCard extends PlayerCard {
 
         return resources;
     }
+    getCostOnlyResourceIndexes(card) {
+        let resourceConfig;
+
+        this.resources.some(resource => {
+            if (typeof resource === 'string') {
+                return false;
+            }
+
+            if (resource.condition) {
+                if (checkCondition(card, resource.condition)) {
+                    resourceConfig = resource;
+
+                    return true;
+                }
+            } else {
+                resourceConfig = resource;
+
+                return true;
+            }
+        });
+
+        if (!resourceConfig?.costOnly) {
+            return [];
+        }
+
+        const printedResourceCount = this.getPrintedResources().length;
+        const costOnlyResourceCount = Math.max(
+            0,
+            resourceConfig.resources.length - printedResourceCount
+        );
+
+        return Array.from(
+            {length: costOnlyResourceCount},
+            (_value, index) => printedResourceCount + index
+        );
+    }
     getPrintedResources() {
         if (Array.isArray(this.resources)) {
             // Without a card being paid, conditional resource bonuses do not apply.

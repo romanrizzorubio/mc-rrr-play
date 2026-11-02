@@ -79,6 +79,49 @@ describe('effect instance definitions', () => {
         assert.equal(secondInstance.effects[0].damageModifier, 4);
     });
 
+    test('retains explicit effect-value assignments in future execution instances', () => {
+        const cardsFactory = new CardsFactory({match: {}});
+        const card = cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_EVENT,
+            params: {
+                abilities: [{
+                    type: ABILITY_HERO_ACTION,
+                    params: {
+                        effect: {
+                            type: EFFECT_CHAINED,
+                            params: {
+                                effects: [{
+                                    type: EFFECT_DEAL_DAMAGE,
+                                    params: {
+                                        damage: 4,
+                                        target: TARGET_ENEMY,
+                                    },
+                                }],
+                            },
+                        },
+                    },
+                }],
+                cost: 0,
+                name: 'Test Event',
+                resources: [],
+            },
+        });
+        const ability = card.abilities[0];
+        const modifier = new ModifyEffectValueEffect({
+            effectTypes: [EFFECT_DEAL_DAMAGE],
+            value: {distribute: true},
+        });
+        modifier.selectedTarget = card;
+        modifier.execute();
+
+        const firstInstance = ability.effectDefinition.createInstance({ability});
+        const secondInstance = ability.effectDefinition.createInstance({ability});
+
+        assert.equal(ability.effectDefinition.effects[0].distribute, true);
+        assert.equal(firstInstance.effects[0].distribute, true);
+        assert.equal(secondInstance.effects[0].distribute, true);
+    });
+
     test('restores cloneable effect definitions and configuration modifiers from snapshots', () => {
         const match = new Match({
             mc: {},

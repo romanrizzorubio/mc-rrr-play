@@ -111,6 +111,33 @@ describe('McAssignDialog', () => {
         assert.equal(dialog.renderAssigned(dialog.data.cards[1]).values[0], 5);
     });
 
+    test('shows and updates the assigned amount below each slider', () => {
+        const dialog = createDialog({
+            count: 6,
+            field: 'damage',
+            cards: [
+                {id: 'first-target', damage: 4},
+                {id: 'second-target', damage: 4},
+            ],
+        });
+        const firstRender = dialog.renderAssigned(dialog.data.cards[1]);
+        const firstMarkup = firstRender.strings.join('');
+
+        assert.ok(
+            firstMarkup.indexOf('</md-slider>') <
+                firstMarkup.indexOf('class="assignment-value"'),
+        );
+        assert.equal(firstRender.values.at(-1), 2);
+
+        dialog.handleSlider(dialog.data.cards[1])({
+            stopPropagation() {},
+            target: {value: '3'},
+        });
+
+        const updatedRender = dialog.renderAssigned(dialog.data.cards[1]);
+        assert.equal(updatedRender.values.at(-1), 3);
+    });
+
     test('starts the threat assignment on the first plan and fills remaining capacity', () => {
         const dialog = createDialog({
             autoAssignRemainderToSingleTarget: true,
@@ -155,6 +182,25 @@ describe('McAssignDialog', () => {
             'main-scheme': 0,
             'side-scheme': 3,
             'other-side-scheme': 0,
+        });
+        assert.equal(dialog.validate(), true);
+    });
+
+    test('starts the damage assignment on the enemy targeted by the dragged attack', () => {
+        const dialog = createDialog({
+            assignInitially: true,
+            count: 3,
+            field: 'damage',
+            initialTargetId: 'second-enemy',
+            cards: [
+                {id: 'first-enemy', damage: 5},
+                {id: 'second-enemy', damage: 5},
+            ],
+        });
+
+        assert.deepEqual(dialog._response.assigned, {
+            'first-enemy': 0,
+            'second-enemy': 3,
         });
         assert.equal(dialog.validate(), true);
     });

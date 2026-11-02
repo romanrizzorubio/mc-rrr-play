@@ -159,7 +159,8 @@ export class ValidTarget extends Engine {
         const targets = this.getTargetCandidates(params, params.target, condition);
         const validTargets = targets.filter(target =>
             this.filter(target, params));
-        const referenceCard = params.ability?.card ??
+        const referenceCard = this.effect?.referenceCard ??
+            params.ability?.card ??
             params.effect?.ability?.card ??
             this.effect?.ability?.card;
         const referentialTargets = filterReferentialTargets(
@@ -215,7 +216,8 @@ export class ValidTarget extends Engine {
     async selectFrom(candidates, params) {
         const validTargets = candidates.filter(card =>
             this.filter(card, params));
-        const referenceCard = params.ability?.card ??
+        const referenceCard = this.effect?.referenceCard ??
+            params.ability?.card ??
             params.effect?.ability?.card ??
             this.effect?.ability?.card;
         const referentialTargets = filterReferentialTargets(

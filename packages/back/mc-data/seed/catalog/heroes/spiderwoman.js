@@ -95,8 +95,8 @@ import {
     translateAspect,
 } from 'mc-shared';
 
-import {hydraTroop} from '../encounters/minions.js';
-import {hailHydra} from '../encounters/treacheries.js';
+import {hydraTroop} from '../shared/minions.js';
+import {hailHydra} from '../shared/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
 const spiderwomanSet = 'Spiderwoman';

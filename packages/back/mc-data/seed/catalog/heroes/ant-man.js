@@ -13,7 +13,6 @@ import {
     CARD_TYPE_HERO,
     CARD_TYPE_MINION,
     CARD_TYPE_OBLIGATION,
-    CARD_TYPE_RESOURCE,
     CARD_TYPE_SIDE_SCHEME_SCENARIO,
     CARD_TYPE_SUPPORT,
     CARD_TYPE_TREACHERY,
@@ -93,9 +92,9 @@ import {
     TRIGGER_PLAYER_TURN_END,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_GET_ATTACK,
-    TRIGGER_THIS_SPEND,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
+import {pymParticles} from '../shared/resources.js';
 
 const set = 'Hombre Hormiga';
 
@@ -282,51 +281,12 @@ const sizeChange = {
     },
 };
 
-const pymParticles = {
-    type: CARD_TYPE_RESOURCE,
+const antManPymParticles = {
+    ...pymParticles,
     params: {
-        name: 'Partículas Pym',
+        ...pymParticles.params,
         set,
         image: 'heroes/ant-man/12006.png',
-        resources: [RESOURCE_WILD],
-        classification: CLASSIFICATION_HERO,
-        abilities: [
-            {
-                type: ABILITY_HERO_RESPONSE,
-                params: {
-                    trigger: TRIGGER_THIS_SPEND,
-                    workInHand: true,
-                    condition: {
-                        'player.superhero.currentSide.traits': [
-                            TRAIT_GIANT,
-                            TRAIT_TINY,
-                        ],
-                    },
-                    effect: {
-                        type: EFFECT_DO_IF,
-                        params: {
-                            condition: {
-                                'player.superhero.currentSide.traits': TRAIT_GIANT,
-                            },
-                            effect: {
-                                type: EFFECT_HEAL,
-                                params: {
-                                    target: TARGET_YOUR_SUPERHERO,
-                                    damage: 2,
-                                },
-                            },
-                            effectNot: {
-                                type: EFFECT_DRAW_CARD,
-                                params: {
-                                    target: TARGET_YOU,
-                                    count: 1,
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        ],
     },
 };
 
@@ -883,7 +843,7 @@ export default {
             },
             {
                 count: 2,
-                card: pymParticles,
+                card: antManPymParticles,
             },
             {
                 count: 3,

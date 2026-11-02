@@ -86,7 +86,7 @@ export class Hand extends Engine {
         resourceType,
         excludedCardIds = new Set(),
         resourceUsage,
-        {printedResources = false} = {}
+        {costOnlyResourceUsage, printedResources = false} = {}
     ) {
         const resourceTypes = normalizeResourceTypes(resourceType);
         const unrestricted = !resourceTypes.length ||
@@ -112,15 +112,25 @@ export class Hand extends Engine {
 
             const payableCard = Object.create(card);
             const resources = resourceUsage.get(card.id).slice();
+            const costOnlyResourceIndexes = printedResources ?
+                [] :
+                costOnlyResourceUsage?.get(card.id) ??
+                    card.card?.getCostOnlyResourceIndexes?.(cardToPlay) ??
+                    [];
             Object.defineProperties(payableCard, {
                 resources: {
                     value: resources,
+                    enumerable: true,
+                },
+                costOnlyResourceIndexes: {
+                    value: costOnlyResourceIndexes,
                     enumerable: true,
                 },
                 toObj: {
                     value: (...args) => ({
                         ...card.toObj(...args),
                         resources,
+                        costOnlyResourceIndexes,
                     }),
                 },
             });

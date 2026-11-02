@@ -11,7 +11,7 @@ import '../../common/mc-resource/mc-resource.js';
 import {RESOURCE_WILD} from '../../../misc/resources.js';
 import {BALL_STATUS_KO, BALL_STATUS_OK} from '../../common/mc-ball/mc-ball.js';
 import {
-    getPaymentResourceUnits,
+    getSpendablePaymentResourceUnits,
     getResourceUnitKey,
 } from '../../../utils/resource-payment.js';
 
@@ -77,9 +77,13 @@ export class McPayCost extends LitElement {
         super.willUpdate(_changedProperties);
     }
     getResources(hand, generators) {
-        return getPaymentResourceUnits(
+        return getSpendablePaymentResourceUnits(
             {hand, generators},
             {
+                cost: this.cost,
+                requirement: this.requirement,
+                resourceType: this.resourceType,
+                resourcePaymentMode: this.resourcePaymentMode,
                 selectedOnly: true,
                 selectedWilds: this._wilds,
                 allowWildConversion: this.allowWildConversion !== false,

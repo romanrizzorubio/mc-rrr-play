@@ -1,5 +1,11 @@
+import {
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
+    STATUS_TOUGH,
+} from 'mc-shared';
+
 export const STATUS_OPTIONS = [
-    ['stunned', 'Aturdido'],
-    ['confused', 'Confundido'],
-    ['tough', 'Duro'],
+    [STATUS_STUNNED, 'Aturdido'],
+    [STATUS_CONFUSED, 'Confundido'],
+    [STATUS_TOUGH, 'Duro'],
 ];

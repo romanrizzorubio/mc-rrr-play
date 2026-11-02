@@ -21,6 +21,7 @@ export default [
                         'condition': {
                             'card.classification': 'protection'
                         },
+                        'costOnly': true,
                         'resources': [
                             RESOURCE_WILD,
                             RESOURCE_WILD

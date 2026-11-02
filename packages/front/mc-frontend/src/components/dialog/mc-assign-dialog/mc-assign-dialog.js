@@ -252,6 +252,9 @@ export class McAssignDialog extends McDialog {
                     labeled
                     @change="${this.handleSlider(card)}"
                 ></md-slider>
+                <output class="assignment-value" aria-live="polite">
+                    Asignado: ${value}
+                </output>
             </div>
         `;
     }

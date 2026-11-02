@@ -184,6 +184,27 @@ describe('multiplayer player boards', () => {
         assert.match(templateText(component.renderPlayerAccordions()), /Ana \(2\) \(tú\)/u);
     });
 
+    test('hides the local player name from the board heading and sidebar', () => {
+        const players = [
+            {id: 'local', name: 'Local', superhero: {image: 'local.png'}},
+            {id: 'guest', name: 'Invitado', superhero: {image: 'guest.png'}},
+        ];
+        const component = Object.assign(new MatchComponent(), {
+            player: players[0],
+            focusedPlayerId: '',
+            match: {players},
+        });
+
+        assert.equal(component.renderPlayerHeading(), '');
+        assert.doesNotMatch(
+            templateText(component.renderPlayerAccordions()),
+            /Local \(tú\)/u,
+        );
+
+        component.focusedPlayerId = 'guest';
+        assert.match(templateText(component.renderPlayerHeading()), /Invitado/u);
+    });
+
     test('collapses the player panel to a Ver jugadores control and reopens it', () => {
         const initializedComponent = new MatchComponent();
         assert.equal(initializedComponent.playersPanelOpen, false);

@@ -98,7 +98,7 @@ import {
     TRIGGER_YOUR_HERO_GET_DEFENSE,
 } from 'mc-shared';
 
-import {hydraMercenary} from '../encounters/minions.js';
+import {hydraMercenary} from '../shared/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
 const blackWidowSet = 'Black Widow';

@@ -410,6 +410,17 @@ export class Engine {
         ability,
         card,
     }) {
+        if (Array.isArray(type)) {
+            [...new Set(type)].forEach(triggerType => this.initTrigger({
+                type: triggerType,
+                priority,
+                ability,
+                card,
+            }));
+
+            return;
+        }
+
         const {match} = this;
         if (!match) {
             console.log('Falta Match');

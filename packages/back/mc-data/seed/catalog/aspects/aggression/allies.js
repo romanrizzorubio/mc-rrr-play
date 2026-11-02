@@ -1,9 +1,11 @@
 import {
     ABILITY_FORCED_RESPONSE,
     ABILITY_CONSTANT,
+    ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     CALC_COUNT,
+    CALC_COUNTERS,
     CALC_DAMAGE,
     CLASSIFICATION_AGGRESSION,
     EFFECT_CHAINED,
@@ -15,8 +17,10 @@ import {
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_HEAL,
+    EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_PLACE_COUNTERS,
     EFFECT_REMOVE_THREAT,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
@@ -30,6 +34,8 @@ import {
     TARGET_SCHEME,
     TARGET_THIS,
     TARGET_YOU,
+    TARGET_VILLAIN,
+    TRAIT_AERIAL,
     TRAIT_ASGARD,
     TRAIT_AVENGER,
     TRAIT_CHAMPION,
@@ -39,6 +45,7 @@ import {
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_GET_ATTACK,
     TRIGGER_CARD_ENTER_PLAY,
+    TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_THIS_DEFEAT_MINION,
     TRIGGER_YOU_END_PLAY_CARD
 } from 'mc-shared';
@@ -518,6 +525,147 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-thor',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 104,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Thor',
+                'subtitle': 'Jane Foster',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/allies/13011.png',
+                'traits': [
+                    TRAIT_ASGARD,
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'attack': 2,
+                'attackConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.name': 'Thor'
+                            },
+                            'effect': {
+                                'type': EFFECT_DO_IF,
+                                'params': {
+                                    'condition': {
+                                        'triggeredEffect.resourcesPaid': RESOURCE_PHYSICAL
+                                    },
+                                    'effect': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_VILLAIN,
+                                            'damage': 3
+                                        }
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_VILLAIN,
+                                            'damage': 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-wasp',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 105,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Avispa',
+                'subtitle': 'Janet Van Dyne',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/allies/13012.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 0,
+                'allowOverpay': true,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'attack': 3,
+                'attackConsequential': 1,
+                'hitPoints': 0,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'paramsCalc': {
+                                        'target': 'effect.ability.card',
+                                        'formula': CALC_COUNTERS
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
+                            'workInHand': true,
+                            'condition': {
+                                'playCardEffect.resourcesOverpaid': '>0',
+                                'playCardEffect.resourcesPaid': RESOURCE_ENERGY
+                            },
+                            'effect': {
+                                'type': EFFECT_DO_IF_HAS_PAID,
+                                'params': {
+                                    'resources': [
+                                        RESOURCE_ENERGY
+                                    ],
+                                    'effect': {
+                                        'type': EFFECT_PLACE_COUNTERS,
+                                        'params': {
+                                            'target': TARGET_THIS,
+                                            'maxCounters': 3,
+                                            'paramsCalc': {
+                                                'target': 'playCardEffect.resourcesPaid',
+                                                'formula': CALC_COUNT,
+                                                'conditions': RESOURCE_ENERGY
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

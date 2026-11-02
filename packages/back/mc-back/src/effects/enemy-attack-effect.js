@@ -3,6 +3,7 @@ import {
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_INTERRUPT,
+    STATUS_STUNNED,
     TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
@@ -36,6 +37,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         });
 
         this.attackModifierCalc = params.attackModifierCalc;
+        this.attackModifier = params.attackModifier ?? 0;
         this.enemyTargetEffect = params.enemyTargetEffect;
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
@@ -50,6 +52,11 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.modifyDefense = 0;
         this.activationInterrupted = false;
         this.preventDamage = 0;
+        if (!Number.isFinite(this.attackModifier)) {
+            throw new TypeError(
+                'EnemyAttackEffect requires a finite attack modifier.'
+            );
+        }
     }
     resetForResolution() {
         super.resetForResolution();
@@ -235,7 +242,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
-            'stunned',
+            STATUS_STUNNED,
             `${this.character.name} estaba aturdido y no ataca.`,
             params,
         );
@@ -261,7 +268,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
         const attackValue = await this.character.getAttackValue(params);
 
-        return attackValue + this.modifyAttack;
+        return attackValue + this.modifyAttack + this.attackModifier;
     }
     async getActivationCharacterData(params) {
         const attackValue = await this.getAttackValue(params);
@@ -274,6 +281,19 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     async getDefenseValue(params, defender = this.defender) {
         return await defender.getDefenseValue(params) + this.modifyDefense;
+    }
+    async triggerBasicDefense(params) {
+        const type = [TRIGGER_YOU_BASIC_DEFENSE];
+        const triggerParams = {
+            ...this.getTriggersParams({...params, effect: this}),
+            effect: this,
+            player: params.player,
+        };
+
+        if (await this.trigger(PRIORITY_CONSTANT, type, triggerParams) &&
+            await this.trigger(PRIORITY_FORCED_INTERRUPT, type, triggerParams)) {
+            await this.trigger(PRIORITY_INTERRUPT, type, triggerParams);
+        }
     }
     async getDefenseBonusPreview(params) {
         const {character, defender} = this;
@@ -315,7 +335,15 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 await this.setDefender(defender, attackTarget, params);
 
                 if (defender.isSuperhero) {
-                    const selectedDefender = this.defendersByTarget.get(attackTarget);
+                    let selectedDefender = this.defendersByTarget.get(attackTarget);
+                    if (this.basicDefendersByTarget.get(attackTarget)) {
+                        await this.triggerBasicDefense({
+                            ...params,
+                            player: this.getTargetPlayer(selectedDefender),
+                        });
+                        this.refreshSuperheroDefender(defender, attackTarget);
+                        selectedDefender = this.defendersByTarget.get(attackTarget);
+                    }
                     const defenseValue = await this.getDefenseValue(
                         {...params, player: defender.owner},
                         selectedDefender
@@ -710,7 +738,14 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 await this.trigger(PRIORITY_CONSTANT, trigger, triggerParams);
                 await this.trigger(PRIORITY_FORCED_INTERRUPT, trigger, triggerParams);
                 await this.trigger(PRIORITY_INTERRUPT, trigger, triggerParams);
+                this.refreshSuperheroDefender(defender, attackTarget);
             }
+        }
+    }
+    refreshSuperheroDefender(defender, attackTarget) {
+        if (defender.isSuperhero) {
+            this.defender = defender.currentSide;
+            this.defendersByTarget.set(attackTarget, this.defender);
         }
     }
     removeDepartedDefenders() {

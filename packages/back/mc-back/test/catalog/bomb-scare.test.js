@@ -4,7 +4,7 @@ import {describe, test} from 'node:test';
 
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import bombScare from '../../../mc-data/seed/catalog/sets/bomb-scare.js';
-import {hydraTerrorist} from '../../../mc-data/seed/catalog/encounters/minions.js';
+import {hydraTerrorist} from '../../../mc-data/seed/catalog/shared/minions.js';
 
 describe('Bomb Scare catalog and images', () => {
     test('Amenaza de bomba is listed as a selectable modular set', async () => {

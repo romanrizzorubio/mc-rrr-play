@@ -434,7 +434,11 @@ export class Player extends Engine {
         resourceType,
         excludedCardIds = new Set(),
         resourceUsage,
-        {includeGenerators = true, printedResources = false} = {}
+        {
+            costOnlyResourceUsage,
+            includeGenerators = true,
+            printedResources = false,
+        } = {}
     ) {
         return {
             generators: includeGenerators ?
@@ -449,7 +453,7 @@ export class Player extends Engine {
                 resourceType,
                 excludedCardIds,
                 resourceUsage,
-                {printedResources}
+                {costOnlyResourceUsage, printedResources}
             ),
         };
     }
@@ -735,9 +739,51 @@ export class Player extends Engine {
                 throw new Error('El objetivo de la activación ya no es válido.');
             }
 
+            const activationParams = {
+                ...abilityParams,
+                activationTargetId: targetId,
+            };
+            const isBasicAttackOrThwart = ability.isBasic &&
+                (ability.isAttack || ability.isThwart);
+
+            if (isBasicAttackOrThwart) {
+                if (!await ability.canRun(activationParams)) {
+                    throw new Error('La activación seleccionada ya no está disponible.');
+                }
+
+                ability.effect.selectedTarget = selectedTarget;
+                await card.resolveAbility({
+                    ...activationParams,
+                    preselectedTarget: true,
+                    fixedPreselectedTarget: true,
+                    selectedTarget,
+                    activationTarget: selectedTarget,
+                    abilityIndex,
+                });
+                return;
+            }
+
+            const isDistributedMultipleTarget =
+                ability.effect.distribute &&
+                ability.effect.validTarget.isMultipleTarget({
+                    target: ability.effect.target,
+                });
+
+            if (isDistributedMultipleTarget) {
+                if (!await ability.canRun(activationParams)) {
+                    throw new Error('La activación seleccionada ya no está disponible.');
+                }
+
+                await card.resolveAbility({
+                    ...activationParams,
+                    abilityIndex,
+                });
+                return;
+            }
+
             ability.effect.selectedTarget = selectedTarget;
             const preselectedParams = {
-                ...abilityParams,
+                ...activationParams,
                 preselectedTarget: true,
                 fixedPreselectedTarget: true,
                 selectedTarget,

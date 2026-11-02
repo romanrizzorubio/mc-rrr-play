@@ -26,6 +26,7 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_MAIN_SCHEME,
     TARGET_MINION,
     TARGET_SCHEME,
     TARGET_SOURCE,
@@ -40,6 +41,7 @@ import {
     TRAIT_WEAPON,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
+    TRIGGER_YOUR_SUPERHERO_FLIPS,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY
 } from 'mc-shared';
 
@@ -697,6 +699,117 @@ export default [
                                     'target': TARGET_YOUR_HERO,
                                     'paramsCalc': {
                                         'target': 'attack.excessDamage'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-entrar-en-combate',
+        'aspect': 'aggression',
+        'order': 13013,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Entrar en combate',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/13013.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_MINION,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_MINION,
+                                                'damage': 6
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_THREAT,
+                                            'params': {
+                                                'target': TARGET_MAIN_SCHEME,
+                                                'threat': 0,
+                                                'paramsCalc': {
+                                                    'target': 'effects.0.activation.excessDamage'
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-ataque-sorpresa',
+        'aspect': 'aggression',
+        'order': 13014,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Ataque sorpresa',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/13014.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'trigger': TRIGGER_YOUR_SUPERHERO_FLIPS,
+                            'effect': {
+                                'type': EFFECT_DO_IF_HAS_PAID,
+                                'params': {
+                                    'resources': [
+                                        RESOURCE_PHYSICAL
+                                    ],
+                                    'target': TARGET_ENEMY,
+                                    'effect': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_ENEMY,
+                                            'damage': 4
+                                        }
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_ENEMY,
+                                            'damage': 3
+                                        }
                                     }
                                 }
                             }

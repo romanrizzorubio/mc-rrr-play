@@ -540,6 +540,16 @@ export class McMatchLobbyPage extends LitElement {
             ></mc-deck-picker>
         `;
     }
+    renderJoinButton() {
+        return html`
+            <md-filled-button
+                .disabled="${this.busy || !this.playerSelection.hero ||
+                    this.loadingDecks}"
+                @click="${this.joinLobby.bind(this)}"
+            >${this.busy ? 'Inscribiendo...' : this.currentPlayer ?
+                'Añadir héroe' : 'Apuntarme a la partida'}</md-filled-button>
+        `;
+    }
     renderJoinForm() {
         if (!this.canJoin) {
             return '';
@@ -565,14 +575,12 @@ export class McMatchLobbyPage extends LitElement {
                         @player-change="${this.handlePlayerChanged.bind(this)}"
                     ></mc-form-player>
                 `}
+                <div class="player-actions">
+                    ${this.renderJoinButton()}
+                </div>
                 ${this.renderDeckPicker()}
                 <div class="player-actions">
-                    <md-filled-button
-                        .disabled="${this.busy || !this.playerSelection.hero ||
-                            this.loadingDecks}"
-                        @click="${this.joinLobby.bind(this)}"
-                    >${this.busy ? 'Inscribiendo...' : this.currentPlayer ?
-                        'Añadir héroe' : 'Apuntarme a la partida'}</md-filled-button>
+                    ${this.renderJoinButton()}
                 </div>
             </section>
         `;

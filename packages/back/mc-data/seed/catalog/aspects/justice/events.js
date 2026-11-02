@@ -5,6 +5,7 @@ import {
     ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
+    CALC_STAGE,
     EFFECT_CHAINED,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CONFUSE,
@@ -22,8 +23,11 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
     TARGET_YOU,
+    TARGET_VILLAIN,
+    TRAIT_AVENGER,
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
@@ -385,6 +389,52 @@ export default [
                                             'target': TARGET_SCHEME,
                                             'threat': 3
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-impedimentos',
+        'aspect': 'justice',
+        'order': 92,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Impedimentos',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/13031.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'threat': 2,
+                                    'additionalThreatCalc': {
+                                        'target': TARGET_VILLAIN,
+                                        'formula': CALC_STAGE,
+                                        'max': 3
                                     }
                                 }
                             }

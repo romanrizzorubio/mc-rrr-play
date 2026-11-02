@@ -49,8 +49,11 @@ const CALCULATION_MAP = {
 
         const filters = Array.isArray(conditions) ? conditions : [conditions];
 
-        return source.filter(item =>
-            filters.some(condition => checkCondition(item, condition))).length;
+        return source.filter(item => filters.some(condition =>
+            condition && typeof condition === 'object' ?
+                checkCondition(item, condition) :
+                item === condition
+        )).length;
     },
     [CALC_COUNTERS]: (source, {target}) => {
         if (!source || typeof source !== 'object' || Array.isArray(source)) {

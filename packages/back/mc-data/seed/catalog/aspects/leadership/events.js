@@ -10,6 +10,7 @@ import {
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
     EFFECT_DISCARD_UNTIL,
     EFFECT_EXHAUST,
@@ -25,6 +26,7 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_SIMULTANEOUS,
     EFFECT_TOUGH,
+    LABEL_ATTACK,
     PLACE_DISCARD_PILE,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -39,12 +41,14 @@ import {
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ROUND,
     TARGET_EFFECT,
+    TARGET_ENEMY,
     TARGET_SOURCE,
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
+    TRAIT_ATTACK,
     TRAIT_TACTIC,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_BASIC_THWART,
@@ -624,6 +628,67 @@ export default [
                                             'type': EFFECT_READY,
                                             'params': {
                                                 'target': TARGET_ALLY
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-todos-para-uno',
+        'aspect': 'leadership',
+        'order': 130,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Todos para uno',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/13032.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                'condition': {
+                                                    'traits': TRAIT_AVENGER
+                                                },
+                                                'multipleTarget': true,
+                                                'selectUpTo': true
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 3,
+                                                'additionalDamageCalc': {
+                                                    'target': 'effects.0.selectedTarget',
+                                                    'formula': CALC_COUNT
+                                                }
                                             }
                                         }
                                     ]

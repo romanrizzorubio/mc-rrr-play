@@ -51,7 +51,7 @@ import {
     TRIGGER_VILLAIN_ATTACKS_YOU,
 } from 'mc-shared';
 
-import {hydraTerrorist} from '../encounters/minions.js';
+import {hydraTerrorist} from '../shared/minions.js';
 import {revealEncounterFrom} from '../utils/reveal-encounter.js';
 import {withCardSet} from '../with-card-set.js';
 

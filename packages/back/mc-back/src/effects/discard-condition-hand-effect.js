@@ -31,8 +31,13 @@ export class DiscardConditionHandEffect extends Effect {
             super.canRun(params);
     }
     async execute(params) {
-        const cards = await this.selectDiscardOrder(
-            this.cards,
+        const cards = this.selectedTarget.hand.searchCards(this.condition);
+        if (!cards.length) {
+            return;
+        }
+
+        const orderedCards = await this.selectDiscardOrder(
+            cards,
             undefined,
             {targetPlayer: params.player}
         );
@@ -41,7 +46,7 @@ export class DiscardConditionHandEffect extends Effect {
             match: this.match,
         });
 
-        await this.promisesSequential(cards, async card => {
+        await this.promisesSequential(orderedCards, async card => {
             discardFromHandEffect.selectedTarget = card;
 
             await discardFromHandEffect.runEffect(params);

@@ -1,4 +1,9 @@
-import {TARGET_CHARACTER} from 'mc-shared';
+import {
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
+    STATUS_TOUGH,
+    TARGET_CHARACTER,
+} from 'mc-shared';
 
 import {STATUS_OPTIONS} from '../constants/status-options.js';
 import {selectStatusOption} from '../utils/status-dialog.js';
@@ -36,13 +41,13 @@ export class RemoveStatusEffect extends Effect {
     }
     removeStatus(card, status) {
         switch (status) {
-            case 'stunned':
+            case STATUS_STUNNED:
                 card.removeStunned(1);
                 break;
-            case 'confused':
+            case STATUS_CONFUSED:
                 card.removeConfused(1);
                 break;
-            case 'tough':
+            case STATUS_TOUGH:
                 card.removeTough(1);
                 break;
         }

@@ -13,7 +13,7 @@ import {
     TARGET_YOU,
 } from 'mc-shared';
 
-import {hydraTerrorist} from '../encounters/minions.js';
+import {hydraTerrorist} from '../shared/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {

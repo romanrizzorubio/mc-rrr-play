@@ -3,7 +3,7 @@ import {stat} from 'node:fs/promises';
 import {describe, test} from 'node:test';
 
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
-import {gangUp} from '../../../mc-data/seed/catalog/encounters/treacheries.js';
+import {gangUp} from '../../../mc-data/seed/catalog/shared/treacheries.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 
 describe('Standard and Expert replacement images', () => {

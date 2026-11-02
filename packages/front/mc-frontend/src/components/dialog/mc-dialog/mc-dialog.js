@@ -1,5 +1,7 @@
 import {LitElement, html} from 'lit-element';
 
+import {renderTextWithFormatting} from '../../../utils/render-text-with-formatting.js';
+
 export class McDialog extends LitElement {
     static get properties() {
         return {
@@ -175,10 +177,13 @@ export class McDialog extends LitElement {
     }
     renderTitle() {
         const title = this.getTitle();
+        const titleContent = typeof title === 'string' ?
+            renderTextWithFormatting(title) :
+            title;
 
         return html`
             <h2 class="title">
-                ${title ? html`<span>${title}</span>` : ''}
+                ${title ? html`<span>${titleContent}</span>` : ''}
                 ${this.renderButtonTable()}
             </h2>
         `;

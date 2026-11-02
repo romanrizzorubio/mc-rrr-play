@@ -322,6 +322,33 @@ describe('match lobby page permissions', () => {
         assert.ok(markup.indexOf('</mc-form-player>') < markup.indexOf('<mc-deck-picker'));
     });
 
+    test('offers the join action above and below the available deck picker', () => {
+        const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
+            user: {id: 'guest-1'},
+            lobby: {
+                ownerId: 'host-1',
+                status: 'waiting',
+                maxPlayers: 4,
+                players: [{userId: 'host-1', hero: 'ironman'}],
+            },
+            playerSelection: {hero: 'spiderwoman', deckId: ''},
+            heroesList: [],
+            decksList: [],
+            loadingHeroes: false,
+            loadingDecks: false,
+            busy: false,
+        });
+
+        const markup = templateText(page.renderJoinForm());
+        const firstJoinButton = markup.indexOf('Apuntarme a la partida');
+        const deckPicker = markup.indexOf('<mc-deck-picker');
+        const secondJoinButton = markup.lastIndexOf('Apuntarme a la partida');
+
+        assert.ok(firstJoinButton >= 0);
+        assert.ok(firstJoinButton < deckPicker);
+        assert.ok(deckPicker < secondJoinButton);
+    });
+
     test('the shared deck picker shows the Precon and aspect-aware deck table', () => {
         const picker = createDeckPicker({
             hero: 'spiderwoman',

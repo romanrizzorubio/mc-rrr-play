@@ -246,6 +246,12 @@ export class MatchComponent extends LitElement {
     renderPlayerHeading() {
         const player = this.displayedPlayer;
 
+        if (!player ||
+            this.getPlayerIdentifier(player) ===
+                this.getPlayerIdentifier(this.player)) {
+            return '';
+        }
+
         return player ? html`
             <div class="board-player-heading">
                 <strong>${player.name}</strong>
@@ -342,9 +348,6 @@ export class MatchComponent extends LitElement {
                     id="player-sidebar-content"
                     ?hidden="${!playersPanelOpen}"
                 >
-                    <div class="local-player-summary">
-                        <span class="player-name">${player.name} (tú)</span>
-                    </div>
                     ${this.renderActionRequest()}
                     ${this.getPlayerIdentifier(displayPlayer) !==
                         this.getPlayerIdentifier(player) ? html`

@@ -1,9 +1,14 @@
-import {DIALOG_LIST} from 'mc-shared';
+import {
+    DIALOG_LIST,
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
+    STATUS_TOUGH,
+} from 'mc-shared';
 
 const STATUS_IMAGES = {
-    confused: 'status/confused.webp',
-    stunned: 'status/stunned.webp',
-    tough: 'status/though.webp',
+    [STATUS_CONFUSED]: 'status/confused.webp',
+    [STATUS_STUNNED]: 'status/stunned.webp',
+    [STATUS_TOUGH]: 'status/though.webp',
 };
 
 export async function selectStatusOption(

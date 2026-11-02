@@ -821,7 +821,13 @@ describe('app match controls and mulligan lifecycle', () => {
 
     test('places the highlighted match state between the match actions and account menu', () => {
         const app = createStatusApp();
+        app.match.creatorUserId = app.user.id;
         const toolbar = templateText(app.renderAccountBar());
+        const exitMatchIndex = toolbar.indexOf('Salir de la partida');
+        const resetMatchIndex = toolbar.indexOf('Reiniciar partida');
+
+        assert.ok(exitMatchIndex >= 0);
+        assert.ok(resetMatchIndex > exitMatchIndex);
         assert.ok(toolbar.indexOf('match-actions') <
             toolbar.indexOf('class="match-status-group"'));
         assert.ok(toolbar.indexOf('class="match-status-group"') <

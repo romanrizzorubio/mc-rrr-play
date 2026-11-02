@@ -48,6 +48,15 @@ export class Thwart extends Activation {
         return !triggersEndsLaunched ? super.getTriggersEnds(params)
             .concat(triggers) : [];
     }
+    getTriggersInit(params) {
+        const triggers = super.getTriggersInit(params);
+
+        if (this.effect?.ability?.isBasic) {
+            triggers.push(TRIGGER_YOU_BASIC_THWART);
+        }
+
+        return triggers;
+    }
     getTriggersParams(params) {
         const {character} = this;
 

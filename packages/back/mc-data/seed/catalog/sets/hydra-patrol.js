@@ -13,7 +13,7 @@ import {
     TRAIT_HYDRA,
 } from 'mc-shared';
 
-import {hydraSoldier, hydraTroop} from '../encounters/minions.js';
+import {hydraSoldier, hydraTroop} from '../shared/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {

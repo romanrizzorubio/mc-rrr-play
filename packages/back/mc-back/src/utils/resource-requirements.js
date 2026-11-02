@@ -76,9 +76,16 @@ export function toResourcePaymentCard(
     const cardParams = cardToPay ?
         {...params, card: cardToPay} :
         params;
+    const printedCard = card?.card ?? card;
+    const costOnlyResourceIndexes = printed ?
+        [] :
+        card?.costOnlyResourceIndexes ??
+            printedCard?.getCostOnlyResourceIndexes?.(cardToPay) ??
+            [];
 
     return {
         ...card.toObj(cardParams),
         resources: getResourceIcons(card, {printed, cardToPay}),
+        costOnlyResourceIndexes,
     };
 }

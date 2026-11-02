@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
 import {
+    DIALOG_ASSIGN,
     EFFECT_DEFEAT,
     EFFECT_REMOVE_THREAT,
+    TARGET_ALL_SCHEMES,
     TARGET_SCHEME,
     TARGET_THIS,
 } from 'mc-shared';
@@ -39,6 +41,51 @@ describe('RemoveThreatEffect', () => {
 
         assert.equal(effect.threat, 6);
         assert.equal(source.threat, 4);
+    });
+
+    test('distributes threat removal across eligible schemes', async () => {
+        let assignmentDialog;
+        const createScheme = (id, threat) => ({
+            id,
+            threat,
+            isSideScheme: true,
+            canRemoveThreat() {
+                return this.threat > 0;
+            },
+            removeThreat(amount) {
+                this.threat -= amount;
+            },
+            refresh() {},
+            toObj() {
+                return {id: this.id, name: this.id, threat: this.threat};
+            },
+        });
+        const firstScheme = createScheme('first', 4);
+        const secondScheme = createScheme('second', 3);
+        const match = {
+            triggerCards: {},
+            async openDialog(dialog) {
+                assignmentDialog = dialog;
+
+                return {assigned: {first: 1, second: 2}};
+            },
+        };
+        const effect = new RemoveThreatEffect({
+            distribute: true,
+            match,
+            selectedTarget: [firstScheme, secondScheme],
+            target: TARGET_ALL_SCHEMES,
+            threat: 3,
+        });
+
+        await effect.runEffect({
+            match,
+            player: {hand: {cards: []}},
+        });
+
+        assert.equal(assignmentDialog.dialogType, DIALOG_ASSIGN);
+        assert.equal(assignmentDialog.data.count, 3);
+        assert.deepEqual([firstScheme.threat, secondScheme.threat], [3, 1]);
     });
 
     test('uses the shared side-scheme defeat check', async () => {

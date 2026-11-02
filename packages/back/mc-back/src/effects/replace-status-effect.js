@@ -1,4 +1,10 @@
-import {DIALOG_SELECT_TARGET, TARGET_CHARACTER} from 'mc-shared';
+import {
+    DIALOG_SELECT_TARGET,
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
+    STATUS_TOUGH,
+    TARGET_CHARACTER,
+} from 'mc-shared';
 
 import {STATUS_OPTIONS} from '../constants/status-options.js';
 import {selectStatusOption} from '../utils/status-dialog.js';
@@ -67,26 +73,26 @@ export class ReplaceStatusEffect extends Effect {
     }
     removeStatus(card, status) {
         switch (status) {
-            case 'stunned':
+            case STATUS_STUNNED:
                 card.removeStunned(1);
                 break;
-            case 'confused':
+            case STATUS_CONFUSED:
                 card.removeConfused(1);
                 break;
-            case 'tough':
+            case STATUS_TOUGH:
                 card.removeTough(1);
                 break;
         }
     }
     addStatus(card, status) {
         switch (status) {
-            case 'stunned':
+            case STATUS_STUNNED:
                 card.stun();
                 break;
-            case 'confused':
+            case STATUS_CONFUSED:
                 card.confuse();
                 break;
-            case 'tough':
+            case STATUS_TOUGH:
                 card.setTough();
                 break;
         }

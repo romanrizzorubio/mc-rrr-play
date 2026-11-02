@@ -40,6 +40,8 @@ Para resolver un efecto individualmente por cada candidato, usa `EFFECT_FOR_EACH
 
 Cuando una habilidad de carta identifica un objetivo por `condition.name`, el motor aplica automáticamente la regla de referencia a los candidatos válidos: primero la propia carta fuente, después las cartas asociadas al mismo superhéroe/conjunto y, por último, las cartas de la misma categoría que la fuente (jugador o encuentro). Solo permanecen las coincidencias del nivel más alto disponible, y se conservan todas las coincidencias de ese nivel. El conjunto asociado se obtiene de la carta fuente y su superhéroe; no lo repitas en la condición de la carta. Esta prioridad también se comprueba al validar objetivos preseleccionados.
 
+Al resolver el objetivo de vinculación de un Accesorio, la carta que se está vinculando es la referencia para una condición `name`. No uses la carta o capacidad que inició la revelación como referencia; el motor conserva esta referencia al validar y seleccionar el objetivo.
+
 Si un efecto compuesto y varios hijos comparten el mismo selector, define el `target` y su condición en el efecto compuesto y configura `TARGET_PARENT` en esos hijos. Así comparten exactamente la selección validada del efecto principal, en vez de calcular cada uno una lista independiente. Al extender esta estrategia a otro tipo de grupo, conserva este mismo flujo de contexto y añade cobertura tanto para la disponibilidad como para la resolución real de sus hijos.
 
 ## Selectores resolubles

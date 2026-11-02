@@ -1,5 +1,10 @@
 import {LitElement, html} from 'lit-element';
 import 'mc-components';
+import {
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
+    STATUS_TOUGH,
+} from 'mc-shared';
 
 import styles from './mc-card.css.js';
 import '../mc-card-image/mc-card-image.js';
@@ -1074,7 +1079,12 @@ export class CardComponent extends LitElement {
     renderConfused() {
         const {statusCards: {confused}} = this;
 
-        return this.renderStatusCard(confused, 'C', 'Confundido', 'confused');
+        return this.renderStatusCard(
+            confused,
+            'C',
+            'Confundido',
+            STATUS_CONFUSED,
+        );
     }
     renderCounters() {
         return html`
@@ -1279,7 +1289,12 @@ export class CardComponent extends LitElement {
     renderStunned() {
         const {statusCards: {stunned}} = this;
 
-        return this.renderStatusCard(stunned, 'A', 'Aturdido', 'stunned');
+        return this.renderStatusCard(
+            stunned,
+            'A',
+            'Aturdido',
+            STATUS_STUNNED,
+        );
     }
     renderAccelerationCounters() {
         const {acceleration} = this;
@@ -1305,7 +1320,7 @@ export class CardComponent extends LitElement {
     renderTough() {
         const {statusCards: {tough}} = this;
 
-        return this.renderStatusCard(tough, 'D', 'Duro', 'tough');
+        return this.renderStatusCard(tough, 'D', 'Duro', STATUS_TOUGH);
     }
     render() {
         return html`

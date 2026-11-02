@@ -45,9 +45,9 @@ import aMessOfThings from '../../../mc-data/seed/catalog/sets/a-mess-of-things.j
 import powerDrain from '../../../mc-data/seed/catalog/sets/power-drain.js';
 import runningInterference from '../../../mc-data/seed/catalog/sets/running-interference.js';
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
-import {goblinGlider, pumpkinBombs} from '../../../mc-data/seed/catalog/encounters/attachments.js';
-import {hydraSoldier} from '../../../mc-data/seed/catalog/encounters/minions.js';
-import {gangUp, hailHydra} from '../../../mc-data/seed/catalog/encounters/treacheries.js';
+import {goblinGlider, pumpkinBombs} from '../../../mc-data/seed/catalog/shared/attachments.js';
+import {hydraSoldier} from '../../../mc-data/seed/catalog/shared/minions.js';
+import {gangUp, hailHydra} from '../../../mc-data/seed/catalog/shared/treacheries.js';
 import mutagenFormula from '../../../mc-data/seed/catalog/scenarios/mutagen-formula.js';
 import {QuickstrikeAbility} from '../../src/abilities/misc/quickstrike-ability.js';
 import {ForcedResponseAbility} from '../../src/abilities/response/forced-response-ability.js';

@@ -11,7 +11,9 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK,
+    EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_REMOVE_THREAT,
+    EFFECT_MODIFY_THWART_VALUE,
     EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_STUN,
     PLACE_DISCARD_PILE,
@@ -22,15 +24,19 @@ import {
     TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_SCHEME,
+    TARGET_THIS,
     TARGET_YOU,
+    TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
+    TRAIT_CHAMPION,
     TRAIT_SHIELD,
     TRAIT_ASGARD,
     TRAIT_SPY,
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
 
 export default [
@@ -284,6 +290,131 @@ export default [
                                 'params': {
                                     'target': TARGET_ENCOUNTER_DECK,
                                     'count': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-ironheart',
+        'classification': 'basic',
+        'order': 13018,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Ironheart',
+                'subtitle': 'Riri Williams',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/allies/13018.png',
+                'traits': [
+                    TRAIT_CHAMPION
+                ],
+                'unique': true,
+                'cost': 2,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'thwart': 1,
+                'attack': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.name': 'Ironheart',
+                                'effect.playedFromHand': true
+                            },
+                            'effect': {
+                                'type': EFFECT_DRAW_CARD,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'count': 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'basic-spiderman-miles-morales',
+        'classification': 'basic',
+        'order': 13019,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Spiderman',
+                'subtitle': 'Miles Morales',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/allies/13019.png',
+                'traits': [
+                    TRAIT_CHAMPION
+                ],
+                'unique': true,
+                'cost': 3,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'thwart': 1,
+                'attack': 2,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.name': 'Spiderman',
+                                'effect.playedFromHand': true
+                            },
+                            'effect': {
+                                'type': EFFECT_CHOOSE,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'options': [
+                                        {
+                                            'type': EFFECT_LASTING,
+                                            'params': {
+                                                'title': 'ATQ +2',
+                                                'target': TARGET_THIS,
+                                                'until': TIME_PHASE,
+                                                'effect': {
+                                                    'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_THIS,
+                                                        'count': 2
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_LASTING,
+                                            'params': {
+                                                'title': 'INT +2',
+                                                'target': TARGET_THIS,
+                                                'until': TIME_PHASE,
+                                                'effect': {
+                                                    'type': EFFECT_MODIFY_THWART_VALUE,
+                                                    'params': {
+                                                        'target': TARGET_THIS,
+                                                        'count': 2
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

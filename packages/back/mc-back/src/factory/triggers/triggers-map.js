@@ -79,6 +79,7 @@ import {
     TRIGGER_YOU_BASIC_DEFENSE,
     TRIGGER_YOU_BASIC_THWART,
     TRIGGER_YOU_DEFEAT_MINION,
+    TRIGGER_YOU_DEFEAT_SIDE_SCHEME,
     TRIGGER_WOULD_PLACE_THREAT,
     TRIGGER_WOULD_ADD_ACCELERATION_TOKEN,
     TRIGGER_YOU_PLAY_CARD,
@@ -176,6 +177,7 @@ import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js'
 import {YouBasicDefenseTrigger} from '../../triggers/you-basic-defense-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
 import {YouDefeatMinionTrigger} from '../../triggers/you-defeat-minion-trigger.js';
+import {YouDefeatSideSchemeTrigger} from '../../triggers/you-defeat-side-scheme-trigger.js';
 import {YouPlayCardTrigger} from '../../triggers/you-play-card-trigger.js';
 import {YouEndPlayCardTrigger} from '../../triggers/you-end-play-card-trigger.js';
 import {SurgeTrigger} from '../../triggers/surge-trigger.js';
@@ -254,6 +256,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOU_ANY_THWART]: YouAnyThwartTrigger,
     [TRIGGER_YOU_BASIC_THWART]: YouBasicThwartTrigger,
     [TRIGGER_YOU_DEFEAT_MINION]: YouDefeatMinionTrigger,
+    [TRIGGER_YOU_DEFEAT_SIDE_SCHEME]: YouDefeatSideSchemeTrigger,
     [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: YourHeroAttackDefeatEnemyTrigger,
     [TRIGGER_YOUR_HERO_GET_ATTACK]: YourHeroGetAttackTrigger,
     [TRIGGER_YOUR_HERO_GET_DEFENSE]: YourHeroGetDefenseTrigger,

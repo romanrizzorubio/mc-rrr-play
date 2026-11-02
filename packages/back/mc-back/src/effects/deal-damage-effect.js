@@ -1,6 +1,7 @@
 import {
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_TAKE_DAMAGE,
+    DIALOG_ASSIGN,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
 } from 'mc-shared';
 
@@ -14,18 +15,23 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         const {
             character,
             damage,
+            additionalDamageCalc,
             ignoreTough = false,
             preventDamage = 0,
+            distribute = false,
         } = params;
 
         this._character = character;
         this.ignoreTough = ignoreTough;
         this.preventDamageAmount = preventDamage;
         this.baseDamage = damage;
+        this.additionalDamageCalc = additionalDamageCalc;
+        this.additionalDamage = 0;
         this.damageModifier = 0;
         this.modifyAttack = 0;
         this.targetCountCalc = params.targetCountCalc;
         this.selectCount = params.selectCount;
+        this.distribute = distribute;
 
         this.damage = undefined;
         this.dealtDamage = 0;
@@ -36,6 +42,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
     }
     resetResolutionData() {
         super.resetResolutionData();
+        this.additionalDamage = 0;
         this.modifyAttack = 0;
         this.dealtDamage = 0;
         this.preventDamage = 0;
@@ -118,6 +125,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
     }
     async prepare(params) {
         this.damage = undefined;
+        this.additionalDamage = 0;
         this.dealtDamage = 0;
         this.preventDamage = 0;
         this.takenDamage = 0;
@@ -125,6 +133,19 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         this.defeated = false;
 
         await super.prepare(params);
+
+        this.additionalDamage = this.additionalDamageCalc ?
+            await new Calc(this.additionalDamageCalc).calculate({
+                ...params,
+                match: params.match ?? this.match,
+                effect: this,
+            }) :
+            0;
+        if (!Number.isFinite(this.additionalDamage)) {
+            throw new TypeError(
+                'DealDamageEffect additionalDamageCalc requires a numeric damage value.'
+            );
+        }
 
         if (this.damage === undefined) {
             const lastStepDamage = this.getLastStepParam('damage', params);
@@ -139,11 +160,12 @@ export class DealDamageEffect extends AttackEffect(Effect) {
                 this.damage = this.baseDamage ?? params.damage;
             }
         }
+        const damageModifier = this.damageModifier + this.additionalDamage;
         if (Array.isArray(this.damage)) {
-            this.damage = this.damage.map(damage => damage + this.damageModifier);
+            this.damage = this.damage.map(damage => damage + damageModifier);
         } else if (Number.isFinite(this.damage)) {
-            this.damage += this.damageModifier;
-        } else if (this.damageModifier) {
+            this.damage += damageModifier;
+        } else if (damageModifier) {
             throw new TypeError('DealDamageEffect requires a numeric damage value to modify.');
         }
 
@@ -160,15 +182,24 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         const {ability} = this;
         if (this.isAttack && ability?.isBasic &&
             typeof ability.getAttackValue === 'function') {
+            const previousTarget = this.target;
             const attackValue = await ability.getAttackValue(params);
+            await this.refreshTargetSelection(previousTarget, params);
             this.damage = attackValue +
                 (this.modifyAttack ?? 0) +
-                this.damageModifier;
+                this.damageModifier +
+                this.additionalDamage;
         }
 
+        await this.distributeDamage(params);
+
         const {activation} = this;
-        if (this.isAttack && activation?.getOverkill?.(params)) {
-            await activation.applyOverkill(params, this);
+        if (this.isAttack && activation) {
+            if (activation.getOverkill?.(params)) {
+                await activation.applyOverkill(params, this);
+            } else if (activation.calculateExcessDamage) {
+                await activation.calculateExcessDamage(params, this);
+            }
         }
 
         const {selectedTarget} = this;
@@ -201,5 +232,87 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         if (this.activation) {
             this.activation.takenDamage = this.takenDamage;
         }
+    }
+    static validateDamageAssignment(assigned, targets, damage) {
+        if (!assigned ||
+            typeof assigned !== 'object' ||
+            Array.isArray(assigned) ||
+            Object.keys(assigned).length !== targets.length) {
+            throw new Error('La distribución del daño no es válida.');
+        }
+
+        const assignments = targets.map(target => {
+            const amount = assigned[target.id];
+            if (!Object.hasOwn(assigned, target.id) ||
+                !Number.isSafeInteger(amount) ||
+                amount < 0 ||
+                amount > damage) {
+                throw new Error('La distribución del daño no es válida.');
+            }
+
+            return {amount, target};
+        });
+        const assignedTotal = assignments.reduce((total, {amount}) =>
+            total + amount, 0);
+        if (assignedTotal !== damage) {
+            throw new Error('La distribución del daño no es válida.');
+        }
+
+        return assignments;
+    }
+    async distributeDamage(params) {
+        if (!this.distribute) {
+            return;
+        }
+
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            this.selectedTarget ? [this.selectedTarget] : [];
+        if (targets.length < 2) {
+            return;
+        }
+
+        if (!Number.isSafeInteger(this.damage) || this.damage < 0) {
+            throw new TypeError(
+                'La distribución del daño requiere una cantidad entera no negativa.',
+            );
+        }
+        if (this.damage === 0) {
+            this.selectedTarget = [targets[0]];
+
+            return;
+        }
+
+        const {player} = params;
+        const {assigned} = await this.openDialog({
+            dialogType: DIALOG_ASSIGN,
+            targetPlayer: player,
+            title: `Reparte ${this.damage} de Daño entre objetivos`,
+            hand: player.hand.cards.map(card => card.toObj(params)),
+            data: {
+                assignInitially: true,
+                autoAssignRemainderToSingleTarget: true,
+                count: this.damage,
+                field: 'damage',
+                ...(targets.some(({id}) =>
+                    id === params.activationTargetId) ?
+                    {initialTargetId: params.activationTargetId} :
+                    {}),
+                preserveRemainderOnDecrease: true,
+                transferIncreaseFromMostAssigned: true,
+                cards: targets.map(target => ({
+                    ...target.toObj(params),
+                    damage: this.damage,
+                })),
+            },
+        });
+        const assignments = DealDamageEffect.validateDamageAssignment(
+            assigned,
+            targets,
+            this.damage,
+        ).filter(({amount}) => amount > 0);
+
+        this.selectedTarget = assignments.map(({target}) => target);
+        this.damage = assignments.map(({amount}) => amount);
     }
 }

@@ -74,6 +74,7 @@ export class PlayCardEffect extends Effect {
         this.modifyCost = 0;
         this.removedFromHand = false;
         this.removedFromPlace = undefined;
+        this.playedFromHand = false;
         this.workInHandTriggersInitializedForPlay = false;
         this.played = false;
         this.maxAlliesDialogAccepted = false;
@@ -409,8 +410,15 @@ export class PlayCardEffect extends Effect {
             ...effects.flatMap(effect =>
                 effect.getExclusivePaymentResourcePreferences()),
         ];
+        const exclusivePreferences = [...new Set(preferences)];
+        if (exclusivePreferences.length) {
+            return exclusivePreferences;
+        }
 
-        return [...new Set(preferences)];
+        const resourcePreferences = this.getPaymentResourcePreferences();
+        return resourcePreferences.length === 1 ?
+            resourcePreferences :
+            [];
     }
     isResolved() {
         return !this.canceled;
@@ -434,11 +442,14 @@ export class PlayCardEffect extends Effect {
             session.getResourcePaymentExcludedCardIds() :
             new Set();
         const resourceUsage = session?.getRemainingResources();
+        const costOnlyResourceUsage =
+            session?.getRemainingCostOnlyResourceIndexes();
         const cardsToPay = await player.getCardsToPay(
             card,
             cost.resourceType,
             excludedCardIds,
-            resourceUsage
+            resourceUsage,
+            {costOnlyResourceUsage},
         );
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
@@ -464,7 +475,7 @@ export class PlayCardEffect extends Effect {
         });
 
         if (response) {
-            const {paid, resources} = response;
+            const {paid, resources, resourceUnits} = response;
 
             this.resourcesPaid = resources;
             this.cardsPaid = {
@@ -477,6 +488,7 @@ export class PlayCardEffect extends Effect {
             return {
                 ...this.cardsPaid,
                 resources,
+                resourceUnits,
             };
         } else {
             this.canceled = true;
@@ -487,6 +499,7 @@ export class PlayCardEffect extends Effect {
         const {card} = this;
         const {player} = params;
 
+        this.playedFromHand = false;
         card.isPlaying = true;
         const hasUnregisteredWorkInHandAbility = card.abilities?.some(ability =>
             ability.workInHand &&
@@ -520,6 +533,8 @@ export class PlayCardEffect extends Effect {
                 await sourceContainer.refresh();
             }
         }
+        this.playedFromHand = this.removedFromHand ||
+            this.removedFromPlace?.place === PLACE_HAND;
 
         await super.prepare(params);
     }

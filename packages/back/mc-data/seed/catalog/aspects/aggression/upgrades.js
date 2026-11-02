@@ -25,6 +25,7 @@ import {
     TARGET_EFFECT,
     TARGET_PLAYER,
     TARGET_THIS,
+    TARGET_TRIGGERED_CARD,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ASGARD,
@@ -37,6 +38,7 @@ import {
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
+    TRIGGER_ENGAGE_HERO,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK
@@ -346,6 +348,58 @@ export default [
                                 'type': EFFECT_EXHAUST,
                                 'params': {
                                     'target': TARGET_THIS
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-al-acecho',
+        'aspect': 'aggression',
+        'order': 13017,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Al acecho',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/upgrades/13017.png',
+                'traits': [
+                    TRAIT_PREPARATION
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'trigger': TRIGGER_ENGAGE_HERO,
+                            'condition': {
+                                'triggeredCard.isMinion': true
+                            },
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_TRIGGERED_CARD,
+                                    'damage': 3
                                 }
                             }
                         }

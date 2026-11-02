@@ -1,4 +1,7 @@
-import {LABEL_THWART,TARGET_SCHEME} from 'mc-shared';
+import {
+    LABEL_THWART,
+    TARGET_SCHEME,
+} from 'mc-shared';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 import {RemoveThreatEffect} from '../../effects/remove-threat-effect.js';
 
@@ -11,6 +14,7 @@ export class ThwartBasicAbility extends BasicAbility {
     }) {
         super(arguments[0]);
 
+        this.defaultTarget = target;
         this.labels = [LABEL_THWART];
         this.effect = new RemoveThreatEffect({
             target,
@@ -20,12 +24,13 @@ export class ThwartBasicAbility extends BasicAbility {
             ability: this,
         });
     }
-    applyConsequencial() {
-        const {card} = this;
+    resetDistribution() {
+        const effects = new Set([this.effectDefinition, this.effect]);
 
-        if (card.thwartConsequential) {
-            return super.applyConsequencial({player: card.controller}, card.thwartConsequential);
-        }
+        effects.forEach(effect => {
+            effect.setConfigValue('target', this.defaultTarget);
+            effect.setConfigValue('distribute', false);
+        });
     }
     canRun(params) {
         const {card} = params;
@@ -40,8 +45,15 @@ export class ThwartBasicAbility extends BasicAbility {
 
         return super.canRun(params);
     }
-    async getThwartValue(params) {
+    applyConsequencial() {
         const {card} = this;
+
+        if (card.thwartConsequential) {
+            return super.applyConsequencial({player: card.controller}, card.thwartConsequential);
+        }
+    }
+    async getThwartValue(params) {
+        const card = this.getCurrentCard();
 
         const getThwartEffect = new GetThwartEffect({
             selectedTarget: card,
@@ -50,16 +62,25 @@ export class ThwartBasicAbility extends BasicAbility {
         });
 
         await getThwartEffect.runEffect(params);
+        const thwart = await getThwartEffect.chooseThwartValue(params);
 
-        return getThwartEffect.chooseThwartValue(params);
+        this.syncEffectConfigurationFromCurrentSide();
+
+        return thwart;
     }
     async resolveAbility(params) {
-        const thwart = await this.getThwartValue(params);
+        this.resetDistribution();
 
-        return super.resolveAbility({
-            ...params,
-            threat: thwart,
-        });
+        try {
+            const thwart = await this.getThwartValue(params);
+
+            return await super.resolveAbility({
+                ...params,
+                threat: thwart,
+            });
+        } finally {
+            this.resetDistribution();
+        }
     }
     toObj() {
         return {

@@ -16,6 +16,7 @@ export class CostPaymentSession {
         this.skippedEffects = new Set();
         this.stagedPayments = new Map();
         this.excludedCardIds = new Set();
+        this.remainingCostOnlyByCard = new Map();
         this.remainingResourcesByCard = new Map();
         this.committedHandCardIds = new Set();
         this.deferredResponses = [];
@@ -41,6 +42,11 @@ export class CostPaymentSession {
     getRemainingResources() {
         return new Map([...this.remainingResourcesByCard].map(([cardId, resources]) =>
             [cardId, resources.slice()]));
+    }
+    getRemainingCostOnlyResourceIndexes() {
+        return new Map([...this.remainingCostOnlyByCard].map(([cardId, resources]) =>
+            [cardId, resources.flatMap((costOnly, index) =>
+                costOnly ? [index] : [])]));
     }
     getPreparedEffect(effect) {
         return this.preparedEffects.get(effect);
@@ -92,11 +98,15 @@ export class CostPaymentSession {
 
         (payment.hand || []).forEach(card => {
             const resources = this.remainingResourcesByCard.get(card.id) || [];
+            const costOnlyResources =
+                this.remainingCostOnlyByCard.get(card.id) || [];
             resources.forEach((resource, index) => {
                 availableUnits.push({
                     cardId: card.id,
                     index,
                     resource,
+                    source: 'hand',
+                    costOnly: Boolean(costOnlyResources[index]),
                 });
             });
         });
@@ -118,6 +128,54 @@ export class CostPaymentSession {
         });
 
         const usedUnitIndexes = new Set();
+
+        if (Array.isArray(payment.resourceUnits)) {
+            const selectedUnits = payment.resourceUnits.map(unit => {
+                if (unit.source !== 'hand') {
+                    return {
+                        resource: unit.resource,
+                        source: unit.source,
+                    };
+                }
+
+                const availableUnit = availableUnits.find(available =>
+                    available.source === unit.source &&
+                    available.cardId === unit.cardId &&
+                    available.index === unit.resourceIndex);
+                if (!availableUnit ||
+                    (unit.originalResource !== undefined &&
+                        unit.originalResource !== availableUnit.resource)) {
+                    throw new Error('El pago contiene una unidad de recurso no disponible.');
+                }
+
+                const resource = unit.resource ?? availableUnit.resource;
+                if (resource !== availableUnit.resource &&
+                    !(availableUnit.resource === RESOURCE_WILD &&
+                        allowWildConversion)) {
+                    throw new Error('El pago contiene una conversión de recurso no válida.');
+                }
+
+                return {
+                    ...availableUnit,
+                    resource,
+                };
+            });
+            const resources = payment.resources ||
+                selectedUnits.map(({resource}) => resource);
+
+            return resources.map(resource => {
+                const unitIndex = selectedUnits.findIndex((unit, index) =>
+                    !usedUnitIndexes.has(index) &&
+                    unit.resource === resource);
+                if (unitIndex < 0) {
+                    throw new Error('El pago contiene un recurso que no está disponible.');
+                }
+
+                usedUnitIndexes.add(unitIndex);
+
+                return selectedUnits[unitIndex];
+            });
+        }
 
         return (payment.resources || []).map(resource => {
             const unitIndex = availableUnits.findIndex((unit, index) =>
@@ -194,7 +252,9 @@ export class CostPaymentSession {
         const requirements = this.getPaymentResourceRequirements(effect, payment);
         const requiredUnits = requirements ?
             this.assignPaymentResources(
-                units,
+                units.slice().sort((left, right) =>
+                    Number(Boolean(left.costOnly)) -
+                    Number(Boolean(right.costOnly))),
                 requirements,
                 {
                     allowWildConversion: payment.allowWildConversion !== false,
@@ -205,8 +265,10 @@ export class CostPaymentSession {
         if (!requiredUnits) {
             throw new Error('El pago no satisface los requisitos de recursos.');
         }
+        const requiredUnitSet = new Set(requiredUnits);
         const usedUnits = effect.resourceCost?.allowOverpay ?
-            units :
+            units.filter(unit =>
+                requiredUnitSet.has(unit) || !unit.costOnly) :
             requiredUnits;
 
         const usedIndexesByCard = new Map();
@@ -221,8 +283,13 @@ export class CostPaymentSession {
         });
         usedIndexesByCard.forEach((indexes, cardId) => {
             const remainingResources = this.remainingResourcesByCard.get(cardId);
+            const remainingCostOnly =
+                this.remainingCostOnlyByCard.get(cardId);
             indexes.sort((left, right) => right - left)
-                .forEach(index => remainingResources.splice(index, 1));
+                .forEach(index => {
+                    remainingResources.splice(index, 1);
+                    remainingCostOnly?.splice(index, 1);
+                });
         });
 
         return usedUnits;
@@ -265,6 +332,13 @@ export class CostPaymentSession {
                     cardToPay,
                 });
                 this.remainingResourcesByCard.set(card.id, resources.slice());
+                const costOnlyIndexes =
+                    card.card?.getCostOnlyResourceIndexes?.(cardToPay) || [];
+                this.remainingCostOnlyByCard.set(
+                    card.id,
+                    resources.map((_resource, index) =>
+                        costOnlyIndexes.includes(index))
+                );
             }
         });
 

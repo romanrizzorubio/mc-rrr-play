@@ -1,5 +1,6 @@
 import {
     CLASSIFICATION_AGGRESSION,
+    ABILITY_CONSTANT,
     ABILITY_ALTEREGO_ACTION,
     ABILITY_ACTION,
     ABILITY_RESPONSE,
@@ -8,16 +9,22 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
+    EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_PLACE_COUNTERS,
     EFFECT_REMOVE_COUNTER,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
+    TARGET_ALL_ALLIES_YOU_CONTROL,
+    TARGET_ANY_PLAYER,
+    TARGET_EFFECT,
     TARGET_ENEMY,
+    TARGET_PLAYER,
     TARGET_THIS,
     TARGET_YOU,
     TRAIT_ASGARD,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
+    TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_YOU_DEFEAT_MINION
 } from 'mc-shared';
 
@@ -31,7 +38,7 @@ export default [
             'params': {
                 'name': 'Unidad táctica',
                 'set': CLASSIFICATION_AGGRESSION,
-                'image': 'aspect/aggression/supports/a56-copy-2.webp',
+                'image': 'aspect/aggression/supports/01056.png',
                 'traits': [
                     TRAIT_SHIELD
                 ],
@@ -144,6 +151,51 @@ export default [
                                 'params': {
                                     'target': TARGET_YOU,
                                     'count': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-centro-de-entrenamiento',
+        'aspect': 'aggression',
+        'order': 13016,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'Centro de entrenamiento',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/supports/13016.png',
+                'traits': [
+                    TRAIT_LOCATION
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'hideDialog': true,
+                            'trigger': TRIGGER_CHARACTER_GET_ATTACK,
+                            'triggerParams': {
+                                'target': TARGET_ALL_ALLIES_YOU_CONTROL
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1
                                 }
                             }
                         }

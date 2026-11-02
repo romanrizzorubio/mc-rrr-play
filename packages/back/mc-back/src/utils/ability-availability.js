@@ -64,13 +64,16 @@ export async function getAbilitiesWithAvailability(card, player) {
             };
             const canRun = (!isOtherPlayerTurn(player) || ability.isAction) &&
                 await ability.canRun(availabilityParams);
+            const isMultipleTarget = ability.effect?.validTarget
+                ?.isMultipleTarget({
+                    target: ability.effect.target,
+                });
             const availableTargetIds = isDragActivation &&
                 canRun &&
                 ability.effect &&
                 (!ability.effect.validTarget ||
-                    !ability.effect.validTarget.isMultipleTarget({
-                        target: ability.effect.target,
-                    })) ?
+                    !isMultipleTarget ||
+                    ability.effect.distribute) ?
                 (await ability.effect.getValidTarget(availabilityParams))
                     .map(target => target.id) :
                 undefined;

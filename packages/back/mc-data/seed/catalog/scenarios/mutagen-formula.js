@@ -69,7 +69,7 @@ import {
 import {
     goblinGlider,
     pumpkinBombs,
-} from '../encounters/attachments.js';
+} from '../shared/attachments.js';
 import {withCardSet} from '../with-card-set.js';
 
 const encounterCard = (type, {

@@ -13,6 +13,7 @@ import {
 } from 'mc-shared';
 import {Ability} from '../core/ability.js';
 import {MixinTriggeableAbility} from '../mixins/mixin-triggeable-ability.js';
+import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
 
 function isAutomaticConstantEffect(effect) {
     if (!effect) {
@@ -54,7 +55,22 @@ export class ConstantAbility extends MixinTriggeableAbility(Ability) {
             this.trigger === TRIGGER_CARD_ENTER_PLAY ||
             isAutomaticConstantEffect(this.effect);
     }
-    initTriggers(card, _params) {
+    async initTriggers(card, params = {}) {
+        if (!this.trigger) {
+            if (isAutomaticConstantEffect(this.effect) && card.isInPlay) {
+                const player = getTriggerCardPlayer(card, params.player);
+                await this.resolveAbility({
+                    ...params,
+                    match: this.match,
+                    ...(player?.isPlayer ? {player} : {}),
+                    card,
+                    triggeredCard: card,
+                });
+            }
+
+            return;
+        }
+
         this.initTrigger({
             type: this.trigger,
             priority: PRIORITY_CONSTANT,

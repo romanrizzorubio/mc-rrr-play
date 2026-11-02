@@ -27,4 +27,11 @@ export default css`
     min-inline-size: 0;
     width: 100%;
   }
+
+  .assignment-value {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    text-align: center;
+  }
 `;

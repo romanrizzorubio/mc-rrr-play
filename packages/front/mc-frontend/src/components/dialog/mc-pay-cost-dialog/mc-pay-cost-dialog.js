@@ -15,7 +15,7 @@ import {RESOURCE_WILD} from '../../../misc/resources.js';
 import {isPlanCard} from '../../../misc/utils.js';
 import {
     getAutomaticWilds,
-    getPaymentResourceUnits,
+    getSpendablePaymentResourceUnits,
     getResourceMatches,
     getResourceUnitKey,
     getResourceUnitKeysForCard,
@@ -167,7 +167,10 @@ export class McPayCostDialog extends McDialog {
         selectedOnly = false,
         selectedWilds = selectedOnly ? (this.data.wilds || []).slice() : []
     ) {
-        return getPaymentResourceUnits(cards, {
+        return getSpendablePaymentResourceUnits(cards, {
+            cost: this.data.cost,
+            requirement: this.data.requirement,
+            resourceType: this.data.resourceType,
             selectedOnly,
             selectedWilds,
             allowWildConversion: this.allowsWildConversion,

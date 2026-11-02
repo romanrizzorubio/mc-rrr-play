@@ -4,6 +4,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_DECK,
 } from 'mc-shared';
 
@@ -71,6 +72,41 @@ export default [
                     'target': TARGET_DECK
                 },
                 'classification': 'basic'
+            }
+        }
+    },
+    {
+        '_id': 'basic-el-poder-de-todos-unidos',
+        'classification': 'basic',
+        'order': 13024,
+        'card': {
+            'type': CARD_TYPE_RESOURCE,
+            'params': {
+                'name': 'El poder de todos unidos',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/resources/13024.png',
+                'resources': [
+                    {
+                        'condition': {
+                            'card.classification': CLASSIFICATION_BASIC
+                        },
+                        'costOnly': true,
+                        'resources': [
+                            RESOURCE_WILD,
+                            RESOURCE_WILD
+                        ]
+                    },
+                    {
+                        'resources': [
+                            RESOURCE_WILD
+                        ]
+                    }
+                ],
+                'maximum': {
+                    'count': 2,
+                    'target': TARGET_DECK
+                },
+                'classification': CLASSIFICATION_BASIC
             }
         }
     },

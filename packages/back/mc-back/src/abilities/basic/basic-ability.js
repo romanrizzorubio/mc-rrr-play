@@ -20,37 +20,83 @@ export class BasicAbility extends Ability {
 
         return dealConsequencialDamageEffect.runEffect(params);
     }
+    getCurrentCard() {
+        const {card} = this;
+        const parent = card?.parent;
+
+        return parent?.sides?.includes(card) ?
+            parent.currentSide :
+            card;
+    }
+    syncEffectConfigurationFromCurrentSide() {
+        const currentCard = this.getCurrentCard();
+        if (!currentCard || currentCard === this.card) {
+            return;
+        }
+
+        const currentAbility = currentCard.abilities?.find(ability =>
+            ability.constructor === this.constructor);
+        const currentEffect = currentAbility?.effectDefinition;
+        if (!currentAbility || !currentEffect || !this.effect) {
+            return;
+        }
+
+        this.effect.setConfigValue('target', currentEffect.target);
+        this.effect.setConfigValue('distribute', currentEffect.distribute);
+        currentAbility.resetDistribution?.();
+    }
     async resolveAbility(params) {
-        const {card} = params;
+        const {activationTarget, ...abilityParams} = params;
+        const {card} = abilityParams;
         this.basicCost.effect.selectedTarget = card;
 
         this.resolved = false;
         this.paymentCancelled = false;
 
-        let resolveParams = params;
+        let resolveParams = abilityParams;
         if ((this.isAttack || this.isThwart) &&
-            !params.preselectedTarget &&
-            !params.fixedPreselectedTarget) {
+            (activationTarget ||
+                (!abilityParams.preselectedTarget &&
+                    !abilityParams.fixedPreselectedTarget))) {
             const statusReplacesActivation =
                 (this.isAttack && card?.isStunned) ||
                 (this.isThwart && card?.isConfused);
 
             if (statusReplacesActivation) {
                 resolveParams = {
-                    ...params,
+                    ...abilityParams,
                     preselectedTarget: true,
                     fixedPreselectedTarget: true,
                     selectedTarget: [],
                 };
             } else {
-                const targetState = await this.prepareToResolve(params);
+                const isDistributedMultipleTarget = activationTarget &&
+                    this.effect.distribute &&
+                    this.effect.validTarget.isMultipleTarget({
+                        target: this.effect.target,
+                    });
+                let targetParams = abilityParams;
+                if (activationTarget && isDistributedMultipleTarget) {
+                    targetParams = {...abilityParams};
+                    delete targetParams.fixedPreselectedTarget;
+                    delete targetParams.preselectedTarget;
+                    delete targetParams.selectedTarget;
+                } else if (activationTarget) {
+                    targetParams = {
+                        ...abilityParams,
+                        preselectedTarget: true,
+                        fixedPreselectedTarget: true,
+                        selectedTarget: activationTarget,
+                    };
+                }
+                const targetState = await this.prepareToResolve(targetParams);
                 if (!targetState.canRun) {
                     this.paymentCancelled = true;
                     return;
                 }
 
                 resolveParams = {
-                    ...params,
+                    ...targetParams,
                     preselectedTarget: targetState.preselectedTarget,
                     ...(targetState.preselectedTarget ? {
                         fixedPreselectedTarget: true,

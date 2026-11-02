@@ -84,6 +84,7 @@ export class AssignThreatEffect extends Effect {
                 ignoreCrisis: this.ignoreCrisis,
                 match: this.match,
                 selectedTarget: scheme,
+                suppressAbilityThwart: true,
                 target: TARGET_ALL_SCHEMES,
                 threat: assignedThreat,
             });
@@ -106,9 +107,13 @@ export class AssignThreatEffect extends Effect {
             ...scheme.toObj(params),
             threat: Math.max(0, Number(scheme.threat) || 0),
         }));
-        const initialTargetId = selectedTargets.find(({id}) =>
-            id === params.playCardEffect?.targetId
-        )?.id;
+        const preferredTargetIds = [
+            params.activationTargetId,
+            params.playCardEffect?.targetId,
+        ];
+        const initialTargetId = preferredTargetIds.find(targetId =>
+            selectedTargets.some(({id}) => id === targetId)
+        );
         const response = await this.openDialog({
             dialogType: DIALOG_ASSIGN,
             targetPlayer: player,

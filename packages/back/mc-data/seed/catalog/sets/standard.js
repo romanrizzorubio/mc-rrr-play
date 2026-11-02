@@ -30,7 +30,7 @@ import {
 } from 'mc-shared';
 
 import {revealEncounterFrom} from '../utils/reveal-encounter.js';
-import {gangUp} from '../encounters/treacheries.js';
+import {gangUp} from '../shared/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {

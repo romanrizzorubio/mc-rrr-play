@@ -53,6 +53,9 @@ export function getPaymentResourceUnits(
         source,
         resourceIndex = 0
     ) => {
+        const costOnlyResourceIndexes = source === 'hand' ?
+            new Set(card.costOnlyResourceIndexes || []) :
+            new Set();
         resources.forEach((resource, index) => {
             const canConvertWild = allowWildConversion &&
                 resource === RESOURCE_WILD &&
@@ -70,6 +73,9 @@ export function getPaymentResourceUnits(
                 ...(canConvertWild ? {
                     wild: true,
                     wildIndex: wildIndex++,
+                } : {}),
+                ...(costOnlyResourceIndexes.has(resourceIndex + index) ? {
+                    costOnly: true,
                 } : {}),
             });
         });
@@ -99,6 +105,52 @@ export function getPaymentResourceUnits(
     }
 
     return units;
+}
+
+export function getSpendablePaymentResourceUnits(
+    cards,
+    {
+        cost = 0,
+        requirement = [],
+        resourceType,
+        allowWildConversion = true,
+        ...options
+    } = {}
+) {
+    const units = getPaymentResourceUnits(cards, {
+        ...options,
+        allowWildConversion,
+    });
+    if (!units.some(({costOnly}) => costOnly) || cost === 'X') {
+        return units;
+    }
+
+    const costCount = Number(cost);
+    const costRequirement = resourceType &&
+        resourceType !== RESOURCE_ANY ?
+        [resourceType] :
+        [RESOURCE_ANY];
+    const costRequirements =
+        Number.isSafeInteger(costCount) && costCount > 0 ?
+            Array.from({length: costCount}, () => costRequirement) :
+            [];
+    const requirements = [
+        ...costRequirements,
+        ...normalizeResourceRequirements(requirement),
+    ];
+    if (!requirements.length) {
+        return units.filter(({costOnly}) => !costOnly);
+    }
+
+    const matches = getResourceMatches(
+        units,
+        requirements,
+        {allowWildConversion},
+    );
+    const requiredIndexes = new Set(matches.resourceIndexes);
+
+    return units.filter((unit, index) =>
+        !unit.costOnly || requiredIndexes.has(index));
 }
 
 export function getAutomaticWilds(
@@ -208,15 +260,20 @@ export function getResourceMatches(
     };
 
     let count = 0;
-    resources.forEach((_resource, index) => {
+    const resourceOrder = resources.map((_resource, index) => index)
+        .sort((left, right) =>
+            Number(Boolean(resources[left].costOnly)) -
+            Number(Boolean(resources[right].costOnly)));
+    resourceOrder.forEach(index => {
         if (assignResource(index, new Set())) {
             count++;
         }
     });
 
-    const cardIds = new Set(matchedResourceIndexes
-        .filter(index => index > -1)
+    const resourceIndexes = [...new Set(matchedResourceIndexes
+        .filter(index => index > -1))];
+    const cardIds = new Set(resourceIndexes
         .map(index => resources[index].cardId));
 
-    return {count, cardIds};
+    return {count, cardIds, resourceIndexes};
 }

@@ -24,7 +24,7 @@ import {
     TRIGGER_THIS_SCHEME,
 } from 'mc-shared';
 
-import {hydraSoldier} from '../encounters/minions.js';
+import {hydraSoldier} from '../shared/minions.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {

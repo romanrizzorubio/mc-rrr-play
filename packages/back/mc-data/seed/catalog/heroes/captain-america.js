@@ -97,8 +97,8 @@ import {
     TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 
-import {hydraSoldier} from '../encounters/minions.js';
-import {hailHydra} from '../encounters/treacheries.js';
+import {hydraSoldier} from '../shared/minions.js';
+import {hailHydra} from '../shared/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
 const agent13 = {

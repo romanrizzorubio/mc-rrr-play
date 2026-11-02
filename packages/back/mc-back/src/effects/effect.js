@@ -32,6 +32,7 @@ export class Effect extends Engine {
             thenEffect,
             match,
             ability,
+            referenceCard,
             excludeTarget,
             condition,
             activation,
@@ -43,6 +44,7 @@ export class Effect extends Engine {
             isRecovery = false,
             isScheme = false,
             isThwart = false,
+            suppressAbilityThwart = false,
             saveData = [],
             target = TARGET_YOU,
             refreshTarget = false,
@@ -66,6 +68,7 @@ export class Effect extends Engine {
         this.paramsLastStep = paramsLastStep;
         this.thenEffect = thenEffect;
         this.match = match;
+        this.referenceCard = referenceCard;
         this.saveData = saveData;
         this.excludeTarget = excludeTarget;
         this.condition = condition;
@@ -77,6 +80,7 @@ export class Effect extends Engine {
         this._isRecovery = isRecovery;
         this._isScheme = isScheme;
         this._isThwart = isThwart;
+        this.suppressAbilityThwart = suppressAbilityThwart;
         this._selectedTarget = selectedTarget;
         this._ability = ability;
 
@@ -300,7 +304,11 @@ export class Effect extends Engine {
         this._isScheme = isScheme;
     }
     get isThwart() {
-        return this._isThwart || (!this.isCost && this.ability && this.ability.isThwart);
+        return this._isThwart ||
+            (!this.suppressAbilityThwart &&
+                !this.isCost &&
+                this.ability &&
+                this.ability.isThwart);
     }
     set isThwart(isThwart) {
         this._isThwart = isThwart;
@@ -461,7 +469,7 @@ export class Effect extends Engine {
         };
         const usesReferentialTargets = hasReferentialTargetCondition(
             this.validTarget.condition ?? this.condition,
-            targetParams.ability?.card
+            this.referenceCard ?? targetParams.ability?.card
         );
         const revalidateSelectedTargets = usesReferentialTargets ||
             target === TARGET_PARENT;
@@ -556,6 +564,14 @@ export class Effect extends Engine {
             selectCount: params.selectCount ?? this.selectCount,
             selectUpTo: this.selectUpTo,
         });
+    }
+    async refreshTargetSelection(previousTarget, params) {
+        if (!this.refreshTarget || this.target === previousTarget) {
+            return;
+        }
+
+        this.selectedTarget = undefined;
+        this.selectedTarget = await this.selectTarget(params);
     }
     async prepare(params){
         if (!this.selectedTarget) {

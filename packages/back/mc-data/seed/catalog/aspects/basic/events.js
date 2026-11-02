@@ -14,6 +14,7 @@ import {
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_READY,
+    EFFECT_REMOVE_STATUS,
     EFFECT_REMOVE_THREAT,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -21,6 +22,8 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    STATUS_CONFUSED,
+    STATUS_STUNNED,
     TARGET_CHARACTER,
     TARGET_CARD,
     TARGET_EFFECT,
@@ -410,5 +413,38 @@ export default [
                 ]
             }
         }
+    },
+    {
+        '_id': 'basic-preparacion-fisica',
+        'classification': 'basic',
+        'order': 95,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Preparación física',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/events/13034.png',
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_REMOVE_STATUS,
+                                'params': {
+                                    'target': TARGET_YOUR_HERO,
+                                    'statuses': [
+                                        STATUS_STUNNED,
+                                        STATUS_CONFUSED,
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
     }
 ];
