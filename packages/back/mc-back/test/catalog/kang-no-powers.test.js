@@ -8,14 +8,19 @@ import {
     CLASSIFICATION_AGGRESSION,
     CLASSIFICATION_HERO,
     DIALOG_DISCARD_HAND,
+    DIALOG_USE_CARD,
     EFFECT_CANNOT,
     EFFECT_DISCARD_GAME,
     EFFECT_SELECT_DISCARD_CARD,
+    PRIORITY_INTERRUPT,
     TARGET_THIS,
     TARGET_YOU,
     TRAIT_TEMPORAL,
     TRIGGER_PLAYER_CAN_PLAY,
+    TRIGGER_YOU_BASIC_ATTACK,
 } from 'mc-shared';
+import {Attack} from '../../src/activations/attack.js';
+import {AttackBasicAbility} from '../../src/abilities/basic/attack-basic-ability.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {PutPlayEffect} from '../../src/effects/put-play-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
@@ -24,8 +29,9 @@ import {Match} from '../../src/model/match/match.js';
 import {getAbilitiesWithAvailability} from '../../src/utils/ability-availability.js';
 import blackPanther from '../../../mc-data/seed/catalog/heroes/blackpanther.js';
 import kang from '../../../mc-data/seed/catalog/scenarios/kang.js';
+import wasp from '../../../mc-data/seed/catalog/heroes/wasp.js';
 
-const createGame = async () => {
+const createGame = async (heroConfig = blackPanther.config) => {
     const match = new Match({
         mc: {mcSocket: {send() {}}},
         name: 'kang-no-powers-test',
@@ -37,7 +43,7 @@ const createGame = async () => {
     const factory = new MatchFactory(match);
     const players = [0, 1].map(index => {
         const superhero = factory.createSuperhero({
-            ...blackPanther.config,
+            ...heroConfig,
             cards: [],
             precon: [],
             nemesis: [],
@@ -220,6 +226,54 @@ describe('Sin poderes', () => {
             target: TARGET_YOU,
         }).runEffect({player: holder});
         assert.ok(holder.gameZone.cards.includes(putIntoPlayCard));
+    });
+
+    test('does not offer Crecimiento rápido while Sin poderes is in the holder play area', async () => {
+        const {factory, match, obligation, players} = await createGame(wasp.config);
+        const [holder] = players;
+        holder.superhero.selectedSide = 1;
+        const quickGrowthConfig = wasp.config.cards.find(({card}) =>
+            card.params.name === 'Crecimiento rápido').card;
+        const quickGrowth = factory.cardsFactory.createGameCardFromConfig(
+            quickGrowthConfig,
+            {owner: holder}
+        );
+        quickGrowth.controller = holder;
+        holder.hand.addCard(quickGrowth);
+        await new Promise(resolve => setImmediate(resolve));
+
+        const dialogs = [];
+        match.openDialog = async dialog => {
+            dialogs.push(dialog);
+            return {};
+        };
+        const triggerBasicAttack = async () => {
+            const ability = new AttackBasicAbility({
+                card: holder.superhero.currentSide,
+                match,
+            });
+            const attack = ability.effect;
+            attack.activation = new Attack({effect: attack});
+            await attack.triggerInit(attack.getTriggersParams({player: holder}));
+        };
+
+        assert.ok(holder.gameZone.cards.includes(obligation));
+        assert.equal(
+            quickGrowth.triggers[TRIGGER_YOU_BASIC_ATTACK][PRIORITY_INTERRUPT].length,
+            1
+        );
+        await triggerBasicAttack();
+        assert.equal(
+            dialogs.filter(({dialogType}) => dialogType === DIALOG_USE_CARD).length,
+            0
+        );
+
+        await obligation.discard();
+        await triggerBasicAttack();
+        assert.equal(
+            dialogs.filter(({dialogType}) => dialogType === DIALOG_USE_CARD).length,
+            1
+        );
     });
 
     test('only its holder can discard it, using the holder hand after a stale target', async () => {

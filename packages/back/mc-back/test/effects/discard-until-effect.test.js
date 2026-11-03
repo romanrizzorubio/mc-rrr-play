@@ -54,10 +54,43 @@ describe('discard until and engage effects', () => {
         await effect.execute(params);
 
         assert.equal(params.selectedCard, mastersOfEvilMinion);
+        assert.deepEqual(params.discardedCards, [
+            discardedMinion,
+            mastersOfEvilMinion,
+        ]);
         assert.deepEqual(deck.discardPile, [discardedMinion, mastersOfEvilMinion]);
         assert.deepEqual(deck.cards, [remainingCard]);
         assert.deepEqual(dialogs, []);
         assert.equal(refreshCount, 1);
+    });
+
+    test('DiscardUntilEffect can keep the matching card out of discard while recording it', async () => {
+        const discardedCard = {isMinion: false};
+        const selectedCard = {
+            id: 'selected-minion',
+            isMinion: true,
+            traits: [TRAIT_MASTERS_OF_EVIL],
+        };
+        const remainingCard = {isMinion: false};
+        const deck = new Deck({owner: {match: {}}});
+        deck.cards = [discardedCard, selectedCard, remainingCard];
+        deck.refresh = async () => {};
+        const effect = new DiscardUntilEffect({
+            condition: {
+                isMinion: true,
+                traits: [TRAIT_MASTERS_OF_EVIL],
+            },
+            selectedTarget: deck,
+            removeFromDiscard: true,
+        });
+        const params = {};
+
+        await effect.execute(params);
+
+        assert.equal(params.selectedCard, selectedCard);
+        assert.deepEqual(params.discardedCards, [discardedCard, selectedCard]);
+        assert.deepEqual(deck.discardPile, [discardedCard]);
+        assert.deepEqual(deck.cards, [remainingCard]);
     });
 
     test('DiscardUntilEffect can show only the matching card before it enters play', async () => {

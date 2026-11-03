@@ -14,7 +14,7 @@ export class DealBoostEffect extends Effect {
         return [...super.getResolutionChildEffects()]
             .filter(effect => effect !== this.enemyActivation);
     }
-    async execute(params) {
+    getEnemyActivation(params) {
         const selectedActivation = this.selectedTarget?.boostCards ?
             this.selectedTarget :
             undefined;
@@ -24,10 +24,13 @@ export class DealBoostEffect extends Effect {
         const parameterActivation = params.enemyActivation?.boostCards ?
             params.enemyActivation :
             undefined;
-        const enemyActivation = this.enemyActivation ||
+        return this.enemyActivation ||
             selectedActivation ||
             effectActivation ||
             parameterActivation;
+    }
+    async execute(params) {
+        const enemyActivation = this.getEnemyActivation(params);
         if (!enemyActivation?.enemy || !Array.isArray(enemyActivation.boostCards)) {
             throw new Error('DealBoostEffect requires an enemy activation.');
         }

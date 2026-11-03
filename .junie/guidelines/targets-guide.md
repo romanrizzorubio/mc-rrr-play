@@ -59,7 +59,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
 | `TARGET_SCENARIO` | El escenario de la partida. |
-| `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta debe producir una colección de candidatos; si se configura `condition`, solo devuelve los elementos que la cumplen. |
+| `TARGET_SOURCE` | El valor resuelto desde `params.source` como ruta sobre el contexto. La ruta puede producir un candidato o una colección; si se configura `condition`, solo devuelve los elementos que la cumplen. |
 | `TARGET_THIS` | La carta de la capacidad: `ability.card`. |
 | `TARGET_TRIGGERED_CARD` | La carta del evento que activó la capacidad, aunque `params.card` se reemplace por la carta que la posee. |
 | `TARGET_TRIGGERED_TARGET` | El objetivo concreto del evento (`params.triggeredTarget`), conservado por el disparador; permite afectar al personaje que realmente sufrió daño, incluido el daño sobrante de Brutalidad. |

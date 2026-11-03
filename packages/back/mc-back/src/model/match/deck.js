@@ -107,8 +107,8 @@ export class Deck extends Engine {
 
                 if (!removeFromDiscard) {
                     discardPile.push(card);
-                    discardedCards?.push(card);
                 }
+                discardedCards?.push(card);
 
                 break;
             } else {

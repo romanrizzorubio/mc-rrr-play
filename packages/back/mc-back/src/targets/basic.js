@@ -44,14 +44,15 @@ export const basicTargets = {
     [TARGET_SCENARIO]: ({match}) => [match.scenario],
     [TARGET_SOURCE]: ({condition, params, source}) => {
         const targets = path(params, source);
-
-        if (!Array.isArray(targets)) {
-            return [];
-        }
+        const candidates = Array.isArray(targets) ?
+            targets :
+            targets && typeof targets === 'object' ?
+                [targets] :
+                [];
 
         return condition ?
-            targets.filter(target => checkCondition(target, condition)) :
-            targets;
+            candidates.filter(target => checkCondition(target, condition)) :
+            candidates;
     },
     [TARGET_THIS]: ({ability}) => [path(ability, 'card')],
     [TARGET_TRIGGERED_CARD]: ({triggeredCard}) => [triggeredCard],

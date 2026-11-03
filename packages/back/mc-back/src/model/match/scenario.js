@@ -6,6 +6,7 @@ import {
     MATCH_END_REASON_VILLAIN_DEFEATED,
     PRIORITY_FORCED_RESPONSE,
     TRIGGER_MAIN_SCHEME_COMPLETED,
+    TRIGGER_PHASE_ENDS,
 } from 'mc-shared';
 import {PutPlayEffect} from '../../effects/put-play-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
@@ -60,8 +61,9 @@ export class Scenario extends Engine {
         this.delayedEffects ??= [];
         this.delayedEffects.push(effect);
     }
-    async resolveDelayedEffects(params) {
-        const scheduledEffects = (this.delayedEffects ?? []).slice();
+    async resolveDelayedEffects(params, {afterResolution = false} = {}) {
+        const scheduledEffects = (this.delayedEffects ?? []).filter(effect =>
+            !afterResolution || effect.at !== TRIGGER_PHASE_ENDS);
         for (const delayedEffect of scheduledEffects) {
             await delayedEffect.resolve({
                 ...params,

@@ -2,12 +2,14 @@ import {Engine} from './engine.js';
 
 export class Delayed extends Engine {
     constructor({
+        at,
         card,
         player,
         effect,
     }) {
         super(arguments[0]);
 
+        this.at = at;
         this.card = card;
         this.player = player;
         this.effect = effect;

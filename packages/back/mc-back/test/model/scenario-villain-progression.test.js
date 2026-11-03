@@ -7,12 +7,17 @@ import {
     CARD_TYPE_TREACHERY,
     DIALOG_ACTIVATE,
     DIALOG_ENCOUNTERS_REVEAL,
+    EFFECT_ADVANCE_MAIN_SCHEME_STAGE,
     EFFECT_CHAINED,
+    EFFECT_DELAYED,
+    EFFECT_MERGE_SCENARIO_ZONE,
     EFFECT_PLACE_THREAT,
     EFFECT_TAKE_DAMAGE,
     MATCH_END_REASON_VILLAIN_DEFEATED,
     TARGET_MAIN_SCHEME,
+    TARGET_SCENARIO,
     TARGET_YOUR_SUPERHERO,
+    TRIGGER_PHASE_ENDS,
 } from 'mc-shared';
 import {EVENTS} from 'mc-endpoints';
 import blackPanther from '../../../mc-data/seed/catalog/heroes/blackpanther.js';
@@ -23,6 +28,7 @@ import temporal from '../../../mc-data/seed/catalog/sets/temporal.js';
 import {AddScenarioVillainEffect} from '../../src/effects/add-scenario-villain-effect.js';
 import {DefeatEffect} from '../../src/effects/defeat-effect.js';
 import {PlaceThreatEffect} from '../../src/effects/place-threat-effect.js';
+import {PlayPlayersPhaseEffect} from '../../src/effects/play-players-phase-effect.js';
 import {PlayVillainPhaseEffect} from '../../src/effects/play-villain-phase-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {WinGameEffect} from '../../src/effects/win-game-effect.js';
@@ -77,6 +83,11 @@ describe('scenario villain progression', () => {
         assert.equal(effect.defeated, true);
     }
 
+    async function endPhase(match, player = match.initialPlayer) {
+        const phase = new PlayPlayersPhaseEffect({match});
+        await phase.triggerEnds({match, player});
+    }
+
     function createSequence(count, manualVillainProgression) {
         const config = structuredClone(rhino.config);
         config.cards = [];
@@ -94,6 +105,66 @@ describe('scenario villain progression', () => {
         config.expertVillains = config.villains.slice();
         return config;
     }
+
+    test('Kang I advances the main scheme at the end of the phase', async () => {
+        const match = await createMatch(kang.config);
+        const {scenario} = match;
+        const initialScheme = scenario.gameZone.currentScheme;
+        const villain = scenario.gameZone.currentVillain;
+        const defeatAbility = villain.abilities.find(ability =>
+            ability.effect?.effectType === EFFECT_DELAYED);
+        assert.ok(defeatAbility);
+        assert.equal(defeatAbility.effect.target, TARGET_SCENARIO);
+
+        await defeat(match, villain);
+
+        assert.equal(scenario.gameZone.currentScheme, initialScheme);
+        assert.equal(initialScheme.currentSide.stage, 1);
+        assert.equal(scenario.delayedEffects.length, 1);
+        assert.equal(scenario.delayedEffects[0].at, TRIGGER_PHASE_ENDS);
+        assert.equal(
+            scenario.delayedEffects[0].effect.effectType,
+            EFFECT_ADVANCE_MAIN_SCHEME_STAGE,
+        );
+
+        await endPhase(match);
+
+        assert.equal(scenario.gameZone.currentScheme.currentSide.stage, 2);
+        assert.equal(scenario.delayedEffects.length, 0);
+    });
+
+    test('Kang II merges its zone at phase end and advances to stage 4 when only the global zone remains', async () => {
+        const match = await createMatch(kang.config);
+        const {scenario} = match;
+        const player = match.initialPlayer;
+        await scenario.advanceMainScheme(scenario.gameZone, 2, player);
+
+        const localZone = player.scenarioZone;
+        const globalScheme = scenario.gameZone.currentScheme.currentSide;
+        const villain = localZone.currentVillain;
+        assert.equal(villain.stage, 2);
+        assert.equal(localZone.currentScheme.currentSide.stage, 3);
+
+        await defeat(match, villain, player);
+
+        assert.equal(localZone.currentScheme, null);
+        assert.ok(scenario.zones.includes(localZone));
+        assert.equal(scenario.gameZone.currentScheme.currentSide, globalScheme);
+        assert.equal(globalScheme.stage, 2);
+        assert.equal(scenario.delayedEffects.length, 1);
+        assert.equal(scenario.delayedEffects[0].at, TRIGGER_PHASE_ENDS);
+        assert.equal(
+            scenario.delayedEffects[0].effect.effectType,
+            EFFECT_MERGE_SCENARIO_ZONE,
+        );
+
+        await endPhase(match, player);
+
+        assert.equal(scenario.zones.length, 1);
+        assert.equal(scenario.gameZone.currentScheme.currentSide.stage, 4);
+        assert.equal(scenario.gameZone.currentVillain.stage, 3);
+        assert.equal(scenario.delayedEffects.length, 0);
+    });
 
     test('Rhino II is shared by the normal and expert sequences', async () => {
         const match = await createMatch({
@@ -708,6 +779,7 @@ describe('scenario villain progression', () => {
                 assert.ok(otherPlayer.superhero.damage > 0);
                 assert.equal(otherPlayer.scenarioZone.currentScheme.currentSide.completed, false);
                 await defeat(match, otherPlayer.scenarioZone.currentVillain, otherPlayer);
+                await endPhase(match, otherPlayer);
             }
             assert.equal(scenario.gameZone.currentScheme.currentSide.stage, 4);
             assert.equal(scenario.gameZone.inPlayCards.filter(card =>
@@ -753,6 +825,7 @@ describe('scenario villain progression', () => {
                         !candidate.defeated)) {
                         if (player.scenarioZone.currentScheme.currentSide.stage === 3) {
                             await defeat(match, player.scenarioZone.currentVillain, player);
+                            await endPhase(match, player);
                         }
                     }
 
@@ -795,8 +868,9 @@ describe('scenario villain progression', () => {
                     assert.equal(stageFour.faceDown[0].card, asideCard);
                 }
                 for (const player of match.players) {
-                    if (player.scenarioZone.currentScheme.currentSide.stage === 3) {
+                    if (player.scenarioZone.currentScheme?.currentSide.stage === 3) {
                         await defeat(match, player.scenarioZone.currentVillain, player);
+                        await endPhase(match, player);
                     }
                 }
                 assert.equal(scenario.gameZone.currentScheme.currentSide.stage, 4);
@@ -850,6 +924,7 @@ describe('scenario villain progression', () => {
                 assert.deepEqual(scenario.expertVillains.map(card => card.stage), [1, 2, 2, 2, 2, 3]);
                 assert.equal(scenario.getVillains(), expert ? scenario.expertVillains : scenario.villains);
                 await defeat(match, scenario.gameZone.currentVillain);
+                await endPhase(match);
 
                 assert.equal(match.playing, true);
                 assert.equal(scenario.gameZone.currentScheme.currentSide.stage, 2);
@@ -861,7 +936,9 @@ describe('scenario villain progression', () => {
                     assert.equal(await zone.currentVillain.getHitPoints({
                         player: zone.players[0],
                     }), expert ? 22 : 18);
-                    await defeat(match, zone.currentVillain, zone.players[0]);
+                    const player = zone.players[0];
+                    await defeat(match, zone.currentVillain, player);
+                    await endPhase(match, player);
                     assert.equal(match.playing, true);
                     assert.equal(match.gameOverReason, null);
                     assert.equal(scenario.zones.includes(zone), false);

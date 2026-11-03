@@ -1,3 +1,5 @@
+import {TRIGGER_PLAYER_CAN_PLAY} from 'mc-shared';
+
 import {
     getTriggerCardPlayer,
     isEventInPlayerHand,
@@ -44,22 +46,33 @@ export class Trigger {
     }
     canRun(params) {
         const {ability} = this;
+        const canTriggerAbility = () => {
+            if (!ability) {
+                return true;
+            }
+
+            return ability.canTrigger({
+                ...params,
+                triggeredCard: params.card,
+                triggeredEffect: params.effect,
+            });
+        };
 
         if (this.card?.isEvent &&
-            !isLastingAbility(ability) &&
-            !isEventInPlayerHand(this.card, params.player)) {
-            return false;
+            !isLastingAbility(ability)) {
+            if (!isEventInPlayerHand(this.card, params.player)) {
+                return false;
+            }
+
+            if (this.trigger !== TRIGGER_PLAYER_CAN_PLAY &&
+                typeof params.player?.canPlayCard === 'function') {
+                return Promise.resolve(
+                    params.player.canPlayCard({card: this.card})
+                ).then(canPlay => canPlay ? canTriggerAbility() : false);
+            }
         }
 
-        if (!ability) {
-            return true;
-        }
-
-        return ability.canTrigger({
-            ...params,
-            triggeredCard: params.card,
-            triggeredEffect: params.effect,
-        });
+        return canTriggerAbility();
     }
     canTrigger(params) {
         return this.canRun(params);

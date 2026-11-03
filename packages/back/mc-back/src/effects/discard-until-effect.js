@@ -8,6 +8,7 @@ import {Effect} from './effect.js';
 export class DiscardUntilEffect extends Effect {
     constructor({
         condition,
+        removeFromDiscard = false,
         showDiscardedCards = false,
         showSelectedCard = false,
         title = 'Cartas descartadas',
@@ -19,6 +20,7 @@ export class DiscardUntilEffect extends Effect {
         }
 
         this.condition = condition;
+        this.removeFromDiscard = removeFromDiscard;
         this.showDiscardedCards = showDiscardedCards;
         this.showSelectedCard = showSelectedCard;
         this.title = title;
@@ -31,14 +33,15 @@ export class DiscardUntilEffect extends Effect {
         if (!deck || typeof deck.discardUntil !== 'function') {
             throw new Error('DiscardUntilEffect requires a deck target.');
         }
-        const discardedCards = this.showDiscardedCards ? [] : undefined;
+        const discardedCards = [];
         const selectedCard = await deck.discardUntil(
             this.condition,
-            false,
+            this.removeFromDiscard,
             discardedCards
         );
         params.selectedCard = selectedCard;
         params.selectedCards = selectedCard ? [selectedCard] : [];
+        params.discardedCards = discardedCards;
         await deck.refresh();
 
         if (this.showSelectedCard && selectedCard) {
@@ -54,7 +57,7 @@ export class DiscardUntilEffect extends Effect {
             }, params.player);
         }
 
-        if (discardedCards?.length) {
+        if (this.showDiscardedCards && discardedCards.length) {
             await this.openDialog({
                 dialogType: DIALOG_REVEAL_CARDS,
                 title: this.title,

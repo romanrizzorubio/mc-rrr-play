@@ -2,9 +2,10 @@ import {
     DECK_POSITION_BOTTOM,
     DECK_POSITION_SHUFFLE,
     DECK_POSITION_TOP,
+    DIALOG_REVEAL_CARDS,
     EFFECT_CATEGORY_LEAVE_PLAY,
 } from 'mc-shared';
-import {path} from '../engine/utils.js';
+import {checkCondition, path} from '../engine/utils.js';
 import {Effect} from './effect.js';
 import {logGameTrace} from '../utils/game-trace.js';
 
@@ -17,6 +18,7 @@ const DECK_POSITIONS = [
 export class MoveToDeckEffect extends Effect {
     constructor({
         cards: cardsSource,
+        cardCondition,
         position = DECK_POSITION_SHUFFLE,
         deckId,
         ...params
@@ -32,6 +34,7 @@ export class MoveToDeckEffect extends Effect {
         this.position = position;
         this.deckId = deckId;
         this.cardsSource = cardsSource;
+        this.cardCondition = cardCondition;
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_LEAVE_PLAY];
@@ -45,14 +48,20 @@ export class MoveToDeckEffect extends Effect {
                 throw new TypeError('MoveToDeckEffect cards must resolve to a card list.');
             }
 
-            return source.slice();
+            return source.slice().filter(card =>
+                !this.cardCondition ||
+                checkCondition(card, this.cardCondition));
         }
 
         const {selectedCards} = params;
 
-        return selectedCards ?
+        const cards = selectedCards ?
             selectedCards.slice() :
             params.card ? [params.card] : [];
+
+        return cards.filter(card =>
+            !this.cardCondition ||
+            checkCondition(card, this.cardCondition));
     }
     static getDestinationDeck(targetDeck, card) {
         if (!card.isInPlay || !targetDeck?.isScenarioDeck) {
@@ -120,6 +129,22 @@ export class MoveToDeckEffect extends Effect {
 
             const gameZones = new Set();
             for (const [destinationDeck, cards] of cardsByDeck) {
+                const cardsFromEncounterDiscard = destinationDeck.isScenarioDeck ?
+                    cards.filter(card => destinationDeck.discardPile.includes(card)) :
+                    [];
+                if (cardsFromEncounterDiscard.length > 0) {
+                    await this.openPublicDialog({
+                        dialogType: DIALOG_REVEAL_CARDS,
+                        title: 'Cartas que vuelven al mazo de Encuentros',
+                        subtitle: 'Estas cartas se devolverán al mazo de Encuentros.',
+                        data: {
+                            cards: cardsFromEncounterDiscard.map(card =>
+                                card.toObj({...params, player})),
+                            rotatePlanCards: true,
+                        },
+                    }, player);
+                }
+
                 for (const card of cards) {
                     const gameZone = await this.removeFromPlay(card);
                     if (gameZone) {

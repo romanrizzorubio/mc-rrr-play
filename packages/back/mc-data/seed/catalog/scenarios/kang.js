@@ -101,6 +101,7 @@ import {
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_READY,
     TRIGGER_MAIN_SCHEME_COMPLETED,
+    TRIGGER_PHASE_ENDS,
     TRIGGER_PLAYER_CAN_PLAY,
     TRIGGER_PLAYER_CAN_USE_ABILITY,
     TRIGGER_THIS_ATTACK,
@@ -158,6 +159,7 @@ const stageOneDefeat = {
             type: EFFECT_DELAYED,
             params: {
                 target: TARGET_SCENARIO,
+                at: TRIGGER_PHASE_ENDS,
                 effect: {
                     type: EFFECT_ADVANCE_MAIN_SCHEME_STAGE,
                     params: {stage: 2},
@@ -228,6 +230,7 @@ const stageTwoDefeat = {
                         type: EFFECT_DELAYED,
                         params: {
                             target: TARGET_SCENARIO,
+                            at: TRIGGER_PHASE_ENDS,
                             effect: {
                                 type: EFFECT_MERGE_SCENARIO_ZONE,
                                 params: {},
