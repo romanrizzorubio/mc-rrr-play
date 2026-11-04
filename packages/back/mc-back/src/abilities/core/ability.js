@@ -12,6 +12,10 @@ import {Maximum} from '../../model/commons/maximum.js';
 import {AbilityCosts} from '../../model/costs/ability-costs.js';
 import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
 import {createEffectInstance} from '../../utils/create-effect-instance.js';
+import {
+    canPreselectEffectTarget,
+    getResolutionEffectTree,
+} from '../../utils/effect-targets.js';
 
 export class Ability extends Engine {
     static #resolutionEffectInstances = new WeakMap();
@@ -307,7 +311,9 @@ export class Ability extends Engine {
             };
         }
 
-        if (!this.effect || this.effect.validTarget.isMultipleTarget({target: this.effect.target})) {
+        if (!this.effect || this.effect.validTarget.isMultipleTarget({
+            target: this.effect.target,
+        })) {
             return {
                 canRun: true,
                 preselectedTarget: false,
@@ -356,9 +362,18 @@ export class Ability extends Engine {
         const effectDefinition = effect === undefined ?
             state.lastResolutionEffect ?? this._effectDefinition :
             effect;
+        const effectTree = getResolutionEffectTree(effectDefinition);
         const sourcePreselectedEffectTargets = preselectedEffectTargets &&
-            new Set([...preselectedEffectTargets].map(preselectedEffect =>
-                this._getCurrentEffectInstance(preselectedEffect)));
+            new Set([...preselectedEffectTargets]
+                .map(preselectedEffect =>
+                    this._getCurrentEffectInstance(preselectedEffect))
+                .filter(preselectedEffect => {
+                    const definition =
+                        this.getEffectDefinition(preselectedEffect);
+
+                    return effectTree.has(preselectedEffect) ||
+                        effectTree.has(definition);
+                }));
         const sourcePrePlayConfirmationAcceptedFor =
             params.prePlayConfirmationAcceptedFor ?
                 this._getCurrentEffectInstance(
@@ -373,13 +388,50 @@ export class Ability extends Engine {
             reuseInstance: effect !== undefined,
             selectedTarget: params.selectedTarget,
         });
-        if (preselectedTarget && effectInstance.effect) {
+        if (params.preselectedEventTarget) {
+            const selectedEffectTargets = new Set(
+                effectInstance.preselectedEffectTargets || []
+            );
+            const targetParams = {
+                ...params,
+                ability: this,
+                preselectedEffectTargets: selectedEffectTargets,
+            };
+            const effectInstances = new Set(
+                effectInstance.effectInstances.values()
+            );
+
+            for (const effect of effectInstances) {
+                if (!canPreselectEffectTarget(effect) ||
+                    selectedEffectTargets.has(effect)) {
+                    continue;
+                }
+
+                const targets = await effect.getValidTarget({
+                    ...targetParams,
+                    effect,
+                });
+                const selectedEventTarget = targets.flat(Infinity).find(
+                    target => target === params.preselectedEventTarget
+                );
+                if (selectedEventTarget) {
+                    effect.selectedTarget = selectedEventTarget;
+                    selectedEffectTargets.add(effect);
+                }
+            }
+
+            effectInstance.preselectedEffectTargets = selectedEffectTargets;
+        }
+        if (preselectedTarget && effectInstance.effect &&
+            !effectInstance.effect.isTargetSelectionWrapper) {
             effectInstance.preselectedEffectTargets = new Set(
                 effectInstance.preselectedEffectTargets || []
             );
             effectInstance.preselectedEffectTargets.add(effectInstance.effect);
         }
         const resolutionEffect = effectInstance.effect;
+        const hasPreselectedResolutionTarget = preselectedTarget ||
+            effectInstance.preselectedEffectTargets?.has(resolutionEffect);
         state.lastResolutionEffect = resolutionEffect;
         state.instancesByDefinition = new Map();
         effectInstance.effectInstances.forEach((effectInstance, sourceEffect) => {
@@ -425,7 +477,7 @@ export class Ability extends Engine {
             this.costs.clearPaymentEffect();
             if (typeof resolutionEffect?.resetResolutionState === 'function') {
                 resolutionEffect.resetResolutionState({
-                    preserveSelectedTarget: preselectedTarget ||
+                    preserveSelectedTarget: hasPreselectedResolutionTarget ||
                         effectInstance.preselectedEffectTargets?.has(
                             resolutionEffect
                         ),
@@ -435,7 +487,7 @@ export class Ability extends Engine {
                 });
             }
             this.prepareEffect({
-                preselectedTarget,
+                preselectedTarget: hasPreselectedResolutionTarget,
                 effect: resolutionEffect,
             });
             if (resolutionEffect?.isActivation) {

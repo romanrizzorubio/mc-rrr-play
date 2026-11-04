@@ -92,7 +92,9 @@ export class DoIfEffect extends Effect {
             return;
         }
 
-        effect.attack = this.attack;
+        if (this.attack !== undefined && typeof effect.attack !== 'function') {
+            effect.attack = this.attack;
+        }
         effect.selectedTarget = effect.target === this.target ? selectedTarget : undefined;
     }
     getEffectProperty(name, params) {

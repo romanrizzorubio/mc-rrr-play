@@ -16,6 +16,29 @@ export class ChooseAbilityEffect extends Effect {
 
         this.isChooseAbility = true;
     }
+    get isTargetSelectionWrapper() {
+        return !this.hasExplicitTarget;
+    }
+    get ability() {
+        return super.ability;
+    }
+    async getTargetSelectionChildren(params) {
+        const validOptions = await this.getValidOptions(params, true);
+        const options = validOptions.length ?
+            validOptions :
+            await this.getValidOptions(params, false);
+
+        return [
+            ...super.getTargetSelectionChildren(params),
+            ...options.map(option => option.effect).filter(Boolean),
+        ];
+    }
+    set ability(ability) {
+        super.ability = ability;
+        this.options.forEach(option => {
+            option.card = ability?.card;
+        });
+    }
     get keepTriggering() {
         return this.options.some(option =>
             option.keepTriggering

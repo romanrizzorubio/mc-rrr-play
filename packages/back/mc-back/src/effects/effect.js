@@ -58,6 +58,7 @@ export class Effect extends Engine {
 
         this.effectType = effectType;
         this.target = target;
+        this.hasExplicitTarget = Object.hasOwn(params, 'target');
         this.locations = locations;
         this.refreshTarget = refreshTarget;
         this.selectCount = selectCount;
@@ -176,6 +177,14 @@ export class Effect extends Engine {
         });
 
         return nestedEffects;
+    }
+    getTargetSelectionCandidates(params) {
+        return this.isTargetSelectionWrapper ?
+            [] :
+            this.getValidTarget(params);
+    }
+    getTargetSelectionChildren() {
+        return this.getResolutionChildEffects();
     }
     resetResolutionState({
         preserveSelectedTarget = false,
@@ -320,6 +329,9 @@ export class Effect extends Engine {
     }
     get effectCategories() {
         return [];
+    }
+    get isTargetSelectionWrapper() {
+        return false;
     }
     get usesActivationTargetFilter() {
         return true;

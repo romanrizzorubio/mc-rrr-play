@@ -91,9 +91,25 @@ export class ValidTarget extends Engine {
             match: this.match || params.match,
             targetCard: card,
         };
-        const sourceCards = Object.values(
-            validationParams.match?.triggerCards || {}
-        ).filter(sourceCard => sourceCard?.isInPlay);
+        const match = validationParams.match;
+        const scenarioZones = match?.scenario?.zones ??
+            [match?.scenario?.gameZone];
+        const hasInitializedPlayers = Array.isArray(match?.players) &&
+            match.players.every(player => player?.gameZone);
+        const canReadMatchInPlayCards = hasInitializedPlayers &&
+            Array.isArray(scenarioZones) &&
+            scenarioZones.filter(Boolean).every(({inPlayCards}) =>
+                Array.isArray(inPlayCards));
+        const inPlayCards = canReadMatchInPlayCards ?
+            match.inPlayCards :
+            Object.hasOwn(match ?? {}, 'inPlayCards') &&
+                Array.isArray(match.inPlayCards) ?
+                match.inPlayCards :
+                [];
+        const sourceCards = [...new Set([
+            ...Object.values(match?.triggerCards || {}),
+            ...(inPlayCards || []),
+        ])].filter(sourceCard => sourceCard?.isInPlay);
         const abilities = [
             ...card.abilities,
             ...sourceCards
@@ -105,6 +121,19 @@ export class ValidTarget extends Engine {
         ];
 
         return abilities.some(ability => {
+            if (ability.card !== card &&
+                typeof validationParams.match?.isScenarioZoneAbilityAllowed === 'function' &&
+                !validationParams.match.isScenarioZoneAbilityAllowed(
+                    ability,
+                    validationParams
+                )) {
+                return false;
+            }
+            if (ability.card?.isObligation &&
+                ability.card.owner !== validationParams.player) {
+                return false;
+            }
+
             const {validation} = ability;
             if (!validation) {
                 return false;

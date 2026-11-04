@@ -10,10 +10,11 @@ function getNestedEffects(value) {
         [];
 }
 
-export async function getEffectTargetEntries(
+async function getTargetEntries(
     effect,
     params,
-    visited = new Set()
+    visited,
+    deferred
 ) {
     if (!effect || typeof effect.getValidTarget !== 'function' ||
         visited.has(effect)) {
@@ -21,8 +22,11 @@ export async function getEffectTargetEntries(
     }
     visited.add(effect);
 
-    const targets = await effect.getValidTarget(params);
+    const targets = await (effect.getTargetSelectionCandidates ?
+        effect.getTargetSelectionCandidates(params) :
+        effect.getValidTarget(params));
     const entries = [{
+        deferred,
         effect,
         targets,
     }];
@@ -30,16 +34,57 @@ export async function getEffectTargetEntries(
         ...params,
         parentTargets: targets.flat(Infinity),
     };
-    const nestedEffects = Object.values(effect)
-        .flatMap(value => getNestedEffects(value));
+    const nestedEffects = effect.getTargetSelectionChildren ?
+        await effect.getTargetSelectionChildren(params) :
+        Object.values(effect).flatMap(value => getNestedEffects(value));
+    const resolutionChildren = effect.getResolutionChildEffects ?
+        effect.getResolutionChildEffects() :
+        new Set(nestedEffects);
 
     for (const nestedEffect of nestedEffects) {
-        entries.push(...await getEffectTargetEntries(
+        entries.push(...await getTargetEntries(
             nestedEffect,
             nestedParams,
-            visited
+            visited,
+            deferred || !resolutionChildren.has(nestedEffect)
         ));
     }
 
     return entries;
+}
+
+export async function getEffectTargetEntries(
+    effect,
+    params,
+    visited = new Set()
+) {
+    return getTargetEntries(effect, params, visited, false);
+}
+
+export function getResolutionEffectTree(effect) {
+    const effects = new Set();
+    const addEffectAndChildren = currentEffect => {
+        if (!currentEffect || effects.has(currentEffect)) {
+            return;
+        }
+
+        effects.add(currentEffect);
+        currentEffect.getResolutionChildEffects?.().forEach(
+            addEffectAndChildren
+        );
+    };
+    addEffectAndChildren(effect);
+
+    return effects;
+}
+
+export function canPreselectEffectTarget(effect) {
+    return Boolean(
+        effect &&
+        !effect.isTargetSelectionWrapper &&
+        !effect.selectUpTo &&
+        !effect.targetCountCalc &&
+        (effect.selectCount === undefined || effect.selectCount === 1) &&
+        !effect.validTarget?.isMultipleTarget?.({target: effect.target})
+    );
 }

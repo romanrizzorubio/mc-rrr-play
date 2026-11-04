@@ -18,9 +18,18 @@ export class RepeatEffect extends Effect {
         this.effectDefinition = effectDefinition;
         this.results = [];
     }
+    get isTargetSelectionWrapper() {
+        return !this.hasExplicitTarget;
+    }
     resetResolutionData() {
         super.resetResolutionData();
         this.results = [];
+    }
+    getTargetSelectionChildren() {
+        return [
+            ...super.getTargetSelectionChildren(),
+            this.createRepeatedEffect(),
+        ];
     }
     createRepeatedEffect() {
         const effect = this.match.effectsFactory.parseEffect(

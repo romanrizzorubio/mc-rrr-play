@@ -26,19 +26,16 @@ import {getRestrictedCards} from '../utils/enforce-restricted-limit.js';
 import {getPlayerCardPlayFromLocation} from '../utils/player-card-play-from.js';
 import {CostGroup} from '../model/costs/cost-group.js';
 import {ResourceCost} from '../model/costs/resource-cost.js';
-import {getEffectTargetEntries} from '../utils/effect-targets.js';
+import {
+    canPreselectEffectTarget,
+    getEffectTargetEntries,
+} from '../utils/effect-targets.js';
 import {toResourcePaymentCard} from '../utils/resource-requirements.js';
 
 const matchesTargetId = (target, targetId) =>
     target?.id === targetId ||
     target?.parentId === targetId ||
     target?.parent?.id === targetId;
-
-const canPreselectEffectTarget = effect =>
-    !effect.selectUpTo &&
-    !effect.targetCountCalc &&
-    (effect.selectCount === undefined || effect.selectCount === 1) &&
-    !effect.validTarget?.isMultipleTarget?.({target: effect.target});
 
 export class PlayCardEffect extends Effect {
     constructor(params) {
@@ -65,6 +62,7 @@ export class PlayCardEffect extends Effect {
         this.abilityType = abilityType;
         this.targetId = targetId;
         this.hasPreselectedEventTarget = false;
+        this.preselectedEventTarget = undefined;
         this.preselectedEventEffects = new Set();
 
         this.resourcesPaid = [];
@@ -262,7 +260,7 @@ export class PlayCardEffect extends Effect {
             );
             let targetFound = false;
 
-            targetEntries.forEach(({effect, targets}) => {
+            targetEntries.forEach(({deferred, effect, targets}) => {
                 const target = targets.flat(Infinity).find(candidate =>
                     matchesTargetId(candidate, targetId)
                 );
@@ -272,9 +270,12 @@ export class PlayCardEffect extends Effect {
 
                 targetFound = true;
                 if (canPreselectEffectTarget(effect)) {
-                    effect.selectedTarget = target;
                     this.hasPreselectedEventTarget = true;
-                    this.preselectedEventEffects.add(effect);
+                    this.preselectedEventTarget = target;
+                    if (!deferred) {
+                        effect.selectedTarget = target;
+                        this.preselectedEventEffects.add(effect);
+                    }
                 }
             });
 
@@ -319,6 +320,9 @@ export class PlayCardEffect extends Effect {
                 ...params,
                 playCardEffect: this,
                 cancelEffects: this.cardEffectsCanceled,
+                ...(this.preselectedEventTarget ? {
+                    preselectedEventTarget: this.preselectedEventTarget,
+                } : {}),
                 prePlayConfirmationAcceptedFor:
                     this.prePlayConfirmationAcceptedFor,
                 preselectedEffectTargets: this.preselectedEventEffects,
@@ -640,8 +644,9 @@ export class PlayCardEffect extends Effect {
             await this.ability.prepareToResolve({
                 ...params,
                 ...(this.hasPreselectedEventTarget ? {
-                    preselectedTarget: true,
+                    preselectedTarget: this.preselectedEventEffects.size > 0,
                     preselectedEffectTargets: this.preselectedEventEffects,
+                    preselectedEventTarget: this.preselectedEventTarget,
                 } : {}),
             }) :
             {

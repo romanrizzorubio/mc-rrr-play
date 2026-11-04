@@ -49,6 +49,15 @@ export const checkValue = (value, condition) => {
                             c === p));
         }
         return value.some(p => p === condition);
+    } else if (typeof value === 'string' &&
+        condition &&
+        typeof condition === 'object' &&
+        !Array.isArray(condition) &&
+        condition.operator === 'matchesTitle' &&
+        typeof condition.value === 'string' &&
+        condition.value.length) {
+        return value === condition.value ||
+            (value.startsWith(`${condition.value} (`) && value.endsWith(')'));
     } else if (Number.isInteger(value)) {
         return checkNumber(value, condition);
     }
