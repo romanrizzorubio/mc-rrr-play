@@ -19,6 +19,7 @@ import {
     EFFECT_HEAL,
     EFFECT_ENEMY_ATTACK,
     EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
     EFFECT_STUN,
     EFFECT_TOUGH,
@@ -43,6 +44,7 @@ import {
     TRAIT_TACTIC,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ENEMY_ATTACKS_YOU,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
@@ -536,5 +538,125 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'protection-ni-un-paso-atras',
+        'aspect': 'protection',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Ni un paso atrás',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/14014.png',
+                'traits': [TRAIT_DEFENSE],
+                'cost': 1,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'labels': [LABEL_DEFENSE],
+                            'trigger': TRIGGER_HERO_DEFENDS_ATTACK,
+                            'condition': {
+                                'effect.defender.isHero': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_MODIFY_DEFENSE_VALUE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'count': 2,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DELAYED,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'effect': {
+                                                    'type': EFFECT_DO_IF,
+                                                    'params': {
+                                                        'condition': {
+                                                            'effect.activation.takenDamage': 0,
+                                                        },
+                                                        'effect': {
+                                                            'type': EFFECT_STUN,
+                                                            'params': {
+                                                                'target': TARGET_ATTACKER,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-esquiva-lateral',
+        'aspect': 'protection',
+        'order': 141,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Esquiva lateral',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/14015.png',
+                'traits': [TRAIT_DEFENSE],
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'labels': [LABEL_DEFENSE],
+                            'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_SUPERHERO,
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_PREVENT_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'damage': 3,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF_HAS_PAID,
+                                            'params': {
+                                                'resources': [RESOURCE_ENERGY],
+                                                'target': TARGET_ENEMY,
+                                                'effect': {
+                                                    'type': EFFECT_DEAL_DAMAGE,
+                                                    'params': {
+                                                        'target': TARGET_ENEMY,
+                                                        'damage': 1,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

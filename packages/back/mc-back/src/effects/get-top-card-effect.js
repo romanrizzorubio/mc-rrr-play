@@ -53,7 +53,7 @@ export class GetTopCardEffect extends Effect {
 
         if (this.remove) {
             deck.removeCardFromDeck(card);
-            await deck.checkCycle();
+            await deck.checkCycle?.();
         }
 
         await deck.refresh();

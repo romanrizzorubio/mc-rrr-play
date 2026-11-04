@@ -1587,6 +1587,9 @@ describe('Hombre Hormiga', () => {
             isPlayer: true,
             superhero,
             canFlip: async () => true,
+            async getHitPoints() {
+                return superhero.hitPoints;
+            },
             hand: {
                 async refresh() {},
             },

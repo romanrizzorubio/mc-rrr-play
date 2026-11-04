@@ -833,6 +833,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.activation.takenDamage = dealDamageEffect.takenDamage;
         await this.resolveDelayedEffects({
             ...defenseParams,
+            attack: this.activation,
             effect: this,
         });
     }

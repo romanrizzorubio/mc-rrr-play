@@ -9,8 +9,10 @@ export const MixinMinionTrigger = C => class extends C {
     }
     canTrigger(params) {
         const minion = this.getMinion(params);
+        const wasMinion = params.effect.defeatedCharacterState?.isMinion ??
+            minion.isMinion;
 
-        if (minion.isMinion) {
+        if (wasMinion) {
             return super.canTrigger(params);
         }
 

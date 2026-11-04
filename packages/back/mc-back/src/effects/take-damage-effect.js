@@ -105,11 +105,13 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
     get takenDamage() {
         if (this.damage instanceof Array) {
             if (this.preventDamage instanceof Array) {
-                return this.damage.map((d, index) => d - this.preventDamage[index]);
+                return this.damage.map((damage, index) =>
+                    Math.max(0, damage - this.preventDamage[index]));
             }
-            return this.damage.map(d => d - this.preventDamage);
+            return this.damage.map(damage =>
+                Math.max(0, damage - this.preventDamage));
         }
-        return this.damage - this.preventDamage;
+        return Math.max(0, this.damage - this.preventDamage);
     }
     canRun(params) {
         const damage = this.paramsCalc ?

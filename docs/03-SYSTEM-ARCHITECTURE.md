@@ -312,7 +312,7 @@ Las respuestas de sala (incluidas las listas) tienen la forma `{id,name,status,m
 - Une cada socket a una sala `mc-match:<nombre>` mediante `join-match` y enruta las actualizaciones a esa partida.
 - Recibe `end-turn` y gestiona el intercambio correlacionado `open-dialog` / `dialog-response`.
 - Los diálogos para elegir una capacidad disparada se dirigen al controlador de su carta fuente; el jugador del evento (por ejemplo, quien revela una carta) se conserva como contexto de resolución.
-- La instantánea `match-refresh` incluye la fase y el jugador activo para que la interfaz solo ofrezca finalizar el turno a quien corresponda.
+- La instantánea `match-refresh` incluye la fase y el jugador activo; la disponibilidad de las acciones del escenario se calcula para el jugador en turno y, mientras una solicitud de acción esté aceptada, para el jugador destinatario.
 - Tras una reconexión, el cliente vuelve a unirse; si el setup terminó, recibe una instantánea completa y, si hay un diálogo pendiente, este se vuelve a emitir.
 - El fin de turno y las respuestas de diálogo requieren acknowledgement; la interfaz informa de desconexiones, fallos y expiraciones.
 - Las conexiones y acciones de juego autentican la cookie mediante `GET ${AUTH_SERVICE_URL}/me` (por defecto `https://localhost:3003`); `mc-back` guarda el ID verificado en cada jugador y solo acepta acciones del propietario de esa identidad.

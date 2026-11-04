@@ -1,3 +1,4 @@
+import {RESOURCES_X} from 'mc-shared';
 import {Effect} from './effect.js';
 import {PayCostEffect} from './pay-cost-effect.js';
 import {ResourceCost} from '../model/costs/resource-cost.js';
@@ -13,6 +14,7 @@ export class PayPrintedCostEffect extends Effect {
         this.deckId = deckId;
         this.position = position;
         this.isPaid = false;
+        this.resourceCost = undefined;
     }
 
     isResolved() {
@@ -35,13 +37,16 @@ export class PayPrintedCostEffect extends Effect {
     }
     getCostPaymentEffects(params) {
         const card = this.getCard(params);
-        if (!card || !(card.cost > 0)) {
+        if (!card ||
+            (!(card.cost > 0) && card.cost !== RESOURCES_X)) {
+            this.resourceCost = undefined;
+
             return [];
         }
 
-        const cost = new ResourceCost({amount: card.cost});
+        this.resourceCost = new ResourceCost({amount: card.cost});
 
-        return cost.requiresPayment ? [this] : [];
+        return this.resourceCost.requiresPayment ? [this] : [];
     }
     getCostPaymentTitle(params) {
         const card = this.getCard(params);
@@ -51,22 +56,34 @@ export class PayPrintedCostEffect extends Effect {
     async preparePayment(params, session) {
         const {player} = params;
         const card = this.getCard(params);
-        const cost = new ResourceCost({amount: card.cost});
-
-        const payment = await player.spendResources(
-            cost.getRequiredResources(),
-            card,
-            session.getResourcePaymentExcludedCardIds(),
-            {
-                showCancel: true,
-                resourceUsage: session.getRemainingResources(),
-            }
-        );
+        const cost = this.resourceCost ??
+            new ResourceCost({amount: card.cost});
+        const excludedCardIds = session.getResourcePaymentExcludedCardIds();
+        const resourceUsage = session.getRemainingResources();
+        const payment = cost.amount === RESOURCES_X ?
+            await player.spendResourcesX(
+                cost.requirement,
+                card,
+                cost.resourceType,
+                excludedCardIds,
+                resourceUsage
+            ) :
+            await player.spendResources(
+                cost.getRequiredResources(),
+                card,
+                excludedCardIds,
+                {
+                    showCancel: true,
+                    resourceUsage,
+                }
+            );
 
         return payment && {
             ...payment,
             cardToPay: card,
-            resourceRequirements: cost.getRequiredResources(),
+            ...(cost.amount === RESOURCES_X ? {} : {
+                resourceRequirements: cost.getRequiredResources(),
+            }),
         };
     }
 
@@ -81,7 +98,8 @@ export class PayPrintedCostEffect extends Effect {
             return;
         }
 
-        const resourceCost = new ResourceCost({amount: card.cost});
+        const resourceCost = this.resourceCost ??
+            new ResourceCost({amount: card.cost});
         if (!resourceCost.requiresPayment) {
             this.isPaid = true;
             return;
@@ -89,10 +107,16 @@ export class PayPrintedCostEffect extends Effect {
 
         const paid = params.costPaymentSession ?
             params.costPaymentSession.getPayment(this) :
-            await player.spendResources(
-                resourceCost.getRequiredResources(),
-                card
-            );
+            resourceCost.amount === RESOURCES_X ?
+                await player.spendResourcesX(
+                    resourceCost.requirement,
+                    card,
+                    resourceCost.resourceType
+                ) :
+                await player.spendResources(
+                    resourceCost.getRequiredResources(),
+                    card
+                );
 
         if (paid) {
             const payCostEffect = new PayCostEffect({

@@ -4,6 +4,7 @@ import {
     ABILITY_CONSTANT,
     ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
+    ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
@@ -15,6 +16,7 @@ import {
     EFFECT_PREVENT_PLACE_THREAT,
     PLACE_ENCOUNTER_DECK,
     RESOURCE_ENERGY,
+    RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ENEMY,
     TARGET_EFFECT,
@@ -28,6 +30,7 @@ import {
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
+    TRAIT_THWART,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ATTACHED_DEFEAT,
     TRIGGER_SIDE_SCHEME_DEFEATED,
@@ -47,7 +50,7 @@ export default [
             'params': {
                 'name': 'Intuición heróica',
                 'set': CLASSIFICATION_JUSTICE,
-                'image': 'aspect/justice/upgrades/j65-copy.webp',
+                'image': 'aspect/justice/upgrades/01065.png',
                 'traits': [
                     TRAIT_SKILL
                 ],
@@ -288,6 +291,50 @@ export default [
                                             'from': PLACE_ENCOUNTER_DECK
                                         })
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-sentido-de-la-justicia',
+        'aspect': 'justice',
+        'order': 14030,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Sentido de la justicia',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/upgrades/14030.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_MENTAL,
+                            'condition': {
+                                'cardToPay.isEvent': true,
+                                'cardToPay.traits': TRAIT_THWART
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS
                                 }
                             }
                         }

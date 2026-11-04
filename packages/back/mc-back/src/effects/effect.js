@@ -99,6 +99,7 @@ export class Effect extends Engine {
         this.resolved = false;
         this.fullResolved = false;
         this.paymentCancelled = false;
+        this.triggerResolutionId = 0;
 
         this.isChoose = false;
         this._keepTriggering = false;
@@ -187,6 +188,7 @@ export class Effect extends Engine {
         }
         visited.add(this);
 
+        this.triggerResolutionId++;
         this.resolved = false;
         this.fullResolved = false;
         this.paymentCancelled = false;
@@ -533,6 +535,7 @@ export class Effect extends Engine {
         const {player} = params;
 
         return this.promisesSequential(this.delayedEffects, delayed => delayed.resolve({
+            ...(params.attack !== undefined ? {attack: params.attack} : {}),
             effect: this,
             player,
         }));

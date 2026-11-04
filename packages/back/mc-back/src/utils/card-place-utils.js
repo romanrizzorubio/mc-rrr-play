@@ -26,18 +26,29 @@ export const removeFromPlace = new Map([
     ],
     [
         PLACE_DECK,
-        (_effect, cards, player) => cards.forEach(card =>
-            player.deck.removeCardFromDeck(card)),
+        (_effect, cards, player) => {
+            cards.forEach(card => player.deck.removeCardFromDeck(card));
+
+            return player.deck;
+        },
     ],
     [
         PLACE_ENCOUNTER_DECK_CARDS,
-        (effect, cards) => cards.forEach(card =>
-            effect.match.removeCardFromEncountersDeck(card)),
+        (effect, cards) => {
+            cards.forEach(card =>
+                effect.match.removeCardFromEncountersDeck(card));
+
+            return effect.match.scenario.deck;
+        },
     ],
     [
         PLACE_ENCOUNTER_DISCARD,
-        (effect, cards) => cards.forEach(card =>
-            effect.match.scenario.deck.searchDiscard(card)),
+        (effect, cards) => {
+            const deck = effect.match.scenario.deck;
+            cards.forEach(card => deck.searchDiscard(card));
+
+            return deck;
+        },
     ],
     [
         PLACE_OUTSIDE_NEMESIS,

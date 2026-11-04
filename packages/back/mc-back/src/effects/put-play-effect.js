@@ -299,6 +299,7 @@ export class PutPlayEffect extends Effect {
         }
 
         if (removedFromDeck) {
+            await ownerDeck.checkCycle?.();
             await ownerDeck.refresh();
         }
     }

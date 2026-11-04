@@ -1,6 +1,7 @@
 import {
     DIALOG_LIST,
     RESOURCE_WILD,
+    RESOURCES_X,
 } from 'mc-shared';
 import {
     getResourceIcons,
@@ -266,7 +267,11 @@ export class CostPaymentSession {
             throw new Error('El pago no satisface los requisitos de recursos.');
         }
         const requiredUnitSet = new Set(requiredUnits);
-        const usedUnits = effect.resourceCost?.allowOverpay ?
+        const isVariableResourceCost =
+            effect.resourceCost?.amount === RESOURCES_X;
+        const usedUnits = isVariableResourceCost ?
+            units :
+            effect.resourceCost?.allowOverpay ?
             units.filter(unit =>
                 requiredUnitSet.has(unit) || !unit.costOnly) :
             requiredUnits;

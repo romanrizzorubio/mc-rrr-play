@@ -1,3 +1,4 @@
+import {RESOURCES_X} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class GetCostEffect extends Effect {
@@ -10,6 +11,8 @@ export class GetCostEffect extends Effect {
     async execute(_params) {
         const {selectedTarget, modifyCost} = this;
 
-        this.cost = selectedTarget.cost + modifyCost;
+        this.cost = selectedTarget.cost === RESOURCES_X ?
+            RESOURCES_X :
+            selectedTarget.cost + modifyCost;
     }
 }

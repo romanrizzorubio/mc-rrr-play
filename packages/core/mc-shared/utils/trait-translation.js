@@ -8,6 +8,7 @@ const TRAIT_LABELS = {
     attack: 'Ataque',
     avenger: 'Vengador',
     bird: 'Pájaro',
+    'brotherhood of mutants': 'Hermandad de mutantes',
     businessman: 'Empresario',
     captive: 'Cautivo',
     champion: 'Campeón',
@@ -52,6 +53,7 @@ const TRAIT_LABELS = {
     robot: 'Robot',
     weapon: 'Arma',
     wood: 'Madera',
+    'x-factor': 'Factor-X',
 };
 
 export function translateTrait(trait) {

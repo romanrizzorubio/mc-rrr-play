@@ -23,6 +23,7 @@ import {
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_CHARACTER_WOULD_READY,
+    TRIGGER_CHARACTER_READIED,
     TRIGGER_CONDITION_GET_DEFENSE,
     TRIGGER_CONDITION_GET_TRAITS,
     TRIGGER_END_PLAY_CARD,
@@ -205,6 +206,7 @@ import {YourSuperheroFlipsTrigger} from '../../triggers/your-superhero-flips-tri
 
 export const TRIGGER_MAP = {
     [TRIGGER_CHARACTER_WOULD_READY]: CharacterWouldReadyTrigger,
+    [TRIGGER_CHARACTER_READIED]: Trigger,
     [TRIGGER_ATTACHED_ACTIVATES]: AttachedActivatesTrigger,
     [TRIGGER_ABILITY_COST]: InstantTrigger,
     [TRIGGER_ABILITY_RESOLVED]: AbilityResolvedTrigger,

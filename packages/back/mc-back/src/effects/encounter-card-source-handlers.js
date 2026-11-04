@@ -47,6 +47,7 @@ export const ENCOUNTER_CARD_SOURCE_HANDLERS = new Map([
         take: async (effect, card) => {
             const deck = effect.getEncounterDeck();
             deck.searchDiscard(card);
+            await deck.checkCycle?.();
             await deck.refresh();
         },
         get: () => {
@@ -66,7 +67,7 @@ export const ENCOUNTER_CARD_SOURCE_HANDLERS = new Map([
         },
         take: async (effect, card) => {
             const deck = effect.getExtraDeck();
-            deck.cards.splice(deck.cards.indexOf(card), 1);
+            await deck.searchDeck(card);
             await deck.refresh();
         },
         get: async effect => {

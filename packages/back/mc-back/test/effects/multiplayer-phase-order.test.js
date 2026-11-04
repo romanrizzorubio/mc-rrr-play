@@ -72,9 +72,9 @@ describe('multiplayer phase order', () => {
                     }));
                 },
             };
-            player.ready = async () => ready.push(player.id);
+            player.readyAllCards = async () => ready.push(player.id);
             player.gameZone = {
-                readyCards: async () => ready.push(`${player.id}-cards`),
+                cards: [],
             };
             return player;
         });
@@ -98,10 +98,7 @@ describe('multiplayer phase order', () => {
         assert.equal(dialogs.length, 1);
         assert.equal(dialogs[0].dialogType, DIALOG_DISCARD_HAND);
         assert.strictEqual(dialogs[0].targetPlayer, match.players[0]);
-        assert.deepEqual(ready, [
-            'player-1', 'player-1-cards',
-            'player-0', 'player-0-cards',
-        ]);
+        assert.deepEqual(ready, ['player-1', 'player-0']);
         assert.ok(match.players.every(player => !player.superhero.flipped));
         assert.equal(match.endPlayerIndex, 2);
     });
@@ -156,10 +153,7 @@ describe('multiplayer phase order', () => {
         responses.get('player-1')({selected: []});
         await endPhase;
 
-        assert.deepEqual(ready, [
-            'player-1', 'player-1-cards',
-            'player-0', 'player-0-cards',
-        ]);
+        assert.deepEqual(ready, ['player-1', 'player-0']);
     });
 
     test('opens discard dialogs sequentially for heroes controlled by one account', async () => {
@@ -208,7 +202,7 @@ describe('multiplayer phase order', () => {
         await new PlayPlayersPhaseEffect({match}).runEndPlayersPhase({});
 
         assert.deepEqual(draws, [{player: 'player-0', count: 4}]);
-        assert.deepEqual(ready, ['player-0', 'player-0-cards']);
+        assert.deepEqual(ready, ['player-0']);
         assert.equal(match.endPlayerIndex, 2);
     });
 

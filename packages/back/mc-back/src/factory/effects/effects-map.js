@@ -102,6 +102,7 @@ import {
     EFFECT_PUT_PLAY,
     EFFECT_RANDOM_CARD,
     EFFECT_READY,
+    EFFECT_REPEAT,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_COUNTER,
     EFFECT_REMOVE_STATUS,
@@ -193,6 +194,7 @@ import {DoIfHasTraitsEffect} from '../../effects/do-if-has-traits-effect.js';
 import {DoIfTakeCharacterDamageEffect} from '../../effects/do-if-take-character-damage-effect.js';
 import {DrawEffect} from '../../effects/draw-effect.js';
 import {ForEachEffect} from '../../effects/for-each-effect.js';
+import {RepeatEffect} from '../../effects/repeat-effect.js';
 import {EngageEffect} from '../../effects/engage-effect.js';
 import {EnemyAttackEffect} from '../../effects/enemy-attack-effect.js';
 import {EnemySchemeEffect} from '../../effects/enemy-scheme-effect.js';
@@ -334,6 +336,7 @@ export const EFFECT_MAP = {
     [EFFECT_DO_IF_TAKE_DAMAGE]: DoIfTakeCharacterDamageEffect,
     [EFFECT_DRAW_CARD]: DrawEffect,
     [EFFECT_FOR_EACH]: ForEachEffect,
+    [EFFECT_REPEAT]: RepeatEffect,
     [EFFECT_ENGAGE]: EngageEffect,
     [EFFECT_ENEMY_ATTACK]: EnemyAttackEffect,
     [EFFECT_EXHAUST]: ExhaustEffect,

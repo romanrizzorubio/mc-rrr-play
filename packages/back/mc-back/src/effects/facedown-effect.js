@@ -64,10 +64,8 @@ export class FaceDownEffect extends Effect {
         const selectedCards = Array.isArray(cards) ?
             cards :
             cards ? [cards] : [];
-        if (!selectedCards.length) {
-            return;
-        }
         const owners = new Set();
+        let sourceDeck;
 
         if (this.from) {
             const remove = removeFromPlace.get(this.from);
@@ -77,10 +75,14 @@ export class FaceDownEffect extends Effect {
                 );
             }
 
-            await remove(this, selectedCards, params.player);
-            if (this.from === PLACE_DECK) {
-                await params.player.deck.refresh();
-            }
+            sourceDeck = await remove(this, selectedCards, params.player);
+        }
+
+        if (!selectedCards.length) {
+            await sourceDeck?.checkCycle?.();
+            await sourceDeck?.refresh();
+
+            return;
         }
 
         selectedCards.forEach(card => {
@@ -92,6 +94,9 @@ export class FaceDownEffect extends Effect {
         });
 
         selectedTarget.addFaceDown(selectedCards);
+
+        await sourceDeck?.checkCycle?.();
+        await sourceDeck?.refresh();
 
         await this.promisesSequential([...owners], owner => owner.hand.refresh());
         const refreshTarget = selectedTarget.gameZone || selectedTarget;

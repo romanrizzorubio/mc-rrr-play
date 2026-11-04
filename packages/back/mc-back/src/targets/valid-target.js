@@ -213,6 +213,75 @@ export class ValidTarget extends Engine {
     isMultipleTarget(params) {
         return Boolean(this.multipleTarget || this.isAllTarget(params));
     }
+    async getTargetDialogData(targets, params) {
+        const cards = await Promise.all(targets.map(async target => {
+            const card = targetToObj(target, params);
+            const character = target.isPlayer ? target.superhero : target;
+
+            if (typeof character?.getEffectiveStats !== 'function') {
+                return card;
+            }
+
+            const player = target.isPlayer ? target : params.player;
+            const stats = await character.getEffectiveStats({
+                ...params,
+                player,
+            });
+
+            return {...card, ...stats};
+        }));
+        const villains = [];
+        const minionsByPlayer = new Map();
+        const otherTargets = [];
+
+        targets.forEach((target, index) => {
+            const card = cards[index];
+
+            if (target.isVillain) {
+                villains.push(card);
+            } else if (target.isMinion) {
+                const engagedPlayer = target.engaged?.isPlayer ?
+                    target.engaged :
+                    undefined;
+                let group = minionsByPlayer.get(engagedPlayer);
+
+                if (!group) {
+                    const superheroName = engagedPlayer?.superhero?.currentSide?.name ??
+                        engagedPlayer?.superhero?.name;
+                    group = {
+                        title: engagedPlayer ?
+                            `Esbirros enfrentados a ${superheroName || 'su superhéroe'}` :
+                            'Esbirros no enfrentados',
+                        cards: [],
+                    };
+                    minionsByPlayer.set(engagedPlayer, group);
+                }
+
+                group.cards.push(card);
+            } else {
+                otherTargets.push(card);
+            }
+        });
+
+        if (!villains.length && !minionsByPlayer.size) {
+            return {cards};
+        }
+
+        return {
+            cards,
+            groups: [
+                ...(villains.length ? [{
+                    title: 'Villano',
+                    cards: villains,
+                }] : []),
+                ...minionsByPlayer.values(),
+                ...(otherTargets.length ? [{
+                    title: 'Otros objetivos',
+                    cards: otherTargets,
+                }] : []),
+            ],
+        };
+    }
     async selectFrom(candidates, params) {
         const validTargets = candidates.filter(card =>
             this.filter(card, params));
@@ -257,6 +326,10 @@ export class ValidTarget extends Engine {
                 Math.min(validTarget.length, selectCount ?? validTarget.length) :
                 selectCount;
             const minCount = selectUpTo ? 0 : count;
+            const targetDialogData = await this.getTargetDialogData(
+                validTarget,
+                params
+            );
             const response = await this.openDialog({
                 dialogType: DIALOG_SELECT_TARGET,
                 ...(showCancel ? {showCancel: true} : {}),
@@ -265,8 +338,7 @@ export class ValidTarget extends Engine {
                 ),
                 title: params.dialogTitle || 'Elige tus objetivos',
                 data: {
-                    cards: validTarget.map(card =>
-                        targetToObj(card, params)),
+                    ...targetDialogData,
                     count,
                     minCount,
                     upTo: Boolean(selectUpTo),
@@ -312,6 +384,10 @@ export class ValidTarget extends Engine {
             case 1:
                 return validTarget.pop();
             default:
+                const targetDialogData = await this.getTargetDialogData(
+                    validTarget,
+                    params
+                );
                 const response = await this.openDialog({
                     dialogType: DIALOG_SELECT_TARGET,
                     ...(params.showCancel ? {showCancel: true} : {}),
@@ -320,8 +396,7 @@ export class ValidTarget extends Engine {
                     ),
                     title: params.dialogTitle || 'Elige tu objetivo',
                     data: {
-                        cards: validTarget.map(card =>
-                            targetToObj(card, params)),
+                        ...targetDialogData,
                     },
                 });
                 if (params.showCancel && (

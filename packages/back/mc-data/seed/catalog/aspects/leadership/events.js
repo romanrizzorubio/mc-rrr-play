@@ -7,6 +7,7 @@ import {
     CALC_ALL,
     CALC_ATTACK,
     CALC_COUNT,
+    CALC_STAGE,
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
@@ -37,13 +38,16 @@ import {
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALL_PLAYERS,
+    TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ANY_PLAYER,
+    TARGET_PARENT,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ROUND,
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_SOURCE,
     TARGET_YOU,
+    TARGET_VILLAIN,
     TARGET_YOUR_HERO,
     TIME_PHASE,
     TIME_ROUND,
@@ -620,14 +624,14 @@ export default [
                                         {
                                             'type': EFFECT_HEAL,
                                             'params': {
-                                                'target': TARGET_ALLY,
+                                                'target': TARGET_PARENT,
                                                 'damage': 1
                                             }
                                         },
                                         {
                                             'type': EFFECT_READY,
                                             'params': {
-                                                'target': TARGET_ALLY
+                                                'target': TARGET_PARENT
                                             }
                                         }
                                     ]
@@ -692,6 +696,48 @@ export default [
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-unidos-resistimos',
+        'aspect': 'leadership',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Unidos resistimos',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/14031.png',
+                'cost': 0,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_ALL_FRIENDLY_CHARACTERS,
+                                    'damage': 1,
+                                    'multipleTarget': true,
+                                    'selectUpTo': true,
+                                    'targetCountCalc': {
+                                        'target': TARGET_VILLAIN,
+                                        'formula': CALC_STAGE,
+                                        'max': 3
+                                    }
                                 }
                             }
                         }

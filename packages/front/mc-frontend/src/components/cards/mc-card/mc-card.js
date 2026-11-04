@@ -868,6 +868,8 @@ export class CardComponent extends LitElement {
             rotated,
         } = this;
         const hiddenFacedown = this.isFacedownHidden();
+        const hideFacedownStats = hiddenFacedown &&
+            this.card?.isMinion !== true;
         const hasFaceDownPeeks = this.getFaceDownPeekCards().length > 0;
         const sideSchemeFaceUpTucked = !hiddenFacedown &&
             this.card?.isSideScheme === true &&
@@ -907,7 +909,7 @@ export class CardComponent extends LitElement {
                 ${this.renderHeader()}
                 <slot name="top"></slot>
                 <div class="cards-facedown">
-                    ${hiddenFacedown || sideSchemeFaceUpTucked ?
+                    ${hideFacedownStats || sideSchemeFaceUpTucked ?
                         '' :
                         this.renderStats()}
                     <div class="card ${
@@ -954,7 +956,7 @@ export class CardComponent extends LitElement {
                                     sideSchemeFaceUpTucked ?
                                     '' :
                                     this.renderCounters()}
-                                ${hiddenFacedown || sideSchemeFaceUpTucked ?
+                                ${hideFacedownStats || sideSchemeFaceUpTucked ?
                                     '' :
                                     this.renderBottomStats()}
                             </div>

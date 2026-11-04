@@ -711,7 +711,11 @@ describe('Zola scenario', () => {
                 nonTechnologyConfig,
                 {owner: scenario},
             );
-        scenario.deck.cards = [experiments, minion];
+        const filler = matchFactory.cardsFactory.createGameCardFromConfig(
+            nonTechnologyConfig,
+            {owner: scenario},
+        );
+        scenario.deck.cards = [experiments, minion, filler];
         scenario.deck.discardPile = [
             olderTechnology,
             topmostTechnology,

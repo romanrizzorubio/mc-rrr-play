@@ -2,8 +2,11 @@ import {
     ABILITY_ACTION,
     DIALOG_MAX_CARDS,
     DIALOG_PAY_COST,
+    PLACE_DECK,
+    PLACE_DISCARD_PILE,
     PLACE_HAND,
     PLACE_TUCKED,
+    RESOURCES_X,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_INTERRUPT,
@@ -368,16 +371,19 @@ export class PlayCardEffect extends Effect {
         return getCostEffect.cost;
     }
     async getResourceCost(params) {
-        const amount = await this.getCost({
+        const cost = await this.getCost({
             ...params,
             card: this.card,
-        }) + this.modifyCost;
+        });
+        const amount = cost === RESOURCES_X ?
+            RESOURCES_X :
+            cost + this.modifyCost;
 
         return new ResourceCost({
             allowOverpay: this.card.card?.allowOverpay ??
                 this.card.allowOverpay ??
                 false,
-            amount: Math.max(0, amount),
+            amount: amount === RESOURCES_X ? RESOURCES_X : Math.max(0, amount),
             card: this.card,
             match: this.match,
             playCardEffect: this,
@@ -530,6 +536,10 @@ export class PlayCardEffect extends Effect {
                     source.place === PLACE_TUCKED ?
                         source.host :
                         sourcePlayer.deck;
+                if (source.place === PLACE_DECK ||
+                    source.place === PLACE_DISCARD_PILE) {
+                    await sourcePlayer.deck.checkCycle?.();
+                }
                 await sourceContainer.refresh();
             }
         }

@@ -40,7 +40,7 @@ export class IncludeAsideCardsEffect extends Effect {
             throw new Error(`Unsupported card inclusion place: ${place}`);
         }
 
-        remove(this, cards, player);
+        return remove(this, cards, player);
     }
     async prepare(params) {
         await super.prepare(params);
@@ -72,9 +72,10 @@ export class IncludeAsideCardsEffect extends Effect {
             card.owner = owner;
         });
 
-        this.removeIncluded(from, cards, player);
+        const sourceDeck = this.removeIncluded(from, cards, player);
 
         selectedTarget.addToDeck(cards);
+        await sourceDeck?.checkCycle?.();
 
         selectedTarget.refresh();
     }

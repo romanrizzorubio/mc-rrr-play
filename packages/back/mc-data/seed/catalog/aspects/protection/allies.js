@@ -1,5 +1,6 @@
 import {
     CLASSIFICATION_PROTECTION,
+    ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
@@ -10,10 +11,12 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_HEAL,
     EFFECT_EXHAUST,
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
     EFFECT_PLACE_COUNTERS,
+    EFFECT_PUT_PLAY,
     EFFECT_REMOVE_CARD,
     EFFECT_REMOVE_COUNTER,
     EFFECT_SEARCH_CARDS,
@@ -21,6 +24,7 @@ import {
     EFFECT_STUN,
     PLACE_DECK,
     PLACE_ENCOUNTER_DECK,
+    PLACE_HAND,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -40,6 +44,7 @@ import {
     TRAIT_MYSTIC,
     TRAIT_SHIELD,
     TRAIT_SPY,
+    TRAIT_X_FACTOR,
 } from 'mc-shared';
 
 import {revealEncounterFrom} from '../../utils/reveal-encounter.js';
@@ -395,5 +400,102 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'protection-hombre-multiple',
+        'aspect': 'protection',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Hombre Múltiple',
+                'subtitle': 'Jamie Madrox',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/allies/14012.png',
+                'traits': [TRAIT_X_FACTOR],
+                'cost': 4,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'hitPoints': 2,
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_CARD_ENTER_PLAY,
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_SEARCH_CARDS,
+                                            'params': {
+                                                'locations': [PLACE_DECK, PLACE_HAND],
+                                                'filter': {name: 'Hombre Múltiple'},
+                                                'count': 1,
+                                                'title': 'Busca una copia de Hombre Múltiple en tu mazo y tu mano',
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_PUT_PLAY,
+                                            'params': {
+                                                'cardSource': 'selectedCards',
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-warlock',
+        'aspect': 'protection',
+        'order': 141,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Warlock',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/allies/14013.png',
+                'unique': true,
+                'traits': [TRAIT_X_FACTOR],
+                'cost': 3,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'hitPoints': 3,
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'name': 'Gasta un recurso [m]: cura hasta 2 de Daño a Warlock',
+                            'arrow': {
+                                'type': EFFECT_SPEND,
+                                'params': {
+                                    'resources': [RESOURCE_MENTAL],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'damage': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

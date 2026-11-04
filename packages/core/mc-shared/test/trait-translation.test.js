@@ -10,6 +10,7 @@ import {
     TRAIT_ARTIFACT,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
+    TRAIT_BROTHERHOOD_OF_MUTANTS,
     TRAIT_BUSINESSMAN,
     TRAIT_CAPTIVE,
     TRAIT_CIVILIAN,
@@ -49,6 +50,7 @@ import {
     TRAIT_TINY,
     translateTrait,
     TRAIT_WOOD,
+    TRAIT_X_FACTOR,
 } from '../index.js';
 
 describe('trait translations', () => {
@@ -59,6 +61,7 @@ describe('trait translations', () => {
             [TRAIT_ARMOR, 'Armadura'],
             [TRAIT_ARTIFACT, 'Artefacto'],
             [TRAIT_AVENGER, 'Vengador'],
+            [TRAIT_BROTHERHOOD_OF_MUTANTS, 'Hermandad de mutantes'],
             [TRAIT_BUSINESSMAN, 'Empresario'],
             [TRAIT_CAPTIVE, 'Cautivo'],
             [TRAIT_CIVILIAN, 'Civil'],
@@ -98,6 +101,7 @@ describe('trait translations', () => {
             [TRAIT_STONE, 'Piedra'],
             [TRAIT_MUTATED, 'Mutado'],
             [TRAIT_WOOD, 'Madera'],
+            [TRAIT_X_FACTOR, 'Factor-X'],
             [TRAIT_TEMPORAL, 'Temporal'],
             [TRAIT_TINY, 'Diminuto'],
         ]);

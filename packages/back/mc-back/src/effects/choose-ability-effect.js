@@ -37,12 +37,15 @@ export class ChooseAbilityEffect extends Effect {
         const {player} = params;
         const {ability: {card}} = this;
 
-        let options = await this.getValidOptions(params, true);
-        if (!options.length) {
-            options = await this.getValidOptions(params, false);
-        }
+        while (true) {
+            let options = await this.getValidOptions(params, true);
+            if (!options.length) {
+                options = await this.getValidOptions(params, false);
+            }
+            if (!options.length) {
+                return;
+            }
 
-        if (options.length) {
             const {selected} = await this.openDialog({
                 dialogType: DIALOG_LIST,
                 hideOk: true,
@@ -59,8 +62,10 @@ export class ChooseAbilityEffect extends Effect {
             });
 
             const ability = options[selected.id];
-
-            return ability.resolveAbility(params);
+            await ability.resolveAbility(params);
+            if (!ability.paymentCancelled) {
+                return;
+            }
         }
     }
 }

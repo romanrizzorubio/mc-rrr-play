@@ -473,6 +473,22 @@ export class Match extends Engine {
 
         return playersByName.length === 1 ? playersByName[0] : undefined;
     }
+    getScenarioAbilityAvailabilityPlayer() {
+        const request = this.actionRequest;
+        if (request?.status === 'accepted') {
+            const target = this.getPlayer(request.targetId) ??
+                this.getPlayer(request.target);
+            if (!target) {
+                throw new Error(
+                    `No se encontró al jugador solicitado "${request.target}" para calcular la disponibilidad de acciones.`
+                );
+            }
+
+            return target;
+        }
+
+        return this.currentTurnPlayer || this.initialPlayer;
+    }
     async selectInitialPlayer() {
         if (this.players.length < 2) {
             return this.initialPlayer;
@@ -694,6 +710,7 @@ export class Match extends Engine {
             const setupCards = player.deck.cards.filter(card => card.currentSide.abilities.some(a => a.isSetup));
             await this.promisesSequential(setupCards, async card => {
                 player.deck.removeCardFromDeck(card);
+                await player.deck.checkCycle?.();
                 const putPlayEffect = new PutPlayEffect({
                     card,
                     controller: player,
@@ -707,6 +724,7 @@ export class Match extends Engine {
         const scenarioSetupCards = this.scenario.deck.cards.filter(card => card.currentSide.abilities.some(a => a.isSetup));
         await this.promisesSequential(scenarioSetupCards, async card => {
             this.scenario.deck.removeCardFromDeck(card);
+            await this.scenario.deck.checkCycle?.();
             const putPlayEffect = new PutPlayEffect({
                 card,
                 controller: this.scenario,
@@ -775,7 +793,9 @@ export class Match extends Engine {
             this.players.map(player => player.toObjWithPlayableHand())
         );
         const scenario = this.scenario &&
-            await this.scenario.toObjWithAbilityAvailability(this.initialPlayer);
+            await this.scenario.toObjWithAbilityAvailability(
+                this.getScenarioAbilityAvailabilityPlayer()
+            );
 
         return {
             ...this.toObj(),

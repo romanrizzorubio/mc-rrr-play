@@ -4,6 +4,7 @@ import {
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
+    ABILITY_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
@@ -27,8 +28,10 @@ import {
     TARGET_YOUR_HERO,
     TRAIT_ARMOR,
     TRAIT_CONDITION,
+    TRAIT_DEFENSE,
     TRAIT_ITEM,
     TRAIT_PREPARATION,
+    TRAIT_SKILL,
     TRAIT_TACTIC,
     TRAIT_TECH,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
@@ -334,5 +337,45 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'protection-nervios-de-acero',
+        'aspect': 'protection',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Nervios de acero',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/upgrades/14017.png',
+                'traits': [TRAIT_SKILL],
+                'cost': 2,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_PROTECTION,
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESOURCE,
+                        'params': {
+                            'resource': RESOURCE_ENERGY,
+                            'condition': {
+                                'cardToPay.isEvent': true,
+                                'cardToPay.traits': TRAIT_DEFENSE,
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

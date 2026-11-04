@@ -840,6 +840,7 @@ describe('app match controls and mulligan lifecycle', () => {
         const styles = McApp.styles.map(style => style.cssText).join('');
         assert.match(styles, /\.match-account-bar\s*\{[^}]*display:\s*grid;[^}]*max-width:\s*none/su);
         assert.match(styles, /\.match-account-bar\s*\{[^}]*grid-template-columns:\s*max-content minmax\(0, 1fr\) max-content/su);
+        assert.match(styles, /\.match-account-bar\s*\{[^}]*column-gap:\s*24px/su);
         assert.match(styles, /\.match-status-group\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center;[^}]*gap:\s*8px/su);
         assert.match(styles, /\.match-status\s*\{[^}]*flex:\s*1 1 auto;[^}]*font-weight:\s*700/su);
         assert.match(styles, /@media \(max-width: 1000px\)[\s\S]*grid-column:\s*1 \/ -1;[\s\S]*grid-row:\s*2/u);

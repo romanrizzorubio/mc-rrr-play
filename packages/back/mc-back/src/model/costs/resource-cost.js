@@ -1,4 +1,4 @@
-import {RESOURCE_ANY} from 'mc-shared';
+import {RESOURCE_ANY, RESOURCES_X} from 'mc-shared';
 import {PlayCardResourceCostEffect} from '../../effects/play-card-resource-cost-effect.js';
 import {Cost} from './cost.js';
 import {COST_TYPE_RESOURCE} from './cost-constants.js';
@@ -15,7 +15,8 @@ export class ResourceCost extends Cost {
     }) {
         super({type: COST_TYPE_RESOURCE, match});
 
-        if (!Number.isSafeInteger(amount) || amount < 0) {
+        if (amount !== RESOURCES_X &&
+            (!Number.isSafeInteger(amount) || amount < 0)) {
             throw new TypeError('A resource cost must be a non-negative integer.');
         }
         if (!Array.isArray(requirement)) {
@@ -33,11 +34,16 @@ export class ResourceCost extends Cost {
         this.allowOverpay = allowOverpay;
     }
     get requiresPayment() {
-        return this.amount > 0 ||
+        return this.amount === RESOURCES_X ||
+            this.amount > 0 ||
             this.requirement.length > 0 ||
             this.allowOverpay;
     }
     getRequiredResources() {
+        if (this.amount === RESOURCES_X) {
+            return [];
+        }
+
         return Array(this.amount).fill(this.resourceType ?? RESOURCE_ANY);
     }
     getEffect() {

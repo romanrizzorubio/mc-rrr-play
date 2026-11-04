@@ -40,14 +40,13 @@ describe('player target hero cards', () => {
         });
         return {catalog, match, factory, dialogs};
     };
-    const assertHeroOptions = (dialog, players) => {
+    const assertHeroOptions = async (dialog, players) => {
         assert.equal(dialog.dialogType, DIALOG_SELECT_TARGET);
-        assert.deepEqual(dialog.data.cards, players.map(player => ({
-            ...player.superhero.toObj(),
-            id: player.id,
-            isPlayer: true,
-            showPlayerHero: true,
+        const expectedCards = await Promise.all(players.map(async player => ({
+            ...player.toTargetObj(),
+            ...await player.superhero.getEffectiveStats({player}),
         })));
+        assert.deepEqual(dialog.data.cards, expectedCards);
         for (const card of dialog.data.cards) {
             assert.ok(card.image);
             assert.ok(Array.isArray(card.attached));
@@ -104,7 +103,7 @@ describe('player target hero cards', () => {
 
             assert.equal(dialogs.length, 1);
             assert.equal(dialogs[0].targetPlayer, actor.id);
-            assertHeroOptions(dialogs[0], match.players);
+            await assertHeroOptions(dialogs[0], match.players);
             assert.strictEqual(effect.selectedTarget, match.players[1]);
             assert.deepEqual(match.players[1].hand.cards, [drawnCard]);
             assert.deepEqual(match.players[0].hand.cards, []);
@@ -122,7 +121,7 @@ describe('player target hero cards', () => {
 
         assert.deepEqual(selected, [match.players[1]]);
         assert.equal(dialogs[0].targetPlayer, match.players[0].id);
-        assertHeroOptions(dialogs[0], match.players);
+        await assertHeroOptions(dialogs[0], match.players);
     });
 
     test('only eligible players appear and an explicit decision recipient is preserved', async () => {
@@ -141,7 +140,7 @@ describe('player target hero cards', () => {
 
         assert.deepEqual(selected, [match.players[1]]);
         assert.equal(dialogs[0].targetPlayer, match.players[1].id);
-        assertHeroOptions(dialogs[0], [match.players[1]]);
+        await assertHeroOptions(dialogs[0], [match.players[1]]);
     });
 
     test('a single eligible player is selected without an unnecessary dialog', async () => {

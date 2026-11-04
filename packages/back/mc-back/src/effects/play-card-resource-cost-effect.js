@@ -1,4 +1,4 @@
-import {TARGET_YOU} from 'mc-shared';
+import {RESOURCES_X, TARGET_YOU} from 'mc-shared';
 import {Effect} from './effect.js';
 import {PayCostEffect} from './pay-cost-effect.js';
 
@@ -17,6 +17,14 @@ export class PlayCardResourceCostEffect extends Effect {
         this.resourceCost = resourceCost;
         this.playCardEffect = playCardEffect;
         this.isPaid = false;
+    }
+    getResolutionChildEffects() {
+        const effects = super.getResolutionChildEffects();
+
+        // The owning play effect is context, not a child to reset during payment.
+        effects.delete(this.playCardEffect);
+
+        return effects;
     }
     getCostPaymentEffects() {
         return [this];
@@ -54,11 +62,13 @@ export class PlayCardResourceCostEffect extends Effect {
         }
 
         this.playCardEffect.resourcesPaid = payment.resources;
-        const requiredResourceCount =
+        const isVariableCost = this.resourceCost.amount === RESOURCES_X;
+        const requiredResourceCount = isVariableCost ?
+            payment.resources.length :
             this.resourceCost.getRequiredResources().length +
-            this.resourceCost.requirement.length;
+                this.resourceCost.requirement.length;
         this.playCardEffect.resourcesOverpaid =
-            this.resourceCost.allowOverpay ?
+            !isVariableCost && this.resourceCost.allowOverpay ?
                 Math.max(0, payment.resources.length - requiredResourceCount) :
                 0;
         this.isPaid = true;

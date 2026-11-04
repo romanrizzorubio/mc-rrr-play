@@ -4,10 +4,22 @@ export class MayEffect extends Effect {
     constructor({
 // MayEffect
         effect,
+        requiresPrePlayConfirmation = false,
     }) {
         super(arguments[0]);
 
         this.effect = effect;
+        this.requiresPrePlayConfirmation = requiresPrePlayConfirmation;
+    }
+    get ability() {
+        return super.ability;
+    }
+    set ability(ability) {
+        super.ability = ability;
+
+        if (this.effect) {
+            this.effect.ability = ability;
+        }
     }
     get isOptional() {
         return true;
@@ -41,6 +53,9 @@ export class MayEffect extends Effect {
             ...params,
             mayEffect: this,
         });
+    }
+    async confirmBeforeResolve(params) {
+        return !this.requiresPrePlayConfirmation || this.confirm(params);
     }
     async confirm(params, {subtitle, data} = {}) {
         if (!this.title) {

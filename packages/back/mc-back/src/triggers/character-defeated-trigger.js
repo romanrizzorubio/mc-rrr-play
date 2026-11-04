@@ -29,11 +29,15 @@ export class CharacterDefeatedTrigger extends Trigger {
     canTrigger(params) {
         const character = this.getCharacter(params);
         const player = getTriggerCardPlayer(this.card, params.player);
+        const characterState = params.effect?.defeatedCharacterState;
+        const isCharacter = characterState?.isCharacter ?? character?.isCharacter;
+        const characterType = characterState?.type ?? character?.type;
 
         if (params.effect?.defeated !== true ||
-            !character?.isCharacter ||
+            !character ||
+            !isCharacter ||
             character.isInPlay ||
-            (this.characterType && character.type !== this.characterType) ||
+            (this.characterType && characterType !== this.characterType) ||
             (this.controlledByYou &&
                 params.effect.defeatedController !== player)) {
             return false;

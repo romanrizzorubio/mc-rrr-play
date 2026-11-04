@@ -14,7 +14,7 @@ export class Trigger {
 
     static #getTriggeredEffects(trigger) {
         if (!Trigger.#triggeredEffectsByTrigger.has(trigger)) {
-            Trigger.#triggeredEffectsByTrigger.set(trigger, new WeakSet());
+            Trigger.#triggeredEffectsByTrigger.set(trigger, new WeakMap());
         }
 
         return Trigger.#triggeredEffectsByTrigger.get(trigger);
@@ -35,13 +35,21 @@ export class Trigger {
         this.paymentCancelled = false;
     }
     hasTriggeredFor(effect) {
-        return Boolean(effect &&
-            typeof effect === 'object' &&
-            Trigger.#getTriggeredEffects(this).has(effect));
+        if (!effect || typeof effect !== 'object') {
+            return false;
+        }
+
+        const triggeredEffects = Trigger.#getTriggeredEffects(this);
+
+        return triggeredEffects.has(effect) &&
+            triggeredEffects.get(effect) === effect.triggerResolutionId;
     }
     markTriggeredFor(effect) {
         if (effect && typeof effect === 'object') {
-            Trigger.#getTriggeredEffects(this).add(effect);
+            Trigger.#getTriggeredEffects(this).set(
+                effect,
+                effect.triggerResolutionId
+            );
         }
     }
     canRun(params) {
@@ -64,12 +72,27 @@ export class Trigger {
                 return false;
             }
 
-            if (this.trigger !== TRIGGER_PLAYER_CAN_PLAY &&
-                typeof params.player?.canPlayCard === 'function') {
-                return Promise.resolve(
-                    params.player.canPlayCard({card: this.card})
-                ).then(canPlay => canPlay ? canTriggerAbility() : false);
-            }
+            const canPlayEvent = typeof this.card.canPlay === 'function' ?
+                this.card.canPlay({
+                    ...params,
+                    abilityType: ability?.abilityType,
+                }) :
+                true;
+
+            return Promise.resolve(canPlayEvent).then(canPlay => {
+                if (!canPlay) {
+                    return false;
+                }
+
+                if (this.trigger !== TRIGGER_PLAYER_CAN_PLAY &&
+                    typeof params.player?.canPlayCard === 'function') {
+                    return Promise.resolve(
+                        params.player.canPlayCard({card: this.card})
+                    ).then(canPlay => canPlay ? canTriggerAbility() : false);
+                }
+
+                return canTriggerAbility();
+            });
         }
 
         return canTriggerAbility();

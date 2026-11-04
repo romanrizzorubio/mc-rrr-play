@@ -1,6 +1,7 @@
 import {
     CLASSIFICATION_BASIC,
     ABILITY_ACTION,
+    ABILITY_HERO_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESOURCE,
     ABILITY_HERO_RESPONSE,
@@ -16,6 +17,10 @@ import {
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_HAND_SIZE,
     EFFECT_MODIFY_RECOVERY_VALUE,
+    EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_LASTING,
+    EFFECT_MAY,
     EFFECT_REMOVE_COUNTER,
     EFFECT_READY,
     EFFECT_SPEND,
@@ -33,11 +38,13 @@ import {
     TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
     TARGET_YOUR_HERO,
+    TIME_PHASE,
     TRAIT_AVENGER,
     TRAIT_CONDITION,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
+    TRAIT_TACTIC,
     TRAIT_TITLE,
     TRAIT_MYSTIC,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
@@ -574,5 +581,107 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'basic-descarga-adrenalina',
+        'classification': 'basic',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Descarga de adrenalina',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/upgrades/14022.png',
+                'traits': [TRAIT_CONDITION],
+                'cost': 1,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_MAY,
+                                'params': {
+                                    'requiresPrePlayConfirmation': true,
+                                    'title': '¿Quieres descartar Descarga de adrenalina para recibir +1 ATQ?',
+                                    'effect': {
+                                        'type': EFFECT_LASTING,
+                                        'params': {
+                                            'target': TARGET_YOUR_HERO,
+                                            'until': TIME_PHASE,
+                                            'effect': {
+                                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                'params': {
+                                                    'target': TARGET_YOUR_HERO,
+                                                    'count': 1,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-deber-civico',
+        'classification': 'basic',
+        'order': 141,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Deber cívico',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/upgrades/14023.png',
+                'traits': [TRAIT_TACTIC],
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_MAY,
+                                'params': {
+                                    'requiresPrePlayConfirmation': true,
+                                    'title': '¿Quieres descartar Deber cívico para recibir +1 INT?',
+                                    'effect': {
+                                        'type': EFFECT_LASTING,
+                                        'params': {
+                                            'target': TARGET_YOUR_HERO,
+                                            'until': TIME_PHASE,
+                                            'effect': {
+                                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                                'params': {
+                                                    'target': TARGET_YOUR_HERO,
+                                                    'count': 1,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

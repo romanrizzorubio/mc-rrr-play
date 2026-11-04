@@ -116,6 +116,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **armor (rasgo)** | Armadura |
 | **attack (rasgo)** | Ataque |
 | **avenger (rasgo)** | Vengador |
+| **brotherhood of mutants (rasgo)** | Hermandad de mutantes |
 | **businessman (rasgo)** | Empresario |
 | **captive (rasgo)** | Cautivo |
 | **condition (rasgo)** | Alteración |
@@ -143,6 +144,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **thwart (rasgo)** | Intervención |
 | **title (rasgo)** | Título |
 | **vehicle (rasgo)** | Vehículo |
+| **x-factor (rasgo)** | Factor-X |
 | **goblin (rasgo)** | Duende |
 | **genius (rasgo)** | Genio |
 | **wood (rasgo)** | Madera |

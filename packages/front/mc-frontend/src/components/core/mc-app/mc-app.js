@@ -112,6 +112,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
               .match-account-bar {
                 display: grid;
                 grid-template-columns: max-content minmax(0, 1fr) max-content;
+                column-gap: 24px;
                 max-width: none;
                 min-height: 60px;
                 padding: 4px 8px;

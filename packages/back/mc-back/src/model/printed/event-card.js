@@ -1,3 +1,5 @@
+import {ABILITY_ACTION} from 'mc-shared';
+
 import {PlayerCard} from './player-card.js';
 
 export class EventCard extends PlayerCard {
@@ -13,14 +15,16 @@ export class EventCard extends PlayerCard {
     }
 
     async canPlay({abilityType, gameCard}) {
-        if (await super.canPlay(arguments[0])) {
-            const abilities = await gameCard.getAbilitiesType(abilityType);
-
-            if (abilities.length) {
-                return true;
-            }
+        if (!await super.canPlay(arguments[0])) {
+            return false;
         }
-        return false;
+
+        const abilities = abilityType === ABILITY_ACTION ?
+            await gameCard.getAbilitiesType(ABILITY_ACTION) :
+            gameCard.abilities.filter(ability =>
+                ability.abilityType === abilityType);
+
+        return abilities.length > 0;
     }
 
     getAbility(index) {

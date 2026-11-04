@@ -22,6 +22,7 @@ export class McSelectTargetDialog extends McCardListDialog {
             ...super.defaultProperties,
             data: {
                 ...super.defaultProperties.data,
+                groups: [],
                 showCounters: true,
                 showLife: true,
                 showDamage: false,
@@ -43,10 +44,16 @@ export class McSelectTargetDialog extends McCardListDialog {
             this._response.selected.slice() :
             [];
         selected.push(card);
+        const groups = this.data.groups?.map(group => ({
+            ...group,
+            cards: group.cards.filter(candidate =>
+                candidate.id !== card.id),
+        })).filter(group => group.cards.length);
 
         this.data = {
             ...this.data,
             cards: cards.filter(candidate => candidate.id !== card.id),
+            ...(this.data.groups ? {groups} : {}),
         };
         this._response = {selected};
 
@@ -70,6 +77,41 @@ export class McSelectTargetDialog extends McCardListDialog {
         return this.data.multiSelect && this.data.upTo ?
             super.renderButtonOk() :
             html``;
+    }
+    renderContent() {
+        const {
+            groups,
+            showCounters,
+            showLife,
+            showDamage,
+        } = this.data;
+
+        if (!groups?.length) {
+            return super.renderContent();
+        }
+
+        return html`
+            <div class="target-groups">
+                ${groups.map(({title, cards}) => html`
+                    <section
+                        class="target-group"
+                        role="group"
+                        aria-label="${title}"
+                    >
+                        <h3 class="target-group-title">${title}</h3>
+                        <mc-card-list
+                            .cards="${cards}"
+                            .marked="${this._marked}"
+                            .showGeneric="${showCounters}"
+                            .showLife="${showLife}"
+                            .showDamage="${showDamage}"
+                            .selectOnClick="${true}"
+                            @card-list-select="${this.handleCardListSelect.bind(this)}"
+                        ></mc-card-list>
+                    </section>
+                `)}
+            </div>
+        `;
     }
 }
 

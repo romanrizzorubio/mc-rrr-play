@@ -2,8 +2,10 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
+    ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
+    EFFECT_CANCEL_ENCOUNTER,
     EFFECT_DEAL_DAMAGE,
     EFFECT_CHAINED,
     EFFECT_HEAL,
@@ -16,6 +18,7 @@ import {
     EFFECT_READY,
     EFFECT_REMOVE_STATUS,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SIMULTANEOUS,
     EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_THWART,
@@ -32,7 +35,9 @@ import {
     TARGET_DECK,
     TARGET_HERO,
     TARGET_HERO_SIDE,
+    TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SCHEME,
+    TARGET_VILLAIN,
     TARGET_YOUR_SUPERHERO,
     TARGET_YOUR_HERO,
     TIME_PHASE,
@@ -44,6 +49,7 @@ import {
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+    TRIGGER_TREACHERY_REVEAL,
 } from 'mc-shared';
 
 export default [
@@ -446,5 +452,99 @@ export default [
                 ],
             },
         },
-    }
+    },
+    {
+        '_id': 'basic-orden-y-caos',
+        'classification': 'basic',
+        'order': 140,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Orden y caos',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/events/14018.png',
+                'cost': 1,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_BASIC,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_DECK,
+                },
+                'keywords': {
+                    'teamUp': ['Mercurio', 'Bruja Escarlata'],
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_TREACHERY_REVEAL,
+                            'effect': {
+                                'type': EFFECT_CANCEL_ENCOUNTER,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'full': false,
+                                    'thenEffect': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_VILLAIN,
+                                            'damage': 2,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-paliza',
+        'classification': 'basic',
+        'order': 141,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Paliza',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/events/14032.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_VILLAIN,
+                                                'damage': 1
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ALL_ENGAGED_MINIONS,
+                                                'damage': 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
 ];

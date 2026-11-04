@@ -76,7 +76,11 @@ export class MoveToHandEffect extends Effect {
                     (deck.cards.includes(card) || deck.discardPile.includes(card)));
 
             if (sourceDeck?.cards.includes(card)) {
-                await sourceDeck.searchDeck(card);
+                if (typeof sourceDeck.removeCardFromDeck === 'function') {
+                    sourceDeck.removeCardFromDeck(card);
+                } else {
+                    await sourceDeck.searchDeck(card);
+                }
                 sourceDecks.add(sourceDeck);
             } else if (sourceDeck?.discardPile.includes(card)) {
                 sourceDeck.searchDiscard(card);
@@ -92,6 +96,11 @@ export class MoveToHandEffect extends Effect {
                 destination.hand.addCard(card);
             }
         }
+
+        await this.promisesSequential(
+            [...sourceDecks],
+            sourceDeck => sourceDeck.checkCycle?.()
+        );
 
         const objectsToRefresh = new Set(sourceDecks);
         if (sourceContainer &&

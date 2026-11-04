@@ -103,6 +103,7 @@ export const EFFECT_PREVENT_PLACE_THREAT = 'prevent-place-threat';
 export const EFFECT_PUT_PLAY = 'put-play';
 export const EFFECT_RANDOM_CARD = 'random-card';
 export const EFFECT_READY = 'ready';
+export const EFFECT_REPEAT = 'repeat';
 export const EFFECT_REMOVE_CARD = 'remove-card';
 export const EFFECT_REMOVE_COUNTER = 'remove-counter';
 export const EFFECT_REMOVE_STATUS = 'remove-status';

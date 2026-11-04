@@ -23,6 +23,7 @@ export class DefeatEffect extends Effect {
         this.prevented = false;
         this.defeated = false;
         this.defeatedCharacter = undefined;
+        this.defeatedCharacterState = undefined;
         this.defeatedController = undefined;
     }
     get effectCategories() {
@@ -38,6 +39,7 @@ export class DefeatEffect extends Effect {
         super.resetResolutionData();
         this.defeated = false;
         this.defeatedCharacter = undefined;
+        this.defeatedCharacterState = undefined;
         this.defeatedController = undefined;
     }
     checkTrigger() {
@@ -58,14 +60,20 @@ export class DefeatEffect extends Effect {
                 TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
             ]);
 
-        if (this.defeated && this.defeatedCharacter?.isSideScheme) {
+        const isSideScheme = this.defeatedCharacterState?.isSideScheme ??
+            this.defeatedCharacter?.isSideScheme;
+
+        if (this.defeated && isSideScheme) {
             triggers.push(
                 TRIGGER_SIDE_SCHEME_DEFEATED,
                 TRIGGER_YOU_DEFEAT_SIDE_SCHEME,
             );
         }
 
-        return this.defeated && this.defeatedCharacter?.isCharacter ?
+        const isCharacter = this.defeatedCharacterState?.isCharacter ??
+            this.defeatedCharacter?.isCharacter;
+
+        return this.defeated && isCharacter ?
             triggers.concat([TRIGGER_CHARACTER_DEFEATED]) :
             triggers;
     }
@@ -93,6 +101,7 @@ export class DefeatEffect extends Effect {
     async execute(params) {
         this.defeated = false;
         this.defeatedCharacter = undefined;
+        this.defeatedCharacterState = undefined;
 
         if (this.prevented) {
             return;
@@ -131,6 +140,13 @@ export class DefeatEffect extends Effect {
             }
         );
         if (selectedTarget.isInPlay !== false) {
+            this.defeatedCharacterState = {
+                type: selectedTarget.type,
+                isCharacter: Boolean(selectedTarget.isCharacter),
+                isEnemy: Boolean(selectedTarget.isEnemy),
+                isMinion: Boolean(selectedTarget.isMinion),
+                isSideScheme: Boolean(selectedTarget.isSideScheme),
+            };
             await selectedTarget.defeat(player, {
                 defeatAnnounced: selectedTarget.isVillain,
             });

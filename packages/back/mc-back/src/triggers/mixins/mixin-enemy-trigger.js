@@ -9,8 +9,10 @@ export const MixinEnemyTrigger = C => class extends C {
     }
     canTrigger(params) {
         const enemy = this.getEnemy(params);
+        const wasEnemy = params.effect.defeatedCharacterState?.isEnemy ??
+            enemy.isEnemy;
 
-        if (enemy.isEnemy) {
+        if (wasEnemy) {
             return super.canTrigger(params);
         }
 

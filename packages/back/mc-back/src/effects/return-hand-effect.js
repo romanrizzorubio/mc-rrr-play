@@ -29,6 +29,7 @@ export class ReturnHandEffect extends Effect {
             }
 
             if (removedFromDeck) {
+                await deck.checkCycle?.();
                 await deck.refresh();
             }
         }

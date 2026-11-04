@@ -1,6 +1,7 @@
 import {
     CLASSIFICATION_AGGRESSION,
     ABILITY_CONSTANT,
+    ABILITY_FORCED_RESPONSE,
     ABILITY_HERO_RESPONSE,
     ABILITY_RESOURCE,
     ABILITY_RESPONSE,
@@ -9,6 +10,7 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
     EFFECT_EXHAUST,
+    EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_READY,
     EFFECT_SIMULTANEOUS,
@@ -17,6 +19,7 @@ import {
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     LABEL_ATTACK,
     RESOURCE_ENERGY,
+    RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ANY_PLAYER,
     TARGET_ALLY,
@@ -39,6 +42,7 @@ import {
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_ENGAGE_HERO,
+    TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK
@@ -400,6 +404,76 @@ export default [
                                 'params': {
                                     'target': TARGET_TRIGGERED_CARD,
                                     'damage': 3
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-fuerza-bruta',
+        'aspect': 'aggression',
+        'order': 14029,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Fuerza bruta',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/upgrades/14029.png',
+                'traits': [
+                    TRAIT_SKILL
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'hideDialog': true,
+                            'trigger': TRIGGER_YOUR_HERO_GET_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'hideDialog': true,
+                            'trigger': TRIGGER_YOU_ATTACK,
+                            'condition': {
+                                'effect.ability.isBasic': true
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'modify': {
+                                        'keywords': {
+                                            'piercing': true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        'type': ABILITY_FORCED_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_ATTACK,
+                            'effect': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS
                                 }
                             }
                         }

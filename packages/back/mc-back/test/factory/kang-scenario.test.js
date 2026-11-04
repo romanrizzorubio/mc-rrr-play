@@ -74,6 +74,91 @@ const kangConfig = structuredClone(kang.config);
 const blackPantherConfig = structuredClone(blackPanther.config);
 
 describe('Kang scenario', () => {
+    test('Recuerdos robados cycles the player deck after taking its available top cards', async () => {
+        const setConfigs = new Map([
+            ['standard', structuredClone(standard.config)],
+            ['temporal', structuredClone(temporal.config)],
+        ]);
+        const match = new Match({
+            mc: {
+                mcSocket: {send() {}},
+                data: {
+                    async getSetConfig(id) {
+                        return setConfigs.get(id);
+                    },
+                },
+            },
+            name: 'stolen-memories-deck-cycle-test',
+        });
+        match.openDialog = async () => ({});
+        match.persist = async () => {};
+        match.refresh = async () => {};
+        const factory = new MatchFactory(match);
+        const superhero = factory.createSuperhero(
+            structuredClone(blackPantherConfig)
+        );
+        superhero.selectedSide = 1;
+        const player = match.createPlayer({
+            name: 'Jugador',
+            superhero,
+            initial: true,
+        });
+        player.initPlayer();
+        player.gameZone = new PlayerZone({owner: player});
+
+        const scenario = await factory.createScenario(
+            structuredClone(kang.config)
+        );
+        match.addScenario(scenario);
+        const dealtEncounterCounts = [];
+        match.drawEncounterCards = async count => {
+            dealtEncounterCounts.push(count);
+            return [];
+        };
+        await scenario.initScenario(match.createObligations(), false);
+        const dealtEncounterCountBeforeReveal = dealtEncounterCounts.length;
+
+        const stolenMemories = scenario.deck.cards.find(card =>
+            card.name === 'Recuerdos robados');
+        assert.ok(stolenMemories);
+
+        const facedownCard = factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {name: 'Carta tomada del mazo'},
+        }, {owner: player});
+        const recycledCard = factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {name: 'Carta de la pila de descartes'},
+        }, {owner: player});
+        player.deck.cards = [facedownCard];
+        player.deck.discardPile = [recycledCard];
+        let shuffleCount = 0;
+        player.deck.shuffle = () => {
+            shuffleCount += 1;
+        };
+
+        await new RevealEncounterEffect({
+            card: stolenMemories,
+            player,
+            match,
+        }).runEffect({player});
+
+        assert.deepEqual(
+            stolenMemories.faceDown.map(({card}) => card.id),
+            [facedownCard.id]
+        );
+        assert.deepEqual(
+            player.deck.cards.map(card => card.id),
+            [recycledCard.id]
+        );
+        assert.deepEqual(player.deck.discardPile, []);
+        assert.equal(shuffleCount, 1);
+        assert.deepEqual(
+            dealtEncounterCounts.slice(dealtEncounterCountBeforeReveal),
+            [1]
+        );
+    });
+
     for (const optionIndex of [0, 1]) {
         test(`Kang attack choice ${optionIndex} resolves once and continues the attack`, async () => {
             const match = new Match({

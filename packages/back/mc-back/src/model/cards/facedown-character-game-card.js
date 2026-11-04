@@ -153,13 +153,14 @@ export class FacedownCharacterGameCard extends CharacterGameCard {
 
         delete this.facedownConversion;
         this.initAbilities();
-        owner.deck.discardPile.push(this);
+        await owner.deck.discard(this);
         await owner.deck.refresh();
     }
     toObj() {
         return {
             ...super.toObj(arguments[0]),
             faceDown: [],
+            isMinion: this.isMinion,
             isFacedownCard: true,
         };
     }

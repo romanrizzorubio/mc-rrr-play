@@ -117,9 +117,11 @@ export class DoIfEffect extends Effect {
     }
     checkCondition(params) {
         const ability = params.ability ?? this.ability;
-        const conditionParams = ability ?
-            {...params, ability} :
-            params;
+        const conditionParams = {
+            ...params,
+            match: params.match ?? this.match,
+            ...(ability ? {ability} : {}),
+        };
 
         return checkCondition(conditionParams, this.condition);
     }

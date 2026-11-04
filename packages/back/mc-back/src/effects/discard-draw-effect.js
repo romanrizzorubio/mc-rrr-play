@@ -43,6 +43,11 @@ export class DiscardDrawEffect extends Effect {
             }
         });
 
+        if (!player.deck.cards.length && player.deck.discardPile.length) {
+            await player.deck.checkCycle?.();
+        }
+        await player.deck.refresh();
+
         const addHandEffect = new AddHandEffect({
             match: this.match,
         });

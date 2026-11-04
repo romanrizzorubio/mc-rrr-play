@@ -21,6 +21,7 @@ async function getGolpetazoDialogs({
     const dialogs = [];
     const match = {
         triggerCards: {},
+        isUniqueCard: () => false,
         async openDialog(dialog) {
             dialogs.push(dialog);
             return {};

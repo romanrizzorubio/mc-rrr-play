@@ -373,6 +373,12 @@ export class Ability extends Engine {
             reuseInstance: effect !== undefined,
             selectedTarget: params.selectedTarget,
         });
+        if (preselectedTarget && effectInstance.effect) {
+            effectInstance.preselectedEffectTargets = new Set(
+                effectInstance.preselectedEffectTargets || []
+            );
+            effectInstance.preselectedEffectTargets.add(effectInstance.effect);
+        }
         const resolutionEffect = effectInstance.effect;
         state.lastResolutionEffect = resolutionEffect;
         state.instancesByDefinition = new Map();

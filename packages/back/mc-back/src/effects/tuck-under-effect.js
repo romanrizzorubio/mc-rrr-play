@@ -120,6 +120,7 @@ export class TuckUnderEffect extends Effect {
         }
 
         const sourcesToRefresh = new Set();
+        const decksToCheckCycle = new Set();
         for (const card of cards) {
             const {place, host, player} = locations.get(card);
 
@@ -127,11 +128,17 @@ export class TuckUnderEffect extends Effect {
                 player.hand.discardHand(card);
                 sourcesToRefresh.add(player.hand);
             } else if (place === PLACE_DECK) {
-                await player.deck.searchDeck(card);
+                if (typeof player.deck.removeCardFromDeck === 'function') {
+                    player.deck.removeCardFromDeck(card);
+                } else {
+                    await player.deck.searchDeck(card);
+                }
                 sourcesToRefresh.add(player.deck);
+                decksToCheckCycle.add(player.deck);
             } else if (place === PLACE_DISCARD_PILE) {
                 player.deck.searchDiscard(card);
                 sourcesToRefresh.add(player.deck);
+                decksToCheckCycle.add(player.deck);
             } else if (place === PLACE_TUCKED) {
                 const index = host.tuckedCards.indexOf(card);
                 if (index < 0) {
@@ -151,6 +158,10 @@ export class TuckUnderEffect extends Effect {
         }
 
         sourcesToRefresh.add(selectedTarget);
+        await this.promisesSequential(
+            [...decksToCheckCycle],
+            deck => deck.checkCycle?.()
+        );
         await this.promisesSequential(
             [...sourcesToRefresh],
             source => source.refresh()

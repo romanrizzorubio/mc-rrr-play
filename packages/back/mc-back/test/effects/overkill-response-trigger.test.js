@@ -26,6 +26,7 @@ describe('overkill defeat responses', () => {
             },
             name: 'overkill-response',
         });
+        match.isUniqueCard = () => false;
         const matchFactory = new MatchFactory(match);
         const dialogs = [];
         const dialogWaiters = new Map();

@@ -55,7 +55,7 @@ export class Deck extends Engine {
         this.cards = this.cards.concat(cards);
     }
     checkCycle() {
-        if (!this.cards.length) {
+        if (!this.cards.length && this.discardPile.length) {
             const cycleEffect = new CycleEffect({
                 selectedTarget: this,
                 match: this.match,
@@ -126,7 +126,7 @@ export class Deck extends Engine {
 
         await this.checkCycle();
 
-        if (cards.length < count) {
+        if (cards.length < count && this.cards.length) {
             cards = cards.concat(await this.draw(count - cards.length));
 
             await this.checkCycle();

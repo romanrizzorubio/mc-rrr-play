@@ -50,6 +50,7 @@ export class Thwart extends Activation {
     }
     getTriggersInit(params) {
         const triggers = super.getTriggersInit(params);
+        triggers.push(TRIGGER_THIS_THWARTS);
 
         if (this.effect?.ability?.isBasic) {
             triggers.push(TRIGGER_YOU_BASIC_THWART);

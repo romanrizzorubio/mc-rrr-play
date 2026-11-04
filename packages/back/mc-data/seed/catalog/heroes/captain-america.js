@@ -711,7 +711,7 @@ export default {
                 'card': shieldBlock
             },
             {
-                'count': 20,
+                'count': 2,
                 'card': shieldToss
             },
             {

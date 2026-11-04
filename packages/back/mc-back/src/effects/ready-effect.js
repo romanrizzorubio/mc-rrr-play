@@ -1,4 +1,7 @@
-import {TRIGGER_CHARACTER_WOULD_READY} from 'mc-shared';
+import {
+    TRIGGER_CHARACTER_READIED,
+    TRIGGER_CHARACTER_WOULD_READY,
+} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class ReadyEffect extends Effect {
@@ -31,11 +34,19 @@ export class ReadyEffect extends Effect {
     }
     checkTrigger(params) {
         return this.isActivationActive(params) &&
-            this.getSelectedTargets().some(target =>
-                target.exhausted && !this.isTargetCanceled(target));
+            (this.readiedTargets.length > 0 ||
+                this.getSelectedTargets().some(target =>
+                    target.exhausted && !this.isTargetCanceled(target)));
     }
     getTriggersWould(params) {
         return super.getTriggersWould(params).concat([TRIGGER_CHARACTER_WOULD_READY]);
+    }
+    getTriggersEnds(params) {
+        const triggerTypes = super.getTriggersEnds(params);
+
+        return this.readiedTargets.length > 0 ?
+            triggerTypes.concat([TRIGGER_CHARACTER_READIED]) :
+            triggerTypes;
     }
     isResolved() {
         return this.readiedTargets.length > 0;

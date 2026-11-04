@@ -263,6 +263,14 @@ export class EffectsFactory {
             effectDefinition: effect,
         };
     }
+    _parseRepeat(params) {
+        const {effect, ...rest} = params;
+
+        return {
+            ...rest,
+            effectDefinition: effect,
+        };
+    }
     _parseReplaceEffect(params) {
         const {replacement, ...rest} = params;
 

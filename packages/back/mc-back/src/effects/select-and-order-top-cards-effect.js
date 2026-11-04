@@ -94,7 +94,12 @@ export class SelectAndOrderTopCardsEffect extends Effect {
 
         deck.cards.unshift(...orderedCards);
         deck.markKnown(orderedCards);
-        deck.discardPile.push(discardedCard);
+        if (typeof deck.discard === 'function') {
+            await deck.discard(discardedCard);
+        } else {
+            deck.discardPile.push(discardedCard);
+            await deck.checkCycle?.();
+        }
         await deck.refresh();
 
         this.discardedCard = discardedCard;

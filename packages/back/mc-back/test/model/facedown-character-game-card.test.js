@@ -74,6 +74,7 @@ describe('Facedown character game cards', () => {
         assert.equal(serializedDrone.attack, 2);
         assert.equal(serializedDrone.hitPoints, 2);
         assert.equal(serializedDrone.life, 2);
+        assert.equal(serializedDrone.isMinion, true);
         assert.equal(serializedDrone.isFacedownCard, true);
         assert.equal(Object.hasOwn(serializedDrone, 'playable'), false);
         assert.equal(serializedText.includes(originalCard.name), false);
@@ -81,7 +82,7 @@ describe('Facedown character game cards', () => {
         assert.strictEqual(serializedDrone.id, drone.id);
     });
 
-    test('defeating a facedown Drone restores the same source card to its owner discard', async () => {
+    test('defeating a facedown Drone restores and cycles its source card when the deck is empty', async () => {
         const context = await createUltronTestContext();
         const {drone, player, sourceCard} = await putDroneInPlay(context);
         const originalPrintedCard = drone.facedownConversion.card;
@@ -99,8 +100,9 @@ describe('Facedown character game cards', () => {
         await drone.defeat();
 
         assert.deepEqual(player.gameZone.minions, []);
-        assert.deepEqual(player.deck.discardPile, [sourceCard]);
-        assert.strictEqual(player.deck.discardPile[0], drone);
+        assert.deepEqual(player.deck.cards, [sourceCard]);
+        assert.deepEqual(player.deck.discardPile, []);
+        assert.strictEqual(player.deck.cards[0], drone);
         assert.equal(drone.id, originalId);
         assert.strictEqual(drone.card, originalPrintedCard);
         assert.equal(drone.card.name, 'Secret Drone Source');

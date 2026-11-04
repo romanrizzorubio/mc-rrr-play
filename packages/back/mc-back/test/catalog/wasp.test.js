@@ -101,6 +101,7 @@ import {
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_SPEND,
     TRIGGER_YOU_ATTACK,
+    TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_YOU_DEFEAT_MINION,
     TRIGGER_YOU_DEFEAT_SIDE_SCHEME,
     TRIGGER_YOUR_HERO_GET_ATTACK,
@@ -123,10 +124,13 @@ import {Thwart} from '../../src/activations/thwart.js';
 import {AttackBasicAbility} from '../../src/abilities/basic/attack-basic-ability.js';
 import {ThwartBasicAbility} from '../../src/abilities/basic/thwart-basic-ability.js';
 import {YouDefeatSideSchemeTrigger} from '../../src/triggers/you-defeat-side-scheme-trigger.js';
+import {YourHeroAttackDefeatEnemyTrigger} from '../../src/triggers/your-hero-attack-defeat-enemy-trigger.js';
+import {CharacterDefeatedTrigger} from '../../src/triggers/character-defeated-trigger.js';
 import {DefeatEffect} from '../../src/effects/defeat-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
+import {FacedownCharacterGameCard} from '../../src/model/cards/facedown-character-game-card.js';
 import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
@@ -1781,6 +1785,133 @@ describe('Avispa', () => {
             1,
         );
         assert.equal(match.triggerCards[card.id], card);
+    });
+
+    test('Pequeña pero poderosa triggers after Wasp defeats a facedown Ultron minion', async () => {
+        const catalog = await loadCatalog();
+        const wasp = catalog.heroes.find(({_id}) => _id === 'wasp');
+        const rhinoScenario = catalog.scenarios.find(({_id}) => _id === 'rhino');
+        const ultron = catalog.scenarios.find(({_id}) => _id === 'ultron');
+        const match = new Match({
+            mc: {mcSocket: {send() {}}},
+            name: 'wasp-facedown-drone-defeat',
+        });
+        const matchFactory = new MatchFactory(match);
+        const superhero = matchFactory.createSuperhero({
+            ...wasp.config,
+            cards: [],
+            precon: [],
+            nemesis: [],
+        });
+        superhero.selectedSide = 1;
+        const player = match.createPlayer({
+            name: 'Avispa',
+            superhero,
+            initial: true,
+        });
+        await player.initPlayer();
+        await superhero.initTriggers({player});
+        player.gameZone.refresh = async () => {};
+        player.deck.refresh = async () => {};
+
+        const scenario = await matchFactory.createScenario({
+            ...rhinoScenario.config,
+            sets: [],
+            defaultSets: [],
+            cards: [],
+        });
+        match.addScenario(scenario);
+        match.persist = async () => {};
+        match.refresh = async () => {};
+        match.openDialog = async () => ({});
+        await scenario.initScenario([], false);
+        match.phase = 'players';
+        match.playing = true;
+        match.currentPlayer = player;
+        match.currentTurnPlayer = player;
+
+        const sourceCard = matchFactory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_EVENT,
+            params: {
+                cost: 1,
+                image: 'heroes/test/golpe-certero.png',
+                name: 'Golpe certero',
+                set: 'Test',
+            },
+        }, {owner: player});
+        const droneConfig = ultron.config.cards.find(({card}) =>
+            card.params.name === 'Dron avanzado de Ultrón').card;
+        const facedownDrone = FacedownCharacterGameCard.convert(
+            sourceCard,
+            matchFactory.cardsFactory.createCard(droneConfig),
+            'wasp-facedown-ultron-drone'
+        );
+        facedownDrone.controller = player;
+        facedownDrone.engaged = player;
+        player.gameZone.engage(facedownDrone);
+
+        const villain = match.villain;
+        const initialDamage = villain.damage;
+        const dialogs = [];
+        match.openDialog = async dialog => {
+            dialogs.push(dialog);
+            if (dialog.dialogType === DIALOG_USE_CARD) {
+                const responseCard = dialog.data.cards.find(({abilityNames}) =>
+                    abilityNames.includes('Pequeña pero poderosa'));
+
+                if (responseCard) {
+                    return {selected: {id: responseCard.id}};
+                }
+            }
+
+            return {};
+        };
+
+        const defeat = new DefeatEffect({
+            ability: {character: player},
+            match,
+            selectedTarget: facedownDrone,
+        });
+        await defeat.runEffect({match, player});
+
+        assert.ok(dialogs.some(({dialogType, data}) =>
+            dialogType === DIALOG_USE_CARD &&
+            data.cards.some(({abilityNames}) =>
+                abilityNames.includes('Pequeña pero poderosa'))));
+        assert.equal(villain.damage, initialDamage + 1);
+        assert.equal(defeat.defeatedCharacterState.isMinion, true);
+        assert.equal(defeat.defeatedCharacterState.isEnemy, true);
+        assert.equal(defeat.defeatedCharacterState.isCharacter, true);
+        assert.equal(defeat.defeatedCharacterState.type, CARD_TYPE_MINION);
+        assert.ok(defeat.getTriggersEnds().includes(TRIGGER_CHARACTER_DEFEATED));
+        assert.equal(sourceCard.card.type, CARD_TYPE_EVENT);
+
+        const characterDefeatedTrigger = new CharacterDefeatedTrigger({
+            card: superhero.currentSide,
+            characterType: CARD_TYPE_MINION,
+        });
+        assert.equal(await characterDefeatedTrigger.canTrigger({
+            effect: defeat,
+            player,
+        }), true);
+
+        const heroAttackDefeatTrigger = new YourHeroAttackDefeatEnemyTrigger({
+            card: {
+                controller: player,
+                id: 'wasp-test',
+                isEvent: false,
+                owner: player,
+            },
+        });
+        assert.equal(await heroAttackDefeatTrigger.canTrigger({
+            effect: {
+                activation: {character: player},
+                defeatedCharacterState: defeat.defeatedCharacterState,
+                isAttack: true,
+                selectedTarget: sourceCard,
+            },
+            player,
+        }), true);
     });
 
     test('enables distribution only while the Giant identity is active', async () => {

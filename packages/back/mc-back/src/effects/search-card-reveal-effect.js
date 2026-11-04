@@ -68,7 +68,9 @@ export class SearchCardAndRevealEffect extends Effect {
             throw new Error(`Unsupported card search place: ${place}`);
         }
 
-        remove(this, cards, player);
+        const deck = remove(this, cards, player);
+
+        return deck?.checkCycle?.();
     }
     search(place, player, params = {}) {
         const excludedNames = this.getExcludedNames(params);
@@ -110,13 +112,13 @@ export class SearchCardAndRevealEffect extends Effect {
         this.hasEnteredGame = false;
         this.hasResolvedCard = false;
         if (revealAll) {
-            const cards = places.reduce((ret, place) => {
+            const cards = [];
+            for (const place of places) {
                 const searched = this.search(place, player, params);
 
-                this.removeRevealed(place, searched, player);
-
-                return ret.concat(searched.map(card => ({card, place})));
-            }, []);
+                await this.removeRevealed(place, searched, player);
+                cards.push(...searched.map(card => ({card, place})));
+            }
 
             await this.promisesSequential(cards, async ({card, place}) => {
                 await this.reveal(card, params, place);
@@ -192,7 +194,7 @@ export class SearchCardAndRevealEffect extends Effect {
                     }
                 }
 
-                this.removeRevealed(place, [card], player);
+                await this.removeRevealed(place, [card], player);
                 await this.reveal(card, params, place);
             }
         }

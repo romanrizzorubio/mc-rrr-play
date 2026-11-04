@@ -680,6 +680,16 @@ export class Player extends Engine {
             card: this.superhero,
         });
     }
+    async readyAllCards() {
+        const readyEffect = new ReadyEffect({
+            target: TARGET_CARD,
+            selectedTarget: [this.superhero, ...this.gameZone.cards],
+            match: this.match,
+        });
+        await readyEffect.runEffect({
+            card: this.superhero,
+        });
+    }
     removeConfused(count = 0) {
         return this.superhero.removeConfused(count);
     }
@@ -862,9 +872,7 @@ export class Player extends Engine {
 
         this.superhero.flipped = false;
 
-        await this.ready();
-
-        await this.gameZone.readyCards();
+        await this.readyAllCards();
     }
     async spendResources(
         resources,
