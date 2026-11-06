@@ -73,6 +73,7 @@ export class SchemeCardComponent extends LitElement {
 
         return html`
             <mc-card
+                class="${card?.playable ? 'playable' : ''}"
                 .card="${card}"
                 .attached="${attached}"
                 .basicActivation="${basicActivation}"

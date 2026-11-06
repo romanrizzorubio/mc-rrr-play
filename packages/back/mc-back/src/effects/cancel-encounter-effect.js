@@ -15,7 +15,7 @@ export {
 
 export class CancelEncounterEffect extends Effect {
     constructor({
-        type = CARD_TYPE_TREACHERY,
+        type = CARD_TYPE_ANY,
         full = false,
     }) {
         super(arguments[0]);

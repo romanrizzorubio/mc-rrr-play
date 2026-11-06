@@ -4,6 +4,7 @@ import {
     EFFECT_ADD_TRAIT,
     EFFECT_CHAINED,
     EFFECT_MODIFY_MAX_ALLIES,
+    EFFECT_SET_CONTROLLER,
     EFFECT_SIMULTANEOUS,
     EFFECT_SURGE,
     EFFECT_TOUGH,
@@ -27,6 +28,7 @@ function isAutomaticConstantEffect(effect) {
         effectType === EFFECT_ADD_ADDITIONAL_COST ||
         effectType === EFFECT_ADD_KEYWORD ||
         effectType === EFFECT_ADD_TRAIT ||
+        effectType === EFFECT_SET_CONTROLLER ||
         effectType === EFFECT_SURGE ||
         effectType === EFFECT_TOUGH ||
         hasKeyword) {

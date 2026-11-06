@@ -595,8 +595,13 @@ describe('mc-match-page actions', () => {
             },
             player: 'Peter',
         });
+        const actionEvent = {
+            isEvent: true,
+            abilities: [{isAction: true}],
+        };
 
         assert.equal(page.canInteract, false);
+        assert.equal(page.canPlayCard(actionEvent), false);
 
         page.match.actionRequest = {
             requester: 'Carol',
@@ -604,9 +609,11 @@ describe('mc-match-page actions', () => {
             status: 'accepted',
         };
         assert.equal(page.canInteract, true);
+        assert.equal(page.canPlayCard(actionEvent), true);
 
         page.match.actionRequest.status = 'pending';
         assert.equal(page.canInteract, false);
+        assert.equal(page.canPlayCard(actionEvent), false);
     });
 
     test('table consultation disables both game actions and action requests', async () => {

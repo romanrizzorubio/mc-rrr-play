@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 
+describe('Transformador sónico', () => {
 test('Transformador sónico stuns the character that took Klaw attack damage', async () => {
     const {scenarios} = await loadCatalog();
     const klaw = scenarios.find(({_id}) => _id === 'klaw');
@@ -82,6 +83,7 @@ test('Transformador sónico can be discarded by spending energy, physical and me
                         resources,
                     }],
                     id: 'three-resource-generator',
+                    owner: player,
                     async resolveResourceAbility() {},
                 }],
                 hand: [],
@@ -131,4 +133,5 @@ test('Transformador sónico can be discarded by spending energy, physical and me
     assert.deepEqual(discardedCards, [attachment]);
     assert.deepEqual(encounterDiscardPile, [attachment]);
     assert.deepEqual(villain.attached, []);
+});
 });

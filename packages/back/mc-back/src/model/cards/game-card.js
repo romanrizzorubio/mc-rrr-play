@@ -47,6 +47,7 @@ export class GameCard extends Engine {
         this.tuckedCards = [];
         this.keywordModifiers = [];
         this.blankTextModifiers = [];
+        this.perilPlayer = undefined;
         this.isPlaying = false;
         this.printedTextBlank = false;
 
@@ -165,6 +166,9 @@ export class GameCard extends Engine {
             return this.currentSide.boost;
         }
         return this.card.boost;
+    }
+    get hasBoostAbility() {
+        return Boolean(this.boostAbility);
     }
     get canDefendBasic() {
         if (this.card.canDefendBasic) {
@@ -557,6 +561,9 @@ export class GameCard extends Engine {
     get overkill() {
         return this.getKeyword('overkill');
     }
+    get peril() {
+        return this.getKeyword('peril');
+    }
     get piercing() {
         return this.getKeyword('piercing');
     }
@@ -601,6 +608,12 @@ export class GameCard extends Engine {
     }
     get permanent() {
         return this.getKeyword('permanent');
+    }
+    get setupKeyword() {
+        return this.getKeyword('setup');
+    }
+    get hinder() {
+        return this.getKeyword('hinder');
     }
     get traits() {
         if (this.sides.length) {
@@ -802,7 +815,7 @@ export class GameCard extends Engine {
             card: this,
         });
     }
-    getAbilitiesType(type) {
+    getAbilitiesType(type, params = {}) {
         return this.promisesSequentialFilter(this.abilities, ability => {
             switch (type) {
                 case ABILITY_ACTION:
@@ -815,6 +828,7 @@ export class GameCard extends Engine {
             }
 
             return ability.canRun({
+                ...params,
                 player: this.owner,
             });
         });
@@ -1049,6 +1063,7 @@ export class GameCard extends Engine {
         this.counters = undefined;
         this.threat = 0;
         this.printedTextBlank = false;
+        this.perilPlayer = undefined;
         this.setExhausted(false);
         this.attachedTo = undefined;
         this.accelerationTokens = 0;

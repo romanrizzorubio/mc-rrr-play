@@ -3,17 +3,19 @@ import {
     ABILITY_FORCED_RESPONSE,
     ABILITY_WHEN_DEFEATED,
     ABILITY_WHEN_REVEALED,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_MINION,
     CARD_TYPE_SIDE_SCHEME_SCENARIO,
     CARD_TYPE_TREACHERY,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DO_IF,
     EFFECT_ENGAGE,
     EFFECT_FOR_EACH,
     EFFECT_HEAL,
+    EFFECT_RESOLVE_CARDS_IN_ORDER,
     EFFECT_SELECT_DISCARD_TO_FIND_CARD,
     EFFECT_SURGE,
     RESOURCE_ENERGY,
@@ -83,6 +85,18 @@ export default {
                                                     },
                                                 },
                                                 {
+                                                    type: EFFECT_RESOLVE_CARDS_IN_ORDER,
+                                                    params: {
+                                                        cards: 'effects.0.cards',
+                                                        effectDefinition: {
+                                                            type: EFFECT_COUNT_BOOST_ICONS,
+                                                            params: {
+                                                                card: 'card',
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                                {
                                                     type: EFFECT_FOR_EACH,
                                                     params: {
                                                         target: TARGET_ALL_PLAYERS,
@@ -93,8 +107,8 @@ export default {
                                                                 target: TARGET_PLAYER,
                                                                 resourceTypes: resourceIcons,
                                                                 paramsCalc: {
-                                                                    target: 'effects.0.cards',
-                                                                    formula: CALC_BOOST_ICONS,
+                                                                    target: 'effects.1.value',
+                                                                    formula: CALC_ALL,
                                                                 },
                                                                 upTo: false,
                                                                 title: 'Elige y descarta recursos de tu mano',
@@ -142,13 +156,19 @@ export default {
                                                     },
                                                 },
                                                 {
+                                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                                    params: {
+                                                        card: 'effects.0.cards.0',
+                                                    },
+                                                },
+                                                {
                                                     type: EFFECT_ASSIGN_DAMAGE,
                                                     params: {
                                                         damage: 0,
                                                         target: TARGET_ALL_CHARACTERS_YOU_CONTROL,
                                                         paramsCalc: {
-                                                            target: 'effects.0.cards',
-                                                            formula: CALC_BOOST_ICONS,
+                                                            target: 'effects.1.value',
+                                                            formula: CALC_ALL,
                                                         },
                                                     },
                                                 },
@@ -241,13 +261,25 @@ export default {
                                                     },
                                                 },
                                                 {
+                                                    type: EFFECT_RESOLVE_CARDS_IN_ORDER,
+                                                    params: {
+                                                        cards: 'effects.0.cards',
+                                                        effectDefinition: {
+                                                            type: EFFECT_COUNT_BOOST_ICONS,
+                                                            params: {
+                                                                card: 'card',
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                                {
                                                     type: EFFECT_ASSIGN_DAMAGE,
                                                     params: {
                                                         damage: 0,
                                                         target: TARGET_ALL_CHARACTERS_YOU_CONTROL,
                                                         paramsCalc: {
-                                                            target: 'effects.0.cards',
-                                                            formula: CALC_BOOST_ICONS,
+                                                            target: 'effects.1.value',
+                                                            formula: CALC_ALL,
                                                         },
                                                     },
                                                 },
@@ -286,13 +318,19 @@ export default {
                                                     },
                                                 },
                                                 {
+                                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                                    params: {
+                                                        card: 'effects.0.cards.0',
+                                                    },
+                                                },
+                                                {
                                                     type: EFFECT_HEAL,
                                                     params: {
                                                         damage: 0,
                                                         target: TARGET_VILLAIN,
                                                         paramsCalc: {
-                                                            target: 'effects.0.cards',
-                                                            formula: CALC_BOOST_ICONS,
+                                                            target: 'effects.1.value',
+                                                            formula: CALC_ALL,
                                                         },
                                                     },
                                                 },

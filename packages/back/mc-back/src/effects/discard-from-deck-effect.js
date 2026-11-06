@@ -75,10 +75,17 @@ export class DiscardFromDeckEffect extends Effect {
 
             this.cards = this.cards.concat(cards);
             if (cards.length > 0 && this.showDialog) {
+                const sourceCardName = this.ability?.card?.name;
+                const subtitle = [
+                    sourceCardName ?
+                        `Se descartan por ${sourceCardName}.` :
+                        undefined,
+                    'En el orden en que se descartarán, desde la carta superior.',
+                ].filter(Boolean).join(' ');
                 await this.openDialog({
                     dialogType: DIALOG_REVEAL_CARDS,
                     title: 'Cartas que se van a descartar',
-                    subtitle: 'En el orden en que se descartarán, desde la carta superior.',
+                    subtitle,
                     data: {
                         cards: cards.map(card => card.toObj({...params, player})),
                     },

@@ -1,5 +1,9 @@
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
-import {DIALOG_LIST} from 'mc-shared';
+import {
+    DIALOG_LIST,
+    PRIORITY_CONSTANT,
+    TRIGGER_INITIAL_PLAYER_CHANGED,
+} from 'mc-shared';
 import {PlayMatchEffect} from '../../effects/play-match-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition, path} from '../../engine/utils.js';
@@ -49,6 +53,8 @@ export class Match extends Engine {
         this.skipBoostDealtNotification = false;
         this.skipSurgeNotification = false;
         this.suppressedInformationalDialogIds = [];
+        this.chatMessages = [];
+        this.activePerilResolutions = [];
 
         this.lasting = [];
         this.limits = {};
@@ -134,6 +140,13 @@ export class Match extends Engine {
     }
     get initialPlayer() {
         return this.players.find(player => player.initial);
+    }
+    get isResolvingPeril() {
+        return this.activePerilResolutions.length > 0;
+    }
+    get chatEnabled() {
+        return !this.isResolvingPeril &&
+            new Set(this.players.map(player => player.userId).filter(Boolean)).size > 1;
     }
     get inPlayCards() {
         const cards = [];
@@ -533,11 +546,84 @@ export class Match extends Engine {
             );
         }
 
+        return this.setInitialPlayer(initialPlayer);
+    }
+    async setInitialPlayer(initialPlayer) {
+        if (!initialPlayer ||
+            initialPlayer.defeated ||
+            !this.players.includes(initialPlayer)) {
+            throw new TypeError('El jugador inicial debe ser un jugador activo de la partida.');
+        }
+
+        const previousInitialPlayer = this.initialPlayer;
         this.players.forEach(player => {
             player.initial = player === initialPlayer;
         });
 
+        if (previousInitialPlayer !== initialPlayer) {
+            await this.trigger(
+                PRIORITY_CONSTANT,
+                [TRIGGER_INITIAL_PLAYER_CHANGED],
+                {
+                    match: this,
+                    player: initialPlayer,
+                    initialPlayer,
+                    previousInitialPlayer,
+                }
+            );
+        }
+
         return initialPlayer;
+    }
+    beginPerilResolution(player, card) {
+        const resolution = {player, card};
+        const wasResolvingPeril = this.isResolvingPeril;
+
+        this.activePerilResolutions.push(resolution);
+        if (!wasResolvingPeril) {
+            this.publishChatState();
+        }
+
+        return resolution;
+    }
+    endPerilResolution(resolution) {
+        const index = this.activePerilResolutions.lastIndexOf(resolution);
+        if (index < 0) {
+            throw new Error('No se encontró la resolución de Peligro que debía finalizar.');
+        }
+
+        this.activePerilResolutions.splice(index, 1);
+        if (!this.isResolvingPeril) {
+            this.publishChatState();
+        }
+    }
+    isPlayerRestrictedByPeril(player) {
+        const resolvingPlayer = this.activePerilResolutions.at(-1)?.player;
+
+        return Boolean(resolvingPlayer && player !== resolvingPlayer);
+    }
+    getChatState() {
+        return {
+            enabled: this.chatEnabled,
+            messages: this.chatEnabled ? this.chatMessages.slice() : [],
+        };
+    }
+    publishChatState() {
+        if (this.mc?.mcSocket?.io) {
+            this.mc.mcSocket.send(
+                this.name,
+                EVENTS.CHAT.STATE,
+                this.getChatState()
+            );
+        }
+    }
+    addChatMessage(message) {
+        if (!this.chatEnabled) {
+            throw new Error('El chat está deshabilitado durante la resolución de Peligro.');
+        }
+
+        this.chatMessages.push(message);
+        this.chatMessages = this.chatMessages.slice(-100);
     }
     async initMatch(expert = false) {
         // Obligation
@@ -707,7 +793,9 @@ export class Match extends Engine {
     }
     async resolveSetupDecks() {
         await this.promisesSequential(this.players, async player => {
-            const setupCards = player.deck.cards.filter(card => card.currentSide.abilities.some(a => a.isSetup));
+            const setupCards = player.deck.cards.filter(card =>
+                card.setupKeyword ||
+                card.currentSide.abilities.some(ability => ability.isSetup));
             await this.promisesSequential(setupCards, async card => {
                 player.deck.removeCardFromDeck(card);
                 await player.deck.checkCycle?.();
@@ -721,13 +809,28 @@ export class Match extends Engine {
             });
         });
 
-        const scenarioSetupCards = this.scenario.deck.cards.filter(card => card.currentSide.abilities.some(a => a.isSetup));
+        const scenarioSetupCards = [...new Set([
+            ...this.scenario.deck.cards,
+            ...this.scenario.apart,
+        ])].filter(card =>
+            card.setupKeyword ||
+            card.currentSide.abilities.some(ability => ability.isSetup));
         await this.promisesSequential(scenarioSetupCards, async card => {
-            this.scenario.deck.removeCardFromDeck(card);
-            await this.scenario.deck.checkCycle?.();
+            if (this.scenario.deck.cards.includes(card)) {
+                this.scenario.deck.removeCardFromDeck(card);
+                await this.scenario.deck.checkCycle?.();
+            } else {
+                const index = this.scenario.apart.indexOf(card);
+                if (index >= 0) {
+                    this.scenario.apart.splice(index, 1);
+                }
+            }
+            const controller = card.isPlayerCard ?
+                this.initialPlayer :
+                this.scenario;
             const putPlayEffect = new PutPlayEffect({
                 card,
-                controller: this.scenario,
+                controller,
                 match: this,
             });
             await putPlayEffect.runEffect({player: this.initialPlayer, force: true});

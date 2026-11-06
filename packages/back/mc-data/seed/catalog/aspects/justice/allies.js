@@ -6,10 +6,14 @@ import {
     CARD_TYPE_ALLY,
     CARD_TYPE_MINION,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_FROM_DECK,
+    EFFECT_DO_IF,
     EFFECT_EXHAUST,
     EFFECT_MOVE_TO_HAND,
     EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_READY,
     EFFECT_REMOVE_THREAT,
     EFFECT_SEARCH_CARDS,
     PLACE_DECK,
@@ -18,7 +22,9 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
+    TARGET_ROUND,
     TARGET_SIDE_SCHEME,
     TARGET_SOURCE,
     TARGET_THIS,
@@ -45,7 +51,7 @@ export default [
             'params': {
                 'name': 'Daredevil',
                 'set': CLASSIFICATION_JUSTICE,
-                'image': 'aspect/justice/allies/j58.webp',
+                'image': 'aspect/justice/allies/01058.png',
                 'traits': [
                     TRAIT_DEFENDER
                 ],
@@ -88,7 +94,7 @@ export default [
             'params': {
                 'name': 'Jessica Jones',
                 'set': CLASSIFICATION_JUSTICE,
-                'image': 'aspect/justice/allies/j59.webp',
+                'image': 'aspect/justice/allies/01059.png',
                 'traits': [
                     TRAIT_DEFENDER
                 ],
@@ -283,6 +289,126 @@ export default [
                                 'params': {
                                     'target': TARGET_SIDE_SCHEME,
                                     'threat': [3, true]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-veloz',
+        'aspect': 'justice',
+        'order': 24,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Veloz',
+                'subtitle': 'Thomas Shepherd',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/allies/15010.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 4,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'thwart': 2,
+                'attack': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_THWARTS,
+                            'limit': {
+                                'count': 1,
+                                'target': TARGET_ROUND
+                            },
+                            'effect': {
+                                'type': EFFECT_READY,
+                                'params': {
+                                    'target': TARGET_THIS
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-wiccan',
+        'aspect': 'justice',
+        'order': 25,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Wiccan',
+                'subtitle': 'William Kaplan',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/allies/15011.png',
+                'traits': [
+                    TRAIT_AVENGER
+                ],
+                'unique': true,
+                'cost': 2,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'thwart': 1,
+                'attack': 1,
+                'thwartConsequential': 1,
+                'attackConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_THWARTS,
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DISCARD_FROM_DECK,
+                                            'params': {
+                                                'target': TARGET_ENCOUNTER_DECK,
+                                                'count': 1
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_COUNT_BOOST_ICONS,
+                                            'params': {
+                                                'card': 'effects.0.cards.0',
+                                                'showDialog': false
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.1.value': '>0'
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_DEAL_DAMAGE,
+                                                    'params': {
+                                                        'target': TARGET_ENEMY,
+                                                        'paramsCalc': {
+                                                            'target': 'effects.1.value'
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

@@ -104,7 +104,7 @@ describe('Ultron advanced drones', () => {
             2
         );
         assert.equal(
-            dialogTitles.filter(title => title === 'Esbirro puesto en juego').length,
+            dialogTitles.filter(title => title === 'Esbirro enfrentado a').length,
             2
         );
         assert.equal(maximumConcurrentDialogs, 1);

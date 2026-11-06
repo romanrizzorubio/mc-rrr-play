@@ -54,6 +54,7 @@ describe('play-card interrupt timing', () => {
                 return {generators: [resourceGenerator], hand: []};
             },
         };
+        resourceGenerator.owner = player;
         const match = {
             triggerCards: {},
             isUniqueCard: () => false,

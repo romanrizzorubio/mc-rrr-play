@@ -146,7 +146,7 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
     const dialogs = [];
     const resolutions = [];
     const match = {
-        amplificationIcons: 0,
+        amplificationIcons: 1,
         scenario: {deck: {knownCards: []}},
         async openDialog(dialog) {
             dialogs.push(dialog);
@@ -183,7 +183,7 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
 
     const totalBoost = await activation.resolveBoostCards({player: {}});
 
-    assert.equal(totalBoost, 3);
+    assert.equal(totalBoost, 5);
     assert.deepEqual(resolutions, [1, 2]);
     assert.deepEqual(dialogs.map(({dialogType}) => dialogType), [
         DIALOG_BOOST_DEALT,
@@ -193,18 +193,23 @@ test('multiple boost cards resolve left to right in the boost dialog', async () 
         'Aumento 1',
         'Aumento 2',
     ]);
-    assert.equal(dialogs[0].data.cards[0].card.boost, 1);
+    assert.equal(dialogs[0].data.cards[0].card.boost, 2);
+    assert.equal(dialogs[0].data.cards[0].appliedAmplificationIcons, 1);
     assert.equal(dialogs[0].data.cards[0].hasBoostAbility, true);
     assert.equal(dialogs[0].data.cards[1].card.isFacedownCard, true);
+    assert.equal(dialogs[0].data.cards[1].appliedAmplificationIcons, 0);
     assert.equal(dialogs[0].data.cards[1].card.canPeekFacedown, false);
-    assert.equal(dialogs[0].data.cumulativeBoost, 1);
+    assert.equal(dialogs[0].data.cumulativeBoost, 2);
     assert.deepEqual(dialogs[1].data.cards.map(card => card?.card.name || null), [
         'Aumento 1',
         'Aumento 2',
     ]);
-    assert.equal(dialogs[1].data.cards[1].card.boost, 2);
+    assert.equal(dialogs[1].data.cards[0].card.boost, 2);
+    assert.equal(dialogs[1].data.cards[0].appliedAmplificationIcons, 1);
+    assert.equal(dialogs[1].data.cards[1].card.boost, 3);
+    assert.equal(dialogs[1].data.cards[1].appliedAmplificationIcons, 1);
     assert.equal(dialogs[1].data.cards[1].hasBoostAbility, true);
-    assert.equal(dialogs[1].data.cumulativeBoost, 3);
+    assert.equal(dialogs[1].data.cumulativeBoost, 5);
 });
 
 test('a boost dealt by a boost ability resolves in the same activation', async () => {
@@ -295,6 +300,7 @@ test('boost abilities receive the current activation', async () => {
             },
         },
         enemyActivation: {},
+        match: {triggerCards: {}},
     });
 
     await effect.execute({});

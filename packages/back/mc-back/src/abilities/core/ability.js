@@ -1,4 +1,8 @@
 import {
+    ABILITY_FORCED_INTERRUPT,
+    ABILITY_FORCED_RESPONSE,
+    ABILITY_INTERRUPT,
+    ABILITY_RESPONSE,
     LABEL_ATTACK,
     LABEL_DEFENSE,
     LABEL_THWART,
@@ -195,8 +199,30 @@ export class Ability extends Engine {
     }
     async canRun(params, effect = this.effect) {
         const {player} = params;
+        const isForced = this.abilityType === ABILITY_FORCED_INTERRUPT ||
+            this.abilityType === ABILITY_FORCED_RESPONSE;
+        const isOptional = this.isAction ||
+            this.isResource ||
+            this.isOptionAbility ||
+            this.abilityType === ABILITY_INTERRUPT ||
+            this.abilityType === ABILITY_RESPONSE;
 
         if (this.card?.printedTextBlank) {
+            return false;
+        }
+
+        if (isOptional && !isForced &&
+            this.match?.isPlayerRestrictedByPeril?.(player)) {
+            return false;
+        }
+
+        const perilPlayer = this.card?.perilPlayer ??
+            this.card?.controller;
+        if (isOptional && !isForced &&
+            this.card?.peril &&
+            this.card.isInPlay &&
+            perilPlayer?.isPlayer &&
+            perilPlayer !== player) {
             return false;
         }
 

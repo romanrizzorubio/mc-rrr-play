@@ -1,5 +1,6 @@
 import {
     DIALOG_DISCARD_HAND,
+    DIALOG_LIST,
     DIALOG_PAY_COST,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
     PRIORITY_CONSTANT,
@@ -345,8 +346,9 @@ export class Player extends Engine {
             const nextPlayers = this.match.players.slice(startIndex + 1)
                 .concat(this.match.players.slice(0, startIndex));
             if (this.initial) {
-                this.initial = false;
-                nextPlayers.find(player => !player.defeated).initial = true;
+                await this.match.setInitialPlayer(
+                    nextPlayers.find(player => !player.defeated)
+                );
             }
             const scenarioZone = this.scenarioZone;
             for (const minion of this.minions.slice()) {
@@ -512,6 +514,17 @@ export class Player extends Engine {
         if (!payableResources.length) {
             throw new Error('La carta no contiene un recurso válido para el pago.');
         }
+        const sharedPaymentContributors =
+            source === 'generators' &&
+            selected.controller !== this ?
+                await this.confirmSharedResourceContributions(
+                    [selected],
+                    cardToPay
+                ) :
+                [];
+        if (sharedPaymentContributors === undefined) {
+            return undefined;
+        }
         const handCard = source === 'hand' ?
             this.hand.getCard(selected.id) :
             undefined;
@@ -526,12 +539,18 @@ export class Player extends Engine {
                 [handCard] :
                 [],
             resources: payableResources,
+            sharedPaymentContributors,
         };
     }
     getPrintedCard(cardId) {
         return this.gameZone.getPrintedCard(cardId);
     }
-    async getResourceGenerators(cardToPay, resourceType, excludedCardIds = new Set()) {
+    async getResourceGenerators(
+        cardToPay,
+        resourceType,
+        excludedCardIds = new Set(),
+        {includeShared = true} = {}
+    ) {
         const generators = [];
         const resourceTypes = normalizeResourceTypes(resourceType);
         const unrestricted = !resourceTypes.length ||
@@ -557,7 +576,109 @@ export class Player extends Engine {
             }
         });
 
+        if (includeShared && !this.match.isResolvingPeril) {
+            await this.promisesSequential(
+                this.match.players.filter(player =>
+                    player !== this && !player.defeated),
+                async provider => {
+                    const sharedGenerators =
+                        await provider.getResourceGenerators(
+                            cardToPay,
+                            resourceType,
+                            excludedCardIds,
+                            {includeShared: false}
+                        );
+                    await this.promisesSequential(
+                        sharedGenerators,
+                        async generator => {
+                            const canShare =
+                                await this.promisesSequentialSome(
+                                    generator.abilities,
+                                    async ability => {
+                                        if (!ability.isResource ||
+                                            !ability.canGenerateForOtherPlayers) {
+                                            return false;
+                                        }
+                                        const canGenerate = type =>
+                                            ability.canRun({
+                                                player: provider,
+                                                card: generator,
+                                                cardToPay,
+                                                ...(type ? {resourceType: type} : {}),
+                                            });
+
+                                        return unrestricted ?
+                                            canGenerate() :
+                                            this.promisesSequentialSome(
+                                                resourceTypes,
+                                                canGenerate
+                                            );
+                                    }
+                                );
+                            if (!canShare ||
+                                generators.some(card =>
+                                    card.id === generator.id)) {
+                                return;
+                            }
+                            generators.push(generator);
+                        }
+                    );
+                }
+            );
+        }
+
         return generators;
+    }
+    async confirmSharedResourceContributions(generators, cardToPay) {
+        const contributors = [];
+
+        for (const generator of generators) {
+            const controller = generator.controller;
+            if (controller === this) {
+                continue;
+            }
+            if (this.match.isResolvingPeril ||
+                !controller?.isPlayer ||
+                !await this.promisesSequentialSome(
+                    generator.abilities,
+                    ability => ability.isResource &&
+                        ability.canGenerateForOtherPlayers &&
+                        ability.canRun({
+                            player: controller,
+                            card: generator,
+                            cardToPay,
+                        })
+                )) {
+                return undefined;
+            }
+
+            const response = await this.match.openDialog({
+                dialogType: DIALOG_LIST,
+                targetPlayer: controller,
+                targetPlayerName: controller.name,
+                title: '¿Quieres ayudar a pagar?',
+                subtitle: `${this.name} solicita usar ${generator.name} para pagar${cardToPay?.name ?
+                    ` ${cardToPay.name}` :
+                    ' un coste'}.`,
+                hideOk: true,
+                hand: controller.hand.cards.map(card =>
+                    card.toObj({player: controller})),
+                data: {
+                    card: generator.toObj({player: controller}),
+                    options: [
+                        {id: 0, text: `Sí, contribuir con ${generator.name}`},
+                        {id: 1, text: 'No ayudar'},
+                    ],
+                },
+            });
+
+            if (response?.selected?.id !== 0) {
+                return undefined;
+            }
+            contributors.push(generator);
+        }
+
+        return contributors;
     }
     healDamage(damage) {
         return this.superhero.healDamage(damage);
@@ -921,12 +1042,42 @@ export class Player extends Engine {
                 new Set(paidResources || []).size < resources.length) {
                 throw new Error('El pago requiere recursos de tipos distintos.');
             }
+            const generators = paid.generators.map(card => {
+                const generator = cardsToPay.generators.find(candidate =>
+                    candidate.id === card.id);
+                if (!generator) {
+                    throw new Error(
+                        'El generador seleccionado ya no está disponible para el pago.'
+                    );
+                }
+
+                return generator;
+            });
+            const sharedPaymentContributors =
+                await this.confirmSharedResourceContributions(
+                    generators,
+                    cardToPay
+                );
+            if (sharedPaymentContributors === undefined) {
+                return undefined;
+            }
+            const hand = paid.hand.map(card => {
+                const handCard = this.hand.getCard(card.id);
+                if (!handCard) {
+                    throw new Error(
+                        'La carta seleccionada ya no está en la mano.'
+                    );
+                }
+
+                return handCard;
+            });
 
             return {
                 resources: paidResources,
                 fullyPaid: fullyPaid ?? !allowPartial,
-                hand: paid.hand.map(card => this.hand.getCard(card.id)),
-                generators: paid.generators.map(card => this.getCard(card.id)),
+                hand,
+                generators,
+                sharedPaymentContributors,
             };
         }
     }
@@ -1044,11 +1195,41 @@ export class Player extends Engine {
 
         if (response) {
             const {paid, resources} = response;
+            const generators = paid.generators.map(card => {
+                const generator = cardsToPay.generators.find(candidate =>
+                    candidate.id === card.id);
+                if (!generator) {
+                    throw new Error(
+                        'El generador seleccionado ya no está disponible para el pago.'
+                    );
+                }
+
+                return generator;
+            });
+            const sharedPaymentContributors =
+                await this.confirmSharedResourceContributions(
+                    generators,
+                    cardToPay
+                );
+            if (sharedPaymentContributors === undefined) {
+                return undefined;
+            }
+            const hand = paid.hand.map(card => {
+                const handCard = this.hand.getCard(card.id);
+                if (!handCard) {
+                    throw new Error(
+                        'La carta seleccionada ya no está en la mano.'
+                    );
+                }
+
+                return handCard;
+            });
 
             return {
                 resources: resourceType ? resources.filter(r => r === resourceType) : resources,
-                hand: paid.hand.map(card => this.hand.getCard(card.id)),
-                generators: paid.generators.map(card => this.getCard(card.id)),
+                hand,
+                generators,
+                sharedPaymentContributors,
             };
         }
     }

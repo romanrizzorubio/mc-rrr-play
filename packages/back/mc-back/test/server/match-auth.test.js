@@ -535,11 +535,8 @@ describe('authenticated match actions', () => {
 
     test('Socket handshake forwards Cookie and stores only verified identity', async () => {
         await withAuthFetch(async () => {
-            const match = {
-                name: 'game',
-                players: [{userId: 'account-1'}],
-                initialized: false,
-            };
+            const match = new Match({name: 'game'});
+            match.players = [{userId: 'account-1'}];
             const io = {
                 middleware: null,
                 connectionHandler: null,

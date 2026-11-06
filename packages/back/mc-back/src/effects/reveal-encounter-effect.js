@@ -44,6 +44,7 @@ export class RevealEncounterEffect extends Effect {
 
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
+        this.perilResolution = undefined;
     }
     resetResolutionData() {
         super.resetResolutionData();
@@ -105,7 +106,9 @@ export class RevealEncounterEffect extends Effect {
             });
         }
 
-        this.selectedTarget.endTriggers(true);
+        if (!this.selectedTarget.isInPlay) {
+            this.selectedTarget.endTriggers(true);
+        }
     }
     checkTrigger() {
         const {canceled} = this;
@@ -114,6 +117,16 @@ export class RevealEncounterEffect extends Effect {
     }
     async canRun(params) {
         return Boolean(this.getCard(params));
+    }
+    async runEffect(params) {
+        try {
+            await super.runEffect(params);
+        } finally {
+            if (this.perilResolution) {
+                this.match.endPerilResolution(this.perilResolution);
+                this.perilResolution = undefined;
+            }
+        }
     }
     getTriggersInit() {
         return super.getTriggersInit()
@@ -138,6 +151,19 @@ export class RevealEncounterEffect extends Effect {
         }
 
         this.selectedTarget = card;
+        if (card.peril) {
+            if (!params.player?.isPlayer) {
+                throw new TypeError(
+                    'Resolving a Peril card requires a resolving player.'
+                );
+            }
+            card.perilPlayer = params.player;
+            this.perilResolution = this.match.beginPerilResolution(
+                params.player,
+                card
+            );
+        }
+
         await super.prepare(params);
 
         const {selectedTarget} = this;

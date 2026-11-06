@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     PRIORITY_RESPONSE,
@@ -70,6 +70,7 @@ const createCard = ({id, isEvent, match, owner, onResolve}) => {
 const createMatchAndPlayer = () => {
     const match = {triggerCards: {}};
     const owner = {
+        isPlayer: true,
         deck: {
             discardPile: [],
             async refresh() {},
@@ -104,241 +105,245 @@ const createMatchAndPlayer = () => {
     return {match, owner};
 };
 
-test('a response event returned to hand is a new option in the same trigger window', async () => {
-    const {match, owner} = createMatchAndPlayer();
-    let plays = 0;
-    const event = createCard({
-        id: 'returned-response',
-        isEvent: true,
-        match,
-        onResolve: async () => {
-            plays++;
-            if (plays === 1) {
-                const returnEffect = new ReturnHandEffect({
-                    match,
-                    selectedTarget: event,
-                });
-                await returnEffect.execute();
-            }
-        },
-        owner,
-    });
-    owner.hand.addCard(event);
-
-    const originalTrigger =
-        event.triggers[TRIGGER_END_PLAY_CARD][PRIORITY_RESPONSE][0];
-    const usedTriggers = [];
-    const triggerEvent = owner.triggerEvent;
-    owner.triggerEvent = async (...args) => {
-        usedTriggers.push(args[0]);
-        return triggerEvent(...args);
-    };
-    const engine = new Engine();
-    engine.match = match;
-
-    await engine.trigger(
-        PRIORITY_RESPONSE,
-        [TRIGGER_END_PLAY_CARD],
-        {effect: {resolved: true}, player: owner}
-    );
-
-    assert.equal(plays, 2);
-    assert.equal(usedTriggers[0], originalTrigger);
-    assert.notEqual(usedTriggers[1], originalTrigger);
-    assert.equal(usedTriggers[1].card, event);
-    assert.equal(owner.hand.cards.includes(event), false);
-});
-
-test('a response returns the played event instead of the inherited context card', async () => {
-    const {match, owner} = createMatchAndPlayer();
-    const villain = {name: 'Rino'};
-    const event = {
-        endTriggers() {},
-        id: 'attack-event',
-        initTriggers() {},
-        isEvent: true,
-        isInPlay: false,
-        isPlayerCard: true,
-        owner,
-        async refresh() {},
-    };
-    const returnEffect = new ReturnHandEffect({
-        match,
-        target: TARGET_TRIGGERED_CARD,
-    });
-    const morfogenetica = new ResponseAbility({
-        effect: returnEffect,
-        hideDialog: true,
-        match,
-        name: 'Morfogenética',
-        trigger: TRIGGER_END_PLAY_CARD,
-    });
-    const hero = {
-        abilities: [morfogenetica],
-        id: 'ms-marvel',
-        owner,
-        triggers: {},
-        get currentSide() {
-            return this;
-        },
-    };
-    morfogenetica.card = hero;
-    morfogenetica.initTriggers(hero);
-    owner.isHero = true;
-    owner.isPlayer = true;
-    owner.deck.discard = async card => {
-        owner.deck.discardPile.push(card);
-    };
-    owner.match.isUniqueCard = () => false;
-    owner.hand.addCard(event);
-
-    const eventAbility = {
-        paymentCancelled: false,
-        async prepareToResolve() {
-            return {canRun: true, preselectedTarget: false};
-        },
-        async resolveAbility() {},
-    };
-    const playEffect = new PlayCardEffect({
-        ability: eventAbility,
-        card: event,
-        match,
-    });
-    playEffect.getCost = async () => 0;
-
-    await playEffect.runEffect({
-        card: villain,
-        player: owner,
-        triggeredCard: villain,
-    });
-
-    assert.deepEqual(owner.hand.cards, [event]);
-    assert.deepEqual(owner.deck.discardPile, []);
-});
-
-test('a response event added to hand during a trigger window becomes available immediately', async () => {
-    const {match, owner} = createMatchAndPlayer();
-    let plays = 0;
-    const drawnEvent = createCard({
-        id: 'drawn-response',
-        isEvent: true,
-        match,
-        onResolve: async () => {
-            plays++;
-        },
-        owner,
-    });
-    const drawResponse = createCard({
-        id: 'draw-response',
-        isEvent: false,
-        match,
-        onResolve: async () => {
-            const addHandEffect = new AddHandEffect({match});
-            await addHandEffect.execute({
-                cards: [drawnEvent],
-                player: owner,
-            });
-        },
-        owner,
-    });
-    drawResponse.abilities[0].initTriggers(drawResponse);
-
-    const engine = new Engine();
-    engine.match = match;
-
-    await engine.trigger(
-        PRIORITY_RESPONSE,
-        [TRIGGER_END_PLAY_CARD],
-        {effect: {resolved: true}, player: owner}
-    );
-
-    assert.equal(plays, 1);
-    assert.equal(owner.hand.cards.includes(drawnEvent), false);
-});
-
-test('an arrow-paid context does not leak into nested response windows', async () => {
-    const {match, owner} = createMatchAndPlayer();
-    let responses = 0;
-    const superhero = {
-        exhausted: false,
-        exhaust() {
-            this.exhausted = true;
-        },
-        async refresh() {},
-    };
-    owner.superhero = superhero;
-
-    const morphogenetics = new ResponseAbility({
-        arrow: new Arrow({
-            cost: new ExhaustEffect({
-                match,
-                target: TARGET_YOUR_SUPERHERO,
-            }),
+describe('new-hand event triggers', () => {
+    test('a response event returned to hand is a new option in the same trigger window', async () => {
+        const {match, owner} = createMatchAndPlayer();
+        let plays = 0;
+        const event = createCard({
+            id: 'returned-response',
+            isEvent: true,
             match,
-        }),
-        effect: {
-            resolved: false,
-            async canRun() {
-                return true;
-            },
-            async runEffect() {
-                this.resolved = true;
-                responses++;
-            },
-        },
-        hideDialog: true,
-        match,
-        name: 'Morfogenética',
-        trigger: TRIGGER_END_PLAY_CARD,
-    });
-    const hero = {
-        abilities: [morphogenetics],
-        id: 'ms-marvel',
-        owner,
-        triggers: {},
-        get currentSide() {
-            return this;
-        },
-    };
-    morphogenetics.card = hero;
-    morphogenetics.initTriggers(hero);
-
-    const events = [
-        {isEvent: true, name: 'Evento de ataque'},
-        {isEvent: true, name: 'A por ellos'},
-    ];
-    const engine = new Engine();
-    engine.match = match;
-    const eventAbility = new Ability({
-        effect: {
-            resolved: false,
-            async canRun() {
-                return true;
-            },
-            async runEffect(params) {
-                for (const event of events) {
-                    await engine.trigger(
-                        PRIORITY_RESPONSE,
-                        [TRIGGER_END_PLAY_CARD],
-                        {
-                            ...params,
-                            card: event,
-                            effect: {card: event, resolved: true},
-                        }
-                    );
+            onResolve: async () => {
+                plays++;
+                if (plays === 1) {
+                    const returnEffect = new ReturnHandEffect({
+                        match,
+                        selectedTarget: event,
+                    });
+                    await returnEffect.execute();
                 }
-                this.resolved = true;
             },
-        },
-        match,
+            owner,
+        });
+        owner.hand.addCard(event);
+
+        const originalTrigger =
+            event.triggers[TRIGGER_END_PLAY_CARD][PRIORITY_RESPONSE][0];
+        const usedTriggers = [];
+        const triggerEvent = owner.triggerEvent;
+        owner.triggerEvent = async (...args) => {
+            usedTriggers.push(args[0]);
+            return triggerEvent(...args);
+        };
+        const engine = new Engine();
+        engine.match = match;
+
+        await engine.trigger(
+            PRIORITY_RESPONSE,
+            [TRIGGER_END_PLAY_CARD],
+            {effect: {resolved: true}, player: owner}
+        );
+
+        assert.equal(plays, 2);
+        assert.equal(usedTriggers[0], originalTrigger);
+        assert.notEqual(usedTriggers[1], originalTrigger);
+        assert.equal(usedTriggers[1].card, event);
+        assert.equal(owner.hand.cards.includes(event), false);
     });
 
-    await eventAbility.resolveAbility({
-        arrowPaid: true,
-        card: events[0],
-        player: owner,
+    test('a response returns the played event instead of the inherited context card', async () => {
+        const {match, owner} = createMatchAndPlayer();
+        const villain = {name: 'Rino'};
+        const event = {
+            endTriggers() {},
+            id: 'attack-event',
+            initTriggers() {},
+            isEvent: true,
+            isInPlay: false,
+            isPlayerCard: true,
+            owner,
+            async refresh() {},
+        };
+        const returnEffect = new ReturnHandEffect({
+            match,
+            target: TARGET_TRIGGERED_CARD,
+        });
+        const morfogenetica = new ResponseAbility({
+            effect: returnEffect,
+            hideDialog: true,
+            match,
+            name: 'Morfogenética',
+            trigger: TRIGGER_END_PLAY_CARD,
+        });
+        const hero = {
+            abilities: [morfogenetica],
+            id: 'ms-marvel',
+            owner,
+            triggers: {},
+            get currentSide() {
+                return this;
+            },
+        };
+        morfogenetica.card = hero;
+        morfogenetica.initTriggers(hero);
+        owner.isHero = true;
+        owner.isPlayer = true;
+        owner.deck.discard = async card => {
+            owner.deck.discardPile.push(card);
+        };
+        owner.match.isUniqueCard = () => false;
+        owner.hand.addCard(event);
+
+        const eventAbility = {
+            paymentCancelled: false,
+            async prepareToResolve() {
+                return {canRun: true, preselectedTarget: false};
+            },
+            async resolveAbility() {},
+        };
+        const playEffect = new PlayCardEffect({
+            ability: eventAbility,
+            card: event,
+            match,
+        });
+        playEffect.getCost = async () => 0;
+
+        await playEffect.runEffect({
+            card: villain,
+            player: owner,
+            triggeredCard: villain,
+        });
+
+        assert.deepEqual(owner.hand.cards, [event]);
+        assert.deepEqual(owner.deck.discardPile, []);
     });
 
-    assert.equal(responses, 1);
-    assert.equal(superhero.exhausted, true);
+    test('a response event added to hand during a trigger window becomes available immediately', async () => {
+        const {match, owner} = createMatchAndPlayer();
+        let plays = 0;
+        const drawnEvent = createCard({
+            id: 'drawn-response',
+            isEvent: true,
+            match,
+            onResolve: async () => {
+                plays++;
+            },
+            owner,
+        });
+        const drawResponse = createCard({
+            id: 'draw-response',
+            isEvent: false,
+            match,
+            onResolve: async () => {
+                const addHandEffect = new AddHandEffect({match});
+                await addHandEffect.execute({
+                    cards: [drawnEvent],
+                    player: owner,
+                });
+            },
+            owner,
+        });
+        drawResponse.abilities[0].initTriggers(drawResponse);
+
+        const engine = new Engine();
+        engine.match = match;
+
+        await engine.trigger(
+            PRIORITY_RESPONSE,
+            [TRIGGER_END_PLAY_CARD],
+            {effect: {resolved: true}, player: owner}
+        );
+
+        assert.equal(plays, 1);
+        assert.equal(owner.hand.cards.includes(drawnEvent), false);
+    });
+
+    test('an arrow-paid context does not leak into nested response windows', async () => {
+        const {match, owner} = createMatchAndPlayer();
+        let responses = 0;
+        const superhero = {
+            controller: owner,
+            exhausted: false,
+            exhaust() {
+                this.exhausted = true;
+            },
+            async refresh() {},
+        };
+        owner.superhero = superhero;
+
+        const morphogenetics = new ResponseAbility({
+            arrow: new Arrow({
+                cost: new ExhaustEffect({
+                    match,
+                    target: TARGET_YOUR_SUPERHERO,
+                }),
+                match,
+            }),
+            effect: {
+                resolved: false,
+                async canRun() {
+                    return true;
+                },
+                async runEffect() {
+                    this.resolved = true;
+                    responses++;
+                },
+            },
+            hideDialog: true,
+            match,
+            name: 'Morfogenética',
+            trigger: TRIGGER_END_PLAY_CARD,
+        });
+        const hero = {
+            abilities: [morphogenetics],
+            controller: owner,
+            id: 'ms-marvel',
+            owner,
+            triggers: {},
+            get currentSide() {
+                return this;
+            },
+        };
+        morphogenetics.card = hero;
+        morphogenetics.initTriggers(hero);
+
+        const events = [
+            {isEvent: true, name: 'Evento de ataque'},
+            {isEvent: true, name: 'A por ellos'},
+        ];
+        const engine = new Engine();
+        engine.match = match;
+        const eventAbility = new Ability({
+            effect: {
+                resolved: false,
+                async canRun() {
+                    return true;
+                },
+                async runEffect(params) {
+                    for (const event of events) {
+                        await engine.trigger(
+                            PRIORITY_RESPONSE,
+                            [TRIGGER_END_PLAY_CARD],
+                            {
+                                ...params,
+                                card: event,
+                                effect: {card: event, resolved: true},
+                            }
+                        );
+                    }
+                    this.resolved = true;
+                },
+            },
+            match,
+        });
+
+        await eventAbility.resolveAbility({
+            arrowPaid: true,
+            card: events[0],
+            player: owner,
+        });
+
+        assert.equal(responses, 1);
+        assert.equal(superhero.exhausted, true);
+    });
 });

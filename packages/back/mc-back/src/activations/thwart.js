@@ -14,7 +14,7 @@ export class Thwart extends Activation {
         return !character.isConfused;
     }
     filterTarget(card, params) {
-        const {player} = params;
+        const {effect, player} = params;
 
         if (card.isScheme && card.isCard) {
             if (typeof card.canThwart !== 'function') {
@@ -22,7 +22,8 @@ export class Thwart extends Activation {
             }
 
             return card.canThwart(player, {
-                ignoreCrisis: this.effect?.ignoreCrisis,
+                ignoreCrisis: effect?.ignoreCrisis ??
+                    this.effect?.ignoreCrisis,
             });
         }
 

@@ -6,6 +6,7 @@ import {
     ABILITY_ALTEREGO_RESPONSE,
     ABILITY_BOOST,
     ABILITY_CONSTANT,
+    ABILITY_FIRST_PLAYER_ACTION,
     ABILITY_FORCED_INTERRUPT,
     ABILITY_FORCED_RESPONSE,
     ABILITY_HERO_ACTION,
@@ -26,6 +27,7 @@ import {
 } from 'mc-shared';
 import {ActionAbility} from '../../abilities/actions/action-ability.js';
 import {AlteregoActionAbility} from '../../abilities/actions/alterego-action-ability.js';
+import {FirstPlayerActionAbility} from '../../abilities/actions/first-player-action-ability.js';
 import {HeroActionAbility} from '../../abilities/actions/hero-action-ability.js';
 import {ForcedInterruptAbility} from '../../abilities/interrupt/forced-interrupt-ability.js';
 import {HeroInterruptAbility} from '../../abilities/interrupt/hero-interrupt-ability.js';
@@ -59,6 +61,7 @@ export const ABILITY_MAP = {
     [ABILITY_ALTEREGO_RESPONSE]: AlteregoResponseAbility,
     [ABILITY_BOOST]: BoostAbility,
     [ABILITY_CONSTANT]: ConstantAbility,
+    [ABILITY_FIRST_PLAYER_ACTION]: FirstPlayerActionAbility,
     [ABILITY_FORCED_INTERRUPT]: ForcedInterruptAbility,
     [ABILITY_FORCED_RESPONSE]: ForcedResponseAbility,
     [ABILITY_HERO_ACTION]: HeroActionAbility,

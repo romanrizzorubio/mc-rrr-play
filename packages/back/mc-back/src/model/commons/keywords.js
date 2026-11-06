@@ -28,7 +28,9 @@ export class Keywords extends Engine {
     constructor(params = {}) {
         const {
             guard = false,
+            peril = false,
             permanent = false,
+            setup = false,
             toughness = false,
             quickStrike = false,
             surge = false,
@@ -38,6 +40,7 @@ export class Keywords extends Engine {
             ranged = false,
             restricted = false,
             incite = 0,
+            hinder = 0,
             retaliate = 0,
             teamUp,
             uses,
@@ -56,7 +59,9 @@ export class Keywords extends Engine {
 
         this.match = match;
         this.guard = guard;
+        this.peril = peril;
         this.permanent = permanent;
+        this.setup = setup;
         this.toughness = toughness;
         this.quickStrike = quickStrike;
         this.surge = surge;
@@ -66,6 +71,7 @@ export class Keywords extends Engine {
         this.ranged = ranged;
         this.restricted = restricted;
         this._incite = incite;
+        this._hinder = hinder;
         this._retaliate = retaliate;
         this.teamUp = teamUp ? [...teamUp] : undefined;
         this._uses = uses;
@@ -76,6 +82,9 @@ export class Keywords extends Engine {
     }
     get incite() {
         return this.getNumericValue(this._incite);
+    }
+    get hinder() {
+        return this.getNumericValue(this._hinder);
     }
     get retaliate() {
         return this.getNumericValue(this._retaliate);

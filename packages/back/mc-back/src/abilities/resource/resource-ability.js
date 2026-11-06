@@ -8,11 +8,18 @@ export class ResourceAbility extends Ability {
 // ResourceAbility
         resource,
         target = TARGET_ANY,
+        canGenerateForOtherPlayers = false,
     }) {
         super(arguments[0]);
 
         this.resource = resource;
         this.target = target;
+        this.canGenerateForOtherPlayers = canGenerateForOtherPlayers;
+        if (typeof canGenerateForOtherPlayers !== 'boolean') {
+            throw new TypeError(
+                'ResourceAbility canGenerateForOtherPlayers must be a boolean.'
+            );
+        }
 
         this.isResource = true;
     }
@@ -50,7 +57,12 @@ export class ResourceAbility extends Ability {
         return this.resource ? [this.resource] : [];
     }
     toObj() {
-        const {resource: configuredResource, target, type} = this;
+        const {
+            resource: configuredResource,
+            target,
+            type,
+            canGenerateForOtherPlayers,
+        } = this;
         const hasDynamicResources = this.effect &&
             typeof this.effect.getGeneratedResources === 'function';
         const resources = this.getGeneratedResources(arguments[0]);
@@ -65,6 +77,7 @@ export class ResourceAbility extends Ability {
             resource,
             resources: hasDynamicResources ? resources : undefined,
             type,
+            canGenerateForOtherPlayers,
         };
     }
 }

@@ -327,7 +327,8 @@ test('Black Widow bracelets generate resources only for Preparation cards', asyn
     const blackWidow = catalog.heroes.find(({_id}) => _id === 'black-widow');
     const braceletConfig = blackWidow.config.cards.find(({card}) =>
         card.params.name === 'Brazaletes de la Viuda Negra').card;
-    const matchFactory = new MatchFactory({triggerCards: {}, limits: {}});
+    const match = {limits: {}, players: [], triggerCards: {}};
+    const matchFactory = new MatchFactory(match);
     const player = Object.create(Player.prototype);
     player.isPlayer = true;
     player.superhero = {
@@ -339,6 +340,7 @@ test('Black Widow bracelets generate resources only for Preparation cards', asyn
             },
         },
     };
+    player.superhero.match = match;
     player.gameZone = {cards: []};
 
     const bracelets = matchFactory.cardsFactory.createGameCardFromConfig(
@@ -346,6 +348,7 @@ test('Black Widow bracelets generate resources only for Preparation cards', asyn
         {owner: player}
     );
     bracelets.controller = player;
+    match.players.push(player);
     player.gameZone.cards.push(bracelets);
 
     assert.deepEqual(
@@ -459,11 +462,11 @@ test('Black Widow obligation discards the highest-cost preparation card or cause
     assert.equal(exhaustOption.arrow.cost.target, TARGET_ALTEREGO);
     assert.equal(exhaustOption.effect.effectType, EFFECT_REMOVE_CARD);
     assert.equal(await exhaustOption.canRun({
-        player: {isAlterEgo: false},
+        player: {isAlterEgo: false, isPlayer: true},
         card: obligation,
     }), false);
     assert.equal(await exhaustOption.canRun({
-        player: {isAlterEgo: true},
+        player: {isAlterEgo: true, isPlayer: true},
         card: obligation,
     }), true);
 

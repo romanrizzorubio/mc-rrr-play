@@ -21,6 +21,42 @@ export class DoIfHasPaidEffect extends DoIfEffect {
             ...this.resources,
         ];
     }
+    async getRequiredPaymentResources(params) {
+        if (!this.effect || !this.effectNot || !this.resources.length) {
+            return [];
+        }
+
+        if (!await this.effect.canRun(params) ||
+            await this.effectNot.canRun(params)) {
+            return [];
+        }
+
+        return this.resources.slice();
+    }
+    async selectTarget(params) {
+        if (!params.playCardEffect ||
+            !this.effect ||
+            this.effect.target !== this.target ||
+            !(await this.getRequiredPaymentResources(params)).length) {
+            return super.selectTarget(params);
+        }
+
+        return this.effect.selectTarget({
+            ...params,
+            effect: this.effect,
+        });
+    }
+    async canRun(params) {
+        if (await super.canRun(params)) {
+            return true;
+        }
+
+        if (!params.playCardEffect) {
+            return false;
+        }
+
+        return (await this.getRequiredPaymentResources(params)).length > 0;
+    }
     getExclusivePaymentResourcePreferences() {
         return [
             ...super.getExclusivePaymentResourcePreferences(),
@@ -32,17 +68,24 @@ export class DoIfHasPaidEffect extends DoIfEffect {
     checkCondition(params) {
         const {playCardEffect} = params;
 
-        const paid = playCardEffect.resourcesPaid.slice();
+        const paid = playCardEffect?.resourcesPaid ?? [];
+        if (!Array.isArray(paid)) {
+            throw new TypeError(
+                'DoIfHasPaidEffect requires an array of paid resources.'
+            );
+        }
+        const paidResources = paid.slice();
         if (this.exclusive &&
-            (!paid.length ||
-                paid.some(resource => !this.resources.includes(resource)))) {
+            (!paidResources.length ||
+                paidResources.some(resource =>
+                    !this.resources.includes(resource)))) {
             return false;
         }
 
         const needed = this.resources.slice();
 
-        while (paid.length) {
-            const resourcePaid = paid.shift();
+        while (paidResources.length) {
+            const resourcePaid = paidResources.shift();
 
             const index = needed.indexOf(resourcePaid);
             if (index > -1) {

@@ -8,11 +8,27 @@ export default css`
     gap: 16px;
   }
 
+  .scenario-board,
+  .scenario-zone-cards {
+    display: grid;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .scenario-board {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    width: 100%;
+  }
+
+  .scenario-board.has-environment-area {
+    grid-template-columns: auto repeat(3, minmax(0, 1fr));
+  }
+
   .schemes {
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex: 1 1 auto;
     min-width: 0;
   }
 
@@ -34,10 +50,12 @@ export default css`
   }
 
   .scenario-zone-cards {
-    display: flex;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     flex: 1 1 auto;
-    align-items: flex-start;
-    gap: 8px;
+  }
+
+  .scenario-zone-cards:not(.has-environment-area) {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .zone-players {
@@ -48,20 +66,35 @@ export default css`
 
   .environments {
     display: flex;
-    flex: 0 0 auto;
-    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    width: 100%;
     gap: 8px;
+  }
+
+  .environments mc-card-list {
+    width: 100%;
+  }
+
+  .environment-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    width: 100%;
   }
 
   .main-scheme-decks,
   .extra-decks {
     display: flex;
+    justify-content: center;
     align-items: flex-start;
+    min-width: 0;
+    width: 100%;
     gap: 8px;
   }
 
-  .main-scheme-decks {
-    justify-content: center;
-    width: 100%;
+  mc-villain-card {
+    justify-self: center;
   }
 `;

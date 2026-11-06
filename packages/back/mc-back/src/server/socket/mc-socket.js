@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import {EVENTS} from 'mc-endpoints';
 import {AuthServiceClient} from '../../utils/auth-service-client.js';
 import {findPlayerSeat} from '../../utils/player-seat.js';
@@ -51,6 +52,9 @@ export class McSocket {
                 this.handleClientEvent(socket, endpoint, params, acknowledge);
             });
         });
+        socket.on(EVENTS.CHAT.SEND, (params, acknowledge) => {
+            this.handleChatMessage(socket, params, acknowledge);
+        });
     }
     async joinMatch(socket, params) {
         const requestedMatch = params?.match;
@@ -80,6 +84,7 @@ export class McSocket {
             const matchState = await match.toObjWithPlayableHands();
             socket.emit(EVENTS.MATCH.REFRESH, matchState);
         }
+        socket.emit(EVENTS.CHAT.STATE, match.getChatState());
         this.dialogSocket.resendPending(matchName, socket);
 
         return {ok: true};
@@ -177,6 +182,48 @@ export class McSocket {
             } else {
                 this.acknowledge(acknowledge, {ok: true});
             }
+        } catch (error) {
+            this.acknowledge(acknowledge, {
+                ok: false,
+                error: error.message,
+            });
+        }
+    }
+    handleChatMessage(socket, params, acknowledge) {
+        try {
+            const matchName = params?.match;
+            const roomName = matchName && this.roomName(matchName);
+            if (!matchName || !socket.rooms.has(roomName)) {
+                throw new Error('El socket no está unido a esa partida.');
+            }
+
+            const match = this.mc.getMatch(matchName);
+            const user = socket.data.user;
+            if (!match || !user?.id ||
+                !match.players.some(player => player.userId === user.id)) {
+                throw new Error('No tienes un jugador en esta partida.');
+            }
+            if (!match.chatEnabled) {
+                throw new Error('El chat está deshabilitado durante la resolución de Peligro.');
+            }
+
+            const text = typeof params.message === 'string' ?
+                params.message.trim() :
+                '';
+            if (!text || text.length > 500) {
+                throw new Error('El mensaje debe tener entre 1 y 500 caracteres.');
+            }
+
+            const message = {
+                id: randomUUID(),
+                userId: user.id,
+                userName: user.name,
+                text,
+                sentAt: new Date().toISOString(),
+            };
+            match.addChatMessage(message);
+            this.send(matchName, EVENTS.CHAT.MESSAGE, message);
+            this.acknowledge(acknowledge, {ok: true});
         } catch (error) {
             this.acknowledge(acknowledge, {
                 ok: false,

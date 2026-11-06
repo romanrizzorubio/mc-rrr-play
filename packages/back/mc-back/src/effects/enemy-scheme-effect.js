@@ -18,6 +18,12 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
         });
 
         this.schemeModifierCalc = params.schemeModifierCalc;
+        this.schemeModifier = params.schemeModifier ?? 0;
+        if (!Number.isFinite(this.schemeModifier)) {
+            throw new TypeError(
+                'EnemySchemeEffect schemeModifier must be a finite number.'
+            );
+        }
         this.modifyScheme = 0;
         this._schemeModifierResolved = false;
         this.preventThreat = 0;
@@ -130,7 +136,9 @@ export class EnemySchemeEffect extends EnemyActivationEffect {
             this._schemeModifierResolved = true;
         }
 
-        return await character.getSchemeValue(schemeParams) + this.modifyScheme;
+        return await character.getSchemeValue(schemeParams) +
+            this.modifyScheme +
+            this.schemeModifier;
     }
     async getActivationCharacterData(params) {
         const schemeParams = this.resolveParams(params);

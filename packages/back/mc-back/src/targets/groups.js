@@ -6,6 +6,7 @@ import {
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ALL_HEROES,
     TARGET_ALL_HEROES_ALLIES,
+    TARGET_ALL_SUPERHEROES,
     TARGET_ALL_MINIONS,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_ALL_PLAYERS,
@@ -14,6 +15,7 @@ import {
     TARGET_ENVIRONMENT,
     TARGET_CHARACTER,
     TARGET_ENEMY,
+    TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
     TARGET_MINION,
     TARGET_PLAYER_LOWEST_HERO_LIFE,
@@ -74,8 +76,31 @@ export const groupTargets = {
             ) :
             characters;
     },
+    [TARGET_FRIENDLY_CHARACTER]: ({
+        match,
+        condition,
+        playCardEffect,
+        player,
+    }) => {
+        const characters = getFriendsFor(match, player);
+
+        return condition ?
+            filterCharacterTargets(
+                characters,
+                condition,
+                Boolean(playCardEffect)
+            ) :
+            characters;
+    },
     [TARGET_ALL_HEROES]: ({match, player, condition}) =>
         filterTargetsByCondition(getHeroesFor(match, player), condition),
+    [TARGET_ALL_SUPERHEROES]: ({match, player, condition}) =>
+        filterTargetsByCondition(
+            getPlayersFor(match, player)
+                .map(zonePlayer => zonePlayer.superhero)
+                .filter(Boolean),
+            condition
+        ),
     [TARGET_ALL_HEROES_ALLIES]: ({match, player, condition}) => {
         const heroes = new Set(getHeroesFor(match, player));
         const characters = getPlayersFor(match, player).reduce((characters, zonePlayer) => {

@@ -10,6 +10,7 @@ export const CALC_IF = 'if';
 export const CALC_HALF_ROUNDED_DOWN = 'half-rounded-down';
 export const CALC_MULTIPLY_2 = 'multiply-2';
 export const CALC_PRINTED_RESOURCES = 'printed-resources';
+export const CALC_RECOVERY = 'recovery';
 export const CALC_RESOURCES = 'resources';
 export const CALC_SUM = 'sum';
 export const CALC_STAGE = 'stage';

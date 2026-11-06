@@ -38,6 +38,8 @@ const renderTemplate = value => {
 
 const getBoostIconCount = markup =>
     (markup.match(/<mc-icon icon="b"><\/mc-icon>/g) || []).length;
+const getAmplificationIconCount = markup =>
+    (markup.match(/<mc-icon icon="F"><\/mc-icon>/g) || []).length;
 
 test('boost dealt dialog renders boost icons and accumulated icons instead of counts', () => {
     const dialog = Object.create(McBoostDealtDialog.prototype);
@@ -58,9 +60,38 @@ test('boost dealt dialog renders boost icons and accumulated icons instead of co
     };
     const markup = renderTemplate(dialog.renderContent());
 
-    assert.match(markup, /Iconos de aumento:/);
-    assert.match(markup, /Iconos de aumento acumulados:/);
+    assert.match(markup, /Iconos de aumento/);
+    assert.match(markup, /Iconos de aumento acumulados/);
     assert.equal(getBoostIconCount(markup), 5);
+});
+
+test('boost dealt dialog shows effective boost and amplification icons', () => {
+    const dialog = Object.create(McBoostDealtDialog.prototype);
+    dialog.data = {
+        allowHideFuture: false,
+        cardCount: 1,
+        cards: [{
+            card: {
+                name: 'Carta de prueba',
+                image: 'test.png',
+                boost: 3,
+                counters: 0,
+            },
+            appliedAmplificationIcons: 2,
+            horizontal: false,
+            hasBoostAbility: false,
+        }],
+        cumulativeBoost: 3,
+    };
+    const markup = renderTemplate(dialog.renderContent());
+
+    assert.match(markup, /Iconos de aumento/);
+    assert.match(
+        markup,
+        /<div class="boost-amplification-row">\s*<strong>\s*Bonificador de amplificación\s*\(\+2\)\s*<\/strong>\s*<span class="boost-icon-list">/u
+    );
+    assert.equal(getBoostIconCount(markup), 6);
+    assert.equal(getAmplificationIconCount(markup), 2);
 });
 
 test('boost dealt dialog omits icon labels when the card and total have no icons', () => {
@@ -107,6 +138,7 @@ test('boost dealt dialog lets players peek at future facedown boost cards', () =
                     isFacedownCard: true,
                     canPeekFacedown: true,
                 },
+                appliedAmplificationIcons: 2,
                 hasBoostAbility: true,
             },
         ],
@@ -118,8 +150,9 @@ test('boost dealt dialog lets players peek at future facedown boost cards', () =
 
     assert.equal(futureCard.values[3], true);
     assert.equal(futureCard.values[4], true);
-    assert.doesNotMatch(markup, /Iconos de aumento:/);
-    assert.doesNotMatch(markup, /Capacidad de aumento:/);
+    assert.doesNotMatch(markup, /Iconos de aumento/);
+    assert.doesNotMatch(markup, /Capacidad de aumento/);
+    assert.equal(getAmplificationIconCount(markup), 0);
 });
 
 test('encounter dealt summary never exposes identities or enables peeking', () => {
@@ -163,16 +196,24 @@ test('encounter reveal dialog renders boost icons and omits the label at zero', 
             image: 'test.png',
             boost: 2,
         },
+        appliedAmplificationIcons: 1,
     };
     const markup = renderTemplate(dialog.renderContent());
 
-    assert.match(markup, /Iconos de aumento:/);
+    assert.match(markup, /Iconos de aumento/);
+    assert.match(
+        markup,
+        /<div class="boost-amplification-row">\s*<strong>\s*Bonificador de amplificación\s*\(\+1\)\s*<\/strong>\s*<span class="boost-icon-list">/u
+    );
     assert.equal(getBoostIconCount(markup), 2);
+    assert.equal(getAmplificationIconCount(markup), 1);
 
     dialog.data.card.boost = 0;
+    dialog.data.appliedAmplificationIcons = 0;
     const zeroBoostMarkup = renderTemplate(dialog.renderContent());
 
     assert.doesNotMatch(zeroBoostMarkup, /Iconos de aumento/);
     assert.equal(getBoostIconCount(zeroBoostMarkup), 0);
+    assert.equal(getAmplificationIconCount(zeroBoostMarkup), 0);
 });
 });

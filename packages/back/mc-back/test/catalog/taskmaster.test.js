@@ -12,7 +12,7 @@ import {
     ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_ALLY,
     CARD_TYPE_ATTACHMENT,
     CARD_TYPE_MINION,
@@ -26,6 +26,7 @@ import {
     DIALOG_LIST,
     EFFECT_CHAINED,
     EFFECT_CHOOSE,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DISCARD_FROM_DECK,
@@ -907,15 +908,18 @@ describe('Taskmaster', () => {
         assert.equal(responseConfig.params.trigger, TRIGGER_SUPERHERO_FLIPS);
         assert.deepEqual(responseConfig.params.condition, {'triggeredCard.isHero': true});
         assert.equal(responseConfig.params.effect.type, EFFECT_CHAINED);
-        const [discardConfig, damageConfig] = responseConfig.params.effect.params.effects;
+        const [discardConfig, countConfig, damageConfig] =
+            responseConfig.params.effect.params.effects;
         assert.equal(discardConfig.type, EFFECT_DISCARD_FROM_DECK);
         assert.equal(discardConfig.params.target, TARGET_ENCOUNTER_DECK);
         assert.equal(discardConfig.params.count, 1);
+        assert.equal(countConfig.type, EFFECT_COUNT_BOOST_ICONS);
+        assert.equal(countConfig.params.card, 'effects.0.cards.0');
         assert.equal(damageConfig.type, EFFECT_TAKE_DAMAGE);
         assert.equal(damageConfig.params.target, TARGET_YOU);
         assert.deepEqual(damageConfig.params.paramsCalc, {
-            formula: CALC_BOOST_ICONS,
-            target: 'effects.0.cards',
+            formula: CALC_ALL,
+            target: 'effects.1.value',
         });
 
         taskmaster.config.expertVillains.forEach(({params}) => {

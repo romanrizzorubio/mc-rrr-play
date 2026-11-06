@@ -63,11 +63,17 @@ class InterruptibleCostEffect extends Effect {
     }
 }
 
-const createResourceGenerator = (id, resources, onResolve = () => {}) => ({
+const createResourceGenerator = (
+    id,
+    resources,
+    onResolve = () => {},
+    controller
+) => ({
     abilities: [{
         isResource: true,
         resources,
     }],
+    controller,
     id,
     async resolveResourceAbility() {
         onResolve();
@@ -128,7 +134,8 @@ describe('Arrow cost payment', () => {
                         [resource],
                         () => {
                             commits.push(`generator-${resource}`);
-                        }
+                        },
+                        player
                     )],
                     hand: [],
                     resources,
@@ -410,7 +417,9 @@ describe('Arrow cost payment', () => {
                 return {
                     generators: [createResourceGenerator(
                         'mental-generator',
-                        [RESOURCE_MENTAL]
+                        [RESOURCE_MENTAL],
+                        () => {},
+                        player
                     )],
                     hand: [],
                     resources,
@@ -481,7 +490,9 @@ describe('Arrow cost payment', () => {
                 return {
                     generators: [createResourceGenerator(
                         'printed-cost-generator',
-                        Array(selectedCard.cost).fill(RESOURCE_ENERGY)
+                        Array(selectedCard.cost).fill(RESOURCE_ENERGY),
+                        () => {},
+                        player
                     )],
                     hand: [],
                     resources: Array(selectedCard.cost).fill(RESOURCE_ENERGY),
@@ -547,7 +558,9 @@ describe('Arrow cost payment', () => {
                 return {
                     generators: [createResourceGenerator(
                         'printed-cost-generator',
-                        Array(selectedCard.cost).fill(RESOURCE_ENERGY)
+                        Array(selectedCard.cost).fill(RESOURCE_ENERGY),
+                        () => {},
+                        player
                     )],
                     hand: [],
                     resources: Array(selectedCard.cost).fill(RESOURCE_ENERGY),

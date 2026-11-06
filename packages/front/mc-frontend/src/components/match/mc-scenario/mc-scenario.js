@@ -154,6 +154,10 @@ export class McScenario extends LitElement {
     renderExtraDecks() {
         const extraDecks = Object.values(this.scenario.extraDecks || {});
 
+        if (!extraDecks.length) {
+            return '';
+        }
+
         return html`
             <div class="extra-decks">
                 ${extraDecks.map(deck => html`
@@ -192,6 +196,7 @@ export class McScenario extends LitElement {
                     show-basic-stats
                     show-threat
                     show-menu-abilities
+                    highlight-playable
                     @card-list-select="${this.handleCardSelect.bind(this)}"
                 ></mc-card-list>
             </div>
@@ -199,20 +204,34 @@ export class McScenario extends LitElement {
     }
     renderEnvironments(zone = this.scenario?.gameZone, includeExtraDecks = true) {
         const cards = zone?.cards || [];
+        const environments = cards.filter(card => card.isEnvironment);
+        const extraDecks = includeExtraDecks ?
+            Object.values(this.scenario?.extraDecks || {}) :
+            [];
+
+        if (!environments.length && !extraDecks.length) {
+            return '';
+        }
 
         return html`
-            <div class="environments">
-                <mc-card-list
-                    .cards="${cards.filter(card => card.isEnvironment)}"
-                    .dragActivation="${this.dragActivation}"
-                    .dragPlayCard="${this.dragPlayCard}"
-                    show-basic-stats
-                    show-generic
-                    show-menu-abilities
-                ></mc-card-list>
+            <div class="environment-area">
+                <div class="environments">
+                    <mc-card-list
+                        .cards="${environments}"
+                        .dragActivation="${this.dragActivation}"
+                        .dragPlayCard="${this.dragPlayCard}"
+                        show-basic-stats
+                        show-generic
+                        show-menu-abilities
+                    ></mc-card-list>
+                </div>
+                ${extraDecks.length ? this.renderExtraDecks() : ''}
             </div>
-            ${includeExtraDecks ? this.renderExtraDecks() : ''}
         `;
+    }
+    static hasEnvironmentArea(zone, extraDecks = {}, includeExtraDecks = true) {
+        return Boolean(zone?.cards?.some(card => card.isEnvironment) ||
+            (includeExtraDecks && Object.keys(extraDecks).length));
     }
     renderZones(zones) {
         return html`
@@ -226,7 +245,12 @@ export class McScenario extends LitElement {
                                     (zone.players || []).join(', ')}
                             </header>
                         ` : ''}
-                        <div class="scenario-zone-cards">
+                        <div class="${McScenario.hasEnvironmentArea(
+                            zone,
+                            this.scenario?.extraDecks,
+                            index === 0
+                        ) ? 'scenario-zone-cards has-environment-area' :
+                            'scenario-zone-cards'}">
                             ${this.renderSchemes(zone)}
                             ${this.renderEnvironments(zone, index === 0)}
                             ${this.renderVillain(zone)}
@@ -272,13 +296,22 @@ export class McScenario extends LitElement {
                 mainScheme: scenario?.mainScheme,
             }];
         const visibleZones = this.getVisibleZones(zones);
+        const zone = visibleZones[0];
+        const hasEnvironmentArea = McScenario.hasEnvironmentArea(
+            zone,
+            scenario?.extraDecks
+        );
 
         return scenario ? html`
-            ${this.renderDeck()}
+            ${visibleZones.length > 1 ? this.renderDeck() : ''}
             ${visibleZones.length > 1 ? this.renderZones(visibleZones) : html`
-                ${this.renderSchemes(visibleZones[0])}
-                ${this.renderEnvironments(visibleZones[0])}
-                ${this.renderVillain(visibleZones[0])}
+                <div class="${hasEnvironmentArea ?
+                    'scenario-board has-environment-area' : 'scenario-board'}">
+                    ${this.renderDeck()}
+                    ${this.renderSchemes(zone)}
+                    ${this.renderEnvironments(zone)}
+                    ${this.renderVillain(zone)}
+                </div>
             `}
         ` : '';
     }

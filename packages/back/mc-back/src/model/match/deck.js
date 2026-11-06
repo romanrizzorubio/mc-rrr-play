@@ -167,6 +167,15 @@ export class Deck extends Engine {
         });
         this.knownCards = [...knownCards];
     }
+    forgetKnown(cards) {
+        if (!Array.isArray(cards)) {
+            throw new TypeError('Deck.forgetKnown requires an array of cards.');
+        }
+
+        const forgottenCards = new Set(cards);
+        this.knownCards = this.knownCards.filter(card =>
+            !forgottenCards.has(card));
+    }
     removeCardFromDeck(card) {
         const index = this.cards.indexOf(card);
         if (index > -1) {

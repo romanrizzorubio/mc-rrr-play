@@ -76,6 +76,7 @@ describe('Bajo vigilancia drag-and-drop', () => {
             }],
             id: 'resource-generator',
             name: 'Recurso de prueba',
+            owner: player,
             async resolveResourceAbility() {},
             toObj() {
                 return {id: this.id, name: this.name};

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     ABILITY_BOOST,
@@ -42,6 +42,7 @@ const findEntry = (set, name) => {
     return entry;
 };
 
+describe('Trucos de duende', () => {
 test('Trucos de duende registers all four cards and their printed values', async () => {
     const {sets} = await loadCatalog();
     const set = sets.find(({_id}) => _id === 'goblin-gimmicks');
@@ -376,6 +377,7 @@ test('Planeador duende resolves its discard effect after paying the self-discard
             };
         },
     };
+    energyGenerator.owner = player;
     const ability = card.abilities[0];
 
     await ability.resolveAbility({player, card, match});
@@ -383,4 +385,5 @@ test('Planeador duende resolves its discard effect after paying the self-discard
     assert.equal(discarded, true);
     assert.equal(ability.effect.resolved, true);
     assert.equal(ability.resolved, true);
+});
 });

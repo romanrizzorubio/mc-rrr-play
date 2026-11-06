@@ -6,7 +6,10 @@ import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
 import {isPlanCard} from '../../../misc/utils.js';
-import {renderBoostIcons} from '../../../utils/boost-icons.js';
+import {
+    renderAmplificationIcons,
+    renderBoostIcons,
+} from '../../../utils/boost-icons.js';
 
 export class McEncountersRevealDialog extends McDialog {
     static get is() {
@@ -27,10 +30,22 @@ export class McEncountersRevealDialog extends McDialog {
         };
     }
     getTitle() {
+        if (this.title === 'Esbirro enfrentado a') {
+            return this.targetPlayerName ?
+                `${this.title} ${this.targetPlayerName}` :
+                this.title;
+        }
+
         return this.title || 'Mostrando carta de Encuentro';
     }
     getSubtitle() {
-        const shownType = this.data.isBoost ? 'Aumento mostrado' : 'Carta mostrada';
+        if (this.title === 'Esbirro enfrentado a') {
+            return super.getSubtitle();
+        }
+
+        const shownType = this.data.isBoost ?
+            'Aumento mostrado' :
+            'Carta mostrada';
         const playerText = this.targetPlayerName ?
             `${shownType} por ${this.targetPlayerName}.` : '';
         return [super.getSubtitle(), playerText].filter(Boolean).join(' ');
@@ -39,15 +54,41 @@ export class McEncountersRevealDialog extends McDialog {
         return html``;
     }
     renderContent() {
-        const {data: {card, horizontal, isBoost, hasBoostAbility}} = this;
+        const {
+            data: {
+                card,
+                horizontal,
+                isBoost,
+                hasBoostAbility,
+                appliedAmplificationIcons,
+            },
+        } = this;
         const isHorizontal = Boolean(horizontal || isPlanCard(card));
         const boostIcons = renderBoostIcons(card.boost);
+        const amplificationIcons = renderAmplificationIcons(
+            appliedAmplificationIcons
+        );
 
         return html`
-            ${isBoost && boostIcons.length ? html`
+            ${isBoost && (boostIcons.length || amplificationIcons.length) ? html`
                 <div class="boost-icons">
-                    <strong>Iconos de aumento:</strong>
-                    <span class="boost-icon-list">${boostIcons}</span>
+                    ${boostIcons.length ? html`
+                        <div class="boost-icon-row">
+                            <strong>Iconos de aumento</strong>
+                            <span class="boost-icon-list">${boostIcons}</span>
+                        </div>
+                    ` : ''}
+                    ${amplificationIcons.length ? html`
+                        <div class="boost-amplification-row">
+                            <strong>
+                                Bonificador de amplificación
+                                (+${appliedAmplificationIcons})
+                            </strong>
+                            <span class="boost-icon-list">
+                                ${amplificationIcons}
+                            </span>
+                        </div>
+                    ` : ''}
                 </div>
             ` : ''}
             <div class="card-preview">
@@ -63,7 +104,7 @@ export class McEncountersRevealDialog extends McDialog {
             </div>
             ${isBoost && hasBoostAbility ? html`
                 <div class="boost-ability">
-                    <strong>Capacidad de aumento:</strong> Sí
+                    <strong>Capacidad de aumento</strong> Sí
                 </div>
             ` : ''}
         `;

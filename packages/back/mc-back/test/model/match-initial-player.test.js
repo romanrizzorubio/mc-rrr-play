@@ -32,6 +32,7 @@ describe('match starting player selection', () => {
             name: 'game',
             creatorUserId: creator.userId,
             players: [creator, guest],
+            triggerCards: {},
             openDialog: async params => {
                 dialog = params;
                 return {selected: {playerId: guest.id}};

@@ -88,6 +88,8 @@ export class ChainedEffect extends Effect {
     }
     getEffectParams(params) {
         const {selectedTarget} = this;
+        const effectParams = {...params};
+        delete effectParams.showSingleTargetDialog;
         const targetPlayer = selectedTarget && selectedTarget.isPlayer ?
             selectedTarget :
             params.targetPlayer;
@@ -100,7 +102,7 @@ export class ChainedEffect extends Effect {
                     [selectedTarget];
 
         return {
-            ...params,
+            ...effectParams,
             effects: this.effects,
             parentTargets,
             ...(targetPlayer ? {targetPlayer} : {}),
@@ -139,6 +141,10 @@ export class ChainedEffect extends Effect {
         );
     }
     canRun(params) {
+        if (this.showCancel && this.selectedTarget === null) {
+            return true;
+        }
+
         const newParams = this.getEffectParams(params);
 
         if (this.requiresAll(params)) {
@@ -183,6 +189,11 @@ export class ChainedEffect extends Effect {
         return true;
     }
     async execute(params) {
+        if (this.showCancel && this.selectedTarget === null) {
+            this.paymentCancelled = true;
+            return;
+        }
+
         const requiresAll = this.requiresAll(params);
         const newParams = params.costPaymentSession?.getExecutionParams(this) ||
             this.getEffectParams(params);

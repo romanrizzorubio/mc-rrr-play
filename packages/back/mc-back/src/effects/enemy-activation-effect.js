@@ -3,6 +3,7 @@ import {
     DIALOG_BOOST_DEALT,
     TARGET_ACTIVATION,
     TRIGGER_ATTACHED_ACTIVATES,
+    TRIGGER_THIS_ACTIVATES,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 import {getVillainFor} from '../utils/match-zone-utils.js';
@@ -27,6 +28,7 @@ export class EnemyActivationEffect extends Effect {
         this.player = player;
 
         this.boostCards = [];
+        this.boostResolutionResults = [];
         this.canceled = false;
         this.activationInterrupted = false;
         this.resolvedBoostCards = new Set();
@@ -181,7 +183,10 @@ export class EnemyActivationEffect extends Effect {
         const triggers = super.getTriggersEnds(params);
 
         return this.resolved && !this.canceled ?
-            triggers.concat([TRIGGER_ATTACHED_ACTIVATES]) :
+            triggers.concat([
+                TRIGGER_ATTACHED_ACTIVATES,
+                TRIGGER_THIS_ACTIVATES,
+            ]) :
             triggers;
     }
     getTargetDialog() {
@@ -204,6 +209,7 @@ export class EnemyActivationEffect extends Effect {
     resetForResolution() {
         this.enemy = this.configuredEnemy;
         this.boostCards = [];
+        this.boostResolutionResults = [];
         this.canceled = false;
         this.activationInterrupted = false;
         this.resolvedBoostCards.clear();
@@ -289,6 +295,10 @@ export class EnemyActivationEffect extends Effect {
 
             await resolveBoostEffect.runEffect(params);
 
+            this.boostResolutionResults[cardIndex] = {
+                boostValue: resolveBoostEffect.value,
+                amplificationIcons: resolveBoostEffect.amplificationIcons,
+            };
             totalBoost += resolveBoostEffect.value;
 
             if (!card.isInPlay) {

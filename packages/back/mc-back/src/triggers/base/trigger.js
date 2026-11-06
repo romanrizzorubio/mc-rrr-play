@@ -1,3 +1,4 @@
+import {AsyncLocalStorage} from 'node:async_hooks';
 import {TRIGGER_PLAYER_CAN_PLAY} from 'mc-shared';
 
 import {
@@ -11,6 +12,9 @@ function isLastingAbility(ability) {
 
 export class Trigger {
     static #triggeredEffectsByTrigger = new WeakMap();
+    static #resolutionQueuesByTrigger = new WeakMap();
+    static #resolutionContext = new AsyncLocalStorage();
+    static #skipResolutionQueue = Symbol('skip-trigger-resolution-queue');
 
     static #getTriggeredEffects(trigger) {
         if (!Trigger.#triggeredEffectsByTrigger.has(trigger)) {
@@ -18,6 +22,16 @@ export class Trigger {
         }
 
         return Trigger.#triggeredEffectsByTrigger.get(trigger);
+    }
+    static #getResolutionQueue(trigger) {
+        if (!Trigger.#resolutionQueuesByTrigger.has(trigger)) {
+            Trigger.#resolutionQueuesByTrigger.set(trigger, {
+                pending: Promise.resolve(),
+                pendingCount: 0,
+            });
+        }
+
+        return Trigger.#resolutionQueuesByTrigger.get(trigger);
     }
 
     constructor({
@@ -33,6 +47,7 @@ export class Trigger {
 
         this.triggered = false;
         this.paymentCancelled = false;
+        this.resolving = false;
     }
     hasTriggeredFor(effect) {
         if (!effect || typeof effect !== 'object') {
@@ -52,29 +67,47 @@ export class Trigger {
             );
         }
     }
-    canRun(params) {
+    canRun(params = {}) {
+        const skipResolutionQueue =
+            params[Trigger.#skipResolutionQueue];
+        const resolutionContext = Trigger.#resolutionContext.getStore() ?? [];
+        if (!skipResolutionQueue && resolutionContext.includes(this)) {
+            return false;
+        }
+        if (!skipResolutionQueue) {
+            const queue = Trigger.#getResolutionQueue(this);
+            if (queue.pendingCount > 0) {
+                return queue.pending.then(() => this.canRun({
+                    ...params,
+                    [Trigger.#skipResolutionQueue]: true,
+                }));
+            }
+        }
+
         const {ability} = this;
+        const abilityParams = {...params};
+        delete abilityParams[Trigger.#skipResolutionQueue];
         const canTriggerAbility = () => {
             if (!ability) {
                 return true;
             }
 
             return ability.canTrigger({
-                ...params,
-                triggeredCard: params.card,
-                triggeredEffect: params.effect,
+                ...abilityParams,
+                triggeredCard: abilityParams.card,
+                triggeredEffect: abilityParams.effect,
             });
         };
 
         if (this.card?.isEvent &&
             !isLastingAbility(ability)) {
-            if (!isEventInPlayerHand(this.card, params.player)) {
+            if (!isEventInPlayerHand(this.card, abilityParams.player)) {
                 return false;
             }
 
             const canPlayEvent = typeof this.card.canPlay === 'function' ?
                 this.card.canPlay({
-                    ...params,
+                    ...abilityParams,
                     abilityType: ability?.abilityType,
                 }) :
                 true;
@@ -85,9 +118,9 @@ export class Trigger {
                 }
 
                 if (this.trigger !== TRIGGER_PLAYER_CAN_PLAY &&
-                    typeof params.player?.canPlayCard === 'function') {
+                    typeof abilityParams.player?.canPlayCard === 'function') {
                     return Promise.resolve(
-                        params.player.canPlayCard({card: this.card})
+                        abilityParams.player.canPlayCard({card: this.card})
                     ).then(canPlay => canPlay ? canTriggerAbility() : false);
                 }
 
@@ -141,11 +174,24 @@ export class Trigger {
     }
     async runCard(params) {
         const {card, ability} = this;
+        const abilityParams = this.getAbilityParams(params);
+        const selectedTriggerTarget = params.selectedTriggerTarget;
+        const selectedTargets = selectedTriggerTarget &&
+            ability.effect?.getValidTarget ?
+            (await ability.effect.getValidTarget(abilityParams)).flat(Infinity) :
+            [];
+        const preselectedTarget = selectedTargets.find(target =>
+            target === selectedTriggerTarget ||
+            (selectedTriggerTarget?.id !== undefined &&
+                target?.id === selectedTriggerTarget.id));
 
         this.paymentCancelled = false;
         await ability.resolveAbility({
-            ...this.getAbilityParams(params),
-            preselectedTarget: false,
+            ...abilityParams,
+            preselectedTarget: Boolean(preselectedTarget),
+            ...(preselectedTarget ? {
+                selectedTarget: preselectedTarget,
+            } : {}),
             triggeredCard: params.card,
             card,
         });
@@ -169,13 +215,61 @@ export class Trigger {
         }
         this.paymentCancelled = result.paymentCancelled;
     }
-    runTrigger(params) {
+    async runTrigger(params, isResolutionActive = () => true) {
         const {ability, card} = this;
+        const resolutionContext = Trigger.#resolutionContext.getStore() ?? [];
+        if (resolutionContext.includes(this)) {
+            return;
+        }
 
-        if (card.isEvent && !isLastingAbility(ability)) {
-            return this.runEvent(params);
-        } else {
-            return this.runCard(params);
+        const queue = Trigger.#getResolutionQueue(this);
+        const queued = queue.pendingCount > 0;
+        const previous = queue.pending;
+        let release;
+        const current = new Promise(resolve => {
+            release = resolve;
+        });
+        queue.pendingCount++;
+        queue.pending = previous.then(() => current);
+
+        await previous;
+        try {
+            if (!isResolutionActive() ||
+                (this.hasTriggeredFor(params.effect) && !this.keepTriggering)) {
+                return;
+            }
+
+            const canRecheck = queued &&
+                (this.canTrigger !== Trigger.prototype.canTrigger ||
+                    typeof ability?.canTrigger === 'function');
+            if (canRecheck) {
+                const canRun = await Trigger.#resolutionContext.run(
+                    [...resolutionContext, this],
+                    () => this.canTrigger({
+                        ...params,
+                        [Trigger.#skipResolutionQueue]: true,
+                    })
+                );
+                if (!canRun || !isResolutionActive()) {
+                    return;
+                }
+            }
+
+            this.resolving = true;
+            await Trigger.#resolutionContext.run(
+                [...resolutionContext, this],
+                async () => {
+                    if (card.isEvent && !isLastingAbility(ability)) {
+                        await this.runEvent(params);
+                    } else {
+                        await this.runCard(params);
+                    }
+                }
+            );
+        } finally {
+            this.resolving = false;
+            queue.pendingCount--;
+            release();
         }
     }
 }

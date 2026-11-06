@@ -5,6 +5,7 @@ export const ABILITY_ALTEREGO_RESOURCE = 'alterego-resource';
 export const ABILITY_ALTEREGO_RESPONSE = 'alterego-response';
 export const ABILITY_BOOST = 'boost';
 export const ABILITY_CONSTANT = 'constant';
+export const ABILITY_FIRST_PLAYER_ACTION = 'first-player-action';
 export const ABILITY_FORCED_INTERRUPT = 'forced-interrupt';
 export const ABILITY_FORCED_RESPONSE = 'forced-response';
 export const ABILITY_HERO_ACTION = 'hero-action';

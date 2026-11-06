@@ -3,6 +3,11 @@ export const EVENTS = {
         DEFEAT: 'card-defeat',
         REFRESH: 'card-refresh',
     },
+    CHAT: {
+        MESSAGE: 'chat-message',
+        SEND: 'send-chat-message',
+        STATE: 'chat-state',
+    },
     DECK: {
         REFRESH: 'deck-refresh',
     },

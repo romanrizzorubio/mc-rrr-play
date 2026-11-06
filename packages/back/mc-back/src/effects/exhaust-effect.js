@@ -73,8 +73,13 @@ export class ExhaustEffect extends Effect {
             selectCount,
         };
     }
-    filterTarget(card) {
+    filterTarget(card, params) {
+        const isControlledByPlayer = card.isPlayer ?
+            card === params.player :
+            card.controller === params.player;
+
         return !card.exhausted &&
+            (!this.isCost || isControlledByPlayer) &&
             super.filterTarget.apply(this, arguments);
     }
     async execute() {

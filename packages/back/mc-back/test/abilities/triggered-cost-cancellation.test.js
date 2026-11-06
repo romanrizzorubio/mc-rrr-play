@@ -56,10 +56,12 @@ describe('triggered cost cancellation', () => {
             async getCardsToPay() {
                 return {
                     generators: [{
+                        id: 'available-generator',
                         abilities: [
                             {isResource: true, resource: RESOURCE_MENTAL},
                             {isResource: true, resource: RESOURCE_PHYSICAL},
                         ],
+                        owner: player,
                     }],
                     hand: [],
                 };
@@ -75,6 +77,7 @@ describe('triggered cost cancellation', () => {
                                 resource: RESOURCE_MENTAL,
                             }],
                             id: `generator-${calls.costPrompts}`,
+                            owner: player,
                             async resolveResourceAbility() {
                                 calls.generatorUses++;
                             },
@@ -98,6 +101,7 @@ describe('triggered cost cancellation', () => {
                             resource,
                         }],
                         id: `generator-${calls.costPrompts}`,
+                        owner: player,
                         async resolveResourceAbility() {
                             calls.generatorUses++;
                         },
@@ -108,6 +112,7 @@ describe('triggered cost cancellation', () => {
             },
         };
         const card = {
+            controller: player,
             exhausted: false,
             id: `triggered-${name}`,
             owner: player,

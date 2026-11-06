@@ -51,7 +51,7 @@ describe('Iron Man Boots', () => {
             bootsConfig,
             {owner: player},
         );
-        player.gameZone.addToGameZone(boots);
+        player.addToGameZone(boots);
         const resource = factory.cardsFactory.createGameCardFromConfig({
             type: CARD_TYPE_RESOURCE,
             params: {

@@ -182,19 +182,15 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         return players.filter(player =>
             player.scenarioZone);
     }
-    runEndVillainPhase() {
+    async runEndVillainPhase() {
         const {players} = this.match;
         const initialIndex = players.findIndex(player => player.initial);
         const startIndex = initialIndex >= 0 ? initialIndex : 0;
-        for (let offset = 0; offset < players.length; offset++) {
-            const player = players[(startIndex + offset) % players.length];
-            player.initial = false;
-        }
         for (let offset = 1; offset <= players.length; offset++) {
             const player = players[(startIndex + offset) % players.length];
             if (!player.defeated) {
-                player.initial = true;
-                break;
+                await this.match.setInitialPlayer(player);
+                return;
             }
         }
     }

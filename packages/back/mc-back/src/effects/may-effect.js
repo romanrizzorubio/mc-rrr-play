@@ -4,11 +4,13 @@ export class MayEffect extends Effect {
     constructor({
 // MayEffect
         effect,
+        effectNot,
         requiresPrePlayConfirmation = false,
     }) {
         super(arguments[0]);
 
         this.effect = effect;
+        this.effectNot = effectNot;
         this.requiresPrePlayConfirmation = requiresPrePlayConfirmation;
     }
     get ability() {
@@ -20,20 +22,29 @@ export class MayEffect extends Effect {
         if (this.effect) {
             this.effect.ability = ability;
         }
+        if (this.effectNot) {
+            this.effectNot.ability = ability;
+        }
     }
     get isOptional() {
-        return true;
+        return !this.effectNot;
     }
     get keepTriggering() {
         return this.effect.keepTriggering;
     }
-    canRun(params) {
-        return this.effect.canRun(params);
+    async canRun(params) {
+        return await this.effect.canRun(params) ||
+            Boolean(this.effectNot && await this.effectNot.canRun(params));
     }
     async prepare(params) {
         await super.prepare(params);
 
-        const {effect} = this;
+        const effectCanRun = !this.effectNot ||
+            await this.effect.canRun(params);
+        const effect = effectCanRun ? this.effect : this.effectNot;
+        if (!effect) {
+            return this.selectedTarget;
+        }
 
         if (effect.target === this.target) {
             effect.selectedTarget = this.selectedTarget;
@@ -46,13 +57,30 @@ export class MayEffect extends Effect {
 
         return this.selectedTarget;
     }
-    execute(params) {
-        const {effect} = this;
+    async execute(params) {
+        const {effect, effectNot} = this;
+        const canResolveMay = await effect.canRun(params);
 
-        return effect.runEffect({
-            ...params,
-            mayEffect: this,
-        });
+        if (!effectNot) {
+            return effect.runEffect({
+                ...params,
+                mayEffect: this,
+            });
+        }
+
+        if (canResolveMay && await this.confirm(params)) {
+            await effect.runEffect({
+                ...params,
+                mayEffect: this,
+            });
+            if (effect.fullResolved) {
+                return;
+            }
+        }
+
+        if (await effectNot.canRun(params)) {
+            return effectNot.runEffect(params);
+        }
     }
     async confirmBeforeResolve(params) {
         return !this.requiresPrePlayConfirmation || this.confirm(params);

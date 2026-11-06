@@ -160,6 +160,7 @@ describe('Ms. Marvel nemesis attack targets', () => {
         for (const owner of [player, staleTargetPlayer]) {
             const generator = {
                 id: `resource-generator-${owner.id}`,
+                owner,
                 abilities: [{
                     isResource: true,
                     resources: [RESOURCE_MENTAL],

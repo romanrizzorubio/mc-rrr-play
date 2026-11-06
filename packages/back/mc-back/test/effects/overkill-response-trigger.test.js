@@ -66,6 +66,7 @@ describe('overkill defeat responses', () => {
                     undefined;
             },
         };
+        physicalGenerator.owner = player;
         player.hand = new Hand(player);
         player.hand.refresh = async () => {};
         match.players.push(player);

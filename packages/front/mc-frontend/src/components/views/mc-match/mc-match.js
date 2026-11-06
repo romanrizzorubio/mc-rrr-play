@@ -5,6 +5,7 @@ import styles from './mc-match.css.js';
 import '../../match/mc-scenario/mc-scenario.js';
 import '../../match/mc-player/mc-player.js';
 import '../../panels/mc-hand/mc-hand.js';
+import '../mc-chat/mc-chat.js';
 import {DECK_TYPES} from '../../panels/mc-deck/mc-deck.js';
 import {getCardAssetUrl} from '../../../misc/cards.js';
 import {MENU_OPTION_VIEW_TUCKED_CARDS} from '../../../misc/card-menu.js';
@@ -19,6 +20,7 @@ export class MatchComponent extends LitElement {
     static get properties() {
         return {
             match: {type: Object},
+            api: {type: Object},
             player: {type: Object},
             boardPlayer: {type: Object},
             dialogBoardPlayerId: {type: String},
@@ -40,6 +42,7 @@ export class MatchComponent extends LitElement {
         super();
 
         this.match = null;
+        this.api = null;
         this.player = null;
         this.boardPlayer = null;
         this.dialogBoardPlayerId = '';
@@ -74,6 +77,13 @@ export class MatchComponent extends LitElement {
     }
     getPlayerIdentifier(player) {
         return player?.id || player?.userId || player?.name || '';
+    }
+    get hasChat() {
+        return new Set(
+            (this.match?.players || [])
+                .map(player => player.userId)
+                .filter(Boolean),
+        ).size > 1;
     }
     showAlert(msg) {
         this.dispatchEvent(new CustomEvent('show-alert', {
@@ -574,6 +584,7 @@ export class MatchComponent extends LitElement {
                 </div>
             </div>
             ${this.renderHand()}
+            ${this.hasChat ? html`<mc-chat .api="${this.api}"></mc-chat>` : ''}
         `;
     }
 }

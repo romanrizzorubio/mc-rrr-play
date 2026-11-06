@@ -11,6 +11,9 @@ globalThis.window = {
 const {McScenario} = await import(
     '../src/components/match/mc-scenario/mc-scenario.js'
 );
+const scenarioStyles = (await import(
+    '../src/components/match/mc-scenario/mc-scenarios.css.js'
+)).default;
 const {McCharacterCard} = await import(
     '../src/components/cards/characters/mc-character-card/mc-character-card.js'
 );
@@ -30,8 +33,8 @@ const assertUnprintedStatsForwarded = (template, unprintedStats) => {
 };
 
 describe('Scenario component', () => {
-    test('keeps a single scenario area in the original top-level layout', () => {
-        const zone = {};
+    test('renders the environment area between schemes and villain when occupied', () => {
+        const zone = {cards: [{isEnvironment: true}]};
         const component = Object.assign(Object.create(McScenario.prototype), {
             scenario: {zones: [zone]},
             renderDeck: () => 'encounter deck',
@@ -43,22 +46,72 @@ describe('Scenario component', () => {
         const template = component.render();
         const scenarioTemplate = template.values[1];
 
-        assert.equal(template.values[0], 'encounter deck');
+        assert.equal(template.values[0], '');
+        assert.equal(
+            scenarioTemplate.values[0],
+            'scenario-board has-environment-area'
+        );
         assert.deepEqual(scenarioTemplate.values, [
+            'scenario-board has-environment-area',
+            'encounter deck',
             'main and side schemes',
             'environments',
             'villain',
         ]);
-        assert.doesNotMatch(scenarioTemplate.strings.join(''), /scenario-zones/);
+    });
+
+    test('centers the main scheme when no environment area is occupied', () => {
+        const zone = {cards: []};
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {zones: [zone]},
+            renderDeck: () => 'encounter deck',
+            renderSchemes: () => 'main and side schemes',
+            renderEnvironments: () => '',
+            renderVillain: () => 'villain',
+        });
+
+        const template = component.render();
+        const scenarioTemplate = template.values[1];
+
+        assert.equal(scenarioTemplate.values[0], 'scenario-board');
+        assert.deepEqual(scenarioTemplate.values.slice(1), [
+            'encounter deck',
+            'main and side schemes',
+            '',
+            'villain',
+        ]);
+    });
+
+    test('centers environments between the main scheme and villain', () => {
+        assert.match(
+            scenarioStyles.cssText,
+            /\.scenario-board,\s*\.scenario-zone-cards/
+        );
+        assert.ok(scenarioStyles.cssText.includes(
+            'grid-template-columns: auto repeat(3, minmax(0, 1fr))'
+        ));
+        assert.ok(scenarioStyles.cssText.includes(
+            'grid-template-columns: auto minmax(0, 1fr) auto'
+        ));
+        assert.ok(scenarioStyles.cssText.includes(
+            'grid-template-columns: repeat(3, minmax(0, 1fr))'
+        ));
+        assert.ok(scenarioStyles.cssText.includes(
+            'grid-template-columns: minmax(0, 1fr) auto'
+        ));
     });
 
     test('groups split-zone cards horizontally beneath their player label', () => {
         const zones = [
-            {id: 'zone-1', players: ['Hulka']},
-            {id: 'zone-2', players: ['Mapache Cohete']},
+            {id: 'zone-1', players: ['Hulka'], cards: [{isEnvironment: true}]},
+            {
+                id: 'zone-2',
+                players: ['Mapache Cohete'],
+                cards: [{isEnvironment: true}],
+            },
         ];
         const component = Object.assign(Object.create(McScenario.prototype), {
-            scenario: {zones},
+            scenario: {extraDecks: {}, zones},
             renderSchemes: () => 'schemes',
             renderEnvironments: () => 'environments',
             renderVillain: () => 'villain',
@@ -74,13 +127,56 @@ describe('Scenario component', () => {
                 zoneTemplate.values[0].strings.join(''),
                 /class="zone-players"/
             );
-            assert.match(zoneTemplate.strings.join(''), /class="scenario-zone-cards"/);
-            assert.deepEqual(zoneTemplate.values.slice(1), [
+            assert.equal(
+                zoneTemplate.values[1],
+                'scenario-zone-cards has-environment-area'
+            );
+            assert.deepEqual(zoneTemplate.values.slice(2), [
                 'schemes',
                 'environments',
                 'villain',
             ]);
         }
+    });
+
+    test('centers the scheme in split zones without an environment area', () => {
+        const zone = {id: 'zone-1', players: ['Hulka'], cards: []};
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {extraDecks: {}, zones: [zone]},
+            renderSchemes: () => 'schemes',
+            renderEnvironments: () => '',
+            renderVillain: () => 'villain',
+        });
+
+        const zoneTemplate = component.renderZones([zone]).values[0][0];
+
+        assert.equal(zoneTemplate.values[1], 'scenario-zone-cards');
+        assert.deepEqual(zoneTemplate.values.slice(2), [
+            'schemes',
+            '',
+            'villain',
+        ]);
+    });
+
+    test('highlights playable side schemes in the scenario card list', () => {
+        const sideScheme = {id: 'under-fire', isSideScheme: true, playable: true};
+        const zone = {
+            cards: [
+                sideScheme,
+                {id: 'environment', isEnvironment: true, playable: true},
+            ],
+        };
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            player: null,
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            renderMainScheme: () => 'main scheme',
+        });
+        const template = component.renderSchemes(zone);
+
+        assert.match(template.strings.join(''), /highlight-playable/);
+        assert.deepEqual(template.values[1], [sideScheme]);
     });
 
     test('shows the general zone and only the selected player scenario zone', () => {
@@ -248,6 +344,62 @@ describe('Scenario component', () => {
         assert.ok(schemeTemplate.values.includes(scheme.counters));
         assert.match(schemeTemplate.strings.join(''), /\.generic=/);
         assert.match(schemeTemplate.strings.join(''), /\.showGeneric=/);
+    });
+
+    test('highlights a playable main scheme and labels its action menu option', () => {
+        const actionName =
+            'Agota la Milano para quitar 3 de amenaza de este plan';
+        const card = {
+            id: 'under-fire',
+            name: 'A cañonazos',
+            image: 'under-fire.png',
+            playable: true,
+            abilities: [{
+                isAction: true,
+                name: actionName,
+                disable: false,
+                availableTargetIds: ['under-fire'],
+            }],
+        };
+        const mainScheme = Object.assign(
+            Object.create(MainSchemeCardComponent.prototype),
+            {
+                card,
+                player: null,
+                attached: [],
+                dragActivation: null,
+                dragPlayCard: null,
+                dragResourcePayment: null,
+                name: card.name,
+                image: card.image,
+                acceleration: 0,
+                threat: 0,
+                counters: undefined,
+                value: 0,
+                stage: 1,
+            }
+        );
+        const options = mainScheme.menuOptions;
+        const schemeTemplate = SchemeCardComponent.prototype.render.call({
+            card,
+            attached: [],
+            basicActivation: null,
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            clickDisabled: false,
+            menuOptions: options,
+            name: card.name,
+            image: card.image,
+            threat: 0,
+            acceleration: 0,
+            counters: undefined,
+            headerLeft: 0,
+            headerRight: 1,
+        });
+
+        assert.equal(options[0].text, actionName);
+        assert.ok(schemeTemplate.values.includes('playable'));
     });
 
     test('scenario villains forward unprinted stats to the villain card', () => {

@@ -1291,6 +1291,7 @@ describe('Hawkeye catalog', () => {
             async refresh() {},
         };
         player.superhero = superhero;
+        generator.owner = player;
         superhero.owner = player;
         factory.match.players.push(player);
 

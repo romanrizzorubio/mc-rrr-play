@@ -331,11 +331,12 @@ export class EffectsFactory {
         };
     }
     _parseMay(params) {
-        const {effect} = params;
+        const {effect, effectNot} = params;
 
         return {
             ...params,
-            effect: effect ? this.parseEffect(effect) : undefined
+            effect: effect ? this.parseEffect(effect) : undefined,
+            effectNot: effectNot ? this.parseEffect(effectNot) : undefined,
         };
     }
 }

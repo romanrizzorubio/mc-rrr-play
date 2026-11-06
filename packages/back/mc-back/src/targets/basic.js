@@ -6,6 +6,7 @@ import {
     TARGET_EFFECT,
     TARGET_EFFECT_PLAY_CARD,
     TARGET_INITIAL_PLAYER,
+    TARGET_INITIAL_PLAYER_SUPERHERO,
     TARGET_PARENT,
     TARGET_PLAYER,
     TARGET_REVEALED_ABILITY,
@@ -32,6 +33,16 @@ export const basicTargets = {
         }
 
         return [initialPlayer];
+    },
+    [TARGET_INITIAL_PLAYER_SUPERHERO]: ({match, player}) => {
+        const initialPlayer = match.initialPlayer;
+
+        if (!initialPlayer ||
+            !getPlayersFor(match, player).includes(initialPlayer)) {
+            return [];
+        }
+
+        return [initialPlayer.superhero];
     },
     [TARGET_PARENT]: ({params}) => params.parentTargets || [],
     [TARGET_PLAYER]: ({player}) => [player],

@@ -10,6 +10,18 @@ export class CancelBoostIconsEffect extends Effect {
     constructor(params = {}) {
         super(params);
 
+        this.allowZero = params.allowZero ?? false;
+        if (typeof this.allowZero !== 'boolean') {
+            throw new TypeError(
+                'CancelBoostIconsEffect allowZero must be a boolean.'
+            );
+        }
+        this.replaceCount = params.replaceCount ?? false;
+        if (typeof this.replaceCount !== 'boolean') {
+            throw new TypeError(
+                'CancelBoostIconsEffect replaceCount must be a boolean.'
+            );
+        }
         this.requiresPrePlayConfirmation =
             params.requiresPrePlayConfirmation ?? false;
         this.prePlayConfirmation = params.prePlayConfirmation;
@@ -81,7 +93,12 @@ export class CancelBoostIconsEffect extends Effect {
         });
     }
     getTriggeredEffect(params) {
-        return [params.triggeredEffect, params.effect].find(triggeredEffect =>
+        return [
+            params.effect,
+            params.triggeredEffect,
+            this.selectedTarget,
+            ...(params.parentTargets || []),
+        ].find(triggeredEffect =>
             triggeredEffect?.card &&
             Number.isFinite(triggeredEffect.boostValue));
     }
@@ -89,7 +106,8 @@ export class CancelBoostIconsEffect extends Effect {
         const triggeredEffect = this.getTriggeredEffect(params);
 
         return Boolean(triggeredEffect) &&
-            getBoostIconCancellation(triggeredEffect).remainingBoostIcons > 0 &&
+            (this.allowZero ||
+                getBoostIconCancellation(triggeredEffect).remainingBoostIcons > 0) &&
             super.canRun(params);
     }
     execute(params) {
@@ -106,6 +124,9 @@ export class CancelBoostIconsEffect extends Effect {
         triggeredEffect.boostValue -= remainingBoostIcons;
         triggeredEffect.cancelledBoostIcons =
             alreadyCancelledBoostIcons + remainingBoostIcons;
+        if (this.replaceCount) {
+            triggeredEffect.countReplaced = true;
+        }
         params.cancelledBoostIcons = remainingBoostIcons;
     }
 }

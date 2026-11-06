@@ -25,7 +25,7 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
 - En objetivos de doble cara, el diálogo devuelve el `id` del lado mostrado y su `parentId`; la selección se resuelve contra el candidato de la partida usando el ID directo o el ID del padre.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_DECKS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_PLAYERS`, `TARGET_ALL_SCHEMES`, `TARGET_ALL_SIDE_SCHEMES` y `TARGET_ALL_SUPPORTS`.
+- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_DECKS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_PLAYERS`, `TARGET_ALL_SUPERHEROES`, `TARGET_ALL_SCHEMES`, `TARGET_ALL_SIDE_SCHEMES` y `TARGET_ALL_SUPPORTS`.
 - Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina durante la resolución o después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`, `EFFECT_EXHAUST` o `EFFECT_TOUGH`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
 
 Que un selector devuelva una colección de candidatos no significa por sí solo que el efecto se aplique a todos.
@@ -55,6 +55,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_EFFECT` | El efecto de `params.effect`. |
 | `TARGET_EFFECT_PLAY_CARD` | El efecto de jugar una carta (`params.playCardEffect`). |
 | `TARGET_INITIAL_PLAYER` | El jugador inicial de la partida, solo si está en la zona del jugador que inicia el efecto. |
+| `TARGET_INITIAL_PLAYER_SUPERHERO` | El superhéroe del jugador inicial, en cualquiera de sus identidades y solo si está en la zona del jugador que inicia el efecto. |
 | `TARGET_PARENT` | Los objetivos validados por el efecto compuesto superior. |
 | `TARGET_PLAYER` | El jugador actual. |
 | `TARGET_ROUND` | La ronda actual. |
@@ -74,7 +75,9 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ALL_CHARACTERS` | Enemigos y personajes amigos de la partida. |
 | `TARGET_ALL_ENEMIES` | Todos los enemigos. |
 | `TARGET_ALL_FRIENDLY_CHARACTERS` | Los personajes amigos de todos los jugadores: superhéroes en su forma actual (héroe o alter ego) y aliados. |
+| `TARGET_FRIENDLY_CHARACTER` | Un personaje amigo elegido entre los personajes de todos los jugadores. |
 | `TARGET_ALL_HEROES` | Los jugadores de la zona del jugador que inicia el efecto cuyo superhéroe esté en forma de héroe; devuelve jugadores, no las cartas de héroe. |
+| `TARGET_ALL_SUPERHEROES` | Los superhéroes (ambas identidades) de todos los jugadores de la zona del jugador que inicia el efecto; devuelve las cartas de superhéroe y resuelve todos los objetivos. |
 | `TARGET_ALL_HEROES_ALLIES` | Los superhéroes en forma de héroe y los aliados de los jugadores de la zona del jugador que inicia el efecto. |
 | `TARGET_ALL_PLAYERS` | Los jugadores de la zona del jugador que inicia el efecto que cumplen `condition`; resuelve todos sin selección. |
 | `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores de la zona del jugador que inicia el efecto en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
@@ -98,13 +101,12 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
 | `TARGET_ALL_ALLIES_YOU_CONTROL` | Todos los aliados controlados por el jugador actual. |
 | `TARGET_ALL_CHARACTERS_YOU_CONTROL` | El superhéroe y los aliados controlados por el jugador actual. |
-| `TARGET_FRIENDLY_CHARACTER` | El superhéroe y los aliados del jugador actual. |
-| `TARGET_ANY_CHARACTER_YOU_CONTROL` | El superhéroe y los aliados controlados por el jugador actual; selecciona uno si hay varios. Es un alias de `TARGET_FRIENDLY_CHARACTER`. |
+| `TARGET_ANY_CHARACTER_YOU_CONTROL` | Un personaje elegido entre el superhéroe y los aliados controlados por el jugador actual. |
 | `TARGET_SUPPORT_YOU_CONTROL` | Los apoyos que controla el jugador actual. |
 | `TARGET_UPGRADE_YOU_CONTROL` | Las mejoras que controla el jugador actual. |
 | `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO` | Las mejoras que controla el jugador actual y que están vinculadas a su superhéroe. Incluye las mejoras de su zona de juego sin vínculo físico y las vinculadas a cualquiera de sus identidades; excluye las vinculadas a aliados u otras cartas. |
 
-`TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_FRIENDLY_CHARACTER` (incluido su alias `TARGET_ANY_CHARACTER_YOU_CONTROL`) y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. Al comprobar objetivos de un evento (`playCardEffect`), los selectores de personajes comparan `condition.name` solo con el nombre de la representación activa en juego; no coinciden con `mainName` ni convierten una cara inactiva en objetivo. Otros personajes en juego con ese nombre siguen siendo candidatos, sujetos a la regla de referencia. Fuera de la comprobación de objetivos de evento, los selectores globales también pueden resolver el lado nombrado a través de `mainName`, por ejemplo para una modificación persistente ligada a ese lado.
+`TARGET_ALL_CHARACTERS`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_FRIENDLY_CHARACTER`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ANY_CHARACTER_YOU_CONTROL` y `TARGET_UPGRADE_YOU_CONTROL` aplican `condition` a sus candidatos cuando se especifica. `TARGET_FRIENDLY_CHARACTER` y `TARGET_ALL_FRIENDLY_CHARACTERS` comparten los personajes amigos de todos los jugadores; el primero selecciona uno y el segundo resuelve todos. `TARGET_ANY_CHARACTER_YOU_CONTROL` queda limitado al superhéroe y los aliados del jugador actual. Al comprobar objetivos de un evento (`playCardEffect`), los selectores de personajes comparan `condition.name` solo con el nombre de la representación activa en juego; no coinciden con `mainName` ni convierten una cara inactiva en objetivo. Otros personajes en juego con ese nombre siguen siendo candidatos, sujetos a la regla de referencia. Fuera de la comprobación de objetivos de evento, los selectores globales también pueden resolver el lado nombrado a través de `mainName`, por ejemplo para una modificación persistente ligada a ese lado.
 
 `TARGET_UPGRADE_YOU_CONTROL` no implica que una mejora esté vinculada al superhéroe. Para cartas que exigen una mejora vinculada al superhéroe propio, usa `TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO`; las mejoras vinculadas a aliados u otras cartas no son candidatas. Las mejoras de la zona de juego sin un vínculo físico se consideran una extensión del superhéroe en cualquiera de sus identidades.
 

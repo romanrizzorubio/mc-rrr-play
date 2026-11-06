@@ -10,6 +10,16 @@ export class PlayPhaseEffect extends Effect {
             ]);
     }
 
+    triggerEnds(params, options) {
+        return super.triggerEnds({
+            ...params,
+            match: params.match ?? this.match,
+        }, {
+            ...options,
+            resolveInterrupts: true,
+        });
+    }
+
     async execute() {
         await this.endLimit(TARGET_PHASE);
     }

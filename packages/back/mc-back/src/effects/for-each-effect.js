@@ -1,4 +1,9 @@
-import {checkCondition, path} from '../engine/utils.js';
+import {checkCondition} from '../engine/utils.js';
+import {
+    getConditionExcludePaths,
+    getExcludedTargets,
+    isExcludedTarget,
+} from '../utils/target-condition-utils.js';
 
 import {Effect} from './effect.js';
 
@@ -14,19 +19,7 @@ export class ForEachEffect extends Effect {
             Array.isArray(condition))) {
             throw new TypeError('ForEachEffect condition must be an object.');
         }
-        if (condition?.exclude !== undefined) {
-            const excludePaths = Array.isArray(condition.exclude) ?
-                condition.exclude :
-                [condition.exclude];
-            if (excludePaths.length === 0 ||
-                !excludePaths.every(excludePath =>
-                    typeof excludePath === 'string' &&
-                    excludePath.length > 0)) {
-                throw new TypeError(
-                    'ForEachEffect condition exclude must be a path or a list of paths.'
-                );
-            }
-        }
+        getConditionExcludePaths(condition);
 
         this.effectDefinition = effectDefinition;
         this.condition = condition;
@@ -46,23 +39,16 @@ export class ForEachEffect extends Effect {
             return true;
         }
 
-        const {exclude, ...targetCondition} = this.condition;
-        if (exclude) {
-            const excludePaths = Array.isArray(exclude) ? exclude : [exclude];
-            const excludedTargets = excludePaths.flatMap(excludePath => {
-                const values = path(params, excludePath);
-                return Array.isArray(values) ?
-                    values.flat(Infinity) :
-                    values === undefined ? [] : [values];
-            });
-            if (excludedTargets.some(excludedTarget =>
-                excludedTarget === target ||
-                (target.id !== undefined &&
-                    excludedTarget?.id === target.id)
-            )) {
-                return false;
-            }
+        const excludedTargets = getExcludedTargets(
+            getConditionExcludePaths(this.condition),
+            params
+        );
+        if (isExcludedTarget(target, excludedTargets)) {
+            return false;
         }
+
+        const targetCondition = {...this.condition};
+        delete targetCondition.exclude;
 
         return Object.keys(targetCondition).length === 0 ||
             checkCondition(target, targetCondition);

@@ -5,6 +5,7 @@ import {DIALOG_SELECT_TARGET,
     TARGET_ALL_ENEMIES, TARGET_ALL_FRIENDLY_CHARACTERS, TARGET_ALL_HEROES,
     TARGET_ALL_MINIONS,
     TARGET_ALL_PLAYERS,
+    TARGET_ALL_SUPERHEROES,
     TARGET_ALL_SCHEMES,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_ALL_SUPPORTS,
@@ -16,6 +17,9 @@ import {DIALOG_SELECT_TARGET,
 import {Engine} from '../engine/engine.js';
 import {
     filterTargetCandidates,
+    getConditionExcludePaths,
+    getExcludedTargets,
+    isExcludedTarget,
     splitTargetCondition,
 } from '../utils/target-condition-utils.js';
 import {filterReferentialTargets} from '../utils/referential-ability-utils.js';
@@ -68,6 +72,8 @@ export class ValidTarget extends Engine {
         this.match = match;
         this.condition = condition;
         this._filter = filter;
+
+        getConditionExcludePaths(condition);
     }
     filter(card, params) {
         if (!card) {
@@ -183,11 +189,16 @@ export class ValidTarget extends Engine {
         }) : [];
     }
     getValidTarget(params) {
+        const excludedTargets = getExcludedTargets(
+            getConditionExcludePaths(this.condition),
+            params
+        );
         const {condition, selectionConditions} =
             splitTargetCondition(this.condition);
         const targets = this.getTargetCandidates(params, params.target, condition);
         const validTargets = targets.filter(target =>
-            this.filter(target, params));
+            !isExcludedTarget(target, excludedTargets) &&
+                this.filter(target, params));
         const referenceCard = this.effect?.referenceCard ??
             params.ability?.card ??
             params.effect?.ability?.card ??
@@ -228,6 +239,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_HEROES_ALLIES:
             case TARGET_ALL_MINIONS:
             case TARGET_ALL_PLAYERS:
+            case TARGET_ALL_SUPERHEROES:
             case TARGET_SELECTED_PLAYER_CHARACTERS:
             case TARGET_ALL_ENGAGED_MINIONS:
             case TARGET_ALL_SCHEMES:
@@ -407,43 +419,43 @@ export class ValidTarget extends Engine {
         return this.selectSingleTarget(validTarget, params);
     }
     async selectSingleTarget(validTarget, params) {
-        switch (validTarget.length) {
-            case 0:
-                return null;
-            case 1:
-                return validTarget.pop();
-            default:
-                const targetDialogData = await this.getTargetDialogData(
-                    validTarget,
-                    params
-                );
-                const response = await this.openDialog({
-                    dialogType: DIALOG_SELECT_TARGET,
-                    ...(params.showCancel ? {showCancel: true} : {}),
-                    ...getTargetPlayerDialogParam(
-                        params.targetPlayer ?? params.player
-                    ),
-                    title: params.dialogTitle || 'Elige tu objetivo',
-                    data: {
-                        ...targetDialogData,
-                    },
-                });
-                if (params.showCancel && (
-                    response?.selected === undefined ||
-                    response.selected === null
-                )) {
-                    return null;
-                }
-
-                const selectedTarget = findSelectedTarget(
-                    validTarget,
-                    response?.selected
-                );
-                if (!selectedTarget) {
-                    throw new Error('La selección del objetivo no es válida.');
-                }
-
-                return selectedTarget;
+        if (validTarget.length === 0) {
+            return null;
         }
+        if (validTarget.length === 1 && !params.showSingleTargetDialog) {
+            return validTarget[0];
+        }
+
+        const targetDialogData = await this.getTargetDialogData(
+            validTarget,
+            params
+        );
+        const response = await this.openDialog({
+            dialogType: DIALOG_SELECT_TARGET,
+            ...(params.showCancel ? {showCancel: true} : {}),
+            ...getTargetPlayerDialogParam(
+                params.targetPlayer ?? params.player
+            ),
+            title: params.dialogTitle || 'Elige tu objetivo',
+            data: {
+                ...targetDialogData,
+            },
+        });
+        if (params.showCancel && (
+            response?.selected === undefined ||
+            response.selected === null
+        )) {
+            return null;
+        }
+
+        const selectedTarget = findSelectedTarget(
+            validTarget,
+            response?.selected
+        );
+        if (!selectedTarget) {
+            throw new Error('La selección del objetivo no es válida.');
+        }
+
+        return selectedTarget;
     }
 }

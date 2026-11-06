@@ -150,6 +150,7 @@ describe('Self-discard costs', () => {
                 dialogOpened = true;
                 throw new Error('No payment dialog should be opened.');
             },
+            players: [player],
             triggerCards: {},
         };
         match.activationsFactory = new ActivationsFactory(match);

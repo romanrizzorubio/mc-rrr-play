@@ -147,7 +147,10 @@ test('boost ability cancellation suppresses only the current boost ability', asy
     const boostEffect = new ResolveBoostEffect({
         card,
         enemyActivation: {boostCards: [card]},
-        match: {amplificationIcons: 0},
+        match: {
+            amplificationIcons: 0,
+            triggerCards: {},
+        },
         selectedTarget: {},
     });
     boostEffect.boostValue = 1;

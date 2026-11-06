@@ -8,7 +8,7 @@ import {
     ABILITY_OPTION,
     ABILITY_RESOURCE,
     ABILITY_WHEN_REVEALED,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CALC_COUNT,
     CARD_TYPE_ALLY,
     CARD_TYPE_ATTACHMENT,
@@ -27,6 +27,7 @@ import {
     DECK_POSITION_SHUFFLE,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CANNOT,
     EFFECT_DEAL_DAMAGE,
@@ -136,13 +137,19 @@ const scarletWitch = {
                                     },
                                 },
                                 {
+                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                    params: {
+                                        card: 'effects.0.cards.0',
+                                    },
+                                },
+                                {
                                     type: EFFECT_MODIFY_ATTACK_VALUE,
                                     params: {
                                         target: TARGET_EFFECT,
                                         count: 0,
                                         paramsCalc: {
-                                            target: 'effects.0.cards',
-                                            formula: CALC_BOOST_ICONS,
+                                            target: 'effects.1.value',
+                                            formula: CALC_ALL,
                                         },
                                     },
                                 },
@@ -168,13 +175,19 @@ const scarletWitch = {
                                     },
                                 },
                                 {
+                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                    params: {
+                                        card: 'effects.0.cards.0',
+                                    },
+                                },
+                                {
                                     type: EFFECT_MODIFY_THWART_VALUE,
                                     params: {
                                         target: TARGET_EFFECT,
                                         count: 0,
                                         paramsCalc: {
-                                            target: 'effects.0.cards',
-                                            formula: CALC_BOOST_ICONS,
+                                            target: 'effects.1.value',
+                                            formula: CALC_ALL,
                                         },
                                     },
                                 },

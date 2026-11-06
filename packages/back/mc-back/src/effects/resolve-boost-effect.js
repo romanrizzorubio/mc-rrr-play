@@ -1,7 +1,11 @@
 import {
     DIALOG_BOOST_DEALT,
     DIALOG_ENCOUNTERS_REVEAL,
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TRIGGER_BOOST_ICONS_COUNTED,
     TRIGGER_BOOST_REVEALED,
 } from 'mc-shared';
 
@@ -23,9 +27,17 @@ export class ResolveBoostEffect extends Effect {
         this.previousBoost = previousBoost;
 
         this.boostValue = 0;
+        this.amplificationIcons = 0;
         this.value = 0;
         this.cancelledBoostIcons = 0;
+        this.countReplaced = false;
         this.cancelledBoostAbility = false;
+    }
+    get boostCountWindows() {
+        return [this];
+    }
+    get id() {
+        return this.card.id;
     }
     getResolutionChildEffects() {
         return [...super.getResolutionChildEffects()]
@@ -33,7 +45,21 @@ export class ResolveBoostEffect extends Effect {
     }
     resetResolutionData() {
         super.resetResolutionData();
+        this.countReplaced = false;
         this.cancelledBoostAbility = false;
+    }
+    checkTrigger() {
+        return !this.countReplaced;
+    }
+    toTargetObj(params) {
+        return {
+            ...this.card.toObj(params),
+            id: this.card.id,
+            boost: this.boostValue,
+        };
+    }
+    toObj(params) {
+        return this.toTargetObj(params);
     }
     get hasCancelableBoostIcons() {
         return getBoostIconCancellation(this).remainingBoostIcons > 0;
@@ -72,6 +98,17 @@ export class ResolveBoostEffect extends Effect {
             const cards = boostCards.map((boostCard, index) => {
                 const cardData = boostCard.toObj(params);
                 const isFacedown = index > cardIndex;
+                const isCurrentCard = index === cardIndex;
+                const resolvedBoostResult =
+                    enemyActivation.boostResolutionResults?.[index];
+                const boostValue = isCurrentCard ?
+                    this.boostValue :
+                    resolvedBoostResult?.boostValue ?? cardData.boost;
+                const appliedAmplificationIcons = isFacedown ?
+                    0 :
+                    isCurrentCard ?
+                        this.amplificationIcons :
+                        resolvedBoostResult?.amplificationIcons ?? 0;
 
                 return {
                     card: isFacedown ?
@@ -81,9 +118,8 @@ export class ResolveBoostEffect extends Effect {
                             canPeekFacedown:
                                 knownEncounterCards?.includes(boostCard) === true,
                         } :
-                        showUpdatedBoost && index === cardIndex ?
-                            {...cardData, boost: this.boostValue} :
-                            cardData,
+                            {...cardData, boost: boostValue},
+                    appliedAmplificationIcons,
                     horizontal: Boolean(boostCard.isMainScheme || boostCard.isSideScheme),
                     hasBoostAbility: !isFacedown && Boolean(boostCard.boostAbility),
                 };
@@ -115,12 +151,11 @@ export class ResolveBoostEffect extends Effect {
                 'Se muestran los iconos de aumento actualizados.' :
                 undefined,
             data: {
-                card: showUpdatedBoost ?
-                    {...cardData, boost: this.boostValue} :
-                    cardData,
+                card: {...cardData, boost: this.boostValue},
                 horizontal: Boolean(card.isMainScheme || card.isSideScheme),
                 isBoost: true,
                 hasBoostAbility: Boolean(card.boostAbility),
+                appliedAmplificationIcons: this.amplificationIcons,
             },
         }, params.player);
     }
@@ -128,7 +163,8 @@ export class ResolveBoostEffect extends Effect {
         await super.prepare(params);
 
         const {card} = this;
-        this.boostValue = (card.boost || 0) + this.match.amplificationIcons;
+        this.amplificationIcons = this.match.amplificationIcons;
+        this.boostValue = (card.boost || 0) + this.amplificationIcons;
 
         await this.showBoostDialog(params);
     }
@@ -151,6 +187,31 @@ export class ResolveBoostEffect extends Effect {
             }
         }
 
+        const previousBoostValue = this.boostValue;
+        const triggerTypes = [TRIGGER_BOOST_ICONS_COUNTED];
+        const triggerParams = {
+            ...params,
+            card,
+            triggeredCard: card,
+            countedCard: card,
+            effect: this,
+        };
+        await this.trigger(PRIORITY_CONSTANT, triggerTypes, triggerParams);
+        if (await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            triggerTypes,
+            triggerParams
+        )) {
+            await this.trigger(
+                PRIORITY_INTERRUPT,
+                triggerTypes,
+                triggerParams
+            );
+        }
+
+        if (this.boostValue !== previousBoostValue && !this.countReplaced) {
+            await this.showBoostDialog(params, {showUpdatedBoost: true});
+        }
         this.value = this.boostValue;
     }
 }

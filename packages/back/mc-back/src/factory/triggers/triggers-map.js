@@ -9,6 +9,7 @@ import {
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE,
     TRIGGER_BOOST_REVEALED,
+    TRIGGER_BOOST_ICONS_COUNTED,
     TRIGGER_ABILITY_COST,
     TRIGGER_ABILITY_RESOLVED,
     TRIGGER_CHARACTER_DEFEATED,
@@ -35,6 +36,7 @@ import {
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_HERO_DEFENDS_ATTACK,
+    TRIGGER_INITIAL_PLAYER_CHANGED,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLACE_DAMAGE,
@@ -55,6 +57,7 @@ import {
     TRIGGER_MOVE_THREAT,
     TRIGGER_SURGE,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_ACTIVATES,
     TRIGGER_THIS_COUNTERS_REMOVED,
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
@@ -74,6 +77,7 @@ import {
     TRIGGER_VILLAIN_PHASE_STEP,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_YOU_ANY_ATTACK,
+    TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOU_BASIC_ATTACK,
@@ -133,6 +137,7 @@ import {PlayCardTrigger} from '../../triggers/play-card-trigger.js';
 import {PlayerTurnStartTrigger} from '../../triggers/player-turn-start-trigger.js';
 import {PlayerTurnEndTrigger} from '../../triggers/player-turn-end-trigger.js';
 import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
+import {ThisActivatesTrigger} from '../../triggers/this-activates-trigger.js';
 import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
@@ -172,6 +177,7 @@ import {
     WouldAddAccelerationTokenTrigger
 } from '../../triggers/would-add-acceleration-token-trigger.js';
 import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
+import {YouAllyAttackTrigger} from '../../triggers/you-ally-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
@@ -221,6 +227,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_ATTACHED_WOULD_ATTACK]: AttachedWouldAttackTrigger,
     [TRIGGER_ATTACHED_WOULD_DEALT_DAMAGE]: AttachedWouldDealtDamageTrigger,
     [TRIGGER_BOOST_REVEALED]: Trigger,
+    [TRIGGER_BOOST_ICONS_COUNTED]: Trigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CHARACTER_ATTACKED]: CharacterAttackedTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
@@ -234,6 +241,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,
+    [TRIGGER_THIS_ACTIVATES]: ThisActivatesTrigger,
     [TRIGGER_THIS_COUNTERS_REMOVED]: ThisCountersRemovedTrigger,
     [TRIGGER_THIS_DEFEAT]: ThisDefeatTrigger,
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
@@ -255,6 +263,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,
     [TRIGGER_YOU_BASIC_DEFENSE]: YouBasicDefenseTrigger,
     [TRIGGER_YOU_ANY_ATTACK]: YouAnyAttackTrigger,
+    [TRIGGER_YOU_ALLY_ATTACK]: YouAllyAttackTrigger,
     [TRIGGER_YOU_ANY_THWART]: YouAnyThwartTrigger,
     [TRIGGER_YOU_BASIC_THWART]: YouBasicThwartTrigger,
     [TRIGGER_YOU_DEFEAT_MINION]: YouDefeatMinionTrigger,
@@ -274,6 +283,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_INSTANT]: InstantTrigger,
     [TRIGGER_MAIN_SCHEME_COMPLETED]: MainSchemeCompletedTrigger,
     [TRIGGER_PHASE_ENDS]: PhaseEndsTrigger,
+    [TRIGGER_INITIAL_PLAYER_CHANGED]: Trigger,
     [TRIGGER_ROUND_ENDS]: RoundEndsTrigger,
     [TRIGGER_PLACE_DAMAGE]: Trigger,
     [TRIGGER_PLACE_THREAT]: PlaceThreatTrigger,

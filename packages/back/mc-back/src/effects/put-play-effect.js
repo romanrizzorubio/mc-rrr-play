@@ -226,7 +226,7 @@ export class PutPlayEffect extends Effect {
         this.initializeCardState(card);
         await this.attachCard(card, controller, selectedTarget, params);
         await this.enforceRestrictedCardLimit(card, controller);
-        this.initializeSideScheme(card);
+        this.initializeSideScheme(card, isEnteringPlay);
         await this.refreshControllerZone(card, controller, gameZone);
 
         if (card.isAlly) {
@@ -337,9 +337,12 @@ export class PutPlayEffect extends Effect {
             );
         }
     }
-    initializeSideScheme(card) {
+    initializeSideScheme(card, isEnteringPlay) {
         if (card.isSideScheme) {
             card.initScheme();
+            if (isEnteringPlay && card.hinder) {
+                card.placeThreat(card.hinder);
+            }
         }
     }
     async refreshControllerZone(card, controller, gameZone = controller?.gameZone) {

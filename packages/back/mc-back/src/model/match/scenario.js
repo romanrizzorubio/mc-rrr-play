@@ -542,12 +542,14 @@ export class Scenario extends Engine {
 
             return card;
         });
+        const permanentCards = cards.filter(card => card.permanent);
+        permanentCards.forEach(card => this.addApart(card));
 
         const initialScheme = this.mainSchemes.shift();
         this.usedMainSchemes = new Set([initialScheme]);
         this.gameZone.addScheme(initialScheme);
 
-        this.deck.initDeck(cards);
+        this.deck.initDeck(cards.filter(card => !card.permanent));
 
         this.finalVillainDefeated = false;
         if (!this.getVillains().length) {

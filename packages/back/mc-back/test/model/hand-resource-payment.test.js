@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {
     RESOURCE_ANY,
@@ -12,10 +12,12 @@ import aggressionResources from '../../../mc-data/seed/catalog/aspects/aggressio
 import msMarvel from '../../../mc-data/seed/catalog/heroes/ms-marvel.js';
 import {PayCostEffect} from '../../src/effects/pay-cost-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
+import {ResourceAbility} from '../../src/abilities/resource/resource-ability.js';
 import {Hand} from '../../src/model/match/hand.js';
 import {Player} from '../../src/model/match/player.js';
 import {ResourceCard} from '../../src/model/printed/resource-card.js';
 
+describe('resource payment', () => {
 test('Hand.getCardsToPay includes conditional wild resources for a specific resource cost', () => {
     const printedResourceCard = new ResourceCard(
         aggressionResources[0].card.params
@@ -195,6 +197,7 @@ test('Player.getDirectResourcePayment resolves a dragged hand resource', async (
         generators: [],
         hand: [resourceCard],
         resources: [RESOURCE_ENERGY],
+        sharedPaymentContributors: [],
     });
 });
 
@@ -207,6 +210,8 @@ test('Player.getDirectResourcePayment resolves a dragged resource generator', as
         id: 'energy-generator',
     };
     const player = Object.create(Player.prototype);
+    player.isPlayer = true;
+    generator.controller = player;
     player.getCardsToPay = async () => ({
         generators: [generator],
         hand: [],
@@ -223,6 +228,7 @@ test('Player.getDirectResourcePayment resolves a dragged resource generator', as
         generators: [generator],
         hand: [],
         resources: [RESOURCE_ENERGY],
+        sharedPaymentContributors: [],
     });
 });
 
@@ -302,8 +308,13 @@ test('Player.getResourceGenerators filters abilities by every required resource 
     const energyGenerator = makeGenerator('energy-generator', RESOURCE_ENERGY);
     const player = Object.create(Player.prototype);
     player.superhero = {
+        match: {
+            isResolvingPeril: false,
+            players: [],
+        },
         currentSide: superheroSide,
     };
+    player.superhero.match.players.push(player);
     player.gameZone = {
         cards: [mentalGenerator, physicalGenerator, energyGenerator],
     };
@@ -325,12 +336,100 @@ test('Player.getResourceGenerators filters abilities by every required resource 
     ]);
 });
 
+test('shared payments offer only opted-in generators and ask their controller', async () => {
+    const dialogs = [];
+    const match = {
+        isResolvingPeril: false,
+        players: [],
+        async openDialog(dialog) {
+            dialogs.push(dialog);
+
+            return {selected: {id: 0}};
+        },
+    };
+    const makePlayer = (id, name) => {
+        const player = Object.create(Player.prototype);
+        player.gameZone = {cards: []};
+        player.hand = {cards: []};
+        player.id = id;
+        player.isPlayer = true;
+        player.name = name;
+        player.superhero = {
+            match,
+            currentSide: {
+                id: `${id}-identity`,
+                async hasResourceGenerators() {
+                    return false;
+                },
+            },
+        };
+
+        return player;
+    };
+    const payer = makePlayer('payer', 'Payer');
+    const controller = makePlayer('controller', 'Controller');
+    const makeGenerator = (id, canGenerateForOtherPlayers) => {
+        const ability = new ResourceAbility({
+            canGenerateForOtherPlayers,
+            match,
+            resource: RESOURCE_WILD,
+        });
+        const generator = {
+            abilities: [ability],
+            controller,
+            id,
+            name: id,
+            async hasResourceGenerators(cardToPay) {
+                return ability.canRun({
+                    card: generator,
+                    cardToPay,
+                    player: controller,
+                });
+            },
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        };
+        ability.card = generator;
+
+        return generator;
+    };
+    const milano = makeGenerator('Milano', true);
+    const privateGenerator = makeGenerator('Private generator', false);
+    controller.gameZone.cards = [milano, privateGenerator];
+    match.players = [payer, controller];
+    const cardToPay = {name: 'Cost'};
+
+    assert.deepEqual(
+        await payer.getResourceGenerators(cardToPay, RESOURCE_ANY),
+        [milano]
+    );
+    assert.deepEqual(
+        await payer.confirmSharedResourceContributions([milano], cardToPay),
+        [milano]
+    );
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].targetPlayer, controller);
+
+    match.isResolvingPeril = true;
+    assert.deepEqual(
+        await payer.getResourceGenerators(cardToPay, RESOURCE_ANY),
+        []
+    );
+    assert.equal(
+        await payer.confirmSharedResourceContributions([milano], cardToPay),
+        undefined
+    );
+    assert.equal(dialogs.length, 1);
+});
+
 test('Ms. Marvel suit can pay for an event and resolves against that event', async () => {
-    const match = {triggerCards: {}};
+    const match = {players: [], triggerCards: {}};
     const cardsFactory = new CardsFactory({match});
     const player = Object.create(Player.prototype);
     player.isPlayer = true;
     player.superhero = {
+        match,
         isHero: true,
         currentSide: {
             id: 'hero-side',
@@ -340,6 +439,7 @@ test('Ms. Marvel suit can pay for an event and resolves against that event', asy
             },
         },
     };
+    match.players.push(player);
     player.gameZone = {
         cards: [],
         getCard(cardId) {
@@ -391,4 +491,5 @@ test('Ms. Marvel suit can pay for an event and resolves against that event', asy
     await payCostEffect.payGenerators({player});
 
     assert.equal(suit.exhausted, true);
+});
 });

@@ -11,7 +11,28 @@ export default css`
   }
 
   .boost-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     margin-bottom: 12px;
+  }
+
+  .boost-icon-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .boost-amplification-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
   }
 
   .boost-icon-list {

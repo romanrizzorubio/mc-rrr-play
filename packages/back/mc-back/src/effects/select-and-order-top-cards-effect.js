@@ -1,4 +1,10 @@
-import {DIALOG_DISCARD_ORDER} from 'mc-shared';
+import {
+    DECK_POSITION_BOTTOM,
+    DECK_POSITION_TOP,
+    DIALOG_DISCARD_ORDER,
+    PLACE_DISCARD_PILE,
+    PLACE_HAND,
+} from 'mc-shared';
 
 import {Effect} from './effect.js';
 
@@ -7,6 +13,13 @@ export class SelectAndOrderTopCardsEffect extends Effect {
         count = 1,
         orderTitle = 'Elige el orden de las cartas que vuelven al mazo',
         title = 'Elige una carta para descartar',
+        selectionDestination = PLACE_DISCARD_PILE,
+        returnPosition = DECK_POSITION_TOP,
+        selectionHeading,
+        returnHeading,
+        selectionInstructions,
+        selectionDropText,
+        confirmText,
         target,
     }) {
         super(arguments[0]);
@@ -20,6 +33,29 @@ export class SelectAndOrderTopCardsEffect extends Effect {
         this.count = count;
         this.orderTitle = orderTitle;
         this.title = title;
+        if (![PLACE_DISCARD_PILE, PLACE_HAND].includes(selectionDestination)) {
+            throw new TypeError(
+                'SelectAndOrderTopCardsEffect selectionDestination must be a player card location.'
+            );
+        }
+        if (![DECK_POSITION_TOP, DECK_POSITION_BOTTOM].includes(returnPosition)) {
+            throw new TypeError(
+                'SelectAndOrderTopCardsEffect returnPosition must be top or bottom.'
+            );
+        }
+        this.selectionDestination = selectionDestination;
+        this.returnPosition = returnPosition;
+        this.selectionHeading = selectionHeading ??
+            (selectionDestination === PLACE_HAND ?
+                'Carta que añades a tu mano' :
+                'Descartar');
+        this.returnHeading = returnHeading ??
+            (returnPosition === DECK_POSITION_BOTTOM ?
+                'Cartas que van al fondo del mazo' :
+                'Cartas que vuelven al mazo');
+        this.selectionInstructions = selectionInstructions;
+        this.selectionDropText = selectionDropText;
+        this.confirmText = confirmText;
     }
     async execute(params) {
         const deck = this.selectedTarget;
@@ -42,7 +78,14 @@ export class SelectAndOrderTopCardsEffect extends Effect {
                 dialogType: DIALOG_DISCARD_ORDER,
                 targetPlayer: params.player,
                 title: this.orderTitle,
-                subtitle: `${this.title}. La carta de la izquierda quedará en la parte superior del mazo.`,
+                ...(this.selectionInstructions === undefined ||
+                    this.selectionInstructions === null ? {
+                        subtitle: `${this.title}. La carta de la izquierda quedará ${
+                            this.returnPosition === DECK_POSITION_BOTTOM ?
+                                'primero al llegar al fondo' :
+                                'en la parte superior'
+                        } del mazo.`,
+                    } : {}),
                 data: {
                     cards: cards.map(card => ({
                         ...card.toObj(params),
@@ -50,6 +93,12 @@ export class SelectAndOrderTopCardsEffect extends Effect {
                     })),
                     discardCount: 1,
                     allowReorder: true,
+                    selectionHeading: this.selectionHeading,
+                    returnHeading: this.returnHeading,
+                    selectionInstructions: this.selectionInstructions,
+                    selectionDropText: this.selectionDropText,
+                    returnPosition: this.returnPosition,
+                    confirmText: this.confirmText,
                 },
             });
             const selectedIds = new Set();
@@ -87,14 +136,30 @@ export class SelectAndOrderTopCardsEffect extends Effect {
             if (response.skipDiscardOrderDialog === true) {
                 this.match.skipDiscardOrderDialog = true;
             }
+
             orderedCards = orderedSelection;
         } else {
             orderedCards = [];
         }
 
-        deck.cards.unshift(...orderedCards);
-        deck.markKnown(orderedCards);
-        if (typeof deck.discard === 'function') {
+        deck.forgetKnown(cards);
+        if (this.returnPosition === DECK_POSITION_BOTTOM) {
+            deck.cards.push(...orderedCards);
+        } else {
+            deck.cards.unshift(...orderedCards);
+        }
+        if (this.returnPosition === DECK_POSITION_TOP) {
+            deck.markKnown(orderedCards);
+        }
+        if (this.selectionDestination === PLACE_HAND) {
+            if (typeof params.player?.hand?.addCard !== 'function') {
+                throw new TypeError(
+                    'SelectAndOrderTopCardsEffect requires a player hand to add the selected card.'
+                );
+            }
+            params.player.hand.addCard(discardedCard);
+            await params.player.hand.refresh();
+        } else if (typeof deck.discard === 'function') {
             await deck.discard(discardedCard);
         } else {
             deck.discardPile.push(discardedCard);

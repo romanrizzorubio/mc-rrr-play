@@ -1,16 +1,23 @@
 import {DIALOG_LIST, TARGET_ALL_PLAYERS, TARGET_YOU} from 'mc-shared';
 
+import {path} from '../engine/utils.js';
 import {Effect} from './effect.js';
 
 export class ChooseEffect extends Effect {
     constructor({
         options = [],
         players = TARGET_YOU,
+        contextCards = [],
     }) {
         super(arguments[0]);
 
+        if (!Array.isArray(contextCards)) {
+            throw new TypeError('ChooseEffect contextCards must be a list.');
+        }
+
         this.options = options;
         this.playersTarget = players;
+        this.contextCards = contextCards;
 
         options.forEach(effect => {
             if (!effect.target) {
@@ -77,6 +84,33 @@ export class ChooseEffect extends Effect {
         return this.promisesSequentialFilter(options, option =>
             option.canRun(optionParams));
     }
+    getContextCards(params) {
+        return this.contextCards.map(contextCard => {
+            if (!contextCard || typeof contextCard !== 'object' ||
+                Array.isArray(contextCard)) {
+                throw new TypeError(
+                    'ChooseEffect context cards must be card descriptors.'
+                );
+            }
+
+            const {card: cardSource, label} = contextCard;
+            if (typeof label !== 'string' || !label.trim()) {
+                throw new TypeError(
+                    'ChooseEffect context cards require a label.'
+                );
+            }
+            const card = typeof cardSource === 'string' ?
+                path(params, cardSource) :
+                cardSource;
+            if (!card || typeof card.toObj !== 'function') {
+                throw new TypeError(
+                    `ChooseEffect could not resolve context card "${cardSource}".`
+                );
+            }
+
+            return {card: card.toObj(params), label};
+        });
+    }
     async execute(params) {
         const card = params.forEachTarget || this.ability.card || params.card;
 
@@ -93,22 +127,26 @@ export class ChooseEffect extends Effect {
                 if (!options.length) {
                     break;
                 }
-                if (options.length === 1 && !returnToChoice) {
+                if (options.length === 1 && !returnToChoice &&
+                    !this.showCancel) {
                     await options[0].runEffect(optionParams);
                     break;
                 }
+                const contextCards = this.getContextCards(playerParams);
 
-                const {selected} = await this.openDialog({
+                const response = await this.openDialog({
                     dialogType: DIALOG_LIST,
                     hideOk: true,
                     hand: player.hand.cards.map(card => card.toObj(playerParams)),
                     title: 'Elige una opción',
+                    ...(this.showCancel ? {showCancel: true} : {}),
                     targetPlayer: player.id ||
                         player.userId ||
                         player.name,
                     targetPlayerName: player.name,
                     data: {
                         card: card.toObj(playerParams),
+                        ...(contextCards.length ? {contextCards} : {}),
                         options: options.map((option, index) => ({
                             id: index,
                             text: option.getTitle(),
@@ -116,7 +154,22 @@ export class ChooseEffect extends Effect {
                     },
                 });
 
+                const selected = response?.selected;
+                if (selected?.id === undefined) {
+                    if (this.showCancel &&
+                        (selected === null || selected === undefined)) {
+                        this.paymentCancelled = true;
+                        return;
+                    }
+
+                    throw new Error('ChooseEffect received an invalid option selection.');
+                }
+
                 const selectedOption = options[selected.id];
+                if (!selectedOption) {
+                    throw new Error('ChooseEffect received an invalid option selection.');
+                }
+
                 await selectedOption.runEffect({
                     ...optionParams,
                     isChosenOption: true,

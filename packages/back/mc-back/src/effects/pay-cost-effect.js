@@ -14,11 +14,22 @@ export class PayCostEffect extends Effect {
     payGenerators(params) {
         const {generators} = this;
 
-        return this.promisesSequential(generators, card => card.resolveResourceAbility({
-            ...params,
-            cardToPay: this.selectedTarget ?? params.cardToPay,
-            card,
-        }));
+        return this.promisesSequential(generators, card => {
+            const resourceOwner = card.controller || card.owner;
+            if (!resourceOwner?.isPlayer) {
+                throw new TypeError(
+                    `El generador "${card.name}" no tiene un jugador controlador.`
+                );
+            }
+
+            return card.resolveResourceAbility({
+                ...params,
+                player: resourceOwner,
+                resourceRecipient: params.player,
+                cardToPay: this.selectedTarget ?? params.cardToPay,
+                card,
+            });
+        });
     }
     async payHand(params) {
         const hand = await this.selectDiscardOrder(

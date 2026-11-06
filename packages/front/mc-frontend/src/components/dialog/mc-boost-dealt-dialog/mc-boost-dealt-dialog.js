@@ -5,7 +5,10 @@ import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
-import {renderBoostIcons} from '../../../utils/boost-icons.js';
+import {
+    renderAmplificationIcons,
+    renderBoostIcons,
+} from '../../../utils/boost-icons.js';
 
 export class McBoostDealtDialog extends McDialog {
     static get is() {
@@ -68,14 +71,34 @@ export class McBoostDealtDialog extends McDialog {
                     }
 
                     const boostIcons = renderBoostIcons(boostCard.card.boost);
+                    const amplificationIcons = renderAmplificationIcons(
+                        boostCard.appliedAmplificationIcons
+                    );
                     const isFacedown = Boolean(boostCard.card.isFacedownCard);
 
                     return html`
                         <div class="boost-card">
-                            ${!isFacedown && boostIcons.length ? html`
+                            ${!isFacedown &&
+                                (boostIcons.length || amplificationIcons.length) ?
+                                html`
                                 <div class="boost-icons">
-                                    <strong>Iconos de aumento:</strong>
-                                    <span class="boost-icon-list">${boostIcons}</span>
+                                    ${boostIcons.length ? html`
+                                        <div class="boost-icon-row">
+                                            <strong>Iconos de aumento</strong>
+                                            <span class="boost-icon-list">${boostIcons}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${amplificationIcons.length ? html`
+                                        <div class="boost-amplification-row">
+                                            <strong>
+                                                Bonificador de amplificación
+                                                (+${boostCard.appliedAmplificationIcons})
+                                            </strong>
+                                            <span class="boost-icon-list">
+                                                ${amplificationIcons}
+                                            </span>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             ` : ''}
                             <mc-card
@@ -91,7 +114,7 @@ export class McBoostDealtDialog extends McDialog {
                             ></mc-card>
                             ${!isFacedown && boostCard.hasBoostAbility ? html`
                                 <div class="boost-ability">
-                                    <strong>Capacidad de aumento:</strong> Sí
+                                    <strong>Capacidad de aumento</strong> Sí
                                 </div>
                             ` : ''}
                         </div>
@@ -100,7 +123,7 @@ export class McBoostDealtDialog extends McDialog {
             </div>
             ${cumulativeBoostIcons.length ? html`
                 <div class="boost-total">
-                    <strong>Iconos de aumento acumulados:</strong>
+                    <strong>Iconos de aumento acumulados</strong>
                     <span class="boost-icon-list">${cumulativeBoostIcons}</span>
                 </div>
             ` : ''}

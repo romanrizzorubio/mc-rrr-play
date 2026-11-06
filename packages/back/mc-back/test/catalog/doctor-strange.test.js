@@ -376,6 +376,7 @@ describe('Doctor Strange', () => {
                         isResource: true,
                         resources,
                     }],
+                    owner: player,
                     async resolveResourceAbility() {},
                 }],
                 hand: [],

@@ -189,6 +189,22 @@ export class Api {
             callback,
         });
     }
+    listenChatState(callback) {
+        this.socket.on(EVENTS.CHAT.STATE, callback);
+
+        return () => this.socket.off(EVENTS.CHAT.STATE, callback);
+    }
+    listenChatMessage(callback) {
+        this.socket.on(EVENTS.CHAT.MESSAGE, callback);
+
+        return () => this.socket.off(EVENTS.CHAT.MESSAGE, callback);
+    }
+    sendChatMessage(message) {
+        return this.send({
+            endpoint: EVENTS.CHAT.SEND,
+            params: {message},
+        });
+    }
     listenPlayer(callback) {
         this.listen({
             event: EVENTS.PLAYER.REFRESH,

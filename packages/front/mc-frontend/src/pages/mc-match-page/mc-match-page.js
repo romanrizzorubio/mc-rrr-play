@@ -1074,6 +1074,7 @@ export class McMatchPage extends LitElement {
         return html`
             <mc-match
                 .match="${match}"
+                .api="${this.api}"
                 .player="${_player}"
                 .boardPlayer="${_player}"
                 .dialogBoardPlayerId="${this.dialogBoardPlayerId}"
