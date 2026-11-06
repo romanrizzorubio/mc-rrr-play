@@ -13,6 +13,8 @@ import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_DELAYED,
+    EFFECT_DISCARD_GAME,
     EFFECT_DISCARD_UNTIL,
     EFFECT_EXHAUST,
     EFFECT_HEAL,
@@ -56,6 +58,7 @@ import {
     TRAIT_TACTIC,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_BASIC_THWART,
+    TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
 
@@ -738,6 +741,62 @@ export default [
                                         'formula': CALC_STAGE,
                                         'max': 3
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-un-ultimo-asalto',
+        'aspect': 'leadership',
+        'order': 150,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Un último asalto',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/15029.png',
+                'traits': [
+                    TRAIT_TACTIC
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_ALLY_ATTACK,
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'count': 3
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DELAYED,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'effect': {
+                                                    'type': EFFECT_DISCARD_GAME,
+                                                    'params': {
+                                                        'target': TARGET_SOURCE,
+                                                        'source': 'effect.character'
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             }
                         }

@@ -265,7 +265,22 @@ describe('requested actions only grant Action abilities', () => {
         const hand = await actor.hand.toObjWithPlayability();
         assert.equal(hand.find(card => card.id === support.id).playable, false);
         assert.equal(hand.find(card => card.id === event.id).playable, true);
+        assert.equal(hand.find(card => card.id === event.id).isEvent, true);
         assert.equal((await actor.toObjWithPlayableHand()).superhero.canFlip, false);
+
+        match.actionRequest.status = 'pending';
+        assert.equal((await actor.hand.toObjWithPlayability())
+            .find(card => card.id === event.id).playable, false);
+        match.actionRequest = null;
+        assert.equal((await actor.hand.toObjWithPlayability())
+            .find(card => card.id === event.id).playable, false);
+        match.actionRequest = {
+            requesterUserId: match.currentTurnPlayer.userId,
+            targetUserId: 'different-player',
+            status: 'accepted',
+        };
+        assert.equal((await actor.hand.toObjWithPlayability())
+            .find(card => card.id === event.id).playable, false);
 
         match.currentTurnPlayer = actor;
         match.actionRequest = null;

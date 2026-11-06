@@ -11,7 +11,7 @@ import {
     ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_ALLY,
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_ATTACHMENT,
@@ -29,6 +29,7 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CANCEL_CARD_EFFECTS,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
@@ -559,13 +560,19 @@ const doctorStrange = {
                                             },
                                         },
                                         {
+                                            type: EFFECT_COUNT_BOOST_ICONS,
+                                            params: {
+                                                card: 'effects.0.cards.0',
+                                            },
+                                        },
+                                        {
                                             type: EFFECT_REMOVE_THREAT,
                                             params: {
                                                 target: TARGET_SCHEME,
                                                 threat: 3,
                                                 paramsCalc: {
-                                                    target: 'effects.0.cards',
-                                                    formula: CALC_BOOST_ICONS,
+                                                    target: 'effects.1.value',
+                                                    formula: CALC_ALL,
                                                     plus: 3,
                                                 },
                                             },

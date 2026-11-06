@@ -1,3 +1,5 @@
+import {isActionRequestSeat} from './player-seat.js';
+
 export function isOtherPlayerTurn(player) {
     const match = player?.match;
     const currentPlayer = match?.currentTurnPlayer;
@@ -14,8 +16,21 @@ export function isOtherPlayerTurn(player) {
 }
 
 export function canPlayCardDuringTurn(card, player) {
-    return !isOtherPlayerTurn(player) ||
-        Boolean(card?.isEvent && card.abilities?.some(ability => ability.isAction));
+    const match = player?.match;
+    const request = match?.actionRequest;
+    const isActionEvent = Boolean(
+        card?.isEvent && card.abilities?.some(ability => ability.isAction)
+    );
+
+    if (request?.status === 'pending') {
+        return false;
+    }
+    if (request?.status === 'accepted') {
+        return isActionRequestSeat(match, request, 'target', player) &&
+            isActionEvent;
+    }
+
+    return !isOtherPlayerTurn(player);
 }
 
 export function assertOwnTurnOption(player) {

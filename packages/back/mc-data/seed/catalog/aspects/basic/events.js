@@ -1,13 +1,16 @@
 import {
     CLASSIFICATION_BASIC,
     ABILITY_ACTION,
+    ABILITY_ALTEREGO_ACTION,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
     CARD_TYPE_EVENT,
+    CALC_RECOVERY,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_DEAL_DAMAGE,
     EFFECT_CHAINED,
+    EFFECT_DRAW_CARD,
     EFFECT_HEAL,
     EFFECT_FLIP,
     EFFECT_EXHAUST,
@@ -18,6 +21,7 @@ import {
     EFFECT_READY,
     EFFECT_REMOVE_STATUS,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SELECT_DISCARD_CARD,
     EFFECT_SIMULTANEOUS,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -29,6 +33,7 @@ import {
     STATUS_STUNNED,
     TARGET_CHARACTER,
     TARGET_CARD,
+    TARGET_ALTEREGO,
     TARGET_EFFECT,
     TARGET_ENEMY,
     TARGET_ANY_CHARACTER_YOU_CONTROL,
@@ -38,6 +43,7 @@ import {
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SCHEME,
     TARGET_VILLAIN,
+    TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
     TARGET_YOUR_HERO,
     TIME_PHASE,
@@ -46,6 +52,8 @@ import {
     TRAIT_SUPERPOWER,
     TRAIT_TACTIC,
     TRAIT_THWART,
+    TRAIT_MYSTIC,
+    TRAIT_SPELL,
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
@@ -546,5 +554,87 @@ export default [
                 ]
             }
         }
+    },
+    {
+        _id: 'basic-meditacion-espiritual',
+        classification: CLASSIFICATION_BASIC,
+        order: 150,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Meditación espiritual',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/events/15019.png',
+                traits: [TRAIT_SPELL],
+                cost: 0,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_BASIC,
+                paramsToPlay: {
+                    'superhero.traits': TRAIT_MYSTIC,
+                },
+                abilities: [
+                    {
+                        type: ABILITY_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DRAW_CARD,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                count: 2,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_SELECT_DISCARD_CARD,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                count: 1,
+                                                title: 'Elige 1 carta de tu mano para descartarla',
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-restablecimiento',
+        classification: CLASSIFICATION_BASIC,
+        order: 151,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Restablecimiento',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/events/15031.png',
+                cost: 2,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_BASIC,
+                abilities: [
+                    {
+                        type: ABILITY_ALTEREGO_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_HEAL,
+                                params: {
+                                    target: TARGET_ALTEREGO,
+                                    paramsCalc: {
+                                        target: 'player.superhero',
+                                        formula: CALC_RECOVERY,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
     },
 ];

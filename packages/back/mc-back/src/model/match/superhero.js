@@ -138,9 +138,6 @@ export class Superhero extends CharacterGameCard {
     get thwart() {
         return this.currentSide.thwart;
     }
-    get traits() {
-        return this.currentSide.traits;
-    }
     async init() {
         const controller = this.controller;
 

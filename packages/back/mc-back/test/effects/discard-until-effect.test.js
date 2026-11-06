@@ -196,7 +196,7 @@ describe('discard until and engage effects', () => {
             dialogType: DIALOG_ENCOUNTERS_REVEAL,
             targetPlayer: initialPlayer,
             showToAll: true,
-            title: 'Esbirro puesto en juego',
+            title: 'Esbirro enfrentado a',
             data: {
                 card: {id: minion.id, name: minion.name},
             },

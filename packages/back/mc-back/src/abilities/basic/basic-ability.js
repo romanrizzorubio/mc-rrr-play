@@ -108,7 +108,7 @@ export class BasicAbility extends Ability {
 
         await super.resolveAbility(resolveParams);
 
-        if (this.resolved && card.isAlly) {
+        if (this.resolved && card.isAlly && card.isInPlay) {
             await this.applyConsequencial(params);
         }
     }

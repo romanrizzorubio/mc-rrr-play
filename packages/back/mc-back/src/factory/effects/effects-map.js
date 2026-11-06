@@ -22,6 +22,8 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CANCEL_BOOST_ABILITY,
     EFFECT_CANCEL_BOOST_ICONS,
+    EFFECT_COUNT_BOOST_ICONS,
+    EFFECT_COUNT_BOOST_ICONS_BATCH,
     EFFECT_CHAINED,
     EFFECT_CREATE_EXTRA_DECK,
     EFFECT_CANNOT,
@@ -115,6 +117,7 @@ import {
     EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES,
     EFFECT_RETURN_FACEDOWN,
     EFFECT_RETURN_HAND,
+    EFFECT_RESOLVE_CARDS_IN_ORDER,
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
@@ -162,6 +165,10 @@ import {ReplaceEffect} from '../../effects/replace-effect.js';
 import {CancelEncounterEffect} from '../../effects/cancel-encounter-effect.js';
 import {CancelBoostAbilityEffect} from '../../effects/cancel-boost-ability-effect.js';
 import {CancelBoostIconsEffect} from '../../effects/cancel-boost-icons-effect.js';
+import {CountBoostIconsEffect} from '../../effects/count-boost-icons-effect.js';
+import {
+    CountBoostIconsBatchEffect,
+} from '../../effects/count-boost-icons-batch-effect.js';
 import {CreateExtraDeckEffect} from '../../effects/create-extra-deck-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
@@ -256,6 +263,7 @@ import {ResolveSelectedSpecialAbilitiesEffect} from '../../effects/resolve-selec
 import {ResolveAbilityEffect} from '../../effects/resolve-ability-effect.js';
 import {ReturnFaceDownEffect} from '../../effects/return-facedown-effect.js';
 import {ReturnHandEffect} from '../../effects/return-hand-effect.js';
+import {ResolveCardsInOrderEffect} from '../../effects/resolve-cards-in-order-effect.js';
 import {TuckUnderEffect} from '../../effects/tuck-under-effect.js';
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {SearchCardAndRevealEffect} from '../../effects/search-card-reveal-effect.js';
@@ -304,6 +312,8 @@ export const EFFECT_MAP = {
     [EFFECT_CANCEL_ENCOUNTER]: CancelEncounterEffect,
     [EFFECT_CANCEL_BOOST_ABILITY]: CancelBoostAbilityEffect,
     [EFFECT_CANCEL_BOOST_ICONS]: CancelBoostIconsEffect,
+    [EFFECT_COUNT_BOOST_ICONS]: CountBoostIconsEffect,
+    [EFFECT_COUNT_BOOST_ICONS_BATCH]: CountBoostIconsBatchEffect,
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CREATE_EXTRA_DECK]: CreateExtraDeckEffect,
     [EFFECT_CANNOT]: CannotEffect,
@@ -379,6 +389,7 @@ export const EFFECT_MAP = {
     [EFFECT_RESOLVE_SPECIAL_ABILITY]: ResolveSpecialAbilityEffect,
     [EFFECT_RESOLVE_ABILITY]: ResolveAbilityEffect,
     [EFFECT_RESOLVE_SELECTED_SPECIAL_ABILITIES]: ResolveSelectedSpecialAbilitiesEffect,
+    [EFFECT_RESOLVE_CARDS_IN_ORDER]: ResolveCardsInOrderEffect,
     [EFFECT_REMOVE_CARD]: RemoveCardEffect,
     [EFFECT_RETURN_HAND]: ReturnHandEffect,
     [EFFECT_REVEAL_ENCOUNTER]: RevealEncounterEffect,

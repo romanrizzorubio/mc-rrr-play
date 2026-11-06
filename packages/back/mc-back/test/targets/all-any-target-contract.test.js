@@ -118,6 +118,7 @@ describe('ALL and ANY target contracts', () => {
         shared.TARGET_ANY_PLAYER,
         shared.TARGET_ANY_DECK,
         shared.TARGET_ANY_CHARACTER_YOU_CONTROL,
+        shared.TARGET_FRIENDLY_CHARACTER,
         shared.TARGET_ALLY_YOU_CONTROL,
         shared.TARGET_CHARACTER,
         shared.TARGET_ENEMY,
@@ -179,6 +180,46 @@ describe('ALL and ANY target contracts', () => {
         });
         assert.equal(any.id, pool[2].id);
         assert.equal(dialogs.length, 1);
+    });
+
+    test('friendly character selection spans players while the you-control selector stays local', async () => {
+        const ownCharacter = {
+            id: 'own-character',
+            toObj() { return {id: this.id}; },
+        };
+        const otherCharacter = {
+            id: 'other-character',
+            toObj() { return {id: this.id}; },
+        };
+        const player = {id: 'actor', friends: [ownCharacter]};
+        const otherPlayer = {id: 'other-player', friends: [otherCharacter]};
+        const match = {
+            players: [player, otherPlayer],
+            openDialog: async dialog => ({
+                selected: dialog.data.cards.at(-1),
+            }),
+        };
+        const validTarget = new ValidTarget({match});
+
+        assert.deepEqual(
+            validTarget.getValidTarget({
+                match, player, target: shared.TARGET_FRIENDLY_CHARACTER,
+            }),
+            [ownCharacter, otherCharacter]
+        );
+        assert.deepEqual(
+            validTarget.getValidTarget({
+                match, player,
+                target: shared.TARGET_ANY_CHARACTER_YOU_CONTROL,
+            }),
+            [ownCharacter]
+        );
+        assert.equal(
+            (await validTarget.selectTarget({
+                match, player, target: shared.TARGET_FRIENDLY_CHARACTER,
+            })).id,
+            'other-character'
+        );
     });
 
     test('ALL and single character selectors support OR conditions and preserve named identity sides', async () => {

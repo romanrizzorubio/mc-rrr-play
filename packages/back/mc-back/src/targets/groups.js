@@ -14,6 +14,7 @@ import {
     TARGET_ENVIRONMENT,
     TARGET_CHARACTER,
     TARGET_ENEMY,
+    TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
     TARGET_MINION,
     TARGET_PLAYER_LOWEST_HERO_LIFE,
@@ -59,6 +60,22 @@ export const groupTargets = {
     [TARGET_ALL_ENEMIES]: ({match, player, condition}) =>
         filterTargetsByCondition(getEnemiesFor(match, player), condition),
     [TARGET_ALL_FRIENDLY_CHARACTERS]: ({
+        match,
+        condition,
+        playCardEffect,
+        player,
+    }) => {
+        const characters = getFriendsFor(match, player);
+
+        return condition ?
+            filterCharacterTargets(
+                characters,
+                condition,
+                Boolean(playCardEffect)
+            ) :
+            characters;
+    },
+    [TARGET_FRIENDLY_CHARACTER]: ({
         match,
         condition,
         playCardEffect,

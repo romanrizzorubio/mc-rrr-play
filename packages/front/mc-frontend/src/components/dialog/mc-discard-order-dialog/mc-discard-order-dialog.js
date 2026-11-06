@@ -178,19 +178,24 @@ export class McDiscardOrderDialog extends McCardListDialog {
         const discardCountLabel = discardCount === 1 ?
             'una carta' :
             `${discardCount} cartas`;
+        const selectionHeading = this.data.selectionHeading || 'Descartar';
+        const returnHeading = this.data.returnHeading ||
+            'Cartas que vuelven al mazo';
+        const selectionInstructions = this.data.selectionInstructions ||
+            (this.canReorder ?
+                `Arrastra ${discardCountLabel} al descarte y ordena las demás. La carta de la izquierda quedará arriba del mazo.` :
+                `Arrastra ${discardCountLabel} al descarte. El orden de las demás se conservará.`);
 
         return html`
             <p class="order-instructions">
                 ${discardCount ?
-                    this.canReorder ?
-                        `Arrastra ${discardCountLabel} al descarte y ordena las demás. La carta de la izquierda quedará arriba del mazo.` :
-                        `Arrastra ${discardCountLabel} al descarte. El orden de las demás se conservará.` :
+                    selectionInstructions :
                     'Arrastra las cartas para elegir el orden en que se descartan. La carta de la izquierda quedará más arriba en la pila de descartes.'}
             </p>
             ${discardCount ? html`
                 <div class="card-zones">
                     <section class="card-zone order-zone">
-                        <h3>Cartas que vuelven al mazo</h3>
+                        <h3>${returnHeading}</h3>
                         <div
                             class="ordered-cards"
                             role="list"
@@ -202,7 +207,7 @@ export class McDiscardOrderDialog extends McCardListDialog {
                         </div>
                     </section>
                     <section class="card-zone discard-zone">
-                        <h3>Descartar (${_discardedCards.length}/${discardCount})</h3>
+                        <h3>${selectionHeading} (${_discardedCards.length}/${discardCount})</h3>
                         <div
                             class="discard-cards"
                             role="list"
@@ -212,7 +217,7 @@ export class McDiscardOrderDialog extends McCardListDialog {
                             ${_discardedCards.length ?
                                 _discardedCards.map((card, index) =>
                                     this.renderCard(card, index, 'discarded', size)) :
-                                html`<span class="discard-placeholder">Arrastra aquí las cartas que se descartan</span>`}
+                                html`<span class="discard-placeholder">${this.data.selectionDropText || 'Arrastra aquí las cartas que se descartan'}</span>`}
                         </div>
                     </section>
                 </div>
@@ -245,7 +250,7 @@ export class McDiscardOrderDialog extends McCardListDialog {
                 <md-text-button
                     ?disabled="${this._discardedCards.length !== this.discardCount}"
                     @click="${this.handleConfirmOrder.bind(this)}"
-                >Confirmar descarte y orden</md-text-button>
+                >${this.data.confirmText || 'Confirmar descarte y orden'}</md-text-button>
             `;
         }
 

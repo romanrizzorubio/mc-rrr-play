@@ -27,10 +27,22 @@ export class McEncountersRevealDialog extends McDialog {
         };
     }
     getTitle() {
+        if (this.title === 'Esbirro enfrentado a') {
+            return this.targetPlayerName ?
+                `${this.title} ${this.targetPlayerName}` :
+                this.title;
+        }
+
         return this.title || 'Mostrando carta de Encuentro';
     }
     getSubtitle() {
-        const shownType = this.data.isBoost ? 'Aumento mostrado' : 'Carta mostrada';
+        if (this.title === 'Esbirro enfrentado a') {
+            return super.getSubtitle();
+        }
+
+        const shownType = this.data.isBoost ?
+            'Aumento mostrado' :
+            'Carta mostrada';
         const playerText = this.targetPlayerName ?
             `${shownType} por ${this.targetPlayerName}.` : '';
         return [super.getSubtitle(), playerText].filter(Boolean).join(' ');

@@ -5,6 +5,7 @@ import {
     CALC_RESOURCES,
     EFFECT_CHAINED,
     EFFECT_CHOOSE_ABILITY,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DRAW_CARD,
@@ -405,7 +406,14 @@ describe('simultaneous effects', () => {
 
         assert.ok(effect instanceof ChainedEffect);
         assert.equal(effect.effects.length, 1);
-        assert.equal(effect.effects[0].thenEffect.effectType, EFFECT_CHOOSE_ABILITY);
+        assert.equal(
+            effect.effects[0].thenEffect.effectType,
+            EFFECT_COUNT_BOOST_ICONS
+        );
+        assert.equal(
+            effect.effects[0].thenEffect.effectDefinition.type,
+            EFFECT_CHOOSE_ABILITY
+        );
     });
 
     test('Combate ritual calculates damage and threat from discarded boost icons', async () => {
@@ -445,14 +453,22 @@ describe('simultaneous effects', () => {
 
         await discardEffect.execute(params);
 
-        const [damageOption, threatOption] = discardEffect.thenEffect.options;
+        const countEffect = discardEffect.thenEffect;
+        const chooseAbility = factory.effectsFactory.parseEffect(
+            countEffect.effectDefinition
+        );
+        const [damageOption, threatOption] = chooseAbility.options;
         assert.deepEqual(discardEffect.cards, [discardedCard]);
         assert.deepEqual(encounterDeck.discardPile, [discardedCard]);
+        const resolutionParams = {
+            ...params,
+            countedBoostIcons: 2,
+        };
         assert.equal(
-            (await damageOption.effect.resolveParams(params)).damage,
+            (await damageOption.effect.resolveParams(resolutionParams)).damage,
             3,
         );
-        assert.equal(threatOption.effect.getThreat(params), 3);
+        assert.equal(threatOption.effect.getThreat(resolutionParams), 3);
     });
 
     test('Envuelto en telaraña resolves cancellation and discard together, then stuns', () => {

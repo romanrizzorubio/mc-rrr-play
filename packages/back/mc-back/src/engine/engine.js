@@ -323,7 +323,7 @@ export class Engine {
             return players;
         }, []);
     }
-    async _openTriggersDialog(triggers, priority, params) {
+    async _openTriggersDialog(triggers, priority, params, isEffectActive) {
         const {cards, cardsTriggers} = await this._getCardTriggers(triggers, params);
 
         const players = this._getPlayersTriggers(triggers);
@@ -368,7 +368,7 @@ export class Engine {
             );
 
             if (selectedTrigger) {
-                await selectedTrigger.runTrigger(params);
+                await selectedTrigger.runTrigger(params, isEffectActive);
 
                 return selectedTrigger;
             }
@@ -450,15 +450,20 @@ export class Engine {
             console.log('Falta Match');
         }
 
-        const cards = params.data?.cards;
-        if (params.dialogType === DIALOG_SELECT_CARD &&
+        const {
+            showSingleCardDialog = false,
+            ...dialogParams
+        } = params;
+        const cards = dialogParams.data?.cards;
+        if (dialogParams.dialogType === DIALOG_SELECT_CARD &&
             cards?.length === 1 &&
-            !params.showCancel &&
-            !params.data?.upTo) {
+            !dialogParams.showCancel &&
+            !dialogParams.data?.upTo &&
+            !showSingleCardDialog) {
             return Promise.resolve({selected: cards});
         }
 
-        return this.match.openDialog(params);
+        return this.match.openDialog(dialogParams);
     }
     openPublicDialog(params, player) {
         return this.openDialog({
@@ -590,9 +595,14 @@ export class Engine {
                     params.player = this._getPlayersTriggers(triggers)[0];
                 }
                 trigger = automaticTrigger;
-                await trigger.runTrigger(params);
+                await trigger.runTrigger(params, isEffectActive);
             } else {
-                trigger = await this._openTriggersDialog(triggers, priority, params);
+                trigger = await this._openTriggersDialog(
+                    triggers,
+                    priority,
+                    params,
+                    isEffectActive
+                );
             }
 
             if (!trigger) {

@@ -1,5 +1,6 @@
 import {
     CLASSIFICATION_JUSTICE,
+    CHARACTER_VILLAIN,
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_RESPONSE,
@@ -13,6 +14,7 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
+    EFFECT_ENEMY_SCHEME,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_REMOVE_THREAT,
     EFFECT_TAKE_DAMAGE,
@@ -31,6 +33,7 @@ import {
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
+    TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
     TRIGGER_WOULD_PLACE_THREAT,
 } from 'mc-shared';
@@ -436,6 +439,218 @@ export default [
                                         'formula': CALC_STAGE,
                                         'max': 3
                                     }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-crisis-resuelta',
+        'aspect': 'justice',
+        'order': 93,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Crisis resuelta',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/15012.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'effect': {
+                                'type': EFFECT_DO_IF_HAS_PAID,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'resources': [
+                                        RESOURCE_MENTAL
+                                    ],
+                                    'effect': {
+                                        'type': EFFECT_REMOVE_THREAT,
+                                        'params': {
+                                            'target': TARGET_MAIN_SCHEME,
+                                            'threat': 6,
+                                            'ignoreCrisis': true
+                                        }
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_REMOVE_THREAT,
+                                        'params': {
+                                            'target': TARGET_MAIN_SCHEME,
+                                            'threat': 6
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-multitarea',
+        'aspect': 'justice',
+        'order': 94,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Multitarea',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/15013.png',
+                'traits': [
+                    TRAIT_THWART
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_REMOVE_THREAT,
+                                            'params': {
+                                                'target': TARGET_SCHEME,
+                                                'threat': 2
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF_HAS_PAID,
+                                            'params': {
+                                                'resources': [
+                                                    RESOURCE_MENTAL
+                                                ],
+                                                'effect': {
+                                                    'type': EFFECT_REMOVE_THREAT,
+                                                    'params': {
+                                                        'target': TARGET_SCHEME,
+                                                        'threat': 2,
+                                                        'condition': {
+                                                            'exclude': 'effects.0.selectedTarget'
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-castigo-inmediato',
+        'aspect': 'justice',
+        'order': 95,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Castigo inmediato',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/15014.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 1,
+                'resources': [
+                    RESOURCE_MENTAL
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_ENEMY_SCHEME,
+                                            'params': {
+                                                'enemyType': CHARACTER_VILLAIN
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_VILLAIN,
+                                                'damage': 4
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'justice-cambiar-la-situacion',
+        'aspect': 'justice',
+        'order': 96,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Cambiar la situación',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/15015.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 0,
+                'resources': [
+                    RESOURCE_ENERGY
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'trigger': TRIGGER_YOU_ANY_THWART,
+                            'condition': {
+                                'effect.character.isHero': true,
+                                'effect.selectedTarget.threat': 0
+                            },
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 3
                                 }
                             }
                         }

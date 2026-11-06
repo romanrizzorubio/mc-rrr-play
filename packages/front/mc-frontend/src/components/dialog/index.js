@@ -15,6 +15,7 @@ import './mc-max-cards-dialog/mc-max-cards-dialog.js';
 import './mc-pay-cost-dialog/mc-pay-cost-dialog.js';
 import './mc-reveal-cards-dialog/mc-reveal-cards-dialog.js';
 import './mc-select-card-dialog/mc-select-card-dialog.js';
+import './mc-select-number-dialog/mc-select-number-dialog.js';
 import './mc-select-places-dialog/mc-select-places-dialog.js';
 import './mc-select-target-dialog/mc-select-target-dialog.js';
 import './mc-surge-dialog/mc-surge-dialog.js';

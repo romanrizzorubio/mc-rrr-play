@@ -57,4 +57,82 @@ describe('McListDialog option groups', () => {
         assert.equal(dialog._response.selected, choice);
         assert.equal(responses, 1);
     });
+
+    test('renders labeled context cards with a separator', () => {
+        const dialog = Object.create(McListDialog.prototype);
+        const sourceCard = {
+            id: 'tiara',
+            image: 'tiara.png',
+            name: 'Tiara de la Bruja Escarlata',
+        };
+        const content = dialog.renderContextCards([
+            {
+                card: {
+                    id: 'counted-card',
+                    image: 'counted-card.png',
+                    name: 'Carta contada',
+                },
+                label: 'Carta cuyo Aumento se modifica',
+            },
+            {
+                card: {
+                    id: 'scarlet-witch',
+                    image: 'scarlet-witch.png',
+                    name: 'Bruja Escarlata',
+                },
+                label: 'Bruja Escarlata',
+            },
+        ], sourceCard);
+        const source = content.values[0];
+        const cards = content.values[1];
+
+        assert.match(content.strings.join(''), /class="context-cards"/);
+        assert.match(source.strings.join(''), /context-card-source/);
+        assert.match(source.strings.join(''), /<mc-card/);
+        assert.equal(cards.length, 2);
+        assert.equal(cards[0].values[1], 'Carta cuyo Aumento se modifica');
+        assert.match(cards[0].values[2].strings.join(''), /<mc-card/);
+        assert.match(
+            cards[0].values[0].strings.join(''),
+            /class="context-card-separator"/
+        );
+        assert.match(
+            cards[1].values[0].strings.join(''),
+            /class="context-card-separator"/
+        );
+        assert.equal(cards[1].values[1], 'Bruja Escarlata');
+    });
+
+    test('renders the source card left of the card being modified', () => {
+        const dialog = Object.assign(Object.create(McListDialog.prototype), {
+            data: {
+                options: [],
+                card: {
+                    id: 'tiara',
+                    image: 'tiara.png',
+                    name: 'Tiara de la Bruja Escarlata',
+                },
+                contextCards: [
+                    {
+                        card: {
+                            id: 'counted-card',
+                            image: 'counted-card.png',
+                            name: 'Carta contada',
+                        },
+                        label: 'Carta cuyo Aumento se modifica',
+                    },
+                ],
+                showCounters: false,
+            },
+        });
+        const content = dialog.renderContent();
+        const relatedCards = content.values[0];
+        const source = relatedCards.values[0];
+        const [target] = relatedCards.values[1];
+
+        assert.match(relatedCards.strings.join(''), /class="context-cards"/);
+        assert.match(source.strings.join(''), /context-card-source/);
+        assert.equal(target.values[1], 'Carta cuyo Aumento se modifica');
+        assert.match(target.values[2].strings.join(''), /<mc-card/);
+    });
 });

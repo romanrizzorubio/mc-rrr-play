@@ -21,10 +21,12 @@ import {
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
+    EFFECT_REMOVE_THREAT,
     EFFECT_STUN,
     EFFECT_TOUGH,
     LABEL_ATTACK,
     LABEL_DEFENSE,
+    LABEL_THWART,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -33,6 +35,7 @@ import {
     TARGET_ENEMY,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
+    TARGET_MAIN_SCHEME,
     TARGET_PLAYER,
     TARGET_YOU,
     TARGET_YOUR_HERO,
@@ -658,5 +661,51 @@ export default [
                 ],
             },
         },
+    },
+    {
+        '_id': 'protection-maniobra-enganosa',
+        'aspect': 'protection',
+        'order': 150,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Maniobra engañosa',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/15030.png',
+                'cost': 1,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'name': 'Maniobra engañosa',
+                            'labels': [LABEL_THWART],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_ENEMY_ATTACK,
+                                            'params': {
+                                                'enemyType': CHARACTER_VILLAIN,
+                                                'target': TARGET_YOU
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_THREAT,
+                                            'params': {
+                                                'target': TARGET_MAIN_SCHEME,
+                                                'threat': 4
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
     },
 ];

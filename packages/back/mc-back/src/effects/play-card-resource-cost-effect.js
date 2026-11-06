@@ -63,10 +63,23 @@ export class PlayCardResourceCostEffect extends Effect {
 
         this.playCardEffect.resourcesPaid = payment.resources;
         const isVariableCost = this.resourceCost.amount === RESOURCES_X;
+        if (isVariableCost) {
+            const costModifier = this.playCardEffect.modifyCost;
+            if (!Number.isSafeInteger(costModifier)) {
+                throw new Error('PlayCardResourceCostEffect has an invalid cost reduction for X.');
+            }
+            const xValue = payment.resources.length - costModifier;
+            if (xValue < 0) {
+                throw new Error('PlayCardResourceCostEffect calculated a negative value for X.');
+            }
+            this.playCardEffect.xValue = xValue;
+        }
         const requiredResourceCount = isVariableCost ?
             payment.resources.length :
-            this.resourceCost.getRequiredResources().length +
-                this.resourceCost.requirement.length;
+            Math.max(
+                this.resourceCost.getRequiredResources().length,
+                this.resourceCost.requirement.length
+            );
         this.playCardEffect.resourcesOverpaid =
             !isVariableCost && this.resourceCost.allowOverpay ?
                 Math.max(0, payment.resources.length - requiredResourceCount) :

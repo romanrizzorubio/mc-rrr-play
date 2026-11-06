@@ -2094,7 +2094,7 @@ describe('Cráneo Rojo scenario', () => {
         const minionEntryDialogs = [];
         match.openDialog = async dialog => {
             if (dialog.dialogType === DIALOG_ENCOUNTERS_REVEAL &&
-                dialog.title === 'Esbirro puesto en juego') {
+                dialog.title === 'Esbirro enfrentado a') {
                 minionEntryDialogs.push({
                     card: dialog.data.card,
                     isInPlay: sleeper.isInPlay,
@@ -2248,7 +2248,7 @@ describe('Cráneo Rojo scenario', () => {
             data.card.name === sleeper.name
         ));
         assert.equal(dialogs.some(({title, data}) =>
-            title === 'Esbirro puesto en juego' &&
+            title === 'Esbirro enfrentado a' &&
             data.card.name === sleeper.name
         ), false);
     });

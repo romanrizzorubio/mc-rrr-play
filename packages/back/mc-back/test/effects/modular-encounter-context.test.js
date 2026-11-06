@@ -478,7 +478,7 @@ describe('modular encounter context', () => {
             card: factory.createCard(highVoltageConfig),
             owner: {},
         });
-        const forEachEffect = highVoltage.abilities[0].effect.effects[1];
+        const forEachEffect = highVoltage.abilities[0].effect.effects[2];
         const effect = forEachEffect.createTargetEffect();
         const dualResourceCard = createHandCard('dual-resource', [
             RESOURCE_MENTAL,
@@ -494,9 +494,7 @@ describe('modular encounter context', () => {
         const dialogs = [];
         const effectParams = {
             player,
-            effects: [{
-                cards: [{boost: 2}, {boost: 1}],
-            }],
+            effects: [{}, {value: 3}],
         };
 
         effect.selectedTarget = player;

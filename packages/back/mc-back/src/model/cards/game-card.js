@@ -166,6 +166,9 @@ export class GameCard extends Engine {
         }
         return this.card.boost;
     }
+    get hasBoostAbility() {
+        return Boolean(this.boostAbility);
+    }
     get canDefendBasic() {
         if (this.card.canDefendBasic) {
             return !this.exhausted;
@@ -802,7 +805,7 @@ export class GameCard extends Engine {
             card: this,
         });
     }
-    getAbilitiesType(type) {
+    getAbilitiesType(type, params = {}) {
         return this.promisesSequentialFilter(this.abilities, ability => {
             switch (type) {
                 case ABILITY_ACTION:
@@ -815,6 +818,7 @@ export class GameCard extends Engine {
             }
 
             return ability.canRun({
+                ...params,
                 player: this.owner,
             });
         });

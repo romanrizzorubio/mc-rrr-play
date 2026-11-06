@@ -8,6 +8,42 @@ export const filterTargetsByCondition = (targets, condition) =>
         targets.filter(target => checkCondition(target, condition)) :
         targets;
 
+export const getConditionExcludePaths = condition => {
+    if (!condition || Array.isArray(condition) ||
+        condition.exclude === undefined) {
+        return [];
+    }
+
+    const excludePaths = Array.isArray(condition.exclude) ?
+        condition.exclude :
+        [condition.exclude];
+    if (excludePaths.length === 0 ||
+        !excludePaths.every(excludePath =>
+            typeof excludePath === 'string' &&
+            excludePath.length > 0)) {
+        throw new TypeError(
+            'condition exclude must be a path or a list of paths.'
+        );
+    }
+
+    return excludePaths;
+};
+
+export const getExcludedTargets = (excludePaths, params) =>
+    excludePaths.flatMap(excludePath => {
+        const values = path(params, excludePath);
+
+        return Array.isArray(values) ?
+            values.flat(Infinity) :
+            values === undefined ? [] : [values];
+    });
+
+export const isExcludedTarget = (target, excludedTargets) =>
+    excludedTargets.some(excludedTarget =>
+        excludedTarget === target ||
+        (target?.id !== undefined && excludedTarget?.id === target.id)
+    );
+
 const getMaxCondition = (condition, property) => {
     if (!condition || typeof condition !== 'object' ||
         Array.isArray(condition) || condition.operator !== MAX_OPERATOR) {
@@ -45,6 +81,10 @@ export const splitTargetCondition = condition => {
     const selectionConditions = [];
 
     Object.entries(condition).forEach(([property, value]) => {
+        if (property === 'exclude') {
+            return;
+        }
+
         const maxCondition = getMaxCondition(value, property);
         if (maxCondition) {
             selectionConditions.push(maxCondition);

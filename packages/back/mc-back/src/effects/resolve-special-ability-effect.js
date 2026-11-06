@@ -1,11 +1,10 @@
 import {
-    DIALOG_LIST,
-    DIALOG_SELECT_CARD,
     PLACE_IN_PLAY,
     TARGET_YOU,
 } from 'mc-shared';
 import {SpecialAbility} from '../abilities/misc/special-ability.js';
 import {checkCondition} from '../engine/utils.js';
+import {selectItemForResolution} from '../utils/select-item-for-resolution.js';
 
 import {Effect} from './effect.js';
 
@@ -71,45 +70,17 @@ export class ResolveSpecialAbilityEffect extends Effect {
     }
 
     async selectAbility(available, closeOnResponse, player) {
-        let selectedIndex;
-        if (available.length > 5) {
-            const response = await this.openDialog({
-                closeOnResponse,
-                dialogType: DIALOG_LIST,
-                hideOk: true,
-                targetPlayer: player,
-                title: SELECT_SPECIAL_ABILITY_TITLE,
-                data: {
-                    options: available.map(({gameCard}, index) => ({
-                        id: index,
-                        text: gameCard.card.name,
-                    })),
-                },
-            });
-            selectedIndex = response?.selected?.id;
-        } else {
-            const response = await this.openDialog({
-                closeOnResponse,
-                dialogType: DIALOG_SELECT_CARD,
-                hideOk: true,
-                targetPlayer: player,
-                title: SELECT_SPECIAL_ABILITY_TITLE,
-                data: {
-                    cards: available.map(({gameCard}) => gameCard.toObj()),
-                },
-            });
-            const selectedId = response?.selected?.[0]?.id;
-            selectedIndex = available.findIndex(({gameCard}) =>
-                gameCard.id === selectedId);
-        }
-
-        if (!Number.isInteger(selectedIndex) ||
-            selectedIndex < 0 ||
-            selectedIndex >= available.length) {
-            throw new Error('La selección de la capacidad especial no es válida.');
-        }
-
-        return available[selectedIndex];
+        return selectItemForResolution({
+            items: available,
+            openDialog: dialog => this.openDialog(dialog),
+            targetPlayer: player,
+            title: SELECT_SPECIAL_ABILITY_TITLE,
+            getCard: ({gameCard}) => gameCard.toObj(),
+            getText: ({gameCard}) => gameCard.card.name,
+            closeOnResponse,
+            invalidSelectionMessage:
+                'La selección de la capacidad especial no es válida.',
+        });
     }
 
     async execute(params) {

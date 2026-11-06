@@ -77,6 +77,18 @@ describe('public card dialogs', () => {
         }
     });
 
+    test('labels a minion entering play by the hero it is engaged with', () => {
+        const dialog = createDialog(McEncountersRevealDialog, false);
+        dialog.subtitle = '';
+        dialog.title = 'Esbirro enfrentado a';
+
+        assert.equal(dialog.getTitle(), 'Esbirro enfrentado a Capitana Marvel');
+        assert.equal(dialog.getSubtitle(), '');
+        const markup = renderTemplate(dialog.render());
+        assert.match(markup, /Esbirro enfrentado a Capitana Marvel/u);
+        assert.doesNotMatch(markup, /Carta mostrada/u);
+    });
+
     test('every boost display identifies its hero once as Aumento mostrado por', () => {
         for (const Component of [McEncountersRevealDialog, McBoostDealtDialog]) {
             for (const readOnly of [false, true]) {

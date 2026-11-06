@@ -369,7 +369,7 @@ export class CharacterGameCard extends GameCard {
         }
     }
     get traits() {
-        let traits = this.card.traits || [];
+        let traits = this.card?.traits || [];
         if (this.sides.length) {
             traits = this.currentSide.traits || [];
         }

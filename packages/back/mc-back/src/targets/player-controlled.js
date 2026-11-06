@@ -3,7 +3,7 @@ import {
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALLY,
     TARGET_ALL_ENGAGED_MINIONS,
-    TARGET_FRIENDLY_CHARACTER,
+    TARGET_ANY_CHARACTER_YOU_CONTROL,
     TARGET_SUPPORT_YOU_CONTROL,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_UPGRADE_YOU_CONTROL,
@@ -41,7 +41,7 @@ export const playerControlledTargets = {
         playerControlledTargets[TARGET_ALL_ALLIES_YOU_CONTROL](params),
     [TARGET_ALL_ENGAGED_MINIONS]: ({player, condition}) =>
         filterTargetsByCondition(player.minions, condition),
-    [TARGET_FRIENDLY_CHARACTER]: ({condition, player}) =>
+    [TARGET_ANY_CHARACTER_YOU_CONTROL]: ({condition, player}) =>
         filterTargetsByCondition(player.friends, condition),
     [TARGET_SUPPORT_YOU_CONTROL]: ({player, condition}) =>
         filterTargetsByCondition(player.supports, condition),

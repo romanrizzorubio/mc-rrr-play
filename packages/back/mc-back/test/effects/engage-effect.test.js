@@ -137,7 +137,7 @@ describe('EngageEffect', () => {
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 targetPlayer: player,
                 showToAll: true,
-                title: 'Esbirro puesto en juego',
+                title: 'Esbirro enfrentado a',
                 data: {
                     card: {name: 'Esclavo duende'},
                 },
@@ -197,7 +197,7 @@ describe('EngageEffect', () => {
         assert.equal(minion.isInPlay, true);
         assert.equal(minion.engaged, player);
         assert.equal(mainScheme.threat, 0);
-        assert.equal(dialogs[0].title, 'Esbirro puesto en juego');
+        assert.equal(dialogs[0].title, 'Esbirro enfrentado a');
     });
 
     test('EngageEffect does not re-engage a minion with its current player', async () => {

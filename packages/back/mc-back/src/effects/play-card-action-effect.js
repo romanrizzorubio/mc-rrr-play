@@ -9,6 +9,7 @@ import {PlayCardEffect} from './play-card-effect.js';
 export class PlayCardActionEffect extends Effect {
     constructor({
         costReduction = 0,
+        ignoreResourceCost = false,
         sharedTraitsWith = TARGET_YOUR_HERO,
     }) {
         super(arguments[0]);
@@ -16,8 +17,12 @@ export class PlayCardActionEffect extends Effect {
         if (!Number.isFinite(costReduction) || costReduction < 0) {
             throw new TypeError('PlayCardActionEffect costReduction must be a non-negative number.');
         }
+        if (typeof ignoreResourceCost !== 'boolean') {
+            throw new TypeError('PlayCardActionEffect ignoreResourceCost must be a boolean.');
+        }
 
         this.costReduction = costReduction;
+        this.ignoreResourceCost = ignoreResourceCost;
         this.sharedTraitsWith = sharedTraitsWith;
         this.playCardEffect = undefined;
     }
@@ -34,10 +39,15 @@ export class PlayCardActionEffect extends Effect {
             .flatMap(target => target?.traits ?? []));
     }
     filterTarget(card, params) {
-        if (!super.filterTarget(card, params) ||
+        if (card === this.ability?.card ||
+            !super.filterTarget(card, params) ||
             !card.isPlayerCard ||
             card.isResource) {
             return false;
+        }
+
+        if (this.ignoreResourceCost) {
+            return true;
         }
 
         const sharedTraits = this.getSharedTraits(params);
@@ -52,6 +62,7 @@ export class PlayCardActionEffect extends Effect {
             const playCardEffect = new PlayCardEffect({
                 abilityType: ABILITY_ACTION,
                 card,
+                ignoreResourceCost: this.ignoreResourceCost,
                 match: this.match,
             });
 
@@ -99,17 +110,20 @@ export class PlayCardActionEffect extends Effect {
         const {player} = params;
         const card = this.selectedTarget;
         if (!card) {
+            this.paymentCancelled = true;
             return;
         }
 
         const candidates = await this.getPlayableTargets(params);
         if (!candidates.includes(card)) {
+            this.paymentCancelled = true;
             return;
         }
 
         const playCardEffect = new PlayCardEffect({
             abilityType: ABILITY_ACTION,
             card,
+            ignoreResourceCost: this.ignoreResourceCost,
             match: this.match,
         });
         playCardEffect.modifyCost = -this.costReduction;
@@ -126,6 +140,7 @@ export class PlayCardActionEffect extends Effect {
             match: this.match,
             player,
         });
-        this.paymentCancelled = playCardEffect.paymentCancelled;
+        this.paymentCancelled = playCardEffect.paymentCancelled ||
+            !playCardEffect.played;
     }
 }

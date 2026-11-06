@@ -3,6 +3,7 @@ import {
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
+    CALC_STAGE,
     CARD_TYPE_EVENT,
     CLASSIFICATION_AGGRESSION,
     EFFECT_CHAINED,
@@ -31,11 +32,13 @@ import {
     TARGET_SCHEME,
     TARGET_SOURCE,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
+    TARGET_VILLAIN,
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TRAIT_ATTACK,
     TRAIT_AERIAL,
+    TRAIT_AVENGER,
     TRAIT_SKILL,
     TRAIT_THWART,
     TRAIT_WEAPON,
@@ -810,6 +813,52 @@ export default [
                                             'target': TARGET_ENEMY,
                                             'damage': 3
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'aggression-amedrentar',
+        'aspect': 'aggression',
+        'order': 15028,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Amedrentar',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/15028.png',
+                'traits': [
+                    TRAIT_ATTACK
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AVENGER
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK
+                            ],
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_VILLAIN,
+                                    'damage': 2,
+                                    'additionalDamageCalc': {
+                                        'target': TARGET_VILLAIN,
+                                        'formula': CALC_STAGE,
+                                        'max': 3
                                     }
                                 }
                             }

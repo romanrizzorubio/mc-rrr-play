@@ -3,6 +3,7 @@ import {
     DIALOG_BOOST_DEALT,
     TARGET_ACTIVATION,
     TRIGGER_ATTACHED_ACTIVATES,
+    TRIGGER_THIS_ACTIVATES,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
 import {getVillainFor} from '../utils/match-zone-utils.js';
@@ -181,7 +182,10 @@ export class EnemyActivationEffect extends Effect {
         const triggers = super.getTriggersEnds(params);
 
         return this.resolved && !this.canceled ?
-            triggers.concat([TRIGGER_ATTACHED_ACTIVATES]) :
+            triggers.concat([
+                TRIGGER_ATTACHED_ACTIVATES,
+                TRIGGER_THIS_ACTIVATES,
+            ]) :
             triggers;
     }
     getTargetDialog() {

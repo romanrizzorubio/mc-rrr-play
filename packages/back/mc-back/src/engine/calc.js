@@ -14,6 +14,7 @@ import {
     CALC_IF,
     CALC_ALL,
     CALC_PRINTED_RESOURCES,
+    CALC_RECOVERY,
     CALC_SUM,
     CALC_STAGE,
     TARGET_MAIN_SCHEME,
@@ -184,6 +185,14 @@ const CALCULATION_MAP = {
             throw new Error(`No se encontró un personaje con ATQ calculable en "${target}".`);
         }
         return source.getAttackValue(params);
+    },
+    [CALC_RECOVERY]: (source, {target}, params) => {
+        if (!source || typeof source.getRecoveryValue !== 'function') {
+            throw new Error(
+                `No se encontró un personaje con REC calculable en "${target}".`
+            );
+        }
+        return source.getRecoveryValue(params);
     },
     [CALC_RESOURCES]: (source, {resourceType, strict}) =>
         source.reduce((sum, card) =>

@@ -295,6 +295,7 @@ test('boost abilities receive the current activation', async () => {
             },
         },
         enemyActivation: {},
+        match: {triggerCards: {}},
     });
 
     await effect.execute({});

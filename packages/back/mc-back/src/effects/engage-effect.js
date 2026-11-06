@@ -119,7 +119,7 @@ export class EngageEffect extends PutPlayEffect {
         if (this.enteredPlay && !this.cardShownInRevealDialog) {
             await this.openPublicDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
-                title: 'Esbirro puesto en juego',
+                title: 'Esbirro enfrentado a',
                 data: {
                     card: card.toObj(params),
                 },

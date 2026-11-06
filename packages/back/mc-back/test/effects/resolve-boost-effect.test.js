@@ -3,7 +3,10 @@ import {describe, test} from 'node:test';
 
 import {
     DIALOG_BOOST_DEALT,
+    DIALOG_ENCOUNTERS_REVEAL,
+    DIALOG_REVEAL_CARDS,
     DIALOG_USE_CARD,
+    PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
     TRIGGER_BOOST_REVEALED,
 } from 'mc-shared';
@@ -12,6 +15,8 @@ import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Deck} from '../../src/model/match/deck.js';
 import {Match} from '../../src/model/match/match.js';
 import {CancelBoostIconsEffect} from '../../src/effects/cancel-boost-icons-effect.js';
+import {CountBoostIconsEffect} from '../../src/effects/count-boost-icons-effect.js';
+import {DiscardFromDeckEffect} from '../../src/effects/discard-from-deck-effect.js';
 import {ModifyBoostIconsEffect} from '../../src/effects/modify-boost-icons-effect.js';
 import {ResolveBoostEffect} from '../../src/effects/resolve-boost-effect.js';
 
@@ -275,6 +280,7 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
     };
     const match = {
         amplificationIcons: 0,
+        triggerCards: {},
         scenario: {deck: {knownCards: []}},
         async openDialog(dialog) {
             dialogs.push(dialog);
@@ -308,6 +314,143 @@ test('a boost ability reopens the multi-card dialog with its updated icon count'
     assert.equal(dialogs[0].data.cumulativeBoost, 1);
     assert.equal(dialogs[1].data.cards[0].card.boost, 2);
     assert.equal(dialogs[1].data.cumulativeBoost, 2);
+});
+
+test('a replaced boost count shows the replacement discard, not the cancelled boost again', async () => {
+    const events = [];
+    const match = new Match({
+        mc: {mcSocket: {send() {}}},
+        name: 'replaced-boost-count-dialog-test',
+    });
+    const scenario = {amplificationIcons: 0, match};
+    const encounterDeck = new Deck({
+        isScenarioDeck: true,
+        owner: scenario,
+    });
+    const replacementCard = {
+        boost: 2,
+        id: 'replacement-boost',
+        name: 'Aumento sustituto',
+        toObj() {
+            return {
+                boost: this.boost,
+                id: this.id,
+                name: this.name,
+            };
+        },
+    };
+    encounterDeck.cards = [
+        replacementCard,
+        {
+            id: 'next-encounter-card',
+            name: 'Siguiente carta',
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        },
+    ];
+    scenario.deck = encounterDeck;
+    match.scenario = scenario;
+    match.openDialog = async dialog => {
+        const cards = dialog.data?.cards ??
+            (dialog.data?.card ? [dialog.data.card] : []);
+        events.push({
+            type: 'dialog',
+            dialogType: dialog.dialogType,
+            title: dialog.title,
+            cardNames: cards.map(({name}) => name),
+        });
+    };
+
+    const player = {};
+    const boostCard = {
+        boost: 1,
+        id: 'original-boost',
+        name: 'Aumento original',
+        boostAbility: {
+            async resolveAbility() {
+                events.push({type: 'boost-ability'});
+            },
+        },
+        isMainScheme: false,
+        isSideScheme: false,
+        toObj() {
+            return {
+                boost: this.boost,
+                id: this.id,
+                name: this.name,
+            };
+        },
+    };
+    const effect = new ResolveBoostEffect({
+        card: boostCard,
+        enemyActivation: {boostCards: [boostCard]},
+        match,
+    });
+    effect.trigger = async priority => {
+        events.push({type: 'trigger', priority});
+        if (priority !== PRIORITY_INTERRUPT) {
+            return true;
+        }
+
+        events.push({type: 'control-interrupt'});
+        new CancelBoostIconsEffect({replaceCount: true}).execute({
+            effect,
+        });
+        const discardEffect = new DiscardFromDeckEffect({
+            ability: {card: {name: 'Control del caos'}},
+            match,
+            selectedTarget: encounterDeck,
+        });
+        await discardEffect.execute({player});
+
+        const countEffect = new CountBoostIconsEffect({
+            card: discardEffect.cards[0],
+            match,
+            showDialog: false,
+        });
+        await countEffect.execute({
+            card: discardEffect.cards[0],
+            player,
+        });
+        new ModifyBoostIconsEffect({
+            count: countEffect.value,
+            match,
+            selectedTarget: effect,
+        }).execute({});
+
+        return true;
+    };
+
+    await effect.prepare({player});
+    await effect.execute({player});
+
+    const originalDialogIndex = events.findIndex(event =>
+        event.type === 'dialog' &&
+        event.dialogType === DIALOG_ENCOUNTERS_REVEAL);
+    const abilityIndex = events.findIndex(event =>
+        event.type === 'boost-ability');
+    const interruptIndex = events.findIndex(event =>
+        event.type === 'control-interrupt');
+    const replacementDialogIndex = events.findIndex(event =>
+        event.type === 'dialog' &&
+        event.dialogType === DIALOG_REVEAL_CARDS);
+
+    assert.ok(originalDialogIndex >= 0);
+    assert.ok(originalDialogIndex < abilityIndex);
+    assert.ok(abilityIndex < interruptIndex);
+    assert.ok(interruptIndex < replacementDialogIndex);
+    assert.deepEqual(events.filter(event => event.type === 'dialog')
+        .map(({title, cardNames}) => [title, cardNames]), [
+        ['Aumento', ['Aumento original']],
+        ['Cartas que se van a descartar', ['Aumento sustituto']],
+    ]);
+    assert.equal(
+        events.some(event => event.title === 'Aumento actualizado'),
+        false
+    );
+    assert.equal(effect.countReplaced, true);
+    assert.equal(effect.value, replacementCard.boost);
 });
 
 test('future boost cards can only be peeked after they are known in the encounter deck', async () => {

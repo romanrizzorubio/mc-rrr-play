@@ -2,6 +2,7 @@ import {
     ABILITY_ACTION,
     DIALOG_MAX_CARDS,
     DIALOG_PAY_COST,
+    DIALOG_SELECT_NUMBER,
     PLACE_DECK,
     PLACE_DISCARD_PILE,
     PLACE_HAND,
@@ -73,6 +74,14 @@ export class PlayCardEffect extends Effect {
         this.paymentCancelled = false;
         this.prePlayConfirmationAcceptedFor = undefined;
         this.modifyCost = 0;
+        this.ignoreResourceCost = params.ignoreResourceCost ?? false;
+        if (typeof this.ignoreResourceCost !== 'boolean') {
+            throw new TypeError(
+                'PlayCardEffect ignoreResourceCost must be a boolean.'
+            );
+        }
+        this.printedCost = card.cost;
+        this.xValue = undefined;
         this.removedFromHand = false;
         this.removedFromPlace = undefined;
         this.playedFromHand = false;
@@ -92,6 +101,10 @@ export class PlayCardEffect extends Effect {
     async canRun(params) {
         const {card, ability, abilityType} = this;
         const {player} = params;
+
+        if (this.ignoreResourceCost && card.requirement?.length) {
+            return false;
+        }
 
         if (card.isPlayerCard && this.match.isUniqueCard(card)) {
             return false;
@@ -328,6 +341,13 @@ export class PlayCardEffect extends Effect {
                 preselectedEffectTargets: this.preselectedEventEffects,
             });
 
+            if (ability.paymentCancelled) {
+                this.played = false;
+                this.canceled = true;
+                this.paymentCancelled = true;
+                return;
+            }
+
             await player.deck.discard(card);
         } else {
             const putPlayEffect = new PutPlayEffect({
@@ -379,18 +399,74 @@ export class PlayCardEffect extends Effect {
             ...params,
             card: this.card,
         });
-        const amount = cost === RESOURCES_X ?
-            RESOURCES_X :
-            cost + this.modifyCost;
+        const requiredPaymentResources = await
+            this.ability?.effect?.getRequiredPaymentResources?.({
+                ...params,
+                ability: this.ability,
+                card: this.card,
+                match: this.match,
+                playCardEffect: this,
+            }) ?? [];
+        if (!Array.isArray(requiredPaymentResources)) {
+            throw new TypeError(
+                'PlayCardEffect requires an array of payment resources.'
+            );
+        }
+        if (cost === RESOURCES_X && this.ignoreResourceCost) {
+            const response = await this.openDialog({
+                dialogType: DIALOG_SELECT_NUMBER,
+                targetPlayer: params.player,
+                title: `Elige X para ${this.card.name}`,
+                subtitle: 'Elige el valor de X antes de aplicar las reducciones de coste.',
+                data: {
+                    label: 'Valor de X',
+                    min: 0,
+                    step: 1,
+                },
+            });
+            const selectedX = response?.value;
+            if (!Number.isSafeInteger(selectedX) || selectedX < 0) {
+                throw new Error('PlayCardEffect received an invalid value for X.');
+            }
+
+            if (!Number.isSafeInteger(this.modifyCost)) {
+                throw new Error('PlayCardEffect has an invalid cost modifier for X.');
+            }
+            this.xValue = selectedX - this.modifyCost;
+            if (this.xValue < 0) {
+                throw new Error('PlayCardEffect calculated a negative value for X.');
+            }
+
+            return new ResourceCost({
+                amount: 0,
+                card: this.card,
+                match: this.match,
+                playCardEffect: this,
+                requirement: requiredPaymentResources,
+                resourceType: this.card.resourceType,
+            });
+        }
+
+        const amount = this.ignoreResourceCost ?
+            0 :
+            cost === RESOURCES_X ?
+                RESOURCES_X :
+                cost + this.modifyCost;
 
         return new ResourceCost({
-            allowOverpay: this.card.card?.allowOverpay ??
-                this.card.allowOverpay ??
-                false,
+            allowOverpay: this.ignoreResourceCost ?
+                false :
+                this.card.card?.allowOverpay ??
+                    this.card.allowOverpay ??
+                    false,
             amount: amount === RESOURCES_X ? RESOURCES_X : Math.max(0, amount),
             card: this.card,
             match: this.match,
             playCardEffect: this,
+            requirement: [
+                ...(this.ignoreResourceCost ? [] : this.card.requirement || []),
+                ...requiredPaymentResources,
+            ],
         });
     }
     getPaymentResourcePreferences() {
@@ -467,7 +543,7 @@ export class PlayCardEffect extends Effect {
             targetPlayer: player,
             data: {
                 cost: cost.amount,
-                requirement: card.requirement,
+                requirement: cost.requirement,
                 resourceType: cost.resourceType,
                 resourcePreferences,
                 exclusiveResourcePreferences,
@@ -509,6 +585,9 @@ export class PlayCardEffect extends Effect {
         const {card} = this;
         const {player} = params;
 
+        this.xValue = undefined;
+        this.resourcesPaid = [];
+        this.resourcesOverpaid = 0;
         this.playedFromHand = false;
         card.isPlaying = true;
         const hasUnregisteredWorkInHandAbility = card.abilities?.some(ability =>
@@ -603,10 +682,15 @@ export class PlayCardEffect extends Effect {
             }
         }
     }
-    async selectAbility() {
+    async selectAbility(params) {
         const {card, abilityType} = this;
         const abilities = card.isEvent && abilityType === ABILITY_ACTION ?
-            await card.getAbilitiesType(ABILITY_ACTION) :
+            await card.getAbilitiesType(ABILITY_ACTION, {
+                ...params,
+                card,
+                match: this.match,
+                playCardEffect: this,
+            }) :
             card.abilities;
         if (card.isEvent && !abilities.length) {
             const error = new Error('El evento no tiene una capacidad disponible para esta jugada.');
@@ -643,6 +727,7 @@ export class PlayCardEffect extends Effect {
         const abilityState = this.ability ?
             await this.ability.prepareToResolve({
                 ...params,
+                playCardEffect: this,
                 ...(this.hasPreselectedEventTarget ? {
                     preselectedTarget: this.preselectedEventEffects.size > 0,
                     preselectedEffectTargets: this.preselectedEventEffects,

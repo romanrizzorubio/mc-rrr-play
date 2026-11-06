@@ -86,10 +86,7 @@ export class CostPaymentSession {
             return effect.resources;
         }
         if (effect.resourceCost) {
-            return [
-                ...effect.resourceCost.getRequiredResources(),
-                ...effect.resourceCost.requirement,
-            ];
+            return effect.resourceCost.getRequiredResources();
         }
     }
     getPaymentResourceUnits(payment, params) {
@@ -275,6 +272,27 @@ export class CostPaymentSession {
             units.filter(unit =>
                 requiredUnitSet.has(unit) || !unit.costOnly) :
             requiredUnits;
+        const resourceRequirements = effect.resourceCost?.requirement || [];
+        if (resourceRequirements.length) {
+            const qualifyingUnits = this.assignPaymentResources(
+                units,
+                resourceRequirements,
+                {
+                    allowWildConversion: payment.allowWildConversion !== false,
+                }
+            );
+            if (!qualifyingUnits) {
+                throw new Error('El pago no satisface los requisitos de recursos.');
+            }
+
+            const usedUnitSet = new Set(usedUnits);
+            qualifyingUnits.forEach(unit => {
+                if (!usedUnitSet.has(unit)) {
+                    usedUnits.push(unit);
+                    usedUnitSet.add(unit);
+                }
+            });
+        }
 
         const usedIndexesByCard = new Map();
         usedUnits.forEach(unit => {

@@ -9,7 +9,7 @@ import {
     ABILITY_WHEN_REVEALED,
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_ALLY,
     CARD_TYPE_ATTACHMENT,
     CARD_TYPE_MINION,
@@ -20,6 +20,7 @@ import {
     CARD_TYPE_VILLAIN,
     CHARACTER_VILLAIN,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_CHOOSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DEAL_ENCOUNTER,
@@ -205,12 +206,18 @@ const identityFlipResponse = () => ({
                         },
                     },
                     {
+                        type: EFFECT_COUNT_BOOST_ICONS,
+                        params: {
+                            card: 'effects.0.cards.0',
+                        },
+                    },
+                    {
                         type: EFFECT_TAKE_DAMAGE,
                         params: {
                             damage: 0,
                             paramsCalc: {
-                                formula: CALC_BOOST_ICONS,
-                                target: 'effects.0.cards',
+                                formula: CALC_ALL,
+                                target: 'effects.1.value',
                             },
                             target: TARGET_YOU,
                         },

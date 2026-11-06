@@ -1,7 +1,11 @@
 import {
     DIALOG_BOOST_DEALT,
     DIALOG_ENCOUNTERS_REVEAL,
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
     PRIORITY_RESPONSE,
+    TRIGGER_BOOST_ICONS_COUNTED,
     TRIGGER_BOOST_REVEALED,
 } from 'mc-shared';
 
@@ -25,7 +29,14 @@ export class ResolveBoostEffect extends Effect {
         this.boostValue = 0;
         this.value = 0;
         this.cancelledBoostIcons = 0;
+        this.countReplaced = false;
         this.cancelledBoostAbility = false;
+    }
+    get boostCountWindows() {
+        return [this];
+    }
+    get id() {
+        return this.card.id;
     }
     getResolutionChildEffects() {
         return [...super.getResolutionChildEffects()]
@@ -33,7 +44,21 @@ export class ResolveBoostEffect extends Effect {
     }
     resetResolutionData() {
         super.resetResolutionData();
+        this.countReplaced = false;
         this.cancelledBoostAbility = false;
+    }
+    checkTrigger() {
+        return !this.countReplaced;
+    }
+    toTargetObj(params) {
+        return {
+            ...this.card.toObj(params),
+            id: this.card.id,
+            boost: this.boostValue,
+        };
+    }
+    toObj(params) {
+        return this.toTargetObj(params);
     }
     get hasCancelableBoostIcons() {
         return getBoostIconCancellation(this).remainingBoostIcons > 0;
@@ -151,6 +176,31 @@ export class ResolveBoostEffect extends Effect {
             }
         }
 
+        const previousBoostValue = this.boostValue;
+        const triggerTypes = [TRIGGER_BOOST_ICONS_COUNTED];
+        const triggerParams = {
+            ...params,
+            card,
+            triggeredCard: card,
+            countedCard: card,
+            effect: this,
+        };
+        await this.trigger(PRIORITY_CONSTANT, triggerTypes, triggerParams);
+        if (await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            triggerTypes,
+            triggerParams
+        )) {
+            await this.trigger(
+                PRIORITY_INTERRUPT,
+                triggerTypes,
+                triggerParams
+            );
+        }
+
+        if (this.boostValue !== previousBoostValue && !this.countReplaced) {
+            await this.showBoostDialog(params, {showUpdatedBoost: true});
+        }
         this.value = this.boostValue;
     }
 }

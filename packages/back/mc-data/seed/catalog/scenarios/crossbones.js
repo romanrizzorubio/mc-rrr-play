@@ -8,7 +8,7 @@ import {
     ABILITY_WHEN_REVEALED_ALTEREGO,
     ABILITY_WHEN_REVEALED_HERO,
     CALC_ATTACK,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_ATTACHMENT,
     CARD_TYPE_MAIN_SCHEME_A_CARD,
     CARD_TYPE_MAIN_SCHEME_B_CARD,
@@ -18,6 +18,7 @@ import {
     EFFECT_ACTIVATE,
     EFFECT_ASSIGN_DAMAGE,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_CREATE_EXTRA_DECK,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DISCARD_GAME,
@@ -28,6 +29,7 @@ import {
     EFFECT_PLACE_DAMAGE,
     EFFECT_PLACE_THREAT,
     EFFECT_REPLACE_EFFECT,
+    EFFECT_RESOLVE_CARDS_IN_ORDER,
     EFFECT_REMOVE_COUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SHUFFLE_DECK,
@@ -187,13 +189,19 @@ const machinegun = weaponAttachment({
                         },
                     },
                     {
+                        type: EFFECT_COUNT_BOOST_ICONS,
+                        params: {
+                            card: 'effects.1.cards.0',
+                        },
+                    },
+                    {
                         type: EFFECT_ASSIGN_DAMAGE,
                         params: {
                             target: TARGET_ALL_CHARACTERS_YOU_CONTROL,
                             damage: 0,
                             paramsCalc: {
-                                target: 'effects.1.cards',
-                                formula: CALC_BOOST_ICONS,
+                                target: 'effects.2.value',
+                                formula: CALC_ALL,
                             },
                         },
                     },
@@ -289,13 +297,25 @@ const automaticFire = {
                             },
                         },
                         {
+                            type: EFFECT_RESOLVE_CARDS_IN_ORDER,
+                            params: {
+                                cards: 'effects.0.cards',
+                                effectDefinition: {
+                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                    params: {
+                                        card: 'card',
+                                    },
+                                },
+                            },
+                        },
+                        {
                             type: EFFECT_ASSIGN_DAMAGE,
                             params: {
                                 target: TARGET_ALL_CHARACTERS_YOU_CONTROL,
                                 damage: 0,
                                 paramsCalc: {
-                                    target: 'effects.0.cards',
-                                    formula: CALC_BOOST_ICONS,
+                                    target: 'effects.1.value',
+                                    formula: CALC_ALL,
                                 },
                             },
                         },
@@ -432,13 +452,25 @@ const corneredStaff = {
                             },
                         },
                         {
+                            type: EFFECT_RESOLVE_CARDS_IN_ORDER,
+                            params: {
+                                cards: 'effects.0.cards',
+                                effectDefinition: {
+                                    type: EFFECT_COUNT_BOOST_ICONS,
+                                    params: {
+                                        card: 'card',
+                                    },
+                                },
+                            },
+                        },
+                        {
                             type: EFFECT_PLACE_THREAT,
                             params: {
                                 target: TARGET_THIS,
                                 threat: 0,
                                 paramsCalc: {
-                                    target: 'effects.0.cards',
-                                    formula: CALC_BOOST_ICONS,
+                                    target: 'effects.1.value',
+                                    formula: CALC_ALL,
                                 },
                             },
                         },

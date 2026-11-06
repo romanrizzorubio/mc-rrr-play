@@ -6,7 +6,7 @@ import {
     ABILITY_HERO_RESPONSE,
     ABILITY_RESOURCE,
     ABILITY_BOOST,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CALC_COUNT,
     CARD_TYPE_ALLY,
     CARD_TYPE_ATTACHMENT,
@@ -24,6 +24,7 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_CHOOSE_ABILITY,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
     EFFECT_EXHAUST,
@@ -1163,16 +1164,23 @@ describe('Mercurio hero cards', () => {
         assert.deepEqual(thwartInterrupt.condition, {
             'effect.ability.isBasic': true,
         });
-        const attackModifier = attackInterrupt.effect.effects[1];
+        const attackCount = attackInterrupt.effect.effects[1];
+        const attackModifier = attackInterrupt.effect.effects[2];
+        assert.equal(attackCount.effectType, EFFECT_COUNT_BOOST_ICONS);
+        assert.equal(attackCount.cardSource, 'effects.0.cards.0');
         assert.equal(attackModifier.effectType, EFFECT_MODIFY_ATTACK_VALUE);
         assert.deepEqual(attackModifier.paramsCalc, {
-            target: 'effects.0.cards',
-            formula: CALC_BOOST_ICONS,
+            target: 'effects.1.value',
+            formula: CALC_ALL,
         });
         assert.equal(await attackModifier.calculate({
-            effects: [{cards: [{boost: 2}, {boost: 1}]}],
-        }), 3);
-        assert.equal(thwartInterrupt.effect.effects[1].paramsCalc.formula, CALC_BOOST_ICONS);
+            effects: [{}, {value: 2}],
+        }), 2);
+        assert.equal(
+            thwartInterrupt.effect.effects[1].effectType,
+            EFFECT_COUNT_BOOST_ICONS
+        );
+        assert.equal(thwartInterrupt.effect.effects[2].paramsCalc.formula, CALC_ALL);
         assert.equal(thwartInterrupt.effect.effects[0].count, 1);
     });
 

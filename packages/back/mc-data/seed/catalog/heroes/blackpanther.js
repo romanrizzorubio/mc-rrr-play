@@ -7,7 +7,7 @@ import {
     ABILITY_SETUP,
     ABILITY_SPECIAL,
     ABILITY_WHEN_REVEALED,
-    CALC_BOOST_ICONS,
+    CALC_ALL,
     CARD_TYPE_ALLY,
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_EVENT,
@@ -24,6 +24,7 @@ import {
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DISCARD_GAME,
@@ -825,46 +826,52 @@ export default {
                                                         'target': TARGET_ENCOUNTER_DECK,
                                                         'count': 1,
                                                         'thenEffect': {
-                                                            'type': EFFECT_CHOOSE_ABILITY,
+                                                            'type': EFFECT_COUNT_BOOST_ICONS,
                                                             'params': {
-                                                                'options': [
-                                                                    {
-                                                                        'type': ABILITY_OPTION,
-                                                                        'params': {
-                                                                            'name': 'Recibir daño',
-                                                                            'effect': {
-                                                                                'type': EFFECT_DEAL_DAMAGE,
+                                                                'card': 'effects.0.cards.0',
+                                                                'effectDefinition': {
+                                                                    'type': EFFECT_CHOOSE_ABILITY,
+                                                                    'params': {
+                                                                        'options': [
+                                                                            {
+                                                                                'type': ABILITY_OPTION,
                                                                                 'params': {
-                                                                                    'target': TARGET_YOUR_SUPERHERO,
-                                                                                    'damage': 0,
-                                                                                    'paramsCalc': {
-                                                                                        'target': 'effects.0.cards',
-                                                                                        'formula': CALC_BOOST_ICONS,
-                                                                                        'plus': 1
+                                                                                    'name': 'Recibir daño',
+                                                                                    'effect': {
+                                                                                        'type': EFFECT_DEAL_DAMAGE,
+                                                                                        'params': {
+                                                                                            'target': TARGET_YOUR_SUPERHERO,
+                                                                                            'damage': 0,
+                                                                                            'paramsCalc': {
+                                                                                                'target': 'countedBoostIcons',
+                                                                                                'formula': CALC_ALL,
+                                                                                                'plus': 1
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                            {
+                                                                                'type': ABILITY_OPTION,
+                                                                                'params': {
+                                                                                    'name': 'Añadir amenaza al Plan principal',
+                                                                                    'effect': {
+                                                                                        'type': EFFECT_PLACE_THREAT,
+                                                                                        'params': {
+                                                                                            'target': TARGET_MAIN_SCHEME,
+                                                                                            'threat': 0,
+                                                                                            'paramsCalc': {
+                                                                                                'target': 'countedBoostIcons',
+                                                                                                'formula': CALC_ALL,
+                                                                                                'plus': 1
+                                                                                            }
+                                                                                        }
                                                                                     }
                                                                                 }
                                                                             }
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        'type': ABILITY_OPTION,
-                                                                        'params': {
-                                                                            'name': 'Añadir amenaza al Plan principal',
-                                                                            'effect': {
-                                                                                'type': EFFECT_PLACE_THREAT,
-                                                                                'params': {
-                                                                                    'target': TARGET_MAIN_SCHEME,
-                                                                                    'threat': 0,
-                                                                                    'paramsCalc': {
-                                                                                        'target': 'effects.0.cards',
-                                                                                        'formula': CALC_BOOST_ICONS,
-                                                                                        'plus': 1
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
+                                                                        ]
                                                                     }
-                                                                ]
+                                                                }
                                                             }
                                                         }
                                                     }

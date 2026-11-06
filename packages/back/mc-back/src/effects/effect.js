@@ -52,6 +52,9 @@ export class Effect extends Engine {
             selectUpTo = false,
             multipleTarget = false,
             title = '',
+            dialogTitle = '',
+            showCancel = false,
+            showSingleTargetDialog = false,
             locations = [],
             effectType,
         } = params;
@@ -63,6 +66,9 @@ export class Effect extends Engine {
         this.refreshTarget = refreshTarget;
         this.selectCount = selectCount;
         this.selectUpTo = selectUpTo;
+        this.showCancel = showCancel;
+        this.showSingleTargetDialog = showSingleTargetDialog;
+        this.dialogTitle = dialogTitle;
         this.source = source;
         this.title = title || params.title || '';
         this.paramsCalc = paramsCalc;
@@ -233,6 +239,9 @@ export class Effect extends Engine {
         return this.thenEffect ?
             this.thenEffect.getExclusivePaymentResourcePreferences() :
             [];
+    }
+    async getRequiredPaymentResources() {
+        return [];
     }
     get character() {
         return path(this, 'ability.character');
@@ -578,6 +587,13 @@ export class Effect extends Engine {
             target,
             selectCount: params.selectCount ?? this.selectCount,
             selectUpTo: this.selectUpTo,
+            showCancel: params.showCancel ?? this.showCancel,
+            showSingleTargetDialog:
+                params.showSingleTargetDialog ??
+                this.showSingleTargetDialog,
+            ...(params.dialogTitle || this.dialogTitle ? {
+                dialogTitle: params.dialogTitle || this.dialogTitle,
+            } : {}),
         });
     }
     async refreshTargetSelection(previousTarget, params) {
@@ -632,7 +648,7 @@ export class Effect extends Engine {
         resolveInterrupts = false,
     } = {}) {
 
-        if (resolveDelayedEffects) {
+        if (resolveDelayedEffects && !this.isAttack) {
             await this.resolveDelayedEffects(params);
         }
         await this.trigger(PRIORITY_CONSTANT, triggerTypes, params);
@@ -659,6 +675,9 @@ export class Effect extends Engine {
 
             if (isActivation && activation && activation.afterTriggerEnds) {
                 await activation.afterTriggerEnds(params);
+            }
+            if (resolveDelayedEffects && this.isAttack) {
+                await this.resolveDelayedEffects(params);
             }
         };
         const {costPaymentSession} = params;

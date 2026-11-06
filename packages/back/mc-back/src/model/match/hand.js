@@ -164,12 +164,19 @@ export class Hand extends Engine {
         const {cards, owner} = this;
 
         return Promise.all(cards.map(async card => {
+            const playCardEffect = card.isEvent ?
+                new PlayCardEffect({
+                    card,
+                    match: this.match,
+                }) :
+                undefined;
             const playable = canPlayCardDuringTurn(card, owner) &&
                 !card.card.isResource && await card.canPlay({
                 player: owner,
                 abilityType: ABILITY_ACTION,
                 checkOnly: true,
                 checkPlayRestrictions: true,
+                ...(playCardEffect ? {playCardEffect} : {}),
             });
             const playTargets = playable ?
                 await this.getPlayTargets(card) :
@@ -180,9 +187,10 @@ export class Hand extends Engine {
 
             return {
                 ...card.toObj(),
-                playable,
-                ...playTargets,
-            };
+                    isEvent: card.isEvent,
+                    playable,
+                    ...playTargets,
+                };
         }));
     }
     getTargetIds(targets) {

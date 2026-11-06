@@ -14,13 +14,14 @@ export class EventCard extends PlayerCard {
         this.isEvent = true;
     }
 
-    async canPlay({abilityType, gameCard}) {
-        if (!await super.canPlay(arguments[0])) {
+    async canPlay(params) {
+        const {abilityType, gameCard} = params;
+        if (!await super.canPlay(params)) {
             return false;
         }
 
         const abilities = abilityType === ABILITY_ACTION ?
-            await gameCard.getAbilitiesType(ABILITY_ACTION) :
+            await gameCard.getAbilitiesType(ABILITY_ACTION, params) :
             gameCard.abilities.filter(ability =>
                 ability.abilityType === abilityType);
 
