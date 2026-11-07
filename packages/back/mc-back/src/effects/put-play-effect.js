@@ -373,8 +373,12 @@ export class PutPlayEffect extends Effect {
         });
         this.selectAllyToDiscard(allies, discardFromGameEffect);
 
+        const delayedEffectTarget =
+            typeof params.effect?.createDelayedEffect === 'function' ?
+                params.effect :
+                this;
         const delayed = new DelayedEffect({
-            selectedTarget: params.effect,
+            selectedTarget: delayedEffectTarget,
             effect: discardFromGameEffect,
             match: this.match,
         });
