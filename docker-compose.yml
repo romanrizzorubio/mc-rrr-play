@@ -38,7 +38,7 @@ services:
       - SESSION_COOKIE_SECURE=true
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGIN=https://localhost:8000
+      - FRONTEND_ORIGIN=https://51.20.138.135
       - SMTP_HOST=${SMTP_HOST:-mailpit}
       - SMTP_PORT=${SMTP_PORT:-1025}
       - SMTP_USER=${SMTP_USER:-}
@@ -68,7 +68,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "8000:8000"
+      - "443:8000"
     environment:
       - NODE_ENV=development
       - TLS_CERT_PATH=/certs/localhost.pem
@@ -201,7 +201,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -241,7 +241,7 @@ services:
       - AUTH_SERVICE_URL=https://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGINS=https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
@@ -278,7 +278,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
