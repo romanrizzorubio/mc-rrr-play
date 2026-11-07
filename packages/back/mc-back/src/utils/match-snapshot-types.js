@@ -448,9 +448,11 @@ await registerSubclassesFromDirectory(new URL('../engine/', import.meta.url), En
 await registerSubclassesFromDirectory(new URL('../model/costs/', import.meta.url), Engine);
 await registerSubclassesFromDirectory(new URL('../abilities/actions/', import.meta.url), Ability);
 await registerSubclassesFromDirectory(new URL('../abilities/basic/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/core/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/interrupt/', import.meta.url), Ability);
 await registerSubclassesFromDirectory(new URL('../abilities/misc/', import.meta.url), Ability);
 await registerSubclassesFromDirectory(new URL('../abilities/resource/', import.meta.url), Ability);
-await registerSubclassesFromDirectory(new URL('../abilities/responses/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/response/', import.meta.url), Ability);
 await registerSubclassesFromDirectory(new URL('../abilities/when/', import.meta.url), Ability);
 
 export const getSnapshotType = value => {
