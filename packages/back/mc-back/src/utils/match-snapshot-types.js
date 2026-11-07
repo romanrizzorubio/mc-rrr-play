@@ -329,12 +329,129 @@ async function registerSubclassesFromDirectory(directory, BaseType) {
         .filter(ModelType => typeof ModelType === 'function' &&
             ModelType.prototype &&
             BaseType.prototype.isPrototypeOf(ModelType.prototype))
-        .forEach(ModelType => registerSnapshotType(ModelType));
+        .forEach(ModelType => {
+            const options = {};
+            if (Ability.prototype.isPrototypeOf(ModelType.prototype)) {
+                options.restore = AbilityType_restore;
+            }
+            registerSnapshotType(ModelType, options);
+        });
 }
+
+const AbilityType_restore = ability => {
+    const effect = ability.effectDefinition;
+    const revealEffects = [];
+    const visited = new Set();
+    const pending = effect ? [effect] : [];
+    while (pending.length) {
+        const currentEffect = pending.pop();
+        if (!currentEffect || visited.has(currentEffect)) {
+            continue;
+        }
+        visited.add(currentEffect);
+        if (currentEffect.effectType === EFFECT_REVEAL_ENCOUNTER &&
+            currentEffect.cardSource === undefined) {
+            revealEffects.push(currentEffect);
+        }
+        if (currentEffect.effectType === EFFECT_CHAINED &&
+            Array.isArray(currentEffect.effects)) {
+            currentEffect.effects.forEach((sourceEffect, index) => {
+                const revealEffect = currentEffect.effects[index + 1];
+                if (sourceEffect.effectType !== EFFECT_GET_ENCOUNTER_CARD ||
+                    sourceEffect.from !== PLACE_SCENARIO_EXTRA_DECK ||
+                    !sourceEffect.resolved ||
+                    revealEffect?.effectType !== EFFECT_REVEAL_ENCOUNTER ||
+                    revealEffect.resolved ||
+                    !sourceEffect.card?.isEncounterCard) {
+                    return;
+                }
+
+                const scenario = ability.match?.scenario;
+                const extraDeck = scenario?.extraDecks?.[sourceEffect.deckId];
+                if (!extraDeck) {
+                    throw new Error(
+                        `Cannot restore drawn card from scenario deck "${sourceEffect.deckId}".`
+                    );
+                }
+
+                const card = sourceEffect.card;
+                const cardZones = [
+                    extraDeck.cards,
+                    extraDeck.discardPile,
+                    scenario.deck?.cards,
+                    scenario.deck?.discardPile,
+                    scenario.apart,
+                    scenario.gameZone?.cards,
+                    ability.match.inPlayCards,
+                    ability.match.removedCards,
+                ];
+                const isInZone = cardZones.some(zone =>
+                    Array.isArray(zone) && zone.includes(card));
+                if (!isInZone) {
+                    extraDeck.cards.unshift(card);
+                }
+            });
+        }
+        currentEffect.getResolutionChildEffects?.().forEach(child =>
+            pending.push(child));
+    }
+
+    if (!revealEffects.length) {
+        return;
+    }
+
+    const gameCards = [
+        ability.card,
+        ...(ability.card?.sides || []),
+    ];
+    let abilityConfig;
+    for (const gameCard of gameCards) {
+        const abilityIndex = gameCard?.abilities?.indexOf(ability) ?? -1;
+        if (abilityIndex >= 0) {
+            abilityConfig = gameCard.card?.abilities?.[abilityIndex];
+            break;
+        }
+    }
+    const effectConfig = abilityConfig?.params?.effect;
+    const effectsFactory = ability.match?.effectsFactory;
+    if (!effectConfig || typeof effectsFactory?.parseEffect !== 'function') {
+        return;
+    }
+
+    const configuredEffect = effectsFactory.parseEffect(effectConfig);
+    const configuredRevealEffects = [];
+    const configuredVisited = new Set();
+    const configuredPending = configuredEffect ? [configuredEffect] : [];
+    while (configuredPending.length) {
+        const currentEffect = configuredPending.pop();
+        if (!currentEffect || configuredVisited.has(currentEffect)) {
+            continue;
+        }
+        configuredVisited.add(currentEffect);
+        if (currentEffect.effectType === EFFECT_REVEAL_ENCOUNTER) {
+            configuredRevealEffects.push(currentEffect);
+        }
+        currentEffect.getResolutionChildEffects?.().forEach(child =>
+            configuredPending.push(child));
+    }
+
+    revealEffects.forEach((revealEffect, index) => {
+        const configuredCardSource = configuredRevealEffects[index]?.cardSource;
+        if (configuredCardSource !== undefined) {
+            revealEffect.cardSource = configuredCardSource;
+        }
+    });
+};
 
 await registerSubclassesFromDirectory(new URL('../effects/', import.meta.url), Effect);
 await registerSubclassesFromDirectory(new URL('../engine/', import.meta.url), Engine);
 await registerSubclassesFromDirectory(new URL('../model/costs/', import.meta.url), Engine);
+await registerSubclassesFromDirectory(new URL('../abilities/actions/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/basic/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/misc/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/resource/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/responses/', import.meta.url), Ability);
+await registerSubclassesFromDirectory(new URL('../abilities/when/', import.meta.url), Ability);
 
 export const getSnapshotType = value => {
     const constructor = Object.getPrototypeOf(value)?.constructor;
