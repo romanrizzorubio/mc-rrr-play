@@ -18,8 +18,8 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "127.0.0.1:1025:1025"
-      - "127.0.0.1:8025:8025"
+      - "1025:1025"
+      - "8025:8025"
     networks:
       - mc-network
 
@@ -38,7 +38,7 @@ services:
       - SESSION_COOKIE_SECURE=true
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGIN=https://51.20.138.135
+      - FRONTEND_ORIGIN=https://${PUBLIC_IP:-localhost}
       - SMTP_HOST=${SMTP_HOST:-mailpit}
       - SMTP_PORT=${SMTP_PORT:-1025}
       - SMTP_USER=${SMTP_USER:-}
@@ -67,6 +67,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "443:8000"
     environment:
@@ -74,6 +76,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
@@ -103,6 +106,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8100:8100"
     environment:
@@ -110,6 +115,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-match:/app/packages/front/mc-match
@@ -124,6 +130,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8200:8200"
     environment:
@@ -131,6 +139,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-deck:/app/packages/front/mc-deck
@@ -144,6 +153,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8300:8300"
     environment:
@@ -151,6 +162,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-static:/app/packages/front/mc-static
@@ -168,6 +180,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8400:8400"
     environment:
@@ -175,6 +189,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-users:/app/packages/front/mc-users
@@ -201,7 +216,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -241,7 +256,7 @@ services:
       - AUTH_SERVICE_URL=https://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
@@ -278,7 +293,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:

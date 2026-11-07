@@ -2,12 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Argumentos de construcción
+ARG PUBLIC_IP=localhost
+ENV PUBLIC_IP=$PUBLIC_IP
+
 # Copiar todo el monorepo
 COPY . .
 
 # Instalar dependencias
 RUN npm install
-
+# Generar configuración dinámica
+RUN node scripts/generate-app-config.js
 # Exponer puerto
 EXPOSE 8000 8100 8200 8300 8400
 
