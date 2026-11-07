@@ -48,7 +48,7 @@ services:
       - ./.local/certs:/certs:ro
       - ./packages/back/mc-user-service:/app/packages/back/mc-user-service
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run start:mc-user-service
     networks:
       - mc-network
@@ -79,7 +79,7 @@ services:
       - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
       - ./packages/front/mc-components:/app/packages/front/mc-components
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-frontend -- --host 0.0.0.0 --port 8000
     networks:
       - mc-network
@@ -115,7 +115,7 @@ services:
       - ./packages/front/mc-match:/app/packages/front/mc-match
       - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
       - ./packages/front/mc-components:/app/packages/front/mc-components
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-match
     networks:
       - mc-network
@@ -135,7 +135,7 @@ services:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-deck:/app/packages/front/mc-deck
       - ./packages/front/mc-components:/app/packages/front/mc-components
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-deck
     networks:
       - mc-network
@@ -154,7 +154,7 @@ services:
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-static:/app/packages/front/mc-static
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-static
     networks:
       - mc-network
@@ -179,7 +179,7 @@ services:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-users:/app/packages/front/mc-users
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run serve --workspace=packages/front/mc-users -- --host 0.0.0.0 --port 8400
     networks:
       - mc-network
@@ -210,7 +210,7 @@ services:
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
       - ./packages/back/mc-data:/app/packages/back/mc-data
       - ./packages/core/mc-shared:/app/packages/core/mc-shared
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run start:backend
     networks:
       - mc-network
@@ -248,7 +248,7 @@ services:
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
       - ./packages/back/mc-data:/app/packages/back/mc-data
       - ./packages/core/mc-shared:/app/packages/core/mc-shared
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run start:match-creation
     networks:
       - mc-network
@@ -287,7 +287,7 @@ services:
       - ./packages/back/mc-data:/app/packages/back/mc-data
       - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
       - ./packages/core/mc-shared:/app/packages/core/mc-shared
-      - ./node_modules:/app/node_modules
+      # - ./node_modules:/app/node_modules
     command: npm run start:mc-deck-service
     networks:
       - mc-network
