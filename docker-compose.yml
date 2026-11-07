@@ -67,6 +67,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "443:8000"
     environment:
@@ -104,6 +106,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8100:8100"
     environment:
@@ -126,6 +130,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8200:8200"
     environment:
@@ -147,6 +153,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8300:8300"
     environment:
@@ -172,6 +180,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "8400:8400"
     environment:
