@@ -43,6 +43,8 @@ Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digi
   - Componentes del Frontend
   - Flujos de datos
   - Sistema de comunicación
+- **[07-DATABASE-MIGRATION.md](./07-DATABASE-MIGRATION.md)**
+  - Migración de MongoDB local a Docker Compose en AWS EC2
 
 ## 🎮 ¿Por Dónde Empiezo?
 
