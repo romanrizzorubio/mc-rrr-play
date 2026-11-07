@@ -18,7 +18,6 @@ import {
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENEMY_SCHEME,
     EFFECT_EXHAUST,
-    EFFECT_MAY,
     EFFECT_REMOVE_THREAT,
     EFFECT_SET_CONTROLLER,
     EFFECT_SIMULTANEOUS,
@@ -323,17 +322,18 @@ const specialDeliveryAbility = ({
     type,
     params: {
         effect: {
-            type: EFFECT_MAY,
+            type: EFFECT_CHOOSE,
             params: {
-                title: '¿Agotas la Milano?',
-                effect: exhaustMilano(),
-                effectNot: {
-                    ...fallbackEffect,
-                    params: {
-                        ...fallbackEffect.params,
-                        title,
+                options: [
+                    exhaustMilano('Agotar la Milano'),
+                    {
+                        ...fallbackEffect,
+                        params: {
+                            ...fallbackEffect.params,
+                            title,
+                        },
                     },
-                },
+                ],
             },
         },
     },

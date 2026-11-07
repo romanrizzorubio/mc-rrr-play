@@ -9,6 +9,7 @@ Consulta esta guía al cambiar componentes de cartas, descartes o diálogos que 
 ## Orientación y composición
 
 - Oculta la ficha de jugador inicial cuando la partida tenga un único jugador/superhéroe. Conserva la ficha si hay varios puestos, aunque los controle una sola cuenta.
+- En los tableros de otros jugadores, conserva el clic derecho en las cartas para ampliarlas. Bloquea las acciones de juego con las guardas del tablero, no con `pointer-events: none` en el contenedor de solo lectura.
 - En el tablero del escenario, centra el Plan principal en el espacio entre el mazo de Encuentros y el Villano cuando no haya Entornos ni mazos auxiliares visibles. Cuando el área central tenga contenido, distribuye Plan principal, área de Entornos y Villano en columnas equidistantes; aplica el ajuste independientemente a cada zona en escenarios divididos.
 - En listas que muestran la jugabilidad y en el Plan principal, resalta las cartas con `playable === true` con un halo amarillo difuminado alrededor de la imagen solamente; no reduzcas el brillo de las cartas no jugables. Conserva el tratamiento de deshabilitado temporal para acciones pendientes.
 - Resalta la pila de descartes del jugador cuando contenga cartas que puedan jugarse desde ella y resalta esas cartas en el diálogo del descarte. No resaltes las pilas de otros jugadores.

@@ -259,11 +259,6 @@ export default css`
     --md-text-button-label-text-color: var(--mc-color-primary, #6750a4);
   }
 
-  mc-scenario.read-only,
-  mc-player.read-only {
-    pointer-events: none;
-  }
-
   .deck-target-veil {
     position: absolute;
     inset: 0;
