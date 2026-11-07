@@ -323,7 +323,8 @@ export default [
                             'name': 'Armadura electrostática',
                             'trigger': TRIGGER_ENEMY_ATTACKS_YOU,
                             'condition': {
-                                'effect.isDefended': true
+                                'effect.isDefended': true,
+                                'effect.defender.isHero': true
                             },
                             'effect': {
                                 'type': EFFECT_DEAL_DAMAGE,

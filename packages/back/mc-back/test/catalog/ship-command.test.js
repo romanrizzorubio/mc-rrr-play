@@ -4,13 +4,14 @@ import {describe, test} from 'node:test';
 import {
     ABILITY_FIRST_PLAYER_ACTION,
     CARD_TYPE_ENVIRONMENT,
+    DIALOG_LIST,
+    EFFECT_CHOOSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_RANDOM,
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENEMY_SCHEME,
     EFFECT_EXHAUST,
     EFFECT_FOR_EACH,
-    EFFECT_MAY,
     EFFECT_STUN,
     TARGET_ALL_SUPERHEROES,
     TARGET_CONDITION_CARD,
@@ -287,7 +288,7 @@ describe('Ship Command modular encounter set', () => {
         assert.equal(milano.controller, secondPlayer);
     });
 
-    test('resolves Entrega especial through its May dialog for both identities', async () => {
+    test('shows Entrega especial with its identity-specific activation choice', async () => {
         const match = new Match({
             mc: {mcSocket: {send() {}}},
             name: 'ship-command-may',
@@ -348,16 +349,16 @@ describe('Ship Command modular encounter set', () => {
         match.openDialog = async params => {
             dialog = params;
 
-            return {confirmed: true};
+            return {selected: {id: 0}};
         };
 
         const alterEgoAbility = delivery.abilities.find(ability =>
             ability.isValidIdentity({player: resolver}) &&
-            ability.effect.effectType === EFFECT_MAY);
+            ability.effect.effectType === EFFECT_CHOOSE);
         const alterEgoEffect = alterEgoAbility.effect.createInstance({
             ability: alterEgoAbility,
         });
-        const fallbackEffect = alterEgoEffect.effectNot;
+        const [milanoChoice, fallbackEffect] = alterEgoEffect.options;
         let fallbackResolved = false;
         fallbackEffect.canRun = async () => true;
         fallbackEffect.prepare = async () => {};
@@ -366,18 +367,19 @@ describe('Ship Command modular encounter set', () => {
         };
 
         assert.ok(alterEgoAbility);
-        assert.equal(alterEgoAbility.effect.effect.effectType, EFFECT_EXHAUST);
+        assert.equal(alterEgoEffect.effectType, EFFECT_CHOOSE);
+        assert.equal(milanoChoice.effectType, EFFECT_EXHAUST);
         assert.equal(fallbackEffect.effectType, EFFECT_ENEMY_SCHEME);
         assert.deepEqual(match.searchCards({'card.name': 'Milano'}, resolver), [milano]);
-        assert.equal(alterEgoEffect.effect.target, TARGET_CONDITION_CARD);
-        assert.deepEqual(alterEgoEffect.effect.condition, {'card.name': 'Milano'});
-        assert.equal(alterEgoEffect.effect.getValidTarget({
+        assert.equal(milanoChoice.target, TARGET_CONDITION_CARD);
+        assert.deepEqual(milanoChoice.condition, {'card.name': 'Milano'});
+        assert.equal(milanoChoice.getValidTarget({
             ability: alterEgoAbility,
             card: delivery,
             match,
             player: resolver,
         }).length, 1);
-        assert.equal(await alterEgoEffect.effect.canRun({
+        assert.equal(await alterEgoEffect.canRun({
             card: delivery,
             match,
             player: resolver,
@@ -388,8 +390,14 @@ describe('Ship Command modular encounter set', () => {
             player: resolver,
         });
 
-        assert.equal(dialog.targetPlayer, resolver);
-        assert.equal(dialog.title, '¿Agotas la Milano?');
+        assert.equal(dialog.targetPlayer, resolver.userId);
+        assert.equal(dialog.dialogType, DIALOG_LIST);
+        assert.equal(dialog.data.card.name, 'Entrega especial');
+        assert.equal(dialog.data.card.image, 'sets/ship-command/16148.png');
+        assert.deepEqual(dialog.data.options, [
+            {id: 0, text: 'Agotar la Milano'},
+            {id: 1, text: 'El Villano ejecuta el Plan con +1 PLA'},
+        ]);
         assert.equal(milano.exhausted, true);
         assert.equal(fallbackResolved, false);
 
@@ -398,11 +406,11 @@ describe('Ship Command modular encounter set', () => {
         dialog = undefined;
         const heroAbility = delivery.abilities.find(ability =>
             ability.isValidIdentity({player: resolver}) &&
-            ability.effect.effectType === EFFECT_MAY);
+            ability.effect.effectType === EFFECT_CHOOSE);
         const heroEffect = heroAbility.effect.createInstance({
             ability: heroAbility,
         });
-        const heroFallback = heroEffect.effectNot;
+        const heroFallback = heroEffect.options[1];
         let heroFallbackResolved = false;
         heroFallback.canRun = async () => true;
         heroFallback.prepare = async () => {};
@@ -412,7 +420,7 @@ describe('Ship Command modular encounter set', () => {
         match.openDialog = async params => {
             dialog = params;
 
-            return {confirmed: false};
+            return {selected: {id: 1}};
         };
 
         assert.equal(heroFallback.effectType, EFFECT_ENEMY_ATTACK);
@@ -422,7 +430,13 @@ describe('Ship Command modular encounter set', () => {
             player: resolver,
         });
 
-        assert.equal(dialog.targetPlayer, resolver);
+        assert.equal(dialog.targetPlayer, resolver.userId);
+        assert.equal(dialog.data.card.name, 'Entrega especial');
+        assert.equal(dialog.data.card.image, 'sets/ship-command/16148.png');
+        assert.deepEqual(dialog.data.options, [
+            {id: 0, text: 'Agotar la Milano'},
+            {id: 1, text: 'El Villano te ataca con +1 ATQ'},
+        ]);
         assert.equal(milano.exhausted, false);
         assert.equal(heroFallbackResolved, true);
 
@@ -432,9 +446,9 @@ describe('Ship Command modular encounter set', () => {
             ability: heroAbility,
         });
         let exhaustedFallbackResolved = false;
-        exhaustedEffect.effectNot.canRun = async () => true;
-        exhaustedEffect.effectNot.prepare = async () => {};
-        exhaustedEffect.effectNot.runEffect = async () => {
+        exhaustedEffect.options[1].canRun = async () => true;
+        exhaustedEffect.options[1].prepare = async () => {};
+        exhaustedEffect.options[1].runEffect = async () => {
             exhaustedFallbackResolved = true;
         };
         await exhaustedEffect.runEffect({
@@ -447,18 +461,35 @@ describe('Ship Command modular encounter set', () => {
         assert.equal(exhaustedFallbackResolved, true);
     });
 
-    test('uses May with a fallback for Entrega especial', () => {
+    test('offers the Milano and activation choices for Entrega especial', () => {
         const specialDelivery = shipCommand.config.cards.find(({card}) =>
             card.params.name === 'Entrega especial').card;
         const effectsFactory = new EffectsFactory({match: {}});
+        const expectedActivationChoices = [
+            'El Villano ejecuta el Plan con +1 PLA',
+            'El Villano te ataca con +1 ATQ',
+        ];
 
-        for (const ability of specialDelivery.params.abilities) {
-            const may = ability.params.effect;
-            assert.equal(may.type, EFFECT_MAY);
-            assert.ok(may.params.effect);
-            assert.ok(may.params.effectNot);
-            assert.ok(effectsFactory.parseEffect(may).effectNot);
-        }
+        specialDelivery.params.abilities.forEach((ability, index) => {
+            const choose = ability.params.effect;
+
+            assert.equal(choose.type, EFFECT_CHOOSE);
+            assert.deepEqual(choose.params.options.map(({params}) =>
+                params.title
+            ), [
+                'Agotar la Milano',
+                expectedActivationChoices[index],
+            ]);
+
+            const parsedChoose = effectsFactory.parseEffect(choose);
+            assert.equal(parsedChoose.effectType, EFFECT_CHOOSE);
+            assert.deepEqual(parsedChoose.options.map(option =>
+                option.getTitle()
+            ), [
+                'Agotar la Milano',
+                expectedActivationChoices[index],
+            ]);
+        });
     });
 
     test('resolves the fallback when the optional effect is declined', async () => {

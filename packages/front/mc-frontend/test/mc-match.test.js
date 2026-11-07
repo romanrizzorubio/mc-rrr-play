@@ -19,6 +19,9 @@ globalThis.CustomEvent ??= class {
 const {HandComponent: McCardList} = await import(
     '../src/components/cards/mc-card-list/mc-card-list.js'
 );
+const {CardComponent} = await import(
+    '../src/components/cards/mc-card/mc-card.js'
+);
 const {MatchComponent} = await import(
     '../src/components/views/mc-match/mc-match.js'
 );
@@ -505,6 +508,10 @@ describe('multiplayer player boards', () => {
 
         assert.equal(component.displayedPlayer.id, 'other-id');
         assert.equal(component.boardInteractive, false);
+        assert.doesNotMatch(
+            matchStyles,
+            /mc-scenario\.read-only,\s*mc-player\.read-only\s*\{\s*pointer-events:\s*none/u,
+        );
 
         component.guardBoardInteraction({
             stopPropagation() {
@@ -512,6 +519,25 @@ describe('multiplayer player boards', () => {
             },
         });
         assert.equal(propagationStopped, true);
+
+        let defaultPrevented = false;
+        let contextMenuPropagationStopped = false;
+        const card = Object.assign(Object.create(CardComponent.prototype), {
+            clickDisabled: true,
+            _showBig: false,
+        });
+
+        card.hableContextMenu({
+            preventDefault() {
+                defaultPrevented = true;
+            },
+            stopPropagation() {
+                contextMenuPropagationStopped = true;
+            },
+        });
+        assert.equal(defaultPrevented, true);
+        assert.equal(contextMenuPropagationStopped, true);
+        assert.equal(card._showBig, true);
 
         component.showPlayerBoard('local-id');
         assert.equal(component.boardInteractive, true);
