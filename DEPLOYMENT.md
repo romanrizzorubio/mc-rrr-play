@@ -11,7 +11,7 @@ Para evitar IPs fijas ("a fuego") en el código, utilizamos la variable de entor
 1. **Crear archivo .env**:
    En la raíz del proyecto, crea un archivo llamado `.env`:
    ```bash
-   PUBLIC_IP=51.20.138.135
+   PUBLIC_IP=TU_IP_PUBLICA
    ```
    *(Sustituye por tu IP actual si cambia)*.
 
