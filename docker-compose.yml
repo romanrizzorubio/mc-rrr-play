@@ -74,6 +74,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
@@ -110,6 +111,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-match:/app/packages/front/mc-match
@@ -131,6 +133,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-deck:/app/packages/front/mc-deck
@@ -151,6 +154,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-static:/app/packages/front/mc-static
@@ -175,6 +179,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
+      - PUBLIC_IP=${PUBLIC_IP:-localhost}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-users:/app/packages/front/mc-users
@@ -201,7 +206,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -241,7 +246,7 @@ services:
       - AUTH_SERVICE_URL=https://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
@@ -278,7 +283,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=https://mc-user-service:3003
-      - FRONTEND_ORIGINS=https://51.20.138.135,https://localhost:8000,https://localhost:8100
+      - FRONTEND_ORIGINS=https://${PUBLIC_IP:-localhost},https://localhost:8000,https://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
