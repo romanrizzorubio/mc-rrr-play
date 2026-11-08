@@ -43,6 +43,7 @@ export default defineConfig(({command}) => ({
         port: 8400,
         strictPort: true,
         cors: true,
+        allowedHosts: true,
         ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),
         fs: {
             allow: [repositoryRoot],

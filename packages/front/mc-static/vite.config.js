@@ -42,6 +42,7 @@ export default defineConfig(({command}) => ({
         port: 8300,
         strictPort: true,
         cors: true,
+        allowedHosts: true,
         ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),
     },
     build: {

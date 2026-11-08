@@ -43,6 +43,7 @@ export default defineConfig(({command}) => ({
         port: 8100,
         strictPort: true,
         cors: true,
+        allowedHosts: true,
         fs: {
             allow: [repositoryRoot],
         },
