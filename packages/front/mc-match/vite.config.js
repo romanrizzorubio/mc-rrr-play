@@ -32,7 +32,7 @@ export default defineConfig(({command}) => ({
         fs: {
             allow: [repositoryRoot],
         },
-        ...(command === 'serve' ? {https: getDevelopmentHttpsOptions()} : {}),
+        ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),
     },
     build: {
         target: 'es2022',

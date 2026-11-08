@@ -52,7 +52,7 @@ services:
     networks:
       - mc-network
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('https://127.0.0.1:3003/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD", "node", "-e", "process.env.NODE_TLS_REJECT_UNAUTHORIZED='0'; fetch((process.env.USE_HTTPS === 'false' ? 'http' : 'https') + '://127.0.0.1:3003/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -84,7 +84,7 @@ services:
       # - ./packages/front/mc-components:/app/packages/front/mc-components
       # - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
       # - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/mc-frontend -- --host 0.0.0.0 --port 8000
+    command: sh -c "npm run serve --workspace=packages/front/mc-frontend -- --host 0.0.0.0 --port 8000"
     networks:
       - mc-network
     depends_on:
@@ -125,7 +125,7 @@ services:
       # - ./packages/front/mc-frontend:/app/packages/front/mc-frontend
       # - ./packages/front/mc-components:/app/packages/front/mc-components
       # - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/mc-match -- --host 0.0.0.0 --port 8100 $$( [ "$${USE_HTTPS}" = "false" ] && echo "" || echo "--https" )
+    command: sh -c "npm run serve --workspace=packages/front/mc-match -- --host 0.0.0.0 --port 8100"
     networks:
       - mc-network
 
@@ -150,7 +150,7 @@ services:
       # - ./packages/front/mc-deck:/app/packages/front/mc-deck
       # - ./packages/front/mc-components:/app/packages/front/mc-components
       # - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/mc-deck -- --host 0.0.0.0 --port 8200 $$( [ "$${USE_HTTPS}" = "false" ] && echo "" || echo "--https" )
+    command: sh -c "npm run serve --workspace=packages/front/mc-deck -- --host 0.0.0.0 --port 8200"
     networks:
       - mc-network
 
@@ -174,7 +174,7 @@ services:
       - ./.local/certs:/certs:ro
       # - ./packages/front/mc-static:/app/packages/front/mc-static
       # - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/mc-static -- --host 0.0.0.0 --port 8300 $$( [ "$${USE_HTTPS}" = "false" ] && echo "" || echo "--https" )
+    command: sh -c "npm run serve --workspace=packages/front/mc-static -- --host 0.0.0.0 --port 8300"
     networks:
       - mc-network
     healthcheck:
@@ -204,7 +204,7 @@ services:
       # - ./packages/front/mc-users:/app/packages/front/mc-users
       # - ./packages/core/mc-endpoints:/app/packages/core/mc-endpoints
       # - ./node_modules:/app/node_modules
-    command: npm run serve --workspace=packages/front/mc-users -- --host 0.0.0.0 --port 8400 $$( [ "$${USE_HTTPS}" = "false" ] && echo "" || echo "--https" )
+    command: sh -c "npm run serve --workspace=packages/front/mc-users -- --host 0.0.0.0 --port 8400"
     networks:
       - mc-network
     healthcheck:
