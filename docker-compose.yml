@@ -80,6 +80,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
     volumes:
       - ./.local/certs:/certs:ro
       - ./scripts:/app/scripts:ro
@@ -129,6 +130,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-match/vite.config.js:/app/packages/front/mc-match/vite.config.js:ro
@@ -162,6 +164,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-deck/vite.config.js:/app/packages/front/mc-deck/vite.config.js:ro
@@ -194,6 +197,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-static/vite.config.js:/app/packages/front/mc-static/vite.config.js:ro
@@ -225,6 +229,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-users/vite.config.js:/app/packages/front/mc-users/vite.config.js:ro
@@ -253,7 +258,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -294,7 +299,7 @@ services:
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
@@ -332,7 +337,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -357,6 +362,33 @@ services:
         condition: service_healthy
       mc-user-service:
         condition: service_healthy
+
+  mc-gateway:
+    image: nginx:alpine
+    ports:
+      - "${PORT_GATEWAY:-80}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      mc-frontend:
+        condition: service_healthy
+      mc-match:
+        condition: service_healthy
+      mc-deck:
+        condition: service_healthy
+      mc-static:
+        condition: service_healthy
+      mc-users:
+        condition: service_healthy
+      mc-backend:
+        condition: service_healthy
+    networks:
+      - mc-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--header=Host: localhost", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   mc-network:

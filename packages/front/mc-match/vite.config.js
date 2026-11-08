@@ -44,6 +44,9 @@ export default defineConfig(({command}) => ({
         strictPort: true,
         cors: true,
         allowedHosts: true,
+        hmr: {
+            clientPort: process.env.PORT_GATEWAY || 80,
+        },
         fs: {
             allow: [repositoryRoot],
         },

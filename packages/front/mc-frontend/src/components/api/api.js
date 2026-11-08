@@ -288,7 +288,8 @@ export class Api {
             },
         };
 
-        const response = await fetch(new URL(endpoint, service), options);
+        const url = new URL(endpoint.startsWith('/') ? endpoint.substring(1) : endpoint, service);
+        const response = await fetch(url, options);
 
         return parseApiResponse(response);
     }

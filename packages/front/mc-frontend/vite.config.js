@@ -28,6 +28,9 @@ export default defineConfig(({command}) => ({
         port: 8000,
         strictPort: true,
         allowedHosts: true,
+        hmr: {
+            clientPort: process.env.PORT_GATEWAY || 80,
+        },
         ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),
     },
     build: {
