@@ -47,10 +47,12 @@ export const createUserServiceApp = ({
     }
 
     const app = express();
+    const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+    const defaultOrigin = protocol === 'http' ? 'http://localhost:8000' : 'https://localhost:8000';
     const auth = createUserAuthService({
         store,
         mailer,
-        frontendOrigin,
+        frontendOrigin: frontendOrigin || defaultOrigin,
         ...(clock ? {clock} : {}),
     });
     const cookieOptions = {
@@ -61,7 +63,7 @@ export const createUserServiceApp = ({
         maxAge: SESSION_DURATION_MS,
     };
 
-    app.use(cors({origin: frontendOrigin, credentials: true}));
+    app.use(cors({origin: frontendOrigin || defaultOrigin, credentials: true}));
     app.use(express.json({limit: '16kb'}));
     app.use((_request, response, next) => {
         response.set('Cache-Control', 'no-store');

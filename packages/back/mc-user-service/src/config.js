@@ -40,6 +40,6 @@ export const loadUserServiceConfig = (environment = process.env) => {
             password: environment.SMTP_PASSWORD,
             from: environment.SMTP_FROM,
         },
-        secureCookies: environment.SESSION_COOKIE_SECURE !== 'false',
+        secureCookies: environment.SESSION_COOKIE_SECURE === 'true',
     };
 };

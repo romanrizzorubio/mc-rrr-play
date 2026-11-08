@@ -117,9 +117,13 @@ export class Mc {
         await this.data.connect();
         this.app = express();
         this.server = createServiceServer(this.app);
+        const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+        const defaultOrigins = protocol === 'http' ?
+            'http://localhost:8000,http://localhost:8100' :
+            'https://localhost:8000,https://localhost:8100';
         const allowedOrigins = (
             process.env.FRONTEND_ORIGINS ||
-            'https://localhost:8000,https://localhost:8100'
+            defaultOrigins
         ).split(',').map(origin => origin.trim()).filter(Boolean);
         this.io = new Server(this.server, {
             connectionStateRecovery: {},
@@ -135,8 +139,8 @@ export class Mc {
 
         const port = Number(process.env.PORT || 3000);
         const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
-        this.server.listen(port, () => {
-            console.log(`match service running at ${protocol}://localhost:${port}`);
+        this.server.listen(port, '0.0.0.0', () => {
+            console.log(`match service running at ${protocol}://0.0.0.0:${port}`);
         });
     }
     async close() {

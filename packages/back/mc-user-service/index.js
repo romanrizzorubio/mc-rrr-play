@@ -22,10 +22,10 @@ const server = createServiceServer(createUserServiceApp({
 
 await new Promise((resolve, reject) => {
     server.once('error', reject);
-    server.listen(config.port, resolve);
+    server.listen(config.port, '0.0.0.0', resolve);
 });
 const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
-console.log(`mc-user-service running at ${protocol}://localhost:${config.port}`);
+console.log(`mc-user-service running at ${protocol}://0.0.0.0:${config.port}`);
 
 let shuttingDown = false;
 for (const signal of ['SIGINT', 'SIGTERM']) {

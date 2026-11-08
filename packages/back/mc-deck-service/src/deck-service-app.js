@@ -153,9 +153,13 @@ export const createDeckServiceApp = ({
     repositoryDeckSnapshotPath = REPOSITORY_DECK_SNAPSHOT_PATH,
 }) => {
     const app = express();
+    const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+    const defaultOrigins = protocol === 'http' ?
+        'http://localhost:8000,http://localhost:8100' :
+        'https://localhost:8000,https://localhost:8100';
     const allowedOrigins = (
         process.env.FRONTEND_ORIGINS ||
-        'https://localhost:8000,https://localhost:8100'
+        defaultOrigins
     ).split(',').map(origin => origin.trim()).filter(Boolean);
     app.use(cors({
         origin: allowedOrigins,
