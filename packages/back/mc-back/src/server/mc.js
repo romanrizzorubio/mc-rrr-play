@@ -136,11 +136,10 @@ export class Mc {
         this.mcRest.createEndpoints();
         this.mcSocket.init(this.io);
         await this.restoreMatches();
-
         const port = Number(process.env.PORT || 3000);
-        const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+        const protocolText = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
         this.server.listen(port, '0.0.0.0', () => {
-            console.log(`match service running at ${protocol}://0.0.0.0:${port}`);
+            console.log(`match service running at ${protocolText}://0.0.0.0:${port}`);
         });
     }
     async close() {

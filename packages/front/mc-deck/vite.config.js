@@ -19,8 +19,22 @@ const remoteEntryDevRoute = {
     },
 };
 
+const healthCheck = {
+    name: 'mc-deck-health-check',
+    configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+            if (req.url === '/healthz') {
+                res.statusCode = 200;
+                res.end('ok');
+                return;
+            }
+            next();
+        });
+    },
+};
+
 export default defineConfig(({command}) => ({
-    plugins: [remoteEntryDevRoute],
+    plugins: [remoteEntryDevRoute, healthCheck],
     root: packageRoot,
     publicDir: false,
     server: {
