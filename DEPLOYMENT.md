@@ -2,32 +2,34 @@
 
 Este proyecto está configurado para desplegarse fácilmente usando Docker, especialmente en entornos de nube como AWS EC2.
 
-## Configuración de la IP Pública
+## Configuración de Red e IP Pública
 
-Para evitar IPs fijas ("a fuego") en el código, utilizamos la variable de entorno `PUBLIC_IP`.
+Para despliegues en AWS tras un balanceador o con terminación SSL externa, se recomienda usar el modo **HTTP** (puerto 80).
 
-### Pasos para configurar en AWS:
+### Pasos para configurar:
 
 1. **Crear archivo .env**:
-   En la raíz del proyecto, crea un archivo llamado `.env`:
+   Copia la plantilla y ajusta los valores:
    ```bash
-   PUBLIC_IP=TU_IP_PUBLICA
+   cp .env.template .env
    ```
-   *(Sustituye por tu IP actual si cambia)*.
+   
+   Asegúrate de configurar:
+   - `PUBLIC_IP`: Tu IP pública o dominio.
+   - `USE_HTTPS`: `false` (para que AWS gestione el SSL).
+   - `PROTOCOL`: `http`.
+   - `PORT_FRONTEND`: `80`.
 
 2. **Despliegue**:
-   Docker Compose leerá automáticamente esta variable para configurar los orígenes CORS y generar la configuración del frontend.
+   Docker Compose configurará los orígenes CORS y el frontend para funcionar por el puerto 80 sin TLS interna.
    ```bash
    docker compose build --no-cache
    docker compose up -d
    ```
 
-3. **Certificados HTTPS**:
-   Si la IP cambia, es recomendable regenerar los certificados para incluir la nueva IP en el SAN (Subject Alternative Name), aunque para acceso vía IP con certificados autofirmados, el navegador seguirá pidiendo "Aceptar el riesgo".
-
 ## Puertos requeridos en AWS Security Group:
 
-- **443**: Frontend (HTTPS estándar)
-- **3000-3003**: Servicios Backend
+- **80**: Frontend (HTTP estándar)
+- **3000-3003**: Servicios Backend (API)
 - **8100-8400**: Micro-frontends (Remotos)
 - **8025**: Mailpit (Opcional, para correos)
