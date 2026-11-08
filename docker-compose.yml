@@ -35,7 +35,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
-      - SESSION_COOKIE_SECURE=false
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
       - FRONTEND_ORIGIN=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}
