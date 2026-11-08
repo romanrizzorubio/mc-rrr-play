@@ -1,4 +1,4 @@
-import {createHttpsServiceServer} from 'mc-server-utils';
+import {createServiceServer} from 'mc-server-utils';
 import {MongoDataStore} from 'mc-data';
 import {createDeckServiceApp} from './src/deck-service-app.js';
 
@@ -6,11 +6,12 @@ const data = new MongoDataStore();
 await data.connect();
 
 const app = createDeckServiceApp({data});
-const server = createHttpsServiceServer(app);
+const server = createServiceServer(app);
 const port = Number(process.env.PORT || 3002);
 
+const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
 server.listen(port, () => {
-    console.log(`mc-deck-service running at https://localhost:${port}`);
+    console.log(`mc-deck-service running at ${protocol}://localhost:${port}`);
 });
 
 for (const signal of ['SIGINT', 'SIGTERM']) {

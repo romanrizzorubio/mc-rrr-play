@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "Shared HTTPS server utilities for backend services",
   "type": "module",
-  "main": "./src/https-server.js",
+  "main": "./index.js",
   "scripts": {
     "test": "node --test"
   },
   "exports": {
-    ".": "./src/https-server.js"
+    ".": "./index.js"
   }
 }
