@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const publicIp = process.env.PUBLIC_IP || 'localhost';
-const protocol = 'https';
+const protocol = process.env.PROTOCOL || 'https';
 
 const config = {
   services: {
