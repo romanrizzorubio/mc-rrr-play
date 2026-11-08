@@ -3,19 +3,25 @@ import path from 'path';
 
 const publicIp = process.env.PUBLIC_IP || 'localhost';
 const protocol = process.env.PROTOCOL || 'https';
+const usePorts = process.env.USE_PORTS_IN_URL !== 'false';
+
+const getUrl = (port) => {
+  const portSuffix = usePorts ? `:${port}` : '';
+  return `${protocol}://${publicIp}${portSuffix}`;
+};
 
 const config = {
   services: {
-    match: `${protocol}://${publicIp}:3000`,
-    matchCreation: `${protocol}://${publicIp}:3001`,
-    deck: `${protocol}://${publicIp}:3002`,
-    users: `${protocol}://${publicIp}:3003`
+    match: getUrl(3000),
+    matchCreation: getUrl(3001),
+    deck: getUrl(3002),
+    users: getUrl(3003)
   },
   remotes: {
-    mcMatch: `${protocol}://${publicIp}:8100/remoteEntry.js`,
-    mcDeck: `${protocol}://${publicIp}:8200/remoteEntry.js`,
-    mcStatic: `${protocol}://${publicIp}:8300/remoteEntry.js`,
-    mcUsers: `${protocol}://${publicIp}:8400/remoteEntry.js`
+    mcMatch: `${getUrl(8100)}/remoteEntry.js`,
+    mcDeck: `${getUrl(8200)}/remoteEntry.js`,
+    mcStatic: `${getUrl(8300)}/remoteEntry.js`,
+    mcUsers: `${getUrl(8400)}/remoteEntry.js`
   }
 };
 

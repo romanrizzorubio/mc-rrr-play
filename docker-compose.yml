@@ -38,7 +38,7 @@ services:
       - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGIN=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}
+      - FRONTEND_ORIGIN=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000}
       - SMTP_HOST=${SMTP_HOST:-mailpit}
       - SMTP_PORT=${SMTP_PORT:-1025}
       - SMTP_USER=${SMTP_USER:-}
@@ -253,7 +253,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
@@ -294,7 +294,7 @@ services:
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
     volumes:
       - ./.local/certs:/certs:ro
       # - ./packages/back/mc-match-creation-service:/app/packages/back/mc-match-creation-service
@@ -332,7 +332,7 @@ services:
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
-      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
+      - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
     volumes:
