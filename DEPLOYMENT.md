@@ -82,3 +82,5 @@ Para despliegues tras un balanceador (ALB) o con terminación SSL externa, se un
    ```
 
 Con esta configuración, Nginx (`mc-gateway`) se encarga de repartir el tráfico internamente por rutas (`/api/...`, `/match/...`, `/deck/...`, etc.) basándose en la configuración definida en `nginx.conf`.
+
+Para diagnosticar errores 502, fallos al cargar remotos o respuestas HTML donde se espera JSON, consulta [la guía de diagnóstico de AWS](docs/AWS-TROUBLESHOOTING.md).
