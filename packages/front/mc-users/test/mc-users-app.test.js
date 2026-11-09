@@ -44,7 +44,31 @@ const flattenTemplate = template => template.strings.reduce((markup, part, index
     return `${markup}${part}${renderedValue}`;
 }, '');
 
-describe('user password forms', () => {
+describe('user microfrontend', () => {
+    test('preserves the auth service path prefix when calling through a gateway', async () => {
+        const app = Object.assign(Object.create(McUsersApp.prototype), {
+            serviceUrl: 'https://mc-rrr.com/api/auth/',
+        });
+        const originalFetch = globalThis.fetch;
+        let requestedUrl;
+        globalThis.fetch = async url => {
+            requestedUrl = new URL(url).href;
+
+            return new Response('{"ok":true}', {
+                headers: {'Content-Type': 'application/json'},
+            });
+        };
+
+        try {
+            const response = await app.request('/me');
+
+            assert.equal(requestedUrl, 'https://mc-rrr.com/api/auth/me');
+            assert.deepEqual(response, {ok: true});
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
     test('registers each account page with its own route path and component', () => {
         assert.deepEqual(
             McUsersApp.pages.map(({route, path, tagName}) => ({
