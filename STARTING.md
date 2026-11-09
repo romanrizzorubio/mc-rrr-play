@@ -7,9 +7,9 @@ Este documento resume cómo arrancar la app según el entorno que quieras usar.
 Usa este modo para depurar el proyecto sin Nginx.
 
 ```bash
-cp .env.local.example .env
+test -f .env || cp .env.local.example .env
 npm install
-npm run start:all
+npm run start:all:local
 ```
 
 Acceso esperado:
@@ -24,17 +24,18 @@ Configuración clave:
 USE_PORTS_IN_URL=true
 PUBLIC_IP=localhost
 PROTOCOL=http
+USE_HTTPS=false
 ```
+
+`npm run start:all` no es este modo: ejecuta la aplicación en el host, pero usa Docker para MongoDB y Mailpit. Para no usar Docker, utiliza `npm run start:all:local`.
 
 ## 2) Docker local (estable)
 
-Este modo usa los puertos directos del host y es la configuración más fiable para Docker local. El gateway de Nginx sobre `localhost` puede entrar en un bucle de self-proxy y devolver 502.
-
-No uses `local.mc-rrr.com` como host local: esa URL ya no forma parte de la configuración soportada. Para ejecutar localmente usa `localhost` o un dominio propio que añadas a tu `/etc/hosts`, pero nunca el gateway de Nginx por defecto en local.
+La configuración predeterminada usa los puertos publicados en el host. Compose también inicia `mc-gateway`, pero con `USE_PORTS_IN_URL=true` el navegador se conecta directamente a cada puerto y no pasa por el gateway.
 
 1. Copia la config del entorno Docker:
    ```bash
-   cp .env.docker.example .env
+   test -f .env || cp .env.docker.example .env
    ```
 2. Arranca la pila:
    ```bash
@@ -43,28 +44,40 @@ No uses `local.mc-rrr.com` como host local: esa URL ya no forma parte de la conf
 
 Acceso esperado:
 - Frontend: http://localhost:8000
-- Match remote: http://localhost:8100/match/src/remote-entry.js
-- Deck remote: http://localhost:8200/deck/src/remote-entry.js
-- Static remote: http://localhost:8300/static/src/remote-entry.js
-- Users remote: http://localhost:8400/users/src/remote-entry.js
+- Match remote: http://localhost:8100/src/remote-entry.js
+- Deck remote: http://localhost:8200/src/remote-entry.js
+- Static remote: http://localhost:8300/src/remote-entry.js
+- Users remote: http://localhost:8400/src/remote-entry.js
 
 Configuración clave:
 ```env
 USE_PORTS_IN_URL=true
 PUBLIC_IP=localhost
 PROTOCOL=http
+USE_HTTPS=false
 ```
 
-Nota importante: en Docker local la opción gateway en `:80` no es la recomendación por defecto porque `localhost` dentro del contenedor puede hacer auto-proxy y responder 502. La configuración estable es usar los puertos directos del host.
+Para probar el gateway local, configura `USE_PORTS_IN_URL=false` y abre http://localhost (puerto 80). En ese modo las URL de remotos incluyen sus prefijos, como `/match/src/remote-entry.js`. Consulta [DEPLOYMENT.md](DEPLOYMENT.md) para ambas variantes.
 
 ## 3) Docker en AWS / producción
 
-Usa este modo cuando la app se sirve detrás de un dominio público o balanceador.
+Estas instrucciones son para EC2 con Docker Compose. El HTTPS público termina en el balanceador o proxy frontal; el `mc-gateway` de Compose escucha por HTTP en el puerto 80. Con `USE_HTTPS=false`, las llamadas entre contenedores también usan HTTP. No hace falta cambiar el `.env` de AWS para separar esos protocolos.
 
 ```bash
-cp .env.aws.example .env
+git pull --ff-only
+test -f .env || cp .env.aws.example .env
+grep -E '^(PUBLIC_IP|PROTOCOL|USE_HTTPS|USE_PORTS_IN_URL|PORT_GATEWAY|SESSION_COOKIE_SECURE)=' .env
+docker compose config --quiet
 docker compose up -d --build
+docker compose up -d --force-recreate mc-gateway
+docker compose ps
+docker compose exec mc-gateway wget -qO- http://mc-match-creation:3001/healthz
+docker compose exec mc-gateway wget -qO- http://mc-deck-service:3002/healthz
+curl -fsS https://mc-rrr.com/api/creation/healthz
+curl -fsS https://mc-rrr.com/api/deck/healthz
 ```
+
+No ejecutes la copia del ejemplo sobre un `.env` existente: podría reemplazar valores propios del despliegue. Los valores públicos esperados son `PUBLIC_IP=mc-rrr.com`, `PROTOCOL=https`, `USE_HTTPS=false`, `USE_PORTS_IN_URL=false`, `PORT_GATEWAY=80` y `SESSION_COOKIE_SECURE=true`. En el Security Group, permite el puerto 80 desde el balanceador/proxy; el puerto 443 debe terminar en ese componente. El Compose actual no configura TLS directo en el puerto 443 de EC2.
 
 Acceso esperado:
 - Frontend: https://mc-rrr.com/
@@ -90,3 +103,5 @@ El punto clave para que funcione todo es usar la ruta real del módulo Vite en c
 - Gateway: `/match/src/remote-entry.js`, `/deck/src/remote-entry.js`, etc.
 
 No uses `remoteEntry.js` directo como URL pública. Vite lo reescribe internamente a `src/remote-entry.js`.
+
+Después de recrear servicios backend, recrea también `mc-gateway`: Nginx puede conservar las IP upstream anteriores hasta que reinicia.

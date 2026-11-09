@@ -57,7 +57,7 @@ Ideal para depuración rápida. Cada servicio expone su propio puerto.
 ```
 
 ### 2. Docker / Producción (Gateway)
-Utiliza un **Gateway (Nginx)** unificado en el puerto 80. Este modo es el predeterminado en Docker y obligatorio en AWS. Evita problemas de CORS y asegura la correcta resolución de módulos ESM.
+Utiliza un **Gateway (Nginx)** unificado en el puerto 80 cuando `USE_PORTS_IN_URL=false`. Es obligatorio en AWS y opcional en Docker local; la plantilla `.env.docker.example` usa por defecto puertos directos y no enruta el tráfico del navegador por el gateway. El modo Gateway permite compartir origen y resolver módulos ESM bajo sus prefijos.
 
 ```
                       Navegador (Puerto 80)
@@ -156,9 +156,9 @@ Una ronda de juego sigue este flujo estructurado:
 
 ## Acceso a la Aplicación
 
-- **Frontend**: https://localhost:8000
-- **Backend**: https://localhost:3000
-- **WebSocket**: wss://localhost:3000 (automático)
+- **Frontend**: `https://localhost:8000` con `npm run start:all`; `http://localhost:8000` con `npm run start:all:local` o `.env.docker.example`.
+- **Backend directo**: puerto `3000`, con el mismo protocolo que el modo elegido.
+- **WebSocket**: `wss:` con HTTPS o `ws:` con HTTP (automático).
 
 ## Próximos Pasos
 

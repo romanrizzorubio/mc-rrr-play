@@ -37,16 +37,16 @@ Bienvenido a la documentación funcional de **MC RRR Play**, una plataforma digi
   - Gestión de recursos
 
 ### Para Desarrolladores
+- **[STARTING.md](../STARTING.md)**
+  - Comandos de arranque y despliegue EC2 listos para ejecutar
+- **[DEPLOYMENT.md](../DEPLOYMENT.md)**
+  - Configuración por entorno y protocolos público/interno
 - **[03-SYSTEM-ARCHITECTURE.md](./03-SYSTEM-ARCHITECTURE.md)**
   - Capas de la arquitectura
   - Componentes del Backend
   - Componentes del Frontend
   - Flujos de datos
   - Sistema de comunicación
-- **[AWS-TROUBLESHOOTING.md](./AWS-TROUBLESHOOTING.md)**
-  - Diagnóstico de errores 502 en Nginx y upstreams
-  - Errores de carga de microfrontends y respuestas JSON
-  - Comprobaciones y despliegue en EC2/Docker Compose y ECS
 - **[07-DATABASE-MIGRATION.md](./07-DATABASE-MIGRATION.md)**
   - Migración de MongoDB local a Docker Compose en AWS EC2
 

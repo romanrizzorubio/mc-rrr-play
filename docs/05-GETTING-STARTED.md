@@ -7,7 +7,7 @@
 - **Node.js 20+** - [Descargar](https://nodejs.org/)
 - **npm** - Incluido con Node.js
 - **Docker y Docker Compose** (opcionales; solo para ejecutar servicios en contenedores)
-- **mkcert** (para los certificados HTTPS de desarrollo)
+- **mkcert** (solo para los modos con HTTPS de desarrollo)
 - **MongoDB 7+ con `mongod` en el `PATH`**, o una instancia MongoDB externa configurada con `MONGODB_URI`
 - **Git** (para clonar el repositorio)
 
@@ -42,7 +42,7 @@ Esto instala dependencias para todos los packages del monorepo:
 - `packages/core/mc-endpoints`
 - `packages/core/mc-shared`
 
-#### 3. Preparar HTTPS local
+#### 3. Preparar HTTPS local (solo si se va a usar HTTPS)
 
 Instala [mkcert](https://github.com/FiloSottile/mkcert) y ejecuta:
 
@@ -50,7 +50,7 @@ Instala [mkcert](https://github.com/FiloSottile/mkcert) y ejecuta:
 npm run https:setup
 ```
 
-Ejecuta este comando una sola vez (o cuando necesites regenerar certificados). Instala la autoridad certificadora local, genera un certificado para `localhost` y los nombres de servicio Docker, y guarda los ficheros en `.local/certs/` (excluido de Git). Confía en esa autoridad en el navegador; `npm run start:all` y Docker usan los mismos certificados. No se ejecuta en cada arranque porque `mkcert -install` modifica la confianza de certificados del sistema y volver a generar los certificados no aporta nada. `start:all` comprueba que estén presentes e indica cómo prepararlos si faltan. No copies certificados ni claves privadas al repositorio.
+Ejecuta este comando una sola vez para los modos que usan HTTPS local, como `npm run start:all` o Docker con `USE_HTTPS=true`. Instala la autoridad certificadora local, genera un certificado para `localhost` y los nombres de servicio Docker, y guarda los ficheros en `.local/certs/` (excluido de Git). Confía en esa autoridad en el navegador. Los modos HTTP (`start:all:local` y la plantilla `.env.docker.example`) no necesitan estos certificados. No se ejecuta en cada arranque porque `mkcert -install` modifica la confianza del sistema. No copies certificados ni claves privadas al repositorio.
 
 #### 4. Preparar MongoDB
 
@@ -60,7 +60,7 @@ Elige cómo ejecutar MongoDB:
 - `npm run start:all:local` reutiliza una instancia Mongo local activa o inicia `mongod`; si `MONGODB_URI` apunta a un host externo, no inicia una base local. Para MongoDB local, requiere MongoDB Community Server en el `PATH`; los datos se guardan en `.local/mongodb` y puedes cambiar la ruta con `MONGODB_DB_PATH`.
 - `npm run docker:up` ejecuta los frontends, microservicios y MongoDB en contenedores.
 
-Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Si ejecutas procesos individuales, define las rutas del certificado y la autoridad para que Node confíe en los servicios locales:
+Para iniciar solo la base Docker antes de lanzar los servicios desde el IDE, usa `npm run mongo:up`. Si ejecutas procesos individuales con HTTPS, define las rutas del certificado y la autoridad para que Node confíe en los servicios locales:
 
 ```bash
 export TLS_CERT_PATH="$PWD/.local/certs/localhost.pem"
@@ -73,7 +73,7 @@ export AUTH_SERVICE_URL=https://localhost:3003
 export MATCH_SERVICE_URL=https://localhost:3000
 ```
 
-`start:all` y Docker configuran esas variables automáticamente. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
+`start:all` y Docker configuran las variables necesarias para el modo elegido; en Docker, las comunicaciones internas usan HTTP cuando `USE_HTTPS=false`. Al iniciar el backend con `npm run start:backend` (también desde `start:all` o `docker:up`), se ejecuta `npm run seed:data` antes de arrancarlo. Esto reemplaza en MongoDB los documentos del catálogo empaquetado por los valores definidos en los módulos JavaScript; cualquier personalización hecha directamente en MongoDB se perderá. También puedes ejecutarlo manualmente:
 
 ```bash
 npm run seed:data
@@ -81,7 +81,7 @@ npm run seed:data
 
 El seed solo actualiza las colecciones del catálogo y no modifica los mazos guardados en `decks`. `./mc-monorepo.sh clean` y `docker-compose down` conservan el volumen `mc-mongodb-data`. No uses `docker-compose down -v` salvo que quieras borrar explícitamente todos los datos de MongoDB, incluidos los mazos guardados.
 
-El servicio de usuarios necesita un origen HTTPS válido del frontend en `FRONTEND_ORIGIN` (el stack local lo establece como `https://localhost:8000`) y usa cookies `Secure`.
+El servicio de usuarios necesita que `FRONTEND_ORIGIN` coincida con el origen del frontend (`http` o `https`). Las cookies se marcan como `Secure` cuando `SESSION_COOKIE_SECURE=true`; los arranques locales establecen ese valor según el protocolo elegido.
 
 Para desarrollo, `start:all:local` inicia MailDev como servidor SMTP local sin Docker. Captura los mensajes —no los envía a direcciones reales— para que puedas abrir los enlaces de activación y recuperación desde http://localhost:8025; SMTP escucha en `127.0.0.1:1025`. `start:all` y `docker:up` usan Mailpit en Docker. Para iniciar MailDev por separado usa `npm run maildev` y detenlo con `Ctrl+C`; al iniciar solo el servicio de usuarios, ejecuta MailDev en otra terminal y configura `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025` y `SMTP_FROM='MC RRR Play <noreply@localhost>'`.
 
@@ -130,9 +130,17 @@ npm run start:all:local
 
 Con MongoDB local, los datos se guardan en `.local/mongodb`; el correo de activación queda en http://localhost:8025. Para depurar frontend y backend por separado desde el IDE, inicia MongoDB y MailDev en terminales separadas con `npm run mongo:up` y `npm run maildev`, y después inicia cada aplicación individualmente. Al ejecutar la carcasa por separado, inicia también `npm run start:mc-static` en otra terminal.
 
-El arranque local lee `.env` y sirve la carcasa en http://localhost:8000 por defecto (`USE_HTTPS=false`, `PROTOCOL=http`). El modo `npm run start:all` y Docker mantiene su configuración HTTPS.
+El arranque local (`npm run start:all:local`) lee `.env` y sirve la carcasa en `http://localhost:8000` por defecto (`USE_HTTPS=false`, `PROTOCOL=http`). `npm run start:all` usa HTTPS por defecto; Docker usa HTTP con `.env.docker.example` y puede configurarse por separado.
 
 ### Instalación con Docker
+
+Para el modo local predeterminado, configura los puertos directos y HTTP:
+
+```bash
+test -f .env || cp .env.docker.example .env
+```
+
+La plantilla `.env.docker.example` usa `USE_PORTS_IN_URL=true`, por lo que el navegador se conecta a los puertos publicados directamente. Aunque Compose también inicia `mc-gateway`, este modo no lo usa. Para usar Gateway local, configura `USE_PORTS_IN_URL=false` y sigue [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 #### 1. Construir Imágenes
 
@@ -146,12 +154,13 @@ npm run docker:build
 npm run docker:up
 ```
 
-Esto inicia frontend, backend y MongoDB, todos en Docker. El backend carga el catálogo cuando MongoDB está saludable. La aplicación queda disponible en:
-- Frontend en `https://localhost:8000`
-- Backend en `https://localhost:3000`
-- Usuarios en `https://localhost:3003` y remoto de cuentas en `https://localhost:8400`
+Esto inicia frontend, backend y MongoDB, todos en Docker. Con `.env.docker.example`, la aplicación usa HTTP y queda disponible en:
+- Frontend en `http://localhost:8000`
+- Backend en `http://localhost:3000`
+- Usuarios en `http://localhost:3003` y remoto de cuentas en `http://localhost:8400`
 - MongoDB en `mongodb://localhost:27017` (los datos persisten en el volumen `mc-mongodb-data`)
-- Sincronización automática de cambios (hot-reload)
+
+El backend carga el catálogo cuando MongoDB está saludable. El Compose actual no monta todo el código fuente para hot-reload; después de cambiar código, reconstruye las imágenes con `docker compose up -d --build`.
 
 #### 3. Ver Logs
 
@@ -167,22 +176,22 @@ npm run docker:down
 
 ## Acceso a la Aplicación
 
-Una vez iniciada la aplicación:
+Una vez iniciada la aplicación, usa las URL del modo elegido:
 
 ### Frontend
-- **URL**: https://localhost:8000
+- **URL**: `https://localhost:8000` con `start:all` (HTTPS por defecto); `http://localhost:8000` con `start:all:local` o `.env.docker.example`.
 - **Descripción**: Interfaz de usuario para jugar
 
 ### Backend
-- **URL**: https://localhost:3000
+- **URL directa**: `https://localhost:3000` con `start:all`; `http://localhost:3000` con los modos HTTP.
 - **Descripción**: API REST + WebSocket
-- **Verificar estado**: https://localhost:3000/healthz
+- **Verificar estado**: añade `/healthz` a la URL del backend correspondiente.
 
 ## Primer Juego
 
 ### Paso 1: Crear una cuenta e iniciar sesión
 
-1. Abre https://localhost:8000 y selecciona **Crear un nuevo usuario**.
+1. Abre la URL del frontend según el modo (`https://localhost:8000` para `start:all` o `http://localhost:8000` para los modos HTTP) y selecciona **Crear un nuevo usuario**.
 2. Introduce email y nombre visible.
 3. Abre el enlace de activación recibido por correo y establece una contraseña segura. La activación inicia sesión automáticamente.
 4. Si SMTP no está configurado, el servicio de usuarios no puede entregar los enlaces.
@@ -250,10 +259,10 @@ Una vez iniciada la aplicación:
 
 **Solución:**
 ```bash
-# Matar proceso en puerto 3000
+# Identificar y, si corresponde, terminar el proceso que ocupa el puerto 3000
 lsof -ti:3000 | xargs kill -9
 
-# O matar en puerto 8000
+# O identificar y terminar el proceso que ocupa el puerto 8000
 lsof -ti:8000 | xargs kill -9
 ```
 
@@ -262,10 +271,9 @@ lsof -ti:8000 | xargs kill -9
 **Síntomas:** Cambios en código no aparecen en navegador
 
 **Soluciones:**
-1. Verifica hot-reload está habilitado
-2. Recarga página (F5)
-3. Limpia caché (Ctrl+Shift+Del)
-4. Reinicia los servidores `mc-frontend` y `mc-static`.
+1. En desarrollo local, verifica que los servidores Vite sigan activos y recarga la página.
+2. En Docker, reconstruye las imágenes tras cambiar código: `docker compose up -d --build`.
+3. Si el navegador sigue mostrando una versión anterior, limpia la caché y reinicia los servicios afectados.
 
 ## Estructura de Carpetas Útil
 

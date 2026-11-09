@@ -64,7 +64,7 @@ Este monorepo soporta múltiples configuraciones según si se usa Docker o no, y
 
 Consulta **[DEPLOYMENT.md](./DEPLOYMENT.md)** para una guía detallada sobre cómo configurar el proyecto para:
 1. **Desarrollo Local**: Conexión directa a puertos, ideal para debugging.
-2. **Docker Local**: Uso de Nginx Gateway para mayor fidelidad productiva.
+2. **Docker Local**: Puertos directos por defecto; Gateway opcional para probar el enrutamiento de producción.
 3. **AWS / Producción**: Configuración optimizada tras balanceador y SSL.
 
 ## Scripts Disponibles
@@ -144,7 +144,7 @@ npm run lint:fix
 - **Tecnología**: Lit-Element 4.0, Material Web
 - **Puerto**: 8000
 - **Responsabilidad**: lobby, creación de partidas, navegación y carga diferida de remotos
-- **URL**: https://localhost:8000
+- **URL**: `https://localhost:8000` con `npm run start:all`; `http://localhost:8000` con `npm run start:all:local` o la plantilla Docker local.
 
 ### Remotos frontend
 - `mc-match` (puerto 8100): interfaz completa de juego, cargada al abrir una partida mediante ES modules nativos.
@@ -183,16 +183,17 @@ Las URL de servicios y remotos se pueden ajustar en `packages/front/mc-frontend/
 
 Para desarrollar con la carcasa, los remotos y microservicios locales (y depurarlos desde el IDE), usa `npm run start:all`; solo MongoDB se ejecuta en Docker. Para ejecutar todo el stack en contenedores, usa `npm run docker:up`.
 
-Para desarrollar el stack completo en Docker con hot-reload:
+Para ejecutar el stack completo en Docker:
 
 ```bash
-docker-compose up
+test -f .env || cp .env.docker.example .env
+docker compose up -d --build
 ```
 
-Los cambios en los archivos se sincronizarán automáticamente con los contenedores gracias a los volúmenes configurados. El backend carga en MongoDB los registros iniciales que falten cuando arranca.
+La plantilla `.env.docker.example` usa HTTP y puertos directos del host. El Compose actual no monta el código fuente de todos los servicios para hot-reload; después de cambiar código, reconstruye las imágenes con `docker compose up -d --build`. El backend carga en MongoDB los registros iniciales que falten cuando arranca.
 
 ## Notas
 
 - Las aplicaciones están comunicadas a través de la red `mc-network`
 - El servicio de creación consume la API interna del servicio de partidas
-- Los volúmenes compartidos permiten desarrollo en tiempo real
+- MongoDB persiste en el volumen `mc-mongodb-data`; Compose no monta el código fuente para hot-reload, por lo que los cambios requieren reconstruir las imágenes.
