@@ -72,6 +72,8 @@ Para despliegues tras un balanceador (ALB) o con terminación SSL externa, se un
    PORT_GATEWAY=80
    SESSION_COOKIE_SECURE=true
    ```
+
+   `PROTOCOL=https` define las URL públicas. TLS termina en el balanceador o proxy frontal; con `USE_HTTPS=false`, el gateway y los servicios backend se comunican por HTTP dentro de Docker. Las URL entre servicios de `docker-compose.yml` usan HTTP y no dependen de `PROTOCOL`, así que no es necesario cambiar el `.env` de AWS.
    
 2. **Puertos en Security Group**:
    - Abrir solo el puerto **80** (o 443 si apuntas directamente al EC2).

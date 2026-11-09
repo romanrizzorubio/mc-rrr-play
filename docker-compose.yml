@@ -257,7 +257,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
-      - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
+      - AUTH_SERVICE_URL=http://mc-user-service:3003
       - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
@@ -295,8 +295,8 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
-      - MATCH_SERVICE_URL=${PROTOCOL:-http}://mc-backend:3000
-      - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
+      - MATCH_SERVICE_URL=http://mc-backend:3000
+      - AUTH_SERVICE_URL=http://mc-user-service:3003
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
       - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
@@ -336,7 +336,7 @@ services:
       - TLS_CERT_PATH=/certs/localhost.pem
       - TLS_KEY_PATH=/certs/localhost-key.pem
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
-      - AUTH_SERVICE_URL=${PROTOCOL:-http}://mc-user-service:3003
+      - AUTH_SERVICE_URL=http://mc-user-service:3003
       - FRONTEND_ORIGINS=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000},${PROTOCOL:-http}://${PUBLIC_IP:-localhost},http://localhost:8000,http://localhost:8100,${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_GATEWAY:-80}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
