@@ -30,6 +30,8 @@ PROTOCOL=http
 
 Este modo usa los puertos directos del host y es la configuración más fiable para Docker local. El gateway de Nginx sobre `localhost` puede entrar en un bucle de self-proxy y devolver 502.
 
+No uses `local.mc-rrr.com` como host local: esa URL ya no forma parte de la configuración soportada. Para ejecutar localmente usa `localhost` o un dominio propio que añadas a tu `/etc/hosts`, pero nunca el gateway de Nginx por defecto en local.
+
 1. Copia la config del entorno Docker:
    ```bash
    cp .env.docker.example .env

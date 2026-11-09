@@ -1,14 +1,14 @@
 {
   "services": {
-    "match": "https://localhost:3000/api/match/",
-    "matchCreation": "https://localhost:3001/api/creation/",
-    "deck": "https://localhost:3002/api/deck/",
-    "users": "https://localhost:3003/api/auth/"
+    "match": "http://localhost:3000/",
+    "matchCreation": "http://localhost:3001/",
+    "deck": "http://localhost:3002/",
+    "users": "http://localhost:3003/"
   },
   "remotes": {
-    "mcMatch": "https://localhost:8100/src/remote-entry.js",
-    "mcDeck": "https://localhost:8200/src/remote-entry.js",
-    "mcStatic": "https://localhost:8300/src/remote-entry.js",
-    "mcUsers": "https://localhost:8400/src/remote-entry.js"
+    "mcMatch": "http://localhost:8100/src/remote-entry.js",
+    "mcDeck": "http://localhost:8200/src/remote-entry.js",
+    "mcStatic": "http://localhost:8300/src/remote-entry.js",
+    "mcUsers": "http://localhost:8400/src/remote-entry.js"
   }
 }

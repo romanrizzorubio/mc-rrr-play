@@ -7,8 +7,10 @@ Este proyecto soporta tres modos principales de configuración según el entorno
 | Escenario | Conexión | `USE_PORTS_IN_URL` | `PUBLIC_IP` | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | **Desarrollo Local** | Directa (Puertos) | `true` | `localhost` | Ideal para depuración rápida sin Nginx. |
-| **Docker Local** | Gateway (Nginx) | `false` | `localhost` | Reproduce el entorno productivo localmente. |
+| **Docker Local** | Puertos directos, sin Nginx | `true` | `localhost` | Configuración estable para local; evita self-proxy y 502. |
 | **Producción (AWS)** | Gateway (SSL/ALB) | `false` | `dominio.com` | Configuración final tras balanceador o proxy. |
+
+> Importante: no se usa `local.mc-rrr.com` en local. Usa `localhost` o tu propio dominio añadido a `hosts`, pero el Nginx solo debe activarse para AWS/producción.
 
 ## Importancia del Gateway (Nginx)
 
