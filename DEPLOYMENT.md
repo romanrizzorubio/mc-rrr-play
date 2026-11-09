@@ -28,12 +28,16 @@ En este modo, cada servicio escucha en su puerto y el frontend se comunica direc
 **Configuración (.env):**
 ```env
 PUBLIC_IP=localhost
-PROTOCOL=http         # O https si ejecutaste npm run https:setup
+PROTOCOL=http         # Si usas HTTPS, cambia también USE_HTTPS a true
 USE_PORTS_IN_URL=true
-USE_HTTPS=false       # O true si usas certificados locales
+USE_HTTPS=false       # Para HTTPS, cambia también PROTOCOL a https
 ```
 
-**Puertos necesarios:** 8000 (Frontend), 8100-8400 (Remotos), 3000-3003 (APIs).
+**Puertos necesarios:** 8000 (Frontend), 8100, 8200, 8300 y 8400 (Remotos), 3000-3003 (APIs). Si se usa MailDev local, también 1025 y 8025.
+
+Antes de iniciar, `npm run start:all:local` comprueba esos puertos y se detiene con comandos para liberar los que ya estén ocupados. MongoDB no se termina ni se comprueba como puerto libre: si ya está disponible, el arranque local lo reutiliza. Este control no se ejecuta en modo Docker.
+
+El arranque local lee `.env` y regenera `app-config.json` con esos valores; con `USE_HTTPS=false` y `PROTOCOL=http`, abre la aplicación en `http://localhost:8000`.
 
 ---
 

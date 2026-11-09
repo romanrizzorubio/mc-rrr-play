@@ -130,6 +130,8 @@ npm run start:all:local
 
 Con MongoDB local, los datos se guardan en `.local/mongodb`; el correo de activación queda en http://localhost:8025. Para depurar frontend y backend por separado desde el IDE, inicia MongoDB y MailDev en terminales separadas con `npm run mongo:up` y `npm run maildev`, y después inicia cada aplicación individualmente. Al ejecutar la carcasa por separado, inicia también `npm run start:mc-static` en otra terminal.
 
+El arranque local lee `.env` y sirve la carcasa en http://localhost:8000 por defecto (`USE_HTTPS=false`, `PROTOCOL=http`). El modo `npm run start:all` y Docker mantiene su configuración HTTPS.
+
 ### Instalación con Docker
 
 #### 1. Construir Imágenes

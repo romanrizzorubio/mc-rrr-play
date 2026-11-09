@@ -4,11 +4,18 @@ import {createConnection} from 'node:net';
 import {get} from 'node:https';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {assertLocalPortsAvailable} from './utils/check-local-ports.js';
+import {configureLocalApp} from './utils/configure-local-app.js';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const mode = process.argv[2] || 'docker';
+const localServicePorts = [3000, 3001, 3002, 3003, 8000, 8100, 8200, 8300, 8400];
 if (!['local', 'docker'].includes(mode)) {
     throw new Error(`Unknown startup mode "${mode}". Use "local" or "docker".`);
+}
+
+if (mode === 'local') {
+    configureLocalApp(projectRoot);
 }
 
 process.env.FRONTEND_ORIGIN ??= (process.env.USE_HTTPS === 'false' ? 'http' : 'https') + '://localhost:8000';
@@ -358,6 +365,12 @@ const main = async () => {
                     {cause},
                 );
             }
+        }
+        if (mode === 'local' && !stopRequested) {
+            await assertLocalPortsAvailable([
+                ...localServicePorts,
+                ...(useLocalMailCapture ? [1025, 8025] : []),
+            ]);
         }
         if (!stopRequested) {
             await startMongo();
