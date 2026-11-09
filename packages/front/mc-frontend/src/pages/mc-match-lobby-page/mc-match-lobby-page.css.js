@@ -70,10 +70,22 @@ export default css`
   }
 
   .players li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     padding: 14px 16px;
     border: 1px solid #e4e0ea;
     border-radius: 16px;
     background: #fff;
+  }
+
+  .player-details {
+    min-width: 0;
+  }
+
+  .players .player-remove {
+    flex: 0 0 auto;
   }
 
   .players strong,

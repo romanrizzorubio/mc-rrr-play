@@ -17,6 +17,7 @@ import {
     TARGET_CONDITION_CARD,
     TARGET_INITIAL_PLAYER,
     TARGET_INITIAL_PLAYER_SUPERHERO,
+    TRIGGER_INITIAL_PLAYER_CHANGED,
 } from 'mc-shared';
 import shipCommand from '../../../mc-data/seed/catalog/sets/ship-command.js';
 import {MayEffect} from '../../src/effects/may-effect.js';
@@ -27,6 +28,7 @@ import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
 import {Player} from '../../src/model/match/player.js';
 import {Scenario} from '../../src/model/match/scenario.js';
+import {ScenarioZone} from '../../src/model/match/scenario-zone.js';
 import {basicTargets} from '../../src/targets/basic.js';
 import {groupTargets} from '../../src/targets/groups.js';
 import {ValidTarget} from '../../src/targets/valid-target.js';
@@ -218,7 +220,115 @@ describe('Ship Command modular encounter set', () => {
         assert.notEqual(discard.type, EFFECT_FOR_EACH);
     });
 
-    test('resolves the initial player superhero in the acting player zone', () => {
+    test('offers Ship Command treachery options for the initial player across zones', async () => {
+        const match = new Match({
+            mc: {mcSocket: {send() {}}},
+            name: 'ship-command-initial-player-options',
+        });
+        const matchFactory = new MatchFactory(match);
+        const scenario = {
+            apart: [],
+            deck: {cards: []},
+            gameZone: null,
+            match,
+            separatePlayAreas: true,
+            zones: [],
+        };
+        const firstScenarioZone = new ScenarioZone({
+            id: 'first-zone',
+            owner: scenario,
+        });
+        const secondScenarioZone = new ScenarioZone({
+            id: 'second-zone',
+            owner: scenario,
+        });
+        scenario.gameZone = firstScenarioZone;
+        scenario.zones.push(firstScenarioZone, secondScenarioZone);
+        const createPlayer = (id, initial) => {
+            const superhero = matchFactory.createSuperhero({
+                ...blackPanther.config,
+                cards: [],
+                nemesis: [],
+                precon: [],
+            });
+            const player = new Player({
+                id,
+                initial,
+                name: id,
+                superhero,
+                userId: id,
+            });
+            player.initPlayer();
+            player.gameZone.refresh = async () => {};
+
+            return player;
+        };
+        const initialPlayer = createPlayer('initial', true);
+        const resolver = createPlayer('resolver', false);
+        firstScenarioZone.addPlayer(initialPlayer);
+        secondScenarioZone.addPlayer(resolver);
+        match.players = [initialPlayer, resolver];
+        match.scenario = scenario;
+
+        const milanoConfig = shipCommand.config.cards.find(({card}) =>
+            card.params.name === 'Milano').card;
+        const milano = matchFactory.cardsFactory.createGameCardFromConfig(
+            milanoConfig,
+            {owner: scenario}
+        );
+        milano.controller = initialPlayer;
+        milano.refresh = async () => {};
+        initialPlayer.gameZone.addToGameZone(milano);
+        initialPlayer.hand.cards.push({});
+
+        const treacheryOptions = [
+            {
+                cardName: 'Punto ciego',
+                optionTitle: 'Aturde al jugador inicial',
+                target: initialPlayer,
+            },
+            {
+                cardName: 'Brecha en el casco',
+                optionTitle: 'Inflige 3 de Daño al jugador inicial',
+                target: initialPlayer.superhero,
+            },
+            {
+                cardName: 'Pérdida de energía',
+                optionTitle: 'Descarta una carta al azar de la mano del jugador inicial',
+                target: initialPlayer,
+            },
+        ];
+
+        for (const {cardName, optionTitle, target} of treacheryOptions) {
+            const treacheryConfig = shipCommand.config.cards.find(({card}) =>
+                card.params.name === cardName).card;
+            const treachery = matchFactory.cardsFactory.createGameCardFromConfig(
+                treacheryConfig,
+                {owner: scenario}
+            );
+            secondScenarioZone.addToGameZone(treachery);
+            const ability = treachery.abilities[0];
+            const choose = ability.effect.createInstance({ability});
+            const params = {
+                ability,
+                card: treachery,
+                match,
+                player: resolver,
+            };
+            const options = await choose.getValidOptions(params);
+            const milanoOption = options.find(option =>
+                option.title === 'Agota la Milano');
+            const initialPlayerOption = options.find(option =>
+                option.title === optionTitle);
+
+            assert.ok(milanoOption, `${cardName} should offer the Milano`);
+            assert.deepEqual(milanoOption.getValidTarget(params), [milano]);
+            assert.ok(initialPlayerOption, `${cardName} should offer its initial-player option`);
+            assert.deepEqual(initialPlayerOption.getValidTarget(params), [target]);
+        }
+    });
+
+    test('resolves the initial player superhero independently of the acting player', () => {
         const superhero = {id: 'initial-superhero'};
         const initialPlayer = {superhero};
         const otherPlayer = {};
@@ -263,12 +373,33 @@ describe('Ship Command modular encounter set', () => {
         const scenario = {
             apart: [],
             deck: {cards: []},
+            gameZone: null,
+            match,
+            separatePlayAreas: true,
+            zones: [],
         };
+        const firstScenarioZone = new ScenarioZone({
+            id: 'first-zone',
+            owner: scenario,
+        });
+        const secondScenarioZone = new ScenarioZone({
+            id: 'second-zone',
+            owner: scenario,
+        });
+        scenario.gameZone = firstScenarioZone;
+        scenario.zones.push(firstScenarioZone, secondScenarioZone);
+        firstScenarioZone.addPlayer(firstPlayer);
+        secondScenarioZone.addPlayer(secondPlayer);
         const milanoConfig = shipCommand.config.cards.find(({card}) =>
             card.params.name === 'Milano').card;
         const milano = matchFactory.cardsFactory.createGameCardFromConfig(
             milanoConfig,
             {owner: scenario}
+        );
+        assert.equal(
+            milano.abilities.find(({trigger}) =>
+                trigger === TRIGGER_INITIAL_PLAYER_CHANGED).globalScope,
+            false
         );
         scenario.apart.push(milano);
         match.players = [firstPlayer, secondPlayer];
@@ -280,12 +411,20 @@ describe('Ship Command modular encounter set', () => {
         assert.equal(scenario.apart.includes(milano), false);
         assert.ok(firstPlayer.gameZone.cards.includes(milano));
         assert.equal(milano.controller, firstPlayer);
+        assert.equal(
+            match.getScenarioZoneForCard(milano),
+            firstScenarioZone
+        );
 
         await match.setInitialPlayer(secondPlayer);
 
         assert.equal(firstPlayer.gameZone.cards.includes(milano), false);
         assert.ok(secondPlayer.gameZone.cards.includes(milano));
         assert.equal(milano.controller, secondPlayer);
+        assert.equal(
+            match.getScenarioZoneForCard(milano),
+            secondScenarioZone
+        );
     });
 
     test('shows Entrega especial with its identity-specific activation choice', async () => {
@@ -297,13 +436,21 @@ describe('Ship Command modular encounter set', () => {
         const scenario = {
             apart: [],
             deck: {cards: []},
-            gameZone: {
-                players: [],
-                searchCards() {
-                    return [];
-                },
-            },
+            gameZone: null,
+            match,
+            separatePlayAreas: true,
+            zones: [],
         };
+        const firstScenarioZone = new ScenarioZone({
+            id: 'first-zone',
+            owner: scenario,
+        });
+        const secondScenarioZone = new ScenarioZone({
+            id: 'second-zone',
+            owner: scenario,
+        });
+        scenario.gameZone = firstScenarioZone;
+        scenario.zones.push(firstScenarioZone, secondScenarioZone);
         match.scenario = scenario;
         const createPlayer = (id, initial, isHero) => {
             const superhero = matchFactory.createSuperhero({
@@ -321,15 +468,15 @@ describe('Ship Command modular encounter set', () => {
                 userId: id,
             });
             player.initPlayer();
-            player.scenarioZone = scenario.gameZone;
             player.gameZone.refresh = async () => {};
 
             return player;
         };
         const controller = createPlayer('controller', true, false);
         const resolver = createPlayer('resolver', false, false);
+        firstScenarioZone.addPlayer(controller);
+        secondScenarioZone.addPlayer(resolver);
         match.players = [controller, resolver];
-        scenario.gameZone.players = match.players;
         const milanoConfig = shipCommand.config.cards.find(({card}) =>
             card.params.name === 'Milano').card;
         const deliveryConfig = shipCommand.config.cards.find(({card}) =>
@@ -339,12 +486,14 @@ describe('Ship Command modular encounter set', () => {
             {owner: scenario}
         );
         milano.controller = controller;
+        milano.scenarioZone = firstScenarioZone;
         milano.refresh = async () => {};
         controller.gameZone.addToGameZone(milano);
         const delivery = matchFactory.cardsFactory.createGameCardFromConfig(
             deliveryConfig,
             {owner: scenario}
         );
+        delivery.scenarioZone = secondScenarioZone;
         let dialog;
         match.openDialog = async params => {
             dialog = params;
@@ -370,7 +519,7 @@ describe('Ship Command modular encounter set', () => {
         assert.equal(alterEgoEffect.effectType, EFFECT_CHOOSE);
         assert.equal(milanoChoice.effectType, EFFECT_EXHAUST);
         assert.equal(fallbackEffect.effectType, EFFECT_ENEMY_SCHEME);
-        assert.deepEqual(match.searchCards({'card.name': 'Milano'}, resolver), [milano]);
+        assert.deepEqual(match.searchCards({'card.name': 'Milano'}, resolver), []);
         assert.equal(milanoChoice.target, TARGET_CONDITION_CARD);
         assert.deepEqual(milanoChoice.condition, {'card.name': 'Milano'});
         assert.equal(milanoChoice.getValidTarget({

@@ -40,6 +40,52 @@ const runRestRequest = async (mc, path) => {
 };
 
 describe('McRest', () => {
+    test('manual-save POST requests skip snapshots but still update lobby state', async () => {
+        const registered = [];
+        const persisted = [];
+        const lobbyUpdates = [];
+        const match = {
+            name: 'manual-match',
+            initialized: true,
+            autoSave: false,
+            lobbyId: 'lobby-id',
+        };
+        const rest = new McRest({
+            app: {
+                post: (path, handler) => registered.push({path, handler}),
+            },
+            getMatch: name => name === match.name ? match : undefined,
+            persistMatch: async value => persisted.push(value),
+            data: {
+                markMatchLobbyStarted: async (...args) =>
+                    lobbyUpdates.push(args),
+            },
+        });
+        rest.post('/test-update', async params => {
+            assert.strictEqual(params.match, match);
+
+            return {ok: true};
+        });
+        const {handler} = registered[0];
+        const response = await new Promise((resolve, reject) => {
+            handler(
+                {
+                    body: {},
+                    headers: {match: match.name, cookie: 'session=player'},
+                },
+                {send: resolve},
+                reject,
+            );
+        });
+
+        assert.deepEqual(response, {ok: true});
+        assert.deepEqual(persisted, []);
+        assert.deepEqual(lobbyUpdates, [[match.lobbyId, {
+            id: match.id,
+            name: match.name,
+        }]]);
+    });
+
     test('REST errors return their client status and a JSON message', async () => {
         const validationError = Object.assign(
             new Error('La solicitud no es válida.'),

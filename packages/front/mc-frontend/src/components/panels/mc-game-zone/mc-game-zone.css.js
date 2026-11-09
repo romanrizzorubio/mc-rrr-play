@@ -7,6 +7,8 @@ export default css`
   }
 
   .play-card-drop-zone {
+    box-sizing: border-box;
+    width: 100%;
     min-width: 300px;
     min-height: 200px;
     border-radius: 8px;
@@ -40,10 +42,5 @@ export default css`
     font-family: var(--mc-font-numeric, sans-serif);
     font-weight: 400;
     text-align: center;
-  }
-  
-  .upgrades-supports {
-    display: flex;
-    flex-wrap: wrap;
   }
 `;

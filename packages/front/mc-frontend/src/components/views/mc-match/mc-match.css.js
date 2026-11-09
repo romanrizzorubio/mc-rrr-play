@@ -44,11 +44,64 @@ export default css`
 
   .player-board-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 240px;
-    align-items: end;
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
     margin-top: auto;
     padding: 16px 0;
+  }
+
+  .primary-player-panel,
+  .secondary-player-panel {
+    min-width: 0;
+  }
+
+  .primary-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 28px;
+    margin-bottom: 12px;
+  }
+
+  .primary-player-panel h2,
+  .secondary-player-panel h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .secondary-player-panel {
+    padding-left: 20px;
+    border-left: 1px solid #d5cedf;
+  }
+
+  .secondary-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 28px;
+    margin-bottom: 12px;
+  }
+
+  .secondary-player-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+
+  .secondary-player-selector select {
+    max-width: 100%;
+    min-height: 36px;
+    padding: 4px 28px 4px 10px;
+    border: 1px solid #b8b2c4;
+    border-radius: 8px;
+    background: #fff;
+    color: inherit;
+    font: inherit;
   }
 
   .board-player-heading {
@@ -63,8 +116,8 @@ export default css`
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .player-board-row.players-collapsed {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .player-board-row.single-player .secondary-player-panel {
+    display: none;
   }
 
   .player-sidebar {
@@ -73,6 +126,7 @@ export default css`
     gap: 10px;
     max-height: calc(100vh - 24px);
     overflow-y: auto;
+    align-self: stretch;
     padding: 12px;
     border: 1px solid #e4e0ea;
     border-radius: 20px;
@@ -146,11 +200,26 @@ export default css`
 
   .player-sidebar.collapsed {
     display: flex;
+    align-self: flex-end;
     width: max-content;
     max-width: 100%;
     max-height: none;
     overflow: visible;
     padding: 4px 8px;
+  }
+
+  .player-board {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow-x: auto;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  @media (min-width: 1501px) {
+    .player-sidebar.legacy-player-selector {
+      display: none;
+    }
   }
 
   .player-accordion {
@@ -160,8 +229,50 @@ export default css`
     overflow: hidden;
   }
 
-  .player-board {
+  .player-list-entry {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .player-list-entry > details {
+    flex: 1;
     min-width: 0;
+  }
+
+  .player-hero-menu {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .player-hero-menu:hover {
+    background: #f0edf5;
+  }
+
+  .player-hero-menu:focus-visible {
+    outline: 2px solid var(--mc-color-primary, #6750a4);
+    outline-offset: 2px;
+  }
+
+  .player-hero-menu .first-player-token {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .scenario-interaction-context {
+    display: contents;
+  }
+
+  .player-board mc-player {
+    min-width: 0;
+    width: 100%;
   }
 
   .local-player-summary {
@@ -221,7 +332,6 @@ export default css`
     margin: 0;
   }
 
-  md-filled-button.request-action,
   .action-request md-filled-button,
   .action-request md-text-button {
     min-height: 36px;
@@ -229,11 +339,6 @@ export default css`
     --md-filled-button-container-shape: 100px;
     --md-filled-button-container-color: var(--mc-color-primary, #6750a4);
     --md-filled-button-label-text-color: #ffffff;
-  }
-
-  .player-sidebar > md-text-button.request-action,
-  .player-list-entry > md-text-button.request-action {
-    --md-text-button-label-text-color: var(--mc-color-primary, #6750a4);
   }
 
   .action-request {
@@ -285,26 +390,17 @@ export default css`
     font-weight: 600;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1500px) {
     .player-board-row {
-      grid-template-columns: minmax(0, 1fr) 200px;
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr);
     }
 
-    .player-sidebar {
-      padding: 8px;
+    .secondary-player-panel {
+      display: none;
     }
   }
 
   @media (max-width: 680px) {
-    .player-board-row {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .player-board-row.players-collapsed {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
     .player-sidebar {
       position: static;
       max-height: 320px;

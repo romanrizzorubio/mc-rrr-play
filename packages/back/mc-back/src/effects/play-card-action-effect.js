@@ -70,6 +70,7 @@ export class PlayCardActionEffect extends Effect {
                 ...params,
                 card,
                 playCardEffect,
+                checkOnly: true,
             })) {
                 playable.push(card);
             }

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import {ENDPOINTS} from 'mc-endpoints';
+
 globalThis.HTMLElement ??= class {};
 globalThis.window ??= {
     customElements: {
@@ -29,6 +31,7 @@ const {McFormPlayer} = await import(
 const {McDeckPicker} = await import(
     '../src/components/config/mc-deck-picker/mc-deck-picker.js'
 );
+const {ConfigMatch} = await import('../src/components/api/config-match.js');
 
 const templateText = template => {
     if (Array.isArray(template)) {
@@ -60,6 +63,28 @@ const createDeckPicker = properties => Object.assign(
 );
 
 describe('match lobby page permissions', () => {
+    test('ConfigMatch removes a lobby seat using encoded route identifiers', async () => {
+        let request;
+        const api = {
+            delete: async options => {
+                request = options;
+            },
+        };
+        const configMatch = new ConfigMatch(api);
+
+        await configMatch.removeLobbyPlayer(
+            'lobby/id',
+            'seat:guest/ironman',
+        );
+
+        assert.deepEqual(request, {
+            endpoint: ENDPOINTS.MATCH_LOBBY.REMOVE_PLAYER
+                .replace(':id', 'lobby%2Fid')
+                .replace(':playerId', 'seat%3Aguest%2Fironman'),
+            params: {},
+        });
+    });
+
     test('an empty lobby offers the creator the same hero picker as guests but cannot start', async () => {
         const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
             user: {id: 'creator'},
@@ -519,6 +544,130 @@ describe('match lobby page permissions', () => {
         );
         assert.doesNotMatch(markup, /Mazo:/u);
         assert.doesNotMatch(markup, /Mazo:<\/strong>/u);
+    });
+
+    test('only an enrolled player or the creator sees seat removal buttons in a waiting lobby', () => {
+        const players = [
+            {id: 'creator-seat', userId: 'creator', name: 'Creator', hero: 'spiderman', aspect: 'leadership'},
+            {id: 'guest-ironman-seat', userId: 'guest', name: 'Guest', hero: 'ironman', aspect: 'justice'},
+            {id: 'guest-hulk-seat', userId: 'guest', name: 'Guest', hero: 'hulk', aspect: 'aggression'},
+        ];
+        const lobby = {
+            ownerId: 'creator',
+            status: 'waiting',
+            players,
+        };
+        const renderFor = user => {
+            const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
+                user,
+                lobby,
+                lobbyDecks: [],
+            });
+
+            return templateText(page.renderPlayers());
+        };
+        const countButtons = markup =>
+            (markup.match(/class="player-remove"/gu) || []).length;
+
+        assert.equal(countButtons(renderFor({id: 'creator'})), 3);
+        assert.equal(countButtons(renderFor({id: 'guest'})), 2);
+        assert.equal(countButtons(renderFor({id: 'outsider'})), 0);
+
+        const startedLobbyPage = Object.assign(
+            Object.create(McMatchLobbyPage.prototype),
+            {
+                user: {id: 'creator'},
+                lobby: {...lobby, status: 'started'},
+                lobbyDecks: [],
+            },
+        );
+        assert.equal(countButtons(templateText(startedLobbyPage.renderPlayers())), 0);
+    });
+
+    test('removing a player confirms and requests only that seat', async () => {
+        const previousConfirm = globalThis.confirm;
+        const calls = [];
+        const lobby = {
+            id: 'room',
+            ownerId: 'creator',
+            status: 'waiting',
+            maxPlayers: 3,
+            players: [
+                {id: 'creator-seat', userId: 'creator', name: 'Creator', hero: 'spiderman'},
+                {id: 'guest-ironman-seat', userId: 'guest', name: 'Guest', hero: 'ironman'},
+                {id: 'guest-hulk-seat', userId: 'guest', name: 'Guest', hero: 'hulk'},
+            ],
+        };
+        const updatedLobby = {
+            ...lobby,
+            players: [lobby.players[0], lobby.players[2]],
+        };
+        let resolvePendingLobby;
+        const pendingLobby = new Promise(resolve => {
+            resolvePendingLobby = resolve;
+        });
+        globalThis.confirm = message => {
+            calls.push(['confirm', message]);
+
+            return true;
+        };
+        const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
+            id: lobby.id,
+            active: true,
+            user: {id: 'guest'},
+            lobby,
+            busy: false,
+            loading: false,
+            loadedHeroes: false,
+            heroesList: [],
+            requestSequence: 0,
+            apiConfigMatch: {
+                getLobby: async () => pendingLobby,
+                getHeroesList: async () => {
+                    calls.push(['load-heroes']);
+
+                    return [{id: 'captainamerica'}];
+                },
+                removeLobbyPlayer: async (id, playerId) => {
+                    calls.push(['remove', id, playerId]);
+
+                    return updatedLobby;
+                },
+            },
+            loadLobbyDecks: async value => calls.push(['load-decks', value]),
+        });
+        const pendingPoll = page.loadLobby();
+
+        try {
+            await page.removePlayer(lobby.players[1]);
+            resolvePendingLobby(lobby);
+            await pendingPoll;
+        } finally {
+            if (previousConfirm === undefined) {
+                delete globalThis.confirm;
+            } else {
+                globalThis.confirm = previousConfirm;
+            }
+        }
+
+        assert.deepEqual(calls.map(call => call[0]), [
+            'confirm',
+            'remove',
+            'load-decks',
+            'load-heroes',
+        ]);
+        assert.deepEqual(calls[1], ['remove', 'room', 'guest-ironman-seat']);
+        assert.match(calls[0][1], /Guest.*ironman/u);
+        assert.deepEqual(page.lobby.players.map(player => player.id), [
+            'creator-seat',
+            'guest-hulk-seat',
+        ]);
+        assert.equal(page.canJoin, true);
+        assert.equal(page.loadedHeroes, true);
+        assert.deepEqual(page.availableHeroes.map(hero => hero.id), [
+            'captainamerica',
+        ]);
+        assert.equal(page.busy, false);
     });
 
     test('opens deck creation with the current hero and lobby as return context', () => {

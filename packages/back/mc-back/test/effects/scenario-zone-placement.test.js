@@ -15,6 +15,7 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_ENEMY,
     TARGET_INITIAL_PLAYER,
+    TARGET_INITIAL_PLAYER_SUPERHERO,
     TARGET_SELECTED_PLAYER_CHARACTERS,
     TARGET_SCHEME,
     TARGET_VILLAIN,
@@ -254,7 +255,7 @@ describe('scenario zone card placement', () => {
         assert.equal(attack.canUseDefenseAbility(otherPlayer), true);
     });
 
-    test('player-target selectors only resolve players in the acting player zone', async () => {
+    test('player-target selectors stay local except for initial player targets', async () => {
         const {match, players} = await createMatch();
         const [player, otherPlayer] = players;
         const anyPlayer = new DrawEffect({match, target: TARGET_ANY_PLAYER});
@@ -262,6 +263,10 @@ describe('scenario zone card placement', () => {
         const initialPlayer = new DrawEffect({
             match,
             target: TARGET_INITIAL_PLAYER,
+        });
+        const initialPlayerSuperhero = new DrawEffect({
+            match,
+            target: TARGET_INITIAL_PLAYER_SUPERHERO,
         });
         const selectedCharacters = new DrawEffect({
             match,
@@ -272,7 +277,14 @@ describe('scenario zone card placement', () => {
         assert.deepEqual(await allPlayers.getValidTarget({match, player}), [player]);
         assert.deepEqual(
             await initialPlayer.getValidTarget({match, player: otherPlayer}),
-            [],
+            [match.initialPlayer],
+        );
+        assert.deepEqual(
+            await initialPlayerSuperhero.getValidTarget({
+                match,
+                player: otherPlayer,
+            }),
+            [match.initialPlayer.superhero],
         );
         assert.deepEqual(
             await selectedCharacters.getValidTarget({
@@ -295,6 +307,13 @@ describe('scenario zone card placement', () => {
         assert.deepEqual(
             await initialPlayer.getValidTarget({match, player: otherPlayer}),
             [match.initialPlayer],
+        );
+        assert.deepEqual(
+            await initialPlayerSuperhero.getValidTarget({
+                match,
+                player: otherPlayer,
+            }),
+            [match.initialPlayer.superhero],
         );
         assert.deepEqual(
             await selectedCharacters.getValidTarget({

@@ -197,7 +197,10 @@ export class PlayerRest {
                 initial,
                 config: heroConfig
             });
-            match.creationConfig ??= {players: [], scenario: null, expert: false};
+            match.creationConfig ??= {
+                players: [], scenario: null, expert: false, autoSave: true,
+            };
+            match.creationConfig.autoSave = match.autoSave !== false;
             match.creationConfig.players.push({
                 id: player.id,
                 name,

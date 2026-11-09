@@ -39,5 +39,7 @@ export default css`
 
   mc-game-zone.panel {
     align-self: flex-end;
+    flex: 1 1 300px;
+    min-width: 300px;
   }
 `;

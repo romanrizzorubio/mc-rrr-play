@@ -62,6 +62,9 @@ export class Mc {
             }
         }
     }
+    async waitForPersistence(name) {
+        await this.persistenceQueues.get(name);
+    }
     async deleteMatch(name) {
         const match = this.getMatch(name);
         if (this.deletingMatches.has(name)) {

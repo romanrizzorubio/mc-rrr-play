@@ -42,7 +42,7 @@ export default css`
     margin-top: 0;
   }
 
-  .expert-mode {
+  .match-option {
     display: flex;
     align-items: center;
     gap: 8px;

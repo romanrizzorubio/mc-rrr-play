@@ -1,4 +1,5 @@
 import {DIALOG_SELECT_TARGET,
+    EFFECT_CATEGORY_LEAVE_PLAY,
     TARGET_ALL_ALLIES, TARGET_ALL_ALLIES_YOU_CONTROL,
     TARGET_ALL_CARDS, TARGET_ALL_CHARACTERS, TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALL_DECKS,
@@ -16,13 +17,22 @@ import {DIALOG_SELECT_TARGET,
 
 import {Engine} from '../engine/engine.js';
 import {
+    filterReferentialTargets,
+    REFERENCE_PRIORITY_ASSOCIATED_SET,
+    REFERENCE_PRIORITY_SOURCE_CARD,
+    getAssociatedSet,
+    getReferenceCardType,
+    getReferencePriority,
+    hasReferentialTargetCondition,
+    isReferentialNameTarget,
+} from '../utils/referential-ability-utils.js';
+import {
     filterTargetCandidates,
     getConditionExcludePaths,
     getExcludedTargets,
     isExcludedTarget,
     splitTargetCondition,
 } from '../utils/target-condition-utils.js';
-import {filterReferentialTargets} from '../utils/referential-ability-utils.js';
 import {targetMap} from './index.js';
 
 const findSelectedTarget = (targets, selected) => {
@@ -81,6 +91,15 @@ export class ValidTarget extends Engine {
         }
         if (this._filter && !this._filter(card, params)) {
             return false;
+        }
+        const effect = this.effect || params.effect;
+        if (card.permanent &&
+            effect?.effectCategories?.includes(EFFECT_CATEGORY_LEAVE_PLAY)) {
+            const sourceSet = effect.ability?.card?.set ??
+                params.ability?.card?.set;
+            if (!sourceSet || sourceSet !== card.set) {
+                return false;
+            }
         }
 
         return !this.isInvalidTarget(card, params);
@@ -179,7 +198,7 @@ export class ValidTarget extends Engine {
             condition,
             currentRound: this.currentRound,
             effect: params.effect,
-            match: this.match,
+            match: this.match ?? params.match,
             params,
             playCardEffect: params.playCardEffect,
             player: params.player,
@@ -188,6 +207,34 @@ export class ValidTarget extends Engine {
             triggeredCard: params.triggeredCard,
         }) : [];
     }
+    getReferentialTargetsAcrossZones(params, target, condition, referenceCard) {
+        const match = this.match ?? params.match;
+        const {scenario} = match ?? {};
+        if (!scenario?.separatePlayAreas ||
+            !hasReferentialTargetCondition(condition, referenceCard)) {
+            return [];
+        }
+
+        const associatedSet = getAssociatedSet(referenceCard, match);
+        const referenceCardType = getReferenceCardType(referenceCard);
+
+        return this.getTargetCandidates(
+            {...params, match, player: undefined},
+            target,
+            condition
+        ).filter(candidate => {
+            const priority = getReferencePriority(
+                candidate,
+                referenceCard,
+                associatedSet,
+                referenceCardType
+            );
+
+            return (priority === REFERENCE_PRIORITY_SOURCE_CARD ||
+                priority === REFERENCE_PRIORITY_ASSOCIATED_SET) &&
+                isReferentialNameTarget(candidate, condition);
+        });
+    }
     getValidTarget(params) {
         const excludedTargets = getExcludedTargets(
             getConditionExcludePaths(this.condition),
@@ -195,14 +242,25 @@ export class ValidTarget extends Engine {
         );
         const {condition, selectionConditions} =
             splitTargetCondition(this.condition);
-        const targets = this.getTargetCandidates(params, params.target, condition);
-        const validTargets = targets.filter(target =>
-            !isExcludedTarget(target, excludedTargets) &&
-                this.filter(target, params));
         const referenceCard = this.effect?.referenceCard ??
             params.ability?.card ??
             params.effect?.ability?.card ??
             this.effect?.ability?.card;
+        const localTargets = this.getTargetCandidates(
+            params,
+            params.target,
+            condition
+        );
+        const crossZoneTargets = this.getReferentialTargetsAcrossZones(
+            params,
+            params.target,
+            condition,
+            referenceCard
+        );
+        const targets = [...new Set([...localTargets, ...crossZoneTargets])];
+        const validTargets = targets.filter(target =>
+            !isExcludedTarget(target, excludedTargets) &&
+                this.filter(target, params));
         const referentialTargets = filterReferentialTargets(
             validTargets,
             condition,

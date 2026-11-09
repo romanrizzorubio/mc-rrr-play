@@ -124,6 +124,7 @@ export class MongoDataStore {
         creatorId,
         scenario,
         expert,
+        autoSave = true,
     }) {
         const id = randomUUID();
         const now = new Date().toISOString();
@@ -135,6 +136,7 @@ export class MongoDataStore {
             players: [],
             scenario,
             expert,
+            autoSave,
             difficulty: expert ? 'Experto' : 'Normal',
             status: 'waiting',
             createdAt: now,
@@ -186,6 +188,21 @@ export class MongoDataStore {
                 'players.userId': userId,
             }, {
                 $pull: {players: {userId}},
+                $set: {updatedAt: new Date().toISOString()},
+            });
+
+        return result.modifiedCount === 1 ?
+            this.getMatchLobby(id) :
+            null;
+    }
+    async removeMatchLobbyPlayer(id, userId, hero) {
+        const result = await this._collection(collectionNames.matchLobbies)
+            .updateOne({
+                _id: id,
+                status: 'waiting',
+                players: {$elemMatch: {userId, hero}},
+            }, {
+                $pull: {players: {userId, hero}},
                 $set: {updatedAt: new Date().toISOString()},
             });
 

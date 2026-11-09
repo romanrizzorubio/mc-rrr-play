@@ -25,6 +25,7 @@ const createComponent = properties => Object.assign(
         maxPlayers: 4,
         currentStep: 1,
         expert: false,
+        autoSave: true,
         scenario: {
             scenario: 'risky-business',
             modularSets: ['goblin-gimmicks'],
@@ -55,6 +56,7 @@ describe('match creation form', () => {
 
         assert.equal(component.name, 'RRR');
         assert.equal(component.maxPlayers, 4);
+        assert.equal(component.autoSave, true);
         assert.equal(Object.hasOwn(component, 'player'), false);
     });
 
@@ -67,6 +69,7 @@ describe('match creation form', () => {
         assert.match(firstView, /Máximo de superhéroes/);
         assert.match(firstView, /<md-filled-select/u);
         assert.match(firstView, /value="4"/);
+        assert.match(firstView, /Guardado automático/u);
         assert.doesNotMatch(firstView, /title="Héroe y aspecto"/u);
         assert.doesNotMatch(firstView, /<mc-deck-picker/u);
         assert.doesNotMatch(firstView, /Modo Experto/);
@@ -87,6 +90,7 @@ describe('match creation form', () => {
         assert.match(secondView, /title="Escenario"/u);
         assert.match(secondView, /Modo Experto/u);
         assert.match(secondView, /title="Conjuntos modulares"/u);
+        assert.doesNotMatch(secondView, /Guardado automático/u);
         assert.match(secondView, /Crear partida/u);
         assert.doesNotMatch(secondView, /Continuar/u);
         component.handleNext();
@@ -131,6 +135,7 @@ describe('match creation form', () => {
         assert.equal(events.length, 0);
         component.scenario = scenario;
         component.handleExpertChange({target: {checked: true}});
+        component.handleAutoSaveChange({target: {checked: false}});
         component.handleClick();
 
         assert.equal(events.length, 1);
@@ -139,6 +144,7 @@ describe('match creation form', () => {
             name: 'Partida de prueba',
             maxPlayers: 4,
             expert: true,
+            autoSave: false,
             scenario: {
                 scenario: 'risky-business',
                 modularSets: ['goblin-gimmicks'],

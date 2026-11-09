@@ -699,7 +699,14 @@ describe('Doctor Strange', () => {
             card.name === 'Sancta Sanctorum');
         const spell = player.superhero.cards.find(card =>
             card.traits.includes(TRAIT_SPELL));
+        assert.ok(spell);
+        assert.equal(player.deck.removeCardFromDeck(spell), true);
         player.deck.discardPile.push(spell);
+        let shuffleCount = 0;
+        player.deck.shuffle = () => {
+            shuffleCount++;
+        };
+        const initialHandSize = player.hand.cards.length;
         player.hand.refresh = async () => {};
         match.openDialog = async ({data}) => ({
             selected: data.cards[0],
@@ -714,6 +721,8 @@ describe('Doctor Strange', () => {
 
         assert.equal(player.deck.discardPile.includes(spell), false);
         assert.equal(player.deck.cards.includes(spell), true);
+        assert.equal(shuffleCount, 1);
+        assert.equal(player.hand.cards.length, initialHandSize + 1);
     });
 
     test('Siete Anillos de Raggador gives Tough to up to three characters', async () => {

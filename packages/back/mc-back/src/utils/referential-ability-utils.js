@@ -2,14 +2,14 @@ const REFERENCE_CARD_TYPE_ENCOUNTER = 'encounter';
 const REFERENCE_CARD_TYPE_PLAYER = 'player';
 const REFERENCE_PRIORITY_NO_MATCH = -1;
 export const REFERENCE_PRIORITY_SOURCE_CARD = 0;
-const REFERENCE_PRIORITY_ASSOCIATED_SET = 1;
+export const REFERENCE_PRIORITY_ASSOCIATED_SET = 1;
 const REFERENCE_PRIORITY_CARD_TYPE = 2;
 
 export const REFERENCE_PRIORITY_COUNT = REFERENCE_PRIORITY_CARD_TYPE + 1;
 
 export const getCardSet = card => card?.set ?? card?.card?.set;
 
-export const getAssociatedSuperheroSet = (referenceCard, match) => {
+export const getAssociatedSet = (referenceCard, match) => {
     const ownerSuperheroSet = getCardSet(referenceCard?.owner?.superhero);
     if (ownerSuperheroSet) {
         return ownerSuperheroSet;
@@ -19,7 +19,8 @@ export const getAssociatedSuperheroSet = (referenceCard, match) => {
     const associatedSuperhero = (match?.players || []).find(({superhero}) =>
         referenceSet && getCardSet(superhero) === referenceSet)?.superhero;
 
-    return getCardSet(associatedSuperhero);
+    return getCardSet(associatedSuperhero) ??
+        (isEncounterCard(referenceCard) ? referenceSet : undefined);
 };
 
 export const isPlayerCard = card => Boolean(
@@ -53,14 +54,13 @@ export const isSameCard = (card, referenceCard) =>
 export const getReferencePriority = (
     card,
     referenceCard,
-    associatedSuperheroSet,
+    associatedSet,
     referenceCardType
 ) => {
     if (isSameCard(card, referenceCard)) {
         return REFERENCE_PRIORITY_SOURCE_CARD;
     }
-    if (associatedSuperheroSet &&
-        getCardSet(card) === associatedSuperheroSet) {
+    if (associatedSet && getCardSet(card) === associatedSet) {
         return REFERENCE_PRIORITY_ASSOCIATED_SET;
     }
     if (
@@ -79,9 +79,17 @@ const getReferenceNames = condition => {
     const conditions = Array.isArray(condition) ? condition : [condition];
 
     return [...new Set(conditions
-        .filter(candidate =>
-            candidate && typeof candidate.name === 'string')
-        .map(candidate => candidate.name))];
+        .flatMap(candidate => {
+            const names = [];
+            if (typeof candidate?.name === 'string') {
+                names.push(candidate.name);
+            }
+            if (typeof candidate?.['card.name'] === 'string') {
+                names.push(candidate['card.name']);
+            }
+
+            return names;
+        }))];
 };
 
 export const hasReferentialTargetCondition = (condition, referenceCard) =>
@@ -92,12 +100,18 @@ const getNamedTarget = (target, name) => {
     if (!isPlayerCard(target) && !isEncounterCard(target)) {
         return undefined;
     }
-    if (target?.name !== name && target?.mainName !== name) {
+    if (target?.name !== name &&
+        target?.mainName !== name &&
+        target?.card?.name !== name) {
         return undefined;
     }
 
     return target;
 };
+
+export const isReferentialNameTarget = (target, condition) =>
+    getReferenceNames(condition).some(name =>
+        Boolean(getNamedTarget(target, name)));
 
 export const filterReferentialTargets = (
     targets,
@@ -115,8 +129,7 @@ export const filterReferentialTargets = (
         return targets;
     }
 
-    const associatedSuperheroSet =
-        getAssociatedSuperheroSet(referenceCard, match);
+    const associatedSet = getAssociatedSet(referenceCard, match);
     const highestPriorityTargets = new Set();
     names.forEach(name => {
         const namedTargets = targets.flatMap(target => {
@@ -128,7 +141,7 @@ export const filterReferentialTargets = (
             getReferencePriority(
                 target,
                 referenceCard,
-                associatedSuperheroSet,
+                associatedSet,
                 referenceCardType
             ));
         const matchingPriorities = priorities.filter(priority =>

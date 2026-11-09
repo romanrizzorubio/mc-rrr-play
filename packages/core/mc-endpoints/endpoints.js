@@ -2,6 +2,7 @@ export const ENDPOINTS = {
     MATCH: {
         CREATE: '/create-match',
         DELETE: '/delete-match',
+        EXIT: '/exit-match',
         GET_HEROES_LIST: '/get-heroes-list',
         GET_MATCHES_LIST: '/get-matches-list',
         GET_SCENARIOS_LIST: '/get-scenarios-list',
@@ -12,6 +13,7 @@ export const ENDPOINTS = {
         COMPLETE_ACTION: '/complete-action',
         INIT: '/init-match',
         RESET: '/reset-match',
+        SAVE: '/save-match',
     },
     USER: {
         ACTIVATE: '/activate',
@@ -49,6 +51,7 @@ export const ENDPOINTS = {
         GET: '/match-lobbies/:id',
         JOIN: '/match-lobbies/:id/join',
         LEAVE: '/match-lobbies/:id/leave',
+        REMOVE_PLAYER: '/match-lobbies/:id/players/:playerId',
         START: '/match-lobbies/:id/start',
         DELETE: '/match-lobbies/:id',
     },

@@ -9,6 +9,8 @@ import {EVENTS} from 'mc-endpoints';
 
 export const MENU_OPTION_END = EVENTS.TURN.END;
 export const MENU_OPTION_FLIP = 'flip';
+export const MENU_OPTION_REQUEST_PLAYER_ACTION = 'request-player-action';
+export const MENU_OPTION_VIEW_HAND = 'view-player-hand';
 
 export class SuperheroCardComponent extends LitElement {
     static get is() {
@@ -42,6 +44,7 @@ export class SuperheroCardComponent extends LitElement {
             attached: {type: Array},
             tuckedCards: {type: Array},
             abilities: {type: Array},
+            extraMenuOptions: {type: Array},
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
             aspectMarkers: {type: Array},
@@ -73,6 +76,7 @@ export class SuperheroCardComponent extends LitElement {
         this.attached = [];
         this.tuckedCards = [];
         this.abilities = [];
+        this.extraMenuOptions = [];
         this.extraTraits = [];
         this.extraKeywords = [];
         this.aspectMarkers = [];
@@ -99,6 +103,8 @@ export class SuperheroCardComponent extends LitElement {
                 text: 'Finalizar turno',
             });
         }
+
+        options.push(...(this.extraMenuOptions || []));
 
         if (this.tuckedCards?.length) {
             options.push({
@@ -133,6 +139,16 @@ export class SuperheroCardComponent extends LitElement {
                         image: this.image,
                     },
                     cards: this.tuckedCards,
+                },
+            }));
+        } else if (option === MENU_OPTION_REQUEST_PLAYER_ACTION ||
+            option === MENU_OPTION_VIEW_HAND) {
+            this.dispatchEvent(new CustomEvent('change-menu', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.card,
+                    menuOptions: this.menuOptions,
                 },
             }));
         } else {

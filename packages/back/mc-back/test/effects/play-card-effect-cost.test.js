@@ -11,6 +11,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_ALL_PLAYERS,
     TARGET_YOU,
     TRIGGER_CARD_ENTER_PLAY,
@@ -26,6 +27,7 @@ import {SearchCardsEffect} from '../../src/effects/search-cards-effect.js';
 import {SimultaneousEffect} from '../../src/effects/simultaneous-effect.js';
 import {BasicActivationCost} from '../../src/model/costs/basic-activation-cost.js';
 import {CostGroup} from '../../src/model/costs/cost-group.js';
+import {CostPaymentSession} from '../../src/utils/cost-payment-session.js';
 
 class CancelledPaymentEffect extends Effect {
     getCostPaymentEffects() {
@@ -131,6 +133,59 @@ describe('PlayCardEffect payment cost', () => {
 
         assert.equal(calls.dialogs.length, 1);
         assert.equal(calls.dialogs[0].data.cost, 2);
+    });
+
+    test('stages a shared resource generator controlled by another player', async () => {
+        const {effect, player} = createPlayCardEffect({calculatedCost: 1});
+        const milano = {
+            abilities: [{isResource: true, resource: RESOURCE_WILD}],
+            controller: {id: 'other-player'},
+            id: 'milano--ship-command-1',
+            name: 'Milano',
+            toObj() {
+                return {id: this.id, name: this.name};
+            },
+        };
+        player.getCardsToPay = async () => ({
+            generators: [milano],
+            hand: [],
+        });
+        player.getCard = () => undefined;
+        effect.openDialog = async ({data}) => {
+            assert.deepEqual(
+                data.cards.generators.map(({id}) => id),
+                [milano.id]
+            );
+
+            return {
+                paid: {
+                    generators: [{id: milano.id}],
+                    hand: [],
+                },
+                resources: [RESOURCE_WILD],
+            };
+        };
+
+        const resourceCost = await effect.getResourceCost({player});
+        const session = new CostPaymentSession();
+        const payment = await effect.payCost(
+            {player},
+            session,
+            resourceCost
+        );
+        const paymentEffect = {resourceCost};
+
+        session.stagePayment(paymentEffect, payment, {card: effect.card});
+        const stagedPayment = session.getPayment(paymentEffect);
+
+        assert.deepEqual(
+            stagedPayment.generators,
+            [milano]
+        );
+        assert.deepEqual(
+            stagedPayment.resources,
+            [RESOURCE_WILD]
+        );
     });
 
     test('restricts every adjusted card-cost resource to its configured type', async () => {

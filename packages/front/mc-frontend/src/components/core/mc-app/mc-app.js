@@ -233,6 +233,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             appReady: {type: Boolean},
             configurationError: {type: String},
             resettingMatch: {type: Boolean},
+            savingMatch: {type: Boolean},
+            leavingMatch: {type: Boolean},
             user: {type: Object},
             sessionLoaded: {type: Boolean},
             logoutPending: {type: Boolean},
@@ -285,6 +287,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.apiDialog = null;
         this.gameOverNotice = '';
         this.resettingMatch = false;
+        this.savingMatch = false;
+        this.leavingMatch = false;
         this.removeConnectionStateListener = null;
         this.removeCommunicationErrorListener = null;
         this.addEventListener(EVENTS.MATCH.CREATED, this.handleMatchCreated.bind(this));
@@ -350,6 +354,10 @@ class McApp extends router(navigator(outlet(LitElement))) {
         });
         this.api.init();
         this.api.listenMatch(this.handleSocketMatch.bind(this));
+        this.api.listen({
+            event: EVENTS.MATCH.EXIT,
+            callback: this.handleMatchExit.bind(this),
+        });
         this.api.listen({
             event: EVENTS.MATCH.MULLIGAN_COMPLETE,
             callback: this.handleMulliganComplete.bind(this),
@@ -541,6 +549,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
        data,
        showCancel,
        hideOk,
+       hideViewTable = false,
+       hideResponsiblePlayer = false,
        title,
        subtitle,
        closeOnResponse,
@@ -584,6 +594,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             callback: readOnly ? undefined : callback,
             showCancel: readOnly ? false : showCancel,
             hideOk: readOnly || hideOk,
+            hideViewTable,
+            hideResponsiblePlayer,
             readOnly,
             targetPlayer,
             targetUserId,
@@ -733,6 +745,25 @@ class McApp extends router(navigator(outlet(LitElement))) {
             tableInspection: this.tableConsultationMode,
         });
     }
+    handleViewPlayerHand(e) {
+        const playerId = e.detail?.playerId;
+        const player = this.getMatchPlayer(playerId);
+        if (!player || !this.ownsMatchPlayer(playerId)) {
+            return;
+        }
+
+        const cards = Array.isArray(player.hand) ? player.hand : [];
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title: `Mano de ${player.superhero?.name || player.name}`,
+            subtitle: cards.length ?
+                'Cartas en la mano de este superhéroe.' :
+                'Este superhéroe no tiene cartas en la mano.',
+            data: {cards},
+            callback: () => {},
+            tableInspection: this.tableConsultationMode,
+        });
+    }
     showAlert(msg) {
         this.alert = {
             msg,
@@ -774,6 +805,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             dialogType: 'list',
             showCancel: true,
             hideOk: true,
+            hideViewTable: true,
+            hideResponsiblePlayer: true,
             callback,
             data: {
                 card,
@@ -969,12 +1002,18 @@ class McApp extends router(navigator(outlet(LitElement))) {
 
         return players.slice(initialIndex).concat(players.slice(0, initialIndex));
     }
+    get hasRoomForSecondaryBoard() {
+        return globalThis.window?.matchMedia ?
+            globalThis.window.matchMedia('(min-width: 1501px)').matches :
+            globalThis.window?.innerWidth > 1500;
+    }
     normalizeSelectedPlayer(previousMatch) {
         const ownedPlayers = this.match?.players?.filter(player =>
             (player.userId || player.id) === this.user?.id) || [];
         if (!ownedPlayers.length) {
             return;
         }
+        const hasRoomForSecondaryBoard = this.hasRoomForSecondaryBoard;
         const startingMatch = previousMatch?.name !== this.match.name ||
             (!previousMatch?.initialized && this.match.initialized);
         const startingPlayersPhase = ownedPlayers.length > 1 &&
@@ -985,7 +1024,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
         const defaultPlayer = McApp.getOrderedMatchPlayers(this.match)
             .find(player => !player.defeated && this.ownsMatchPlayer(player.id)) ||
             ownedPlayers[0];
-        if (startingMatch || startingPlayersPhase) {
+        if (startingMatch || (startingPlayersPhase && !hasRoomForSecondaryBoard)) {
             this.player = defaultPlayer.id;
             return;
         }
@@ -993,7 +1032,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
             this.player = defaultPlayer.id;
             return;
         }
-        if (ownedPlayers.length > 1 &&
+        if (!hasRoomForSecondaryBoard &&
+            ownedPlayers.length > 1 &&
             previousMatch?.name === this.match.name &&
             previousMatch.phase === 'players' &&
             this.match.phase === 'players' &&
@@ -1195,13 +1235,43 @@ class McApp extends router(navigator(outlet(LitElement))) {
         return Boolean(this.user?.id &&
             this.match?.creatorUserId === this.user.id);
     }
+    get canSaveMatch() {
+        return Boolean(this.match?.autoSave === false &&
+            this.user?.id &&
+            this.match.players?.some(player => player.userId === this.user.id));
+    }
+    async handleSaveMatch() {
+        if (!this.canSaveMatch) {
+            return;
+        }
+        if (this.savingMatch || this.resettingMatch || this.leavingMatch ||
+            !this.match?.id) {
+            return;
+        }
+
+        const match = this.match;
+        this.savingMatch = true;
+        try {
+            await this.api.saveMatch();
+            if (this.match === match) {
+                this.showAlert('Partida guardada.');
+            }
+        } catch (error) {
+            if (this.match === match) {
+                this.showAlert(error.message);
+            }
+        } finally {
+            this.savingMatch = false;
+        }
+    }
     async handleResetMatch() {
         if (!this.canResetMatch) {
             this.showAlert('Solo el creador puede reiniciar esta partida.');
             return;
         }
         const match = this.match;
-        if (this.resettingMatch || !match?.id || !window.confirm(
+        if (this.resettingMatch || this.savingMatch || this.leavingMatch ||
+            !match?.id || !window.confirm(
             `¿Reiniciar la partida "${match.name}"? Se perderá el progreso actual.`
         )) {
             return;
@@ -1216,8 +1286,47 @@ class McApp extends router(navigator(outlet(LitElement))) {
             this.resettingMatch = false;
         }
     }
-    handleExitMatch() {
+    handleMatchExit({match: matchName}) {
+        if (matchName && this.api?.match !== matchName) {
+            return;
+        }
+        this.finishMatchExit(matchName);
+    }
+    finishMatchExit(matchName) {
+        this.api?.endMatch?.(matchName);
+        this.match = null;
+        this.player = '';
+        this.pendingResumeMatch = '';
+        this.mulliganWaiting = false;
+        this.waitingForResponse = '';
+        this.waitingDialogRequestId = '';
+        this.dialog = null;
+        this.dialogQueue = [];
+        this.tableViewDialog = null;
+        this.tableConsultationMode = false;
         this.navigate(getNavigationPath('matches'));
+    }
+    async handleExitMatch() {
+        const match = this.match;
+        if (this.leavingMatch || this.resettingMatch || this.savingMatch || !match) {
+            return;
+        }
+
+        this.leavingMatch = true;
+        try {
+            if (this.canResetMatch && match.autoSave === false) {
+                await this.api.exitMatch();
+            } else {
+                await this.api.leaveMatch();
+            }
+            this.finishMatchExit(match.name);
+        } catch (error) {
+            if (this.match === match) {
+                this.showAlert(error.message);
+            }
+        } finally {
+            this.leavingMatch = false;
+        }
     }
     renderDialogElement(dialog, id, open) {
         let dialogElement = html``;
@@ -1229,6 +1338,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 data,
                 showCancel,
                 hideOk,
+                hideViewTable,
+                hideResponsiblePlayer,
                 title,
                 subtitle,
                 readOnly,
@@ -1247,6 +1358,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
                     .data="${data}"
                     .showCancel="${showCancel}"
                     .hideOk="${hideOk}"
+                    .hideViewTable="${hideViewTable}"
+                    .hideResponsiblePlayer="${hideResponsiblePlayer}"
                     .readOnly="${readOnly}"
                     .viewOnly="${viewOnly}"
                     .targetPlayerName="${targetPlayerName}"
@@ -1332,14 +1445,23 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 aria-label="Cuenta de usuario">
                 ${this.route === 'match' ? html`
                     <div class="match-actions" role="group" aria-label="Acciones de partida">
-                        <md-text-button @click="${this.handleExitMatch.bind(this)}">
-                            Salir de la partida
+                        <md-text-button
+                            .disabled="${this.leavingMatch || this.resettingMatch || this.savingMatch}"
+                            @click="${this.handleExitMatch.bind(this)}"
+                        >
+                            ${this.leavingMatch ? 'Saliendo...' : 'Salir de la partida'}
                         </md-text-button>
                         ${this.canResetMatch ? html`
                         <md-text-button
-                            .disabled="${this.resettingMatch || !this.match?.id}"
+                            .disabled="${this.resettingMatch || this.leavingMatch || this.savingMatch || !this.match?.id}"
                             @click="${this.handleResetMatch.bind(this)}"
                         >${this.resettingMatch ? 'Reiniciando...' : 'Reiniciar partida'}</md-text-button>
+                        ` : ''}
+                        ${this.canSaveMatch ? html`
+                        <md-text-button
+                            .disabled="${this.savingMatch || this.leavingMatch || this.resettingMatch || !this.match?.id}"
+                            @click="${this.handleSaveMatch.bind(this)}"
+                        >${this.savingMatch ? 'Guardando...' : 'Guardar partida'}</md-text-button>
                         ` : ''}
                     </div>
                     <div class="match-status-group">
@@ -1441,6 +1563,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                                   @view-discard="${this.handleViewDiscard.bind(this)}"
                                   @view-known-cards="${this.handleViewKnownCards.bind(this)}"
                                   @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
+                                  @view-player-hand="${this.handleViewPlayerHand.bind(this)}"
                                   @communication-error="${this.handleCommunicationError.bind(this)}"
                               ></mc-match-page>
                           `)}

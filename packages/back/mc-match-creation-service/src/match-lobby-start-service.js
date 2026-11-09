@@ -54,6 +54,7 @@ export class MatchLobbyStartService {
             matchId: identity.id,
             matchName: identity.name,
             expert: lobby.expert,
+            autoSave: lobby.autoSave !== false,
         };
     }
     async configureMatchLobby(lobby, cookie) {
