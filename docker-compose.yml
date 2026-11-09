@@ -80,7 +80,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
-      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-false}
     volumes:
       - ./.local/certs:/certs:ro
       - ./scripts:/app/scripts:ro
@@ -130,7 +130,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
-      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-false}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-match/vite.config.js:/app/packages/front/mc-match/vite.config.js:ro
@@ -164,7 +164,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
-      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-false}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-deck/vite.config.js:/app/packages/front/mc-deck/vite.config.js:ro
@@ -197,7 +197,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
-      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-false}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-static/vite.config.js:/app/packages/front/mc-static/vite.config.js:ro
@@ -229,7 +229,7 @@ services:
       - NODE_EXTRA_CA_CERTS=/certs/rootCA.pem
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
-      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-true}
+      - USE_PORTS_IN_URL=${USE_PORTS_IN_URL:-false}
     volumes:
       - ./.local/certs:/certs:ro
       - ./packages/front/mc-users/vite.config.js:/app/packages/front/mc-users/vite.config.js:ro

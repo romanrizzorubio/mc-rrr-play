@@ -10,10 +10,9 @@ const remoteEntryDevRoute = {
     name: 'mc-deck-remote-entry-dev-route',
     configureServer(server) {
         server.middlewares.use((req, _res, next) => {
-            if (req.url === '/remoteEntry.js') {
+            if (req.url.endsWith('/remoteEntry.js')) {
                 req.url = '/src/remote-entry.js';
             }
-
             next();
         });
     },
@@ -34,6 +33,7 @@ const healthCheck = {
 };
 
 export default defineConfig(({command}) => ({
+    base: process.env.USE_PORTS_IN_URL === 'false' ? '/deck/' : '/',
     plugins: [remoteEntryDevRoute, healthCheck],
     root: packageRoot,
     publicDir: false,
@@ -44,6 +44,7 @@ export default defineConfig(({command}) => ({
         cors: true,
         allowedHosts: true,
         hmr: {
+            path: '/deck/',
             clientPort: process.env.PORT_GATEWAY || 80,
         },
         ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),

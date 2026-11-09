@@ -396,7 +396,7 @@ const main = async () => {
             await startAndWaitForService(
                 'start:mc-static',
                 'mc-static remote',
-                `${protocol}://127.0.0.1:8300/remoteEntry.js`,
+                `${protocol}://127.0.0.1:8300/src/remote-entry.js`,
             );
         }
         if (!stopRequested) {
@@ -418,9 +418,9 @@ const main = async () => {
         if (!stopRequested) {
             const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             const remotesAndDeckService = [
-                ['start:mc-match', 'mc-match remote', `${protocol}://127.0.0.1:8100/remoteEntry.js`],
-                ['start:mc-deck', 'mc-deck remote', `${protocol}://127.0.0.1:8200/remoteEntry.js`],
-                ['start:mc-users', 'mc-users remote', `${protocol}://127.0.0.1:8400/remoteEntry.js`],
+                ['start:mc-match', 'mc-match remote', `${protocol}://127.0.0.1:8100/src/remote-entry.js`],
+                ['start:mc-deck', 'mc-deck remote', `${protocol}://127.0.0.1:8200/src/remote-entry.js`],
+                ['start:mc-users', 'mc-users remote', `${protocol}://127.0.0.1:8400/src/remote-entry.js`],
                 ['start:mc-deck-service', 'mc-deck-service', `${protocol}://127.0.0.1:3002/healthz`],
             ].map(([scriptName, serviceName, healthUrl]) =>
                 startAndWaitForService(scriptName, serviceName, healthUrl));

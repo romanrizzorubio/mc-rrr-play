@@ -58,6 +58,15 @@ npm run seed:data
 
 En Docker, `docker-compose` inicia MongoDB con un volumen persistente; el backend espera a que esté saludable y carga los registros iniciales que falten.
 
+## Configuración y Despliegue
+
+Este monorepo soporta múltiples configuraciones según si se usa Docker o no, y si se prefiere una conexión directa a los puertos o a través de un gateway.
+
+Consulta **[DEPLOYMENT.md](./DEPLOYMENT.md)** para una guía detallada sobre cómo configurar el proyecto para:
+1. **Desarrollo Local**: Conexión directa a puertos, ideal para debugging.
+2. **Docker Local**: Uso de Nginx Gateway para mayor fidelidad productiva.
+3. **AWS / Producción**: Configuración optimizada tras balanceador y SSL.
+
 ## Scripts Disponibles
 
 ### Desarrollo Local

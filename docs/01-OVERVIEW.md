@@ -38,6 +38,11 @@ La aplicación existe para:
 
 ## Arquitectura de Alto Nivel
 
+El sistema soporta dos modos de arquitectura de red:
+
+### 1. Desarrollo Local (Conexión Directa)
+Ideal para depuración rápida. Cada servicio expone su propio puerto.
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │ mc-frontend │ mc-users │ mc-match │ mc-deck │ mc-static │
@@ -50,6 +55,25 @@ La aplicación existe para:
 │ catálogo, creación y lobby       │ motor de partidas│ cuentas y sesiones     │
 └─────────────────────────────────────────────────────┘
 ```
+
+### 2. Docker / Producción (Gateway)
+Utiliza un **Gateway (Nginx)** unificado en el puerto 80. Este modo es el predeterminado en Docker y obligatorio en AWS. Evita problemas de CORS y asegura la correcta resolución de módulos ESM.
+
+```
+                      Navegador (Puerto 80)
+                               │
+                      ┌────────▼────────┐
+                      │    mc-gateway   │ (Nginx)
+                      └────────┬────────┘
+             ┌─────────────────┴─────────────────┐
+    /api ────┤  /match  ───┤  /deck  ───┤ /static ───┤   /
+      │            │             │            │          │
+┌─────▼─────┐ ┌────▼────┐ ┌─────▼─────┐ ┌─────▼────┐ ┌───▼───┐
+│ Servicios │ │ mc-match│ │ mc-deck   │ │ mc-static│ │Front  │
+└───────────┘ └─────────┘ └───────────┘ └──────────┘ └───────┘
+```
+
+Consulta **[DEPLOYMENT.md](../DEPLOYMENT.md)** para detalles de configuración.
 
 ## Componentes Principales
 

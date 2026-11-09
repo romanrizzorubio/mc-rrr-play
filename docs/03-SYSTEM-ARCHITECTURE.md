@@ -263,6 +263,24 @@ class Effect {
 }
 ```
 
+### Comunicación y Gateway
+
+El sistema utiliza un **Gateway Unificado (Nginx)** para centralizar el tráfico en entornos de Docker y Producción. Esto permite:
+- **Evitar problemas de CORS**: Todas las peticiones van al mismo origen (puerto 80).
+- **Resolución de módulos ESM**: Las importaciones relativas dentro de los remotos se resuelven correctamente usando prefijos de ruta (ej. `/deck/src/...`).
+- **Seguridad**: Terminación SSL simplificada y gestión de cookies `Secure`.
+
+#### Modos de Red
+1. **Desarrollo Local** (`USE_PORTS_IN_URL=true`): Conexión directa a puertos (8000, 8100, 3000, etc.). Ideal para depuración rápida.
+2. **Gateway (Docker/AWS)** (`USE_PORTS_IN_URL=false`): Nginx (`mc-gateway`) redirige el tráfico basándose en el prefijo de la URL:
+   - `/api/auth` -> `mc-user-service:3003`
+   - `/match/` -> `mc-match:8100`
+   - `/deck/` -> `mc-deck:8200`
+   - `/static/` -> `mc-static:8300`
+   - `/` -> `mc-frontend:8000`
+
+Las configuraciones de **Vite** en cada microfrontend ajustan dinámicamente la propiedad `base` y el `path` de HMR según el modo activo para asegurar que los assets y las conexiones WebSocket funcionen a través del Gateway.
+
 ### 7. Server (Servidor)
 
 **Ubicación:** `packages/back/mc-back/src/server/`
