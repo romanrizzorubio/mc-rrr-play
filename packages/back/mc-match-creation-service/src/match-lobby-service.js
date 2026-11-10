@@ -147,6 +147,7 @@ export class MatchLobbyService {
             })),
             scenarioName: lobby.scenario.name,
             expert: lobby.expert,
+            autoSave: lobby.autoSave !== false,
             modularSetNames: lobby.scenario.modularSets.map(id =>
                 modularSetNames.get(id) || id),
             matchId: matchIdentity?.id || null,
@@ -154,7 +155,13 @@ export class MatchLobbyService {
     }
     async create(req) {
         const user = await this.authenticate(req);
-        const {name: requestedName, maxPlayers, scenario, expert = false} = req.body || {};
+        const {
+            name: requestedName,
+            maxPlayers,
+            scenario,
+            expert = false,
+            autoSave = true,
+        } = req.body || {};
         const name = typeof requestedName === 'string' ? requestedName.trim() : '';
 
         if (!name || name.length > 80) {
@@ -166,6 +173,9 @@ export class MatchLobbyService {
         if (typeof expert !== 'boolean') {
             throw this.error('La dificultad seleccionada no es válida.', 400);
         }
+        if (typeof autoSave !== 'boolean') {
+            throw this.error('La opción Guardado automático no es válida.', 400);
+        }
 
         const validatedScenario = await this.validateScenario(scenario);
 
@@ -175,6 +185,7 @@ export class MatchLobbyService {
             creatorId: user.id,
             scenario: validatedScenario,
             expert,
+            autoSave,
         });
 
         return this.formatLobby(lobby);
@@ -250,6 +261,50 @@ export class MatchLobbyService {
         }
 
         throw this.error('La sala ya no está esperando jugadores.', 409);
+    }
+    async removePlayer(req) {
+        const user = await this.authenticate(req);
+        const lobby = await this.data.getMatchLobby(req.params.id);
+        if (!lobby) {
+            throw this.error('No se encontró la sala.', 404);
+        }
+
+        const player = getLobbyPlayerSeats(lobby).find(({id}) =>
+            id === req.params.playerId
+        );
+        if (!player) {
+            throw this.error('No se encontró la inscripción.', 404);
+        }
+        if (lobby.creatorId !== user.id && player.userId !== user.id) {
+            throw this.error('Solo el jugador inscrito o el creador pueden eliminar esta inscripción.', 403);
+        }
+        if (lobby.status !== 'waiting') {
+            throw this.error('Solo se pueden eliminar inscripciones de una sala en espera.', 409);
+        }
+
+        const updatedLobby = await this.data.removeMatchLobbyPlayer(
+            lobby.id,
+            player.userId,
+            player.hero,
+        );
+        if (updatedLobby) {
+            return this.formatLobby(updatedLobby);
+        }
+
+        const latestLobby = await this.data.getMatchLobby(lobby.id);
+        if (!latestLobby) {
+            throw this.error('No se encontró la sala.', 404);
+        }
+        if (latestLobby.status !== 'waiting') {
+            throw this.error('Solo se pueden eliminar inscripciones de una sala en espera.', 409);
+        }
+        if (!getLobbyPlayerSeats(latestLobby).some(({id}) =>
+            id === req.params.playerId
+        )) {
+            throw this.error('No se encontró la inscripción.', 404);
+        }
+
+        throw this.error('La inscripción ya no se puede eliminar.', 409);
     }
     async delete(req) {
         const user = await this.authenticate(req);

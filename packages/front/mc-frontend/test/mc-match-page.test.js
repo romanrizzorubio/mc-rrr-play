@@ -23,7 +23,12 @@ const {getEndTurnConfirmationReasons} = await import(
     '../src/utils/end-turn.js'
 );
 const {McMatchPage} = await import('../src/pages/mc-match-page/mc-match-page.js');
-const {MENU_OPTION_END, MENU_OPTION_FLIP} = await import(
+const {
+    MENU_OPTION_END,
+    MENU_OPTION_FLIP,
+    MENU_OPTION_REQUEST_PLAYER_ACTION,
+    MENU_OPTION_VIEW_HAND,
+} = await import(
     '../src/components/cards/characters/mc-superhero-card/mc-superhero-card.js'
 );
 
@@ -90,6 +95,9 @@ describe('mc-match-page actions', () => {
                 resolveAbility: async (...args) => requests.push(['ability', ...args]),
                 endTurn: async (...args) => requests.push(['end', ...args]),
                 flip: async (...args) => requests.push(['flip', ...args]),
+                playCard: async (...args) => requests.push(['play', ...args]),
+                requestAction: async (...args) =>
+                    requests.push(['request-action', ...args]),
             },
             dispatchEvent: event => events.push(event),
         });
@@ -131,6 +139,8 @@ describe('mc-match-page actions', () => {
             {id: 'ability-0'},
             {id: MENU_OPTION_END},
             {id: MENU_OPTION_FLIP},
+            {id: MENU_OPTION_REQUEST_PLAYER_ACTION},
+            {id: MENU_OPTION_VIEW_HAND},
             {id: 'view-tucked-cards'},
             {
                 basicActivation: true, abilityIndex: 0,
@@ -158,6 +168,64 @@ describe('mc-match-page actions', () => {
             selected: {id: 'ability-0'},
         });
         assert.deepEqual(requests, [['ability', 'seat-1', 'hero-1', 0]]);
+    });
+
+    test('requests actions and opens hands from the superhero menu with ownership checks', async () => {
+        const {page, requests, events} = createTwoHeroPage();
+        await page.handleMenuOption(
+            page.match.players[1].superhero,
+            'seat-2',
+        )({
+            selected: {id: MENU_OPTION_REQUEST_PLAYER_ACTION},
+        });
+        assert.deepEqual(requests, [
+            ['request-action', 'seat-1', 'seat-2'],
+        ]);
+
+        await page.handleMenuOption(
+            page.match.players[1].superhero,
+            'seat-2',
+        )({
+            selected: {id: MENU_OPTION_VIEW_HAND},
+        });
+        assert.equal(events.at(-1).type, 'view-player-hand');
+        assert.deepEqual(events.at(-1).detail, {playerId: 'seat-2'});
+
+        page.match.players[1].userId = 'another-account';
+        await page.handleMenuOption(
+            page.match.players[1].superhero,
+            'seat-2',
+        )({
+            selected: {id: MENU_OPTION_VIEW_HAND},
+        });
+        assert.equal(events.length, 1);
+    });
+
+    test('places hand and action options on the panel opposite the active controlled hero', async () => {
+        const {page, requests, events} = createTwoHeroPage();
+        page.match.currentTurnPlayer = 'seat-2';
+
+        assert.equal(page.activePlayerId, 'seat-2');
+        assert.equal(page.canViewPlayerHand('seat-1'), true);
+        assert.equal(page.canViewPlayerHand('seat-2'), false);
+
+        await page.handleMenuOption(
+            page.match.players[0].superhero,
+            'seat-1',
+        )({
+            selected: {id: MENU_OPTION_REQUEST_PLAYER_ACTION},
+        });
+        await page.handleMenuOption(
+            page.match.players[0].superhero,
+            'seat-1',
+        )({
+            selected: {id: MENU_OPTION_VIEW_HAND},
+        });
+
+        assert.deepEqual(requests, [
+            ['request-action', 'seat-2', 'seat-1'],
+        ]);
+        assert.deepEqual(events.at(-1).detail, {playerId: 'seat-1'});
     });
 
     test('basic confirmations preserve hero and ally actors and never save another seat preference', async () => {
@@ -302,6 +370,33 @@ describe('mc-match-page actions', () => {
         assert.equal(page.match.players[1].superhero, card);
         assert.equal(page.match.players[0].superhero.life, 10);
         assert.equal(page.player, 'seat-1');
+    });
+
+    test('routes actions from the visible owned hero through that seat to cross-board targets', async () => {
+        const {page, requests} = createTwoHeroPage();
+        page.match.currentTurnPlayer = 'seat-2';
+
+        await page.handleAbility({
+            detail: {
+                card: page.match.players[1].superhero,
+                ability: 0,
+                playerId: 'seat-2',
+            },
+        });
+        await page.handlePlayCardDrop({
+            detail: {
+                card: {id: 'targeted-event', playable: true},
+                targetId: 'guest-player',
+                playerId: 'seat-2',
+            },
+        });
+
+        assert.deepEqual(requests, [
+            ['ability', 'seat-2', 'hero-2', 0],
+            ['play', 'seat-2', 'targeted-event', 'guest-player'],
+        ]);
+        assert.equal(page.player, 'seat-1');
+        assert.equal(page.match.currentTurnPlayer, 'seat-2');
     });
 
     test('uses the controller seat when two heroes have cards with the same printed ID', () => {
@@ -502,11 +597,11 @@ describe('mc-match-page actions', () => {
         assert.equal(page.playCardPending, false);
     });
 
-    test('resolves a dropped targeted attack action from an upgrade', async () => {
+    test('routes a dropped attack from the owned secondary hero to another player zone', async () => {
         const requests = [];
         const upgrade = {
             abilities: [{
-                availableTargetIds: ['villain-1'],
+                availableTargetIds: ['minion-1'],
                 disable: false,
                 index: 1,
                 isAction: true,
@@ -518,34 +613,111 @@ describe('mc-match-page actions', () => {
             id: 'energy-channel',
             isUpgrade: true,
         };
+        const players = [
+            {id: 'seat-1', userId: 'account'},
+            {
+                id: 'seat-2',
+                userId: 'account',
+                superhero: {id: 'hero-2'},
+                gameZone: {cards: [upgrade]},
+            },
+            {
+                id: 'guest',
+                userId: 'guest-account',
+                gameZone: {minions: [{id: 'minion-1'}]},
+            },
+        ];
         const page = Object.assign(Object.create(McMatchPage.prototype), {
             apiPlayer: {
                 async resolveAbility(...params) {
                     requests.push(params);
                 },
             },
-            match: createActiveMatch('Carol', {
-                gameZone: {cards: [upgrade]},
-            }),
-            player: 'Carol',
+            match: {
+                phase: 'players',
+                currentTurnPlayer: 'seat-2',
+                actionRequest: null,
+                players,
+            },
+            player: 'seat-1',
         });
 
         await page.handleBasicActivation({
             stopPropagation() {},
             detail: {
                 actor: upgrade,
-                card: {id: 'villain-1'},
+                card: {id: 'minion-1'},
                 option: {
                     abilityIndex: 1,
                     activationType: 'attack',
-                    targetId: 'villain-1',
+                    targetId: 'minion-1',
                 },
+                playerId: 'seat-2',
             },
         });
 
         assert.deepEqual(requests, [
-            ['Carol', 'energy-channel', 1, 'villain-1'],
+            ['seat-2', 'energy-channel', 1, 'minion-1'],
         ]);
+        assert.equal(page.player, 'seat-1');
+    });
+
+    test('resolves a basic attack from the secondary hero against a minion in another zone', async () => {
+        const requests = [];
+        const players = [
+            {id: 'seat-1', userId: 'account'},
+            {
+                id: 'seat-2',
+                userId: 'account',
+                superhero: {
+                    id: 'hero-2',
+                    abilities: [{
+                        availableTargetIds: ['minion-1'],
+                        disable: false,
+                        index: 0,
+                        isAttack: true,
+                        isBasic: true,
+                    }],
+                },
+            },
+            {
+                id: 'guest',
+                userId: 'guest-account',
+                gameZone: {minions: [{id: 'minion-1'}]},
+            },
+        ];
+        const page = Object.assign(Object.create(McMatchPage.prototype), {
+            apiPlayer: {
+                async resolveAbility(...params) {
+                    requests.push(params);
+                },
+            },
+            match: {
+                phase: 'players',
+                currentTurnPlayer: 'seat-2',
+                actionRequest: null,
+                players,
+            },
+            player: 'seat-1',
+            shouldSkipBasicActivationConfirmation: () => true,
+        });
+
+        await page.handleBasicActivation({
+            stopPropagation() {},
+            detail: {
+                actor: players[1].superhero,
+                card: {id: 'minion-1'},
+                option: {
+                    basicActivation: true,
+                    abilityIndex: 0,
+                    activationType: 'attack',
+                    targetId: 'minion-1',
+                },
+                playerId: 'seat-2',
+            },
+        });
+
+        assert.deepEqual(requests, [['seat-2', 'hero-2', 0, 'minion-1']]);
     });
 
     test('resolves a dropped resource payment without opening a payment dialog', async () => {
@@ -616,6 +788,73 @@ describe('mc-match-page actions', () => {
         assert.equal(page.canPlayCard(actionEvent), false);
     });
 
+    test('allows the requested controlled hero to use only Action cards and abilities', async () => {
+        const {page, requests} = createTwoHeroPage();
+        page.match.actionRequest = {
+            requester: 'seat-1',
+            targetId: 'seat-2',
+            status: 'accepted',
+        };
+        const actionEvent = {
+            id: 'action-event',
+            isEvent: true,
+            abilities: [{isAction: true}],
+        };
+        const permanent = {id: 'support', isSupport: true};
+        const actionCard = {
+            id: 'action-card',
+            abilities: [{isAction: true}],
+        };
+        const basicCard = {
+            id: 'basic-card',
+            abilities: [{isBasic: true}],
+        };
+
+        assert.equal(page.canInteractFor('seat-2'), true);
+        assert.equal(page.canPlayCard(actionEvent, 'seat-2'), true);
+        assert.equal(page.canPlayCard(permanent, 'seat-2'), false);
+        assert.equal(page.canActivateAbility(actionCard, 0, 'seat-2'), true);
+        assert.equal(page.canActivateAbility(basicCard, 0, 'seat-2'), false);
+
+        await page.handleSelectCardHand({
+            detail: {card: actionEvent, playerId: 'seat-2'},
+        });
+        await page.resolveAbilityOrSelectDeck(actionCard, 0, 'seat-2');
+
+        assert.deepEqual(requests, [
+            ['play', 'seat-2', 'action-event', undefined],
+            ['ability', 'seat-2', 'action-card', 0],
+        ]);
+    });
+
+    test('routes action-request acceptance and completion to the controlled target seat', async () => {
+        const {page, requests} = createTwoHeroPage();
+        page.match.actionRequest = {
+            targetId: 'seat-2',
+            status: 'pending',
+        };
+        page.apiPlayer.respondToActionRequest = async (...args) =>
+            requests.push(['respond', ...args]);
+        page.apiPlayer.completeRequestedAction = async (...args) =>
+            requests.push(['complete', ...args]);
+
+        await page.handleRespondPlayerAction({
+            detail: {accept: true, playerId: 'seat-1'},
+        });
+        await page.handleRespondPlayerAction({
+            detail: {accept: true, playerId: 'seat-2'},
+        });
+        page.match.actionRequest.status = 'accepted';
+        await page.handleCompletePlayerAction({
+            detail: {playerId: 'seat-2'},
+        });
+
+        assert.deepEqual(requests, [
+            ['respond', 'seat-2', true],
+            ['complete', 'seat-2'],
+        ]);
+    });
+
     test('table consultation disables both game actions and action requests', async () => {
         const {page, requests} = createTwoHeroPage();
         page.tableConsultationMode = true;
@@ -628,5 +867,20 @@ describe('mc-match-page actions', () => {
             detail: {targetPlayer: 'seat-2'},
         });
         assert.deepEqual(requests, []);
+    });
+
+    test('requests an action as the controlled hero taking the turn on the secondary board', async () => {
+        const {page, requests} = createTwoHeroPage();
+        page.match.players.push({id: 'guest', userId: 'other-account'});
+        page.match.currentTurnPlayer = 'seat-2';
+
+        assert.equal(page.canRequestAction, true);
+        await page.handleRequestPlayerAction({
+            detail: {targetPlayer: 'guest'},
+        });
+
+        assert.deepEqual(requests, [
+            ['request-action', 'seat-2', 'guest'],
+        ]);
     });
 });

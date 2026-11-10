@@ -95,7 +95,9 @@ export class McRest {
                     const match = params.match ||
                         (params.name && this.getMatch(params.name));
                     if (match && match.initialized) {
-                        await this.mc.persistMatch(match);
+                        if (match.autoSave !== false) {
+                            await this.mc.persistMatch(match);
+                        }
                         if (match.lobbyId) {
                             await this.mc.data.markMatchLobbyStarted(
                                 match.lobbyId,

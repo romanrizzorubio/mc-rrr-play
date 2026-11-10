@@ -17,7 +17,7 @@ import {checkFilter} from '../utils/filter-utils.js';
 import {
     REFERENCE_PRIORITY_COUNT,
     REFERENCE_PRIORITY_SOURCE_CARD,
-    getAssociatedSuperheroSet,
+    getAssociatedSet,
     getReferenceCardType,
     getReferencePriority,
 } from '../utils/referential-ability-utils.js';
@@ -117,8 +117,7 @@ export class SearchCardsEffect extends Effect {
         const referenceCard = typeof this.filter.name === 'string' ?
             this.ability?.card :
             undefined;
-        const associatedSuperheroSet =
-            getAssociatedSuperheroSet(referenceCard, game);
+        const associatedSet = getAssociatedSet(referenceCard, game);
         const referenceCardType =
             getReferenceCardType(referenceCard);
         const referenceOptions = Array.from(
@@ -153,7 +152,7 @@ export class SearchCardsEffect extends Effect {
                         getReferencePriority(
                             card,
                             referenceCard,
-                            associatedSuperheroSet,
+                            associatedSet,
                             referenceCardType
                         ) :
                         -1;

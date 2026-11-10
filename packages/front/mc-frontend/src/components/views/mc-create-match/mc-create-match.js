@@ -22,6 +22,7 @@ export class McCreateMatch extends LitElement {
             maxPlayers: {type: Number},
             currentStep: {type: Number},
             expert: {type: Boolean},
+            autoSave: {type: Boolean},
             scenario: {type: Object},
             scenariosList: {type: Array},
             modularSetsList: {type: Array},
@@ -36,6 +37,7 @@ export class McCreateMatch extends LitElement {
         this.maxPlayers = 4;
         this.currentStep = 1;
         this.expert = false;
+        this.autoSave = true;
         this.scenario = {};
         this.scenariosList = [];
         this.modularSetsList = [];
@@ -86,13 +88,13 @@ export class McCreateMatch extends LitElement {
             return;
         }
 
-        const {name, maxPlayers, expert, scenario} = this;
+        const {name, maxPlayers, expert, autoSave, scenario} = this;
 
         this.dispatchEvent(new CustomEvent('create-match', {
             bubbles: true,
             composed: true,
             detail: {
-                name, maxPlayers, expert, scenario
+                name, maxPlayers, expert, autoSave, scenario
             }
         }));
     }
@@ -107,6 +109,9 @@ export class McCreateMatch extends LitElement {
     }
     handleExpertChange(e) {
         this.expert = e.target.checked;
+    }
+    handleAutoSaveChange(e) {
+        this.autoSave = e.target.checked;
     }
     handleScenarioChanged(e) {
         const {scenario} = e.detail;
@@ -241,6 +246,14 @@ export class McCreateMatch extends LitElement {
                         </md-select-option>
                     `)}
                 </md-filled-select>
+                <label class="match-option">
+                    <input
+                        type="checkbox"
+                        .checked="${this.autoSave}"
+                        @change="${this.handleAutoSaveChange.bind(this)}"
+                    >
+                    <span>Guardado automático</span>
+                </label>
             </mc-panel>
         `;
     }
@@ -255,7 +268,7 @@ export class McCreateMatch extends LitElement {
                     @scenario-changed="${this.handleScenarioChanged.bind(this)}"
                 >
                 </mc-form-scenario>
-                <label class="expert-mode">
+                <label class="match-option">
                     <input
                         type="checkbox"
                         .checked="${this.expert}"

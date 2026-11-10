@@ -42,6 +42,7 @@ export class DeckComponent extends LitElement {
             highlightPlayableDiscard: {type: Boolean, attribute: 'highlight-playable-discard'},
             showDeck: {type: Boolean, attribute: 'show-deck'},
             showDiscard: {type: Boolean, attribute: 'show-discard'},
+            size: {type: String, reflect: true},
             targetId: {type: String, attribute: 'target-id'},
             targetSelectable: {
                 type: Boolean,
@@ -68,6 +69,7 @@ export class DeckComponent extends LitElement {
         this.highlightPlayableDiscard = false;
         this.showDeck = true;
         this.showDiscard = true;
+        this.size = 'm';
         this.targetId = '';
         this.targetSelectable = false;
         this.dragActivation = null;
@@ -162,6 +164,7 @@ export class DeckComponent extends LitElement {
                 class="${isEmptyDiscard ? 'empty-discard' : ''}"
                 src="${src}"
                 .activationBlocked="${Boolean(this.dragActivation)}"
+                size="${this.size}"
                 .horizontal="${horizontal}"
                 .rotated="${horizontal}"
             >

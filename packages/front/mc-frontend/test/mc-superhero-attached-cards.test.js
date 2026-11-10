@@ -14,7 +14,12 @@ globalThis.CustomEvent = class {
     }
 };
 
-const {MENU_OPTION_END, SuperheroCardComponent} = await import(
+const {
+    MENU_OPTION_END,
+    MENU_OPTION_REQUEST_PLAYER_ACTION,
+    MENU_OPTION_VIEW_HAND,
+    SuperheroCardComponent,
+} = await import(
     '../src/components/cards/characters/mc-superhero-card/mc-superhero-card.js'
 );
 const {McPlayer} = await import(
@@ -185,6 +190,42 @@ describe('player card display', () => {
         assert.ok(viewOption);
     });
 
+    test('adds contextual options and opens the menu when there is only one', () => {
+        const events = [];
+        const extraMenuOptions = [
+            {id: MENU_OPTION_REQUEST_PLAYER_ACTION, text: 'Pedir una acción'},
+        ];
+        const superhero = Object.assign(
+            Object.create(SuperheroCardComponent.prototype),
+            {
+                card: {id: 'hero'},
+                abilities: [],
+                canEndTurn: false,
+                canFlip: false,
+                flipped: false,
+                extraMenuOptions,
+                dispatchEvent(event) {
+                    events.push(event);
+                },
+            },
+        );
+
+        assert.deepEqual(
+            superhero.menuOptions.filter(option =>
+                option.id === MENU_OPTION_REQUEST_PLAYER_ACTION ||
+                option.id === MENU_OPTION_VIEW_HAND
+            ),
+            extraMenuOptions,
+        );
+        superhero.handleClickMenu({
+            detail: {option: MENU_OPTION_REQUEST_PLAYER_ACTION},
+        });
+
+        assert.equal(events[0].type, 'change-menu');
+        assert.equal(events[0].detail.card, superhero.card);
+        assert.deepEqual(events[0].detail.menuOptions, superhero.menuOptions);
+    });
+
     test('opens the tucked-card viewer from the superhero menu option', () => {
         const tuckedCards = [{id: 'tucked-card'}];
         const superhero = Object.assign(
@@ -229,6 +270,31 @@ describe('player card display', () => {
 
         assert.notEqual(canFlipIndex, -1);
         assert.equal(template.values[canFlipIndex], true);
+    });
+
+    test('forwards contextual options to the superhero card menu', () => {
+        const superheroMenuOptions = [
+            {id: MENU_OPTION_REQUEST_PLAYER_ACTION, text: 'Pedir una acción'},
+        ];
+        const player = Object.assign(Object.create(McPlayer.prototype), {
+            player: {
+                handSize: 5,
+                superhero: {
+                    name: 'Hero',
+                    image: 'hero',
+                    life: 10,
+                    abilities: [],
+                },
+            },
+            superheroMenuOptions,
+            canEndTurn: false,
+        });
+        const template = player.renderSuperhero();
+        const optionsIndex = template.strings.findIndex(part =>
+            part.includes('.extraMenuOptions=')
+        );
+
+        assert.deepEqual(template.values[optionsIndex], superheroMenuOptions);
     });
 
     test('keeps player obligations in the game zone instead of the superhero card', () => {

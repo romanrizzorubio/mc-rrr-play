@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import playerStyles from '../src/components/match/mc-player/mc-player.css.js';
 import styles from '../src/components/panels/mc-game-zone/mc-game-zone.css.js';
 import {getUpgradesForDisplay} from '../src/utils/game-zone.js';
 
@@ -56,8 +57,41 @@ describe('game zone', () => {
     test('keeps a minimum-size drop area for playing cards', () => {
         assert.match(
             styles.cssText,
-            /\.play-card-drop-zone\s*\{[^}]*min-width:\s*300px;[^}]*min-height:\s*200px;/s
+            /\.play-card-drop-zone\s*\{[^}]*width:\s*100%;[^}]*min-width:\s*300px;[^}]*min-height:\s*200px;/s
         );
+        assert.match(
+            playerStyles.cssText,
+            /mc-game-zone\.panel\s*\{[^}]*flex:\s*1 1 300px;[^}]*min-width:\s*300px;/s
+        );
+    });
+
+    test('stacks supports below upgrades, allies, and encounters', () => {
+        const zone = Object.assign(
+            Object.create(McGameZone.prototype),
+            {
+                cards: [],
+                attachedUpgrades: [],
+                minions: [],
+                encounters: 1,
+                player: {},
+                dragActivation: null,
+                dragPlayCard: null,
+                dragResourcePayment: null,
+            }
+        );
+        const [
+            encounters,
+            minions,
+            allies,
+            upgrades,
+            supports,
+        ] = zone.render().values.slice(3);
+
+        assert.match(encounters.strings.join(''), /<mc-card-image/u);
+        assert.match(minions.strings.join(''), /class="minions-row"/u);
+        assert.equal(allies.values[0], 'allies');
+        assert.equal(upgrades.values[0], 'upgrades');
+        assert.equal(supports.values[0], 'supports');
     });
 
     test('renders obligations before minions in their shared row', () => {
@@ -124,6 +158,35 @@ describe('game zone', () => {
             stopPropagation() {},
         });
         assert.equal(dispatchedEvent, undefined);
+    });
+
+    test('only activates another player zone when the card can target that player', () => {
+        const zone = Object.assign(
+            Object.create(McGameZone.prototype),
+            {
+                player: {id: 'other-id'},
+                cards: [],
+                attachedUpgrades: [],
+                minions: [],
+                encounters: 0,
+                dragPlayCard: {
+                    card: {id: 'event-card'},
+                    playerId: 'local-id',
+                    playableInGameZone: true,
+                    playablePlayerIds: [],
+                },
+            },
+        );
+
+        assert.equal(zone.canPlayDraggedCardOnPlayer(), false);
+        assert.equal(zone.render().values[0], '');
+
+        zone.player = {id: 'local-id'};
+        assert.equal(zone.canPlayDraggedCardOnPlayer(), true);
+
+        zone.player = {id: 'other-id'};
+        zone.dragPlayCard.playablePlayerIds = ['other-id'];
+        assert.equal(zone.canPlayDraggedCardOnPlayer(), true);
     });
 
     test('shows an assigned encounter count only when multiple cards are present', () => {

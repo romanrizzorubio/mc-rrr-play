@@ -4,7 +4,9 @@ import {Api} from '../../components/api/api.js';
 import {Player} from '../../components/api/player.js';
 import {
     MENU_OPTION_END,
-    MENU_OPTION_FLIP
+    MENU_OPTION_FLIP,
+    MENU_OPTION_REQUEST_PLAYER_ACTION,
+    MENU_OPTION_VIEW_HAND,
 } from '../../components/cards/characters/mc-superhero-card/mc-superhero-card.js';
 import '../../components/views/mc-match/mc-match.js';
 import {ABILITY_ID} from '../../misc/utils.js';
@@ -62,17 +64,53 @@ export class McMatchPage extends LitElement {
     get actionRequest() {
         return this.match?.actionRequest || null;
     }
+    get actionRequestTargetId() {
+        const request = this.actionRequest;
+        if (!request) {
+            return '';
+        }
+
+        if (request.targetId) {
+            return request.targetId;
+        }
+
+        const targetId = request.target || '';
+        const targetPlayer = (this.match?.players || []).find(player =>
+            this.getPlayerIdentifier(player) === targetId ||
+            player.name === targetId
+        );
+
+        return targetPlayer ?
+            this.getPlayerIdentifier(targetPlayer) :
+            targetId;
+    }
     getPlayerIdentifier(player) {
         return player?.id || player?.userId || player?.name || '';
     }
-    static assertInitiatingPlayer(player, initiatingPlayer) {
-        if (player !== initiatingPlayer) {
-            throw new Error('El superhéroe seleccionado ha cambiado. Vuelve a iniciar la acción.');
+    isControlledPlayer(playerId) {
+        if (playerId === this.player) {
+            return true;
         }
+
+        const selectedPlayer = this.match?.players?.find(player =>
+            this.getPlayerIdentifier(player) === this.player
+        );
+        const targetPlayer = this.match?.players?.find(player =>
+            this.getPlayerIdentifier(player) === playerId
+        );
+
+        return Boolean(selectedPlayer?.userId &&
+            targetPlayer?.userId === selectedPlayer.userId);
     }
-    get canInteract() {
+    canInteractFor(playerId = this.player) {
         if (this.tableConsultationMode ||
-            this.match?.phase !== 'players' || !this.player) {
+            this.match?.phase !== 'players' ||
+            !this.player ||
+            !playerId) {
+            return false;
+        }
+
+        if (!this.isControlledPlayer(playerId)) {
             return false;
         }
 
@@ -81,27 +119,50 @@ export class McMatchPage extends LitElement {
             return false;
         }
         if (request?.status === 'accepted') {
-            return (request.targetId || request.target) === this.player;
+            return (request.targetId || request.target) === playerId;
         }
 
-        return this.match.currentTurnPlayer === this.player;
+        return this.match.currentTurnPlayer === playerId;
+    }
+    static assertInitiatingPlayer(player, initiatingPlayer) {
+        if (player !== initiatingPlayer) {
+            throw new Error('El superhéroe seleccionado ha cambiado. Vuelve a iniciar la acción.');
+        }
+    }
+    get canInteract() {
+        return this.canInteractFor();
+    }
+    get activePlayerId() {
+        const playerId = this.actionRequest?.status === 'accepted' ?
+            this.actionRequest.targetId || this.actionRequest.target :
+            this.match?.currentTurnPlayer;
+
+        return this.canInteractFor(playerId) ?
+            playerId :
+            this.player;
     }
     get canRequestAction() {
         return !this.tableConsultationMode &&
             this.match?.phase === 'players' &&
-            this.match.currentTurnPlayer === this.player &&
+            this.canInteractFor(this.match.currentTurnPlayer) &&
             !this.actionRequest;
     }
     get canUseOwnTurnOptions() {
-        return this.canInteract &&
-            this.match.currentTurnPlayer === this.player;
+        return this.canUseOwnTurnOptionsFor();
     }
-    canActivateAbility(card, abilityIndex) {
-        return this.canInteract && (this.canUseOwnTurnOptions ||
+    canUseOwnTurnOptionsFor(playerId = this.player) {
+        return this.canInteractFor(playerId) &&
+            !this.actionRequest &&
+            this.match.currentTurnPlayer === playerId;
+    }
+    canActivateAbility(card, abilityIndex, playerId = this.player) {
+        return this.canInteractFor(playerId) &&
+            (this.canUseOwnTurnOptionsFor(playerId) ||
             card?.abilities?.[abilityIndex]?.isAction === true);
     }
-    canPlayCard(card) {
-        return this.canInteract && (this.canUseOwnTurnOptions ||
+    canPlayCard(card, playerId = this.player) {
+        return this.canInteractFor(playerId) &&
+            (this.canUseOwnTurnOptionsFor(playerId) ||
             (card?.isEvent === true &&
                 card.abilities?.some(ability => ability.isAction)));
     }
@@ -119,34 +180,37 @@ export class McMatchPage extends LitElement {
         this.api.joinMatch(true);
     }
     handleActivationDragStart(e) {
-        const {actor, options} = e.detail;
+        const {actor, options, playerId = this.player} = e.detail;
 
-        if (!this.canInteract || !actor || !options?.length) {
+        if (!this.canInteractFor(playerId) || !actor || !options?.length) {
             return;
         }
 
         const allowedOptions = options.filter(option =>
-            this.canActivateAbility(actor, option.abilityIndex));
+            this.canActivateAbility(actor, option.abilityIndex, playerId));
         if (!allowedOptions.length) {
             return;
         }
-        this.dragActivation = {actor, options: allowedOptions};
+        this.dragActivation = {actor, options: allowedOptions, playerId};
     }
     handleActivationDragEnd() {
         this.dragActivation = null;
     }
     handlePlayCardDragStart(e) {
-        if (this.playCardPending || !this.canInteract) {
+        const playerId = e.detail?.playerId || this.player;
+        if (this.playCardPending || !this.canInteractFor(playerId)) {
             return;
         }
 
         const {card} = e.detail;
-        if (card?.playable !== true || !card.id || !this.canPlayCard(card)) {
+        if (card?.playable !== true || !card.id ||
+            !this.canPlayCard(card, playerId)) {
             return;
         }
 
         this.dragPlayCard = {
             card,
+            playerId,
             cardId: card.id,
             targetIds: card.playableTargetIds || [],
             playablePlayerIds: card.playablePlayerIds || [],
@@ -157,7 +221,8 @@ export class McMatchPage extends LitElement {
         this.dragPlayCard = null;
     }
     handleResourcePaymentDragStart(e) {
-        if (this.playCardPending || !this.canInteract) {
+        const playerId = e.detail?.playerId || this.player;
+        if (this.playCardPending || !this.canInteractFor(playerId)) {
             return;
         }
 
@@ -166,7 +231,7 @@ export class McMatchPage extends LitElement {
             return;
         }
 
-        this.dragResourcePayment = {card, source};
+        this.dragResourcePayment = {card, source, playerId};
     }
     handleResourcePaymentDragEnd() {
         this.dragResourcePayment = null;
@@ -176,6 +241,13 @@ export class McMatchPage extends LitElement {
         super.disconnectedCallback();
     }
     updated(changedProperties) {
+        if (changedProperties.has('match')) {
+            const previousMatch = changedProperties.get('match');
+            if (previousMatch && previousMatch.currentTurnPlayer !==
+                this.match?.currentTurnPlayer) {
+                this.clearPlayerTargeting();
+            }
+        }
         if (changedProperties.has('tableConsultationMode') &&
             this.tableConsultationMode) {
             this.clearPlayerTargeting();
@@ -207,8 +279,11 @@ export class McMatchPage extends LitElement {
         this.player = this.getPlayerIdentifier(selectedPlayer);
     }
     handlePlayCardDrop(e) {
+        const playerId = e.detail?.playerId ||
+            this.dragPlayCard?.playerId ||
+            this.player;
         this.dragPlayCard = null;
-        if (!this.canInteract) {
+        if (!this.canInteractFor(playerId)) {
             return;
         }
 
@@ -217,11 +292,15 @@ export class McMatchPage extends LitElement {
                 card: e.detail.card,
                 targetCard: e.detail.targetCard,
                 targetId: e.detail.targetId,
+                playerId,
             },
         });
     }
     async handleResourcePaymentDrop(e) {
-        if (!this.canInteract) {
+        const playerId = e.detail?.playerId ||
+            this.dragResourcePayment?.playerId ||
+            this.player;
+        if (!this.canInteractFor(playerId)) {
             return;
         }
 
@@ -234,11 +313,15 @@ export class McMatchPage extends LitElement {
         }
 
         try {
-            if (!this.canActivateAbility(targetCard, option.abilityIndex)) {
+            if (!this.canActivateAbility(
+                targetCard,
+                option.abilityIndex,
+                playerId,
+            )) {
                 throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
             }
             await this.apiPlayer.resolveAbility(
-                this.player,
+                playerId,
                 targetCard.id,
                 option.abilityIndex,
                 undefined,
@@ -259,12 +342,13 @@ export class McMatchPage extends LitElement {
     }
     async handleRequestPlayerAction(event) {
         const {targetPlayer} = event.detail || {};
-        if (!this.canRequestAction || !targetPlayer) {
+        const requestingPlayer = this.match?.currentTurnPlayer;
+        if (!this.canRequestAction || !targetPlayer || !requestingPlayer) {
             return;
         }
 
         try {
-            await this.apiPlayer.requestAction(this.player, targetPlayer);
+            await this.apiPlayer.requestAction(requestingPlayer, targetPlayer);
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -274,14 +358,17 @@ export class McMatchPage extends LitElement {
         }
     }
     async handleRespondPlayerAction(event) {
-        if ((this.actionRequest?.targetId || this.actionRequest?.target) !== this.player ||
+        const targetPlayerId = event.detail?.playerId ||
+            this.actionRequestTargetId;
+        if (targetPlayerId !== this.actionRequestTargetId ||
+            !this.isControlledPlayer(targetPlayerId) ||
             this.actionRequest?.status !== 'pending') {
             return;
         }
 
         try {
             await this.apiPlayer.respondToActionRequest(
-                this.player,
+                targetPlayerId,
                 event.detail?.accept === true
             );
         } catch (error) {
@@ -292,14 +379,17 @@ export class McMatchPage extends LitElement {
             }));
         }
     }
-    async handleCompletePlayerAction() {
-        if ((this.actionRequest?.targetId || this.actionRequest?.target) !== this.player ||
+    async handleCompletePlayerAction(event) {
+        const targetPlayerId = event?.detail?.playerId ||
+            this.actionRequestTargetId;
+        if (targetPlayerId !== this.actionRequestTargetId ||
+            !this.isControlledPlayer(targetPlayerId) ||
             this.actionRequest?.status !== 'accepted') {
             return;
         }
 
         try {
-            await this.apiPlayer.completeRequestedAction(this.player);
+            await this.apiPlayer.completeRequestedAction(targetPlayerId);
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -308,23 +398,23 @@ export class McMatchPage extends LitElement {
             }));
         }
     }
-    getBasicActivationPreferenceKey() {
+    getBasicActivationPreferenceKey(playerId = this.player) {
         const matchId = this.match?.id ?? this.match?.name;
 
-        return matchId && this.player ?
-            `mc-match:${matchId}:${this.player}:hide-basic-activation-confirmation` :
+        return matchId && playerId ?
+            `mc-match:${matchId}:${playerId}:hide-basic-activation-confirmation` :
             '';
     }
-    shouldSkipBasicActivationConfirmation() {
-        const key = this.getBasicActivationPreferenceKey();
+    shouldSkipBasicActivationConfirmation(playerId = this.player) {
+        const key = this.getBasicActivationPreferenceKey(playerId);
 
         return Boolean(
             key &&
             globalThis.window?.sessionStorage?.getItem(key) === 'true'
         );
     }
-    rememberBasicActivationConfirmationChoice() {
-        const key = this.getBasicActivationPreferenceKey();
+    rememberBasicActivationConfirmationChoice(playerId = this.player) {
+        const key = this.getBasicActivationPreferenceKey(playerId);
 
         if (key) {
             globalThis.window?.sessionStorage?.setItem(key, 'true');
@@ -638,10 +728,10 @@ export class McMatchPage extends LitElement {
         });
     }
     async handleAbility(e) {
-        const {card, ability} = e.detail;
+        const {card, ability, playerId = this.player} = e.detail;
 
         try {
-            await this.resolveAbilityOrSelectDeck(card, ability);
+            await this.resolveAbilityOrSelectDeck(card, ability, playerId);
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -673,11 +763,11 @@ export class McMatchPage extends LitElement {
             )
             .map(deck => deck.id);
     }
-    resolveAbilityOrSelectDeck(card, abilityIndex) {
-        if (!this.canInteract) {
+    resolveAbilityOrSelectDeck(card, abilityIndex, playerId = this.player) {
+        if (!this.canInteractFor(playerId)) {
             return;
         }
-        if (!this.canActivateAbility(card, abilityIndex)) {
+        if (!this.canActivateAbility(card, abilityIndex, playerId)) {
             throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
         }
         if (!card?.id) {
@@ -691,7 +781,8 @@ export class McMatchPage extends LitElement {
 
         if (targetIds.length && Number.isSafeInteger(numericAbilityIndex)) {
             const selection = {
-                player: this.player,
+                player: playerId,
+                initiatingPlayer: this.player,
                 cardId: card.id,
                 abilityIndex: numericAbilityIndex,
                 targetIds,
@@ -721,7 +812,7 @@ export class McMatchPage extends LitElement {
         }
 
         return this.apiPlayer.resolveAbility(
-            this.player,
+            playerId,
             card.id,
             abilityIndex
         );
@@ -761,8 +852,11 @@ export class McMatchPage extends LitElement {
 
         this.clearDeckTargetSelection();
         try {
-            McMatchPage.assertInitiatingPlayer(this.player, selection.player);
-            if (!this.canInteract) {
+            McMatchPage.assertInitiatingPlayer(
+                this.player,
+                selection.initiatingPlayer ?? selection.player,
+            );
+            if (!this.canInteractFor(selection.player)) {
                 return;
             }
             await this.apiPlayer.resolveAbility(
@@ -783,24 +877,36 @@ export class McMatchPage extends LitElement {
     }
     handleBasicActivation(e) {
         e.stopPropagation();
-        if (!this.canInteract) {
+        const {playerId = this.dragActivation?.playerId || this.player} =
+            e.detail || {};
+        if (!this.canInteractFor(playerId)) {
             return;
         }
 
         const {actor, card, option} = e.detail;
 
         if (!option?.basicActivation) {
-            return this.handleTargetedActivationSelection(card, option, actor);
+            return this.handleTargetedActivationSelection(
+                card,
+                option,
+                actor,
+                playerId,
+            );
         }
 
-        return this.handleBasicActivationSelection(card, option, actor);
+        return this.handleBasicActivationSelection(
+            card,
+            option,
+            actor,
+            playerId,
+        );
     }
-    handleTargetedActivationSelection(card, option, actor) {
+    handleTargetedActivationSelection(card, option, actor, playerId = this.player) {
         const player = this.match?.players.find(_player =>
-            this.getPlayerIdentifier(_player) === this.player
+            this.getPlayerIdentifier(_player) === playerId
         );
 
-        if (!player || !card || !option) {
+        if (!this.canInteractFor(playerId) || !player || !card || !option) {
             return;
         }
 
@@ -831,14 +937,19 @@ export class McMatchPage extends LitElement {
             return;
         }
 
-        return this.resolveActivation(card, validOption, activator);
+        return this.resolveActivation(card, validOption, activator, playerId);
     }
-    handleBasicActivationSelection(card, option, actor) {
-        if (!this.canUseOwnTurnOptions) {
+    handleBasicActivationSelection(
+        card,
+        option,
+        actor,
+        playerId = this.player,
+    ) {
+        if (!this.canUseOwnTurnOptionsFor(playerId)) {
             return;
         }
         const player = this.match?.players.find(_player =>
-            this.getPlayerIdentifier(_player) === this.player
+            this.getPlayerIdentifier(_player) === playerId
         );
 
         if (!player || !card || !option?.basicActivation) {
@@ -871,8 +982,8 @@ export class McMatchPage extends LitElement {
             return;
         }
 
-        if (this.shouldSkipBasicActivationConfirmation()) {
-            return this.resolveActivation(card, option, activator);
+        if (this.shouldSkipBasicActivationConfirmation(playerId)) {
+            return this.resolveActivation(card, option, activator, playerId);
         }
 
         const initiatingPlayer = this.player;
@@ -890,29 +1001,51 @@ export class McMatchPage extends LitElement {
                         return;
                     }
                     McMatchPage.assertInitiatingPlayer(this.player, initiatingPlayer);
+                    if (!this.canUseOwnTurnOptionsFor(playerId)) {
+                        return;
+                    }
                     if (response.skipBasicActivationConfirmation) {
-                        this.rememberBasicActivationConfirmationChoice();
+                        this.rememberBasicActivationConfirmationChoice(playerId);
                     }
 
-                    return this.resolveActivation(card, option, activator);
+                    return this.resolveActivation(
+                        card,
+                        option,
+                        activator,
+                        playerId,
+                    );
                 },
             },
         }));
     }
     handleChangeMenu(e) {
         e.stopPropagation();
-        const {card} = e.detail;
+        const {card, playerId = this.player} = e.detail;
 
         this.dispatchEvent(new CustomEvent('change-menu', {
             bubbles: true,
             composed: true,
             detail: {
                 ...e.detail,
-                callback: this.handleMenuOption(card),
+                callback: this.handleMenuOption(card, playerId),
             }
         }));
     }
-    handleMenuOption(card) {
+    canViewPlayerHand(playerId) {
+        const selectedPlayer = this.match?.players?.find(player =>
+            this.getPlayerIdentifier(player) === this.player
+        );
+        const targetPlayer = this.match?.players?.find(player =>
+            this.getPlayerIdentifier(player) === playerId
+        );
+
+        return Boolean(
+            playerId !== this.activePlayerId &&
+            selectedPlayer?.userId &&
+            targetPlayer?.userId === selectedPlayer.userId
+        );
+    }
+    handleMenuOption(card, playerId = this.player) {
         const initiatingPlayer = this.player;
         return response => {
             if (response === undefined) {
@@ -935,30 +1068,53 @@ export class McMatchPage extends LitElement {
                 }));
                 return;
             }
-            if (!this.canInteract) {
+            if (selected.id === MENU_OPTION_REQUEST_PLAYER_ACTION) {
+                if (playerId !== this.activePlayerId) {
+                    return this.handleRequestPlayerAction({
+                        detail: {targetPlayer: playerId},
+                    });
+                }
+                return;
+            }
+            if (selected.id === MENU_OPTION_VIEW_HAND) {
+                if (this.canViewPlayerHand(playerId)) {
+                    this.dispatchEvent(new CustomEvent('view-player-hand', {
+                        bubbles: true,
+                        composed: true,
+                        detail: {playerId},
+                    }));
+                }
+                return;
+            }
+            if (!this.canInteractFor(playerId)) {
                 return;
             }
             if (selected.basicActivation) {
-                return this.handleBasicActivationSelection(card, selected);
+                return this.handleBasicActivationSelection(
+                    card,
+                    selected,
+                    undefined,
+                    playerId,
+                );
             }
 
             switch (selected.id) {
                 case MENU_OPTION_END:
-                    return this.endTurn();
+                    return this.endTurn(playerId);
                 case MENU_OPTION_FLIP:
-                    return this.flipSuperhero();
+                    return this.flipSuperhero(playerId);
                 default:
                     const index = Number(selected.id.substring(ABILITY_ID.length));
-                    return this.resolveAbilityOrSelectDeck(card, index);
+                    return this.resolveAbilityOrSelectDeck(card, index, playerId);
             }
         };
     }
-    handlePlayerEnd() {
-        this.endTurn();
+    handlePlayerEnd(event) {
+        this.endTurn(event?.detail?.playerId || this.player);
     }
-    getEndTurnReasons() {
+    getEndTurnReasons(playerId = this.player) {
         const currentPlayer = this.match?.players.find(_player =>
-            this.getPlayerIdentifier(_player) === this.player);
+            this.getPlayerIdentifier(_player) === playerId);
 
         if (!currentPlayer) {
             return [];
@@ -966,11 +1122,11 @@ export class McMatchPage extends LitElement {
 
         return getEndTurnConfirmationReasons(currentPlayer);
     }
-    endTurn() {
-        if (!this.canInteract || this.actionRequest) {
+    endTurn(playerId = this.player) {
+        if (!this.canInteractFor(playerId) || this.actionRequest) {
             return;
         }
-        const reasons = this.getEndTurnReasons();
+        const reasons = this.getEndTurnReasons(playerId);
         if (reasons.length) {
             const initiatingPlayer = this.player;
             this.dispatchEvent(new CustomEvent('turn-end-confirmation', {
@@ -983,7 +1139,10 @@ export class McMatchPage extends LitElement {
                             return;
                         }
                         McMatchPage.assertInitiatingPlayer(this.player, initiatingPlayer);
-                        return this.sendEndTurn();
+                        if (!this.canInteractFor(playerId) || this.actionRequest) {
+                            return;
+                        }
+                        return this.sendEndTurn(playerId);
                     },
                 },
             }));
@@ -991,13 +1150,13 @@ export class McMatchPage extends LitElement {
             return;
         }
 
-        return this.sendEndTurn();
+        return this.sendEndTurn(playerId);
     }
-    sendEndTurn() {
-        if (!this.canInteract || this.actionRequest) {
+    sendEndTurn(playerId = this.player) {
+        if (!this.canInteractFor(playerId) || this.actionRequest) {
             return Promise.resolve();
         }
-        return this.apiPlayer.endTurn(this.player).catch(error => {
+        return this.apiPlayer.endTurn(playerId).catch(error => {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
                 composed: true,
@@ -1007,14 +1166,14 @@ export class McMatchPage extends LitElement {
             }));
         });
     }
-    async flipSuperhero() {
-        if (!this.canUseOwnTurnOptions) {
+    async flipSuperhero(playerId = this.player) {
+        if (!this.canUseOwnTurnOptionsFor(playerId)) {
             return;
         }
-        const {apiPlayer, player} = this;
+        const {apiPlayer} = this;
 
         try {
-            this.changePlayer(await apiPlayer.flip(player));
+            this.changePlayer(await apiPlayer.flip(playerId));
         } catch (error) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
@@ -1025,18 +1184,19 @@ export class McMatchPage extends LitElement {
             }));
         }
     }
-    handleFlipSuperhero() {
-        return this.flipSuperhero();
+    handleFlipSuperhero(event) {
+        return this.flipSuperhero(event?.detail?.playerId || this.player);
     }
     async handleSelectCardHand(e) {
-        if (this.playCardPending || !this.canInteract) {
+        const playerId = e.detail?.playerId || this.player;
+        if (this.playCardPending || !this.canInteractFor(playerId)) {
             return;
         }
 
-        const {apiPlayer, player} = this;
+        const {apiPlayer} = this;
         const {card, targetCard, targetId} = e.detail;
 
-        if (!this.canPlayCard(card)) {
+        if (!this.canPlayCard(card, playerId)) {
             this.dispatchEvent(new CustomEvent('communication-error', {
                 bubbles: true,
                 composed: true,
@@ -1050,7 +1210,7 @@ export class McMatchPage extends LitElement {
         this.playCardPending = true;
         try {
             await apiPlayer.playCard(
-                player,
+                playerId,
                 card.id,
                 targetId || targetCard?.id,
             );
@@ -1085,6 +1245,7 @@ export class McMatchPage extends LitElement {
                 .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
                 .playCardPending="${this.playCardPending}"
                 .deckSelectionTargetIds="${this.deckTargetSelection?.targetIds || []}"
+                .deckSelectionPlayerId="${this.deckTargetSelection?.player || ''}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 .dragResourcePayment="${this.dragResourcePayment}"
@@ -1110,21 +1271,25 @@ export class McMatchPage extends LitElement {
             ></mc-match>
         `;
     }
-    async resolveActivation(card, option, activator) {
+    async resolveActivation(card, option, activator, playerId = this.player) {
         try {
-            if (!this.canInteract) {
+            if (!this.canInteractFor(playerId)) {
                 return;
             }
             if (!activator || !Number.isSafeInteger(option.abilityIndex) ||
                 !option.targetId) {
                 throw new Error('No se pudo iniciar la activación seleccionada.');
             }
-            if (!this.canActivateAbility(activator, option.abilityIndex)) {
+            if (!this.canActivateAbility(
+                activator,
+                option.abilityIndex,
+                playerId,
+            )) {
                 throw new Error('Fuera de tu turno solo puedes activar capacidades de Acción.');
             }
 
             await this.apiPlayer.resolveAbility(
-                this.player,
+                playerId,
                 activator.id,
                 option.abilityIndex,
                 option.targetId

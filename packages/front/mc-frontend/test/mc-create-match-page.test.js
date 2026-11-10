@@ -34,7 +34,7 @@ const flattenTemplate = template => template.strings.reduce((markup, part, index
 describe('match list session prompt', () => {
     test('creation loads only scenario catalogs and opens the empty lobby directly', async () => {
         const payload = {
-            name: 'Sala', maxPlayers: 2, expert: true,
+            name: 'Sala', maxPlayers: 2, expert: true, autoSave: true,
             scenario: {scenario: 'rhino', modularSets: ['bomb-scare']},
         };
         const calls = [];

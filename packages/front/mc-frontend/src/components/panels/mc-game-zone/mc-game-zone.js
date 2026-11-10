@@ -45,7 +45,7 @@ export class McGameZone extends LitElement {
         const playerIds = this.dragPlayCard.playablePlayerIds || [];
         return playerIds.length ?
             playerIds.includes(this.player?.id) :
-            true;
+            this.dragPlayCard.playerId === this.player?.id;
     }
     handlePlayCardDragOver(event) {
         if (!this.canPlayDraggedCardOnPlayer()) {
@@ -249,10 +249,8 @@ export class McGameZone extends LitElement {
                 ${this.renderEncounters()}
                 ${this.renderMinionsRow()}
                 ${this.renderAllies()}
-                <div class="upgrades-supports">
-                    ${this.renderUpgrades()}
-                    ${this.renderSupports()}
-                </div>
+                ${this.renderUpgrades()}
+                ${this.renderSupports()}
             </div>
         `;
     }

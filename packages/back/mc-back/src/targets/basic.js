@@ -1,5 +1,4 @@
 import {checkCondition, path} from '../engine/utils.js';
-import {getPlayersFor} from '../utils/match-zone-utils.js';
 import {
     TARGET_ACTIVATION,
     TARGET_CARD,
@@ -24,25 +23,15 @@ export const basicTargets = {
     [TARGET_CARD]: ({card}) => [card],
     [TARGET_EFFECT]: ({effect}) => [effect],
     [TARGET_EFFECT_PLAY_CARD]: ({playCardEffect}) => [playCardEffect],
-    [TARGET_INITIAL_PLAYER]: ({match, player}) => {
+    [TARGET_INITIAL_PLAYER]: ({match}) => {
         const initialPlayer = match.initialPlayer;
 
-        if (!initialPlayer ||
-            !getPlayersFor(match, player).includes(initialPlayer)) {
-            return [];
-        }
-
-        return [initialPlayer];
+        return initialPlayer ? [initialPlayer] : [];
     },
-    [TARGET_INITIAL_PLAYER_SUPERHERO]: ({match, player}) => {
+    [TARGET_INITIAL_PLAYER_SUPERHERO]: ({match}) => {
         const initialPlayer = match.initialPlayer;
 
-        if (!initialPlayer ||
-            !getPlayersFor(match, player).includes(initialPlayer)) {
-            return [];
-        }
-
-        return [initialPlayer.superhero];
+        return initialPlayer?.superhero ? [initialPlayer.superhero] : [];
     },
     [TARGET_PARENT]: ({params}) => params.parentTargets || [],
     [TARGET_PLAYER]: ({player}) => [player],

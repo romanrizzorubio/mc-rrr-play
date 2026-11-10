@@ -34,6 +34,8 @@ La progresión automática introduce la primera carta al preparar el escenario. 
 
 `Scenario.isFinalVillain()` compara la carta con la última de la lista seleccionada, sin inferir una etapa máxima. Una marca explícita `final: true` puede identificar una carta final introducida por una capacidad. La victoria automática espera a los otros villanos activos; `finalVillainDefeated` conserva la derrota de la carta final si otros villanos deben caer después. Las dos listas, los villanos actuales por zona y ese estado se conservan al guardar la partida. Al restaurar el formato anterior se eliminan las colecciones e índices derivados; la progresión se obtiene del villano actual. Una carta actual ajena a la lista seleccionada se rechaza explícitamente, sin inferir su posición por nombre o etapa. Las antiguas listas numéricas de `content` del plan principal solo se admiten al importar configuraciones de progresión automática; las de progresión manual requieren actualizar el catálogo, pues una lista de inicio no identifica la carta final.
 
+En escenarios con `separatePlayAreas`, los triggers normalmente solo se activan en la zona del jugador del evento. `TRIGGER_INITIAL_PLAYER_CHANGED` siempre atraviesa la separación de zonas, sin configurar `globalScope`; esta excepción no amplía los objetivos que resuelve el efecto.
+
 ### Aislamiento entre héroes de una misma cuenta
 
 `Player.id` identifica el puesto de un héroe; `userId` identifica la cuenta que lo controla y puede repetirse. Usa el puesto para manos, costes, objetivos y diálogos, nunca la cuenta para elegir el jugador que resuelve un efecto.

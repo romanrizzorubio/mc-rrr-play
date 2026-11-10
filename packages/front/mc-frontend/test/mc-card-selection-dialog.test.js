@@ -113,7 +113,7 @@ describe('card selection dialogs', () => {
         assert.doesNotMatch(renderText(dialog.renderDialog()), /dialog-responsible-player/u);
     });
 
-    test('an action menu omits empty optional headings and keeps its table button', () => {
+    test('an action menu omits empty optional headings and hides its table button', () => {
         const renderTemplate = value => {
             if (Array.isArray(value)) {
                 return value.map(renderTemplate).join('');
@@ -128,10 +128,19 @@ describe('card selection dialogs', () => {
         const dialog = Object.assign(Object.create(McListDialog.prototype), {
             data: {options: [], card: {}, showCounters: false},
             title: '', subtitle: '', footer: '', hand: [], readOnly: false,
+            hideViewTable: true,
+            hideResponsiblePlayer: true,
+            targetPlayerName: 'Carol Danvers',
         });
         let markup = renderTemplate(dialog.renderDialog());
         assert.doesNotMatch(markup, /<h[23]\b[^>]*>\s*<\/h[23]>/u);
+        assert.doesNotMatch(markup, /Ver mesa/u);
+        assert.doesNotMatch(markup, /Héroe responsable/u);
+        dialog.hideViewTable = false;
+        dialog.hideResponsiblePlayer = false;
+        markup = renderTemplate(dialog.renderDialog());
         assert.match(markup, /Ver mesa/u);
+        assert.match(markup, /Héroe responsable: Carol Danvers/u);
         dialog.title = 'Elige una capacidad';
         dialog.subtitle = 'Selecciona una opción';
         dialog.footer = 'Información';

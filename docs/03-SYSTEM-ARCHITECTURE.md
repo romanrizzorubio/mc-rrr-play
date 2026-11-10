@@ -123,7 +123,7 @@ class Match extends Engine {
 ```
 
 #### Player
-Un `Player` representa un puesto de superhéroe, no una cuenta: `id` identifica ese puesto y `userId` la cuenta que puede controlarlo. Varios puestos pueden compartir `userId`, pero conservan turnos, cartas, recursos y estado propios. El frontend mantiene como jugador seleccionado el ID del puesto y permite cambiarlo desde el listado sin modificar el turno del motor.
+Un `Player` representa un puesto de superhéroe, no una cuenta: `id` identifica ese puesto y `userId` la cuenta que puede controlarlo. Varios puestos pueden compartir `userId`, pero conservan turnos, cartas, recursos y estado propios. El frontend mantiene como jugador seleccionado el ID del puesto y permite cambiarlo desde el listado sin modificar el turno del motor. En la vista amplia de dos mesas, la selección izquierda se mantiene entre turnos y el personaje activo puede gestionarse desde la mesa derecha; en la vista de una sola mesa, la selección sigue al siguiente personaje controlado.
 
 ```javascript
 class Player {
@@ -292,6 +292,7 @@ Express y Socket.IO comparten el servidor HTTP del servicio de partidas, que esc
 | `GET` | `/match-lobbies/:id` | Consultar detalles de sala con sesión iniciada |
 | `POST` | `/match-lobbies/:id/join` | Unirse a una sala en espera |
 | `POST` | `/match-lobbies/:id/leave` | Abandonar una sala en espera |
+| `DELETE` | `/match-lobbies/:id/players/:playerId` | Eliminar una inscripción propia o, como creador, cualquier inscripción de una sala en espera |
 | `POST` | `/match-lobbies/:id/start` | Preparar la partida como creador, sin inicializar |
 | `DELETE` | `/match-lobbies/:id` | Eliminar una sala en espera como creador |
 | `POST` | `/player-flip` | Cambiar identidad directamente en `mc-back` |
@@ -512,7 +513,7 @@ El estado de una partida contiene:
 **Partidas (MongoDB):**
 - La colección `matches` guarda el estado completo del motor, incluidos mazos, cartas, efectos y referencias entre objetos; no se usa el JSON de presentación del frontend.
 - El snapshot conserva el `id` estable y una configuración inicial compacta (configuración de los jugadores y del escenario, sets modulares y dificultad). No anida una segunda instantánea completa del motor, para evitar duplicar cartas en la persistencia.
-- Cada cambio REST de una partida inicializada se persiste antes de responder. El flujo automático guarda puntos de reanudación entre turnos y fases.
+- Cada partida conserva la opción `autoSave`, activada por defecto. En ese modo, las operaciones REST y los puntos de reanudación entre turnos/fases se persisten automáticamente, y salir solo abandona el socket de ese participante. En modo manual, la preparación guarda un único punto de recuperación inicial; después solo `POST /save-match` actualiza la instantánea. Si el creador sale, `POST /exit-match` restaura esa última instantánea y expulsa a todos los sockets de la sala; si sale otro participante, solo abandona su socket.
 - Al arrancar, el backend rehidrata las partidas y reanuda las que estaban activas. `MONGODB_URI` y `MONGODB_DATABASE` determinan dónde se guardan.
 
 **Durante la partida:**

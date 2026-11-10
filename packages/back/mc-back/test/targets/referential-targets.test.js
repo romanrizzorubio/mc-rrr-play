@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     TARGET_ALL_CARDS,
     TARGET_ALL_CHARACTERS,
+    TARGET_CONDITION_CARD,
     TARGET_PARENT,
     TARGET_YOU,
 } from 'mc-shared';
@@ -115,6 +116,73 @@ describe('Referential ability targets', () => {
             match: {},
             player: {},
         }), [sourceCard]);
+    });
+
+    test('finds same-set named encounter cards across scenario zones', () => {
+        const sourceCard = createCard('ship-command-source', {
+            isEncounterCard: true,
+            name: 'Órdenes de la nave',
+            set: 'ship-command',
+        });
+        const actor = {id: 'actor'};
+        const otherPlayer = {id: 'other-player'};
+        const localMilano = createCard('local-milano', {
+            isEncounterCard: true,
+            name: 'Milano',
+            set: 'Standard',
+        });
+        localMilano.card = {name: 'Milano', set: 'Standard'};
+        const localZone = {
+            cards: [localMilano],
+            players: [actor],
+        };
+        const remoteMilano = createCard('remote-milano', {
+            isEncounterCard: true,
+            name: 'Milano',
+            set: 'ship-command',
+        });
+        remoteMilano.card = {name: 'Milano', set: 'ship-command'};
+        const sharedMilano = createCard('shared-milano', {
+            isEncounterCard: true,
+            name: 'Milano',
+            set: 'ship-command',
+        });
+        sharedMilano.card = {name: 'Milano', set: 'ship-command'};
+        const remoteZone = {
+            cards: [remoteMilano],
+            players: [otherPlayer],
+        };
+        const sharedZone = {cards: [sharedMilano], players: []};
+        const scenario = {
+            separatePlayAreas: true,
+            zones: [localZone, remoteZone, sharedZone],
+        };
+        actor.scenarioZone = localZone;
+        otherPlayer.scenarioZone = remoteZone;
+        const match = {
+            players: [actor, otherPlayer],
+            scenario,
+            searchCards(condition, player) {
+                const zones = player ?
+                    [player.scenarioZone] :
+                    scenario.zones;
+
+                return zones.flatMap(zone => zone.cards.filter(card =>
+                    card.name === condition.name ||
+                    card.card?.name === condition['card.name']));
+            },
+        };
+        const effect = new Effect({
+            ability: {card: sourceCard},
+            condition: {'card.name': 'Milano'},
+            match,
+            target: TARGET_CONDITION_CARD,
+        });
+
+        assert.deepEqual(effect.getValidTarget({match, player: actor}), [
+            remoteMilano,
+            sharedMilano,
+        ]);
     });
 
     test('selectFrom keeps only targets in the highest reference tier', async () => {

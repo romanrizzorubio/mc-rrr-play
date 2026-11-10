@@ -38,6 +38,10 @@ export class MatchLobbyRest {
             ENDPOINTS.MATCH_LOBBY.LEAVE,
             this.handle(req => this.lobbyService.leave(req)),
         );
+        this.app.delete(
+            ENDPOINTS.MATCH_LOBBY.REMOVE_PLAYER,
+            this.handle(req => this.lobbyService.removePlayer(req)),
+        );
         this.app.post(
             ENDPOINTS.MATCH_LOBBY.START,
             this.handle(req => this.startService.start(req)),

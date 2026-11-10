@@ -46,6 +46,15 @@ export class McSocket {
                 },
             );
         });
+        socket.on(EVENTS.MATCH.LEAVE, (params, acknowledge) => {
+            this.leaveMatch(socket, params).then(
+                response => this.acknowledge(acknowledge, response),
+                error => this.acknowledge(acknowledge, {
+                    ok: false,
+                    error: error.message,
+                }),
+            );
+        });
 
         [EVENTS.TURN.END, EVENTS.DIALOG.RESPONSE].forEach(endpoint => {
             socket.on(endpoint, (params, acknowledge) => {
@@ -86,6 +95,27 @@ export class McSocket {
         }
         socket.emit(EVENTS.CHAT.STATE, match.getChatState());
         this.dialogSocket.resendPending(matchName, socket);
+
+        return {ok: true};
+    }
+    async leaveMatch(socket, params) {
+        const matchName = params?.match;
+        if (typeof matchName !== 'string' || !matchName) {
+            throw new Error('Falta el identificador de la partida al salir del socket.');
+        }
+        if (socket.data.match !== matchName) {
+            const error = new Error('No estás conectado al canal de esta partida.');
+            error.statusCode = 409;
+            throw error;
+        }
+
+        const room = this.roomName(matchName);
+        if (socket.rooms.has(room)) {
+            await socket.leave(room);
+        }
+        if (socket.data.match === matchName) {
+            delete socket.data.match;
+        }
 
         return {ok: true};
     }
@@ -242,5 +272,10 @@ export class McSocket {
         }
 
         this.io.to(this.roomName(matchName)).emit(endpoint, params);
+    }
+    async closeMatch(matchName) {
+        const room = this.roomName(matchName);
+        this.send(matchName, EVENTS.MATCH.EXIT, {match: matchName});
+        await this.io.in(room).socketsLeave(room);
     }
 }

@@ -27,6 +27,7 @@ export default css`
 
   .schemes {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     align-items: center;
     min-width: 0;

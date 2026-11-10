@@ -19,6 +19,7 @@ export class Match extends Engine {
         id = name,
         lobbyId,
         creatorUserId,
+        autoSave = true,
     }) {
         super(arguments[0]);
 
@@ -27,12 +28,14 @@ export class Match extends Engine {
         this.id = id;
         this.lobbyId = lobbyId;
         this.creatorUserId = creatorUserId;
+        this.autoSave = autoSave;
         this.actionRequest = null;
         this.expert = false;
         this.creationConfig = {
             players: [],
             scenario: null,
             expert: false,
+            autoSave,
         };
 
         this.villains = [];
@@ -191,7 +194,14 @@ export class Match extends Engine {
             card?.parent?.scenarioZone;
     }
     isScenarioZoneAbilityAllowed(ability, params = {}) {
-        if (!this.scenario?.separatePlayAreas || ability?.globalScope) {
+        const trigger = ability?.trigger;
+        const initialPlayerChanged = Array.isArray(trigger) ?
+            trigger.includes(TRIGGER_INITIAL_PLAYER_CHANGED) :
+            trigger === TRIGGER_INITIAL_PLAYER_CHANGED;
+
+        if (!this.scenario?.separatePlayAreas ||
+            ability?.globalScope ||
+            initialPlayerChanged) {
             return true;
         }
 
@@ -666,6 +676,18 @@ export class Match extends Engine {
         //this.scenario.deck.cards.sort(a => a.name === 'Shadow of the Past' ? -1 : 1)
         //this.scenario.deck.cards.sort(a => a.isMinion ? -1 : 1)
         this.initialized = true;
+        if (this.autoSave === false) {
+            const wasInitializing = this.initializing;
+            this.initializing = false;
+            this.playing = true;
+            let recoverySnapshot;
+            try {
+                recoverySnapshot = this.mc.persistMatch(this);
+            } finally {
+                this.initializing = wasInitializing;
+            }
+            await recoverySnapshot;
+        }
         this.startMatch().catch(error => {
             if (this.mc.getMatch(this.name) === this) {
                 console.error(`Match "${this.name}" stopped unexpectedly`, error);
@@ -746,6 +768,10 @@ export class Match extends Engine {
         this.scenario.removeCardFromDeck(card);
     }
     persist() {
+        if (this.autoSave === false) {
+            return Promise.resolve();
+        }
+
         return this.mc.persistMatch(this);
     }
     async resolveWhenReveal(player) {
@@ -871,6 +897,7 @@ export class Match extends Engine {
             id,
             name,
             ...(this.creatorUserId ? {creatorUserId: this.creatorUserId} : {}),
+            autoSave: this.autoSave !== false,
             phase,
             playing,
             gameOverReason,

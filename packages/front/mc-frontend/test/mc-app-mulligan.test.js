@@ -3,7 +3,7 @@ import {describe, test} from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'vite';
 import {Dialog} from '../src/components/api/dialog.js';
-import {PLACE_DISCARD_PILE} from 'mc-shared';
+import {DIALOG_REVEAL_CARDS, PLACE_DISCARD_PILE} from 'mc-shared';
 
 globalThis.HTMLElement ??= class {};
 const elements = new Map();
@@ -100,6 +100,43 @@ describe('app match controls and mulligan lifecycle', () => {
             ],
         },
         ...overrides,
+    });
+
+    test('hides the table button and responsible hero from card action menus', () => {
+        const app = createStatusApp();
+
+        app.handleChangeMenu({detail: {
+            card: {name: 'Carta'},
+            menuOptions: [{id: 'action', text: 'Acción'}],
+            callback: () => {},
+        }});
+
+        assert.equal(app.dialog.dialogType, 'list');
+        assert.equal(app.dialog.hideViewTable, true);
+        assert.equal(app.dialog.hideResponsiblePlayer, true);
+    });
+
+    test('opens the hand dialog only for a hero controlled by the local account', () => {
+        const app = createStatusApp();
+        const dialogs = [];
+        app.match.players.push({
+            id: 'controlled-hero',
+            userId: 'local',
+            name: 'Jugador',
+            superhero: {name: 'Hero B'},
+            hand: [],
+        });
+        app.openDialog = dialog => dialogs.push(dialog);
+
+        app.handleViewPlayerHand({detail: {playerId: 'guest'}});
+        assert.equal(dialogs.length, 0);
+
+        app.handleViewPlayerHand({detail: {playerId: 'controlled-hero'}});
+        assert.equal(dialogs.length, 1);
+        assert.equal(dialogs[0].dialogType, DIALOG_REVEAL_CARDS);
+        assert.equal(dialogs[0].title, 'Mano de Hero B');
+        assert.deepEqual(dialogs[0].data.cards, []);
+        assert.match(dialogs[0].subtitle, /no tiene cartas en la mano/u);
     });
 
     test('dialog board follows a controlled target hero only while its dialog is open', () => {
@@ -564,6 +601,67 @@ describe('app match controls and mulligan lifecycle', () => {
         }
     });
 
+    test('keeps the selected primary hero on wide layouts when another owned hero takes the turn', () => {
+        const previousMatchMedia = window.matchMedia;
+        window.matchMedia = () => ({matches: true});
+        try {
+            for (const socketRefresh of [false, true]) {
+                const app = createStatusApp({player: 'seat-a'});
+                app.match = {...app.match, players: [
+                    {id: 'seat-a', userId: 'local', initial: true},
+                    {id: 'seat-b', userId: 'local'},
+                    {id: 'guest', userId: 'guest'},
+                ]};
+                const refresh = match => socketRefresh ?
+                    app.handleSocketMatch(match) :
+                    app.handleMatchChanged({detail: {match}});
+
+                refresh({...app.match, currentTurnPlayer: 'seat-b'});
+                assert.equal(app.player, 'seat-a');
+                assert.equal(app.match.currentTurnPlayer, 'seat-b');
+            }
+        } finally {
+            if (previousMatchMedia) {
+                window.matchMedia = previousMatchMedia;
+            } else {
+                delete window.matchMedia;
+            }
+        }
+    });
+
+    test('keeps the two wide-layout player panels fixed across player phases', () => {
+        const previousMatchMedia = window.matchMedia;
+        window.matchMedia = () => ({matches: true});
+        try {
+            for (const socketRefresh of [false, true]) {
+                const app = createStatusApp({player: 'seat-a'});
+                app.match = {...app.match, phase: 'villain', currentTurnPlayer: null, players: [
+                    {id: 'seat-a', userId: 'local'},
+                    {id: 'seat-b', userId: 'local', initial: true},
+                ]};
+                const refresh = match => socketRefresh ?
+                    app.handleSocketMatch(match) :
+                    app.handleMatchChanged({detail: {match}});
+
+                refresh({...app.match, phase: 'players', currentTurnPlayer: 'seat-b'});
+
+                assert.equal(app.player, 'seat-a');
+                assert.equal(app.match.currentTurnPlayer, 'seat-b');
+
+                refresh({...app.match, currentTurnPlayer: 'seat-a'});
+
+                assert.equal(app.player, 'seat-a');
+                assert.equal(app.match.currentTurnPlayer, 'seat-a');
+            }
+        } finally {
+            if (previousMatchMedia) {
+                window.matchMedia = previousMatchMedia;
+            } else {
+                delete window.matchMedia;
+            }
+        }
+    });
+
     test('automatic selection uses initial-player order and skips defeated heroes', () => {
         const app = createStatusApp({player: 'seat-c'});
         app.match = {...app.match, currentTurnPlayer: 'seat-c', players: [
@@ -846,6 +944,51 @@ describe('app match controls and mulligan lifecycle', () => {
         assert.match(styles, /@media \(max-width: 1000px\)[\s\S]*grid-column:\s*1 \/ -1;[\s\S]*grid-row:\s*2/u);
     });
 
+    test('shows manual save after reset only to a participant in a manual-save match', () => {
+        const app = createStatusApp({
+            match: {
+                id: 'match-id',
+                name: 'partida',
+                creatorUserId: 'local',
+                autoSave: false,
+                initialized: true,
+                players: [{id: 'local', userId: 'local'}],
+            },
+        });
+        const toolbar = templateText(app.renderAccountBar());
+
+        assert.equal(app.canSaveMatch, true);
+        assert.ok(toolbar.indexOf('Guardar partida') >
+            toolbar.indexOf('Reiniciar partida'));
+        app.match.autoSave = true;
+        assert.equal(app.canSaveMatch, false);
+        assert.doesNotMatch(templateText(app.renderAccountBar()), /Guardar partida/u);
+    });
+
+    test('saves manually and reports success or a server error', async () => {
+        const alerts = [];
+        let saves = 0;
+        const app = createStatusApp({
+            match: {
+                id: 'match-id',
+                autoSave: false,
+                players: [{userId: 'local'}],
+            },
+            api: {
+                saveMatch: async () => { saves += 1; },
+            },
+            showAlert: message => alerts.push(message),
+        });
+
+        await app.handleSaveMatch();
+        assert.equal(saves, 1);
+        assert.deepEqual(alerts, ['Partida guardada.']);
+        app.api.saveMatch = async () => { throw new Error('No se pudo guardar'); };
+        await app.handleSaveMatch();
+        assert.deepEqual(alerts, ['Partida guardada.', 'No se pudo guardar']);
+        assert.equal(app.savingMatch, false);
+    });
+
     test('updates the central state across turns, the villain phase and end-of-round work', () => {
         const app = createStatusApp();
         assert.equal(app.matchStatusText, 'Tu turno');
@@ -976,6 +1119,48 @@ describe('app match controls and mulligan lifecycle', () => {
         } finally {
             window.confirm = confirm;
         }
+    });
+
+    test('creator exit closes the shared match and participant exit leaves only their socket', async () => {
+        const navigations = [];
+        const exits = [];
+        const app = createStatusApp({
+            match: {
+                id: 'match-id',
+                name: 'partida',
+                creatorUserId: 'local',
+                autoSave: false,
+            },
+            api: {
+                match: 'partida',
+                exitMatch: async () => { exits.push('shared'); },
+                leaveMatch: async () => { exits.push('individual'); },
+                endMatch: matchName => exits.push(`end:${matchName}`),
+            },
+            navigate: path => navigations.push(path),
+        });
+
+        await app.handleExitMatch();
+        assert.deepEqual(exits, ['shared', 'end:partida']);
+        assert.equal(app.match, null);
+        assert.equal(app.player, '');
+        assert.equal(app.leavingMatch, false);
+        assert.equal(navigations.length, 1);
+
+        exits.length = 0;
+        app.match = {
+            id: 'match-id',
+            name: 'partida',
+            creatorUserId: 'local',
+            autoSave: true,
+        };
+        await app.handleExitMatch();
+        assert.deepEqual(exits, ['individual', 'end:partida']);
+
+        exits.length = 0;
+        app.match = {id: 'match-id', name: 'partida', creatorUserId: 'other'};
+        await app.handleExitMatch();
+        assert.deepEqual(exits, ['individual', 'end:partida']);
     });
 
     test('closes waiting when completion arrives before the first match snapshot', () => {
