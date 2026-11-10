@@ -285,6 +285,51 @@ const createTestServices = async data => {
 };
 
 describe('match-lobby REST API', () => {
+    test('reports whether a starting lobby has finished configuring its match', async () => {
+        const context = await createTestServices(createData());
+
+        try {
+            const created = await fetch(
+                `${context.service.url}${ENDPOINTS.MATCH.LOBBIES}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Cookie: 'session=creator',
+                    },
+                    body: JSON.stringify({
+                        name: 'Preparing Room',
+                        maxPlayers: 1,
+                        scenario: {scenario: 'rhino', modularSets: []},
+                    }),
+                },
+            );
+            const lobby = await created.json();
+            const storedLobby = context.data.lobbies.get(lobby.id);
+            storedLobby.status = 'starting';
+            storedLobby.startingMatch = {
+                id: lobby.id,
+                name: lobby.name,
+                configured: false,
+            };
+
+            const getLobby = () => fetch(
+                `${context.service.url}${ENDPOINTS.MATCH_LOBBY.GET.replace(':id', lobby.id)}`,
+                {headers: {Cookie: 'session=creator'}},
+            );
+            const pendingResponse = await getLobby();
+            assert.equal(pendingResponse.status, 200);
+            assert.equal((await pendingResponse.json()).matchConfigured, false);
+
+            storedLobby.startingMatch.configured = true;
+            const readyResponse = await getLobby();
+            assert.equal(readyResponse.status, 200);
+            assert.equal((await readyResponse.json()).matchConfigured, true);
+        } finally {
+            await context.close();
+        }
+    });
+
     test('empty lobbies cannot start and an organizer can start a guest-only room', async () => {
         const context = await createTestServices(createData());
         const post = (endpoint, body, cookie = 'session=creator') => fetch(
@@ -576,6 +621,7 @@ describe('match-lobby REST API', () => {
                 autoSave: true,
                 modularSetNames: ['Bomb Scare'],
                 matchId: null,
+                matchConfigured: false,
             });
             assert.equal(Object.hasOwn(lobby.players[0], 'email'), false);
             const listedLobbies = await fetch(
@@ -724,6 +770,7 @@ describe('match-lobby REST API', () => {
                     ...joinedLobby,
                     status: 'starting',
                     matchId: lobby.id,
+                    matchConfigured: true,
                 },
                 matchId: lobby.id,
                 matchName: 'Test Room',

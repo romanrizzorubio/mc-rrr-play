@@ -16,6 +16,7 @@ import {
     EFFECT_EXHAUST,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_HAND_SIZE,
+    EFFECT_MODIFY_COST,
     EFFECT_MODIFY_RECOVERY_VALUE,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_THWART_VALUE,
@@ -34,6 +35,7 @@ import {
     TARGET_EFFECT,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_PLAYER,
+    TARGET_PHASE,
     TARGET_THIS,
     TARGET_YOU,
     TARGET_YOUR_SUPERHERO,
@@ -44,6 +46,7 @@ import {
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
+    TRAIT_SUPERPOWER,
     TRAIT_TACTIC,
     TRAIT_TITLE,
     TRAIT_MYSTIC,
@@ -54,6 +57,7 @@ import {
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
     TRIGGER_SURGE,
+    TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
 
 export default [
@@ -674,6 +678,63 @@ export default [
                                                     'count': 1,
                                                 },
                                             },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-concentracion-eficaz',
+        'classification': 'basic',
+        'order': 16024,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Concentración eficaz',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/upgrades/16024.png',
+                'traits': [TRAIT_SKILL],
+                'cost': 1,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_BASIC,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_LASTING,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'until': TIME_PHASE,
+                                    'triggerType': TRIGGER_YOU_PLAY_CARD,
+                                    'limit': {
+                                        'count': 1,
+                                        'target': TARGET_PHASE,
+                                    },
+                                    'condition': {
+                                        'effect.card.traits': TRAIT_SUPERPOWER,
+                                    },
+                                    'hideDialog': true,
+                                    'effect': {
+                                        'type': EFFECT_MODIFY_COST,
+                                        'params': {
+                                            'target': TARGET_EFFECT,
+                                            'count': -1,
                                         },
                                     },
                                 },

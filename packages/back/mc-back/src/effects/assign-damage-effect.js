@@ -9,19 +9,36 @@ export class AssignDamageEffect extends Effect {
     }) {
         super(arguments[0]);
 
+        this.baseDamage = damage;
         this.damage = damage;
+        this.damageModifier = 0;
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
     }
     async execute(params) {
-        const selectedTarget = [...this.selectedTarget].sort((first, second) =>
+        const selectedTargets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
+        const targetPlayer = selectedTargets.find(target =>
+            target?.isPlayer);
+        const selectedTarget = (targetPlayer ?
+            [...(targetPlayer.allies ?? []), targetPlayer.superhero] :
+            [...selectedTargets]).filter(Boolean);
+        const assignmentParams = targetPlayer ?
+            {...params, player: targetPlayer, targetPlayer} :
+            params;
+        const player = targetPlayer ?? params.player;
+        if (!selectedTarget.length) {
+            return;
+        }
+
+        selectedTarget.sort((first, second) =>
             Number(second.isSuperhero) - Number(first.isSuperhero)
         );
-        const {player} = params;
-        const damage = this.paramsCalc ?
-            await this.calculate(params) :
-            this.damage;
+        const damage = (this.paramsCalc ?
+            await this.calculate(assignmentParams) :
+            this.baseDamage) + this.damageModifier;
         if (damage <= 0) {
             return;
         }
@@ -29,7 +46,7 @@ export class AssignDamageEffect extends Effect {
         this.damage = damage;
         const cardStats = await Promise.all(selectedTarget.map(async card => ({
             card,
-            stats: await card.getEffectiveStats(),
+            stats: await card.getEffectiveStats(assignmentParams),
         })));
         const dealDamage = (card, assignedDamage) => {
             if (!assignedDamage) {
@@ -42,7 +59,7 @@ export class AssignDamageEffect extends Effect {
                 match: this.match,
             });
 
-            return dealDamageEffect.runEffect(params);
+            return dealDamageEffect.runEffect(assignmentParams);
         };
 
         if (cardStats.length === 1) {

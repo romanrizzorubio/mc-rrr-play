@@ -397,6 +397,9 @@ export class Effect extends Engine {
 
         return true;
     }
+    async resolveStatusBeforeInterrupts() {
+        return true;
+    }
     checkTrigger() {
         return true;
     }
@@ -616,6 +619,10 @@ export class Effect extends Engine {
         const type = this.getTriggersWould(params);
 
         if (await this.trigger(PRIORITY_CONSTANT, type, params)) {
+            if (!await this.resolveStatusBeforeInterrupts(params)) {
+                return false;
+            }
+
             if (this.checkStatus(params)) {
                 if (await this.trigger(PRIORITY_FORCED_INTERRUPT, type, params)) {
                     if (await this.trigger(PRIORITY_INTERRUPT, type, params)) {

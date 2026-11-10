@@ -331,6 +331,20 @@ describe('resolve special ability effect', () => {
         assert.equal(threat.threat, 1);
     });
 
+    test('checks calculated damage against the last-step value', async () => {
+        const damage = new DealDamageEffect({
+            match: {},
+            paramsCalc: {target: 'damage'},
+            paramsLastStep: {damage: 2},
+            selectedTarget: {},
+        });
+
+        assert.equal(await damage.canRun({isLastStep: true}), true);
+
+        damage.paramsLastStep = {damage: 0};
+        assert.equal(await damage.canRun({isLastStep: true}), false);
+    });
+
     test('checks the last-step damage requirement before offering the Panther Suit', async () => {
         const resolved = [];
         const suit = createMoveDamageCard({

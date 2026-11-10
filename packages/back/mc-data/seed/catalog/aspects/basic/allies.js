@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
+    ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     EFFECT_CHAINED,
@@ -19,6 +20,7 @@ import {
     PLACE_DISCARD_PILE,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     TARGET_CARD,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
@@ -32,6 +34,7 @@ import {
     TRAIT_CHAMPION,
     TRAIT_SHIELD,
     TRAIT_ASGARD,
+    TRAIT_GUARDIAN,
     TRAIT_SPY,
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
@@ -422,6 +425,67 @@ export default [
                 ]
             }
         }
+    },
+    {
+        '_id': 'basic-mapache-cohete',
+        'classification': 'basic',
+        'order': 16019,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Mapache Cohete',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/allies/16019.png',
+                'traits': [TRAIT_GUARDIAN],
+                'cost': 3,
+                'resources': [RESOURCE_WILD],
+                'classification': CLASSIFICATION_BASIC,
+                'hitPoints': 3,
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 2,
+                'thwartConsequential': 1,
+                'paramsToPlay': {
+                    'superhero.currentSide.traits': TRAIT_GUARDIAN,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ATTACK,
+                            'condition': {
+                                'effect.selectedTarget.isMinion': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'count': 3,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_MODIFY_ATTACK,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'modify': {
+                                                    'keywords': {
+                                                        'overkill': true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
     },
 
 ];

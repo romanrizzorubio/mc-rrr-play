@@ -1,6 +1,7 @@
 import {
     CLASSIFICATION_PROTECTION,
     ABILITY_CONSTANT,
+    ABILITY_HERO_RESPONSE,
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
@@ -12,12 +13,16 @@ import {
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_DEFENSE_VALUE,
+    EFFECT_MODIFY_RETALIATE_VALUE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
     EFFECT_REMOVE_COUNTER,
+    EFFECT_REMOVE_THREAT,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
     TARGET_ENEMY,
+    TARGET_MAIN_SCHEME,
     TARGET_ANY_PLAYER,
     TARGET_ATTACKER,
     TARGET_EFFECT,
@@ -36,7 +41,9 @@ import {
     TRAIT_TECH,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
-    TRIGGER_ENEMY_ATTACKS_YOU
+    TRIGGER_ENEMY_ATTACKS_YOU,
+    TRIGGER_HERO_DEFENDED_ATTACK,
+    TRIGGER_YOUR_HERO_GET_RETALIATE,
 } from 'mc-shared';
 
 export default [
@@ -371,6 +378,90 @@ export default [
                                 'type': EFFECT_EXHAUST,
                                 'params': {
                                     'target': TARGET_THIS,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-intrepido',
+        'aspect': 'protection',
+        'order': 16016,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Intrépido',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/upgrades/16016.png',
+                'traits': [TRAIT_CONDITION],
+                'cost': 1,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_PROTECTION,
+                'controllerTarget': TARGET_ANY_PLAYER,
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_HERO_GET_RETALIATE,
+                            'condition': {
+                                'effect.selectedTarget.life': {
+                                    'operator': 'gte',
+                                    'path': 'effect.selectedTarget.hitPoints',
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_RETALIATE_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-dificil-de-ignorar',
+        'aspect': 'protection',
+        'order': 16017,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Difícil de ignorar',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/upgrades/16017.png',
+                'traits': [TRAIT_SKILL],
+                'cost': 1,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_HERO_DEFENDED_ATTACK,
+                            'condition': {
+                                'attackDamage': 0,
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'threat': 1,
                                 },
                             },
                         },

@@ -20,8 +20,16 @@ export class CostPaymentSession {
         this.remainingCostOnlyByCard = new Map();
         this.remainingResourcesByCard = new Map();
         this.committedHandCardIds = new Set();
+        this.deferredPayments = [];
         this.deferredResponses = [];
         this.requireAllCosts = false;
+    }
+    deferPayment(callback) {
+        if (typeof callback !== 'function') {
+            throw new TypeError('El pago diferido debe ser una función.');
+        }
+
+        this.deferredPayments.push(callback);
     }
     deferResponse(callback) {
         this.deferredResponses.push(callback);
@@ -423,12 +431,14 @@ export class CostPaymentSession {
                 );
             }
             if (!paymentEffect) {
+                this.discardDeferredPayments();
                 this.discardDeferredResponses();
                 return {blocked: false, cancelled: true, resolved: false};
             }
 
             const payment = await paymentEffect.preparePayment(effectParams, this);
             if (!payment) {
+                this.discardDeferredPayments();
                 this.discardDeferredResponses();
                 return {blocked: false, cancelled: true, resolved: false};
             }
@@ -436,6 +446,7 @@ export class CostPaymentSession {
         }
 
         if (!await effect.canRun(effectParams)) {
+            this.discardDeferredPayments();
             this.discardDeferredResponses();
             return {blocked: true, cancelled: false, resolved: false};
         }
@@ -444,6 +455,7 @@ export class CostPaymentSession {
         try {
             await effect.runEffect(effectParams);
         } catch (error) {
+            this.discardDeferredPayments();
             this.discardDeferredResponses();
             throw error;
         } finally {
@@ -453,12 +465,24 @@ export class CostPaymentSession {
         if (effect.paymentCancelled ||
             (requireAllCosts && !effect.fullResolved)) {
             const cancelled = effect.paymentCancelled;
+            this.discardDeferredPayments();
             this.discardDeferredResponses();
             return {
                 blocked: !cancelled,
                 cancelled,
                 resolved: false,
             };
+        }
+
+        this.committing = true;
+        try {
+            await this.commitPayments();
+        } catch (error) {
+            this.discardDeferredPayments();
+            this.discardDeferredResponses();
+            throw error;
+        } finally {
+            this.committing = false;
         }
 
         await this.resolveResponses();
@@ -509,6 +533,15 @@ export class CostPaymentSession {
     }
     discardDeferredResponses() {
         this.deferredResponses = [];
+    }
+    discardDeferredPayments() {
+        this.deferredPayments = [];
+    }
+    async commitPayments() {
+        while (this.deferredPayments.length) {
+            const callback = this.deferredPayments.shift();
+            await callback();
+        }
     }
     async resolveResponses() {
         this.committing = false;

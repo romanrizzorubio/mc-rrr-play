@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {test} from 'node:test';
+import {describe, test} from 'node:test';
 
 import {CharacterGameCard} from '../../src/model/cards/character-game-card.js';
 import {Player} from '../../src/model/match/player.js';
@@ -26,73 +26,77 @@ const createIdentitySide = (id, {isHero, isAlterEgo}) => new CharacterGameCard({
     },
 });
 
-test('player snapshot includes active identity attachments without duplicates', async () => {
-    const heroSide = createIdentitySide('hero', {
-        isHero: true,
-        isAlterEgo: false,
-    });
-    const alterEgoSide = createIdentitySide('alter-ego', {
-        isHero: false,
-        isAlterEgo: true,
-    });
-    const superhero = new Superhero({
-        sides: [heroSide, alterEgoSide],
-    });
-    const hostAttachment = {
-        id: 'host-attachment',
-        async toObjWithAbilityAvailability() {
-            return {id: this.id};
-        },
-    };
-    const identityAttachment = {
-        id: 'identity-attachment',
-        async toObjWithAbilityAvailability() {
-            return {id: this.id};
-        },
-    };
-
-    superhero.attached.push(hostAttachment);
-    heroSide.attached.push(hostAttachment, identityAttachment);
-    superhero.getEffectiveTraits = async () => [];
-    superhero.getEffectiveStats = async () => ({});
-
-    const player = {
-        superhero,
-        async canFlip() {
-            return false;
-        },
-        async getHandSize() {
-            return 5;
-        },
-        hand: {
-            async toObjWithPlayability() {
-                return [];
+describe('Player attached cards', () => {
+    test('player snapshot includes active identity attachments without duplicates', async () => {
+        const heroSide = createIdentitySide('hero', {
+            isHero: true,
+            isAlterEgo: false,
+        });
+        const alterEgoSide = createIdentitySide('alter-ego', {
+            isHero: false,
+            isAlterEgo: true,
+        });
+        const superhero = new Superhero({
+            sides: [heroSide, alterEgoSide],
+        });
+        const hostAttachment = {
+            id: 'host-attachment',
+            card: {retaliate: 0},
+            async toObjWithAbilityAvailability() {
+                return {id: this.id};
             },
-        },
-        toObj() {
-            return {
-                superhero: {
-                    extraTraits: [],
+        };
+        const identityAttachment = {
+            id: 'identity-attachment',
+            card: {retaliate: 0},
+            async toObjWithAbilityAvailability() {
+                return {id: this.id};
+            },
+        };
+
+        superhero.attached.push(hostAttachment);
+        heroSide.attached.push(hostAttachment, identityAttachment);
+        superhero.getEffectiveTraits = async () => [];
+        superhero.getEffectiveStats = async () => ({});
+
+        const player = {
+            superhero,
+            async canFlip() {
+                return false;
+            },
+            async getHandSize() {
+                return 5;
+            },
+            hand: {
+                async toObjWithPlayability() {
+                    return [];
                 },
-            };
-        },
-    };
+            },
+            toObj() {
+                return {
+                    superhero: {
+                        extraTraits: [],
+                    },
+                };
+            },
+        };
 
-    const snapshot = await Player.prototype.toObjWithPlayableHand.call(player);
+        const snapshot = await Player.prototype.toObjWithPlayableHand.call(player);
 
-    assert.deepEqual(
-        snapshot.superhero.attached.map(({id}) => id),
-        ['host-attachment', 'identity-attachment'],
-    );
+        assert.deepEqual(
+            snapshot.superhero.attached.map(({id}) => id),
+            ['host-attachment', 'identity-attachment'],
+        );
 
-    alterEgoSide.abilities = [];
-    superhero.selectedSide = 1;
+        alterEgoSide.abilities = [];
+        superhero.selectedSide = 1;
 
-    const alterEgoSnapshot =
-        await Player.prototype.toObjWithPlayableHand.call(player);
+        const alterEgoSnapshot =
+            await Player.prototype.toObjWithPlayableHand.call(player);
 
-    assert.deepEqual(
-        alterEgoSnapshot.superhero.attached.map(({id}) => id),
-        ['host-attachment'],
-    );
+        assert.deepEqual(
+            alterEgoSnapshot.superhero.attached.map(({id}) => id),
+            ['host-attachment'],
+        );
+    });
 });

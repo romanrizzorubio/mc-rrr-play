@@ -80,6 +80,36 @@ describe('checkCondition', () => {
         assert.equal(checkCondition({name: 'Kang (the Conqueror) II'}, condition), false);
     });
 
+    test('conditions compare finite numeric values from separate runtime paths', () => {
+        const condition = {
+            'hero.life': {
+                operator: 'gte',
+                path: 'hero.initialLife',
+            },
+        };
+
+        assert.equal(checkCondition({
+            hero: {life: 10, initialLife: 10},
+        }, condition), true);
+        assert.equal(checkCondition({
+            hero: {life: 9, initialLife: 10},
+        }, condition), false);
+        assert.equal(checkCondition({
+            hero: {life: 10},
+        }, condition), false);
+        assert.equal(checkCondition({
+            hero: {life: Infinity, initialLife: 10},
+        }, condition), false);
+        assert.equal(checkCondition({
+            hero: {life: 4, initialLife: 5},
+        }, {
+            'hero.life': {
+                operator: 'lt',
+                path: 'hero.initialLife',
+            },
+        }), true);
+    });
+
     test('paths expand wildcards over arrays and keep defined values', () => {
         const firstPlayer = {id: 'first'};
         const secondPlayer = {id: 'second'};

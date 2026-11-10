@@ -151,6 +151,8 @@ export class MatchLobbyService {
             modularSetNames: lobby.scenario.modularSets.map(id =>
                 modularSetNames.get(id) || id),
             matchId: matchIdentity?.id || null,
+            matchConfigured: lobby.status === 'started' ||
+                lobby.startingMatch?.configured === true,
         };
     }
     async create(req) {

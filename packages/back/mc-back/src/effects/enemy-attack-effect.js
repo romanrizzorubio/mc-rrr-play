@@ -3,10 +3,12 @@ import {
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
     PRIORITY_INTERRUPT,
+    PRIORITY_RESPONSE,
     STATUS_STUNNED,
     TARGET_CARD,
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
+    TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
@@ -831,6 +833,31 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         }
 
         this.activation.takenDamage = dealDamageEffect.takenDamage;
+        const takenDamage = Array.isArray(dealDamageEffect.takenDamage) ?
+            dealDamageEffect.takenDamage :
+            [dealDamageEffect.takenDamage];
+        for (const [index, defender] of attackedTargets.entries()) {
+            if (!defender?.isHero) {
+                continue;
+            }
+
+            await this.trigger(
+                PRIORITY_RESPONSE,
+                [TRIGGER_HERO_DEFENDED_ATTACK],
+                {
+                    ...defenseParams,
+                    player: defender.owner,
+                    effect: this,
+                    defender,
+                    attack: this.activation,
+                    attackDamage: takenDamage[index] ?? 0,
+                }
+            );
+            if (!this.canContinueActivation()) {
+                return;
+            }
+        }
+
         await this.resolveDelayedEffects({
             ...defenseParams,
             attack: this.activation,

@@ -7,6 +7,7 @@ import {
     EFFECT_REVEAL_FACEDOWN_UNDER,
     EFFECT_REMOVE_SCENARIO_MAIN_SCHEME,
     EFFECT_ADD_ADDITIONAL_COST,
+    EFFECT_ADD_ADDITIONAL_DAMAGE,
     EFFECT_BLANK_TEXT,
     EFFECT_ADD_KEYWORD,
     EFFECT_ACTIVATE,
@@ -76,6 +77,7 @@ import {
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ACTIVATION,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_RETALIATE_VALUE,
     EFFECT_MODIFY_BOOST_ICONS,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     EFFECT_MODIFY_COST,
@@ -159,6 +161,7 @@ import {ActivateEffect} from '../../effects/activate-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
+import {AddAdditionalDamageEffect} from '../../effects/add-additional-damage-effect.js';
 import {AssignThreatEffect} from '../../effects/assign-threat-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
 import {CancelCardEffectsEffect} from '../../effects/cancel-card-effects-effect.js';
@@ -223,6 +226,9 @@ import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
 import {ModifyActivationEffect} from '../../effects/modify-activation-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
+import {
+    ModifyRetaliateValueEffect
+} from '../../effects/modify-retaliate-value-effect.js';
 import {ModifyBoostIconsEffect} from '../../effects/modify-boost-icons-effect.js';
 import {
     ModifyattackConsequentialEffect
@@ -301,6 +307,7 @@ export const EFFECT_MAP = {
     [EFFECT_ADD_KEYWORD]: AddKeywordEffect,
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
+    [EFFECT_ADD_ADDITIONAL_DAMAGE]: AddAdditionalDamageEffect,
     [EFFECT_ASSIGN_DAMAGE]: AssignDamageEffect,
     [EFFECT_ASSIGN_THREAT]: AssignThreatEffect,
     [EFFECT_PREVENT_DAMAGE]: PreventDamageEffect,
@@ -367,6 +374,7 @@ export const EFFECT_MAP = {
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
     [EFFECT_MODIFY_ACTIVATION]: ModifyActivationEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
+    [EFFECT_MODIFY_RETALIATE_VALUE]: ModifyRetaliateValueEffect,
     [EFFECT_MODIFY_BOOST_ICONS]: ModifyBoostIconsEffect,
     [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyattackConsequentialEffect,
     [EFFECT_MODIFY_MAX_ALLIES]: ModifyMaxAlliesEffect,
