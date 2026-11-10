@@ -148,10 +148,13 @@ export class McMatchLobbyPage extends LitElement {
                 Promise.resolve();
             await Promise.all([this.loadLobbyDecks(lobby), loadHeroes]);
             await this.applyRouteDeckSelection();
-            if (['starting', 'started'].includes(lobby.status) &&
-                this.currentPlayer) {
+            const currentPlayer = this.currentPlayer;
+            const matchCanBeJoined = lobby.status === 'started' ||
+                (lobby.status === 'starting' && lobby.matchConfigured);
+            if (currentPlayer && matchCanBeJoined) {
                 this.enterStartedMatch(lobby);
-            } else if (lobby.status === 'starting' && this.isCreator && !this.enteringMatch) {
+            } else if (!currentPlayer && lobby.status === 'starting' &&
+                this.isCreator && !this.enteringMatch) {
                 await this.apiConfigMatch.startLobby(this.id);
                 await this.initializeOrganizedMatch(lobby);
             }
@@ -462,7 +465,8 @@ export class McMatchLobbyPage extends LitElement {
         }
     }
     async enterStartedMatch(lobby) {
-        if (this.enteringMatch || !this.currentPlayer || !this.active) {
+        if (this.enteringMatch || !this.currentPlayer || !this.active ||
+            (lobby.status === 'starting' && !lobby.matchConfigured)) {
             return;
         }
         if (typeof this.prepareMatch !== 'function') {

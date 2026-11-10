@@ -16,6 +16,7 @@ import {
 import {GetDefenseEffect} from '../../effects/get-defense-effect.js';
 import {GetHitPointsEffect} from '../../effects/get-hit-points-effect.js';
 import {GetRecoveryEffect} from '../../effects/get-recovery-effect.js';
+import {GetRetaliateEffect} from '../../effects/get-retaliate-effect.js';
 import {GetTraitsEffect} from '../../effects/get-traits-effect.js';
 import {GetThwartEffect} from '../../effects/get-thwart-effect.js';
 
@@ -257,6 +258,42 @@ export class CharacterGameCard extends GameCard {
         });
 
         return getRecoveryEffect.recovery;
+    }
+    async getRetaliateValue(params = {}) {
+        if (!this.isSuperhero) {
+            return this.retaliate;
+        }
+
+        const player = this.controller?.isPlayer ? this.controller :
+            this.owner?.isPlayer ? this.owner :
+                params.player ?? this.match?.initialPlayer;
+        if (!player) {
+            throw new Error(`Character ${this.id} has no player for Retaliate calculation.`);
+        }
+
+        const getRetaliateEffect = new GetRetaliateEffect({
+            selectedTarget: this,
+            match: this.match,
+        });
+
+        await getRetaliateEffect.runEffect({
+            ...params,
+            card: this,
+            player,
+        });
+
+        return getRetaliateEffect.retaliate;
+    }
+    async getExtraKeywords({player, card = this.toObj()} = {}) {
+        const retaliate = await this.getRetaliateValue({player});
+        const printedRetaliate = this.currentSide.card.retaliate ?? 0;
+        const extraKeywords = (card.extraKeywords || [])
+            .filter(({name}) => name !== 'retaliate');
+        if (!printedRetaliate && retaliate > 0) {
+            extraKeywords.push({name: 'retaliate', value: retaliate});
+        }
+
+        return extraKeywords;
     }
     get isConfused() {
         switch (this.statusAvailable) {
@@ -670,12 +707,14 @@ export class CharacterGameCard extends GameCard {
             ...(card.extraTraits || []),
             ...effectiveTraits,
         ])].filter(trait => !printedTraits.includes(trait));
+        const extraKeywords = await this.getExtraKeywords({player, card});
 
         return {
             ...card,
             ...abilityAvailability,
             ...stats,
             extraTraits,
+            extraKeywords,
         };
     }
     toObj() {

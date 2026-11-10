@@ -148,10 +148,10 @@ export class McGameZone extends LitElement {
         const {encounters} = this;
 
         return encounters ? html`
-            <div class="panel">
+            <div class="panel encounters">
                 <mc-card-image
                     src="${getCardAssetUrl(BACK_CARD_ENCOUNTER)}"
-                    size="xs"
+                    size="s"
                     .activationBlocked="${Boolean(
                         this.dragActivation || this.dragPlayCard
                     )}"
@@ -212,26 +212,16 @@ export class McGameZone extends LitElement {
         `;
     }
 
-    renderUpgrades() {
+    renderUpgradesAndSupports() {
         const {attachedUpgrades, cards} = this;
+        const upgrades = getUpgradesForDisplay(cards, attachedUpgrades);
+        const supports = cards
+            .filter(card => card.isSupport)
+            .sort((a, b) => a.id > b.id ? 1 : -1);
 
         return this.renderCards({
-            cards: getUpgradesForDisplay(cards, attachedUpgrades),
-            type: 'upgrades',
-            dragActivation: this.dragActivation,
-            dragPlayCard: this.dragPlayCard,
-            dragResourcePayment: this.dragResourcePayment,
-        });
-    }
-
-    renderSupports() {
-        const {cards} = this;
-
-        return this.renderCards({
-            cards: cards
-                .filter(card => card.isSupport)
-                .sort((a, b) => a.id > b.id ? 1 : -1),
-            type: 'supports',
+            cards: [...upgrades, ...supports],
+            type: 'upgrades-supports',
             dragActivation: this.dragActivation,
             dragPlayCard: this.dragPlayCard,
             dragResourcePayment: this.dragResourcePayment,
@@ -249,8 +239,7 @@ export class McGameZone extends LitElement {
                 ${this.renderEncounters()}
                 ${this.renderMinionsRow()}
                 ${this.renderAllies()}
-                ${this.renderUpgrades()}
-                ${this.renderSupports()}
+                ${this.renderUpgradesAndSupports()}
             </div>
         `;
     }

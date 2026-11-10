@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
 import playerStyles from '../src/components/match/mc-player/mc-player.css.js';
+import cardListStyles from '../src/components/cards/mc-card-list/mc-card-list.css.js';
 import styles from '../src/components/panels/mc-game-zone/mc-game-zone.css.js';
 import {getUpgradesForDisplay} from '../src/utils/game-zone.js';
 
@@ -65,11 +66,20 @@ describe('game zone', () => {
         );
     });
 
-    test('stacks supports below upgrades, allies, and encounters', () => {
+    test('aligns player cards toward their superhero instead of centering them', () => {
+        assert.match(
+            styles.cssText,
+            /\.play-card-drop-zone mc-card-list\s*\{[^}]*justify-content:\s*flex-start;/s
+        );
+    });
+
+    test('renders upgrades and supports in one wrapping row', () => {
+        const upgrade = {id: 'upgrade', isUpgrade: true};
+        const support = {id: 'support', isSupport: true};
         const zone = Object.assign(
             Object.create(McGameZone.prototype),
             {
-                cards: [],
+                cards: [support, upgrade],
                 attachedUpgrades: [],
                 minions: [],
                 encounters: 1,
@@ -83,15 +93,15 @@ describe('game zone', () => {
             encounters,
             minions,
             allies,
-            upgrades,
-            supports,
+            upgradesAndSupports,
         ] = zone.render().values.slice(3);
 
         assert.match(encounters.strings.join(''), /<mc-card-image/u);
         assert.match(minions.strings.join(''), /class="minions-row"/u);
         assert.equal(allies.values[0], 'allies');
-        assert.equal(upgrades.values[0], 'upgrades');
-        assert.equal(supports.values[0], 'supports');
+        assert.equal(upgradesAndSupports.values[0], 'upgrades-supports');
+        assert.deepEqual(upgradesAndSupports.values[1], [upgrade, support]);
+        assert.match(cardListStyles.cssText, /flex-wrap:\s*wrap;/u);
     });
 
     test('renders obligations before minions in their shared row', () => {
@@ -201,12 +211,15 @@ describe('game zone', () => {
 
         const singleEncounter = renderEncounters(1);
         assert.ok(singleEncounter.strings.join('').includes('<mc-card-image'));
+        assert.match(singleEncounter.strings.join(''), /size="s"/u);
+        assert.match(styles.cssText, /\.panel\s*\{[^}]*align-items:\s*center;/su);
         assert.equal(
             singleEncounter.values.some(value =>
                 value?.strings?.join('').includes('class="count"')
             ),
             false
         );
+        assert.doesNotMatch(styles.cssText, /\.panel:first-child/u);
 
         const multipleEncounters = renderEncounters(2);
         const countLabel = multipleEncounters.values.find(value =>

@@ -76,8 +76,14 @@ export class Attack extends Activation {
             character.owner :
             character;
 
-        const retaliate = target?.retaliate ?? target?.card?.retaliate;
-        if (!attacker || !retaliate || !target.isInPlay || !character) {
+        if (!attacker || !target?.isInPlay || !character) {
+            return;
+        }
+
+        const retaliate = typeof target.getRetaliateValue === 'function' ?
+            await target.getRetaliateValue(params) :
+            target.retaliate ?? target.card?.retaliate;
+        if (!retaliate) {
             return;
         }
 

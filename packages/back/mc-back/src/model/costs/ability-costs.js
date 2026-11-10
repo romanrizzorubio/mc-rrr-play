@@ -3,6 +3,7 @@ import {
     TRIGGER_ABILITY_COST,
 } from 'mc-shared';
 import {createEffectInstance} from '../../utils/create-effect-instance.js';
+import {getEffectTargetEntries} from '../../utils/effect-targets.js';
 import {CostGroup} from './cost-group.js';
 import {COST_TYPE_ABILITY, COST_TYPE_ARROW} from './cost-constants.js';
 
@@ -10,6 +11,8 @@ export class AbilityCosts extends CostGroup {
     constructor({ability, match} = {}) {
         super({ability, match, type: COST_TYPE_ABILITY});
         this.paymentEffect = undefined;
+        this.pendingPaymentEffect = undefined;
+        this.hasPendingPaymentEffect = false;
     }
     async getEffect(params) {
         const ability = this.ability;
@@ -31,10 +34,52 @@ export class AbilityCosts extends CostGroup {
             );
         }
 
-        return super.getEffect(
+        const effect = await super.getEffect(
             {...params, ...(abilityContext ? {ability: abilityContext} : {})},
             [...this.costs, ...additionalCosts]
         );
+        this.pendingPaymentEffect = effect;
+        this.hasPendingPaymentEffect = true;
+
+        return effect;
+    }
+    async getPaymentTargetLimit(params) {
+        const abilityEffect = params.abilityEffect ??
+            params.ability?.effect ??
+            this.ability?.effect;
+        if (!abilityEffect) {
+            return undefined;
+        }
+
+        const freshAbilityEffect = createEffectInstance(abilityEffect, {
+            ability: params.ability || this.ability,
+        }).effect;
+        const targetEntries = await getEffectTargetEntries(
+            freshAbilityEffect,
+            params
+        );
+        const dependentEntries = targetEntries.filter(({effect, deferred}) => {
+            const target = effect.targetCountCalc?.target;
+
+            return !deferred &&
+                typeof target === 'string' &&
+                target.startsWith('effect.ability.costs.paymentEffect.');
+        });
+        if (!dependentEntries.length) {
+            return undefined;
+        }
+
+        const targetCounts = dependentEntries.map(({targets}) => {
+            if (!Array.isArray(targets)) {
+                throw new TypeError(
+                    'Un efecto con recuento dependiente del coste debe resolver sus objetivos en una lista.'
+                );
+            }
+
+            return targets.flat(Infinity).length;
+        });
+
+        return Math.min(...targetCounts);
     }
     async canPay(params) {
         const effect = await this.getEffect(params);
@@ -88,7 +133,7 @@ export class AbilityCosts extends CostGroup {
         });
     }
     async pay(params, paramsToUpdate = params) {
-        this.paymentEffect = undefined;
+        this.clearPaymentEffect();
         const effect = await this.getEffect(params);
         if (!effect) {
             const result = {
@@ -131,6 +176,8 @@ export class AbilityCosts extends CostGroup {
     }
     clearPaymentEffect() {
         this.paymentEffect = undefined;
+        this.pendingPaymentEffect = undefined;
+        this.hasPendingPaymentEffect = false;
     }
     async rollbackPayment() {
         const effect = this.paymentEffect;
@@ -144,6 +191,15 @@ export class AbilityCosts extends CostGroup {
     }
     setPaymentResult(result) {
         super.setPaymentResult(result);
+        if (this.hasPendingPaymentEffect) {
+            this.paymentEffect = result.resolved ?
+                this.pendingPaymentEffect :
+                undefined;
+            this.pendingPaymentEffect = undefined;
+            this.hasPendingPaymentEffect = false;
+        } else if (!result.resolved) {
+            this.paymentEffect = undefined;
+        }
         if (this.ability) {
             this.ability.paymentCancelled = result.cancelled;
         }

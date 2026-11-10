@@ -127,8 +127,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **elite (rasgo)** | Élite |
 | **ice (rasgo)** | Hielo |
 | **location (rasgo)** | Lugar |
+| **leviathon (rasgo)** | Leviatón |
 | **metal (rasgo)** | Metal |
 | **mystic (rasgo)** | Místico |
+| **outlaw (rasgo)** | Proscrito |
 | **persona (rasgo)** | Individuo |
 | **preparation (rasgo)** | Planificación |
 | **skill (rasgo)** | Habilidad |
@@ -146,6 +148,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **vehicle (rasgo)** | Vehículo |
 | **x-factor (rasgo)** | Factor-X |
 | **goblin (rasgo)** | Duende |
+| **guardian (rasgo)** | Guardián |
 | **genius (rasgo)** | Genio |
 | **wood (rasgo)** | Madera |
 | **invocation (rasgo)** | Invocación |

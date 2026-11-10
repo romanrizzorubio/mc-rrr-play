@@ -15,6 +15,10 @@ export default css`
     transition: box-shadow 120ms ease, background-color 120ms ease;
   }
 
+  .play-card-drop-zone mc-card-list {
+    justify-content: flex-start;
+  }
+
   .play-card-drop-zone.available {
     background-color: rgba(0, 200, 83, 0.08);
     box-shadow:
@@ -28,10 +32,6 @@ export default css`
     gap: 8px;
   }
   
-  .panel:first-child {
-    margin-right: 16px;
-  }
-
   .panel {
     display: flex;
     flex-direction: column;
