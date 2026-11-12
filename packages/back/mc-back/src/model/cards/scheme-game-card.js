@@ -99,13 +99,11 @@ export class SchemeGameCard extends GameCard {
         return this.canScheme();
     }
     canThwart(player, {ignoreCrisis = false} = {}) {
-        if (this.canRemoveThreat({ignoreCrisis})) {
-            if (!player.hasPatrol) {
-                return true;
-            }
+        if (!this.canRemoveThreat({ignoreCrisis})) {
+            return false;
         }
 
-        return false;
+        return !this.isMainScheme || !player.hasPatrol;
     }
     defeat() {
         if (this.isMain) {

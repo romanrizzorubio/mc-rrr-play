@@ -453,6 +453,9 @@ export class Effect extends Engine {
             activation.getTriggersEnds(params) :
             [];
     }
+    getForcedInterruptTriggersEnds() {
+        return [];
+    }
     getTriggersInit(params) {
         const {activation} = this;
 
@@ -651,6 +654,7 @@ export class Effect extends Engine {
     }
     async triggerEnds(params, {
         triggerTypes = this.getTriggersEnds(params),
+        interruptTriggerTypes = [],
         resolveDelayedEffects = true,
         resolveInterrupts = false,
     } = {}) {
@@ -659,9 +663,20 @@ export class Effect extends Engine {
             await this.resolveDelayedEffects(params);
         }
         await this.trigger(PRIORITY_CONSTANT, triggerTypes, params);
-        if (resolveInterrupts &&
-            await this.trigger(PRIORITY_FORCED_INTERRUPT, triggerTypes, params)) {
-            await this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+        const forcedInterruptTypes = resolveInterrupts ?
+            triggerTypes :
+            interruptTriggerTypes;
+        if (forcedInterruptTypes.length &&
+            await this.trigger(
+                PRIORITY_FORCED_INTERRUPT,
+                forcedInterruptTypes,
+                params
+            )) {
+            await this.trigger(
+                PRIORITY_INTERRUPT,
+                forcedInterruptTypes,
+                params
+            );
         }
 
         const {isActivation, activation} = this;
@@ -769,6 +784,9 @@ export class Effect extends Engine {
         await this.triggerEnds({
             ...triggersParams,
             ...this.getTriggersParams(effectParams),
+        }, {
+            interruptTriggerTypes:
+                this.getForcedInterruptTriggersEnds(effectParams),
         });
     }
     async runEffect(params) {

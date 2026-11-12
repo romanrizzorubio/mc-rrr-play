@@ -28,6 +28,7 @@ export class Keywords extends Engine {
     constructor(params = {}) {
         const {
             guard = false,
+            patrol = false,
             peril = false,
             permanent = false,
             setup = false,
@@ -59,6 +60,7 @@ export class Keywords extends Engine {
 
         this.match = match;
         this.guard = guard;
+        this.patrol = patrol;
         this.peril = peril;
         this.permanent = permanent;
         this.setup = setup;

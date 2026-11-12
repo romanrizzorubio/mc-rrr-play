@@ -7,6 +7,7 @@ export const TRAIT_ASSASSIN = 'assassin';
 export const TRAIT_ATTACK = 'attack';
 export const TRAIT_ATTORNEY = 'attorney';
 export const TRAIT_AVENGER = 'avenger';
+export const TRAIT_BADOON = 'badoon';
 export const TRAIT_BLACK_PANTHER = 'black panther';
 export const TRAIT_BROTHERHOOD_OF_MUTANTS = 'brotherhood of mutants';
 export const TRAIT_BRUTE = 'brute';

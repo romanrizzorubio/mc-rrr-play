@@ -291,7 +291,7 @@ export class RevealEncounterEffect extends Effect {
                     card: selectedTarget,
                     controller: this.match.scenario,
                     target: selectedTarget.faceTo,
-                    deferEngageHeroTrigger: true,
+                    deferEngageTriggers: true,
                     cardShownInRevealDialog: true,
                     match: this.match,
                 });
@@ -378,7 +378,7 @@ export class RevealEncounterEffect extends Effect {
         }
 
         if (engageEffect) {
-            await engageEffect.resolveDeferredEngageHeroTrigger(params);
+            await engageEffect.resolveDeferredEngageTriggers(params);
         }
 
         if (selectedTarget.isTreachery) {

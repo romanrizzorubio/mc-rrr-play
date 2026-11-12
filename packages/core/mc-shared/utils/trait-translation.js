@@ -7,6 +7,7 @@ const TRAIT_LABELS = {
     artifact: 'Artefacto',
     attack: 'Ataque',
     avenger: 'Vengador',
+    badoon: 'Badoon',
     bird: 'Pájaro',
     'brotherhood of mutants': 'Hermandad de mutantes',
     businessman: 'Empresario',
