@@ -21,6 +21,7 @@ import {
     PRIORITY_RESPONSE,
     TARGET_ATTACKER,
     TRIGGER_END_PLAY_CARD,
+    TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_THIS_ATTACK,
@@ -815,10 +816,12 @@ describe('enemy attack responses', () => {
             effect.defense = async () => {};
             effect.resolveBoostCards = async () => 0;
             effect.trigger = async (priority, types, params) => {
-                if (types.includes(TRIGGER_HERO_DEFENDED_ATTACK)) {
+                if (priority === PRIORITY_RESPONSE &&
+                    types.includes(TRIGGER_HERO_DEFENDED_ATTACK)) {
                     defendedAttackResponses.push({
                         attackDamage: params.attackDamage,
                         priority,
+                        types,
                     });
                 }
 
@@ -832,10 +835,19 @@ describe('enemy attack responses', () => {
             {damage: 1, target: 'Rino'},
             {damage: 1, target: 'Rino'},
         ]);
-        assert.deepEqual(defendedAttackResponses, [
-            {attackDamage: 0, priority: PRIORITY_RESPONSE},
-            {attackDamage: 1, priority: PRIORITY_RESPONSE},
-        ]);
+        assert.deepEqual(
+            defendedAttackResponses.map(({attackDamage, priority}) => ({
+                attackDamage,
+                priority,
+            })),
+            [
+                {attackDamage: 0, priority: PRIORITY_RESPONSE},
+                {attackDamage: 1, priority: PRIORITY_RESPONSE},
+            ],
+        );
+        assert.ok(defendedAttackResponses.every(({types}) =>
+            types.includes(TRIGGER_ENEMY_ATTACKS_YOU) &&
+            types.includes(TRIGGER_HERO_DEFENDED_ATTACK)));
     });
 
     test('retaliation resolves before the response to the enemy attack', async () => {

@@ -93,6 +93,39 @@ describe('Groot added cards', () => {
 
         return entry.card;
     };
+    const resolveFlamesDamage = async (
+        name,
+        {burningInfernoInPlay = false, furnaxInPlay = false},
+    ) => {
+        const {groot, match, player, superhero} =
+            await createGrootFixture(name);
+        const flamesConfig = groot.config.nemesis.find(({card}) =>
+            card.params.name === 'Avivar las llamas').card;
+        match.scenario = {
+            villain: {isInPlay: false},
+            schemes: [],
+            sideSchemes: burningInfernoInPlay ?
+                [{name: 'Infierno abrasador'}] :
+                [],
+            gameZone: {inPlayCards: []},
+        };
+        if (furnaxInPlay) {
+            player.gameZone.engage({name: 'Furnax'});
+        }
+        match.openDialog = async () => ({});
+        const flames = new CardsFactory({match}).createGameCardFromConfig(
+            flamesConfig,
+            {owner: player},
+        );
+
+        await flames.abilities[0].resolveAbility({
+            card: flames,
+            match,
+            player,
+        });
+
+        return superhero.damage;
+    };
 
     test('registers Groot upgrades, the expanded precon, obligation, and nemesis set', async () => {
         const {heroes} = await loadCatalog();
@@ -546,48 +579,39 @@ describe('Groot added cards', () => {
         });
     });
 
-    test('Avivar las llamas assigns one total amount including its conditional bonuses', async () => {
-        const {heroes} = await loadCatalog();
-        const groot = heroes.find(({_id}) => _id === 'groot');
-        const flamesConfig = groot.config.nemesis.find(({card}) =>
-            card.params.name === 'Avivar las llamas').card;
-        const cases = [
-            {names: [], damage: 2},
-            {names: ['Infierno abrasador'], damage: 3},
-            {names: ['Furnax'], damage: 3},
-            {names: ['Infierno abrasador', 'Furnax'], damage: 4},
-        ];
+    test('Avivar las llamas deals 2 damage with no side scheme or Furnax in play', async () => {
+        assert.equal(
+            await resolveFlamesDamage('groot-flames-no-bonus', {}),
+            2,
+        );
+    });
 
-        for (const {names, damage} of cases) {
-            const {match, player, superhero} =
-                await createGrootFixture(
-                    `groot-flames-${names.join('-') || 'none'}`,
-                );
-            match.scenario = {
-                villain: {isInPlay: false},
-                schemes: [],
-                sideSchemes: names.includes('Infierno abrasador') ?
-                    [{name: 'Infierno abrasador'}] :
-                    [],
-                gameZone: {inPlayCards: []},
-            };
-            if (names.includes('Furnax')) {
-                player.gameZone.engage({name: 'Furnax'});
-            }
-            match.openDialog = async () => ({});
-            const flames = new CardsFactory({match}).createGameCardFromConfig(
-                flamesConfig,
-                {owner: player},
-            );
+    test('Avivar las llamas deals 3 damage with only Infierno abrasador in play', async () => {
+        assert.equal(
+            await resolveFlamesDamage('groot-flames-side-scheme', {
+                burningInfernoInPlay: true,
+            }),
+            3,
+        );
+    });
 
-            await flames.abilities[0].resolveAbility({
-                card: flames,
-                match,
-                player,
-            });
+    test('Avivar las llamas deals 3 damage with only Furnax in play', async () => {
+        assert.equal(
+            await resolveFlamesDamage('groot-flames-furnax', {
+                furnaxInPlay: true,
+            }),
+            3,
+        );
+    });
 
-            assert.equal(superhero.damage, damage);
-        }
+    test('Avivar las llamas deals 4 damage with Infierno abrasador and Furnax in play', async () => {
+        assert.equal(
+            await resolveFlamesDamage('groot-flames-both-bonuses', {
+                burningInfernoInPlay: true,
+                furnaxInPlay: true,
+            }),
+            4,
+        );
     });
 
     test("player-targeted indirect damage is assigned among that player's characters", async () => {

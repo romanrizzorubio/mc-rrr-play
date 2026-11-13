@@ -33,6 +33,7 @@ import {
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
     TRIGGER_ENGAGE_HERO,
+    TRIGGER_ENGAGE_PLAYER,
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_HERO_DEFENDS_ATTACK,
@@ -127,6 +128,7 @@ import {
     EncounterAbilityResolvedTrigger
 } from '../../triggers/encounter-ability-resolved-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
+import {EngagePlayerTrigger} from '../../triggers/engage-player-trigger.js';
 import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {CharacterSchemesTrigger} from '../../triggers/character-schemes-trigger.js';
@@ -319,5 +321,6 @@ export const TRIGGER_MAP = {
     [TRIGGER_SURGE]: SurgeTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
+    [TRIGGER_ENGAGE_PLAYER]: EngagePlayerTrigger,
     [TRIGGER_FACEDOWN_CARD]: FacedownCardTrigger,
 };

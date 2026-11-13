@@ -555,6 +555,9 @@ export class GameCard extends Engine {
     get guard() {
         return this.getKeyword('guard');
     }
+    get patrol() {
+        return this.getKeyword('patrol');
+    }
     get villainous() {
         return this.getKeyword('villainous');
     }

@@ -1,32 +1,11 @@
 import {
     ASPECT_IDS,
-    TARGET_ALTEREGO,
-    TARGET_HERO,
-    TARGET_YOUR_HERO,
-    TARGET_YOUR_SUPERHERO,
     hasClassification,
 } from 'mc-shared';
 
 import {CharacterGameCard} from '../cards/character-game-card.js';
 
 export class Superhero extends CharacterGameCard {
-    static targetsIdentity(target, isHero, isAlterEgo) {
-        const targets = Array.isArray(target) ? target : [target];
-
-        return targets.some(targetType => {
-            switch (targetType) {
-                case TARGET_YOUR_SUPERHERO:
-                    return true;
-                case TARGET_HERO:
-                case TARGET_YOUR_HERO:
-                    return isHero;
-                case TARGET_ALTEREGO:
-                    return isAlterEgo;
-                default:
-                    return false;
-            }
-        });
-    }
     constructor({
 // GameCard
         sides: _sides = [],
@@ -145,28 +124,12 @@ export class Superhero extends CharacterGameCard {
 
         this.controller = controller;
     }
-    async initTriggers(params) {
-        const {currentSide, isAlterEgo, isHero} = this;
+    initTriggers(params) {
+        if (!this.sides.length) {
+            return super.initTriggers(params);
+        }
 
-        await this.promisesSequential(this.sides, async side => {
-            await this.promisesSequential(side.abilities, async ability => {
-                if (side.hasAbilityTrigger(ability)) {
-                    return;
-                }
-
-                if (side !== currentSide &&
-                    (!ability.effect ||
-                        !Superhero.targetsIdentity(
-                            ability.effect.target,
-                            isHero,
-                            isAlterEgo
-                        ))) {
-                    return;
-                }
-
-                await ability.initTriggers(side, params);
-            });
-        });
+        return this.currentSide.initTriggers(params);
     }
     endTriggers(force) {
         this.sides.forEach(side => side.endTriggers(force));

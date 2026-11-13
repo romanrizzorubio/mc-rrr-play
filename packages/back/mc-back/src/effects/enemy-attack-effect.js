@@ -237,10 +237,21 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     getTriggersParams(params) {
         const triggerParams = super.getTriggersParams(params);
+        const heroDefender = !Array.isArray(this.selectedTarget) &&
+            (this.defender?.isHero ?
+                this.defender :
+                [...this.defendersByTarget.values()].find(defender => defender.isHero));
 
-        return !Array.isArray(this.selectedTarget) && this.defendingPlayersByTarget.size ?
-            {...triggerParams, player: this.getTargetPlayer(this.selectedTarget)} :
-            triggerParams;
+        return {
+            ...triggerParams,
+            ...(!Array.isArray(this.selectedTarget) && this.defendingPlayersByTarget.size ? {
+                player: this.getTargetPlayer(this.selectedTarget),
+            } : {}),
+            ...(heroDefender ? {
+                defender: heroDefender,
+                attackDamage: this.activation.takenDamage,
+            } : {}),
+        };
     }
     async resolveStatus(params) {
         await this.showActivationSkippedDialog(
@@ -680,6 +691,12 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 TRIGGER_VILLAIN_ATTACKS_YOU,
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
+        const hasSingleHeroDefender = !Array.isArray(this.selectedTarget) &&
+            (this.defender?.isHero ||
+                [...this.defendersByTarget.values()].some(defender => defender.isHero));
+        if (hasSingleHeroDefender) {
+            triggers.push(TRIGGER_HERO_DEFENDED_ATTACK);
+        }
         if ([...this.basicDefendersByTarget.values()].some(Boolean)) {
             triggers.push(TRIGGER_YOU_BASIC_DEFENSE);
         }
@@ -833,28 +850,30 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         }
 
         this.activation.takenDamage = dealDamageEffect.takenDamage;
-        const takenDamage = Array.isArray(dealDamageEffect.takenDamage) ?
-            dealDamageEffect.takenDamage :
-            [dealDamageEffect.takenDamage];
-        for (const [index, defender] of attackedTargets.entries()) {
-            if (!defender?.isHero) {
-                continue;
-            }
-
-            await this.trigger(
-                PRIORITY_RESPONSE,
-                [TRIGGER_HERO_DEFENDED_ATTACK],
-                {
-                    ...defenseParams,
-                    player: defender.owner,
-                    effect: this,
-                    defender,
-                    attack: this.activation,
-                    attackDamage: takenDamage[index] ?? 0,
+        if (isMultiTarget) {
+            const takenDamage = Array.isArray(dealDamageEffect.takenDamage) ?
+                dealDamageEffect.takenDamage :
+                [dealDamageEffect.takenDamage];
+            for (const [index, defender] of attackedTargets.entries()) {
+                if (!defender?.isHero) {
+                    continue;
                 }
-            );
-            if (!this.canContinueActivation()) {
-                return;
+
+                await this.trigger(
+                    PRIORITY_RESPONSE,
+                    [TRIGGER_HERO_DEFENDED_ATTACK],
+                    {
+                        ...defenseParams,
+                        player: defender.owner,
+                        effect: this,
+                        defender,
+                        attack: this.activation,
+                        attackDamage: takenDamage[index] ?? 0,
+                    }
+                );
+                if (!this.canContinueActivation()) {
+                    return;
+                }
             }
         }
 

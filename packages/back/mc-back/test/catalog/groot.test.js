@@ -173,6 +173,7 @@ describe('Groot', () => {
 
         const floraColossus = hero.params.abilities[0];
         assert.equal(floraColossus.type, ABILITY_FORCED_INTERRUPT);
+        assert.equal(floraColossus.params.condition, undefined);
         assert.equal(
             floraColossus.params.trigger,
             TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
@@ -785,7 +786,7 @@ describe('Groot', () => {
         assert.equal(superhero.counters, 10);
     });
 
-    test('removes no more Growth counters than damage and prevents the removed amount', async () => {
+    test('Flora Colossus deactivates and reactivates with Groot identity flips', async () => {
         const {match, player, superhero} =
             await createFixture('groot-growth-damage-prevention');
         superhero.placeCounters(3);
@@ -811,6 +812,61 @@ describe('Groot', () => {
         assert.equal(superhero.counters, 0);
         assert.equal(incomingDamage.preventDamage, 3);
         assert.equal(incomingDamage.takenDamage, 1);
+
+        await superhero.flipToSide(0, {match, player});
+        assert.equal(heroSide.hasAbilityTrigger(ability), false);
+        superhero.placeCounters(3);
+        const alterEgoDamage = new TakeDamageEffect({
+            damage: 2,
+            match,
+            selectedTarget: superhero,
+        });
+        const alterEgoDamageParams = alterEgoDamage.getTriggersParams({
+            match,
+            player,
+        });
+        const alterEgoTriggers = await match._getTriggers(
+            [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE],
+            PRIORITY_FORCED_INTERRUPT,
+            alterEgoDamageParams,
+        );
+        assert.equal(
+            alterEgoTriggers.some(({ability: triggeredAbility}) =>
+                triggeredAbility === ability),
+            false,
+        );
+
+        await alterEgoDamage.runEffect({match, player});
+
+        assert.equal(superhero.counters, 3);
+        assert.equal(alterEgoDamage.preventDamage, 0);
+        assert.equal(alterEgoDamage.takenDamage, 2);
+
+        await superhero.flipToSide(1, {match, player});
+        assert.equal(heroSide.hasAbilityTrigger(ability), true);
+        const [reactivatedTrigger] = heroSide.triggers[
+            TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE
+        ][PRIORITY_FORCED_INTERRUPT];
+        const returningDamage = new TakeDamageEffect({
+            damage: 2,
+            match,
+            selectedTarget: superhero,
+        });
+        const returningDamageParams = returningDamage.getTriggersParams({
+            match,
+            player,
+        });
+        assert.equal(
+            await reactivatedTrigger.canTrigger(returningDamageParams),
+            true,
+        );
+        await ability.resolveAbility(
+            reactivatedTrigger.getAbilityParams(returningDamageParams),
+        );
+
+        assert.equal(superhero.counters, 1);
+        assert.equal(returningDamage.preventDamage, 2);
+        assert.equal(returningDamage.takenDamage, 0);
     });
 
     test('Tough absorbs multi-target damage before Groot can remove Growth counters', async () => {

@@ -110,6 +110,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **tough** | duro |
 | **trait** | rasgo |
 | **aerial (rasgo)** | Aéreo |
+| **badoon (rasgo)** | Badoon |
 | **arrow (rasgo)** | Flecha |
 | **artifact (rasgo)** | Artefacto |
 | **android (rasgo)** | droide |
