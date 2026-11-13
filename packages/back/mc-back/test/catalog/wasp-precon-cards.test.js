@@ -432,6 +432,7 @@ describe('Avispa precon cards', () => {
         const damageEffect = {
             attacked: minion,
             damage: 6,
+            match,
             selectedTarget: minion,
             getEffectProperty(property) {
                 return this[property];
@@ -463,6 +464,7 @@ describe('Avispa precon cards', () => {
             effect: {
                 attacked: minion,
                 damage: 6,
+                match,
                 selectedTarget: minion,
                 getEffectProperty(property) {
                     return this[property];

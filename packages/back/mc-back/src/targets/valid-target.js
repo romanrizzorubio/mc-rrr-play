@@ -10,6 +10,7 @@ import {DIALOG_SELECT_TARGET,
     TARGET_ALL_SCHEMES,
     TARGET_ALL_SIDE_SCHEMES,
     TARGET_ALL_SUPPORTS,
+    TARGET_ALL_UPGRADES_YOU_CONTROL,
     TARGET_ALL_HEROES_ALLIES, TARGET_ALL_ENGAGED_MINIONS,
     TARGET_PARENT,
     TARGET_SELECTED_PLAYER_CHARACTERS,
@@ -303,6 +304,7 @@ export class ValidTarget extends Engine {
             case TARGET_ALL_SCHEMES:
             case TARGET_ALL_SIDE_SCHEMES:
             case TARGET_ALL_SUPPORTS:
+            case TARGET_ALL_UPGRADES_YOU_CONTROL:
             case TARGET_PARENT:
                 return true;
         }

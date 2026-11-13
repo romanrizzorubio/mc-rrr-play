@@ -9,6 +9,7 @@ import {
     TRIGGER_ATTACHED_WOULD_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_HERO_DEFENDED_ATTACK,
+    TRIGGER_CHARACTER_DEFENDED_ATTACK,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
@@ -696,6 +697,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 [...this.defendersByTarget.values()].some(defender => defender.isHero));
         if (hasSingleHeroDefender) {
             triggers.push(TRIGGER_HERO_DEFENDED_ATTACK);
+        }
+        if ([...this.defendersByTarget.values()].some(Boolean)) {
+            triggers.push(TRIGGER_CHARACTER_DEFENDED_ATTACK);
         }
         if ([...this.basicDefendersByTarget.values()].some(Boolean)) {
             triggers.push(TRIGGER_YOU_BASIC_DEFENSE);

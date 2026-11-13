@@ -30,6 +30,7 @@ describe('ALL and ANY target contracts', () => {
             friends: pool,
             minions: pool,
             supports: pool,
+            upgrades: pool,
         };
         const match = {
             name: 'target-contracts',

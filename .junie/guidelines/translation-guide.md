@@ -200,6 +200,7 @@ Al mostrar los rasgos de las cartas, utiliza estas etiquetas en español para lo
 | **[w]** | [w]            | recurso universal  |
 | **[d]** | [d]            | daño derivado      |
 | **[u]** | [u]            | carta única        |
+| **[f]** | [f]            | icono de Amplificación |
 
 ## Instrucciones para el Asistente
 

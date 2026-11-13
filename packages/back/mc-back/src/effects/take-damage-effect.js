@@ -4,6 +4,7 @@ import {
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
+    TRIGGER_YOU_DEAL_DAMAGE,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
@@ -250,7 +251,10 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             .concat([TRIGGER_ATTACHED_TAKES_DAMAGE]);
 
         return this.checkTrigger(params) ?
-            triggers.concat([TRIGGER_CHARACTER_TAKES_DAMAGE]) :
+            triggers.concat([
+                TRIGGER_CHARACTER_TAKES_DAMAGE,
+                TRIGGER_YOU_DEAL_DAMAGE,
+            ]) :
             triggers;
     }
     async placeDamage(selectedTarget, takenDamage, params) {

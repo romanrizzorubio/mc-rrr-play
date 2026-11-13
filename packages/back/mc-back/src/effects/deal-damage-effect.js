@@ -87,8 +87,8 @@ export class DealDamageEffect extends AttackEffect(Effect) {
 
         return newParams;
     }
-    getTriggersEnds() {
-        return super.getTriggersEnds();
+    getTriggersEnds(params) {
+        return super.getTriggersEnds(params);
     }
     getTriggersWould() {
         return super.getTriggersWould()
@@ -249,6 +249,21 @@ export class DealDamageEffect extends AttackEffect(Effect) {
 
         if (this.activation) {
             this.activation.takenDamage = this.takenDamage;
+            const excessDamageTarget = this.activation.excessDamageTarget;
+            if (excessDamageTarget) {
+                const targets = Array.isArray(takeDamageEffect.selectedTarget) ?
+                    takeDamageEffect.selectedTarget :
+                    [takeDamageEffect.selectedTarget];
+                const targetIndex = targets.indexOf(excessDamageTarget);
+                const takenDamage = Array.isArray(takeDamageEffect.takenDamage) ?
+                    takeDamageEffect.takenDamage[targetIndex] :
+                    targetIndex === 0 ? takeDamageEffect.takenDamage : 0;
+
+                this.activation.excessDamageTaken = targetIndex < 0 ?
+                    0 :
+                    takenDamage ?? 0;
+                this.excessDamage = this.activation.excessDamage;
+            }
         }
     }
     static validateDamageAssignment(assigned, targets, damage) {

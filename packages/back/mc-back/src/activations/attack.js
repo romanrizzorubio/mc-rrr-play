@@ -1,10 +1,15 @@
 import {
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
     TRIGGER_THIS_ATTACK,
     TRIGGER_CHARACTER_ATTACKED,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOU_BASIC_ATTACK,
+    TRIGGER_YOU_DEALT_EXCESS_DAMAGE,
+    TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
     EFFECT_DEAL_DAMAGE,
 } from 'mc-shared';
 
@@ -21,10 +26,16 @@ export class Attack extends Activation {
 
         this.takenDamage = 0;
         this.attackedTargets = undefined;
+        this.excessDamage = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
     }
     async applyOverkill(params, effect = this.effect) {
         const selectedTarget = effect.attacked || effect.selectedTarget;
 
+        this.excessDamage = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
         this.attackedTargets = Array.isArray(selectedTarget) ?
             selectedTarget.slice() :
             [selectedTarget];
@@ -35,8 +46,30 @@ export class Attack extends Activation {
             const controller = this.getController(selectedTarget);
 
             if (controller && this.excessDamage > 0) {
+                this.excessDamageTarget = controller;
+                const triggerParams = {
+                    ...params,
+                    effect,
+                    attack: this,
+                    character: this.character,
+                };
+                const trigger = [TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE];
+
+                await this.trigger(PRIORITY_CONSTANT, trigger, triggerParams);
+                await this.trigger(
+                    PRIORITY_FORCED_INTERRUPT,
+                    trigger,
+                    triggerParams
+                );
+                await this.trigger(PRIORITY_INTERRUPT, trigger, triggerParams);
+
+                const modifiedDamage = effect.getEffectProperty('damage', params);
                 effect.selectedTarget = [selectedTarget, controller];
-                effect.setEffectProperty('damage', [damage, this.excessDamage], params);
+                effect.setEffectProperty(
+                    'damage',
+                    [modifiedDamage, this.excessDamage],
+                    params
+                );
             }
         }
     }
@@ -143,6 +176,10 @@ export class Attack extends Activation {
             return triggers;
         }
 
+        this.excessDamage = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
+
         const attackTriggers = triggers.concat(
             TRIGGER_THIS_ATTACK,
             TRIGGER_CHARACTER_ATTACKED,
@@ -232,6 +269,9 @@ export class Attack extends Activation {
 
         if (isBasic) {
             triggers.push(TRIGGER_YOU_BASIC_ATTACK);
+        }
+        if (this.excessDamageTaken > 0) {
+            triggers.push(TRIGGER_YOU_DEALT_EXCESS_DAMAGE);
         }
 
         return !triggersEndsLaunched ? super.getTriggersEnds(params)
