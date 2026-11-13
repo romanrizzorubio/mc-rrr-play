@@ -19,9 +19,11 @@ export class DealDamageEffect extends AttackEffect(Effect) {
             ignoreTough = false,
             preventDamage = 0,
             distribute = false,
+            attackKeywordSource,
         } = params;
 
         this._character = character;
+        this.attackKeywordSource = attackKeywordSource;
         this.ignoreTough = ignoreTough;
         this.preventDamageAmount = preventDamage;
         this.baseDamage = damage;
@@ -212,7 +214,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         await this.distributeDamage(params);
 
         const {activation} = this;
-        if (this.isAttack && activation) {
+        if (this.isAttack && !this.isAttackDamageOnly && activation) {
             if (activation.getOverkill?.(params)) {
                 await activation.applyOverkill(params, this);
             } else if (activation.calculateExcessDamage) {
@@ -236,10 +238,12 @@ export class DealDamageEffect extends AttackEffect(Effect) {
             damage,
             preventDamage,
             ignoreTough: this.ignoreTough,
+            character: this.character,
             ability: this.ability,
             activation: this.activation,
             isAttack: this.isAttack,
-            attackKeywordSource: this,
+            isAttackDamageOnly: this.isAttackDamageOnly,
+            attackKeywordSource: this.attackKeywordSource ?? this,
         });
 
         await takeDamageEffect.runEffect(params);
@@ -247,23 +251,26 @@ export class DealDamageEffect extends AttackEffect(Effect) {
         this.takenDamage = takeDamageEffect.takenDamage;
         this.defeated = takeDamageEffect.defeated === true;
 
-        if (this.activation) {
-            this.activation.takenDamage = this.takenDamage;
-            const excessDamageTarget = this.activation.excessDamageTarget;
-            if (excessDamageTarget) {
-                const targets = Array.isArray(takeDamageEffect.selectedTarget) ?
-                    takeDamageEffect.selectedTarget :
-                    [takeDamageEffect.selectedTarget];
-                const targetIndex = targets.indexOf(excessDamageTarget);
-                const takenDamage = Array.isArray(takeDamageEffect.takenDamage) ?
-                    takeDamageEffect.takenDamage[targetIndex] :
-                    targetIndex === 0 ? takeDamageEffect.takenDamage : 0;
-
-                this.activation.excessDamageTaken = targetIndex < 0 ?
-                    0 :
-                    takenDamage ?? 0;
-                this.excessDamage = this.activation.excessDamage;
+        if (this.activation && !this.isAttackDamageOnly) {
+            if (Number.isFinite(takeDamageEffect.excessDamage)) {
+                this.activation.excessDamage = takeDamageEffect.excessDamage;
             }
+
+            if (this.activation.excessDamageTarget) {
+                this.activation.excessDamageTaken = this.defeated ?
+                    this.activation.excessDamageTaken ?? 0 :
+                    0;
+
+                if (this.defeated) {
+                    this.takenDamage = [
+                        this.takenDamage,
+                        this.activation.excessDamageTaken,
+                    ];
+                }
+            }
+
+            this.activation.takenDamage = this.takenDamage;
+            this.excessDamage = this.activation.excessDamage;
         }
     }
     static validateDamageAssignment(assigned, targets, damage) {

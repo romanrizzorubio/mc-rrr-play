@@ -55,6 +55,21 @@ describe('Composite effect availability', () => {
         });
     }
 
+    test('triggered chains ignore their parent cost context but keep their own cost rules', async () => {
+        const {effect, player} = createFixture([true, false]);
+        const params = {
+            player,
+            isCost: true,
+            costPaymentSession: {requireAllCosts: true},
+            triggeredEffect: {},
+        };
+
+        assert.equal(await effect.canRun(params), true);
+
+        effect.isCost = true;
+        assert.equal(await effect.canRun(params), false);
+    });
+
     test('Then does not prevent initiation or independent preceding effects from resolving', async () => {
         const {effect, thenEffect, player, resolved} = createFixture([false, true], ChainedEffect, true);
         assert.equal(await effect.canRun({player}), true);

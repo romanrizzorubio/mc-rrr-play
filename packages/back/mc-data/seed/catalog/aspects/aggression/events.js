@@ -889,7 +889,7 @@ export default [
                         'type': ABILITY_HERO_ACTION,
                         'params': {
                             'labels': [LABEL_THWART],
-                            'effect': {
+                            'arrow': {
                                 'type': EFFECT_CHAINED,
                                 'params': {
                                     'effects': [
@@ -900,6 +900,7 @@ export default [
                                                 'condition': {
                                                     'isMinion': true,
                                                 },
+                                                'showDiscardedCards': true,
                                             },
                                         },
                                         {
@@ -909,14 +910,15 @@ export default [
                                                 'cardSource': 'selectedCard',
                                             },
                                         },
-                                        {
-                                            'type': EFFECT_REMOVE_THREAT,
-                                            'params': {
-                                                'target': TARGET_MAIN_SCHEME,
-                                                'threat': 3,
-                                            },
-                                        },
                                     ],
+                                    'outputParams': ['selectedCard'],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'threat': 3,
                                 },
                             },
                         },

@@ -24,6 +24,12 @@ export class DiscardUntilEffect extends Effect {
         this.showDiscardedCards = showDiscardedCards;
         this.showSelectedCard = showSelectedCard;
         this.title = title;
+        this.outputParams = [
+            'selectedCard',
+            'selectedCards',
+            'selectedCardDeck',
+            'discardedCards',
+        ];
         this.selectedCard = undefined;
         this.selectedCardDeck = undefined;
     }

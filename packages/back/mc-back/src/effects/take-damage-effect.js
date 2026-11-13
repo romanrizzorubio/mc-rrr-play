@@ -1,19 +1,23 @@
 import {
     EFFECT_CATEGORY_DAMAGE,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_PLACE_DAMAGE,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
     TRIGGER_YOU_DEAL_DAMAGE,
+    TRIGGER_YOU_DEALT_EXCESS_DAMAGE,
 } from 'mc-shared';
 
 import {Effect} from './effect.js';
 import {AttackEffect} from './attack-effect.js';
 import {
+    calculateExcessDamage,
     canResolveDamageWithStatus,
     defeatCharacter,
     defeatCharacterIfLethal,
     getDamageStatusTarget,
+    isEnemyDamageTarget,
     isCharacterLethal,
     resolveDamageStatus,
     resolveToughDamage,
@@ -21,6 +25,7 @@ import {
 
 export class TakeDamageEffect extends AttackEffect(Effect) {
     constructor({
+        character,
         damage,
         ignoreTough = false,
         preventDamage = 0,
@@ -28,6 +33,7 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
     }) {
         super(arguments[0]);
 
+        this._character = character;
         this.initialDamage = damage;
         this.damage = damage;
         this.ignoreTough = ignoreTough;
@@ -39,7 +45,8 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.preventDamage = Array.isArray(this.initialPreventDamage) ?
             this.initialPreventDamage.slice() :
             this.initialPreventDamage;
-        this.excess = 0;
+        this.excessDamage = 0;
+        this.excessDamageTargetWasEnemy = undefined;
         this.canceled = false;
         this.defeated = false;
     }
@@ -49,7 +56,8 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.preventDamage = Array.isArray(this.initialPreventDamage) ?
             this.initialPreventDamage.slice() :
             this.initialPreventDamage;
-        this.excess = 0;
+        this.excessDamage = 0;
+        this.excessDamageTargetWasEnemy = undefined;
         this.canceled = false;
         this.defeated = false;
     }
@@ -91,6 +99,9 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
     }
     get effectCategories() {
         return [EFFECT_CATEGORY_DAMAGE];
+    }
+    get character() {
+        return this._character || super.character;
     }
     getAttackKeyword(name) {
         if (this.attackKeywordSource?.isAttack &&
@@ -254,8 +265,16 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             triggers.concat([
                 TRIGGER_CHARACTER_TAKES_DAMAGE,
                 TRIGGER_YOU_DEAL_DAMAGE,
+                ...(this.hasExcessDamage() ?
+                    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE] :
+                    []),
             ]) :
             triggers;
+    }
+    hasExcessDamage() {
+        return Array.isArray(this.excessDamage) ?
+            this.excessDamage.some(damage => damage > 0) :
+            this.excessDamage > 0;
     }
     async placeDamage(selectedTarget, takenDamage, params) {
         const placeDamageEffect = this.match.effectsFactory.createEffect({
@@ -275,30 +294,112 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         });
     }
 
-    async takeDamage(selectedTarget, takenDamage, params) {
+    async takeDamage(selectedTarget, takenDamage, params, index = 0) {
         if (takenDamage <= 0) {
+            this.setExcessDamage(index, 0);
+            this.setAttackExcessDamage(0);
+
             return false;
         }
 
+        const excessDamage = await this.calculateExcessDamage(
+            selectedTarget,
+            takenDamage
+        );
+        this.setExcessDamage(index, excessDamage);
+        this.setAttackExcessDamage(excessDamage);
         await this.placeDamage(selectedTarget, takenDamage, params);
 
-        return defeatCharacterIfLethal(selectedTarget, {
+        const defeated = await defeatCharacterIfLethal(selectedTarget, {
             match: this.match,
             ability: this.ability,
             activation: this.activation,
             params,
         });
+        if (defeated) {
+            await this.resolveOverkillDamage(params);
+        }
+
+        return defeated;
+    }
+    async calculateExcessDamage(selectedTarget, takenDamage) {
+        const excessDamage = await calculateExcessDamage(
+            selectedTarget,
+            takenDamage
+        );
+
+        return this.isAttack &&
+            !this.isAttackDamageOnly &&
+            this.activation &&
+            !Array.isArray(this.selectedTarget) ?
+            excessDamage + (this.activation.excessDamageModifier ?? 0) :
+            excessDamage;
+    }
+    setAttackExcessDamage(excessDamage) {
+        if (this.isAttack &&
+            !this.isAttackDamageOnly &&
+            this.activation &&
+            !Array.isArray(this.selectedTarget)) {
+            this.activation.excessDamage = excessDamage;
+        }
+    }
+    async resolveOverkillDamage(params) {
+        const {activation} = this;
+        if (!this.isAttack ||
+            this.isAttackDamageOnly ||
+            Array.isArray(this.selectedTarget) ||
+            !activation?.excessDamageTarget ||
+            activation.excessDamage <= 0) {
+            return;
+        }
+
+        const overkillDamageEffect = this.match.effectsFactory.createEffect({
+            type: EFFECT_DEAL_DAMAGE,
+            ability: this.ability,
+            character: this.character,
+            activation,
+            damage: activation.excessDamage,
+            ignoreTough: this.ignoreTough,
+            isAttackDamageOnly: true,
+            attackKeywordSource: this.attackKeywordSource,
+            selectedTarget: activation.excessDamageTarget,
+            isAttack: true,
+        });
+        await overkillDamageEffect.runEffect(params);
+        activation.excessDamageTaken = overkillDamageEffect.takenDamage ?? 0;
+    }
+    setExcessDamage(index, excessDamage) {
+        if (Array.isArray(this.selectedTarget)) {
+            this.excessDamage[index] = excessDamage;
+        } else {
+            this.excessDamage = excessDamage;
+        }
     }
     async execute(params) {
         const {selectedTarget, takenDamage} = this;
         this.defeated = false;
+        this.excessDamage = Array.isArray(selectedTarget) ?
+            selectedTarget.map(() => 0) :
+            0;
+        const targets = Array.isArray(selectedTarget) ?
+            selectedTarget :
+            [selectedTarget];
+        const targetWasEnemy = targets.map(isEnemyDamageTarget);
+        this.excessDamageTargetWasEnemy = Array.isArray(selectedTarget) ?
+            targetWasEnemy :
+            targetWasEnemy[0] ?? false;
 
         if (selectedTarget instanceof Array) {
             const takeDamage = async (target, index) => {
                 if (takenDamage instanceof Array) {
-                    return this.takeDamage(target, takenDamage[index], params);
+                    return this.takeDamage(
+                        target,
+                        takenDamage[index],
+                        params,
+                        index
+                    );
                 } else {
-                    return this.takeDamage(target, takenDamage, params);
+                    return this.takeDamage(target, takenDamage, params, index);
                 }
             };
 
@@ -311,6 +412,18 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
                         this.defeated;
                 }
             } else {
+                this.excessDamage = await Promise.all(
+                    selectedTarget.map(async (target, index) => {
+                        const targetDamage = takenDamage instanceof Array ?
+                            takenDamage[index] :
+                            takenDamage;
+
+                        return targetDamage > 0 ?
+                            this.calculateExcessDamage(target, targetDamage) :
+                            0;
+                    })
+                );
+
                 await Promise.all(selectedTarget.map(async (target, index) => {
                     const targetDamage = takenDamage instanceof Array ?
                         takenDamage[index] :
@@ -346,7 +459,8 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             this.defeated = await this.takeDamage(
                 selectedTarget,
                 takenDamage,
-                params
+                params,
+                0
             );
         }
     }

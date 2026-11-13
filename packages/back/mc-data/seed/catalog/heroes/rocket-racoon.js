@@ -56,6 +56,7 @@ import {
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_ALL_CHARACTERS,
+    TARGET_ALL_ENGAGED_MINIONS,
     TARGET_ALL_UPGRADES_YOU_CONTROL,
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
@@ -567,9 +568,7 @@ const rocketLauncher = {
                                 {
                                     type: EFFECT_DEAL_DAMAGE,
                                     params: {
-                                        target: TARGET_SOURCE,
-                                        source: 'targetPlayer.minions',
-                                        multipleTarget: true,
+                                        target: TARGET_ALL_ENGAGED_MINIONS,
                                         damage: 2,
                                     },
                                 },

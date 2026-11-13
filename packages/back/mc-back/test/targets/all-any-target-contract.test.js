@@ -172,6 +172,38 @@ describe('ALL and ANY target contracts', () => {
         assert.equal(dialogs.length, 1);
     });
 
+    test('multipleTarget alone does not turn a single-target selector into ALL', async () => {
+        const {actor, dialogs, match, params} =
+            createContext(shared.TARGET_ENEMY);
+        const target = new ValidTarget({match, multipleTarget: true});
+
+        assert.equal(target.isMultipleTarget({target: shared.TARGET_ENEMY}), true);
+        assert.equal(
+            (await target.selectTarget({...params, target: shared.TARGET_ENEMY})).id,
+            'last'
+        );
+        assert.equal(dialogs.length, 1);
+        assert.equal(dialogs[0].targetPlayer, actor.id);
+    });
+
+    test('TARGET_VILLAIN selects only the current villain when other villains exist', () => {
+        const currentVillain = {id: 'current-villain'};
+        const otherVillain = {id: 'other-villain'};
+        const match = {
+            enemies: [currentVillain, otherVillain],
+            scenario: {
+                gameZone: {currentVillain},
+            },
+        };
+        const target = new ValidTarget({match});
+
+        assert.deepEqual(target.getValidTarget({
+            match,
+            player: {},
+            target: shared.TARGET_VILLAIN,
+        }), [currentVillain]);
+    });
+
     test('controlled ally selectors use the ability controller, not a different triggering player', async () => {
         const {actor, dialogs, match, params, pool} =
             createContext(shared.TARGET_ALL_ALLIES_YOU_CONTROL);

@@ -14,6 +14,7 @@ import {
     TRIGGER_ROUND_ENDS,
     TRIGGER_THIS_SPEND,
 } from 'mc-shared';
+import {Engine} from '../../src/engine/engine.js';
 import {PlaceCountersEffect} from '../../src/effects/place-counters-effect.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
@@ -249,7 +250,15 @@ describe('restored match card identities', () => {
         owner.hand.cards.push(resource);
 
         assert.equal(resource.hasAbilityTrigger(resource.abilities[0]), false);
-        const restored = restoreMatch(serializeMatch(match), mc);
+        const snapshot = serializeMatch(match);
+        const previousTriggersFactory = Engine.triggersFactory;
+        Engine.triggersFactory = undefined;
+        let restored;
+        try {
+            restored = restoreMatch(snapshot, mc);
+        } finally {
+            Engine.triggersFactory = previousTriggersFactory;
+        }
         const restoredResource = restored.players[0].hand.cards[0];
 
         assert.equal(restoredResource.abilities[0].trigger, TRIGGER_THIS_SPEND);

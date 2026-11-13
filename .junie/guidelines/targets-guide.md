@@ -25,12 +25,12 @@ Que un selector devuelva varios candidatos no significa que el efecto se aplique
 - Si devuelve uno, el motor lo selecciona directamente.
 - Si devuelve varios, normalmente se muestra el diálogo de selección de objetivo.
 - En objetivos de doble cara, el diálogo devuelve el `id` del lado mostrado y su `parentId`; la selección se resuelve contra el candidato de la partida usando el ID directo o el ID del padre.
-- `ValidTarget.isMultipleTarget()` resuelve todos los resultados, sin pedir una selección, para `TARGET_ALL_ALLIES`, `TARGET_ALL_ALLIES_YOU_CONTROL`, `TARGET_ALL_CARDS`, `TARGET_ALL_CHARACTERS`, `TARGET_ALL_CHARACTERS_YOU_CONTROL`, `TARGET_ALL_DECKS`, `TARGET_ALL_ENEMIES`, `TARGET_ALL_FRIENDLY_CHARACTERS`, `TARGET_ALL_HEROES`, `TARGET_ALL_HEROES_ALLIES`, `TARGET_ALL_ENGAGED_MINIONS`, `TARGET_ALL_MINIONS`, `TARGET_ALL_PLAYERS`, `TARGET_ALL_SUPERHEROES`, `TARGET_ALL_SCHEMES`, `TARGET_ALL_SIDE_SCHEMES`, `TARGET_ALL_SUPPORTS` y `TARGET_ALL_UPGRADES_YOU_CONTROL`.
-- Configura `multipleTarget: true` cuando un efecto debe manejar una selección de varios objetivos que no resuelve un selector `TARGET_ALL_*`. Esto evita que la capacidad preseleccione un único objetivo antes de pagar sus costes. Si el número de objetivos se determina durante la resolución o después del coste, usa el cálculo de recuento dinámico que admita ese efecto (por ejemplo, `targetCountCalc` en `EFFECT_DEAL_DAMAGE`, `EFFECT_EXHAUST` o `EFFECT_TOUGH`) antes de pedir la selección; sin un recuento, el efecto resuelve todos los candidatos del selector.
+- `ValidTarget.isAllTarget()` identifica los selectores `TARGET_ALL_*` que resuelven todos los candidatos válidos sin pedir una selección.
+- Usa `multipleTarget: true` para que una habilidad pueda seleccionar varios objetivos y no preseleccione uno antes de pagar costes. Limita la selección con `selectCount`, `selectUpTo` o un recuento dinámico; sin un recuento explícito, sigue eligiendo un solo objetivo. Para afectar a todos los candidatos que cumplen los requisitos, usa un selector `TARGET_ALL_*` con `condition`, o un selector de grupo específico como `TARGET_ALL_ENGAGED_MINIONS`; no uses `multipleTarget` como sustituto de "todos".
 
 Que un selector devuelva una colección de candidatos no significa por sí solo que el efecto se aplique a todos.
 
-Todos los selectores resolubles `TARGET_ALL_*` aplican el efecto al conjunto completo que cumpla `condition`, sin elegir uno. Sus equivalentes `ANY` o singulares (`TARGET_CHARACTER`, `TARGET_ENEMY`, `TARGET_MINION`, `TARGET_SCHEME`, `TARGET_SIDE_SCHEME`, `TARGET_ALLY_YOU_CONTROL`, etc.) seleccionan uno del conjunto filtrado. Una condición puede combinar propiedades, rutas, negaciones y alternativas OR; las condiciones agregadas conservan los empates después de comprobar la elegibilidad. `selectCount` o `selectUpTo` explícitos siguen permitiendo elegir un subconjunto incluso con un selector `ALL`.
+Todos los selectores resolubles `TARGET_ALL_*` aplican el efecto al conjunto completo que cumpla `condition`, sin elegir uno. Sus equivalentes `ANY` o singulares (`TARGET_CHARACTER`, `TARGET_ENEMY`, `TARGET_MINION`, `TARGET_SCHEME`, `TARGET_SIDE_SCHEME`, `TARGET_ALLY_YOU_CONTROL`, etc.) seleccionan uno del conjunto filtrado. Una condición puede combinar propiedades, rutas, negaciones y alternativas OR; las condiciones agregadas conservan los empates después de comprobar la elegibilidad. `selectCount` o `selectUpTo` explícitos permiten elegir un subconjunto cuando el texto lo indique.
 
 `TARGET_ALLY` significa un aliado, no un grupo `ALL`; es el alias de `TARGET_ALLY_YOU_CONTROL`. Ambos selectores de aliados controlados, singular y plural, usan el controlador de la fuente cuando existe. `TARGET_ANY`, empleado como comodín de recursos, no es un selector de objetivos registrado en `targetMap`.
 
@@ -98,7 +98,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | :--- | :--- |
 | `TARGET_ALLY` | Los aliados del jugador actual. |
 | `TARGET_ALLY_YOU_CONTROL` | Un aliado elegido entre los que controla el jugador actual. |
-| `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados al jugador actual. |
+| `TARGET_ALL_ENGAGED_MINIONS` | Los esbirros enfrentados a `targetPlayer` cuando un efecto compuesto ha elegido un jugador; si no, los enfrentados al jugador actual. |
 | `TARGET_ALL_ALLIES_YOU_CONTROL` | Todos los aliados controlados por el jugador actual. |
 | `TARGET_ALL_CHARACTERS_YOU_CONTROL` | El superhéroe y los aliados controlados por el jugador actual. |
 | `TARGET_ANY_CHARACTER_YOU_CONTROL` | Un personaje elegido entre el superhéroe y los aliados controlados por el jugador actual. |

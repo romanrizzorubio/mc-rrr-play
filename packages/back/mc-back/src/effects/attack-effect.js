@@ -2,9 +2,13 @@ export const AttackEffect = BaseEffect => class extends BaseEffect {
     constructor(params) {
         super(params);
 
+        this.isAttackDamageOnly = params?.isAttackDamageOnly ?? false;
         this.attackKeywordModifiers = [];
         this.usedAttackKeywords = new Set();
         this.temporaryAttackKeywords = new Map();
+    }
+    get isActivation() {
+        return !this.isAttackDamageOnly && super.isActivation;
     }
     resetResolutionData() {
         super.resetResolutionData();

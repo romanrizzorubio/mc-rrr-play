@@ -193,6 +193,9 @@ import {YouAllyAttackTrigger} from '../../triggers/you-ally-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
 import {YouDealDamageTrigger} from '../../triggers/you-deal-damage-trigger.js';
+import {
+    YouDealtExcessDamageTrigger
+} from '../../triggers/you-dealt-excess-damage-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
 import {YouBasicDefenseTrigger} from '../../triggers/you-basic-defense-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
@@ -280,7 +283,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
     [TRIGGER_YOU_DEAL_DAMAGE]: YouDealDamageTrigger,
-    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE]: YouAttackTrigger,
+    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE]: YouDealtExcessDamageTrigger,
     [TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE]: YouAttackTrigger,
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,
     [TRIGGER_YOU_BASIC_DEFENSE]: YouBasicDefenseTrigger,

@@ -253,7 +253,7 @@ export class Effect extends Engine {
         this._selectedTarget = selectedTarget;
     }
     get activation() {
-        if (!this._activation) {
+        if (!this._activation && this.isActivation) {
             if (this.isAttack) {
                 this._activation = this.match.activationsFactory.createActivation({
                     type: ACTIVATION_ATTACK,
@@ -297,7 +297,7 @@ export class Effect extends Engine {
     get isActivation() {
         const {isAttack, isDefense, isRecovery, isScheme, isThwart} = this;
 
-        return (isAttack || isDefense || isRecovery || isScheme || isThwart);
+        return isAttack || isDefense || isRecovery || isScheme || isThwart;
     }
     get isAttack() {
         return this._isAttack ?? (!this.isCost && this.ability && this.ability.isAttack);

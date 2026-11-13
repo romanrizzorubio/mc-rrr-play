@@ -472,7 +472,7 @@ export class ValidTarget extends Engine {
                 resolvedSelectedTargets.includes(target));
         }
 
-        if (this.isMultipleTarget(params)) {
+        if (this.isAllTarget(params)) {
             return validTarget;
         }
 

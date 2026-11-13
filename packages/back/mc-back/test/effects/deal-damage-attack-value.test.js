@@ -1,17 +1,12 @@
 import assert from 'node:assert/strict';
-import {describe, test} from 'node:test';
+import { describe, test } from 'node:test';
 
-import {
-    CALC_ATTACK,
-    EFFECT_TAKE_DAMAGE,
-    PRIORITY_CONSTANT,
-    TRIGGER_YOUR_HERO_GET_ATTACK,
-} from 'mc-shared';
-import {Attack} from '../../src/activations/attack.js';
-import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
-import {ModifyAttackValueEffect} from '../../src/effects/modify-attack-value-effect.js';
-import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
-import {CharacterGameCard} from '../../src/model/cards/character-game-card.js';
+import { CALC_ATTACK, EFFECT_TAKE_DAMAGE, PRIORITY_CONSTANT, TRIGGER_YOUR_HERO_GET_ATTACK } from 'mc-shared';
+import { Attack } from '../../src/activations/attack.js';
+import { DealDamageEffect } from '../../src/effects/deal-damage-effect.js';
+import { ModifyAttackValueEffect } from '../../src/effects/modify-attack-value-effect.js';
+import { TakeDamageEffect } from '../../src/effects/take-damage-effect.js';
+import { CharacterGameCard } from '../../src/model/cards/character-game-card.js';
 
 describe('DealDamageEffect attack value', () => {
     test('DealDamageEffect resolves attack damage through Calc and the character', async () => {
@@ -108,8 +103,7 @@ describe('DealDamageEffect attack value', () => {
             selectedTarget: minion,
         });
         effect.damageModifier = 1;
-        const attack = new Attack({effect});
-        effect.activation = attack;
+        effect.activation = new Attack({ effect });
         const modifyAttack = new ModifyAttackValueEffect({
             count: 3,
             match,
@@ -119,12 +113,12 @@ describe('DealDamageEffect attack value', () => {
         await modifyAttack.execute({});
         await effect.execute({});
 
-        assert.deepEqual(effect.damage, [8, 3]);
+        assert.equal(effect.damage, 8);
         assert.deepEqual(dealDamage, {
-            selectedTarget: [minion, villain],
-            damage: [8, 3],
+            selectedTarget: minion,
+            damage: 8,
         });
-        assert.deepEqual(effect.takenDamage, [8, 3]);
+        assert.equal(effect.takenDamage, 8);
     });
 
     test('DealDamageEffect carries attack context into TakeDamageEffect', async () => {

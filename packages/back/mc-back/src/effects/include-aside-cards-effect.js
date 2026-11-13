@@ -50,15 +50,13 @@ export class IncludeAsideCardsEffect extends Effect {
 
         const validTarget = new ValidTarget({
             match: this.match,
-            multipleTarget: true,
         });
 
-        this.cards = await validTarget.selectTarget({
+        this.cards = validTarget.getValidTarget({
             target: from,
             player,
         });
 
-        validTarget.multipleTarget = false;
         this.owner = await validTarget.selectTarget({
             target: ownerTarget,
             player,

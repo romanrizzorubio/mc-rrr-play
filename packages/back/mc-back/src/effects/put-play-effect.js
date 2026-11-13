@@ -112,7 +112,12 @@ export class PutPlayEffect extends Effect {
     }
     async canRun(params) {
         const card = this.getCard(params);
-        if ((this.cardSource || this.requirePlayable) && !card) {
+        const deferredCardSource = params.deferredOutputParams?.has(
+            this.cardSource
+        );
+        if ((this.cardSource || this.requirePlayable) &&
+            !card &&
+            !deferredCardSource) {
             return false;
         }
 

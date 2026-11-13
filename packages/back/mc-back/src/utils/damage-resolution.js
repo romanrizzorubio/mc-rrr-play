@@ -1,5 +1,9 @@
 import {EFFECT_DEFEAT} from 'mc-shared';
 
+export function isEnemyDamageTarget(target) {
+    return Boolean(target?.isMinion || target?.isVillain);
+}
+
 export function getDamageStatusTarget(target) {
     return target.isPlayer ?
         target.superhero.currentSide :
@@ -12,6 +16,21 @@ export async function isCharacterLethal(target) {
     }
 
     return (await target.getLife()) <= 0;
+}
+
+export async function calculateExcessDamage(target, damage) {
+    if (!Number.isFinite(damage) ||
+        damage <= 0 ||
+        typeof target?.getLife !== 'function') {
+        return 0;
+    }
+
+    const remainingLife = await target.getLife();
+    if (!Number.isFinite(remainingLife)) {
+        return 0;
+    }
+
+    return Math.max(0, damage - Math.max(0, remainingLife));
 }
 
 export async function defeatCharacter(target, {

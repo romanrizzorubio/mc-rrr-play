@@ -54,6 +54,8 @@ export class AssignDamageEffect extends Effect {
             }
 
             const dealDamageEffect = new DealDamageEffect({
+                ability: this.ability,
+                character: this.character,
                 selectedTarget: card,
                 damage: assignedDamage,
                 match: this.match,

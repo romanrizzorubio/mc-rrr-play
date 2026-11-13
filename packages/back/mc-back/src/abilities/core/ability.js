@@ -197,6 +197,9 @@ export class Ability extends Engine {
     isValidIdentity() {
         return true;
     }
+    async canRunEffect(params, effect) {
+        return effect.canRun(params);
+    }
     async canRun(params, effect = this.effect) {
         const {player} = params;
         const isForced = this.abilityType === ABILITY_FORCED_INTERRUPT ||
@@ -278,7 +281,7 @@ export class Ability extends Engine {
             return false;
         }
         if (effect) {
-            if (!await effect.canRun(params)) {
+            if (!await this.canRunEffect(params, effect)) {
                 return false;
             }
         }

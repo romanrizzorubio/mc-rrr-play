@@ -94,9 +94,18 @@ describe('Avispa precon cards', () => {
             damage: 0,
             hitPoints: 2,
             isAlly: false,
+            isInPlay: true,
             isMinion: true,
             async getLife() {
                 return this.hitPoints - this.damage;
+            },
+            async refresh() {},
+            placeDamage(damage) {
+                this.damage += damage;
+            },
+            async defeat() {
+                this.isInPlay = false;
+                this.isMinion = false;
             },
         };
         const mainScheme = {
@@ -115,23 +124,6 @@ describe('Avispa precon cards', () => {
             match,
             player,
         };
-        const createEffect = match.effectsFactory.createEffect.bind(
-            match.effectsFactory,
-        );
-        match.effectsFactory.createEffect = effectConfig => {
-            if (effectConfig.type === EFFECT_TAKE_DAMAGE) {
-                return {
-                    defeated: false,
-                    takenDamage: 0,
-                    async runEffect() {
-                        minion.damage += effectConfig.damage;
-                        this.takenDamage = effectConfig.damage;
-                    },
-                };
-            }
-
-            return createEffect(effectConfig);
-        };
 
         damageEffect.selectedTarget = minion;
         await damageEffect.prepare(params);
@@ -139,6 +131,7 @@ describe('Avispa precon cards', () => {
         assert.equal(damageEffect.activation.excessDamage, 4);
         assert.equal(damageEffect.selectedTarget, minion);
         assert.equal(minion.damage, 6);
+        assert.equal(minion.isMinion, false);
 
         threatEffect.selectedTarget = mainScheme;
         await threatEffect.prepare(params);
@@ -446,8 +439,8 @@ describe('Avispa precon cards', () => {
 
         await attack.applyOverkill({match, player}, damageEffect);
 
-        assert.deepEqual(damageEffect.selectedTarget, [minion, villain]);
-        assert.deepEqual(damageEffect.damage, [6, 4]);
+        assert.equal(damageEffect.selectedTarget, minion);
+        assert.equal(damageEffect.damage, 6);
         assert.equal(attack.excessDamage, 4);
         assert.equal(await threatEffect.calculate({
             effects: [{activation: attack}],
