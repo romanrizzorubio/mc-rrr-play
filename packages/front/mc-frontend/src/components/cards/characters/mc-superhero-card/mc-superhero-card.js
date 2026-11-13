@@ -195,6 +195,8 @@ export class SuperheroCardComponent extends LitElement {
                     .dragResourcePayment="${this.dragResourcePayment}"
                     .life="${life}"
                     .hitPoints="${hitPoints}"
+                    .generic="${card?.counters}"
+                    .showGeneric="${Boolean(card?.counters)}"
                     .statusCards="${statusCards}"
                     .exhausted="${exhausted}"
                     .attached="${attached}"

@@ -123,6 +123,24 @@ export class DealDamageEffect extends AttackEffect(Effect) {
             damage,
         };
     }
+    async canRun(params) {
+        const resolvedParams = await this.resolveParams(params);
+        const lastStepDamage = this.getLastStepParam('damage', resolvedParams);
+        const damage = lastStepDamage !== undefined ?
+            lastStepDamage :
+            resolvedParams.damage;
+        const paramsCalcTarget = this.paramsCalc?.target;
+        const dependsOnUnpaidArrowCost =
+            !params.arrowPaid &&
+            typeof paramsCalcTarget === 'string' &&
+            paramsCalcTarget.startsWith('effect.ability.arrow.cost.');
+        if (this.paramsCalc && !(damage > 0) &&
+            !dependsOnUnpaidArrowCost) {
+            return false;
+        }
+
+        return super.canRun(resolvedParams);
+    }
     async prepare(params) {
         this.damage = undefined;
         this.additionalDamage = 0;

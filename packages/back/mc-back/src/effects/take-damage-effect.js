@@ -152,20 +152,62 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             piercing: this.isAttack && this.piercing,
         });
     }
-    async triggerWould(params) {
-        const canResolve = await super.triggerWould(params);
+    async resolveStatusBeforeInterrupts() {
         const {selectedTarget} = this;
+        const piercing = this.isAttack && this.piercing;
+        const multiTarget = Array.isArray(selectedTarget);
+
+        if (!multiTarget && !piercing) {
+            return true;
+        }
+
+        const targets = multiTarget ? selectedTarget : [selectedTarget];
+        const result = await resolveToughDamage({
+            targets,
+            damage: this.damage,
+            preventDamage: this.preventDamage,
+            getStatusTarget: target => this.getStatusTarget(target),
+            ignoreTough: this.ignoreTough,
+            piercing,
+        });
+
+        this.damage = result.damage;
+
+        return result.hasDamage;
+    }
+    async triggerWould(params) {
+        const {selectedTarget} = this;
+        const targets = Array.isArray(selectedTarget) ?
+            selectedTarget :
+            [selectedTarget];
+        const isTargetInPlay = target => target?.isInPlay ||
+            target?.controller?.gameZone?.cards?.includes(target) ||
+            target?.engaged?.gameZone?.cards?.includes(target);
+        const wasInPlay = targets.map(isTargetInPlay);
+        const canResolve = await super.triggerWould(params);
         const piercing = this.isAttack && this.piercing;
         const multiTarget = Array.isArray(selectedTarget);
 
         if (!canResolve) {
             return canResolve;
         }
+        const damage = Array.isArray(this.damage) ?
+            this.damage.slice() :
+            targets.map(() => this.damage);
+        let targetLeftPlay = false;
+        targets.forEach((target, index) => {
+            if (wasInPlay[index] && !isTargetInPlay(target)) {
+                damage[index] = 0;
+                targetLeftPlay = true;
+            }
+        });
+        if (targetLeftPlay) {
+            this.damage = multiTarget ? damage : damage[0];
+        }
         if (!multiTarget && !piercing) {
             return canResolve;
         }
 
-        const targets = multiTarget ? selectedTarget : [selectedTarget];
         const result = await resolveToughDamage({
             targets,
             damage: this.damage,

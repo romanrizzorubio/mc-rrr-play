@@ -54,11 +54,18 @@ export class PlayCardResourceCostEffect extends Effect {
             selectedTarget: this.resourceCost.card,
         });
 
-        await payCostEffect.runEffect(params);
-        if (!payCostEffect.resolved || payCostEffect.paymentCancelled) {
-            this.paymentCancelled = payCostEffect.paymentCancelled;
+        const costPaymentSession = params.costPaymentSession;
+        if (costPaymentSession?.committing) {
+            costPaymentSession.deferPayment(() =>
+                payCostEffect.runEffect(params)
+            );
+        } else {
+            await payCostEffect.runEffect(params);
+            if (!payCostEffect.resolved || payCostEffect.paymentCancelled) {
+                this.paymentCancelled = payCostEffect.paymentCancelled;
 
-            return;
+                return;
+            }
         }
 
         this.playCardEffect.resourcesPaid = payment.resources;

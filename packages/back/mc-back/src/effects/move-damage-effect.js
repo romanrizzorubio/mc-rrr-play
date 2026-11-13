@@ -87,6 +87,29 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
         });
     }
 
+    async resolveStatusBeforeInterrupts() {
+        const {selectedTarget} = this;
+        const piercing = this.isAttack && this.piercing;
+        const multiTarget = Array.isArray(selectedTarget);
+
+        if (!multiTarget && !piercing) {
+            return true;
+        }
+
+        const targets = multiTarget ? selectedTarget : [selectedTarget];
+        const result = await resolveToughDamage({
+            targets,
+            damage: this.damage,
+            preventDamage: this.preventDamage,
+            getStatusTarget: target => this.getStatusTarget(target),
+            piercing,
+        });
+
+        this.damage = result.damage;
+
+        return result.hasDamage;
+    }
+
     getStatusTarget(target) {
         return getDamageStatusTarget(target);
     }

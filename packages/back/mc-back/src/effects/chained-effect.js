@@ -37,14 +37,24 @@ export class ChainedEffect extends Effect {
     constructor({
 // ChainedEffect
         effects = [],
+        hasAdditional = false,
         outputParams = [],
         deckId,
     }) {
         super(arguments[0]);
 
         this.effects = effects;
+        this.hasAdditional = hasAdditional;
         this.outputParams = outputParams;
         this.deckId = deckId;
+
+        if (hasAdditional &&
+            (effects.length < 2 ||
+                !Number.isFinite(effects[0]?.damageModifier))) {
+            throw new TypeError(
+                'An additional-damage chain requires a damage effect first.'
+            );
+        }
 
         effects.forEach(effect => {
             if (!effect.target) {
@@ -152,6 +162,10 @@ export class ChainedEffect extends Effect {
                 effect.canRun(newParams));
         }
 
+        if (this.hasAdditional) {
+            return this.effects[0].canRun(newParams);
+        }
+
         return this.promisesSequentialSome(this.effects, effect =>
             effect.canRun(newParams));
     }
@@ -198,7 +212,10 @@ export class ChainedEffect extends Effect {
         const newParams = params.costPaymentSession?.getExecutionParams(this) ||
             this.getEffectParams(params);
 
-        await this.promisesSequential(this.effects, async effect => {
+        const effects = this.hasAdditional ?
+            [...this.effects.slice(1), this.effects[0]] :
+            this.effects;
+        await this.promisesSequential(effects, async effect => {
             this.selectedTarget = getCurrentVillainStage(
                 this.selectedTarget,
                 this.match

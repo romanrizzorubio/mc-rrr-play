@@ -1318,6 +1318,10 @@ export class Player extends Engine {
             ...player.superhero.extraTraits,
             ...effectiveTraits,
         ])].filter(trait => !printedTraits.includes(trait));
+        const extraKeywords = await superhero.getExtraKeywords({
+            player: this,
+            card: player.superhero,
+        });
 
         return {
             ...player,
@@ -1328,6 +1332,7 @@ export class Player extends Engine {
                 ...player.superhero,
                 ...stats,
                 extraTraits,
+                extraKeywords,
                 abilities,
                 attached,
                 canFlip,

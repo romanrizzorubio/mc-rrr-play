@@ -273,6 +273,7 @@ export class Ability extends Engine {
         if (!params.arrowPaid && !await this.costs.canPay({
             ...params,
             ability: this,
+            abilityEffect: effect,
         })) {
             return false;
         }
@@ -294,7 +295,7 @@ export class Ability extends Engine {
         return this.effect.getValidTarget(match, player);
     }
     initTriggers() {}
-    async payCosts(params) {
+    async payCosts(params, paramsToUpdate = params) {
         const paymentParams = {...params};
         delete paymentParams.preselectedTarget;
         delete paymentParams.fixedPreselectedTarget;
@@ -304,7 +305,7 @@ export class Ability extends Engine {
         const result = await this.costs.pay({
             ...paymentParams,
             ability: this,
-        }, params);
+        }, paramsToUpdate);
 
         this.paymentCancelled = result.cancelled;
 
@@ -500,7 +501,9 @@ export class Ability extends Engine {
         try {
             this.resolved = false;
             this.paymentCancelled = false;
-            this.costs.clearPaymentEffect();
+            if (!arrowPaid) {
+                this.costs.clearPaymentEffect();
+            }
             if (typeof resolutionEffect?.resetResolutionState === 'function') {
                 resolutionEffect.resetResolutionState({
                     preserveSelectedTarget: hasPreselectedResolutionTarget ||
@@ -539,7 +542,10 @@ export class Ability extends Engine {
                     return;
                 }
 
-                const costsPaid = arrowPaid || await this.payCosts(params);
+                const costsPaid = arrowPaid || await this.payCosts({
+                    ...params,
+                    abilityEffect: resolutionEffect,
+                }, resolutionParams);
 
                 if (costsPaid) {
                     this.maximum?.use(resolutionParams);

@@ -36,6 +36,7 @@ import {
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_HERO_DEFENDS_ATTACK,
+    TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_INITIAL_PLAYER_CHANGED,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
@@ -74,6 +75,7 @@ import {
     TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU,
+    TRIGGER_VILLAIN_PHASE_START,
     TRIGGER_VILLAIN_PHASE_STEP,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_YOU_ANY_ATTACK,
@@ -92,6 +94,7 @@ import {
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
+    TRIGGER_YOUR_HERO_GET_RETALIATE,
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART,
@@ -167,6 +170,7 @@ import {
     ThisCountersRemovedTrigger
 } from '../../triggers/this-counters-removed-trigger.js';
 import {HeroDefendsAttackTrigger} from '../../triggers/hero-defends-attack-trigger.js';
+import {HeroDefendedAttackTrigger} from '../../triggers/hero-defended-attack-trigger.js';
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
 import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigger.js';
@@ -193,6 +197,9 @@ import {
     YourHeroAttackDefeatEnemyTrigger
 } from '../../triggers/your-hero-attack-defeat-enemy-trigger.js';
 import {YourHeroGetAttackTrigger} from '../../triggers/your-hero-get-attack-trigger.js';
+import {
+    YourHeroGetRetaliateTrigger
+} from '../../triggers/your-hero-get-retaliate-trigger.js';
 import {YourHeroGetDefenseTrigger} from '../../triggers/your-hero-get-defense-trigger.js';
 import {GetHandSizeTrigger} from '../../triggers/get-hand-size-trigger.js';
 import {
@@ -238,6 +245,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_CHARACTER_SCHEMES]: CharacterSchemesTrigger,
     [TRIGGER_CHARACTER_WOULD_BE_DEFEATED]: CharacterWouldBeDefeatedTrigger,
     [TRIGGER_HERO_DEFENDS_ATTACK]: HeroDefendsAttackTrigger,
+    [TRIGGER_HERO_DEFENDED_ATTACK]: HeroDefendedAttackTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,
@@ -257,6 +265,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_VILLAIN_ATTACKS]: VillainAttacksTrigger,
     [TRIGGER_VILLAIN_ATTACKS_YOU]: VillainAttacksYouTrigger,
     [TRIGGER_VILLAIN_ACTIVATES]: VillainActivatesTrigger,
+    [TRIGGER_VILLAIN_PHASE_START]: Trigger,
     [TRIGGER_VILLAIN_PHASE_STEP]: Trigger,
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
@@ -270,6 +279,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOU_DEFEAT_SIDE_SCHEME]: YouDefeatSideSchemeTrigger,
     [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: YourHeroAttackDefeatEnemyTrigger,
     [TRIGGER_YOUR_HERO_GET_ATTACK]: YourHeroGetAttackTrigger,
+    [TRIGGER_YOUR_HERO_GET_RETALIATE]: YourHeroGetRetaliateTrigger,
     [TRIGGER_YOUR_HERO_GET_DEFENSE]: YourHeroGetDefenseTrigger,
     [TRIGGER_GET_HAND_SIZE]: GetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,

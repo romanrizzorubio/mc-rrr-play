@@ -5,12 +5,14 @@ import {
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_INTERRUPT,
+    ABILITY_OPTION,
     CARD_TYPE_EVENT,
     CARD_TYPE_TREACHERY,
     CALC_RECOVERY,
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_DEAL_DAMAGE,
     EFFECT_CHAINED,
+    EFFECT_CHOOSE_ABILITY,
     EFFECT_DRAW_CARD,
     EFFECT_HEAL,
     EFFECT_FLIP,
@@ -19,6 +21,7 @@ import {
     EFFECT_MODIFY_HAND_SIZE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
+    EFFECT_PLACE_COUNTERS,
     EFFECT_READY,
     EFFECT_REMOVE_STATUS,
     EFFECT_REMOVE_THREAT,
@@ -30,6 +33,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    RESOURCE_WILD,
     STATUS_CONFUSED,
     STATUS_STUNNED,
     TARGET_CHARACTER,
@@ -41,6 +45,8 @@ import {
     TARGET_DECK,
     TARGET_HERO,
     TARGET_HERO_SIDE,
+    TARGET_PARENT,
+    TARGET_UPGRADE_YOU_CONTROL,
     TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SCHEME,
     TARGET_VILLAIN,
@@ -631,6 +637,101 @@ export default [
                                         target: 'player.superhero',
                                         formula: CALC_RECOVERY,
                                     },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-flora-y-fauna',
+        classification: CLASSIFICATION_BASIC,
+        order: 16020,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Flora y fauna',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/events/16020.png',
+                cost: 1,
+                resources: [RESOURCE_WILD],
+                classification: CLASSIFICATION_BASIC,
+                keywords: {
+                    teamUp: ['Groot', 'Mapache Cohete'],
+                },
+                maximum: {
+                    count: 1,
+                    target: TARGET_DECK,
+                },
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_CHOOSE_ABILITY,
+                                params: {
+                                    options: [
+                                        {
+                                            type: ABILITY_OPTION,
+                                            params: {
+                                                name: 'Coloca 2 contadores de Crecimiento sobre Groot y prepáralo',
+                                                effect: {
+                                                    type: EFFECT_CHAINED,
+                                                    params: {
+                                                        target: TARGET_YOUR_SUPERHERO,
+                                                        effects: [
+                                                            {
+                                                                type: EFFECT_PLACE_COUNTERS,
+                                                                params: {
+                                                                    target: TARGET_PARENT,
+                                                                    counters: 2,
+                                                                    maxCounters: 10,
+                                                                },
+                                                            },
+                                                            {
+                                                                type: EFFECT_READY,
+                                                                params: {
+                                                                    target: TARGET_YOUR_HERO,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            type: ABILITY_OPTION,
+                                            params: {
+                                                name: 'Coloca 2 contadores de Carga sobre una Mejora de Mapache Cohete y prepárala',
+                                                effect: {
+                                                    type: EFFECT_CHAINED,
+                                                    params: {
+                                                        target: TARGET_UPGRADE_YOU_CONTROL,
+                                                        condition: {
+                                                            'card.set': 'Mapache Cohete',
+                                                        },
+                                                        effects: [
+                                                            {
+                                                                type: EFFECT_PLACE_COUNTERS,
+                                                                params: {
+                                                                    target: TARGET_PARENT,
+                                                                    counters: 2,
+                                                                },
+                                                            },
+                                                            {
+                                                                type: EFFECT_READY,
+                                                                params: {
+                                                                    target: TARGET_PARENT,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

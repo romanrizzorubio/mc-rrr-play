@@ -156,6 +156,63 @@ describe('match lobby page permissions', () => {
         assert.equal(page.enteringMatch, false);
         assert.equal(page.error, '');
     });
+
+    test('players wait for lobby configuration before joining the match socket', async () => {
+        const calls = [];
+        let lobby = {
+            id: 'room',
+            name: 'Groot contra Rhino',
+            ownerId: 'host',
+            status: 'starting',
+            matchConfigured: false,
+            players: [{id: 'guest-seat', userId: 'guest', hero: 'groot'}],
+            expert: false,
+        };
+        const page = Object.assign(Object.create(McMatchLobbyPage.prototype), {
+            user: {id: 'guest'},
+            active: true,
+            id: 'room',
+            lobby: null,
+            loading: false,
+            requestSequence: 0,
+            enteringMatch: false,
+            prepareMatch: async () => calls.push('prepare'),
+            api: {
+                beginMatch: name => calls.push(`begin:${name}`),
+                markMatchReady: () => calls.push('ready'),
+                joinMatch: async () => {
+                    calls.push('join');
+                    return true;
+                },
+            },
+            apiConfigMatch: {
+                getLobby: async () => lobby,
+                startLobby: async () => calls.push('start'),
+                initMatch: async () => assert.fail('A guest must not initialize the match'),
+            },
+            loadLobbyDecks: async () => {},
+            applyRouteDeckSelection: async () => {},
+            dispatchEvent: event => calls.push(event.type),
+        });
+
+        await page.loadLobby();
+        await McMatchLobbyPage.prototype.enterStartedMatch.call(page, lobby);
+        assert.deepEqual(calls, []);
+        assert.equal(page.error, '');
+
+        lobby = {...lobby, matchConfigured: true};
+        await page.loadLobby();
+
+        assert.deepEqual(calls, [
+            'prepare',
+            'begin:Groot contra Rhino',
+            'ready',
+            'match-resumed',
+            'join',
+        ]);
+        assert.equal(page.error, '');
+    });
+
     test('roster player names are bold while aspect labels are regular weight', () => {
         assert.match(McMatchLobbyPageCss.cssText, /\.players \.player-name\s*\{[^}]*font-family:\s*var\(--mc-font-title,\s*sans-serif\);[^}]*font-weight:\s*700;/u);
         assert.match(McMatchLobbyPageCss.cssText, /\.players \.player-aspect\s*\{[^}]*font-weight:\s*400;/u);
@@ -777,6 +834,7 @@ describe('match lobby page permissions', () => {
                         status: 'starting',
                         expert: false,
                         maxPlayers: 4,
+                        matchConfigured: true,
                         players: [{userId: 'host-1', name: 'Host'}],
                     },
                     matchId: 'match-1',
