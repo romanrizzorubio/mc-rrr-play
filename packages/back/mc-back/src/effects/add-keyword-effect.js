@@ -1,4 +1,5 @@
 import {Effect} from './effect.js';
+import {STATUS_STALWART} from 'mc-shared';
 import {getSelectedTargets} from '../utils/target-utils.js';
 import {resolveNumericKeyword} from '../model/commons/keywords.js';
 
@@ -7,6 +8,7 @@ const booleanKeywords = new Set([
     'permanent',
     'toughness',
     'quickStrike',
+    'stalwart',
     'surge',
     'villainous',
     'overkill',
@@ -69,6 +71,9 @@ export class AddKeywordEffect extends Effect {
             if (!target?.isCard || typeof target.addKeywordModifier !== 'function') {
                 throw new TypeError('EFFECT_ADD_KEYWORD requires card targets.');
             }
+            if (resolvedKeyword.stalwart && !target.isCharacter) {
+                throw new TypeError('Stalwart can only be granted to a character.');
+            }
 
             target.addKeywordModifier(
                 source,
@@ -77,6 +82,11 @@ export class AddKeywordEffect extends Effect {
                 Boolean(params.lasting),
                 modifierCondition
             );
+            if (resolvedKeyword.stalwart &&
+                target.statusAvailable === STATUS_STALWART) {
+                target.removeStunned();
+                target.removeConfused();
+            }
             if (typeof target.refresh === 'function') {
                 await target.refresh();
             }

@@ -18,6 +18,7 @@ import {
     TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
     TARGET_MINION,
+    TARGET_PLAYER_FEWEST_MINIONS,
     TARGET_PLAYER_LOWEST_HERO_LIFE,
     TARGET_VILLAIN,
     TARGET_YOUR_HERO,
@@ -137,6 +138,22 @@ export const groupTargets = {
 
         return heroes.filter(zonePlayer =>
             zonePlayer.superhero.life === lowestLife);
+    },
+    [TARGET_PLAYER_FEWEST_MINIONS]: ({match, player}) => {
+        const players = getPlayersFor(match, player)
+            .filter(targetPlayer => !targetPlayer.defeated);
+        if (!players.length) {
+            return [];
+        }
+
+        const minionCounts = players.map(targetPlayer =>
+            targetPlayer.minions?.length ??
+            targetPlayer.gameZone?.minions?.length ??
+            0);
+        const fewestMinions = Math.min(...minionCounts);
+
+        return players.filter((_targetPlayer, index) =>
+            minionCounts[index] === fewestMinions);
     },
     [TARGET_ALL_SIDE_SCHEMES]: ({match, player, condition}) =>
         filterTargetsByCondition(getSideSchemesFor(match, player), condition),

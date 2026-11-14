@@ -1,4 +1,5 @@
 import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
+import {checkCondition} from '../../engine/utils.js';
 
 import {GameZone} from './game-zone.js';
 
@@ -46,6 +47,28 @@ export class ScenarioZone extends GameZone {
     addToGameZone(card) {
         super.addToGameZone(card);
         card.scenarioZone = this;
+    }
+    searchCard(condition) {
+        const activeCards = [
+            this.currentVillain,
+            this.currentScheme?.currentSide,
+        ];
+        const activeCard = activeCards.find(card =>
+            card && checkCondition(card, condition));
+
+        return activeCard ?? super.searchCard(condition);
+    }
+    searchCards(condition) {
+        const activeCards = [
+            this.currentVillain,
+            this.currentScheme?.currentSide,
+        ].filter(card =>
+            card && checkCondition(card, condition));
+
+        return [...new Set([
+            ...activeCards,
+            ...super.searchCards(condition),
+        ])];
     }
     async refresh() {
         await super.refresh();

@@ -127,6 +127,7 @@ export const EFFECT_RETURN_HAND = 'return-hand';
 export const EFFECT_REVEAL_ENCOUNTER = 'reveal-encounter';
 export const EFFECT_SEARCH_CARD_REVEAL = 'search-cards-reveal';
 export const EFFECT_SEARCH_CARDS = 'search-cards';
+export const EFFECT_SHOW_CARDS = 'show-cards';
 export const EFFECT_SET_LIFE = 'set-life';
 export const EFFECT_SET_CONTROLLER = 'set-controller';
 export const EFFECT_SET_THWART_VALUE = 'set-thwart-value';

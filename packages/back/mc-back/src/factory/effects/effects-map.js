@@ -125,6 +125,7 @@ import {
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
+    EFFECT_SHOW_CARDS,
     EFFECT_SIMULTANEOUS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
@@ -224,6 +225,7 @@ import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
 import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
+import {ShowCardsEffect} from '../../effects/show-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
 import {ModifyExcessDamageEffect} from '../../effects/modify-excess-damage-effect.js';
@@ -374,6 +376,7 @@ export const EFFECT_MAP = {
     [EFFECT_DELAYED]: DelayedEffect,
     [EFFECT_LASTING]: LastingEffect,
     [EFFECT_LOOK_AT_TOP_CARDS]: LookAtTopCardsEffect,
+    [EFFECT_SHOW_CARDS]: ShowCardsEffect,
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
     [EFFECT_MODIFY_EXCESS_DAMAGE]: ModifyExcessDamageEffect,

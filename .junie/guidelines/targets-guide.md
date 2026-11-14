@@ -80,6 +80,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 | `TARGET_ALL_SUPERHEROES` | Los superhéroes (ambas identidades) de todos los jugadores de la zona del jugador que inicia el efecto; devuelve las cartas de superhéroe y resuelve todos los objetivos. |
 | `TARGET_ALL_HEROES_ALLIES` | Los superhéroes en forma de héroe y los aliados de los jugadores de la zona del jugador que inicia el efecto. |
 | `TARGET_ALL_PLAYERS` | Los jugadores de la zona del jugador que inicia el efecto que cumplen `condition`; resuelve todos sin selección. |
+| `TARGET_PLAYER_FEWEST_MINIONS` | Los jugadores no derrotados de la zona del jugador que inicia el efecto que están enfrentados con el menor número de esbirros; devuelve todos los empatados. |
 | `TARGET_PLAYER_LOWEST_HERO_LIFE` | Los jugadores de la zona del jugador que inicia el efecto en identidad de héroe cuyo superhéroe tenga la menor Vida restante; devuelve todos los empatados. |
 | `TARGET_ALL_SIDE_SCHEMES` | Todos los planes secundarios; resuelve todos los resultados. |
 | `TARGET_ENVIRONMENT` | Los entornos en juego en la zona del escenario; selecciona uno si hay varios. |

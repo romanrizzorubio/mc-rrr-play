@@ -1,6 +1,7 @@
 import {
     DIALOG_SELECT_TARGET,
     STATUS_CONFUSED,
+    STATUS_STALWART,
     STATUS_STUNNED,
     STATUS_TOUGH,
     TARGET_CHARACTER,
@@ -23,18 +24,23 @@ export class ReplaceStatusEffect extends Effect {
         this.replacementStatus = undefined;
     }
     getAvailableStatuses(card) {
-        return STATUS_OPTIONS
-            .filter(([status]) => this.statuses.includes(status))
+        return this.getAllowedStatuses(card)
             .filter(([status]) => (card[status] || 0) > 0);
     }
-    hasReplacement(selectedStatus) {
-        return STATUS_OPTIONS.some(([status]) =>
-            this.statuses.includes(status) &&
+    getAllowedStatuses(card) {
+        return STATUS_OPTIONS
+            .filter(([status]) => this.statuses.includes(status))
+            .filter(([status]) =>
+                card.statusAvailable !== STATUS_STALWART ||
+                (status !== STATUS_STUNNED && status !== STATUS_CONFUSED));
+    }
+    hasReplacement(card, selectedStatus) {
+        return this.getAllowedStatuses(card).some(([status]) =>
             status !== selectedStatus);
     }
     filterTarget(card) {
         return this.getAvailableStatuses(card).some(([status]) =>
-            this.hasReplacement(status)) &&
+            this.hasReplacement(card, status)) &&
             super.filterTarget.apply(this, arguments);
     }
     async canRun(params) {
@@ -44,7 +50,8 @@ export class ReplaceStatusEffect extends Effect {
 
         return this.selectedTarget ?
             this.getAvailableStatuses(this.selectedTarget)
-                .some(([status]) => this.hasReplacement(status)) :
+                .some(([status]) =>
+                    this.hasReplacement(this.selectedTarget, status)) :
             this.getValidTarget(params).length > 0;
     }
     async selectTarget(params) {
@@ -107,10 +114,8 @@ export class ReplaceStatusEffect extends Effect {
             {targetPlayer: params.player}
         );
 
-        const replacements = STATUS_OPTIONS
-            .filter(([status]) =>
-                this.statuses.includes(status) &&
-                status !== this.selectedStatus);
+        const replacements = this.getAllowedStatuses(card)
+            .filter(([status]) => status !== this.selectedStatus);
         this.replacementStatus = await selectStatusOption(
             this,
             replacements,

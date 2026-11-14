@@ -52,6 +52,19 @@ export class McScenario extends LitElement {
             }));
         }
     }
+    handleCardMenuClick(e) {
+        e.stopPropagation();
+
+        const {card, ability} = e.detail;
+        this.dispatchEvent(new CustomEvent('ability', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card,
+                ability,
+            },
+        }));
+    }
     isDeckSelectable(deck) {
         return Boolean(
             deck?.id &&
@@ -177,28 +190,38 @@ export class McScenario extends LitElement {
             </div>
         `;
     }
-    renderSchemes(zone = this.scenario?.gameZone) {
+    renderSchemes(zone = this.scenario?.gameZone, includeExtraDecks = true) {
         const cards = zone?.cards || [];
+        const hasEnvironmentArea = McScenario.hasEnvironmentArea(
+            zone,
+            this.scenario?.extraDecks,
+            includeExtraDecks
+        );
 
         return html`
-            <div class="schemes">
-                <div class="main-scheme-decks">
-                    ${this.renderMainScheme(zone)}
+            <div class="${hasEnvironmentArea ?
+                'schemes has-environment-area' : 'schemes'}">
+                <div class="scheme-cards">
+                    <div class="main-scheme-decks">
+                        ${this.renderMainScheme(zone)}
+                    </div>
+                    <mc-card-list
+                        .cards="${cards.filter(card =>
+                            card.isSideScheme)}"
+                        .player="${this.player}"
+                        .dragActivation="${this.dragActivation}"
+                        .dragPlayCard="${this.dragPlayCard}"
+                        .dragResourcePayment="${this.dragResourcePayment}"
+                        basic-activation-type="thwart"
+                        show-basic-stats
+                        show-threat
+                        show-menu-abilities
+                        highlight-playable
+                        @card-list-select="${this.handleCardSelect.bind(this)}"
+                        @card-list-menu-click="${this.handleCardMenuClick.bind(this)}"
+                    ></mc-card-list>
                 </div>
-                <mc-card-list
-                    .cards="${cards.filter(card =>
-                        card.isSideScheme)}"
-                    .player="${this.player}"
-                    .dragActivation="${this.dragActivation}"
-                    .dragPlayCard="${this.dragPlayCard}"
-                    .dragResourcePayment="${this.dragResourcePayment}"
-                    basic-activation-type="thwart"
-                    show-basic-stats
-                    show-threat
-                    show-menu-abilities
-                    highlight-playable
-                    @card-list-select="${this.handleCardSelect.bind(this)}"
-                ></mc-card-list>
+                ${this.renderEnvironments(zone, includeExtraDecks)}
             </div>
         `;
     }
@@ -245,14 +268,8 @@ export class McScenario extends LitElement {
                                     (zone.players || []).join(', ')}
                             </header>
                         ` : ''}
-                        <div class="${McScenario.hasEnvironmentArea(
-                            zone,
-                            this.scenario?.extraDecks,
-                            index === 0
-                        ) ? 'scenario-zone-cards has-environment-area' :
-                            'scenario-zone-cards'}">
-                            ${this.renderSchemes(zone)}
-                            ${this.renderEnvironments(zone, index === 0)}
+                        <div class="scenario-zone-cards">
+                            ${this.renderSchemes(zone, index === 0)}
                             ${this.renderVillain(zone)}
                         </div>
                     </section>
@@ -297,19 +314,13 @@ export class McScenario extends LitElement {
             }];
         const visibleZones = this.getVisibleZones(zones);
         const zone = visibleZones[0];
-        const hasEnvironmentArea = McScenario.hasEnvironmentArea(
-            zone,
-            scenario?.extraDecks
-        );
 
         return scenario ? html`
             ${visibleZones.length > 1 ? this.renderDeck() : ''}
             ${visibleZones.length > 1 ? this.renderZones(visibleZones) : html`
-                <div class="${hasEnvironmentArea ?
-                    'scenario-board has-environment-area' : 'scenario-board'}">
+                <div class="scenario-board">
                     ${this.renderDeck()}
                     ${this.renderSchemes(zone)}
-                    ${this.renderEnvironments(zone)}
                     ${this.renderVillain(zone)}
                 </div>
             `}
