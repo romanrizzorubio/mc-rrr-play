@@ -9,6 +9,7 @@ import {
 import {Deck} from '../../src/model/match/deck.js';
 import {DiscardUntilEffect} from '../../src/effects/discard-until-effect.js';
 import {EngageEffect} from '../../src/effects/engage-effect.js';
+import {PutPlayEffect} from '../../src/effects/put-play-effect.js';
 
 describe('discard until and engage effects', () => {
     test('DiscardUntilEffect discards through a matching card and returns it for the next effect', async () => {
@@ -54,6 +55,9 @@ describe('discard until and engage effects', () => {
         await effect.execute(params);
 
         assert.equal(params.selectedCard, mastersOfEvilMinion);
+        assert.equal(params.selectedCardDeck, deck);
+        assert.equal(effect.selectedCard, mastersOfEvilMinion);
+        assert.equal(effect.selectedCardDeck, deck);
         assert.deepEqual(params.discardedCards, [
             discardedMinion,
             mastersOfEvilMinion,
@@ -62,6 +66,58 @@ describe('discard until and engage effects', () => {
         assert.deepEqual(deck.cards, [remainingCard]);
         assert.deepEqual(dialogs, []);
         assert.equal(refreshCount, 1);
+    });
+
+    test('PutPlayEffect removes a cycled selected card from its original deck', async() => {
+        const ownerDeck = new Deck({owner: {match: {}}});
+        ownerDeck.cards = [];
+        ownerDeck.refresh = async() => {};
+        const owner = {deck: ownerDeck};
+        const selectedCard = {
+            id: 'cycled-minion',
+            isCard: true,
+            isEncounterCard: true,
+            isMinion: true,
+            isPlayerCard: false,
+            isInPlay: false,
+            owner,
+            async initTriggers() {},
+        };
+        const otherDiscardedCard = {id: 'discarded-card'};
+        const selectedCardDeck = new Deck({owner: {match: {}}});
+        selectedCardDeck.cards = [otherDiscardedCard, selectedCard];
+        selectedCardDeck.checkCycle = async() => {
+            if (!selectedCardDeck.cards.length &&
+                selectedCardDeck.discardPile.length) {
+                selectedCardDeck.cycle();
+            }
+        };
+        selectedCardDeck.refresh = async() => {};
+
+        const discardUntil = new DiscardUntilEffect({
+            condition: {isMinion: true},
+            selectedTarget: selectedCardDeck,
+        });
+        const params = {};
+        await discardUntil.execute(params);
+
+        assert.equal(params.selectedCard, selectedCard);
+        assert.equal(params.selectedCardDeck, selectedCardDeck);
+        assert.ok(selectedCardDeck.cards.includes(selectedCard));
+
+        const player = {gameZone: {}};
+        const putPlay = new PutPlayEffect({
+            cardSource: 'selectedCard',
+            controller: player,
+            match: {players: []},
+        });
+        await putPlay.execute({...params, player});
+
+        assert.equal(selectedCard.controller, player);
+        assert.ok(!selectedCardDeck.cards.includes(selectedCard));
+        assert.ok(!selectedCardDeck.discardPile.includes(selectedCard));
+        assert.ok(!ownerDeck.cards.includes(selectedCard));
+        assert.ok(!ownerDeck.discardPile.includes(selectedCard));
     });
 
     test('DiscardUntilEffect can keep the matching card out of discard while recording it', async () => {

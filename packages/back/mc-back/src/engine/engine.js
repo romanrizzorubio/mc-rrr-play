@@ -24,12 +24,12 @@ export class Engine {
     }
     constructor() {
         this.triggers = {};
-
+    }
+    get triggersFactory() {
         if (!Engine.triggersFactory) {
             Engine.triggersFactory = new TriggersFactory();
         }
-    }
-    get triggersFactory() {
+
         return Engine.triggersFactory;
     }
     get currentRound() {

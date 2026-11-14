@@ -8,6 +8,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_CHOOSE,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_HEAL,
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
@@ -39,6 +40,7 @@ import {
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_CHARACTER_DEFENDED_ATTACK,
     TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
 
@@ -487,5 +489,45 @@ export default [
             },
         },
     },
-
+    {
+        '_id': 'basic-groot',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 16047,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Groot',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/allies/16047.png',
+                'traits': [TRAIT_GUARDIAN],
+                'unique': true,
+                'cost': 3,
+                'resources': [RESOURCE_WILD],
+                'classification': CLASSIFICATION_BASIC,
+                'attack': 2,
+                'attackConsequential': 2,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 6,
+                'paramsToPlay': {
+                    'superhero.currentSide.traits': TRAIT_GUARDIAN,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_DEFENDED_ATTACK,
+                            'effect': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'damage': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

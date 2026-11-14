@@ -4,6 +4,7 @@ import {Trigger} from './base/trigger.js';
 export class RetaliateTrigger extends Trigger {
     constructor(attack, target) {
         const ability = {
+            card: target,
             name: 'Represalia',
             effect: {
                 isChoose: false,
@@ -24,7 +25,7 @@ export class RetaliateTrigger extends Trigger {
         this.target = target;
     }
     canTrigger(params) {
-        return this.attack.canRetaliate(this.target, params);
+        return this.attack.canRetaliate(this.target, params, this.ability);
     }
     getName() {
         return this.ability.name;
@@ -33,7 +34,7 @@ export class RetaliateTrigger extends Trigger {
         return false;
     }
     async runTrigger(params) {
-        await this.attack.applyRetaliate(this.target, params);
+        await this.attack.applyRetaliate(this.target, params, this.ability);
         this.ability.resolved = true;
         this.triggered = true;
         this.markTriggeredFor(params.effect);

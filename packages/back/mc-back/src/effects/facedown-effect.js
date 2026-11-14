@@ -46,12 +46,11 @@ export class FaceDownEffect extends Effect {
 
         const {cardsTarget} = this;
         const validTarget = new ValidTarget({
-            multipleTarget: true,
             match: this.match,
         });
 
         if (!this.cards?.length) {
-            this.cards = await validTarget.selectTarget({
+            this.cards = validTarget.getValidTarget({
                 ...params,
                 target: cardsTarget,
                 source: this.source,

@@ -16,6 +16,19 @@ export class RandomCardEffect extends Effect {
 
         this.cards = [];
     }
+    selectTarget(params) {
+        if (this.source) {
+            return this.validTarget.getValidTarget({
+                ...params,
+                ability: this.ability,
+                effect: this,
+                source: this.source,
+                target: this.target,
+            });
+        }
+
+        return super.selectTarget(params);
+    }
     resetResolutionData() {
         super.resetResolutionData();
         this.cards = [];

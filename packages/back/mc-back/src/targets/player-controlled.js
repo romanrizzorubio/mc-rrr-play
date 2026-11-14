@@ -3,12 +3,14 @@ import {
     TARGET_ALL_CHARACTERS_YOU_CONTROL,
     TARGET_ALLY,
     TARGET_ALL_ENGAGED_MINIONS,
+    TARGET_ALL_UPGRADES_YOU_CONTROL,
     TARGET_ANY_CHARACTER_YOU_CONTROL,
     TARGET_SUPPORT_YOU_CONTROL,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_UPGRADE_YOU_CONTROL,
 } from 'mc-shared';
 import {checkCondition} from '../engine/utils.js';
+import {getPlayersFor} from '../utils/match-zone-utils.js';
 import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
 
 const isLinkedToYourSuperhero = (upgrade, superhero) => {
@@ -39,8 +41,23 @@ export const playerControlledTargets = {
     },
     [TARGET_ALLY]: params =>
         playerControlledTargets[TARGET_ALL_ALLIES_YOU_CONTROL](params),
-    [TARGET_ALL_ENGAGED_MINIONS]: ({player, condition}) =>
-        filterTargetsByCondition(player.minions, condition),
+    [TARGET_ALL_ENGAGED_MINIONS]: ({
+        match,
+        player,
+        params,
+        targetPlayer,
+        condition,
+    }) => {
+        const selectedTargetPlayer = params?.targetPlayer ?? targetPlayer;
+        const selectedPlayer = selectedTargetPlayer?.isPlayer &&
+            getPlayersFor(match, player).includes(selectedTargetPlayer) ?
+            selectedTargetPlayer :
+            player;
+
+        return filterTargetsByCondition(selectedPlayer.minions, condition);
+    },
+    [TARGET_ALL_UPGRADES_YOU_CONTROL]: ({player, condition}) =>
+        filterTargetsByCondition(player.upgrades, condition),
     [TARGET_ANY_CHARACTER_YOU_CONTROL]: ({condition, player}) =>
         filterTargetsByCondition(player.friends, condition),
     [TARGET_SUPPORT_YOU_CONTROL]: ({player, condition}) =>

@@ -4,7 +4,10 @@ import styles from './mc-encounters-reveal-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import '../../cards/mc-card/mc-card.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
-import {BACK_CARD_ENCOUNTER} from '../../../misc/cards.js';
+import {
+    BACK_CARD_ENCOUNTER,
+    BACK_CARD_PLAYER,
+} from '../../../misc/cards.js';
 import {isPlanCard} from '../../../misc/utils.js';
 import {
     renderAmplificationIcons,
@@ -64,6 +67,9 @@ export class McEncountersRevealDialog extends McDialog {
             },
         } = this;
         const isHorizontal = Boolean(horizontal || isPlanCard(card));
+        const facedownImage = card.isFacedownCard && card.isMinion ?
+            BACK_CARD_PLAYER :
+            BACK_CARD_ENCOUNTER;
         const boostIcons = renderBoostIcons(card.boost);
         const amplificationIcons = renderAmplificationIcons(
             appliedAmplificationIcons
@@ -97,7 +103,7 @@ export class McEncountersRevealDialog extends McDialog {
                     image="${card.image}"
                     .isFacedownCard="${card.isFacedownCard}"
                     .canPeekFacedown="${Boolean(!this.readOnly && card.isFacedownCard && card.image)}"
-                    .facedownImage="${BACK_CARD_ENCOUNTER}"
+                    .facedownImage="${facedownImage}"
                     size="l"
                     ?horizontal="${isHorizontal}"
                 ></mc-card>

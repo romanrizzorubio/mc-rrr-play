@@ -24,7 +24,6 @@ export const pymParticles = {
                 type: ABILITY_HERO_RESPONSE,
                 params: {
                     trigger: TRIGGER_THIS_SPEND,
-                    workInHand: true,
                     condition: {
                         'player.superhero.currentSide.traits': [
                             TRAIT_GIANT,

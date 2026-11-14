@@ -4,6 +4,14 @@ import {
     EFFECT_REVEAL_ENCOUNTER,
 } from 'mc-shared';
 
+export const revealSelectedEncounter = ({revealParams = {}} = {}) => ({
+    type: EFFECT_REVEAL_ENCOUNTER,
+    params: {
+        ...revealParams,
+        card: 'selectedCard',
+    },
+});
+
 export const revealEncounterFrom = ({
     from,
     deckId,

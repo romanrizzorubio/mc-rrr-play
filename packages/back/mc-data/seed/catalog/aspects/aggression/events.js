@@ -9,6 +9,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_TRAITS,
     EFFECT_ENGAGE,
@@ -26,6 +27,7 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ENEMY,
+    TARGET_ENCOUNTER_DECK,
     TARGET_EFFECT,
     TARGET_MAIN_SCHEME,
     TARGET_MINION,
@@ -867,5 +869,62 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'aggression-buscando-problemas',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 16043,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Buscando problemas',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/16043.png',
+                'traits': [TRAIT_THWART],
+                'cost': 0,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [LABEL_THWART],
+                            'arrow': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DISCARD_UNTIL,
+                                            'params': {
+                                                'target': TARGET_ENCOUNTER_DECK,
+                                                'condition': {
+                                                    'isMinion': true,
+                                                },
+                                                'showDiscardedCards': true,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_ENGAGE,
+                                            'params': {
+                                                'target': TARGET_YOU,
+                                                'cardSource': 'selectedCard',
+                                            },
+                                        },
+                                    ],
+                                    'outputParams': ['selectedCard'],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'threat': 3,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

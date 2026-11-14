@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_AGGRESSION,
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
+    ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_RESPONSE,
     ABILITY_RESOURCE,
     ABILITY_RESPONSE,
@@ -12,7 +13,9 @@ import {
     EFFECT_EXHAUST,
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_EXCESS_DAMAGE,
     EFFECT_READY,
+    EFFECT_REMOVE_COUNTER,
     EFFECT_SIMULTANEOUS,
     EFFECT_SPEND,
     EFFECT_TAKE_DAMAGE,
@@ -37,6 +40,7 @@ import {
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_TACTIC,
+    TRAIT_TECH,
     TRAIT_WEAPON,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_ATTACK_CONSEQUENCIAL,
@@ -44,6 +48,7 @@ import {
     TRIGGER_ENGAGE_HERO,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_ATTACK,
+    TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK
 } from 'mc-shared';
@@ -481,5 +486,117 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'aggression-ensanamiento',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 16045,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Ensañamiento',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/upgrades/16045.png',
+                'traits': [TRAIT_SKILL],
+                'cost': 2,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
+                            'condition': {
+                                'effect.activation.excessDamage': '>0',
+                            },
+                            'effect': {
+                                'type': EFFECT_MODIFY_EXCESS_DAMAGE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'aggression-pistolon',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 16046,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Pistolón',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/upgrades/16046.png',
+                'traits': [TRAIT_TECH, TRAIT_WEAPON],
+                'cost': 2,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'keywords': {
+                    'restricted': true,
+                    'uses': 3,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_ATTACK,
+                            'condition': {
+                                'effect.character.isHero': true,
+                            },
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_COUNTER,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                                'count': 1,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'count': 2,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_MODIFY_ATTACK,
+                                            'params': {
+                                                'target': TARGET_EFFECT,
+                                                'modify': {
+                                                    'keywords': {
+                                                        'overkill': true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

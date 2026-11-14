@@ -480,34 +480,63 @@ export default {
                                                 TRAIT_AERIAL
                                             ],
                                             'effect': {
-                                                'type': EFFECT_DEAL_DAMAGE,
+                                                'type': EFFECT_SIMULTANEOUS,
                                                 'params': {
-                                                    'target': [
-                                                        TARGET_VILLAIN,
-                                                        TARGET_ALL_ENGAGED_MINIONS
-                                                    ],
-                                                    'multipleTarget': true,
-                                                    'damage': 0,
-                                                    'paramsCalc': {
-                                                        'target': 'effect.ability.arrow.cost.paid',
-                                                        'formula': CALC_COUNT
-                                                    },
-                                                    'ignoreTough': true
+                                                    'effects': [
+                                                        {
+                                                            'type': EFFECT_DEAL_DAMAGE,
+                                                            'params': {
+                                                                'target': TARGET_VILLAIN,
+                                                                'damage': 0,
+                                                                'paramsCalc': {
+                                                                    'target': 'effect.ability.arrow.cost.paid',
+                                                                    'formula': CALC_COUNT
+                                                                },
+                                                                'ignoreTough': true
+                                                            }
+                                                        },
+                                                        {
+                                                            'type': EFFECT_DEAL_DAMAGE,
+                                                            'params': {
+                                                                'target': TARGET_ALL_ENGAGED_MINIONS,
+                                                                'damage': 0,
+                                                                'paramsCalc': {
+                                                                    'target': 'effect.ability.arrow.cost.paid',
+                                                                    'formula': CALC_COUNT
+                                                                },
+                                                                'ignoreTough': true
+                                                            }
+                                                        }
+                                                    ]
                                                 }
                                             },
                                             'effectNot': {
-                                                'type': EFFECT_DEAL_DAMAGE,
+                                                'type': EFFECT_SIMULTANEOUS,
                                                 'params': {
-                                                    'target': [
-                                                        TARGET_VILLAIN,
-                                                        TARGET_ALL_ENGAGED_MINIONS
-                                                    ],
-                                                    'multipleTarget': true,
-                                                    'damage': 0,
-                                                    'paramsCalc': {
-                                                        'target': 'effect.ability.arrow.cost.paid',
-                                                        'formula': CALC_COUNT
-                                                    }
+                                                    'effects': [
+                                                        {
+                                                            'type': EFFECT_DEAL_DAMAGE,
+                                                            'params': {
+                                                                'target': TARGET_VILLAIN,
+                                                                'damage': 0,
+                                                                'paramsCalc': {
+                                                                    'target': 'effect.ability.arrow.cost.paid',
+                                                                    'formula': CALC_COUNT
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            'type': EFFECT_DEAL_DAMAGE,
+                                                            'params': {
+                                                                'target': TARGET_ALL_ENGAGED_MINIONS,
+                                                                'damage': 0,
+                                                                'paramsCalc': {
+                                                                    'target': 'effect.ability.arrow.cost.paid',
+                                                                    'formula': CALC_COUNT
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
                                                 }
                                             }
                                         }

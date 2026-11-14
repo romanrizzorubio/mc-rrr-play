@@ -24,6 +24,19 @@ export class DiscardUntilEffect extends Effect {
         this.showDiscardedCards = showDiscardedCards;
         this.showSelectedCard = showSelectedCard;
         this.title = title;
+        this.outputParams = [
+            'selectedCard',
+            'selectedCards',
+            'selectedCardDeck',
+            'discardedCards',
+        ];
+        this.selectedCard = undefined;
+        this.selectedCardDeck = undefined;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.selectedCard = undefined;
+        this.selectedCardDeck = undefined;
     }
     async execute(params) {
         const selectedTarget = this.selectedTarget;
@@ -34,24 +47,27 @@ export class DiscardUntilEffect extends Effect {
             throw new Error('DiscardUntilEffect requires a deck target.');
         }
         const discardedCards = [];
-        const selectedCard = await deck.discardUntil(
+        this.selectedCard = await deck.discardUntil(
             this.condition,
             this.removeFromDiscard,
             discardedCards
         );
-        params.selectedCard = selectedCard;
-        params.selectedCards = selectedCard ? [selectedCard] : [];
+        this.selectedCardDeck = this.selectedCard ? deck : undefined;
+        params.selectedCard = this.selectedCard;
+        params.selectedCards = this.selectedCard ? [this.selectedCard] : [];
+        params.selectedCardDeck = this.selectedCardDeck;
         params.discardedCards = discardedCards;
         await deck.refresh();
 
-        if (this.showSelectedCard && selectedCard) {
+        if (this.showSelectedCard && this.selectedCard) {
             await this.openPublicDialog({
                 dialogType: DIALOG_ENCOUNTERS_REVEAL,
                 title: this.title,
                 data: {
-                    card: selectedCard.toObj(params),
+                    card: this.selectedCard.toObj(params),
                     horizontal: Boolean(
-                        selectedCard.isMainScheme || selectedCard.isSideScheme
+                        this.selectedCard.isMainScheme ||
+                        this.selectedCard.isSideScheme
                     ),
                 },
             }, params.player);

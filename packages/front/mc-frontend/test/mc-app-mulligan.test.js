@@ -965,7 +965,7 @@ describe('app match controls and mulligan lifecycle', () => {
         assert.doesNotMatch(templateText(app.renderAccountBar()), /Guardar partida/u);
     });
 
-    test('saves manually and reports success or a server error', async () => {
+    test('saves manually without a success dialog and reports a server error', async () => {
         const alerts = [];
         let saves = 0;
         const app = createStatusApp({
@@ -982,10 +982,10 @@ describe('app match controls and mulligan lifecycle', () => {
 
         await app.handleSaveMatch();
         assert.equal(saves, 1);
-        assert.deepEqual(alerts, ['Partida guardada.']);
+        assert.deepEqual(alerts, []);
         app.api.saveMatch = async () => { throw new Error('No se pudo guardar'); };
         await app.handleSaveMatch();
-        assert.deepEqual(alerts, ['Partida guardada.', 'No se pudo guardar']);
+        assert.deepEqual(alerts, ['No se pudo guardar']);
         assert.equal(app.savingMatch, false);
     });
 

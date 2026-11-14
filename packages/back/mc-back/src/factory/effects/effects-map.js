@@ -75,6 +75,7 @@ import {
     EFFECT_LOOK_AT_TOP_CARDS,
     EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
+    EFFECT_MODIFY_EXCESS_DAMAGE,
     EFFECT_MODIFY_ACTIVATION,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_RETALIATE_VALUE,
@@ -91,6 +92,7 @@ import {
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MOVE_DAMAGE,
+    EFFECT_MOVE_COUNTERS,
     EFFECT_MOVE_THREAT,
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
@@ -224,6 +226,7 @@ import {LastingEffect} from '../../effects/lasting-effect.js';
 import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
+import {ModifyExcessDamageEffect} from '../../effects/modify-excess-damage-effect.js';
 import {ModifyActivationEffect} from '../../effects/modify-activation-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
 import {
@@ -245,6 +248,7 @@ import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.
 import {SetThwartValueEffect} from '../../effects/set-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
+import {MoveCountersEffect} from '../../effects/move-counters-effect.js';
 import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
 import {MoveToDeckEffect} from '../../effects/move-to-deck-effect.js';
 import {MoveToHandEffect} from '../../effects/move-to-hand-effect.js';
@@ -372,6 +376,7 @@ export const EFFECT_MAP = {
     [EFFECT_LOOK_AT_TOP_CARDS]: LookAtTopCardsEffect,
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
+    [EFFECT_MODIFY_EXCESS_DAMAGE]: ModifyExcessDamageEffect,
     [EFFECT_MODIFY_ACTIVATION]: ModifyActivationEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
     [EFFECT_MODIFY_RETALIATE_VALUE]: ModifyRetaliateValueEffect,
@@ -389,6 +394,7 @@ export const EFFECT_MAP = {
     [EFFECT_MODIFY_HIT_POINTS]: ModifyHitPointsEffect,
     [EFFECT_MODIFY_TRAITS]: ModifyTraitsEffect,
     [EFFECT_MOVE_DAMAGE]: MoveDamageEffect,
+    [EFFECT_MOVE_COUNTERS]: MoveCountersEffect,
     [EFFECT_MOVE_THREAT]: MoveThreatEffect,
     [EFFECT_PLACE_COUNTERS]: PlaceCountersEffect,
     [EFFECT_PLACE_DAMAGE]: PlaceDamageEffect,

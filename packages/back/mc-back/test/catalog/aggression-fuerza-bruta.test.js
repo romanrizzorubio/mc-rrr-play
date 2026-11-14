@@ -10,7 +10,6 @@ import {
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     PRIORITY_CONSTANT,
-    PRIORITY_FORCED_RESPONSE,
     RESOURCE_MENTAL,
     TARGET_EFFECT,
     TARGET_ENEMY,
@@ -234,23 +233,13 @@ describe('Fuerza bruta', () => {
         await resolveConstants(basicAttack);
         assert.equal(basicAttack.effect.piercing, true);
 
+        match.openDialog = async dialog => ({
+            selected: dialog.data.cards[0],
+        });
         await basicAttack.effect.execute(basicAttack.params);
 
         assert.equal(enemy.isTough, false);
         assert.equal(enemy.damage, baseAttack + 1);
-
-        const attackEndTriggers = basicAttack.activation.getTriggersEnds(
-            basicAttack.params
-        );
-        assert.ok(attackEndTriggers.includes(TRIGGER_YOU_BASIC_ATTACK));
-        const forcedResponses = await match._getTriggers(
-            attackEndTriggers,
-            PRIORITY_FORCED_RESPONSE,
-            basicAttack.params
-        );
-        assert.equal(forcedResponses.length, 1);
-        await forcedResponses[0].runTrigger(basicAttack.params);
-
         assert.equal(card.isInPlay, false);
         assert.equal(player.gameZone.cards.includes(card), false);
         assert.deepEqual(discardedCards, [card]);

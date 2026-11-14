@@ -145,12 +145,16 @@ export class ChainedEffect extends Effect {
         return true;
     }
     requiresAll(params) {
-        return Boolean(
-            params.isCost ||
-            params.costPaymentSession?.requireAllCosts
-        );
+        if (this.isCost) {
+            return true;
+        }
+        if (Object.hasOwn(params, 'triggeredEffect')) {
+            return false;
+        }
+
+        return Boolean(params.isCost || params.costPaymentSession?.requireAllCosts);
     }
-    canRun(params) {
+    async canRun(params) {
         if (this.showCancel && this.selectedTarget === null) {
             return true;
         }
@@ -158,8 +162,21 @@ export class ChainedEffect extends Effect {
         const newParams = this.getEffectParams(params);
 
         if (this.requiresAll(params)) {
-            return this.promisesSequentialEvery(this.effects, effect =>
-                effect.canRun(newParams));
+            const deferredOutputParams = new Set(
+                params.deferredOutputParams || []
+            );
+            for (const effect of this.effects) {
+                if (!await effect.canRun({
+                    ...newParams,
+                    deferredOutputParams,
+                })) {
+                    return false;
+                }
+                (effect.outputParams || []).forEach(param =>
+                    deferredOutputParams.add(param));
+            }
+
+            return true;
         }
 
         if (this.hasAdditional) {
@@ -192,13 +209,23 @@ export class ChainedEffect extends Effect {
 
         const {effectParams} = session.getPreparedEffect(this);
         const newParams = this.getEffectParams(effectParams);
+        const deferredOutputParams = new Set(
+            params.deferredOutputParams ||
+            effectParams.deferredOutputParams ||
+            []
+        );
+        // Prepared children share this context so earlier outputs reach later ones.
+        newParams.deferredOutputParams = deferredOutputParams;
         session.prepareExecutionParams(this, newParams);
 
         for (const effect of this.effects) {
             if (!await effect.prepareCost(newParams, session)) {
                 return false;
             }
+            (effect.outputParams || []).forEach(param =>
+                deferredOutputParams.add(param));
         }
+        delete newParams.deferredOutputParams;
 
         return true;
     }

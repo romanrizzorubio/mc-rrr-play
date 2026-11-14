@@ -29,7 +29,7 @@ export class Hand extends Engine {
         return 'hand';
     }
     addCard(card) {
-        if (card.isEvent) {
+        if (card.isEvent || card.isResource) {
             card.initTriggers();
         } else if (card.abilities?.some(ability => ability.workInHand)) {
             card.initTriggers(undefined, {workInHandOnly: true});
@@ -42,6 +42,7 @@ export class Hand extends Engine {
     }
     discardHand(card, {preserveTriggers = false} = {}) {
         if (!preserveTriggers && (card.isEvent ||
+            (card.isResource && !card.isPlaying && !card.isInPlay) ||
             (card.abilities?.some(ability => ability.workInHand) &&
                 !card.isPlaying &&
                 !card.isInPlay))) {

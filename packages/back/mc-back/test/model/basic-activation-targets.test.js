@@ -12,6 +12,7 @@ import {
 import {Attack} from '../../src/activations/attack.js';
 import {Thwart} from '../../src/activations/thwart.js';
 import {BasicAbility} from '../../src/abilities/basic/basic-ability.js';
+import {ThwartBasicAbility} from '../../src/abilities/basic/thwart-basic-ability.js';
 import {Effect} from '../../src/effects/effect.js';
 import {Player} from '../../src/model/match/player.js';
 import {getAbilitiesWithAvailability} from '../../src/utils/ability-availability.js';
@@ -541,6 +542,40 @@ describe('Basic activation targets', () => {
         assert.equal(costPayments, 1);
         assert.equal(actor.isConfused, false);
         assert.equal(ability.resolved, false);
+    });
+
+    test('a confused basic thwart is unavailable while its actor is exhausted', async () => {
+        const player = {
+            id: 'player-1',
+            async canThwart() {
+                return true;
+            },
+        };
+        const actor = {
+            id: 'hero-1',
+            controller: player,
+            exhausted: true,
+            isConfused: true,
+            thwart: 2,
+            currentSide: {abilities: []},
+        };
+        const ability = new ThwartBasicAbility({
+            card: actor,
+            match: {},
+        });
+        ability.effect.canRun = async() => true;
+        ability.effect.getValidTarget = async() => [];
+        actor.currentSide.abilities.push(ability);
+
+        const [availableAbility] = await getAbilitiesWithAvailability(actor, player);
+
+        assert.equal(availableAbility.disable, true);
+
+        actor.exhausted = false;
+        const [preparedAbility] = await getAbilitiesWithAvailability(actor, player);
+
+        assert.equal(preparedAbility.disable, false);
+        assert.deepEqual(preparedAbility.availableTargetIds, []);
     });
 
     test('a basic attack without a target still requires its matching status', async () => {

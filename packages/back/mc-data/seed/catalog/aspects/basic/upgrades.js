@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_ACTION,
     ABILITY_HERO_ACTION,
+    ABILITY_HERO_INTERRUPT,
     ABILITY_CONSTANT,
     ABILITY_HERO_RESOURCE,
     ABILITY_HERO_RESPONSE,
@@ -12,6 +13,7 @@ import {
     EFFECT_ADD_TRAIT,
     EFFECT_CANCEL_BOOST_ABILITY,
     EFFECT_DISCARD_GAME,
+    EFFECT_DISCARD_FROM_DECK,
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
     EFFECT_MODIFY_HIT_POINTS,
@@ -22,6 +24,8 @@ import {
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_LASTING,
     EFFECT_MAY,
+    EFFECT_PREVENT_DAMAGE,
+    EFFECT_SIMULTANEOUS,
     EFFECT_REMOVE_COUNTER,
     EFFECT_READY,
     EFFECT_SPEND,
@@ -42,12 +46,15 @@ import {
     TARGET_YOUR_HERO,
     TIME_PHASE,
     TRAIT_AVENGER,
+    TRAIT_ARMOR,
     TRAIT_CONDITION,
+    TRAIT_GUARDIAN,
     TRAIT_PREPARATION,
     TRAIT_SKILL,
     TRAIT_SPY,
     TRAIT_SUPERPOWER,
     TRAIT_TACTIC,
+    TRAIT_TECH,
     TRAIT_TITLE,
     TRAIT_MYSTIC,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
@@ -57,6 +64,7 @@ import {
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_ALTEREGO_GET_RECOVERY,
     TRIGGER_SURGE,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_YOU_PLAY_CARD,
 } from 'mc-shared';
 
@@ -737,6 +745,71 @@ export default [
                                             'count': -1,
                                         },
                                     },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-botas-impulsoras',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 16052,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Botas impulsoras',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/upgrades/16052.png',
+                'traits': [TRAIT_ARMOR, TRAIT_TECH],
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_BASIC,
+                'paramsToPlay': {
+                    'superhero.currentSide.traits': TRAIT_GUARDIAN,
+                },
+                'maximum': {
+                    'count': 1,
+                    'target': TARGET_PLAYER,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_YOUR_SUPERHERO,
+                            },
+                            'condition': {
+                                'effect.isAttack': true,
+                            },
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DISCARD_FROM_DECK,
+                                            'params': {
+                                                'target': TARGET_YOU,
+                                                'count': 1,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_PREVENT_DAMAGE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'damage': 1,
                                 },
                             },
                         },

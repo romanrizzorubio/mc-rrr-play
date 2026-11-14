@@ -1,10 +1,14 @@
 import {
+    PRIORITY_CONSTANT,
+    PRIORITY_FORCED_INTERRUPT,
+    PRIORITY_INTERRUPT,
     TRIGGER_THIS_ATTACK,
     TRIGGER_CHARACTER_ATTACKED,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ATTACK,
     TRIGGER_YOU_BASIC_ATTACK,
+    TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
     EFFECT_DEAL_DAMAGE,
 } from 'mc-shared';
 
@@ -21,10 +25,18 @@ export class Attack extends Activation {
 
         this.takenDamage = 0;
         this.attackedTargets = undefined;
+        this.excessDamage = 0;
+        this.excessDamageModifier = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
     }
     async applyOverkill(params, effect = this.effect) {
         const selectedTarget = effect.attacked || effect.selectedTarget;
 
+        this.excessDamage = 0;
+        this.excessDamageModifier = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
         this.attackedTargets = Array.isArray(selectedTarget) ?
             selectedTarget.slice() :
             [selectedTarget];
@@ -35,8 +47,26 @@ export class Attack extends Activation {
             const controller = this.getController(selectedTarget);
 
             if (controller && this.excessDamage > 0) {
-                effect.selectedTarget = [selectedTarget, controller];
-                effect.setEffectProperty('damage', [damage, this.excessDamage], params);
+                this.excessDamageTarget = controller;
+                const initialExcessDamage = this.excessDamage;
+                const triggerParams = {
+                    ...params,
+                    effect,
+                    attack: this,
+                    character: this.character,
+                };
+                const trigger = [TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE];
+
+                await this.trigger(PRIORITY_CONSTANT, trigger, triggerParams);
+                await this.trigger(
+                    PRIORITY_FORCED_INTERRUPT,
+                    trigger,
+                    triggerParams
+                );
+                await this.trigger(PRIORITY_INTERRUPT, trigger, triggerParams);
+
+                this.excessDamageModifier =
+                    this.excessDamage - initialExcessDamage;
             }
         }
     }
@@ -60,17 +90,21 @@ export class Attack extends Activation {
 
         return this.excessDamage;
     }
-    async applyRetaliate(target, params) {
-        const dealDamageEffect = await this.getRetaliateDamageEffect(target, params);
+    async applyRetaliate(target, params, ability) {
+        const dealDamageEffect = await this.getRetaliateDamageEffect(
+            target,
+            params,
+            ability
+        );
 
         if (dealDamageEffect) {
             await dealDamageEffect.runEffect(params);
         }
     }
-    async canRetaliate(target, params) {
-        return Boolean(await this.getRetaliateDamageEffect(target, params));
+    async canRetaliate(target, params, ability) {
+        return Boolean(await this.getRetaliateDamageEffect(target, params, ability));
     }
-    async getRetaliateDamageEffect(target, params) {
+    async getRetaliateDamageEffect(target, params, ability = this.effect.ability) {
         const character = this.character;
         const attacker = character?.isSuperhero && character.owner?.isPlayer ?
             character.owner :
@@ -113,9 +147,10 @@ export class Attack extends Activation {
 
         const dealDamageEffect = this.match.effectsFactory.createEffect({
             type: EFFECT_DEAL_DAMAGE,
+            character: target,
             damage: retaliate,
             selectedTarget: attacker,
-            ability: this.effect.ability,
+            ability,
             isAttack: false,
         });
 
@@ -142,6 +177,11 @@ export class Attack extends Activation {
         if (triggersInitLaunched) {
             return triggers;
         }
+
+        this.excessDamage = 0;
+        this.excessDamageModifier = 0;
+        this.excessDamageTarget = undefined;
+        this.excessDamageTaken = 0;
 
         const attackTriggers = triggers.concat(
             TRIGGER_THIS_ATTACK,

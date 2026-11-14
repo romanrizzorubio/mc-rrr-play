@@ -17,6 +17,7 @@ import {checkCondition, path} from '../engine/utils.js';
 import {defeatCharacterIfLethal} from '../utils/damage-resolution.js';
 import {getAlliesCountingTowardLimit} from '../utils/ally-utils.js';
 import {getScenarioZone} from '../utils/match-zone-utils.js';
+import {removeCardFromDeck} from '../utils/remove-card-from-deck.js';
 
 
 export class PutPlayEffect extends Effect {
@@ -111,7 +112,12 @@ export class PutPlayEffect extends Effect {
     }
     async canRun(params) {
         const card = this.getCard(params);
-        if ((this.cardSource || this.requirePlayable) && !card) {
+        const deferredCardSource = params.deferredOutputParams?.has(
+            this.cardSource
+        );
+        if ((this.cardSource || this.requirePlayable) &&
+            !card &&
+            !deferredCardSource) {
             return false;
         }
 
@@ -221,7 +227,13 @@ export class PutPlayEffect extends Effect {
     }
     async resolvePutPlay(card, controller, selectedTarget, isEnteringPlay, params) {
         const gameZone = this.getControllerZone(card, controller, params);
-        await this.addToController(card, controller, isEnteringPlay, gameZone);
+        await this.addToController(
+            card,
+            controller,
+            isEnteringPlay,
+            gameZone,
+            params
+        );
         await card.initTriggers(params);
         this.initializeCardState(card);
         await this.attachCard(card, controller, selectedTarget, params);
@@ -245,13 +257,19 @@ export class PutPlayEffect extends Effect {
 
         return controller?.gameZone;
     }
-    async addToController(card, controller, isEnteringPlay, gameZone = controller?.gameZone) {
+    async addToController(
+        card,
+        controller,
+        isEnteringPlay,
+        gameZone = controller?.gameZone,
+        params
+    ) {
         if (!controller) {
             return;
         }
 
         await this.removeFromOwnerHand(card);
-        await this.removeFromOwnerDeck(card);
+        await this.removeFromOwnerDeck(card, params);
         this.removeFromScenarioAside(card);
 
         if (isEnteringPlay && this.resetsDamageOnEntry(card)) {
@@ -286,21 +304,19 @@ export class PutPlayEffect extends Effect {
         ownerHand.discardHand(card);
         await ownerHand.refresh();
     }
-    async removeFromOwnerDeck(card) {
-        const ownerDeck = card.owner?.deck;
-        let removedFromDeck = false;
+    async removeFromOwnerDeck(card, params = {}) {
+        const selectedCardDeck = params.selectedCard === card ?
+            params.selectedCardDeck :
+            undefined;
+        const removedFromSelectedDeck = await removeCardFromDeck(
+            card,
+            selectedCardDeck
+        );
 
-        if (ownerDeck?.cards?.includes(card)) {
-            ownerDeck.removeCardFromDeck(card);
-            removedFromDeck = true;
-        } else if (ownerDeck?.discardPile?.includes(card)) {
-            ownerDeck.searchDiscard(card);
-            removedFromDeck = true;
-        }
-
-        if (removedFromDeck) {
-            await ownerDeck.checkCycle?.();
-            await ownerDeck.refresh();
+        if (!removedFromSelectedDeck &&
+            selectedCardDeck &&
+            selectedCardDeck !== card.owner?.deck) {
+            await removeCardFromDeck(card);
         }
     }
     resetsDamageOnEntry(card) {

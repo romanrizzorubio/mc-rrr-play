@@ -305,6 +305,7 @@ Si una capacidad cura a un personaje, el daño acumulado que el personaje ha sos
 El daño sobrante de los ataques con brutalidad se inflige al superhéroe o al villano.
 
 - Si un ataque con brutalidad derrota a un aliado o esbirro, cualquier daño sobrante de ese ataque se inflige al superhéroe o al villano, respectivamente.
+- El daño sobrante se transfiere después de resolver la derrota del aliado o esbirro; no se transfiere si el objetivo no es derrotado.
 - Si el daño sobrante es evitado, no se inflige al superhéroe/villano.
 
 **Véase también**: [daño sobrante](#daño-sobrante-excess-damage), ataque, daño, puntos de vida, superhéroe, esbirro, villano.

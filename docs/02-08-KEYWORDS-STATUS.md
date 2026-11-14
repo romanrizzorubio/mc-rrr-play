@@ -104,6 +104,7 @@ El daño sobrante de los ataques con brutalidad se inflige al superhéroe o al v
 
 - Si un aliado es derrotado por un ataque con la palabra clave brutalidad, inflige cualquier daño en ese aliado más allá de sus puntos de vida al superhéroe del jugador que controla al aliado.
 - Si un esbirro es derrotado por un ataque con la palabra clave brutalidad, inflige cualquier daño en ese esbirro más allá de sus puntos de vida al villano.
+- El daño sobrante se transfiere después de resolver la derrota del objetivo, no se duplica como daño adicional. Si el aliado o esbirro no es derrotado (por ejemplo, porque Duro o una prevención evitan el daño), no hay transferencia.
 - La palabra clave brutalidad es equivalente a la siguiente capacidad: "Si este ataque derrota a un aliado, inflige el daño más allá de sus puntos de vida al superhéroe del controlador de ese aliado. Si este ataque derrota a un esbirro, inflige el daño más allá de sus puntos de vida al villano".
 - El daño infligido por brutalidad a un superhéroe o villano se considera daño de un ataque, pero no constituye un ataque contra ese personaje.
 - Si la capacidad de una carta cuenta el daño sobrante infligido, esa capacidad cuenta el mismo valor de daño sobrante que se calcula al resolver la palabra clave brutalidad.

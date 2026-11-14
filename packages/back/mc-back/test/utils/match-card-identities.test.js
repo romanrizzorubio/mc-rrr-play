@@ -6,12 +6,15 @@ import {
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_EVENT,
     CARD_TYPE_HERO,
+    CARD_TYPE_RESOURCE,
     CARD_TYPE_UPGRADE,
     EFFECT_PLACE_COUNTERS,
     PRIORITY_RESPONSE,
     TARGET_YOUR_SUPERHERO,
     TRIGGER_ROUND_ENDS,
+    TRIGGER_THIS_SPEND,
 } from 'mc-shared';
+import {Engine} from '../../src/engine/engine.js';
 import {PlaceCountersEffect} from '../../src/effects/place-counters-effect.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {Match} from '../../src/model/match/match.js';
@@ -21,7 +24,7 @@ import {restoreMatch, serializeMatch} from '../../src/utils/match-serialization.
 
 describe('restored match card identities', () => {
     const mc = {mcSocket: {send() {}}};
-    const cardConfig = (type = CARD_TYPE_UPGRADE) => ({
+    const cardConfig = (type = CARD_TYPE_UPGRADE, trigger = TRIGGER_ROUND_ENDS) => ({
         type,
         params: {
             id: 'shared-card',
@@ -31,7 +34,7 @@ describe('restored match card identities', () => {
             abilities: [{
                 type: ABILITY_RESPONSE,
                 params: {
-                    trigger: TRIGGER_ROUND_ENDS,
+                    trigger,
                     effect: {
                         type: EFFECT_PLACE_COUNTERS,
                         params: {
@@ -211,6 +214,56 @@ describe('restored match card identities', () => {
         assert.ok(sources.includes(restored.players[0].hand.cards[0]));
         assert.ok(sources.includes(restored.players[1].hand.cards[0]));
         assert.ok(!sources.includes(restored.players[0].deck.discardPile[0]));
+    });
+
+    test('restores resource-card triggers from hand without workInHand', async () => {
+        const {match, factory} = createFixture();
+        const owner = match.players[0];
+        const resource = factory.cardsFactory.createGameCardFromConfig({
+            ...cardConfig(CARD_TYPE_RESOURCE),
+            params: {
+                ...cardConfig(CARD_TYPE_RESOURCE).params,
+                id: 'hand-resource',
+                name: 'Hand Resource',
+            },
+        }, {owner});
+        owner.hand.addCard(resource);
+        await new Promise(resolve => setImmediate(resolve));
+        assert.equal(resource.abilities[0].workInHand, false);
+        assert.ok(resource.hasAbilityTrigger(resource.abilities[0]));
+
+        delete match.triggerCards[resource.id];
+        const restored = restoreMatch(serializeMatch(match), mc);
+        const restoredResource = restored.players[0].hand.cards[0];
+
+        assert.ok(restoredResource.hasAbilityTrigger(restoredResource.abilities[0]));
+        assert.strictEqual(restored.triggerCards[restoredResource.id], restoredResource);
+    });
+
+    test('reinitializes resource triggers missing from a legacy saved hand', () => {
+        const {match, factory} = createFixture();
+        const owner = match.players[0];
+        const resource = factory.cardsFactory.createGameCardFromConfig(
+            cardConfig(CARD_TYPE_RESOURCE, TRIGGER_THIS_SPEND),
+            {owner},
+        );
+        owner.hand.cards.push(resource);
+
+        assert.equal(resource.hasAbilityTrigger(resource.abilities[0]), false);
+        const snapshot = serializeMatch(match);
+        const previousTriggersFactory = Engine.triggersFactory;
+        Engine.triggersFactory = undefined;
+        let restored;
+        try {
+            restored = restoreMatch(snapshot, mc);
+        } finally {
+            Engine.triggersFactory = previousTriggersFactory;
+        }
+        const restoredResource = restored.players[0].hand.cards[0];
+
+        assert.equal(restoredResource.abilities[0].trigger, TRIGGER_THIS_SPEND);
+        assert.ok(restoredResource.hasAbilityTrigger(restoredResource.abilities[0]));
+        assert.strictEqual(restored.triggerCards[restoredResource.id], restoredResource);
     });
 
     test('rejects ambiguous ID-only selections rather than resuming with another hero target', () => {

@@ -14,6 +14,7 @@ import {
     TRIGGER_ABILITY_RESOLVED,
     TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_CHARACTER_ATTACKED,
+    TRIGGER_CHARACTER_DEFENDED_ATTACK,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL,
@@ -56,6 +57,7 @@ import {
     TRIGGER_REMOVE_DAMAGE,
     TRIGGER_REMOVE_THREAT,
     TRIGGER_MOVE_DAMAGE,
+    TRIGGER_MOVE_COUNTERS,
     TRIGGER_MOVE_THREAT,
     TRIGGER_SURGE,
     TRIGGER_THIS_ATTACK,
@@ -83,6 +85,9 @@ import {
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOU_ATTACK,
+    TRIGGER_YOU_DEAL_DAMAGE,
+    TRIGGER_YOU_DEALT_EXCESS_DAMAGE,
+    TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
     TRIGGER_YOU_BASIC_THWART,
@@ -109,6 +114,7 @@ import {AttachedGetTraitsTrigger} from '../../triggers/attached-get-traits-trigg
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
 import {CharacterDefeatedTrigger} from '../../triggers/character-defeated-trigger.js';
 import {CharacterAttackedTrigger} from '../../triggers/character-attacked-trigger.js';
+import {CharacterDefendedAttackTrigger} from '../../triggers/character-defended-attack-trigger.js';
 import {CharacterWouldReadyTrigger} from '../../triggers/character-would-ready-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
 import {AttachedTakesDamageTrigger} from '../../triggers/attached-takes-damage-trigger.js';
@@ -186,6 +192,10 @@ import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
 import {YouAllyAttackTrigger} from '../../triggers/you-ally-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
+import {YouDealDamageTrigger} from '../../triggers/you-deal-damage-trigger.js';
+import {
+    YouDealtExcessDamageTrigger
+} from '../../triggers/you-dealt-excess-damage-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
 import {YouBasicDefenseTrigger} from '../../triggers/you-basic-defense-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
@@ -239,6 +249,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_BOOST_ICONS_COUNTED]: Trigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CHARACTER_ATTACKED]: CharacterAttackedTrigger,
+    [TRIGGER_CHARACTER_DEFENDED_ATTACK]: CharacterDefendedAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
     [TRIGGER_SCHEME_GET_THWART]: SchemeGetThwartTrigger,
@@ -271,6 +282,9 @@ export const TRIGGER_MAP = {
     [TRIGGER_VILLAIN_PHASE_STEP]: Trigger,
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
+    [TRIGGER_YOU_DEAL_DAMAGE]: YouDealDamageTrigger,
+    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE]: YouDealtExcessDamageTrigger,
+    [TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE]: YouAttackTrigger,
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,
     [TRIGGER_YOU_BASIC_DEFENSE]: YouBasicDefenseTrigger,
     [TRIGGER_YOU_ANY_ATTACK]: YouAnyAttackTrigger,
@@ -302,6 +316,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_REMOVE_DAMAGE]: Trigger,
     [TRIGGER_REMOVE_THREAT]: Trigger,
     [TRIGGER_MOVE_DAMAGE]: Trigger,
+    [TRIGGER_MOVE_COUNTERS]: Trigger,
     [TRIGGER_MOVE_THREAT]: Trigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_WOULD_ADD_ACCELERATION_TOKEN]: WouldAddAccelerationTokenTrigger,

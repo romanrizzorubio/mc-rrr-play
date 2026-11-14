@@ -1253,9 +1253,6 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.savingMatch = true;
         try {
             await this.api.saveMatch();
-            if (this.match === match) {
-                this.showAlert('Partida guardada.');
-            }
         } catch (error) {
             if (this.match === match) {
                 this.showAlert(error.message);
