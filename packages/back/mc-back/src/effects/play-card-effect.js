@@ -17,6 +17,7 @@ import {
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
+    TRIGGER_YOU_PLAY_CARD_COST,
     TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
 
@@ -231,6 +232,19 @@ export class PlayCardEffect extends Effect {
 
         return this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
     }
+    async triggerPlayCardCostInterrupts(params) {
+        const triggerTypes = [TRIGGER_YOU_PLAY_CARD_COST];
+
+        if (!await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            triggerTypes,
+            params
+        )) {
+            return false;
+        }
+
+        return this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+    }
     getTriggersEnds() {
         return super.getTriggersEnds()
             .concat([
@@ -243,6 +257,8 @@ export class PlayCardEffect extends Effect {
         return {
             ...super.getTriggersParams(params),
             card: this.card,
+            playedBy: params.player,
+            playedFromHand: this.playedFromHand,
         };
     }
     selectTarget(params) {
@@ -371,6 +387,8 @@ export class PlayCardEffect extends Effect {
                 ...params,
                 effect: this,
                 card,
+                playedBy: player,
+                playedFromHand: this.playedFromHand,
             });
         }
         card.isPlaying = false;
@@ -755,6 +773,18 @@ export class PlayCardEffect extends Effect {
             };
 
         if (!abilityState.canRun) {
+            this.canceled = true;
+            card.isPlaying = false;
+            return;
+        }
+
+        const costTriggerParams = this.getTriggersParams({
+            ...params,
+            ability: this.ability,
+            card,
+            playCardEffect: this,
+        });
+        if (!await this.triggerPlayCardCostInterrupts(costTriggerParams)) {
             this.canceled = true;
             card.isPlaying = false;
             return;

@@ -26,8 +26,12 @@ Use this skill when a user provides card text or structured card data and asks t
 
 ## Authoring workflow
 
+For a request to add a player card to the collection without including it in any preconstructed deck, follow [Add to collection](../mc-add-collection/SKILL.md) for catalog placement and precon verification. Continue using this skill for the card configuration and effect-authoring details.
+
+For a request to create a new modular encounter set from supplied names and card data, use the dedicated [`mc-create-modular`](../mc-create-modular/SKILL.md) workflow for intake and set integration. Continue using this skill for card-text interpretation, effect composition, and the relevant catalog conventions.
+
 1. Identify whether each supplied card belongs to a hero, an aspect, a scenario, a modular encounter set, or a shared encounter-card definition. Inspect nearby catalog modules and tests before adding a new pattern.
-2. Map the supplied facts into the existing card types, `params`, ability types, triggers, and effect types. Use domain constants imported from `mc-shared`; use `TARGET_*` constants for every field named `target`.
+2. Map the supplied facts into the existing card types, `params`, ability types, triggers, and effect types. Use exported `mc-shared` constants for every symbolic domain value (card/ability/effect types, triggers, targets, resources, phases, traits, locations, and positions); never write their string values directly. Keep runtime property paths and printed/user-facing text as strings. For card-type choices, use the shared `CARD_TYPES` list and keep translated labels in the frontend, never in card seed configuration.
 3. Prefer existing generic effects and compose them according to the card text. Do not create card-specific effect classes or branches in general abilities, effects, or factories. If required behavior is missing, implement a reusable effect and test it.
    Do not declare helper functions at module scope in ability, effect, or factory implementation files. Put reusable helpers in `utils/` and keep class-specific helpers as `static` methods.
 4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `catalog/encounters/` when needed, but omit `params.set` there; use `withCardSet(card, set)` in each consuming catalog to assign its set, and configure its count in each owning catalog.

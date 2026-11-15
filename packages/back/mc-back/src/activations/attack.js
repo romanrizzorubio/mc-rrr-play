@@ -4,6 +4,7 @@ import {
     PRIORITY_INTERRUPT,
     TRIGGER_THIS_ATTACK,
     TRIGGER_CHARACTER_ATTACKED,
+    TRIGGER_ALLY_ATTACK,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ATTACK,
@@ -186,7 +187,10 @@ export class Attack extends Activation {
         const attackTriggers = triggers.concat(
             TRIGGER_THIS_ATTACK,
             TRIGGER_CHARACTER_ATTACKED,
-            ...(effect?.character?.isAlly ? [TRIGGER_YOU_ALLY_ATTACK] : [])
+            ...(effect?.character?.isAlly ? [
+                TRIGGER_ALLY_ATTACK,
+                TRIGGER_YOU_ALLY_ATTACK,
+            ] : [])
         );
         const playerAttackTriggers = effect?.ability?.card ?
             attackTriggers.concat(TRIGGER_YOU_ATTACK) :
@@ -267,7 +271,7 @@ export class Attack extends Activation {
         ];
 
         if (effect?.character?.isAlly) {
-            triggers.push(TRIGGER_YOU_ALLY_ATTACK);
+            triggers.push(TRIGGER_ALLY_ATTACK, TRIGGER_YOU_ALLY_ATTACK);
         }
 
         if (isBasic) {

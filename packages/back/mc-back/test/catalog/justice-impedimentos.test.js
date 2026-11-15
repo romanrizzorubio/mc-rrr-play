@@ -56,9 +56,9 @@ describe('Impedimentos', () => {
                 },
             },
         };
-        assert.equal(card.canPlay({player}), false);
+        assert.equal(await card.canPlay({player}), false);
         currentSide.traits.push(TRAIT_AVENGER);
-        assert.equal(card.canPlay({player}), true);
+        assert.equal(await card.canPlay({player}), true);
 
         const [ability] = entry.card.params.abilities;
         assert.equal(ability.type, ABILITY_HERO_ACTION);

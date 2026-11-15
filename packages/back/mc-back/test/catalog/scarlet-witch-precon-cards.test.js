@@ -241,9 +241,9 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
         const meditationCard = new PlayerCard(meditacion.params);
         meditationCard.match = {isUniqueCard: () => false};
         const player = {superhero: {traits: []}};
-        assert.equal(meditationCard.canPlay({player}), false);
+        assert.equal(await meditationCard.canPlay({player}), false);
         player.superhero.traits.push(TRAIT_MYSTIC);
-        assert.equal(meditationCard.canPlay({player}), true);
+        assert.equal(await meditationCard.canPlay({player}), true);
     });
 
     test('generic target exclusions resolve multiple wildcard paths and missing values', () => {

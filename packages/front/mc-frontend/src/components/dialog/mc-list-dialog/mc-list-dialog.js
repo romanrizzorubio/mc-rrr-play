@@ -7,6 +7,10 @@ import {McDialog} from '../mc-dialog/mc-dialog.js';
 import {isPlanCard} from '../../../misc/utils.js';
 import {getCardAssetUrl} from '../../../misc/cards.js';
 import {renderTextWithFormatting} from '../../../utils/render-text-with-formatting.js';
+import {
+    getCardTypeLabel,
+    sortCardTypeOptions,
+} from '../../../utils/card-type-translation.js';
 
 export class McListDialog extends McDialog {
     static get is() {
@@ -32,6 +36,14 @@ export class McListDialog extends McDialog {
             }
         };
     }
+    getTitle() {
+        return this.data.cardTypeOptions ?
+            'Nombra un tipo de carta' :
+            super.getTitle();
+    }
+    get className() {
+        return this.data.cardTypeOptions ? 'card-type-options' : '';
+    }
     handleClick(option) {
         return e => {
             e.stopPropagation();
@@ -51,9 +63,12 @@ export class McListDialog extends McDialog {
         };
     }
     renderItem(option, submenu = false) {
-        const text = typeof option.text === 'string' ?
-            renderTextWithFormatting(option.text) :
+        const optionText = option.cardType ?
+            getCardTypeLabel(option.cardType) :
             option.text;
+        const text = typeof optionText === 'string' ?
+            renderTextWithFormatting(optionText) :
+            optionText;
         const content = option.image ? html`
             <div class="option-content">
                 <img
@@ -152,9 +167,18 @@ export class McListDialog extends McDialog {
     }
     renderContent() {
         const {
-            data: {options, card, contextCards = [], showCounters},
+            data: {
+                options,
+                card,
+                cardTypeOptions,
+                contextCards = [],
+                showCounters,
+            },
         } = this;
         const {name, image, counters} = card;
+        const displayedOptions = cardTypeOptions ?
+            sortCardTypeOptions(options) :
+            options;
 
         return html`
             ${contextCards.length ?
@@ -172,8 +196,8 @@ export class McListDialog extends McDialog {
                     hide-name
                 ></mc-card>
                 ` : ''}
-            <md-list class="list">
-                ${options.map(this.renderItem.bind(this))}
+            <md-list class="list ${cardTypeOptions ? 'card-type-list' : ''}">
+                ${displayedOptions.map(this.renderItem.bind(this))}
             </md-list>
         `;
     }

@@ -67,12 +67,12 @@ describe('Unidos resistimos', () => {
         const gameCard = createGameCard(cardConfig, player);
         player.hand.cards.push(gameCard);
 
-        assert.equal(PlayerCard.prototype.canPlay.call(gameCard.card, {
+        assert.equal(await PlayerCard.prototype.canPlay.call(gameCard.card, {
             gameCard,
             player,
         }), true);
         player.superhero.traits = [];
-        assert.equal(PlayerCard.prototype.canPlay.call(gameCard.card, {
+        assert.equal(await PlayerCard.prototype.canPlay.call(gameCard.card, {
             gameCard,
             player,
         }), false);

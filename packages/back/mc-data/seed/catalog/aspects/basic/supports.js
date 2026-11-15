@@ -3,6 +3,7 @@ import {
     ABILITY_ACTION,
     ABILITY_CONSTANT,
     ABILITY_HERO_ACTION,
+    ABILITY_RESPONSE,
     ABILITY_RESOURCE,
     CARD_TYPE_ANY,
     CARD_TYPE_ALLY,
@@ -13,25 +14,34 @@ import {
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_MAX_ALLIES,
     EFFECT_PLAY_CARD,
+    EFFECT_READY,
+    EFFECT_SIMULTANEOUS,
+    EFFECT_SPEND,
+    RESOURCE_ANY,
+    RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_ANY_PLAYER,
     TARGET_CARD,
     TARGET_EFFECT,
+    TARGET_FRIENDLY_CHARACTER,
     TARGET_PHASE,
     TARGET_PLAYER,
     TARGET_SOURCE,
     TARGET_THIS,
+    TARGET_YOU,
     TARGET_YOUR_HERO,
     TIME_PHASE,
     TRAIT_AVENGER,
+    TRAIT_GUARDIAN,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
     TRAIT_VEHICLE,
     TRIGGER_END_PLAY_CARD,
     TRIGGER_PHASE_ENDS,
     TRIGGER_PLAY_CARD,
+    TRIGGER_YOU_END_PLAY_CARD,
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
 } from 'mc-shared';
 
@@ -302,5 +312,117 @@ export default [
                 ],
             },
         },
-    }
+    },
+    {
+        '_id': 'basic-ngii',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 17021,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'N.G.I.I.',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/supports/17021.png',
+                'traits': [TRAIT_VEHICLE],
+                'cost': 2,
+                'resources': [RESOURCE_WILD],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_SPEND,
+                                            'params': {
+                                                'resources': [
+                                                    RESOURCE_ANY,
+                                                    RESOURCE_ANY,
+                                                ],
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_READY,
+                                'params': {
+                                    'target': TARGET_FRIENDLY_CHARACTER,
+                                    'condition': {
+                                        'traits': TRAIT_GUARDIAN,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-sapiencial',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 17022,
+        'card': {
+            'type': CARD_TYPE_SUPPORT,
+            'params': {
+                'name': 'Sapiencial',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/supports/17022.png',
+                'traits': [TRAIT_LOCATION],
+                'cost': 2,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_BASIC,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_GUARDIAN,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES,
+                            'effect': {
+                                'type': EFFECT_MODIFY_MAX_ALLIES,
+                                'params': {
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_END_PLAY_CARD,
+                            'condition': {
+                                'effect.card.isAlly': true,
+                                'effect.card.traits': TRAIT_GUARDIAN,
+                            },
+                            'arrow': {
+                                'type': EFFECT_EXHAUST,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_DRAW_CARD,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

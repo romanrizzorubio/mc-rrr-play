@@ -10,6 +10,7 @@ export class BasicAbility extends Ability {
         this.costs.add(this.basicCost);
 
         this.isBasic = true;
+        this.preventConsequentialDamage = false;
     }
     applyConsequencial(params, damage) {
         const dealConsequencialDamageEffect = new DealConsequencialDamageEffect({
@@ -52,6 +53,7 @@ export class BasicAbility extends Ability {
 
         this.resolved = false;
         this.paymentCancelled = false;
+        this.preventConsequentialDamage = false;
 
         let resolveParams = abilityParams;
         if ((this.isAttack || this.isThwart) &&
@@ -108,7 +110,8 @@ export class BasicAbility extends Ability {
 
         await super.resolveAbility(resolveParams);
 
-        if (this.resolved && card.isAlly && card.isInPlay) {
+        if (this.resolved && card.isAlly && card.isInPlay &&
+            !this.preventConsequentialDamage) {
             await this.applyConsequencial(params);
         }
     }

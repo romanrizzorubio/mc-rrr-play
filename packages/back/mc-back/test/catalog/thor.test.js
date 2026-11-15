@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     ABILITY_BOOST,
     CALC_ALL,
+    CARD_TYPE_HERO,
     CARD_TYPE_MINION,
     CARD_TYPE_TREACHERY,
     DIALOG_USE_CARD,
@@ -21,6 +22,7 @@ import {
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ENCOUNTER_DECK,
     TARGET_VILLAIN,
+    TRAIT_AERIAL,
     TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
@@ -179,7 +181,7 @@ describe('Thor catalog', () => {
         assert.equal(await isDignoDisabled(), true);
     });
 
-    test('Relámpago damages the villain and engaged Guard minions without being an attack', async () => {
+    const resolveLightning = async withAerial => {
         const catalog = await loadCatalog();
         const thor = catalog.heroes.find(hero => hero._id === 'thor');
         const match = new Match({
@@ -188,16 +190,34 @@ describe('Thor catalog', () => {
                     send() {},
                 },
             },
-            name: 'thor-lightning-strike',
+            name: withAerial ?
+                'thor-lightning-strike-aerial' :
+                'thor-lightning-strike-no-aerial',
         });
         const matchFactory = new MatchFactory(match);
-        const thorSuperhero = matchFactory.createSuperhero(thor.config);
+        const thorConfig = withAerial ?
+            {
+                ...thor.config,
+                sides: thor.config.sides.map(side =>
+                    side.type === CARD_TYPE_HERO ?
+                        {
+                            ...side,
+                            params: {
+                                ...side.params,
+                                traits: [...side.params.traits, TRAIT_AERIAL],
+                            },
+                        } :
+                        side),
+            } :
+            thor.config;
+        const thorSuperhero = matchFactory.createSuperhero(thorConfig);
         thorSuperhero.selectedSide = 1;
         const player = match.createPlayer({
             name: 'Thor',
             superhero: thorSuperhero,
         });
         player.gameZone = new PlayerZone({owner: player});
+        const effectiveTraits = await thorSuperhero.getEffectiveTraits({player});
 
         const createEnemy = ({
             guard = false,
@@ -261,6 +281,37 @@ describe('Thor catalog', () => {
             player,
         });
 
+        return {
+            effectiveTraits,
+            guardMinion,
+            thorSuperhero,
+            villain,
+        };
+    };
+
+    test('Relámpago uses its Aerial branch when Thor has Aerial', async () => {
+        const {
+            effectiveTraits,
+            guardMinion,
+            thorSuperhero,
+            villain,
+        } = await resolveLightning(true);
+
+        assert.ok(effectiveTraits.includes(TRAIT_AERIAL));
+        assert.equal(villain.damage, 2);
+        assert.equal(guardMinion.damage, 2);
+        assert.equal(thorSuperhero.currentSide.damage, 0);
+    });
+
+    test('Relámpago uses its normal branch when Thor does not have Aerial', async () => {
+        const {
+            effectiveTraits,
+            guardMinion,
+            thorSuperhero,
+            villain,
+        } = await resolveLightning(false);
+
+        assert.equal(effectiveTraits.includes(TRAIT_AERIAL), false);
         assert.equal(villain.damage, 2);
         assert.equal(guardMinion.damage, 2);
         assert.equal(thorSuperhero.currentSide.damage, 0);

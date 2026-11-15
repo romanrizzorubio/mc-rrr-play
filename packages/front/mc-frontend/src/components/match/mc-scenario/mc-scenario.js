@@ -181,6 +181,8 @@ export class McScenario extends LitElement {
                         .deckName="${deck.name}"
                         .deckNameSpansPiles="${true}"
                         .showDiscard="${deck.hasDiscard !== false}"
+                        .targetId="${deck.id || ''}"
+                        .targetSelectable="${this.isDeckSelectable(deck)}"
                         .dragActivation="${this.dragActivation}"
                         .dragPlayCard="${this.dragPlayCard}"
                         .dragResourcePayment="${this.dragResourcePayment}"

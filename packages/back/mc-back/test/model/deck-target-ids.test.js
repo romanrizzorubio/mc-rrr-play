@@ -34,4 +34,25 @@ describe('deck target identifiers', () => {
 
         assert.equal(deck.id, 'custom-deck');
     });
+
+    test('serializes only safe metadata for target selection', () => {
+        const deck = new Deck({
+            owner: {id: 'Peter Parker', name: 'Peter Parker'},
+            isPlayerDeck: true,
+        });
+        deck.cards = [{name: 'Hidden card'}];
+        deck.discardPile = [{name: 'Discarded card'}];
+        deck.knownCards = [deck.cards[0]];
+
+        assert.deepEqual(deck.toTargetObj(), {
+            name: 'Peter Parker',
+            id: 'player-deck-Peter Parker',
+            ownerName: 'Peter Parker',
+            isPlayerDeck: true,
+            isPlayerExtraDeck: false,
+            isScenarioDeck: false,
+            isScenarioExtraDeck: false,
+            cardCount: 1,
+        });
+    });
 });

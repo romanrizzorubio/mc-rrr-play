@@ -8,11 +8,12 @@ export class CharacterGetAttackTrigger extends Trigger {
         super(params);
 
         this.target = params.target;
+        this.traits = params.traits;
     }
-    canTrigger(params) {
+    async canTrigger(params) {
+        const triggerPlayer = getTriggerCardPlayer(this.card, params.player);
         if (this.target) {
             const targetFn = targetMap[this.target];
-            const triggerPlayer = getTriggerCardPlayer(this.card, params.player);
             const candidates = targetFn ? targetFn({
                 ...params,
                 ability: this.ability,
@@ -32,6 +33,27 @@ export class CharacterGetAttackTrigger extends Trigger {
                     candidate,
                     selectedTarget
                 ))) {
+                return false;
+            }
+        }
+
+        if (this.traits) {
+            const selectedTarget = params.effect?.selectedTarget;
+            if (!selectedTarget) {
+                return false;
+            }
+
+            const traitPlayer = triggerPlayer?.isPlayer ?
+                triggerPlayer :
+                params.player;
+            const effectiveTraits = typeof selectedTarget.getEffectiveTraits === 'function' ?
+                await selectedTarget.getEffectiveTraits({player: traitPlayer}) :
+                selectedTarget.traits ?? [];
+            const requiredTraits = Array.isArray(this.traits) ?
+                this.traits :
+                [this.traits];
+            if (!requiredTraits.some(trait =>
+                effectiveTraits.includes(trait))) {
                 return false;
             }
         }

@@ -132,7 +132,13 @@ const CALCULATION_MAP = {
             );
         }
 
-        return source.filter(card => (card.traits || []).includes(trait)).length;
+        return Promise.all(source.map(async card => {
+            const traits = typeof card?.getEffectiveTraits === 'function' ?
+                await card.getEffectiveTraits() :
+                card?.traits || [];
+
+            return traits.includes(trait);
+        })).then(matches => matches.filter(Boolean).length);
     },
     [CALC_DIFFERENT_RESOURCE_TYPE]: (source, calc) =>
         calc.differentResourceType(source),

@@ -1,4 +1,4 @@
-import {ABILITY_ACTION} from 'mc-shared';
+import {ABILITY_ACTION, PHASE_PLAYERS} from 'mc-shared';
 import {ENDPOINTS, INTERNAL_ENDPOINTS} from 'mc-endpoints';
 import {MatchFactory} from '../../factory/match-factory.js';
 import {logGameTrace} from '../../utils/game-trace.js';
@@ -55,7 +55,7 @@ export class PlayerRest {
         if (match.initialized === undefined) {
             return;
         }
-        if (!match.initialized || match.phase !== 'players' ||
+        if (!match.initialized || match.phase !== PHASE_PLAYERS ||
             match.gameOverReason) {
             const error = new Error('Solo se pueden realizar acciones durante la fase de jugador.');
             error.statusCode = 409;
@@ -286,7 +286,7 @@ export class PlayerRest {
             error.statusCode = 409;
             throw error;
         }
-        if (match.phase !== 'players' ||
+        if (match.phase !== PHASE_PLAYERS ||
             getPlayerSeatId(match.currentTurnPlayer) !== getPlayerSeatId(requester)) {
             const error = new Error('Solo el jugador del turno puede solicitar una acción.');
             error.statusCode = 403;

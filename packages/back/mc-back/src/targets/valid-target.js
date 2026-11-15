@@ -400,7 +400,8 @@ export class ValidTarget extends Engine {
         return this.selectSingleTarget(referentialTargets, params);
     }
     async selectTarget(params) {
-        const validTarget = this.getValidTarget(params);
+        const validTarget = params.targetCandidates ??
+            this.getValidTarget(params);
         const {
             selectCount,
             selectUpTo,
