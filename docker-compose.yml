@@ -38,7 +38,7 @@ services:
       - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-false}
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=mc
-      - FRONTEND_ORIGIN=${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000}
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-${PROTOCOL:-http}://${PUBLIC_IP:-localhost}:${PORT_FRONTEND:-8000}}
       - SMTP_HOST=${SMTP_HOST:-mailpit}
       - SMTP_PORT=${SMTP_PORT:-1025}
       - SMTP_USER=${SMTP_USER:-}

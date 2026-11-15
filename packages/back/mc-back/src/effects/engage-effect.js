@@ -1,6 +1,8 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
     TRIGGER_ENGAGE_HERO,
+    TRIGGER_ENGAGE_PLAYER,
+    TRIGGER_THIS_ENGAGES,
 } from 'mc-shared';
 
 import {PutPlayEffect} from './put-play-effect.js';
@@ -8,12 +10,12 @@ import {PutPlayEffect} from './put-play-effect.js';
 
 export class EngageEffect extends PutPlayEffect {
     constructor({
-        deferEngageHeroTrigger = false,
+        deferEngageTriggers = false,
         cardShownInRevealDialog = false,
     }) {
         super(arguments[0]);
 
-        this.deferEngageHeroTrigger = deferEngageHeroTrigger;
+        this.deferEngageTriggers = deferEngageTriggers;
         this.cardShownInRevealDialog = cardShownInRevealDialog;
         this.didEngage = false;
         this.enteredPlay = false;
@@ -46,9 +48,18 @@ export class EngageEffect extends PutPlayEffect {
             return triggerTypes;
         }
 
-        return this.deferEngageHeroTrigger ?
+        return this.deferEngageTriggers ?
             triggerTypes :
-            triggerTypes.concat([TRIGGER_ENGAGE_HERO]);
+            triggerTypes.concat([
+                TRIGGER_ENGAGE_PLAYER,
+                TRIGGER_ENGAGE_HERO,
+                TRIGGER_THIS_ENGAGES,
+            ]);
+    }
+    getForcedInterruptTriggersEnds() {
+        return this.didEngage && !this.deferEngageTriggers ?
+            [TRIGGER_ENGAGE_PLAYER, TRIGGER_THIS_ENGAGES] :
+            [];
     }
     isResolved() {
         return this.didEngage && super.isResolved();
@@ -59,8 +70,8 @@ export class EngageEffect extends PutPlayEffect {
             card: this.getCard(params),
         };
     }
-    async resolveDeferredEngageHeroTrigger(params) {
-        if (!this.deferEngageHeroTrigger ||
+    async resolveDeferredEngageTriggers(params) {
+        if (!this.deferEngageTriggers ||
             !this.didEngage ||
             !this.resolved) {
             return;
@@ -72,7 +83,15 @@ export class EngageEffect extends PutPlayEffect {
                 player: this.selectedTarget,
             }),
             {
-                triggerTypes: [TRIGGER_ENGAGE_HERO],
+                triggerTypes: [
+                    TRIGGER_ENGAGE_PLAYER,
+                    TRIGGER_ENGAGE_HERO,
+                    TRIGGER_THIS_ENGAGES,
+                ],
+                interruptTriggerTypes: [
+                    TRIGGER_ENGAGE_PLAYER,
+                    TRIGGER_THIS_ENGAGES,
+                ],
                 resolveDelayedEffects: false,
             }
         );

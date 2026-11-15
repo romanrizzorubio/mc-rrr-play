@@ -37,7 +37,6 @@ import {
     EFFECT_ADD_KEYWORD,
     EFFECT_FACEDOWN,
     EFFECT_FOR_EACH,
-    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_ACTIVATION,
     EFFECT_MODIFY_HIT_POINTS,
@@ -572,15 +571,12 @@ describe('Zola scenario', () => {
         assert.equal(revealSubjectEffects[0].type, EFFECT_DISCARD_UNTIL);
         assert.equal(revealSubjectEffects[0].params.target, TARGET_ENCOUNTER_DECK);
         assert.deepEqual(revealSubjectEffects[0].params.condition, {isMinion: true});
-        assert.equal(revealSubjectEffects[1].type, EFFECT_CHAINED);
-        const [getEncounterCard, revealMinion] =
-            revealSubjectEffects[1].params.effects;
-        assert.equal(getEncounterCard.type, EFFECT_GET_ENCOUNTER_CARD);
-        assert.equal(getEncounterCard.params.from, PLACE_ENCOUNTER_DISCARD);
-        assert.equal(getEncounterCard.params.cardSource, 'selectedCard');
-        assert.equal(revealMinion.type, EFFECT_REVEAL_ENCOUNTER);
-        assert.equal(revealMinion.params.card, 'effects.0.card');
-        assert.equal(revealMinion.params.player, 'match.initialPlayer');
+        assert.equal(revealSubjectEffects[1].type, EFFECT_REVEAL_ENCOUNTER);
+        assert.equal(revealSubjectEffects[1].params.card, 'selectedCard');
+        assert.equal(
+            revealSubjectEffects[1].params.player,
+            'match.initialPlayer',
+        );
 
         assert.equal(prison.type, CARD_TYPE_SIDE_SCHEME_SCENARIO);
         assert.equal(prison.params.image, 'scenarios/zola/04122.png');
@@ -1125,7 +1121,6 @@ describe('Zola scenario', () => {
         );
         const otherEncounterCard = {isMinion: false};
         subjects.controller = scenario;
-        minion.controller = scenario;
         scenario.gameZone.addToGameZone(subjects);
         scenario.deck.cards = [
             otherEncounterCard,

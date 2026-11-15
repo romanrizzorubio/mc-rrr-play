@@ -127,6 +127,7 @@ export class PlayCardEffect extends Effect {
             abilityType,
             card,
             playCardEffect: this,
+            checkOnly: params.checkOnly,
             checkPlayRestrictions: true,
         })) {
             return false;
@@ -135,7 +136,8 @@ export class PlayCardEffect extends Effect {
         return this.checkRestrictedCardLimit(params);
     }
     async checkRestrictedCardLimit(params) {
-        if (!this.card.isPlayerCard || !this.card.restricted || this.card.isEvent ||
+        if (params.checkOnly || !this.card.isPlayerCard ||
+            !this.card.restricted || this.card.isEvent ||
             this.restrictedDialogAccepted) {
             return true;
         }
@@ -571,8 +573,17 @@ export class PlayCardEffect extends Effect {
             this.cardsPaid = {
                 hand: paid.hand
                     .map(card => player.hand.getCard(card.id)),
-                generators: paid.generators
-                    .map(card => player.getCard(card.id)),
+                generators: paid.generators.map(card => {
+                    const generator = cardsToPay.generators.find(candidate =>
+                        candidate.id === card.id);
+                    if (!generator) {
+                        throw new Error(
+                            'El generador seleccionado ya no está disponible para el pago.'
+                        );
+                    }
+
+                    return generator;
+                }),
             };
 
             return {

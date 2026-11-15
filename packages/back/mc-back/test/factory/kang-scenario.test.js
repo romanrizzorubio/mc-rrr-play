@@ -66,12 +66,14 @@ import {
 } from 'mc-shared';
 import blackPanther from '../../../mc-data/seed/catalog/heroes/blackpanther.js';
 import hulk from '../../../mc-data/seed/catalog/heroes/hulk.js';
+import scarletWitch from '../../../mc-data/seed/catalog/heroes/scarlet-witch.js';
 import kang from '../../../mc-data/seed/catalog/scenarios/kang.js';
 import standard from '../../../mc-data/seed/catalog/sets/standard.js';
 import temporal from '../../../mc-data/seed/catalog/sets/temporal.js';
 
 const kangConfig = structuredClone(kang.config);
 const blackPantherConfig = structuredClone(blackPanther.config);
+const scarletWitchConfig = structuredClone(scarletWitch.config);
 
 describe('Kang scenario', () => {
     test('Recuerdos robados cycles the player deck after taking its available top cards', async () => {
@@ -331,7 +333,7 @@ describe('Kang scenario', () => {
         assert.equal(desbocado.count, 2);
         assert.equal(desbocado.card.type, CARD_TYPE_SIDE_SCHEME_SCENARIO);
         assert.equal(desbocado.card.params.image, 'scenarios/kang/11025.png');
-        assert.equal(desbocado.card.params.boost, 2);
+        assert.equal(desbocado.card.params.boost, 3);
         assert.equal(desbocado.card.params.startingThreat, 4);
         assert.deepEqual(desbocado.card.params.abilities[0], {
             type: ABILITY_WHEN_DEFEATED,
@@ -1107,9 +1109,23 @@ describe('Kang scenario', () => {
             name: 'kang-setup-test',
         });
         const factory = new MatchFactory(match);
-        const superhero = factory.createSuperhero(blackPanther.config);
-        const player = match.createPlayer({name: 'Jugador 1', superhero, initial: true});
+        const superhero = factory.createSuperhero(
+            structuredClone(blackPantherConfig)
+        );
+        const player = match.createPlayer({
+            name: 'Jugador 1',
+            superhero,
+            initial: true,
+        });
         player.initPlayer();
+        const scarletWitchSuperhero = factory.createSuperhero(
+            structuredClone(scarletWitchConfig)
+        );
+        const scarletWitchPlayer = match.createPlayer({
+            name: 'Jugador 2',
+            superhero: scarletWitchSuperhero,
+        });
+        scarletWitchPlayer.initPlayer();
         const scenario = await factory.createScenario(kang.config);
         match.addScenario(scenario);
         const drawEncounterCards = match.drawEncounterCards.bind(match);
@@ -1127,6 +1143,9 @@ describe('Kang scenario', () => {
         const playerObligationsBeforeDeal = deckBeforeDeal.filter(card =>
             card.isObligation && card.owner?.isPlayer);
         assert.equal(playerObligationsBeforeDeal.length, 0);
+        assert.equal(scarletWitchSuperhero.obligations.length, 2);
+        assert.ok(scarletWitchSuperhero.obligations.every(card =>
+            !deckBeforeDeal.includes(card)));
         const obligationsBeforeDeal = deckBeforeDeal.filter(card =>
             card.isObligation);
         assert.equal(obligationsBeforeDeal.length, 9);

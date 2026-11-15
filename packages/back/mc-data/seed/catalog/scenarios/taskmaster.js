@@ -537,7 +537,6 @@ const capturedByHydra = {
                                             isAlly: true,
                                             traits: TRAIT_CAPTIVE,
                                         },
-                                        multipleTarget: true,
                                         removeFromSource: true,
                                         showDialog: false,
                                     },

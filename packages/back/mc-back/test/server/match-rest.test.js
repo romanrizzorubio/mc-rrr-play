@@ -5,7 +5,10 @@ import {Match} from '../../src/model/match/match.js';
 import {MatchRest} from '../../src/server/rest/match-rest.js';
 import {AuthServiceClient} from '../../src/utils/auth-service-client.js';
 import {Mc} from '../../src/server/mc.js';
-import {serializeMatch} from '../../src/utils/match-serialization.js';
+import {
+    restoreMatch,
+    serializeMatch,
+} from '../../src/utils/match-serialization.js';
 import rhino from '../../../mc-data/seed/catalog/scenarios/rhino.js';
 import {MongoDataStore} from '../../../mc-data/index.js';
 
@@ -88,6 +91,7 @@ describe('MatchRest', () => {
                 id: 'match-1',
                 name: 'match-with-player',
                 creatorUserId: 'player-1',
+                autoSave: true,
                 initialized: true,
                 initializing: false,
                 playing: true,
@@ -278,5 +282,237 @@ describe('MatchRest', () => {
         assert.deepEqual(result, {name: match.name});
         assert.equal(match.creationConfig.expert, true);
         assert.equal(Object.hasOwn(match, 'creationSnapshot'), false);
+    });
+
+    test('match creation takes the auto-save setting from its authenticated lobby', async () => {
+        const lobby = {
+            id: 'lobby-id',
+            creatorId: 'creator',
+            status: 'starting',
+            autoSave: false,
+            startingMatch: {id: 'stable-id', name: 'manual-lobby'},
+        };
+        let created;
+        const mc = {
+            data: {getMatchLobby: async () => lobby},
+            getMatch: () => undefined,
+            setMatch: match => { created = match; },
+        };
+
+        await withIdentity('creator', () => new MatchRest({mc}).createMatch({
+            name: 'manual-lobby',
+            lobbyId: 'lobby-id',
+            cookie: 'session=creator',
+            autoSave: true,
+        }));
+
+        assert.equal(created.id, 'stable-id');
+        assert.equal(created.autoSave, false);
+        assert.equal(created.toObj().autoSave, false);
+    });
+
+    test('skips automatic persistence only when manual saving is enabled', async () => {
+        const persisted = [];
+        const mc = {
+            persistMatch: async match => persisted.push(match.name),
+        };
+        const manualMatch = new Match({
+            name: 'manual',
+            autoSave: false,
+            mc,
+        });
+        const automaticMatch = new Match({name: 'automatic', mc});
+
+        await manualMatch.persist();
+        await automaticMatch.persist();
+
+        assert.deepEqual(persisted, ['automatic']);
+        assert.equal(manualMatch.toObj().autoSave, false);
+        assert.equal(automaticMatch.toObj().autoSave, true);
+    });
+
+    test('stores one recovery snapshot after manual-save match setup completes', async () => {
+        const persisted = [];
+        const match = new Match({
+            name: 'manual-setup',
+            autoSave: false,
+            mc: {
+                persistMatch: async savedMatch => {
+                    assert.equal(savedMatch.initialized, true);
+                    assert.equal(savedMatch.initializing, false);
+                    assert.equal(savedMatch.playing, true);
+                    persisted.push(savedMatch.name);
+                },
+                getMatch: () => match,
+            },
+        });
+        match.initializing = true;
+        match.players = [{initial: true}];
+        match.createObligations = () => [];
+        match.initNemesis = () => {};
+        match.initPlayers = () => {};
+        match.selectInitialPlayer = async () => {};
+        match.initScenario = async () => {};
+        match.resolveSetupDecks = async () => {};
+        match.resolveWhenReveal = async () => {};
+        match.setupCampaign = () => {};
+        match.drawInitial = async () => {};
+        match.mulligan = async () => {};
+        match.resolveSetupPlayer = async () => {};
+        match.startMatch = () => Promise.resolve();
+
+        await match.initMatch();
+
+        assert.deepEqual(persisted, ['manual-setup']);
+        assert.equal(match.initializing, true);
+    });
+
+    test('manual save persists the current snapshot for an authenticated player', async () => {
+        const mc = new Mc();
+        const savedSnapshots = [];
+        mc.data = {
+            saveMatchSnapshot: async (name, snapshot) =>
+                savedSnapshots.push({name, snapshot}),
+        };
+        const match = new Match({
+            name: 'manual-save',
+            id: 'manual-save-id',
+            autoSave: false,
+            mc,
+        });
+        match.initialized = true;
+        match.players = [{userId: 'player'}];
+        mc.setMatch(match);
+
+        await withIdentity('player', async () => {
+            assert.deepEqual(await new MatchRest({mc}).saveMatch({
+                match,
+                cookie: 'session=player',
+            }), {id: match.id, name: match.name});
+        });
+
+        assert.equal(savedSnapshots.length, 1);
+        assert.equal(savedSnapshots[0].name, match.name);
+        assert.equal(
+            restoreMatch(savedSnapshots[0].snapshot, mc).autoSave,
+            false,
+        );
+    });
+
+    test('does not save while a decision is pending or for a non-participant', async () => {
+        const mc = new Mc();
+        let persisted = 0;
+        mc.data = {
+            saveMatchSnapshot: async () => { persisted += 1; },
+        };
+        const match = new Match({
+            name: 'pending-save',
+            autoSave: false,
+            mc,
+        });
+        match.initialized = true;
+        match.players = [{userId: 'player'}];
+        mc.setMatch(match);
+        const rest = new MatchRest({mc});
+        mc.mcSocket.dialogSocket.hasPending = () => true;
+
+        await withIdentity('player', () => assert.rejects(
+            rest.saveMatch({match, cookie: 'session=player'}),
+            error => error.statusCode === 409,
+        ));
+        mc.mcSocket.dialogSocket.hasPending = () => false;
+        await withIdentity('visitor', () => assert.rejects(
+            rest.saveMatch({match, cookie: 'session=visitor'}),
+            error => error.statusCode === 403,
+        ));
+        assert.equal(persisted, 0);
+    });
+
+    test('creator exit restores the manual-save snapshot and closes the shared room', async () => {
+        const mc = new Mc();
+        const snapshotMatch = new Match({
+            name: 'manual-exit',
+            id: 'manual-exit-id',
+            creatorUserId: 'creator',
+            autoSave: false,
+            mc,
+        });
+        snapshotMatch.initialized = true;
+        snapshotMatch.turnIndex = 2;
+        snapshotMatch.gameOverReason = 'main-scheme-completed';
+        const snapshot = serializeMatch(snapshotMatch);
+        mc.data = {getMatchSnapshot: async () => snapshot};
+        const liveMatch = new Match({
+            name: 'manual-exit',
+            id: 'manual-exit-id',
+            creatorUserId: 'creator',
+            autoSave: false,
+            mc,
+        });
+        liveMatch.initialized = true;
+        liveMatch.playing = true;
+        liveMatch.turnIndex = 9;
+        mc.setMatch(liveMatch);
+        const dispatches = [];
+        const closedMatches = [];
+        mc.mcSocket.dispatch = (...args) => dispatches.push(args);
+        mc.mcSocket.closeMatch = async name => closedMatches.push(name);
+        const params = {match: liveMatch, cookie: 'session=creator'};
+
+        await withIdentity('creator', () => new MatchRest({mc}).exitMatch(params));
+
+        assert.equal(liveMatch.playing, false);
+        assert.equal(params.match.turnIndex, 2);
+        assert.equal(params.match.autoSave, false);
+        assert.strictEqual(mc.getMatch(liveMatch.name), params.match);
+        assert.deepEqual(closedMatches, ['manual-exit']);
+        assert.equal(dispatches[0][0], 'manual-exit');
+    });
+
+    test('only the authenticated creator can exit a match for everyone', async () => {
+        const mc = new Mc();
+        const match = new Match({
+            name: 'creator-exit',
+            creatorUserId: 'creator',
+            autoSave: false,
+            mc,
+        });
+        match.initialized = true;
+        mc.setMatch(match);
+        let closed = false;
+        mc.mcSocket.closeMatch = async () => { closed = true; };
+
+        await withIdentity('guest', () => assert.rejects(
+            new MatchRest({mc}).exitMatch({
+                match,
+                cookie: 'session=guest',
+            }),
+            error => error.statusCode === 403,
+        ));
+
+        assert.equal(closed, false);
+    });
+
+    test('global exit is unavailable when automatic saving is enabled', async () => {
+        const mc = new Mc();
+        const match = new Match({
+            name: 'automatic-exit',
+            creatorUserId: 'creator',
+            mc,
+        });
+        match.initialized = true;
+        mc.setMatch(match);
+        let closed = false;
+        mc.mcSocket.closeMatch = async () => { closed = true; };
+
+        await withIdentity('creator', () => assert.rejects(
+            new MatchRest({mc}).exitMatch({
+                match,
+                cookie: 'session=creator',
+            }),
+            error => error.statusCode === 409,
+        ));
+
+        assert.equal(closed, false);
     });
 });

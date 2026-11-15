@@ -58,6 +58,14 @@ export class ConfigMatch {
             params: {},
         });
     }
+    removeLobbyPlayer(id, playerId) {
+        return this.api.delete({
+            endpoint: ENDPOINTS.MATCH_LOBBY.REMOVE_PLAYER
+                .replace(':id', encodeURIComponent(id))
+                .replace(':playerId', encodeURIComponent(playerId)),
+            params: {},
+        });
+    }
     startLobby(id) {
         return this.api.post({
             endpoint: `${ENDPOINTS.MATCH.LOBBIES}/${encodeURIComponent(id)}/start`,

@@ -60,6 +60,7 @@ import {
     TARGET_ACTIVATION,
     TARGET_ANY_PLAYER,
     TARGET_ALL_PLAYERS,
+    TARGET_ALL_ENGAGED_MINIONS,
     TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
     TARGET_CARD,
@@ -386,9 +387,7 @@ const explosiveArrowCard = {
                                 {
                                     'type': EFFECT_DEAL_DAMAGE,
                                     'params': {
-                                        'target': TARGET_SOURCE,
-                                        'source': 'targetPlayer.minions',
-                                        'multipleTarget': true,
+                                        'target': TARGET_ALL_ENGAGED_MINIONS,
                                         'damage': 3,
                                     },
                                 },

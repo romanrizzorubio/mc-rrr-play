@@ -82,6 +82,7 @@ export class SchemeCardComponent extends LitElement {
                 .dragResourcePayment="${this.dragResourcePayment}"
                 .clickDisabled="${clickDisabled}"
                 .menuOptions="${menuOptions}"
+                ?has-attached="${Boolean(attached?.length)}"
                 horizontal
                 size="m"
                 name="${name}"

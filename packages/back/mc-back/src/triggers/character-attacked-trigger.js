@@ -2,17 +2,19 @@ import {CharacterWouldTakeDamageTrigger} from './character-would-take-damage-tri
 
 export class CharacterAttackedTrigger extends CharacterWouldTakeDamageTrigger {
     canTrigger(params) {
-        return Boolean(params.effect?.isAttack && this.getTarget(params)) &&
-            super.canRun(this.getAbilityParams(params));
+        return Boolean(params.effect?.isAttack) &&
+            super.canTrigger(params, {requireDamage: false});
     }
-    getTargetDamage(params, target = this.getTarget(params)) {
+    getTargetDamage(params, target = this.getTarget(params), targetIndex) {
         if (!target) {
             return 0;
         }
 
         const {effect} = params;
-        const index = Array.isArray(effect.selectedTarget) ?
-            effect.selectedTarget.indexOf(target) : 0;
+        const index = Number.isInteger(targetIndex) ?
+            targetIndex :
+            Array.isArray(effect.selectedTarget) ?
+                effect.selectedTarget.indexOf(target) : 0;
         const damage = Array.isArray(effect.damage) ?
             effect.damage[index] : effect.damage;
         const prevention = Array.isArray(effect.preventDamage) ?

@@ -21,7 +21,9 @@ export const EVENTS = {
     },
     MATCH: {
         CREATED: 'match-created',
+        EXIT: 'match-exit',
         JOIN: 'join-match',
+        LEAVE: 'leave-match',
         MULLIGAN_COMPLETE: 'mulligan-complete',
         REFRESH: 'match-refresh',
     },

@@ -108,6 +108,18 @@ const createData = () => {
 
             return lobby;
         },
+        async removeMatchLobbyPlayer(id, userId, hero) {
+            const lobby = lobbies.get(id);
+            if (!lobby || lobby.status !== 'waiting' ||
+                !lobby.players.some(player =>
+                    player.userId === userId && player.hero === hero)) {
+                return null;
+            }
+            lobby.players = lobby.players.filter(player =>
+                player.userId !== userId || player.hero !== hero);
+
+            return lobby;
+        },
         async claimMatchLobbyStart(id, creatorId, startingMatch) {
             const lobby = lobbies.get(id);
             if (!lobby || lobby.creatorId !== creatorId || lobby.status !== 'waiting') {
@@ -273,6 +285,51 @@ const createTestServices = async data => {
 };
 
 describe('match-lobby REST API', () => {
+    test('reports whether a starting lobby has finished configuring its match', async () => {
+        const context = await createTestServices(createData());
+
+        try {
+            const created = await fetch(
+                `${context.service.url}${ENDPOINTS.MATCH.LOBBIES}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Cookie: 'session=creator',
+                    },
+                    body: JSON.stringify({
+                        name: 'Preparing Room',
+                        maxPlayers: 1,
+                        scenario: {scenario: 'rhino', modularSets: []},
+                    }),
+                },
+            );
+            const lobby = await created.json();
+            const storedLobby = context.data.lobbies.get(lobby.id);
+            storedLobby.status = 'starting';
+            storedLobby.startingMatch = {
+                id: lobby.id,
+                name: lobby.name,
+                configured: false,
+            };
+
+            const getLobby = () => fetch(
+                `${context.service.url}${ENDPOINTS.MATCH_LOBBY.GET.replace(':id', lobby.id)}`,
+                {headers: {Cookie: 'session=creator'}},
+            );
+            const pendingResponse = await getLobby();
+            assert.equal(pendingResponse.status, 200);
+            assert.equal((await pendingResponse.json()).matchConfigured, false);
+
+            storedLobby.startingMatch.configured = true;
+            const readyResponse = await getLobby();
+            assert.equal(readyResponse.status, 200);
+            assert.equal((await readyResponse.json()).matchConfigured, true);
+        } finally {
+            await context.close();
+        }
+    });
+
     test('empty lobbies cannot start and an organizer can start a guest-only room', async () => {
         const context = await createTestServices(createData());
         const post = (endpoint, body, cookie = 'session=creator') => fetch(
@@ -397,6 +454,74 @@ describe('match-lobby REST API', () => {
         }
     });
 
+    test('removing a lobby player requires its owner or the creator and removes only that seat', async () => {
+        const data = createData();
+        data.lobbies.set('existing', {
+            id: 'existing', name: 'Room', status: 'waiting',
+            maxPlayers: 4, creatorId: 'user-creator', expert: false,
+            scenario: {name: 'Rino', modularSets: []},
+            players: [
+                {id: 'creator-seat', userId: 'user-creator', name: 'Creator', hero: 'spiderman'},
+                {id: 'guest-ironman-seat', userId: 'user-guest', name: 'Guest', hero: 'ironman'},
+                {id: 'guest-hulk-seat', userId: 'user-guest', name: 'Guest', hero: 'hulk'},
+            ],
+        });
+        const context = await createTestServices(data);
+        const removeUrl = playerId =>
+            `${context.service.url}${ENDPOINTS.MATCH_LOBBY.REMOVE_PLAYER
+                .replace(':id', 'existing')
+                .replace(':playerId', playerId)}`;
+
+        try {
+            const unauthenticated = await fetch(removeUrl('guest-ironman-seat'), {
+                method: 'DELETE',
+            });
+            assert.equal(unauthenticated.status, 401);
+
+            const guestRemovedOwnSeat = await fetch(removeUrl('guest-ironman-seat'), {
+                method: 'DELETE',
+                headers: {Cookie: 'session=guest'},
+            });
+            assert.equal(guestRemovedOwnSeat.status, 200);
+            const afterGuestRemoval = await guestRemovedOwnSeat.json();
+            assert.deepEqual(afterGuestRemoval.players.map(player => player.id), [
+                'creator-seat',
+                'guest-hulk-seat',
+            ]);
+
+            const guestCannotRemoveAnotherAccount = await fetch(removeUrl('creator-seat'), {
+                method: 'DELETE',
+                headers: {Cookie: 'session=guest'},
+            });
+            assert.equal(guestCannotRemoveAnotherAccount.status, 403);
+
+            const creatorRemovedGuestSeat = await fetch(removeUrl('guest-hulk-seat'), {
+                method: 'DELETE',
+                headers: {Cookie: 'session=creator'},
+            });
+            assert.equal(creatorRemovedGuestSeat.status, 200);
+            const afterCreatorRemoval = await creatorRemovedGuestSeat.json();
+            assert.deepEqual(afterCreatorRemoval.players.map(player => player.id), [
+                'creator-seat',
+            ]);
+
+            const missingSeat = await fetch(removeUrl('missing-seat'), {
+                method: 'DELETE',
+                headers: {Cookie: 'session=creator'},
+            });
+            assert.equal(missingSeat.status, 404);
+
+            data.lobbies.get('existing').status = 'started';
+            const startedLobby = await fetch(removeUrl('creator-seat'), {
+                method: 'DELETE',
+                headers: {Cookie: 'session=creator'},
+            });
+            assert.equal(startedLobby.status, 409);
+        } finally {
+            await context.close();
+        }
+    });
+
     test('legacy creation proxy forwards the session Cookie', async () => {
         const context = await createTestServices(createData());
 
@@ -493,8 +618,10 @@ describe('match-lobby REST API', () => {
                 }],
                 scenarioName: 'Rino',
                 expert: false,
+                autoSave: true,
                 modularSetNames: ['Bomb Scare'],
                 matchId: null,
+                matchConfigured: false,
             });
             assert.equal(Object.hasOwn(lobby.players[0], 'email'), false);
             const listedLobbies = await fetch(
@@ -599,6 +726,7 @@ describe('match-lobby REST API', () => {
                         player: {hero: 'spiderman', deckId: 'deck-spider'},
                         scenario: {scenario: 'rhino', modularSets: []},
                         expert: true,
+                        autoSave: false,
                     }),
                 },
             );
@@ -642,10 +770,12 @@ describe('match-lobby REST API', () => {
                     ...joinedLobby,
                     status: 'starting',
                     matchId: lobby.id,
+                    matchConfigured: true,
                 },
                 matchId: lobby.id,
                 matchName: 'Test Room',
                 expert: true,
+                autoSave: false,
             });
             assert.deepEqual(context.forwarded.map(({endpoint}) => endpoint), [
                 INTERNAL_ENDPOINTS.MATCH.CREATE,

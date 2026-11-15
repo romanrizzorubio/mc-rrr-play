@@ -710,4 +710,55 @@ export default [
             }
         }
     },
+    {
+        '_id': 'protection-en-plena-forma',
+        'aspect': 'protection',
+        'order': 16014,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'En plena forma',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/16014.png',
+                'traits': [TRAIT_ATTACK],
+                'cost': 2,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [LABEL_ATTACK],
+                            'effect': {
+                                'type': EFFECT_DO_IF,
+                                'params': {
+                                    'target': TARGET_VILLAIN,
+                                    'condition': {
+                                        'player.superhero.life': {
+                                            'operator': 'gte',
+                                            'path': 'player.superhero.currentSide.card.hitPoints',
+                                        },
+                                    },
+                                    'effect': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_VILLAIN,
+                                            'damage': 5,
+                                        },
+                                    },
+                                    'effectNot': {
+                                        'type': EFFECT_DEAL_DAMAGE,
+                                        'params': {
+                                            'target': TARGET_VILLAIN,
+                                            'damage': 2,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

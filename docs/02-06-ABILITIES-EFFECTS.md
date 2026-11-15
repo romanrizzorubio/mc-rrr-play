@@ -25,6 +25,7 @@ Una capacidad de respuesta es un tipo de capacidad disparada, indicada por el di
     - Los jugadores no pueden activar capacidades de respuesta en las obligaciones que se encuentren en las zonas de juego de otros jugadores.
 - Se pueden activar múltiples respuestas a partir de la misma condición de activación, pero cada respuesta solo se puede activar una vez por cada ocurrencia de la condición de activación.
     - Se pueden activar múltiples copias de una carta con una respuesta por la misma condición de activación.
+- Cuando un efecto daña a varios personajes simultáneamente, cada personaje que recibe daño genera su propia ocurrencia para las capacidades que responden a que ese personaje sufre daño. La simultaneidad no agrupa esos daños en una sola instancia ni retrasa la aplicación del daño a los demás objetivos.
 - Si un único efecto hace que se produzcan múltiples condiciones de activación, las respuestas a cada una de esas condiciones de activación pueden resolverse en cualquier orden. (Por ejemplo, si un ataque activa respuestas tanto "después de que ataques" como "después de que derrotes", esas respuestas pueden resolverse en cualquier orden).
 - Una vez que todos los jugadores deciden que no desean resolver ninguna respuesta (adicional) a una condición de activación, ya no se pueden usar más respuestas a esa instancia de esa condición de activación.
 

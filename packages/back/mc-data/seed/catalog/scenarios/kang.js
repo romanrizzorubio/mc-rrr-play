@@ -181,25 +181,18 @@ const stageOneSetup = {
                         params: {
                             target: TARGET_ALL_PLAYERS,
                             effect: {
-                                type: EFFECT_CHAINED,
+                                type: EFFECT_FOR_EACH,
                                 params: {
-                                    effects: [
-                                        {
-                                            type: EFFECT_SEARCH_CARDS,
-                                            params: {
-                                                locations: [PLACE_ENCOUNTER_DECK_CARDS],
-                                                filter: {
-                                                    isObligation: true,
-                                                    'owner.isPlayer': true,
-                                                },
-                                                firstMatch: true,
-                                            },
+                                    target: TARGET_SOURCE,
+                                    source: 'player.superhero.obligations',
+                                    condition: {isObligation: true},
+                                    effect: {
+                                        type: EFFECT_REMOVE_CARD,
+                                        params: {
+                                            target: TARGET_SOURCE,
+                                            source: 'forEachTarget',
                                         },
-                                        {
-                                            type: EFFECT_REMOVE_CARD,
-                                            params: {target: TARGET_CARD},
-                                        },
-                                    ],
+                                    },
                                 },
                             },
                         },
@@ -405,7 +398,7 @@ const desbocado = {
         name: 'Desbocado',
         set: SET,
         image: 'scenarios/kang/11025.png',
-        boost: 2,
+        boost: 3,
         startingThreat: 4,
         abilities: [
             {

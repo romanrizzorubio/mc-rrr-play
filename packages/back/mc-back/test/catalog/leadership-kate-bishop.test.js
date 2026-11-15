@@ -154,6 +154,7 @@ describe('Kate Bishop Leadership Ally', () => {
         assert.equal(ability.arrow.cost.effects[1].target, TARGET_YOU);
         assert.equal(typeof ability.effect.canRun, 'function');
 
+        assert.equal(await ability.canRun({match, player, card: ally}), true);
         await ability.resolveAbility({match, player, card: ally});
 
         assert.equal(ally.exhausted, true);

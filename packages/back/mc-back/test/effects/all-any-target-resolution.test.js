@@ -146,24 +146,69 @@ describe('ALL and ANY concrete effect resolution', () => {
         assert.equal(dialogs.length, 1);
     });
 
-    test('discarding ALL supports discards every eligible support without selecting one', async () => {
+    test('discarding ALL supports leaves permanents from other sets in play', async () => {
         const {actor, dialogs, match, supports} = createGame();
+        supports[0].permanent = true;
+        supports[0].set = 'ship-command';
         const effect = new DiscardFromGameEffect({
-            match, target: TARGET_ALL_SUPPORTS, condition: {eligible: true},
-        });
-        await effect.runEffect({match, player: actor});
-        assert.deepEqual(supports.map(support => support.discarded), [true, false, true]);
-        assert.deepEqual(dialogs, []);
-    });
-
-    test('discarding one controlled support offers only eligible choices', async () => {
-        const {actor, dialogs, match, supports} = createGame();
-        const effect = new DiscardFromGameEffect({
-            match, target: TARGET_SUPPORT_YOU_CONTROL, condition: {eligible: true},
+            match,
+            target: TARGET_ALL_SUPPORTS,
+            condition: {eligible: true},
+            ability: {card: {set: 'kang'}},
         });
         await effect.runEffect({match, player: actor});
         assert.deepEqual(supports.map(support => support.discarded), [false, false, true]);
-        assert.equal(dialogs.length, 1);
+        assert.deepEqual(dialogs, []);
+    });
+
+    test('discarding one controlled support skips permanents from other sets', async () => {
+        const {actor, dialogs, match, supports} = createGame();
+        supports[0].permanent = true;
+        supports[0].set = 'ship-command';
+        const effect = new DiscardFromGameEffect({
+            match,
+            target: TARGET_SUPPORT_YOU_CONTROL,
+            condition: {eligible: true},
+            ability: {card: {set: 'kang'}},
+        });
+        await effect.runEffect({match, player: actor});
+        assert.deepEqual(supports.map(support => support.discarded), [false, false, true]);
+        assert.deepEqual(dialogs, []);
+    });
+
+    test('rejects a preselected permanent support when the discard source is from another set', async () => {
+        const {actor, match, supports} = createGame();
+        supports[0].permanent = true;
+        supports[0].set = 'ship-command';
+        const effect = new DiscardFromGameEffect({
+            match,
+            target: TARGET_SUPPORT_YOU_CONTROL,
+            selectedTarget: supports[0],
+            ability: {card: {set: 'kang'}},
+        });
+
+        assert.deepEqual(effect.getValidTarget({match, player: actor}), []);
+        assert.equal(Boolean(await effect.canRun({match, player: actor})), false);
+        assert.equal(supports[0].discarded, false);
+    });
+
+    test('allows a discard ability from the permanent support set to target it', async () => {
+        const {actor, dialogs, match, supports} = createGame();
+        supports[0].permanent = true;
+        supports[0].set = 'ship-command';
+        supports[2].eligible = false;
+        const effect = new DiscardFromGameEffect({
+            match,
+            target: TARGET_SUPPORT_YOU_CONTROL,
+            selectedTarget: supports[0],
+            ability: {card: {set: 'ship-command'}},
+        });
+
+        assert.equal(await effect.canRun({match, player: actor}), true);
+        await effect.runEffect({match, player: actor});
+
+        assert.equal(supports[0].discarded, true);
+        assert.deepEqual(dialogs, []);
     });
 
     test('dealing encounters to ALL players distributes separate cards to each eligible player', async () => {

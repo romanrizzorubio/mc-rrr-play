@@ -14,10 +14,13 @@ import {
     EFFECT_ENGAGE,
     EFFECT_HEAL,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SIMULTANEOUS,
     CLASSIFICATION_BASIC,
     RESOURCE_ENERGY,
+    TARGET_ALL_ENGAGED_MINIONS,
     TARGET_ALL_FRIENDLY_CHARACTERS,
     TARGET_ENCOUNTER_DECK,
+    TARGET_VILLAIN,
     TRIGGER_CARD_ENTER_PLAY,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
@@ -99,9 +102,34 @@ describe('Thor catalog', () => {
         const lightningAbility = lightning.card.params.abilities[0];
         const {effect: aerialBranch, effectNot: normalBranch} =
             lightningAbility.params.effect.params;
-        assert.equal(aerialBranch.params.ignoreTough, true);
-        assert.equal(aerialBranch.params.keywords?.piercing, undefined);
-        assert.equal(normalBranch.params.ignoreTough, undefined);
+        assert.equal(aerialBranch.type, EFFECT_SIMULTANEOUS);
+        const [aerialVillainDamage, aerialMinionDamage] =
+            aerialBranch.params.effects;
+        assert.equal(
+            aerialVillainDamage.params.target,
+            TARGET_VILLAIN
+        );
+        assert.equal(
+            aerialMinionDamage.params.target,
+            TARGET_ALL_ENGAGED_MINIONS
+        );
+        assert.equal(aerialVillainDamage.params.ignoreTough, true);
+        assert.equal(aerialMinionDamage.params.ignoreTough, true);
+        assert.equal(aerialBranch.params.effects.length, 2);
+        assert.equal(normalBranch.type, EFFECT_SIMULTANEOUS);
+        const [normalVillainDamage, normalMinionDamage] =
+            normalBranch.params.effects;
+        assert.equal(
+            normalVillainDamage.params.target,
+            TARGET_VILLAIN
+        );
+        assert.equal(
+            normalMinionDamage.params.target,
+            TARGET_ALL_ENGAGED_MINIONS
+        );
+        assert.equal(normalVillainDamage.params.ignoreTough, undefined);
+        assert.equal(normalMinionDamage.params.ignoreTough, undefined);
+        assert.equal(normalBranch.params.effects.length, 2);
     });
 
     test('Digno is available only while Mjolnir is in Thor deck or discard pile', async () => {

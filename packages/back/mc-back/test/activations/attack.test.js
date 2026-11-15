@@ -43,6 +43,49 @@ describe('attack activation', () => {
         ]);
     });
 
+    test('reads the calculated Retaliate value before creating retaliation damage', async () => {
+        let retaliation;
+        const character = {owner: {}};
+        const target = {
+            isInPlay: true,
+            async getLife() {
+                return 3;
+            },
+            async getRetaliateValue(params) {
+                assert.equal(params.player, character.owner);
+
+                return 2;
+            },
+        };
+        const match = {
+            effectsFactory: {
+                createEffect(params) {
+                    retaliation = params;
+
+                    return {
+                        async canRun() {
+                            return true;
+                        },
+                    };
+                },
+            },
+        };
+        const attack = new Attack({
+            effect: {
+                character,
+                match,
+                ranged: false,
+            },
+        });
+
+        await attack.getRetaliateDamageEffect(target, {
+            player: character.owner,
+        });
+
+        assert.equal(retaliation.damage, 2);
+        assert.equal(retaliation.selectedTarget, character);
+    });
+
     test('does not offer retaliation for an enemy removed from play by the attack', async () => {
         const target = {
             card: {retaliate: 1},

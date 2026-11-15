@@ -7,6 +7,7 @@ import {
     EFFECT_REVEAL_FACEDOWN_UNDER,
     EFFECT_REMOVE_SCENARIO_MAIN_SCHEME,
     EFFECT_ADD_ADDITIONAL_COST,
+    EFFECT_ADD_ADDITIONAL_DAMAGE,
     EFFECT_BLANK_TEXT,
     EFFECT_ADD_KEYWORD,
     EFFECT_ACTIVATE,
@@ -74,8 +75,10 @@ import {
     EFFECT_LOOK_AT_TOP_CARDS,
     EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
+    EFFECT_MODIFY_EXCESS_DAMAGE,
     EFFECT_MODIFY_ACTIVATION,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MODIFY_RETALIATE_VALUE,
     EFFECT_MODIFY_BOOST_ICONS,
     EFFECT_MODIFY_ATTACK_CONSEQUENCIAL,
     EFFECT_MODIFY_COST,
@@ -89,6 +92,7 @@ import {
     EFFECT_MODIFY_THWART_VALUE,
     EFFECT_MODIFY_TRAITS,
     EFFECT_MOVE_DAMAGE,
+    EFFECT_MOVE_COUNTERS,
     EFFECT_MOVE_THREAT,
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
@@ -121,6 +125,7 @@ import {
     EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SEARCH_CARD_REVEAL,
     EFFECT_SEARCH_CARDS,
+    EFFECT_SHOW_CARDS,
     EFFECT_SIMULTANEOUS,
     EFFECT_RESOLVE_SPECIAL_ABILITY,
     EFFECT_SELECT_DISCARD_CARD,
@@ -159,6 +164,7 @@ import {ActivateEffect} from '../../effects/activate-effect.js';
 import {ChangeAttackTargetsEffect} from '../../effects/change-attack-targets-effect.js';
 import {AddTraitEffect} from '../../effects/add-trait-effect.js';
 import {AssignDamageEffect} from '../../effects/assign-damage-effect.js';
+import {AddAdditionalDamageEffect} from '../../effects/add-additional-damage-effect.js';
 import {AssignThreatEffect} from '../../effects/assign-threat-effect.js';
 import {CancelActivationEffect} from '../../effects/cancel-activation-effect.js';
 import {CancelCardEffectsEffect} from '../../effects/cancel-card-effects-effect.js';
@@ -219,10 +225,15 @@ import {HealEffect} from '../../effects/heal-effect.js';
 import {IncludeAsideCardsEffect} from '../../effects/include-aside-cards-effect.js';
 import {LastingEffect} from '../../effects/lasting-effect.js';
 import {LookAtTopCardsEffect} from '../../effects/look-at-top-cards-effect.js';
+import {ShowCardsEffect} from '../../effects/show-cards-effect.js';
 import {MayEffect} from '../../effects/may-effect.js';
 import {ModifyAttackEffect} from '../../effects/modify-attack-effect.js';
+import {ModifyExcessDamageEffect} from '../../effects/modify-excess-damage-effect.js';
 import {ModifyActivationEffect} from '../../effects/modify-activation-effect.js';
 import {ModifyAttackValueEffect} from '../../effects/modify-attack-value-effect.js';
+import {
+    ModifyRetaliateValueEffect
+} from '../../effects/modify-retaliate-value-effect.js';
 import {ModifyBoostIconsEffect} from '../../effects/modify-boost-icons-effect.js';
 import {
     ModifyattackConsequentialEffect
@@ -239,6 +250,7 @@ import {ModifyThwartValueEffect} from '../../effects/modify-thwart-value-effect.
 import {SetThwartValueEffect} from '../../effects/set-thwart-value-effect.js';
 import {ModifyTraitsEffect} from '../../effects/modify-traits-effect.js';
 import {MoveDamageEffect} from '../../effects/move-damage-effect.js';
+import {MoveCountersEffect} from '../../effects/move-counters-effect.js';
 import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
 import {MoveToDeckEffect} from '../../effects/move-to-deck-effect.js';
 import {MoveToHandEffect} from '../../effects/move-to-hand-effect.js';
@@ -301,6 +313,7 @@ export const EFFECT_MAP = {
     [EFFECT_ADD_KEYWORD]: AddKeywordEffect,
     [EFFECT_CHANGE_ATTACK_TARGETS]: ChangeAttackTargetsEffect,
     [EFFECT_ADD_TRAIT]: AddTraitEffect,
+    [EFFECT_ADD_ADDITIONAL_DAMAGE]: AddAdditionalDamageEffect,
     [EFFECT_ASSIGN_DAMAGE]: AssignDamageEffect,
     [EFFECT_ASSIGN_THREAT]: AssignThreatEffect,
     [EFFECT_PREVENT_DAMAGE]: PreventDamageEffect,
@@ -363,10 +376,13 @@ export const EFFECT_MAP = {
     [EFFECT_DELAYED]: DelayedEffect,
     [EFFECT_LASTING]: LastingEffect,
     [EFFECT_LOOK_AT_TOP_CARDS]: LookAtTopCardsEffect,
+    [EFFECT_SHOW_CARDS]: ShowCardsEffect,
     [EFFECT_MAY]: MayEffect,
     [EFFECT_MODIFY_ATTACK]: ModifyAttackEffect,
+    [EFFECT_MODIFY_EXCESS_DAMAGE]: ModifyExcessDamageEffect,
     [EFFECT_MODIFY_ACTIVATION]: ModifyActivationEffect,
     [EFFECT_MODIFY_ATTACK_VALUE]: ModifyAttackValueEffect,
+    [EFFECT_MODIFY_RETALIATE_VALUE]: ModifyRetaliateValueEffect,
     [EFFECT_MODIFY_BOOST_ICONS]: ModifyBoostIconsEffect,
     [EFFECT_MODIFY_ATTACK_CONSEQUENCIAL]: ModifyattackConsequentialEffect,
     [EFFECT_MODIFY_MAX_ALLIES]: ModifyMaxAlliesEffect,
@@ -381,6 +397,7 @@ export const EFFECT_MAP = {
     [EFFECT_MODIFY_HIT_POINTS]: ModifyHitPointsEffect,
     [EFFECT_MODIFY_TRAITS]: ModifyTraitsEffect,
     [EFFECT_MOVE_DAMAGE]: MoveDamageEffect,
+    [EFFECT_MOVE_COUNTERS]: MoveCountersEffect,
     [EFFECT_MOVE_THREAT]: MoveThreatEffect,
     [EFFECT_PLACE_COUNTERS]: PlaceCountersEffect,
     [EFFECT_PLACE_DAMAGE]: PlaceDamageEffect,

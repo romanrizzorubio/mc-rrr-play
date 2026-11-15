@@ -31,20 +31,23 @@ export class CharacterTakesDamageTrigger extends CharacterWouldTakeDamageTrigger
 
         return super.canTrigger(params);
     }
-    getTarget(params) {
+    getTarget(params, targetIndex) {
         const player = getTriggerCardPlayer(
             this.card,
             params.player ?? this.card.owner
         );
 
-        return super.getTarget({...params, player});
+        return super.getTarget({...params, player}, targetIndex);
     }
-    getAbilityParams(params) {
+    getAbilityParams(params, targetIndex) {
         const player = getTriggerCardPlayer(
             this.card,
             params.player ?? this.card.owner
         );
-        const abilityParams = super.getAbilityParams({...params, player});
+        const abilityParams = super.getAbilityParams(
+            {...params, player},
+            targetIndex
+        );
         const attack = params.effect?.activation?.effect ?? params.attack;
 
         return {

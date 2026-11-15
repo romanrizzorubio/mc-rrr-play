@@ -22,6 +22,35 @@ export const checkCondition = (obj, condition) => {
             return param.every(item => checkCondition(item, value.every));
         }
 
+        if (value &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            typeof value.path === 'string' &&
+            typeof value.operator === 'string') {
+            const comparedValue = path(obj, value.path);
+            if (!Number.isFinite(param) ||
+                !Number.isFinite(comparedValue)) {
+                return false;
+            }
+
+            switch (value.operator) {
+                case 'eq':
+                    return param === comparedValue;
+                case 'gt':
+                    return param > comparedValue;
+                case 'gte':
+                    return param >= comparedValue;
+                case 'lt':
+                    return param < comparedValue;
+                case 'lte':
+                    return param <= comparedValue;
+                default:
+                    throw new Error(
+                        `Unsupported condition comparison operator "${value.operator}".`
+                    );
+            }
+        }
+
         return checkValue(param, value);
     });
 };

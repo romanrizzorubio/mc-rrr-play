@@ -1,4 +1,8 @@
 import {
+    createAccountActivationEmail,
+    createPasswordResetEmail,
+} from 'mc-email';
+import {
     createOpaqueToken,
     createServiceError,
     hashOpaqueToken,
@@ -143,11 +147,11 @@ class UserAuthService {
 
         const activationLink = new URL(USER_LINK_PATHS.activation, this.frontendOrigin);
         activationLink.searchParams.set('token', token);
-        await this.mailer.send({
+        await this.mailer.send(createAccountActivationEmail({
             to: email,
-            subject: 'Activa tu cuenta de MC RRR Play',
-            text: `Hola ${displayName}:\n\nActiva tu cuenta y elige una contraseña en este enlace:\n${activationLink}\n\nEl enlace caduca en 24 horas.`,
-        });
+            displayName,
+            activationLink,
+        }));
     }
 
     async login(body) {
@@ -270,11 +274,11 @@ class UserAuthService {
 
         const resetLink = new URL(USER_LINK_PATHS.passwordReset, this.frontendOrigin);
         resetLink.searchParams.set('token', token);
-        await this.mailer.send({
+        await this.mailer.send(createPasswordResetEmail({
             to: user.email,
-            subject: 'Restablece tu contraseña de MC RRR Play',
-            text: `Hola ${user.displayName}:\n\nElige una nueva contraseña en este enlace:\n${resetLink}\n\nEl enlace caduca en una hora. Si no solicitaste el cambio, ignora este correo.`,
-        });
+            displayName: user.displayName,
+            resetLink,
+        }));
     }
 
     async getAdminUsers() {

@@ -45,6 +45,7 @@ describe('Armadura electrostática', () => {
         assert.equal(ability.params.trigger, TRIGGER_ENEMY_ATTACKS_YOU);
         assert.deepEqual(ability.params.condition, {
             'effect.isDefended': true,
+            'effect.defender.isHero': true,
         });
         assert.equal(ability.params.effect.type, EFFECT_DEAL_DAMAGE);
         assert.deepEqual(ability.params.effect.params, {
@@ -53,7 +54,7 @@ describe('Armadura electrostática', () => {
         });
     });
 
-    it('solo responde al final de un ataque defendido', async () => {
+    it('solo responde si defiende el héroe, no si defiende un aliado', async () => {
         assert.ok(catalogEntry);
 
         const match = {triggerCards: {}};
@@ -78,15 +79,15 @@ describe('Armadura electrostática', () => {
         const engine = new Engine();
         engine.match = match;
 
-        const createAttack = ({defended}) => {
+        const createAttack = defender => {
             const attack = new EnemyAttackEffect({
                 activation: {getTriggersEnds: () => []},
                 enemy: attacker,
                 match,
                 selectedTarget: player,
             });
-            if (defended) {
-                attack.defender = {isHero: true, owner: player};
+            if (defender) {
+                attack.defender = {...defender, owner: player};
             }
             return attack;
         };
@@ -98,13 +99,21 @@ describe('Armadura electrostática', () => {
                 params,
             );
         };
-        const defendedAttack = createAttack({defended: true});
-        const undefendedAttack = createAttack({defended: false});
+        const defendedByHeroAttack = createAttack({isHero: true});
+        const defendedByAllyAttack = createAttack({
+            isAlly: true,
+            isHero: false,
+        });
+        const undefendedAttack = createAttack();
 
         assert.deepEqual(
-            (await findAvailableResponses(defendedAttack))
+            (await findAvailableResponses(defendedByHeroAttack))
                 .map(trigger => trigger.card),
             [card],
+        );
+        assert.deepEqual(
+            await findAvailableResponses(defendedByAllyAttack),
+            [],
         );
         assert.deepEqual(
             await findAvailableResponses(undefendedAttack),
@@ -118,8 +127,8 @@ describe('Armadura electrostática', () => {
             }),
         };
         const effectParams = {
-            attack: defendedAttack,
-            effect: defendedAttack,
+            attack: defendedByHeroAttack,
+            effect: defendedByHeroAttack,
             match,
             player,
         };

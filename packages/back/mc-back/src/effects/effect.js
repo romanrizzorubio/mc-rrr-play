@@ -253,7 +253,7 @@ export class Effect extends Engine {
         this._selectedTarget = selectedTarget;
     }
     get activation() {
-        if (!this._activation) {
+        if (!this._activation && this.isActivation) {
             if (this.isAttack) {
                 this._activation = this.match.activationsFactory.createActivation({
                     type: ACTIVATION_ATTACK,
@@ -297,7 +297,7 @@ export class Effect extends Engine {
     get isActivation() {
         const {isAttack, isDefense, isRecovery, isScheme, isThwart} = this;
 
-        return (isAttack || isDefense || isRecovery || isScheme || isThwart);
+        return isAttack || isDefense || isRecovery || isScheme || isThwart;
     }
     get isAttack() {
         return this._isAttack ?? (!this.isCost && this.ability && this.ability.isAttack);
@@ -397,6 +397,9 @@ export class Effect extends Engine {
 
         return true;
     }
+    async resolveStatusBeforeInterrupts() {
+        return true;
+    }
     checkTrigger() {
         return true;
     }
@@ -449,6 +452,9 @@ export class Effect extends Engine {
         return isActivation && activation ?
             activation.getTriggersEnds(params) :
             [];
+    }
+    getForcedInterruptTriggersEnds() {
+        return [];
     }
     getTriggersInit(params) {
         const {activation} = this;
@@ -616,6 +622,10 @@ export class Effect extends Engine {
         const type = this.getTriggersWould(params);
 
         if (await this.trigger(PRIORITY_CONSTANT, type, params)) {
+            if (!await this.resolveStatusBeforeInterrupts(params)) {
+                return false;
+            }
+
             if (this.checkStatus(params)) {
                 if (await this.trigger(PRIORITY_FORCED_INTERRUPT, type, params)) {
                     if (await this.trigger(PRIORITY_INTERRUPT, type, params)) {
@@ -644,6 +654,7 @@ export class Effect extends Engine {
     }
     async triggerEnds(params, {
         triggerTypes = this.getTriggersEnds(params),
+        interruptTriggerTypes = [],
         resolveDelayedEffects = true,
         resolveInterrupts = false,
     } = {}) {
@@ -652,9 +663,20 @@ export class Effect extends Engine {
             await this.resolveDelayedEffects(params);
         }
         await this.trigger(PRIORITY_CONSTANT, triggerTypes, params);
-        if (resolveInterrupts &&
-            await this.trigger(PRIORITY_FORCED_INTERRUPT, triggerTypes, params)) {
-            await this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+        const forcedInterruptTypes = resolveInterrupts ?
+            triggerTypes :
+            interruptTriggerTypes;
+        if (forcedInterruptTypes.length &&
+            await this.trigger(
+                PRIORITY_FORCED_INTERRUPT,
+                forcedInterruptTypes,
+                params
+            )) {
+            await this.trigger(
+                PRIORITY_INTERRUPT,
+                forcedInterruptTypes,
+                params
+            );
         }
 
         const {isActivation, activation} = this;
@@ -762,6 +784,9 @@ export class Effect extends Engine {
         await this.triggerEnds({
             ...triggersParams,
             ...this.getTriggersParams(effectParams),
+        }, {
+            interruptTriggerTypes:
+                this.getForcedInterruptTriggersEnds(effectParams),
         });
     }
     async runEffect(params) {

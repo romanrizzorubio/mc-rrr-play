@@ -11,6 +11,8 @@ export class McDialog extends LitElement {
             footer: {type: String},
             showCancel: {type: Boolean},
             hideOk: {type: Boolean},
+            hideViewTable: {type: Boolean},
+            hideResponsiblePlayer: {type: Boolean},
             readOnly: {type: Boolean},
             viewOnly: {type: Boolean},
             targetPlayerName: {type: String},
@@ -27,6 +29,8 @@ export class McDialog extends LitElement {
         this.footer = '';
         this.showCancel = false;
         this.hideOk = false;
+        this.hideViewTable = false;
+        this.hideResponsiblePlayer = false;
         this.readOnly = false;
         this.viewOnly = false;
         this.targetPlayerName = '';
@@ -145,7 +149,7 @@ export class McDialog extends LitElement {
         return html`
             ${this.renderTitle()}
             <div class="content">
-                ${this.renderResponsiblePlayer()}
+                ${this.hideResponsiblePlayer ? '' : this.renderResponsiblePlayer()}
                 ${this.renderSubtitle()}
                 ${this.readOnly || this.viewOnly ? html`
                     <div inert>${this.renderContent()}</div>
@@ -177,6 +181,9 @@ export class McDialog extends LitElement {
     }
     renderTitle() {
         const title = this.getTitle();
+        if (!title && this.hideViewTable) {
+            return '';
+        }
         const titleContent = typeof title === 'string' ?
             renderTextWithFormatting(title) :
             title;
@@ -184,7 +191,7 @@ export class McDialog extends LitElement {
         return html`
             <h2 class="title">
                 ${title ? html`<span>${titleContent}</span>` : ''}
-                ${this.renderButtonTable()}
+                ${this.hideViewTable ? '' : this.renderButtonTable()}
             </h2>
         `;
     }

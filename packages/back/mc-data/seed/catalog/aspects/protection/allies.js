@@ -11,6 +11,7 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_RETURN_HAND,
     EFFECT_HEAL,
     EFFECT_EXHAUST,
     EFFECT_MOVE_TO_DECK,
@@ -36,11 +37,14 @@ import {
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ENEMY_ATTACKS_YOU,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_DEFEAT,
     TRAIT_AVENGER,
+    TRAIT_AERIAL,
     TRAIT_CHAMPION,
     TRAIT_DEFENDER,
+    TRAIT_GUARDIAN,
     TRAIT_MYSTIC,
     TRAIT_SHIELD,
     TRAIT_SPY,
@@ -490,6 +494,49 @@ export default [
                                 'params': {
                                     'target': TARGET_THIS,
                                     'damage': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-halcon-estelar',
+        'aspect': 'protection',
+        'order': 16012,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Halcón Estelar',
+                'subtitle': 'Stakar Ogord',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/allies/16012.png',
+                'traits': [TRAIT_AERIAL, TRAIT_GUARDIAN],
+                'cost': 2,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'hitPoints': 3,
+                'attack': 2,
+                'attackConsequential': 2,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            'condition': {
+                                'triggeredTargetDamage': {
+                                    'operator': 'eq',
+                                    'path': 'triggeredTarget.life',
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_RETURN_HAND,
+                                'params': {
+                                    'target': TARGET_THIS,
                                 },
                             },
                         },

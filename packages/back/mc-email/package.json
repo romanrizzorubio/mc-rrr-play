@@ -1,0 +1,16 @@
+{
+  "name": "mc-email",
+  "version": "1.0.0",
+  "description": "Shared SMTP delivery and account email templates",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "nodemailer": "^7.0.3"
+  }
+}

@@ -1,5 +1,6 @@
 import {
     ABILITY_FORCED_RESPONSE,
+    ABILITY_HERO_RESPONSE,
     ABILITY_CONSTANT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
@@ -40,10 +41,12 @@ import {
     TRAIT_AVENGER,
     TRAIT_CHAMPION,
     TRAIT_GAMMA,
+    TRAIT_GUARDIAN,
     TRAIT_OLYMPUS,
     TRIGGER_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_GET_ATTACK,
+    TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_THIS_DEFEAT_MINION,
@@ -675,4 +678,44 @@ export default [
         }
     },
 
+    {
+        '_id': 'aggression-bicho',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 16040,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Bicho',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/allies/16040.png',
+                'traits': [TRAIT_GUARDIAN],
+                'cost': 2,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_YOU_BASIC_ATTACK,
+                            'condition': {
+                                'effect.character.isHero': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_HEAL,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                    'damage': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

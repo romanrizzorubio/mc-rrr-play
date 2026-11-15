@@ -99,6 +99,10 @@ export class DialogSocket {
             }
         }
     }
+    hasPending(matchName) {
+        return [...this.pending.values()].some(pending =>
+            pending.matchName === matchName);
+    }
     clearPending(matchName) {
         let cleared = 0;
 

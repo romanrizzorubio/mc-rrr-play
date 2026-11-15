@@ -158,13 +158,16 @@ export class RestoreCardIdentities {
             Array.isArray(object.discardPile) ? object.discardPile : []));
         const triggerCards = {};
         cards.forEach(card => {
+            const isInHand = (match.players || []).some(player =>
+                player.hand?.cards?.includes(card));
+            if (isInHand && card.isResource) {
+                card.initTriggers();
+            }
             const triggers = Object.values(card.triggers).flatMap(priorities =>
                 Object.values(priorities).flat());
             if (!triggers.length) {
                 return;
             }
-            const isInHand = (match.players || []).some(player =>
-                player.hand?.cards?.includes(card));
             const persistent = triggers.some(trigger =>
                 trigger.ability?.lasting || trigger.keepTriggering);
             if (discarded.has(card) && !card.isPlaying && !persistent) {
@@ -179,7 +182,8 @@ export class RestoreCardIdentities {
             const eligible = card.isEvent ?
                 isInHand || card.isPlaying || persistent :
                 registered.has(card) || inPlay || persistent ||
-                    (isInHand && triggers.some(trigger => trigger.ability?.workInHand));
+                    (isInHand && (card.isResource ||
+                        triggers.some(trigger => trigger.ability?.workInHand)));
             if (eligible) {
                 triggerCards[card.id] = card;
             }

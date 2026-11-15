@@ -7,10 +7,16 @@ export default css`
   }
 
   .play-card-drop-zone {
+    box-sizing: border-box;
+    width: 100%;
     min-width: 300px;
     min-height: 200px;
     border-radius: 8px;
     transition: box-shadow 120ms ease, background-color 120ms ease;
+  }
+
+  .play-card-drop-zone mc-card-list {
+    justify-content: flex-start;
   }
 
   .play-card-drop-zone.available {
@@ -26,10 +32,6 @@ export default css`
     gap: 8px;
   }
   
-  .panel:first-child {
-    margin-right: 16px;
-  }
-
   .panel {
     display: flex;
     flex-direction: column;
@@ -40,10 +42,5 @@ export default css`
     font-family: var(--mc-font-numeric, sans-serif);
     font-weight: 400;
     text-align: center;
-  }
-  
-  .upgrades-supports {
-    display: flex;
-    flex-wrap: wrap;
   }
 `;

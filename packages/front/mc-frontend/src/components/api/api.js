@@ -104,6 +104,40 @@ export class Api {
             params: {id},
         });
     }
+    saveMatch() {
+        return this.post({
+            endpoint: ENDPOINTS.MATCH.SAVE,
+            params: {},
+        });
+    }
+    exitMatch() {
+        return this.post({
+            endpoint: ENDPOINTS.MATCH.EXIT,
+            params: {},
+        });
+    }
+    async leaveMatch() {
+        const match = this.match;
+        if (this.joinPromise) {
+            await this.joinPromise;
+        }
+        if (match && this.joinedMatch === match && this.socket?.connected) {
+            await this.send({
+                endpoint: EVENTS.MATCH.LEAVE,
+                params: {match},
+            });
+        }
+        this.endMatch(match);
+    }
+    endMatch(match) {
+        if (match && this.match !== match) {
+            return;
+        }
+        this.match = '';
+        this.matchReady = false;
+        this.joinedMatch = '';
+        this.joinPromise = null;
+    }
     onConnectionState(callback) {
         this.connectionListeners.add(callback);
         callback(this.connectionState);

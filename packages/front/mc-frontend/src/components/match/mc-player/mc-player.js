@@ -18,6 +18,8 @@ export class McPlayer extends LitElement {
         return {
             player: {type: Object},
             canEndTurn: {type: Boolean},
+            compactDecks: {type: Boolean},
+            superheroMenuOptions: {type: Array},
             firstPlayerTokenUrl: {type: String},
             deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
@@ -30,6 +32,8 @@ export class McPlayer extends LitElement {
 
         this.player = null;
         this.canEndTurn = false;
+        this.compactDecks = false;
+        this.superheroMenuOptions = [];
         this.firstPlayerTokenUrl = '';
         this.deckSelectionTargetIds = [];
         this.dragActivation = null;
@@ -116,6 +120,7 @@ export class McPlayer extends LitElement {
                     .defense="${defense}"
                     .recovery="${recovery}"
                     .abilities="${abilities}"
+                    .extraMenuOptions="${this.superheroMenuOptions}"
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
                     .aspectMarkers="${aspectMarkers}"
@@ -159,6 +164,7 @@ export class McPlayer extends LitElement {
                 .discard="${deck.discard}"
                 .knownCards="${deck.knownCards || []}"
                 .deckName="${name}"
+                .size="${this.compactDecks ? 's' : 'm'}"
                 .targetId="${deck.id || ''}"
                 .targetSelectable="${this.isDeckSelectable(deck)}"
                 .showDeckName="${false}"
@@ -184,6 +190,7 @@ export class McPlayer extends LitElement {
                         .topCardFaceUp="${deck.topCardFaceUp === true}"
                         .knownCards="${deck.knownCards || []}"
                         .deckName="${deck.name}"
+                        .size="${this.compactDecks ? 's' : 'm'}"
                         .deckNameSpansPiles="${true}"
                         .dragActivation="${this.dragActivation}"
                         .dragPlayCard="${this.dragPlayCard}"

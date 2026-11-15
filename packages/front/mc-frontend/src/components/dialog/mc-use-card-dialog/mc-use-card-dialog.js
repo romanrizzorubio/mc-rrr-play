@@ -38,10 +38,19 @@ export class McUseCardDialog extends McCardListDialog {
         const {showCancel, hideOk} = this;
 
         if (showCancel && !hideOk) {
-            return 'Pulsa Ok si no quieres usar ninguna.';
+            return 'Pincha en la carta que quieras activar. Pulsa «No usar ninguna» si no quieres activar ninguna.';
         }
 
-        return '';
+        return 'Pincha en la carta que quieras activar.';
+    }
+    renderButtonOk() {
+        const {hideOk} = this;
+
+        return !hideOk ? html`
+            <md-text-button
+                @click="${this.handleOk.bind(this)}"
+            >No usar ninguna</md-text-button>
+        ` : html``;
     }
     handleDontShowInformationalDialogChange(e) {
         this._dontShowInformationalDialog = e.target.checked;

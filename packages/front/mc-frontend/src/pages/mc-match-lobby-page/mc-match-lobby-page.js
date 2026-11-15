@@ -110,6 +110,11 @@ export class McMatchLobbyPage extends LitElement {
     get isWaiting() {
         return this.lobby?.status === 'waiting';
     }
+    canRemovePlayer(player) {
+        return this.isWaiting &&
+            Boolean(this.user?.id && player?.id) &&
+            (this.isCreator || player.userId === this.user.id);
+    }
     get canJoin() {
         return this.isWaiting &&
             Boolean(this.user?.id) &&
@@ -143,10 +148,13 @@ export class McMatchLobbyPage extends LitElement {
                 Promise.resolve();
             await Promise.all([this.loadLobbyDecks(lobby), loadHeroes]);
             await this.applyRouteDeckSelection();
-            if (['starting', 'started'].includes(lobby.status) &&
-                this.currentPlayer) {
+            const currentPlayer = this.currentPlayer;
+            const matchCanBeJoined = lobby.status === 'started' ||
+                (lobby.status === 'starting' && lobby.matchConfigured);
+            if (currentPlayer && matchCanBeJoined) {
                 this.enterStartedMatch(lobby);
-            } else if (lobby.status === 'starting' && this.isCreator && !this.enteringMatch) {
+            } else if (!currentPlayer && lobby.status === 'starting' &&
+                this.isCreator && !this.enteringMatch) {
                 await this.apiConfigMatch.startLobby(this.id);
                 await this.initializeOrganizedMatch(lobby);
             }
@@ -360,6 +368,36 @@ export class McMatchLobbyPage extends LitElement {
             this.busy = false;
         }
     }
+    async removePlayer(player) {
+        if (!this.canRemovePlayer(player) || this.busy ||
+            !globalThis.confirm(
+                `¿Eliminar la inscripción de "${player.name}" (${player.heroName || player.hero})?`,
+            )) {
+            return;
+        }
+
+        this.busy = true;
+        this.error = '';
+        try {
+            const lobby = await this.apiConfigMatch.removeLobbyPlayer(
+                this.id,
+                player.id,
+            );
+            this.requestSequence++;
+            this.loading = false;
+            this.lobby = lobby;
+            await Promise.all([
+                this.loadLobbyDecks(lobby),
+                this.canJoin && !this.loadedHeroes ?
+                    this.loadHeroes() :
+                    Promise.resolve(),
+            ]);
+        } catch (error) {
+            this.error = error.message;
+        } finally {
+            this.busy = false;
+        }
+    }
     async deleteLobby() {
         if (!this.isCreator || !this.isWaiting || this.busy ||
             !globalThis.confirm(`¿Eliminar la partida "${this.lobby?.name}"?`)) {
@@ -427,7 +465,8 @@ export class McMatchLobbyPage extends LitElement {
         }
     }
     async enterStartedMatch(lobby) {
-        if (this.enteringMatch || !this.currentPlayer || !this.active) {
+        if (this.enteringMatch || !this.currentPlayer || !this.active ||
+            (lobby.status === 'starting' && !lobby.matchConfigured)) {
             return;
         }
         if (typeof this.prepareMatch !== 'function') {
@@ -514,14 +553,24 @@ export class McMatchLobbyPage extends LitElement {
             <ul class="players">
                 ${(this.lobby?.players || []).map(player => html`
                     <li>
-                        <strong class="player-name">${player.name}</strong>
-                        <span>
-                            ${player.heroName || player.hero}
-                            <span class="player-detail-separator">.</span>
-                            ${this.renderPlayerAspects(player)}
-                            <span class="player-detail-separator">.</span>
-                            ${this.getLobbyDeckName(player)}
-                        </span>
+                        <div class="player-details">
+                            <strong class="player-name">${player.name}</strong>
+                            <span>
+                                ${player.heroName || player.hero}
+                                <span class="player-detail-separator">.</span>
+                                ${this.renderPlayerAspects(player)}
+                                <span class="player-detail-separator">.</span>
+                                ${this.getLobbyDeckName(player)}
+                            </span>
+                        </div>
+                        ${this.canRemovePlayer(player) ? html`
+                            <md-text-button
+                                class="player-remove"
+                                aria-label="Eliminar la inscripción de ${player.name}"
+                                ?disabled="${this.busy}"
+                                @click="${() => this.removePlayer(player)}"
+                            >Eliminar</md-text-button>
+                        ` : ''}
                     </li>
                 `)}
             </ul>
@@ -636,6 +685,9 @@ export class McMatchLobbyPage extends LitElement {
                     <p><strong>Escenario:</strong> ${this.getScenarioName()}</p>
                     <p><strong>Dificultad:</strong>
                         ${this.lobby.expert ? 'Experto' : 'Normal'}
+                    </p>
+                    <p><strong>Guardado automático:</strong>
+                        ${this.lobby.autoSave !== false ? 'Sí' : 'No'}
                     </p>
                     <p><strong>Conjuntos modulares:</strong>
                         ${modularSets.length ? modularSets.join(', ') : 'Ninguno'}

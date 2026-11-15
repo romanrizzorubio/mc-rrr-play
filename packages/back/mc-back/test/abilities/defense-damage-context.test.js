@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import {DIALOG_USE_CARD} from 'mc-shared';
 import {AbilitiesFactory} from '../../src/factory/abilities/abilities-factory.js';
+import {Attack} from '../../src/activations/attack.js';
 import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {EnemyAttacksYouTrigger} from '../../src/triggers/enemy-attacks-you-trigger.js';
@@ -114,5 +116,69 @@ describe('defense abilities during damage resolution', () => {
             effect: attack,
             player,
         }), true);
+        attack.activation.takenDamage = 1;
+        assert.equal(await imperturbableTrigger.canTrigger({
+            effect: attack,
+            player,
+        }), false);
+    });
+
+    test('Imperturbable and Difícil de ignorar are offered in the same post-defense dialog', async () => {
+        const dialogs = [];
+        const match = {
+            triggerCards: {},
+            openDialog: async dialog => {
+                dialogs.push(dialog);
+                return {};
+            },
+        };
+        const player = createPlayer('player');
+        player.hand = {cards: []};
+        const defender = player.superhero.currentSide;
+        const attack = new EnemyAttackEffect({
+            enemy: {name: 'Minion'},
+            match,
+            selectedTarget: player,
+        });
+        attack.activation = new Attack({effect: attack});
+        attack.activation.takenDamage = 0;
+        attack.defender = defender;
+        attack.defendingPlayersByTarget.set(player, defender);
+        attack.resolveDelayedEffects = async () => {};
+
+        const abilityFactory = new AbilitiesFactory({match});
+        for (const id of [
+            'protection-imperturbable',
+            'protection-dificil-de-ignorar',
+        ]) {
+            const cardConfig = protectionUpgrades.find(entry => entry._id === id);
+            const card = {
+                id,
+                name: cardConfig.card.params.name,
+                isUpgrade: true,
+                owner: player,
+                controller: player,
+                triggers: {},
+                toObj() {
+                    return {id: this.id, name: this.name};
+                },
+            };
+            const ability = abilityFactory.createAbility(
+                cardConfig.card.params.abilities[0],
+            );
+            ability.card = card;
+            ability.effect.canRun = async () => true;
+            ability.costs.canPay = async () => true;
+            await ability.initTriggers(card);
+        }
+
+        await attack.triggerEnds(attack.getTriggersParams({player}));
+
+        assert.equal(dialogs.length, 1);
+        assert.equal(dialogs[0].dialogType, DIALOG_USE_CARD);
+        assert.deepEqual(
+            dialogs[0].data.cards.map(({name}) => name).sort(),
+            ['Difícil de ignorar', 'Imperturbable'].sort(),
+        );
     });
 });

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import {
+    BACK_CARD_ENCOUNTER,
+    BACK_CARD_PLAYER,
+} from 'mc-shared';
+
 globalThis.HTMLElement = class {};
 globalThis.window = {
     customElements: {define() {}},
@@ -50,6 +55,47 @@ describe('encounters reveal dialog', () => {
             styles,
             /\.card-preview\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center;/su
         );
+    });
+
+    test('shows facedown minions with a player card back', () => {
+        const dialog = Object.assign(
+            Object.create(McEncountersRevealDialog.prototype),
+            {
+                data: {
+                    card: {
+                        image: 'scenarios/ultron/drone.webp',
+                        isFacedownCard: true,
+                        isMinion: true,
+                        name: 'Dron boca abajo',
+                    },
+                },
+                readOnly: false,
+            }
+        );
+        const markup = renderTemplate(dialog.renderContent());
+
+        assert.ok(markup.includes(`.facedownImage="${BACK_CARD_PLAYER}"`));
+        assert.ok(!markup.includes(`.facedownImage="${BACK_CARD_ENCOUNTER}"`));
+    });
+
+    test('keeps the encounter card back for other facedown encounter cards', () => {
+        const dialog = Object.assign(
+            Object.create(McEncountersRevealDialog.prototype),
+            {
+                data: {
+                    card: {
+                        image: 'encounters/hidden-card.webp',
+                        isFacedownCard: true,
+                        isMinion: false,
+                        name: 'Carta boca abajo',
+                    },
+                },
+                readOnly: false,
+            }
+        );
+        const markup = renderTemplate(dialog.renderContent());
+
+        assert.ok(markup.includes(`.facedownImage="${BACK_CARD_ENCOUNTER}"`));
     });
 
     test('vertically centers the view-table button with the title', () => {

@@ -40,6 +40,22 @@ export class RemoveThreatEffect extends Effect {
         return card.canRemoveThreat({ignoreCrisis: this.ignoreCrisis}) &&
             super.filterTarget.apply(this, arguments);
     }
+    async canRun(params) {
+        if (!await super.canRun(params)) {
+            return false;
+        }
+
+        if (!this.paramsCalc) {
+            return true;
+        }
+
+        const lastStepThreat = this.getLastStepParam('threat', params);
+        const threat = lastStepThreat !== undefined ?
+            lastStepThreat :
+            await this.calculate(params);
+
+        return threat > 0;
+    }
     async prepare(params) {
         await super.prepare(params);
 

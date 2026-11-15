@@ -99,6 +99,7 @@ describe('add keyword effect', () => {
 
     test('character snapshots include keywords added during effective calculations', async () => {
         const hero = createHero();
+        hero.getRetaliateValue = async () => hero.retaliate;
         hero.getAbilityAvailability = async () => ({});
         hero.getEffectiveStats = async () => ({});
         hero.getEffectiveTraits = async () => {

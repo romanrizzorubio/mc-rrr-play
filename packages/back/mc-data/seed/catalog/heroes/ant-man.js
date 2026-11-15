@@ -36,7 +36,6 @@ import {
     EFFECT_EXHAUST,
     EFFECT_FLIP,
     EFFECT_FOR_EACH,
-    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_HEAL,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
@@ -51,7 +50,6 @@ import {
     EFFECT_STUN,
     LABEL_ATTACK,
     LABEL_THWART,
-    PLACE_ENCOUNTER_DISCARD,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -691,23 +689,9 @@ const yellowJacketPlan = {
                                     },
                                 },
                                 {
-                                    type: EFFECT_CHAINED,
+                                    type: EFFECT_REVEAL_ENCOUNTER,
                                     params: {
-                                        effects: [
-                                            {
-                                                type: EFFECT_GET_ENCOUNTER_CARD,
-                                                params: {
-                                                    from: PLACE_ENCOUNTER_DISCARD,
-                                                    cardSource: 'selectedCard',
-                                                },
-                                            },
-                                            {
-                                                type: EFFECT_REVEAL_ENCOUNTER,
-                                                params: {
-                                                    card: 'effects.0.card',
-                                                },
-                                            },
-                                        ],
+                                        card: 'selectedCard',
                                     },
                                 },
                             ],

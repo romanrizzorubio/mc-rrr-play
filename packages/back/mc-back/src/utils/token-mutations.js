@@ -13,6 +13,11 @@ export function moveDamageTokens(source, destination, damage) {
     placeDamageTokens(destination, damage);
 }
 
+export function moveCounterTokens(source, destination, counters) {
+    source.removeCounters(counters);
+    destination.placeCounters(counters);
+}
+
 export function placeThreatTokens(target, threat) {
     return target.placeThreat(threat);
 }

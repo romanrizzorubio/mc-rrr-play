@@ -150,6 +150,56 @@ describe('requesting another hero to defend an enemy attack', () => {
         assert.equal(attack.selectedTarget.id, players[1].id);
     });
 
+    test('a tough defending ally prevents Overkill from transferring damage', async () => {
+        const {ally, attack, match, players} = createGame({overkill: true});
+        Object.defineProperty(ally, 'isTough', {
+            configurable: true,
+            value: true,
+            writable: true,
+        });
+        ally.removeTough = () => {
+            ally.isTough = false;
+        };
+        const defenderLife = await players[1].getLife();
+        match.openDialog = async dialog => {
+            if (dialog.dialogType !== DIALOG_DEFENSE) {
+                return {};
+            }
+
+            return dialog.targetPlayer === players[0] ?
+                {defendingPlayerId: players[1].id} :
+                {defender: dialog.data.defenders.find(card => card.id === ally.id)};
+        };
+
+        await attack.execute({player: players[0], match});
+
+        assert.equal(ally.isTough, false);
+        assert.equal(ally.damage, 0);
+        assert.ok(players[1].gameZone.cards.includes(ally));
+        assert.equal(await players[1].getLife(), defenderLife);
+    });
+
+    test('prevented attack damage does not transfer Overkill damage', async () => {
+        const {ally, attack, match, players} = createGame({overkill: true});
+        attack.preventDamage = 10;
+        const defenderLife = await players[1].getLife();
+        match.openDialog = async dialog => {
+            if (dialog.dialogType !== DIALOG_DEFENSE) {
+                return {};
+            }
+
+            return dialog.targetPlayer === players[0] ?
+                {defendingPlayerId: players[1].id} :
+                {defender: dialog.data.defenders.find(card => card.id === ally.id)};
+        };
+
+        await attack.execute({player: players[0], match});
+
+        assert.equal(ally.damage, 0);
+        assert.ok(players[1].gameZone.cards.includes(ally));
+        assert.equal(await players[1].getLife(), defenderLife);
+    });
+
     test('an ally removed by a boost leaves the attack undefended against its defending player', async () => {
         const {ally, attack, match, players} = createGame();
         const originalLife = await players[0].getLife();

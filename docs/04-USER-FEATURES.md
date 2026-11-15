@@ -30,15 +30,17 @@ Ver las salas que esperan jugadores y, con sesión iniciada, consultar las parti
 4. El creador puede eliminar la sala mientras espera; los demás inscritos pueden abandonarla antes del inicio.
 5. Para volver a empezar una partida iniciada con la misma configuración, presionar "Reiniciar partida" y confirmar.
 
-Para empezar otra, presionar **Nueva partida**. El asistente tiene dos pasos: primero se indican el nombre de la sala y un máximo de 1 a 4 superhéroes; después se configura escenario, modo experto y conjuntos modulares. **Crear partida** abre directamente el lobby vacío, sin elegir héroe ni mazo durante el asistente. Allí el creador y los invitados añaden sus propios héroes con el mismo selector de mazos legales, filtros por nombre y aspecto y la opción Precon. Cada inscripción usa la identidad de la cuenta autenticada, sin introducir otro nombre de jugador.
+Para empezar otra, presionar **Nueva partida**. El asistente tiene dos pasos: primero se indican el nombre de la sala, un máximo de 1 a 4 superhéroes y si se activa el guardado automático; después se configura escenario, modo experto y conjuntos modulares. **Crear partida** abre directamente el lobby vacío, sin elegir héroe ni mazo durante el asistente. Allí el creador y los invitados añaden sus propios héroes con el mismo selector de mazos legales, filtros por nombre y aspecto y la opción Precon. Cada inscripción usa la identidad de la cuenta autenticada, sin introducir otro nombre de jugador.
 
 El creador también puede organizar e iniciar una partida sin jugar: no ocupa una plaza y todos los héroes pueden pertenecer a invitados. Es necesario inscribir al menos un superhéroe para iniciar; los diálogos de preparación se resuelven por las cuentas que controlan esos héroes. El organizador permanece en el lobby, sin unirse al tablero ni responder decisiones ajenas. En su listado de partidas iniciadas dispone de **Ver sala** y **Eliminar partida**.
 
-Una cuenta puede controlar varios superhéroes: mientras haya plazas, incluso después de inscribirse, el selector de la sala permite **Añadir otro héroe** con su propio mazo. Se pueden combinar varias cuentas y varios héroes por cuenta; el límite se aplica al total de superhéroes, y no se puede repetir héroe. Si una cuenta lleva varios, sus nombres aparecen como **Nombre (1)**, **Nombre (2)**, etc. Cada uno conserva su mano, tablero, turnos y decisiones independientes. Abandonar la sala como invitado retira todos los héroes de esa cuenta.
+Una cuenta puede controlar varios superhéroes: mientras haya plazas, incluso después de inscribirse, el selector de la sala permite **Añadir otro héroe** con su propio mazo. Se pueden combinar varias cuentas y varios héroes por cuenta; el límite se aplica al total de superhéroes, y no se puede repetir héroe. Si una cuenta lleva varios, sus nombres aparecen como **Nombre (1)**, **Nombre (2)**, etc. Cada uno conserva su mano, tablero, turnos y decisiones independientes. Abandonar la sala como invitado retira todos los héroes de esa cuenta; también se puede eliminar una inscripción individual, sin quitar las demás.
 
-La sala muestra escenario, dificultad, conjuntos modulares y jugadores inscritos con su superhéroe, aspecto y nombre del mazo seleccionado en la misma línea. El creador puede iniciar la partida aunque queden plazas libres o eliminar la sala mientras espera. Los demás usuarios pueden elegir superhéroe y mazo para apuntarse, o abandonar la sala antes de que comience. El precon está seleccionado por defecto; **Cambiar mazo** abre la lista completa de mazos legales del héroe, con filas coloreadas por aspecto y filtros por nombre y aspecto; cada mazo muestra nombre, aspecto, número de cartas y creador. Desde esa lista se puede crear un mazo para el héroe elegido; al guardarlo se vuelve a la sala con el nuevo mazo seleccionado si es legal para jugar. La vista **Partidas** permite consultar las salas abiertas en una tabla compacta con su nombre, escenario, dificultad y plazas ocupadas; **Ver partida** abre el detalle de la sala.
+La sala muestra escenario, dificultad, conjuntos modulares y jugadores inscritos con su superhéroe, aspecto y nombre del mazo seleccionado en la misma línea. El creador puede iniciar la partida aunque queden plazas libres o eliminar la sala mientras espera. Durante la espera, el creador puede quitar cualquier inscripción y cada jugador puede quitar las suyas; los demás no ven esos botones. Los demás usuarios también pueden elegir superhéroe y mazo para apuntarse, o abandonar la sala completa antes de que comience. El precon está seleccionado por defecto; **Cambiar mazo** abre la lista completa de mazos legales del héroe, con filas coloreadas por aspecto y filtros por nombre y aspecto; cada mazo muestra nombre, aspecto, número de cartas y creador. Desde esa lista se puede crear un mazo para el héroe elegido; al guardarlo se vuelve a la sala con el nuevo mazo seleccionado si es legal para jugar. La vista **Partidas** permite consultar las salas abiertas en una tabla compacta con su nombre, escenario, dificultad y plazas ocupadas; **Ver partida** abre el detalle de la sala.
 
 Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida usa las etapas expertas del villano y añade el conjunto Experto al mazo de encuentros, manteniendo también el conjunto Normal.
+
+La opción **Guardado automático** está activada por defecto y conserva el guardado habitual; al salir, cada participante abandona solo su propia conexión. Si se desactiva, la preparación guarda un punto inicial de recuperación y, durante la partida, el botón **Guardar partida** actualiza ese punto. Al salir el creador se restaura el último guardado y todos los participantes vuelven al lobby; si aún no se había guardado manualmente, se restaura el estado inicial. La salida de otro participante no restaura la partida ni expulsa a los demás.
 
 **Resultado:**
 - El creador y cada jugador se identifican mediante su cuenta, no mediante un nombre de jugador elegido manualmente.
@@ -46,6 +48,8 @@ Durante la creación se puede activar **Modo Experto**. Al hacerlo, la partida u
 - Las salas limitan las inscripciones al máximo de superhéroes indicado y no permiten repetir superhéroe.
 - La partida puede comenzar antes de alcanzar ese máximo; al iniciarse, todos los inscritos se conectan a la misma sesión de juego.
 - Las partidas inicializadas recuperan el tablero completo.
+- Con **Guardado automático** desactivado, solo la preparación y el botón **Guardar partida** actualizan el punto de recuperación.
+- Al salir el creador de una partida con guardado manual, se descartan los cambios posteriores al último guardado y los participantes salen de la sala.
 - El lobby muestra el superhéroe, el aspecto o los aspectos y el nombre del mazo elegido para cada jugador.
 - Si el setup de una partida continúa en el backend, se vuelven a mostrar los diálogos pendientes.
 - Las partidas se conservan en MongoDB y pueden reanudarse tras reiniciar el backend.
@@ -153,11 +157,11 @@ La pantalla se divide en varias áreas:
 - Información de todos los jugadores
 - Contador de aceleración
 
-El listado **Jugadores** permite cambiar entre los héroes que controla tu cuenta. Solo se muestra el tablero y la mano del héroe propio seleccionado, tanto durante su turno como durante el de otro héroe o la fase del villano. En escenarios con zonas separadas, también cambia la zona local visible: se muestra el Villano y el plan de ese jugador junto a la zona general, sin revelar las demás zonas. Cambiar de vista no cambia el turno ni concede acciones fuera de las permitidas. Las decisiones dirigidas a cualquiera de tus héroes siguen llegando a tu cuenta; durante la preparación, sus mulligans se presentan uno a uno. Con un único jugador y superhéroe no aparece el listado.
+El listado **Jugadores** permite cambiar el héroe propio de la columna izquierda cuando solo se muestra una mesa. En pantallas amplias, debajo de la zona del escenario aparecen dos mesas: la propia a la izquierda y otra a la derecha. El puesto izquierdo no cambia automáticamente al cambiar el turno ni al comenzar una nueva fase de jugadores; en una partida de dos puestos, ambas mesas conservan su lado mientras las dos estén visibles. Con dos puestos, la derecha muestra siempre el otro; con más puestos, el selector superior permite elegir cualquiera de los demás. Cuando el jugador del turno está en la mesa derecha, el selector se coloca en la cabecera de la mesa izquierda. Al cambiar el turno, la derecha vuelve a mostrar automáticamente al jugador activo, salvo que el turno sea propio: en ese caso prioriza otro héroe de tu cuenta y, si no hay, el siguiente puesto de la partida. Una selección manual del selector se conserva mientras no cambie el turno; otras actualizaciones de la partida no la sustituyen. Si otro héroe de tu cuenta recibe el turno y ya está a la derecha, su mesa permanece ahí y la mano activa pasa a ser la suya, de modo que puedes jugar desde esa vista. Las mesas ajenas son de solo lectura, pero sus zonas y cartas pueden ser destinos válidos de arrastres iniciados desde tu mesa activa. En pantallas de hasta 1500 px se oculta la segunda mesa.
+
+Cambiar de vista no cambia el turno ni concede acciones fuera de las permitidas. En escenarios con zonas separadas, la zona del escenario sigue mostrando las áreas autorizadas para el puesto activo. Las decisiones dirigidas a cualquiera de tus héroes siguen llegando a tu cuenta; durante la preparación, sus mulligans se presentan uno a uno. Con un único jugador y superhéroe no aparece el listado.
 
 Los diálogos de decisión incluyen **Ver mesa**, que oculta el diálogo sin cancelar la decisión y permite consultar el tablero y la mano, cambiar entre las mesas del listado de jugadores y abrir los descartes o las cartas metidas debajo. En esta vista se bloquean las acciones de juego; un botón superior vuelve a mostrar el diálogo. Salir o reiniciar la partida siguen disponibles.
-
-Al comenzar cada fase de jugadores, si controlas varios héroes se muestra automáticamente el jugador inicial si pertenece a tu cuenta; en otro caso, el primer héroe propio superviviente en el orden desde el jugador inicial. Esta selección se realiza una sola vez al entrar en la fase: después puedes cambiar de vista manualmente sin que las actualizaciones normales la reemplacen. Cuando termina el turno del héroe propio seleccionado, la vista pasa al siguiente héroe de tu cuenta que aún tenga su turno pendiente, siguiendo ese mismo orden y omitiendo héroes derrotados. Esto también funciona si entre ambos debe jugar otra cuenta: solo cambia el tablero visible, no el turno real. Si todos tus héroes han terminado, se conserva la última vista.
 
 **Pilas de descartes**
 - Haz clic en una pila para consultar sus cartas, desde la carta superior hacia abajo.
@@ -400,6 +404,7 @@ Se muestra un registro de:
 
 Puedes visualizar:
 - Todas las cartas en zona de juego
+- En cada zona de jugador, los apoyos quedan abajo, sobre ellos las mejoras, después los aliados y arriba la zona de encuentros; cada grupo se ajusta al ancho disponible.
 - Cartas en descarte
 - Cartas en baraja de encuentro
 - Estadísticas de cada carta
@@ -408,10 +413,12 @@ Puedes visualizar:
 
 **Comunicación:**
 - Ver el tablero del villano y el estado sincronizado de las mesas de jugadores en tiempo real
-- Consultar las mesas de otros jugadores en modo de solo lectura y volver a la propia con **Ver mi mesa**
+- Ver simultáneamente la mesa propia y la mesa secundaria; la de otro jugador es de solo lectura y puede elegirse con el selector superior
+- En pantallas con dos mesas, el puesto izquierdo no cambia automáticamente al cambiar el turno ni al comenzar otra fase de jugadores; en partidas de dos puestos, ambos lados permanecen fijos mientras quepan las dos mesas. Si el héroe en turno está a la derecha, su mesa y su mano siguen siendo interactivas desde ese panel
 - La mesa propia permanece visible aunque se pidan acciones a otro jugador. Sus descartes solo se consultan en su mesa, sin duplicarse en la esquina del tablero.
-- El listado de jugadores queda junto a la zona propia, alineado por abajo con el mazo y el superhéroe.
-- Al pulsar una vez la fila de otro superhéroe de tu cuenta, se muestra directamente su mesa y su mano; no hace falta abrir primero el acordeón ni cambia el turno activo.
+- El selector antiguo con la lista de jugadores se conserva y solo se muestra cuando la pantalla no permite la mesa secundaria; en la vista de dos mesas queda oculto.
+- Al pulsar una vez la fila de otro superhéroe de tu cuenta, se cambia el puesto propio de la izquierda sin cambiar el turno.
+- Los arrastres pueden cruzar entre las dos mesas: por ejemplo, para atacar esbirros de otro puesto o jugar una carta en su zona o sobre una de sus cartas cuando el destino sea legal. La acción conserva el puesto que inició el arrastre.
 - Ver quién tiene la ficha de jugador inicial
 - Información de sus manos oculta
 - Contador de cartas en mano
@@ -419,7 +426,8 @@ Puedes visualizar:
 
 **Coordinación:**
 - Los turnos alternan entre los jugadores inscritos y se indica quién tiene el jugador inicial.
-- Durante su turno, un jugador puede pedir a otro que realice una acción; el destinatario puede aceptar o rechazar.
+- Durante su turno, el menú contextual del superhéroe del panel opuesto al héroe activo incluye **Pedir una acción**. En pantallas donde solo cabe una mesa, se abre desde el retrato del jugador en el selector. El destinatario puede aceptar o rechazar.
+- Si controlas varios superhéroes, **Ver mano** aparece en el menú del héroe del panel opuesto al activo y abre un diálogo con sus cartas. La opción no aparece para héroes de otros jugadores.
 - Mientras una solicitud está pendiente se muestra a quién se espera. Si se acepta, el jugador solicitado puede activar capacidades de **Acción** (también eventos de Acción, respetando su identidad, costes y condiciones) y avisa cuando termina.
 - Al aceptar, su panel de jugadores muestra únicamente **He terminado**, sin el texto explicativo de las restricciones.
 - La solicitud no concede un turno completo: no permite cambiar voluntariamente de identidad, usar atributos básicos del superhéroe o de aliados, ni jugar normalmente aliados, apoyos, mejoras o planes secundarios. Estas opciones se deshabilitan y el servidor rechaza los intentos de usarlas.

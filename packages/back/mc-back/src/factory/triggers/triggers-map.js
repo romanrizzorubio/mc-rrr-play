@@ -14,6 +14,7 @@ import {
     TRIGGER_ABILITY_RESOLVED,
     TRIGGER_CHARACTER_DEFEATED,
     TRIGGER_CHARACTER_ATTACKED,
+    TRIGGER_CHARACTER_DEFENDED_ATTACK,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CHARACTER_GET_ATTACK,
     TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL,
@@ -33,9 +34,11 @@ import {
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_ENCOUNTER_ABILITY_RESOLVED,
     TRIGGER_ENGAGE_HERO,
+    TRIGGER_ENGAGE_PLAYER,
     TRIGGER_FACEDOWN_CARD,
     TRIGGER_INSTANT,
     TRIGGER_HERO_DEFENDS_ATTACK,
+    TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_INITIAL_PLAYER_CHANGED,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
@@ -54,6 +57,7 @@ import {
     TRIGGER_REMOVE_DAMAGE,
     TRIGGER_REMOVE_THREAT,
     TRIGGER_MOVE_DAMAGE,
+    TRIGGER_MOVE_COUNTERS,
     TRIGGER_MOVE_THREAT,
     TRIGGER_SURGE,
     TRIGGER_THIS_ATTACK,
@@ -61,6 +65,7 @@ import {
     TRIGGER_THIS_COUNTERS_REMOVED,
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_THIS_ENGAGES,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_GET_THWART,
@@ -74,12 +79,16 @@ import {
     TRIGGER_VILLAIN_ACTIVATES,
     TRIGGER_VILLAIN_ATTACKS,
     TRIGGER_VILLAIN_ATTACKS_YOU,
+    TRIGGER_VILLAIN_PHASE_START,
     TRIGGER_VILLAIN_PHASE_STEP,
     TRIGGER_VILLAIN_SCHEMES,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ANY_THWART,
     TRIGGER_YOU_ATTACK,
+    TRIGGER_YOU_DEAL_DAMAGE,
+    TRIGGER_YOU_DEALT_EXCESS_DAMAGE,
+    TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
     TRIGGER_YOU_BASIC_THWART,
@@ -92,6 +101,7 @@ import {
     TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY,
     TRIGGER_YOUR_HERO_GET_ATTACK,
     TRIGGER_YOUR_HERO_GET_DEFENSE,
+    TRIGGER_YOUR_HERO_GET_RETALIATE,
     TRIGGER_GET_HAND_SIZE,
     TRIGGER_YOUR_HERO_GET_HIT_POINTS,
     TRIGGER_YOUR_HERO_GET_THWART,
@@ -105,6 +115,7 @@ import {AttachedGetTraitsTrigger} from '../../triggers/attached-get-traits-trigg
 import {AbilityResolvedTrigger} from '../../triggers/ability-resolved-trigger.js';
 import {CharacterDefeatedTrigger} from '../../triggers/character-defeated-trigger.js';
 import {CharacterAttackedTrigger} from '../../triggers/character-attacked-trigger.js';
+import {CharacterDefendedAttackTrigger} from '../../triggers/character-defended-attack-trigger.js';
 import {CharacterWouldReadyTrigger} from '../../triggers/character-would-ready-trigger.js';
 import {AttachedGetStatTrigger} from '../../triggers/attached-get-stat-trigger.js';
 import {AttachedTakesDamageTrigger} from '../../triggers/attached-takes-damage-trigger.js';
@@ -124,6 +135,7 @@ import {
     EncounterAbilityResolvedTrigger
 } from '../../triggers/encounter-ability-resolved-trigger.js';
 import {EngageHeroTrigger} from '../../triggers/engage-hero-trigger.js';
+import {EngagePlayerTrigger} from '../../triggers/engage-player-trigger.js';
 import {FacedownCardTrigger} from '../../triggers/facedown-card-trigger.js';
 import {InstantTrigger} from '../../triggers/instant-trigger.js';
 import {CharacterSchemesTrigger} from '../../triggers/character-schemes-trigger.js';
@@ -140,6 +152,7 @@ import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
 import {ThisActivatesTrigger} from '../../triggers/this-activates-trigger.js';
 import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
+import {ThisEngagesTrigger} from '../../triggers/this-engages-trigger.js';
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
 import {ThisFlipTrigger} from '../../triggers/this-flip-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
@@ -167,6 +180,7 @@ import {
     ThisCountersRemovedTrigger
 } from '../../triggers/this-counters-removed-trigger.js';
 import {HeroDefendsAttackTrigger} from '../../triggers/hero-defends-attack-trigger.js';
+import {HeroDefendedAttackTrigger} from '../../triggers/hero-defended-attack-trigger.js';
 import {TreacheryRevealTrigger} from '../../triggers/treachery-reveal-trigger.js';
 import {VillainAttacksTrigger} from '../../triggers/villain-attacks-trigger.js';
 import {VillainAttacksYouTrigger} from '../../triggers/villain-attacks-you-trigger.js';
@@ -180,6 +194,10 @@ import {YouAnyAttackTrigger} from '../../triggers/you-any-attack-trigger.js';
 import {YouAllyAttackTrigger} from '../../triggers/you-ally-attack-trigger.js';
 import {YouAnyThwartTrigger} from '../../triggers/you-any-thwart-trigger.js';
 import {YouAttackTrigger} from '../../triggers/you-attack-trigger.js';
+import {YouDealDamageTrigger} from '../../triggers/you-deal-damage-trigger.js';
+import {
+    YouDealtExcessDamageTrigger
+} from '../../triggers/you-dealt-excess-damage-trigger.js';
 import {YouBasicAttackTrigger} from '../../triggers/you-basic-attack-trigger.js';
 import {YouBasicDefenseTrigger} from '../../triggers/you-basic-defense-trigger.js';
 import {YouBasicThwartTrigger} from '../../triggers/you-basic-thwart-trigger.js';
@@ -193,6 +211,9 @@ import {
     YourHeroAttackDefeatEnemyTrigger
 } from '../../triggers/your-hero-attack-defeat-enemy-trigger.js';
 import {YourHeroGetAttackTrigger} from '../../triggers/your-hero-get-attack-trigger.js';
+import {
+    YourHeroGetRetaliateTrigger
+} from '../../triggers/your-hero-get-retaliate-trigger.js';
 import {YourHeroGetDefenseTrigger} from '../../triggers/your-hero-get-defense-trigger.js';
 import {GetHandSizeTrigger} from '../../triggers/get-hand-size-trigger.js';
 import {
@@ -230,6 +251,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_BOOST_ICONS_COUNTED]: Trigger,
     [TRIGGER_CHARACTER_GET_HIT_POINTS]: CharacterGetHitPointsTrigger,
     [TRIGGER_CHARACTER_ATTACKED]: CharacterAttackedTrigger,
+    [TRIGGER_CHARACTER_DEFENDED_ATTACK]: CharacterDefendedAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK]: CharacterGetAttackTrigger,
     [TRIGGER_CHARACTER_GET_ATTACK_CONSEQUENCIAL]: CharacterGetAttackTrigger,
     [TRIGGER_SCHEME_GET_THWART]: SchemeGetThwartTrigger,
@@ -238,6 +260,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_CHARACTER_SCHEMES]: CharacterSchemesTrigger,
     [TRIGGER_CHARACTER_WOULD_BE_DEFEATED]: CharacterWouldBeDefeatedTrigger,
     [TRIGGER_HERO_DEFENDS_ATTACK]: HeroDefendsAttackTrigger,
+    [TRIGGER_HERO_DEFENDED_ATTACK]: HeroDefendedAttackTrigger,
     [TRIGGER_CONDITION_GET_DEFENSE]: ConditionGetDefenseTrigger,
     [TRIGGER_CONDITION_GET_TRAITS]: ConditionGetTraitsTrigger,
     [TRIGGER_THIS_ATTACK]: ThisAttackTrigger,
@@ -245,6 +268,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_COUNTERS_REMOVED]: ThisCountersRemovedTrigger,
     [TRIGGER_THIS_DEFEAT]: ThisDefeatTrigger,
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
+    [TRIGGER_THIS_ENGAGES]: ThisEngagesTrigger,
     [TRIGGER_THIS_FLIP]: ThisFlipTrigger,
     [TRIGGER_THIS_GET_THWART]: ThisGetThwartTrigger,
     [TRIGGER_THIS_GET_ATTACK]: ThisGetAttackTrigger,
@@ -257,9 +281,13 @@ export const TRIGGER_MAP = {
     [TRIGGER_VILLAIN_ATTACKS]: VillainAttacksTrigger,
     [TRIGGER_VILLAIN_ATTACKS_YOU]: VillainAttacksYouTrigger,
     [TRIGGER_VILLAIN_ACTIVATES]: VillainActivatesTrigger,
+    [TRIGGER_VILLAIN_PHASE_START]: Trigger,
     [TRIGGER_VILLAIN_PHASE_STEP]: Trigger,
     [TRIGGER_VILLAIN_SCHEMES]: VillainSchemesTrigger,
     [TRIGGER_YOU_ATTACK]: YouAttackTrigger,
+    [TRIGGER_YOU_DEAL_DAMAGE]: YouDealDamageTrigger,
+    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE]: YouDealtExcessDamageTrigger,
+    [TRIGGER_YOU_WOULD_DEAL_EXCESS_DAMAGE]: YouAttackTrigger,
     [TRIGGER_YOU_BASIC_ATTACK]: YouBasicAttackTrigger,
     [TRIGGER_YOU_BASIC_DEFENSE]: YouBasicDefenseTrigger,
     [TRIGGER_YOU_ANY_ATTACK]: YouAnyAttackTrigger,
@@ -270,6 +298,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_YOU_DEFEAT_SIDE_SCHEME]: YouDefeatSideSchemeTrigger,
     [TRIGGER_YOUR_HERO_ATTACK_DEFEAT_ENEMY]: YourHeroAttackDefeatEnemyTrigger,
     [TRIGGER_YOUR_HERO_GET_ATTACK]: YourHeroGetAttackTrigger,
+    [TRIGGER_YOUR_HERO_GET_RETALIATE]: YourHeroGetRetaliateTrigger,
     [TRIGGER_YOUR_HERO_GET_DEFENSE]: YourHeroGetDefenseTrigger,
     [TRIGGER_GET_HAND_SIZE]: GetHandSizeTrigger,
     [TRIGGER_YOUR_HERO_GET_HIT_POINTS]: YourHeroGetHitPointsTrigger,
@@ -290,6 +319,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_REMOVE_DAMAGE]: Trigger,
     [TRIGGER_REMOVE_THREAT]: Trigger,
     [TRIGGER_MOVE_DAMAGE]: Trigger,
+    [TRIGGER_MOVE_COUNTERS]: Trigger,
     [TRIGGER_MOVE_THREAT]: Trigger,
     [TRIGGER_WOULD_PLACE_THREAT]: WouldPlaceThreatTrigger,
     [TRIGGER_WOULD_ADD_ACCELERATION_TOKEN]: WouldAddAccelerationTokenTrigger,
@@ -309,5 +339,6 @@ export const TRIGGER_MAP = {
     [TRIGGER_SURGE]: SurgeTrigger,
     [TRIGGER_TREACHERY_REVEAL]: TreacheryRevealTrigger,
     [TRIGGER_ENGAGE_HERO]: EngageHeroTrigger,
+    [TRIGGER_ENGAGE_PLAYER]: EngagePlayerTrigger,
     [TRIGGER_FACEDOWN_CARD]: FacedownCardTrigger,
 };

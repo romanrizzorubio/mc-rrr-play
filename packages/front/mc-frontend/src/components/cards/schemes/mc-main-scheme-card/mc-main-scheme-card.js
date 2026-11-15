@@ -8,6 +8,7 @@ import {
     isTargetClickDisabled,
     getTargetMenuOptions,
 } from '../../../../utils/basic-activation.js';
+import {ABILITY_ID} from '../../../../misc/utils.js';
 
 export class MainSchemeCardComponent extends LitElement {
     static get is() {
@@ -82,6 +83,21 @@ export class MainSchemeCardComponent extends LitElement {
             }));
         }
     }
+    handleCardMenuClick(e) {
+        e.stopPropagation();
+
+        const {option} = e.detail;
+        const abilityIndex = option.substring(ABILITY_ID.length);
+
+        this.dispatchEvent(new CustomEvent('ability', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.card,
+                ability: parseInt(abilityIndex),
+            },
+        }));
+    }
 
     render() {
         const {
@@ -114,6 +130,7 @@ export class MainSchemeCardComponent extends LitElement {
                 .headerLeft="${value}"
                 .headerRight="${stage}"
                 @card-click="${this.handleCardClick.bind(this)}"
+                @card-menu-click="${this.handleCardMenuClick.bind(this)}"
             >
             </mc-scheme-card>
         `;

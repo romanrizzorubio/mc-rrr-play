@@ -38,7 +38,7 @@ import {
     TARGET_ANY_PLAYER,
     TARGET_ENEMY,
     TARGET_ANY_CHARACTER_YOU_CONTROL,
-    TARGET_SOURCE,
+    TARGET_ALL_ENGAGED_MINIONS,
     TARGET_SCHEME,
     TARGET_THIS,
     TARGET_UPGRADE_YOU_CONTROL,
@@ -380,9 +380,7 @@ describe('Hawkeye catalog', () => {
                     {
                         type: EFFECT_DEAL_DAMAGE,
                         params: {
-                            target: TARGET_SOURCE,
-                            source: 'targetPlayer.minions',
-                            multipleTarget: true,
+                            target: TARGET_ALL_ENGAGED_MINIONS,
                             damage: 3,
                         },
                     },

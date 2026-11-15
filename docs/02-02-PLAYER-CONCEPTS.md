@@ -150,6 +150,7 @@ Un jugador puede estar en identidad de héroe o de alter ego en un momento dado.
 
 - Una vez en cada ronda, durante su turno, cada jugador tiene permitido cambiar de identidad dando la vuelta a su carta de superhéroe.
 - Cuando un jugador cambia de identidad, solo cambia la identidad. El personaje conserva su daño sufrido, cartas de estado, efectos postergados, cartas vinculadas, cartas metidas debajo (tucked cards), fichas y estado actual (preparado o agotado).
+- Solo están activas las reglas de la cara boca arriba. Al cambiar de identidad, se desactivan las capacidades de la cara que queda boca abajo y se activan las de la nueva cara; al volver, las capacidades de esa cara se activan de nuevo.
 - Si la capacidad de una carta hace que un jugador cambie de identidad, no cuenta para el cambio de identidad voluntario que el jugador tiene permitido durante su turno esa ronda.
 - Mientras un jugador está en identidad de héroe, las capacidades de las cartas que interactúan con su alter ego no interactúan con su superhéroe.
 - Mientras un jugador está en identidad de alter ego, las capacidades de las cartas que interactúan con su héroe no interactúan con su superhéroe.

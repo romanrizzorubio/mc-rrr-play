@@ -8,13 +8,17 @@ import {
     TRIGGER_MOVE_DAMAGE,
     TRIGGER_PLACE_DAMAGE,
     TRIGGER_REMOVE_DAMAGE,
+    TRIGGER_YOU_DEAL_DAMAGE,
+    TRIGGER_YOU_DEALT_EXCESS_DAMAGE,
 } from 'mc-shared';
 import {path} from '../engine/utils.js';
 
 import {
+    calculateExcessDamage,
     canResolveDamageWithStatus,
     defeatCharacterIfLethal,
     getDamageStatusTarget,
+    isEnemyDamageTarget,
     resolveDamageStatus,
     resolveToughDamage,
 } from '../utils/damage-resolution.js';
@@ -36,6 +40,8 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
         this.movedDamage = 0;
         this.movementResolved = false;
         this.defeated = false;
+        this.excessDamage = 0;
+        this.excessDamageTargetWasEnemy = undefined;
     }
 
     get takenDamage() {
@@ -64,6 +70,8 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
         this.movedDamage = 0;
         this.movementResolved = false;
         this.defeated = false;
+        this.excessDamage = 0;
+        this.excessDamageTargetWasEnemy = undefined;
     }
 
     checkTrigger(params) {
@@ -85,6 +93,29 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
         return canResolveDamageWithStatus(this.selectedTarget, {
             piercing: this.isAttack && this.piercing,
         });
+    }
+
+    async resolveStatusBeforeInterrupts() {
+        const {selectedTarget} = this;
+        const piercing = this.isAttack && this.piercing;
+        const multiTarget = Array.isArray(selectedTarget);
+
+        if (!multiTarget && !piercing) {
+            return true;
+        }
+
+        const targets = multiTarget ? selectedTarget : [selectedTarget];
+        const result = await resolveToughDamage({
+            targets,
+            damage: this.damage,
+            preventDamage: this.preventDamage,
+            getStatusTarget: target => this.getStatusTarget(target),
+            piercing,
+        });
+
+        this.damage = result.damage;
+
+        return result.hasDamage;
     }
 
     getStatusTarget(target) {
@@ -138,8 +169,19 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
             ]);
 
         return this.checkTrigger(params) ?
-            triggers.concat([TRIGGER_CHARACTER_TAKES_DAMAGE]) :
+            triggers.concat([
+                TRIGGER_CHARACTER_TAKES_DAMAGE,
+                TRIGGER_YOU_DEAL_DAMAGE,
+                ...(this.hasExcessDamage() ?
+                    [TRIGGER_YOU_DEALT_EXCESS_DAMAGE] :
+                    []),
+            ]) :
             triggers;
+    }
+    hasExcessDamage() {
+        return Array.isArray(this.excessDamage) ?
+            this.excessDamage.some(damage => damage > 0) :
+            this.excessDamage > 0;
     }
 
     getTriggersWould() {
@@ -250,6 +292,13 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
             this.takenDamage :
             [this.takenDamage];
         const totalDamage = takenDamage.reduce((total, amount) => total + amount, 0);
+        this.excessDamage = Array.isArray(selectedTarget) ?
+            selectedTarget.map(() => 0) :
+            0;
+        const targetWasEnemy = targets.map(isEnemyDamageTarget);
+        this.excessDamageTargetWasEnemy = Array.isArray(selectedTarget) ?
+            targetWasEnemy :
+            targetWasEnemy[0] ?? false;
 
         if (!source ||
             !targets.length ||
@@ -263,6 +312,13 @@ export class MoveDamageEffect extends AttackEffect(Effect) {
             )) {
             return;
         }
+
+        const excessDamage = await Promise.all(targets.map((target, index) =>
+            calculateExcessDamage(target, takenDamage[index])
+        ));
+        this.excessDamage = Array.isArray(selectedTarget) ?
+            excessDamage :
+            excessDamage[0] ?? 0;
 
         targets.forEach((target, index) => {
             moveDamageTokens(source, target, takenDamage[index]);

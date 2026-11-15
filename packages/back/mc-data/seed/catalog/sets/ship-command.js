@@ -18,7 +18,6 @@ import {
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENEMY_SCHEME,
     EFFECT_EXHAUST,
-    EFFECT_MAY,
     EFFECT_REMOVE_THREAT,
     EFFECT_SET_CONTROLLER,
     EFFECT_SIMULTANEOUS,
@@ -31,9 +30,9 @@ import {
     RESOURCE_WILD,
     TARGET_ALL_SUPERHEROES,
     TARGET_CONDITION_CARD,
+    TARGET_MAIN_SCHEME,
     TARGET_INITIAL_PLAYER,
     TARGET_INITIAL_PLAYER_SUPERHERO,
-    TARGET_MAIN_SCHEME,
     TARGET_THIS,
     TRAIT_AERIAL,
     TRAIT_VEHICLE,
@@ -323,17 +322,18 @@ const specialDeliveryAbility = ({
     type,
     params: {
         effect: {
-            type: EFFECT_MAY,
+            type: EFFECT_CHOOSE,
             params: {
-                title: '¿Agotas la Milano?',
-                effect: exhaustMilano(),
-                effectNot: {
-                    ...fallbackEffect,
-                    params: {
-                        ...fallbackEffect.params,
-                        title,
+                options: [
+                    exhaustMilano('Agotar la Milano'),
+                    {
+                        ...fallbackEffect,
+                        params: {
+                            ...fallbackEffect.params,
+                            title,
+                        },
                     },
-                },
+                ],
             },
         },
     },

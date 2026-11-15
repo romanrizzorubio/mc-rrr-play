@@ -39,11 +39,14 @@ export class ThwartBasicAbility extends BasicAbility {
             return false;
         }
 
-        if (card.isConfused) {
+        return super.canRun(params);
+    }
+    async canRunEffect(params, effect) {
+        if (params.card?.isConfused) {
             return true;
         }
 
-        return super.canRun(params);
+        return super.canRunEffect(params, effect);
     }
     applyConsequencial() {
         const {card} = this;

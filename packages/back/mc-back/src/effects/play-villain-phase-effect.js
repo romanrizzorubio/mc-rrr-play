@@ -1,6 +1,7 @@
 import {
     DIALOG_ENCOUNTERS_DEALT,
     TARGET_ALL_ENGAGED_MINIONS,
+    TRIGGER_VILLAIN_PHASE_START,
     TRIGGER_VILLAIN_PHASE_STEP,
 } from 'mc-shared';
 
@@ -210,11 +211,28 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
             resolveDelayedEffects: false,
         });
     }
+    async triggerPhaseStart(params) {
+        const phaseEffect = new PlayVillainPhaseEffect({match: this.match});
+        const triggerParams = {
+            ...params,
+            effect: phaseEffect,
+            match: this.match,
+        };
+
+        await super.triggerEnds(triggerParams, {
+            triggerTypes: [TRIGGER_VILLAIN_PHASE_START],
+            resolveDelayedEffects: false,
+        });
+    }
 
     async execute(params) {
         logGameTrace('villain-phase.start', {
             match: this.match.name,
         });
+
+        if (!this.match.villainPhaseStep) {
+            await this.triggerPhaseStart(params);
+        }
 
         const steps = [
             ['place-threat', () => this.stepAccelerateScheme(params)],

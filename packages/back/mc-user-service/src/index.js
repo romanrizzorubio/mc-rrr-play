@@ -1,5 +1,5 @@
 export {loadUserServiceConfig} from './config.js';
-export {createSmtpMailer} from './smtp-mailer.js';
+export {createSmtpMailer} from 'mc-email';
 export {PASSWORD_POLICY} from './utils/auth-utils.js';
 export {
     RESET_REQUEST_MESSAGE,

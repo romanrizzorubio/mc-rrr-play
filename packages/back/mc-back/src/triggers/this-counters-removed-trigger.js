@@ -6,7 +6,9 @@ export class ThisCountersRemovedTrigger extends Trigger {
         const targets = Array.isArray(selectedTarget) ?
             selectedTarget :
             [selectedTarget];
-        const affectsThisCard = targets.some(target =>
+        const sourceTarget = params.effect?.sourceTarget;
+
+        const affectsThisCard = targets.concat(sourceTarget).some(target =>
             target === this.card ||
             (target?.id !== undefined &&
                 target.id === this.card.id &&

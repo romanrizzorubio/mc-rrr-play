@@ -77,7 +77,7 @@ import {
     TRIGGER_THIS_GET_ATTACK,
     TRIGGER_VILLAIN_PHASE_STEP,
 } from 'mc-shared';
-import {revealEncounterFrom} from '../utils/reveal-encounter.js';
+import {revealSelectedEncounter} from '../utils/reveal-encounter.js';
 
 const SET = 'zola';
 const BIO_SERVANT_NAME = 'Biosiervo definitivo';
@@ -642,9 +642,7 @@ const testSubjects = {
                                     },
                                 },
                                 {
-                                    ...revealEncounterFrom({
-                                        from: PLACE_ENCOUNTER_DISCARD,
-                                        cardSource: 'selectedCard',
+                                    ...revealSelectedEncounter({
                                         revealParams: {
                                             player: 'match.initialPlayer',
                                         },

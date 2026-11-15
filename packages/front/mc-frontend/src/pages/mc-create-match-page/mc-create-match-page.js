@@ -136,7 +136,7 @@ export class McCreateMatchPage extends LitElement {
             return;
         }
 
-        const {name, maxPlayers, expert, scenario} = e.detail;
+        const {name, maxPlayers, expert, autoSave, scenario} = e.detail;
         if (this.matches.some(match => match.name === name) ||
             this.lobbies.some(lobby => lobby.name === name)) {
             this.reportCommunicationError(new Error('Ya existe una partida con ese nombre.'));
@@ -152,6 +152,7 @@ export class McCreateMatchPage extends LitElement {
                 maxPlayers,
                 scenario,
                 expert,
+                autoSave,
             });
 
             this.creatingMatch = false;

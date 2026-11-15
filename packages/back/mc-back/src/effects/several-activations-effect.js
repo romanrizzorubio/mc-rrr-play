@@ -37,7 +37,6 @@ export class SeveralActivationsEffect extends Effect {
             const validTarget = new ValidTarget({
                 effect: this,
                 match: this.match,
-                multipleTarget: true,
                 condition: this.condition,
             });
             enemies = validTarget.getValidTarget({

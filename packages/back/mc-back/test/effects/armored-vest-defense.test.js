@@ -61,6 +61,7 @@ function createPlayer(match, name, superheroName = 'Capitana Marvel') {
         modifyDefense: 0,
         modifyThwart: 0,
         modifyHitPoints: 0,
+        getExtraKeywords: async () => [],
         _controller: player,
     });
     player.superhero = superhero;

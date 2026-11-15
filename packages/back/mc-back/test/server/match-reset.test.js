@@ -42,7 +42,13 @@ describe('match reset', () => {
         const id = 'stable-match-id';
         const initialMatch = new Match({mc: {}, name, id});
         initialMatch.expert = true;
-        const currentMatch = new Match({mc: {}, name, id, creatorUserId: 'creator'});
+        const currentMatch = new Match({
+            mc: {},
+            name,
+            id,
+            creatorUserId: 'creator',
+            autoSave: false,
+        });
         currentMatch.creationSnapshot = serializeMatch(initialMatch);
         currentMatch.initialized = true;
         currentMatch.expert = true;
@@ -96,6 +102,8 @@ describe('match reset', () => {
             assert.equal(resetMatch.name, name);
             assert.equal(resetMatch.creatorUserId, 'creator');
             assert.equal(resetMatch.expert, true);
+            assert.equal(resetMatch.autoSave, false);
+            assert.equal(resetMatch.creationConfig.autoSave, false);
             assert.equal(params.match, resetMatch);
             assert.deepEqual(result, {id, name});
             assert.equal(resetMatch.initialized, true);

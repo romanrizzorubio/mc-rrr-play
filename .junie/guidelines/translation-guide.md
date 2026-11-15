@@ -49,7 +49,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **piercing** | **penetrante** |
 | **restricted** | **restringida** |
 | **mutated** | **mutado** |
-| **Stalwart** | **firmeza** |
+| **Stalwart** | **Firmeza** |
 | **team-up** | **equipo** |
 | **toughness** | **dureza** |
 | **when revealed** | **cuando se muestre esta carta** |
@@ -110,6 +110,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **tough** | duro |
 | **trait** | rasgo |
 | **aerial (rasgo)** | Aéreo |
+| **badoon (rasgo)** | Badoon |
 | **arrow (rasgo)** | Flecha |
 | **artifact (rasgo)** | Artefacto |
 | **android (rasgo)** | droide |
@@ -127,8 +128,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **elite (rasgo)** | Élite |
 | **ice (rasgo)** | Hielo |
 | **location (rasgo)** | Lugar |
+| **leviathon (rasgo)** | Leviatón |
 | **metal (rasgo)** | Metal |
 | **mystic (rasgo)** | Místico |
+| **outlaw (rasgo)** | Proscrito |
 | **persona (rasgo)** | Individuo |
 | **preparation (rasgo)** | Planificación |
 | **skill (rasgo)** | Habilidad |
@@ -146,6 +149,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **vehicle (rasgo)** | Vehículo |
 | **x-factor (rasgo)** | Factor-X |
 | **goblin (rasgo)** | Duende |
+| **guardian (rasgo)** | Guardián |
 | **genius (rasgo)** | Genio |
 | **wood (rasgo)** | Madera |
 | **invocation (rasgo)** | Invocación |
@@ -196,6 +200,7 @@ Al mostrar los rasgos de las cartas, utiliza estas etiquetas en español para lo
 | **[w]** | [w]            | recurso universal  |
 | **[d]** | [d]            | daño derivado      |
 | **[u]** | [u]            | carta única        |
+| **[f]** | [f]            | icono de Amplificación |
 
 ## Instrucciones para el Asistente
 

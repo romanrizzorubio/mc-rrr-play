@@ -334,6 +334,7 @@ export default [
                         'type': ABILITY_INTERRUPT,
                         'params': {
                             'trigger': TRIGGER_BOOST_REVEALED,
+                            'condition': {'effect.enemyActivation.isScheme': true},
                             'effect': {
                                 'type': EFFECT_CANCEL_BOOST_ICONS,
                                 'params': {

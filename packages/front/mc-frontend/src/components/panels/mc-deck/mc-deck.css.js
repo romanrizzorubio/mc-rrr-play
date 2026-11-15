@@ -68,6 +68,16 @@ export default css`
     text-align: center;
   }
 
+  :host([size="s"]) .count {
+    margin-top: 2px;
+    padding: 1px 2px;
+    font-size: 0.65rem;
+  }
+
+  :host([size="s"]) .panel:first-child {
+    margin-right: 8px;
+  }
+
   .deck-panel {
     position: relative;
   }

@@ -34,6 +34,14 @@ export default css`
     width: calc(var(--card-size) * 1.39667);
   }
 
+  :host([horizontal][has-attached]) {
+    width: max-content;
+  }
+
+  :host([horizontal][has-attached]) header {
+    width: calc(var(--card-size) * 1.39667);
+  }
+
   :host([horizontal][rotated]) {
     width: var(--card-size);
   }

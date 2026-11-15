@@ -5,8 +5,15 @@ export class AttachedWouldDealtDamageTrigger extends CharacterWouldTakeDamageTri
     constructor(params) {
         super({...params, target: TARGET_ATTACHED});
     }
-    getTarget(params) {
-        return this.card?.attachedTo ? super.getTarget(params) : undefined;
+    getTargetIndexes(params, options) {
+        return this.card?.attachedTo ?
+            super.getTargetIndexes(params, options) :
+            [];
+    }
+    getTarget(params, targetIndex) {
+        return this.card?.attachedTo ?
+            super.getTarget(params, targetIndex) :
+            undefined;
     }
     getInterruptName(params) {
         return super.getInterruptName({
@@ -15,18 +22,20 @@ export class AttachedWouldDealtDamageTrigger extends CharacterWouldTakeDamageTri
                 params.triggeredTargetDamage : undefined,
         });
     }
-    getTargetDamage(params, target = this.getTarget(params)) {
+    getTargetDamage(params, target = this.getTarget(params), targetIndex) {
         if (!target) {
             return 0;
         }
 
         const {effect} = params;
-        const targetIndex = Array.isArray(effect.selectedTarget) ?
-            effect.selectedTarget.indexOf(target) : 0;
+        const index = Number.isInteger(targetIndex) ?
+            targetIndex :
+            Array.isArray(effect.selectedTarget) ?
+                effect.selectedTarget.indexOf(target) : 0;
         const damage = Array.isArray(effect.damage) ?
-            effect.damage[targetIndex] : effect.damage;
+            effect.damage[index] : effect.damage;
         const prevention = Array.isArray(effect.preventDamage) ?
-            effect.preventDamage[targetIndex] : effect.preventDamage;
+            effect.preventDamage[index] : effect.preventDamage;
 
         return Math.max(0, (damage ?? 0) - (prevention ?? 0));
     }

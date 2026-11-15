@@ -8,6 +8,7 @@ import {Effect} from '../../src/effects/effect.js';
 import {PlayCardActionEffect} from '../../src/effects/play-card-action-effect.js';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 import {CostGroup} from '../../src/model/costs/cost-group.js';
+import {AllyCard} from '../../src/model/printed/ally-card.js';
 
 describe('PlayCardActionEffect', () => {
     test('does not check its source card when selecting from the same collection', async () => {
@@ -44,6 +45,62 @@ describe('PlayCardActionEffect', () => {
             await effect.getPlayableTargets({ability, match, player}),
             [playableCard]
         );
+    });
+
+    test('checks ally playability without opening the max-allies dialog', async () => {
+        const dialogs = [];
+        const match = {
+            isUniqueCard: () => false,
+            openDialog: async dialog => {
+                dialogs.push(dialog);
+
+                return {
+                    accepted: true,
+                    selected: {id: 'ally-1'},
+                };
+            },
+            triggerCards: {},
+        };
+        const allyCard = new AllyCard({
+            attack: 1,
+            cost: 1,
+            hitPoints: 1,
+            id: 'new-ally',
+            image: 'ally.webp',
+            match,
+            name: 'New Ally',
+            set: 'test',
+            thwart: 1,
+        });
+        const ability = {
+            card: {
+                isPlayerCard: true,
+                isResource: false,
+            },
+        };
+        const player = {
+            allies: [
+                {id: 'ally-1'},
+                {id: 'ally-2'},
+                {id: 'ally-3'},
+            ],
+            hand: {
+                cards: [allyCard],
+            },
+        };
+        const effect = new PlayCardActionEffect({
+            ability,
+            ignoreResourceCost: true,
+            match,
+            source: 'player.hand.cards',
+            target: TARGET_SOURCE,
+        });
+
+        assert.deepEqual(
+            await effect.getPlayableTargets({ability, match, player}),
+            [allyCard]
+        );
+        assert.deepEqual(dialogs, []);
     });
 
     test('ignores a fixed resource cost without opening a payment dialog', async () => {

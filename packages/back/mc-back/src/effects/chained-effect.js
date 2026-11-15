@@ -37,14 +37,24 @@ export class ChainedEffect extends Effect {
     constructor({
 // ChainedEffect
         effects = [],
+        hasAdditional = false,
         outputParams = [],
         deckId,
     }) {
         super(arguments[0]);
 
         this.effects = effects;
+        this.hasAdditional = hasAdditional;
         this.outputParams = outputParams;
         this.deckId = deckId;
+
+        if (hasAdditional &&
+            (effects.length < 2 ||
+                !Number.isFinite(effects[0]?.damageModifier))) {
+            throw new TypeError(
+                'An additional-damage chain requires a damage effect first.'
+            );
+        }
 
         effects.forEach(effect => {
             if (!effect.target) {
@@ -135,12 +145,16 @@ export class ChainedEffect extends Effect {
         return true;
     }
     requiresAll(params) {
-        return Boolean(
-            params.isCost ||
-            params.costPaymentSession?.requireAllCosts
-        );
+        if (this.isCost) {
+            return true;
+        }
+        if (Object.hasOwn(params, 'triggeredEffect')) {
+            return false;
+        }
+
+        return Boolean(params.isCost || params.costPaymentSession?.requireAllCosts);
     }
-    canRun(params) {
+    async canRun(params) {
         if (this.showCancel && this.selectedTarget === null) {
             return true;
         }
@@ -148,8 +162,25 @@ export class ChainedEffect extends Effect {
         const newParams = this.getEffectParams(params);
 
         if (this.requiresAll(params)) {
-            return this.promisesSequentialEvery(this.effects, effect =>
-                effect.canRun(newParams));
+            const deferredOutputParams = new Set(
+                params.deferredOutputParams || []
+            );
+            for (const effect of this.effects) {
+                if (!await effect.canRun({
+                    ...newParams,
+                    deferredOutputParams,
+                })) {
+                    return false;
+                }
+                (effect.outputParams || []).forEach(param =>
+                    deferredOutputParams.add(param));
+            }
+
+            return true;
+        }
+
+        if (this.hasAdditional) {
+            return this.effects[0].canRun(newParams);
         }
 
         return this.promisesSequentialSome(this.effects, effect =>
@@ -178,13 +209,23 @@ export class ChainedEffect extends Effect {
 
         const {effectParams} = session.getPreparedEffect(this);
         const newParams = this.getEffectParams(effectParams);
+        const deferredOutputParams = new Set(
+            params.deferredOutputParams ||
+            effectParams.deferredOutputParams ||
+            []
+        );
+        // Prepared children share this context so earlier outputs reach later ones.
+        newParams.deferredOutputParams = deferredOutputParams;
         session.prepareExecutionParams(this, newParams);
 
         for (const effect of this.effects) {
             if (!await effect.prepareCost(newParams, session)) {
                 return false;
             }
+            (effect.outputParams || []).forEach(param =>
+                deferredOutputParams.add(param));
         }
+        delete newParams.deferredOutputParams;
 
         return true;
     }
@@ -198,7 +239,10 @@ export class ChainedEffect extends Effect {
         const newParams = params.costPaymentSession?.getExecutionParams(this) ||
             this.getEffectParams(params);
 
-        await this.promisesSequential(this.effects, async effect => {
+        const effects = this.hasAdditional ?
+            [...this.effects.slice(1), this.effects[0]] :
+            this.effects;
+        await this.promisesSequential(effects, async effect => {
             this.selectedTarget = getCurrentVillainStage(
                 this.selectedTarget,
                 this.match

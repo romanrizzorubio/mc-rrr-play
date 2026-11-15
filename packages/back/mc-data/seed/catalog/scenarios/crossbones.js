@@ -54,7 +54,10 @@ import {
 } from 'mc-shared';
 
 import {hydraTerrorist} from '../shared/minions.js';
-import {revealEncounterFrom} from '../utils/reveal-encounter.js';
+import {
+    revealEncounterFrom,
+    revealSelectedEncounter,
+} from '../utils/reveal-encounter.js';
 import {withCardSet} from '../with-card-set.js';
 
 const SET = 'crossbones';
@@ -394,10 +397,7 @@ const lootTheArsenal = {
                                 },
                             },
                         },
-                        revealEncounterFrom({
-                            from: PLACE_ENCOUNTER_DISCARD,
-                            cardSource: 'selectedCard',
-                        }),
+                        revealSelectedEncounter(),
                     ]),
                 },
             },

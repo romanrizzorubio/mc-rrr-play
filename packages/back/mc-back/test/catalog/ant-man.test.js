@@ -36,7 +36,6 @@ import {
     EFFECT_EXHAUST,
     EFFECT_FLIP,
     EFFECT_FOR_EACH,
-    EFFECT_GET_ENCOUNTER_CARD,
     EFFECT_HEAL,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK_VALUE,
@@ -49,7 +48,6 @@ import {
     EFFECT_STUN,
     LABEL_ATTACK,
     LABEL_THWART,
-    PLACE_ENCOUNTER_DISCARD,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -1464,7 +1462,6 @@ describe('Hombre Hormiga', () => {
                     type: ABILITY_HERO_RESPONSE,
                     params: {
                         trigger: TRIGGER_THIS_SPEND,
-                        workInHand: true,
                         condition: {
                             'player.superhero.currentSide.traits': [
                                 TRAIT_GIANT,
@@ -1812,7 +1809,7 @@ describe('Hombre Hormiga', () => {
             whenRevealedConfig.params.effect.type,
             EFFECT_CHAINED,
         );
-        const [discardUntilConfig, revealChainConfig] =
+        const [discardUntilConfig, revealEncounterConfig] =
             whenRevealedConfig.params.effect.params.effects;
         assert.deepEqual(discardUntilConfig, {
             type: EFFECT_DISCARD_UNTIL,
@@ -1822,19 +1819,10 @@ describe('Hombre Hormiga', () => {
                 showDiscardedCards: true,
             },
         });
-        assert.equal(revealChainConfig.type, EFFECT_CHAINED);
-        const [getEncounterCardConfig, revealEncounterConfig] =
-            revealChainConfig.params.effects;
-        assert.deepEqual(getEncounterCardConfig, {
-            type: EFFECT_GET_ENCOUNTER_CARD,
-            params: {
-                from: PLACE_ENCOUNTER_DISCARD,
-                cardSource: 'selectedCard',
-            },
-        });
+        assert.equal(revealEncounterConfig.type, EFFECT_REVEAL_ENCOUNTER);
         assert.deepEqual(revealEncounterConfig, {
             type: EFFECT_REVEAL_ENCOUNTER,
-            params: {card: 'effects.0.card'},
+            params: {card: 'selectedCard'},
         });
 
         const scheme = cardsFactory.createGameCardFromConfig(schemeConfig);
@@ -1896,15 +1884,12 @@ describe('Hombre Hormiga', () => {
             assert.equal(typeof ability.effect.canRun, 'function');
         }
         assert.equal(whenRevealed.effect.effectType, EFFECT_CHAINED);
-        const [discardUntil, revealChain] = whenRevealed.effect.effects;
+        const [discardUntil, revealEncounter] = whenRevealed.effect.effects;
         assert.equal(discardUntil.effectType, EFFECT_DISCARD_UNTIL);
         assert.deepEqual(discardUntil.condition, {set: 'Hombre Hormiga'});
         assert.equal(discardUntil.target, TARGET_ENCOUNTER_DECK);
-        assert.equal(revealChain.effectType, EFFECT_CHAINED);
-        assert.deepEqual(
-            revealChain.effects.map(({effectType}) => effectType),
-            [EFFECT_GET_ENCOUNTER_CARD, EFFECT_REVEAL_ENCOUNTER],
-        );
+        assert.equal(revealEncounter.effectType, EFFECT_REVEAL_ENCOUNTER);
+        assert.equal(revealEncounter.card, 'selectedCard');
     });
 
     test('El plan de Chaqueta Amarilla discards through the first Ant-Man set card', async () => {

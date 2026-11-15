@@ -47,6 +47,27 @@ describe('superhero aspect markers', () => {
         assert.ok(template.values.includes(aspectMarkers));
     });
 
+    test('passes generic counters from the superhero to its card display', () => {
+        const counters = 2;
+        const component = Object.assign(
+            Object.create(SuperheroCardComponent.prototype),
+            {
+                card: {counters},
+                abilities: [],
+                canEndTurn: false,
+                extraMenuOptions: [],
+                tuckedCards: [],
+            }
+        );
+
+        const template = component.render();
+
+        assert.match(template.strings.join(''), /\.generic=/);
+        assert.match(template.strings.join(''), /\.showGeneric=/);
+        assert.ok(template.values.includes(counters));
+        assert.ok(template.values.includes(true));
+    });
+
     test('renders centered colored dots above the image without a border', () => {
         const component = Object.assign(
             Object.create(SuperheroCardComponent.prototype),

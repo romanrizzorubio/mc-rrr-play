@@ -2635,10 +2635,7 @@ describe('Avispa', () => {
             assert.equal(ability.resolved, true);
             const attackEffect = ability.effect;
             assert.equal(attackEffect.overkill, expectedOverkill);
-            assert.deepEqual(
-                attackEffect.damage,
-                expectedOverkill ? [expectedDamage, 3] : expectedDamage,
-            );
+            assert.equal(attackEffect.damage, expectedDamage);
             assert.equal(match.villain.damage >= 3, expectedOverkill);
         };
 
