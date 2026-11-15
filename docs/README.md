@@ -85,6 +85,7 @@ MC RRR Play
    │  ├─ mc-back: motor de partidas + Socket.IO (puerto 3000)
    │  ├─ mc-match-creation-service: creación y catálogo (puerto 3001)
    │  ├─ mc-user-service: cuentas, activación y sesiones (puerto 3003)
+   │  ├─ mc-email: entrega SMTP y plantillas de correo compartidas
    │  ├─ mc-deck-service: API y persistencia de mazos (puerto 3002)
    │  ├─ mc-server-utils: utilidades HTTPS compartidas
    │  └─ mc-data: acceso al catálogo y partidas de MongoDB

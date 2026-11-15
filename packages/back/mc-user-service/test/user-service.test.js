@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import {createSmtpMailer} from 'mc-email';
 import {loadUserServiceConfig} from '../src/config.js';
-import {createSmtpMailer} from '../src/smtp-mailer.js';
 import {createUserAuthService} from '../src/user-auth-service.js';
 import {MongoUserStore} from '../src/user-store.js';
 import {
@@ -1212,12 +1212,6 @@ describe('mc-user-service', () => {
             });
             assert.equal(invalidEmail.status, 400);
 
-            const unconfiguredMailer = createSmtpMailer({});
-            assert.throws(
-                () => unconfiguredMailer.assertConfigured(),
-                error => error.statusCode === 503 &&
-                    error.message.includes('SMTP_HOST'),
-            );
             assert.throws(
                 () => loadUserServiceConfig({}),
                 /FRONTEND_ORIGIN must be configured/u,
@@ -1240,7 +1234,6 @@ describe('mc-user-service', () => {
             assert.equal(config.frontendOrigin, 'https://play.example.com');
             assert.equal(config.smtp.host, 'smtp.example.com');
             assert.equal(config.secureCookies, true);
-            assert.equal(typeof createSmtpMailer(config.smtp).send, 'function');
 
             const localHttpsConfig = loadUserServiceConfig({
                 FRONTEND_ORIGIN: frontendOrigin,
@@ -1256,51 +1249,6 @@ describe('mc-user-service', () => {
                     SESSION_COOKIE_SECURE: 'yes',
                 }),
                 /SESSION_COOKIE_SECURE must be true or false/u,
-            );
-
-            let localSmtpOptions;
-            let sentMail;
-            const localMailer = createSmtpMailer({
-                host: 'mailpit',
-                port: '1025',
-                user: '',
-                password: '',
-                from: 'MC RRR Play <noreply@example.com>',
-                transportFactory: options => {
-                    localSmtpOptions = options;
-                    return {
-                        sendMail: async message => {
-                            sentMail = message;
-                        },
-                    };
-                },
-            });
-            await localMailer.send({
-                to: 'player@example.com',
-                subject: 'Test',
-                text: 'Test message',
-            });
-            assert.deepEqual(localSmtpOptions, {
-                host: 'mailpit',
-                port: 1025,
-                secure: false,
-                requireTLS: false,
-            });
-            assert.deepEqual(sentMail, {
-                from: 'MC RRR Play <noreply@example.com>',
-                to: 'player@example.com',
-                subject: 'Test',
-                text: 'Test message',
-            });
-            assert.throws(
-                () => createSmtpMailer({
-                    host: 'mailpit',
-                    port: '1025',
-                    user: 'mailer',
-                    password: '',
-                    from: 'noreply@example.com',
-                }).assertConfigured(),
-                /deben configurarse juntos/u,
             );
 
             const indexes = [];
