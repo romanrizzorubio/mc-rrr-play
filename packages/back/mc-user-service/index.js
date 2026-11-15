@@ -1,4 +1,3 @@
-import {createHttpsServiceServer} from 'mc-server-utils';
 import {createSmtpMailer} from 'mc-email';
 import {createServiceServer} from 'mc-server-utils';
 import {loadUserServiceConfig} from './src/config.js';
