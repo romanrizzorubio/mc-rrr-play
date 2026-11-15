@@ -26,16 +26,11 @@ docker-compose up
 ```
 
 Luego accede a:
-- **Frontend**: http://localhost:8000
-- **mc-match**: http://localhost:8100
-- **mc-deck**: http://localhost:8200
-- **mc-static**: http://localhost:8300
-- **Servicio de partidas**: http://localhost:3000
-- **Servicio de creación**: http://localhost:3001
-- **Servicio de mazos**: http://localhost:3002
-- **MongoDB**: mongodb://localhost:27017
+- **Frontend (Gateway)**: http://localhost (Puerto 80)
+- **Frontend (Directo)**: http://localhost:8000
+- **Servicios y Remotos**: Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para detalles de puertos y rutas.
 
-El backend carga automáticamente en MongoDB los registros del catálogo inicial que falten.
+Por defecto, Docker usa el modo **Gateway** (puerto 80). Si prefieres acceder directamente a los puertos de cada servicio, consulta la sección de configuración en [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### Opción 2: Desarrollo Local
 

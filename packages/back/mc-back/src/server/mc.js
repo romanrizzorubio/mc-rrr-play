@@ -1,7 +1,7 @@
 import express from 'express';
 import {Server} from 'socket.io';
 import {MongoDataStore} from 'mc-data';
-import {createHttpsServiceServer} from 'mc-server-utils';
+import {createServiceServer} from 'mc-server-utils';
 
 import {restoreMatch, serializeMatch} from '../utils/match-serialization.js';
 import {McRest} from './rest/mc-rest.js';
@@ -119,10 +119,14 @@ export class Mc {
     async init() {
         await this.data.connect();
         this.app = express();
-        this.server = createHttpsServiceServer(this.app);
+        this.server = createServiceServer(this.app);
+        const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+        const defaultOrigins = protocol === 'http' ?
+            'http://localhost:8000,http://localhost:8100' :
+            'https://localhost:8000,https://localhost:8100';
         const allowedOrigins = (
             process.env.FRONTEND_ORIGINS ||
-            'https://localhost:8000,https://localhost:8100'
+            defaultOrigins
         ).split(',').map(origin => origin.trim()).filter(Boolean);
         this.io = new Server(this.server, {
             connectionStateRecovery: {},
@@ -135,10 +139,10 @@ export class Mc {
         this.mcRest.createEndpoints();
         this.mcSocket.init(this.io);
         await this.restoreMatches();
-
         const port = Number(process.env.PORT || 3000);
-        this.server.listen(port, () => {
-            console.log(`match service running at https://localhost:${port}`);
+        const protocolText = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+        this.server.listen(port, '0.0.0.0', () => {
+            console.log(`match service running at ${protocolText}://0.0.0.0:${port}`);
         });
     }
     async close() {

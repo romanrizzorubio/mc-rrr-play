@@ -4,17 +4,24 @@ import {createConnection} from 'node:net';
 import {get} from 'node:https';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {assertLocalPortsAvailable} from './utils/check-local-ports.js';
+import {configureLocalApp} from './utils/configure-local-app.js';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const mode = process.argv[2] || 'docker';
+const localServicePorts = [3000, 3001, 3002, 3003, 8000, 8100, 8200, 8300, 8400];
 if (!['local', 'docker'].includes(mode)) {
     throw new Error(`Unknown startup mode "${mode}". Use "local" or "docker".`);
 }
 
-process.env.FRONTEND_ORIGIN ??= 'https://localhost:8000';
-process.env.AUTH_SERVICE_URL ??= 'https://localhost:3003';
-process.env.MATCH_SERVICE_URL ??= 'https://localhost:3000';
-process.env.SESSION_COOKIE_SECURE ??= 'true';
+if (mode === 'local') {
+    configureLocalApp(projectRoot);
+}
+
+process.env.FRONTEND_ORIGIN ??= (process.env.USE_HTTPS === 'false' ? 'http' : 'https') + '://localhost:8000';
+process.env.AUTH_SERVICE_URL ??= (process.env.USE_HTTPS === 'false' ? 'http' : 'https') + '://localhost:3003';
+process.env.MATCH_SERVICE_URL ??= (process.env.USE_HTTPS === 'false' ? 'http' : 'https') + '://localhost:3000';
+process.env.SESSION_COOKIE_SECURE ??= process.env.USE_HTTPS === 'false' ? 'false' : 'true';
 process.env.TLS_CERT_PATH ??= resolve(projectRoot, '.local/certs/localhost.pem');
 process.env.TLS_KEY_PATH ??= resolve(projectRoot, '.local/certs/localhost-key.pem');
 process.env.NODE_EXTRA_CA_CERTS ??= resolve(projectRoot, '.local/certs/rootCA.pem');
@@ -352,10 +359,18 @@ const main = async () => {
                 access(process.env.NODE_EXTRA_CA_CERTS),
             ]);
         } catch (cause) {
-            throw new Error(
-                'Faltan los certificados HTTPS locales. Ejecuta npm run https:setup antes de iniciar la app.',
-                {cause},
-            );
+            if (process.env.USE_HTTPS !== 'false') {
+                throw new Error(
+                    'Faltan los certificados HTTPS locales. Ejecuta npm run https:setup antes de iniciar la app.',
+                    {cause},
+                );
+            }
+        }
+        if (mode === 'local' && !stopRequested) {
+            await assertLocalPortsAvailable([
+                ...localServicePorts,
+                ...(useLocalMailCapture ? [1025, 8025] : []),
+            ]);
         }
         if (!stopRequested) {
             await startMongo();
@@ -382,49 +397,55 @@ const main = async () => {
             console.log('Mailpit inbox is available at http://localhost:8025.');
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             await startAndWaitForService(
                 'start:mc-user-service',
                 'User service',
-                'https://127.0.0.1:3003/healthz',
+                `${protocol}://127.0.0.1:3003/healthz`,
             );
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             await startAndWaitForService(
                 'start:mc-static',
                 'mc-static remote',
-                'https://127.0.0.1:8300/remoteEntry.js',
+                `${protocol}://127.0.0.1:8300/src/remote-entry.js`,
             );
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             await startAndWaitForService(
                 'start:backend',
                 'Match service',
-                'https://127.0.0.1:3000/healthz',
+                `${protocol}://127.0.0.1:3000/healthz`,
             );
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             await startAndWaitForService(
                 'start:match-creation',
                 'Match creation service',
-                'https://127.0.0.1:3001/healthz',
+                `${protocol}://127.0.0.1:3001/healthz`,
             );
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             const remotesAndDeckService = [
-                ['start:mc-match', 'mc-match remote', 'https://127.0.0.1:8100/remoteEntry.js'],
-                ['start:mc-deck', 'mc-deck remote', 'https://127.0.0.1:8200/remoteEntry.js'],
-                ['start:mc-users', 'mc-users remote', 'https://127.0.0.1:8400/remoteEntry.js'],
-                ['start:mc-deck-service', 'mc-deck-service', 'https://127.0.0.1:3002/healthz'],
+                ['start:mc-match', 'mc-match remote', `${protocol}://127.0.0.1:8100/src/remote-entry.js`],
+                ['start:mc-deck', 'mc-deck remote', `${protocol}://127.0.0.1:8200/src/remote-entry.js`],
+                ['start:mc-users', 'mc-users remote', `${protocol}://127.0.0.1:8400/src/remote-entry.js`],
+                ['start:mc-deck-service', 'mc-deck-service', `${protocol}://127.0.0.1:3002/healthz`],
             ].map(([scriptName, serviceName, healthUrl]) =>
                 startAndWaitForService(scriptName, serviceName, healthUrl));
 
             await Promise.all(remotesAndDeckService);
         }
         if (!stopRequested) {
+            const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
             await startAndWaitForService(
                 'start:frontend',
                 'Frontend',
-                'https://127.0.0.1:8000/app-config.json',
+                `${protocol}://127.0.0.1:8000/app-config.json`,
             );
             console.log('All applications and services are ready. Press Ctrl+C to stop managed processes.');
             await stopped;
