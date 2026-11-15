@@ -1,4 +1,4 @@
-const assetRoot = new URL(/* @vite-ignore */ './', import.meta.url);
+const assetRoot = new URL(/* @vite-ignore */ './assets/', import.meta.url);
 
 export const getAssetUrl = path => {
     if (typeof path !== 'string' || path.startsWith('/') || path.split('/').includes('..')) {

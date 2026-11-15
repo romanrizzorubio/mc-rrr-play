@@ -6,12 +6,12 @@ export class UserSessionApi {
         this.serviceUrl = serviceUrl;
     }
     async request(endpoint, method = 'GET') {
-        const response = await fetch(new URL(endpoint, this.serviceUrl), {
+        const url = new URL(endpoint.startsWith('/') ? endpoint.substring(1) : endpoint, this.serviceUrl);
+        const response = await fetch(url, {
             method,
             credentials: 'include',
             headers: {'Content-Type': 'application/json'},
         });
-
         return parseApiResponse(response);
     }
     async getCurrentUser() {

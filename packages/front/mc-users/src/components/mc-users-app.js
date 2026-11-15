@@ -136,7 +136,13 @@ export class McUsersApp extends LitElement {
             throw new Error('El servicio de usuarios no está configurado.');
         }
 
-        const response = await fetch(new URL(endpoint, this.serviceUrl), {
+        const serviceUrl = this.serviceUrl.endsWith('/') ?
+            this.serviceUrl :
+            `${this.serviceUrl}/`;
+        const endpointPath = endpoint.startsWith('/') ?
+            endpoint.substring(1) :
+            endpoint;
+        const response = await fetch(new URL(endpointPath, serviceUrl), {
             method,
             credentials: 'include',
             headers: body === undefined ? {} : {'Content-Type': 'application/json'},

@@ -4,6 +4,32 @@ import {describe, test} from 'node:test';
 import {DeckServiceClient} from '../src/services/deck-service-client.js';
 
 describe('deck service client', () => {
+    test('preserves the service path prefix when calling through a gateway', async () => {
+        const originalFetch = globalThis.fetch;
+        let requestedUrl;
+        globalThis.fetch = async url => {
+            requestedUrl = new URL(url).href;
+
+            return {
+                ok: true,
+                status: 200,
+                json: async () => [],
+            };
+        };
+
+        try {
+            const client = new DeckServiceClient('https://mc-rrr.com/api/deck/');
+            await client.getDecks();
+
+            assert.equal(
+                requestedUrl,
+                'https://mc-rrr.com/api/deck/decks',
+            );
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
     test('sends multiple selected aspects in the single aspect field', async () => {
         const originalFetch = globalThis.fetch;
         let requestBody;

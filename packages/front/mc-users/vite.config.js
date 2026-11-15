@@ -11,17 +11,31 @@ const remoteEntryDevRoute = {
     name: 'mc-users-remote-entry-dev-route',
     configureServer(server) {
         server.middlewares.use((req, _res, next) => {
-            if (req.url === '/remoteEntry.js') {
+            if (req.url.endsWith('/remoteEntry.js')) {
                 req.url = '/src/remote-entry.js';
             }
+            next();
+        });
+    },
+};
 
+const healthCheck = {
+    name: 'mc-users-health-check',
+    configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+            if (req.url === '/healthz') {
+                res.statusCode = 200;
+                res.end('ok');
+                return;
+            }
             next();
         });
     },
 };
 
 export default defineConfig(({command}) => ({
-    plugins: [remoteEntryDevRoute],
+    base: process.env.USE_PORTS_IN_URL === 'false' ? '/users/' : '/',
+    plugins: [remoteEntryDevRoute, healthCheck],
     root: packageRoot,
     publicDir: false,
     server: {
@@ -29,7 +43,12 @@ export default defineConfig(({command}) => ({
         port: 8400,
         strictPort: true,
         cors: true,
-        ...(command === 'serve' ? {https: getDevelopmentHttpsOptions()} : {}),
+        allowedHosts: true,
+        hmr: {
+            path: '/users/',
+            clientPort: process.env.PORT_GATEWAY || 80,
+        },
+        ...(command === 'serve' && process.env.USE_HTTPS !== 'false' ? {https: getDevelopmentHttpsOptions()} : {}),
         fs: {
             allow: [repositoryRoot],
         },

@@ -18,7 +18,13 @@ export class DeckServiceClient {
             options.body = JSON.stringify(body);
         }
 
-        const response = await fetch(new URL(endpoint, this.serviceUrl), options);
+        const serviceUrl = this.serviceUrl.endsWith('/') ?
+            this.serviceUrl :
+            `${this.serviceUrl}/`;
+        const endpointPath = endpoint.startsWith('/') ?
+            endpoint.substring(1) :
+            endpoint;
+        const response = await fetch(new URL(endpointPath, serviceUrl), options);
         const result = response.status === 204 ? null : await response.json();
         if (!response.ok) {
             throw new Error(result?.error?.message || `Error HTTP ${response.status}.`);

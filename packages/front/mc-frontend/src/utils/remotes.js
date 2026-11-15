@@ -38,7 +38,10 @@ export const loadRemote = async remoteName => {
         throw new Error(`La URL del remoto "${remoteName}" debe usar HTTP o HTTPS.`);
     }
 
-    return import(/* @vite-ignore */ url.href);
+    // In Vite dev, the actual module entry is /{prefix}/src/remote-entry.js.
+    // We intentionally point app-config.json to that file so gateway and direct-port modes work.
+    const finalUrl = url.href.endsWith('/') ? url.href.slice(0, -1) : url.href;
+    return import(/* @vite-ignore */ finalUrl);
 };
 
 export const getStaticAssetUrl = path => {

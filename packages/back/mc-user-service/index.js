@@ -1,4 +1,4 @@
-import {createHttpsServiceServer} from 'mc-server-utils';
+import {createServiceServer} from 'mc-server-utils';
 import {loadUserServiceConfig} from './src/config.js';
 import {createSmtpMailer} from './src/smtp-mailer.js';
 import {createUserServiceApp} from './src/user-service-app.js';
@@ -13,7 +13,7 @@ const mailer = createSmtpMailer(config.smtp);
 
 await store.connect();
 
-const server = createHttpsServiceServer(createUserServiceApp({
+const server = createServiceServer(createUserServiceApp({
     store,
     mailer,
     frontendOrigin: config.frontendOrigin,
@@ -22,9 +22,10 @@ const server = createHttpsServiceServer(createUserServiceApp({
 
 await new Promise((resolve, reject) => {
     server.once('error', reject);
-    server.listen(config.port, resolve);
+    server.listen(config.port, '0.0.0.0', resolve);
 });
-console.log(`mc-user-service running at https://localhost:${config.port}`);
+const protocol = process.env.USE_HTTPS === 'false' ? 'http' : 'https';
+console.log(`mc-user-service running at ${protocol}://0.0.0.0:${config.port}`);
 
 let shuttingDown = false;
 for (const signal of ['SIGINT', 'SIGTERM']) {
