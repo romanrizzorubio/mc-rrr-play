@@ -52,6 +52,7 @@ PROTOCOL=http
 USE_PORTS_IN_URL=true
 USE_HTTPS=false
 PORT_GATEWAY=80
+FRONTEND_ORIGIN=http://localhost:8000
 ```
 
 **Arranque:** `docker compose up -d --build`.
@@ -70,6 +71,7 @@ PUBLIC_IP=localhost
 PROTOCOL=http
 USE_PORTS_IN_URL=false
 PORT_GATEWAY=80
+FRONTEND_ORIGIN=http://localhost
 ```
 
 **Acceso:** http://localhost (a través del puerto 80).
@@ -91,6 +93,7 @@ USE_HTTPS=false
 USE_PORTS_IN_URL=false
 PORT_GATEWAY=80
 SESSION_COOKIE_SECURE=true
+FRONTEND_ORIGIN=https://mc-rrr.com
 ```
 
 Antes de desplegar, sustituye los placeholders `SMTP_USER`, `SMTP_PASSWORD` y `SMTP_FROM` de `.env.aws.example` por el login SMTP, la clave SMTP y un remitente verificado del proveedor. No uses una API key como contraseña SMTP ni guardes las credenciales reales en `.env.aws.example`; mantenlas solo en `.env` en la instancia.
