@@ -1,6 +1,6 @@
+import {createSmtpMailer} from 'mc-email';
 import {createServiceServer} from 'mc-server-utils';
 import {loadUserServiceConfig} from './src/config.js';
-import {createSmtpMailer} from './src/smtp-mailer.js';
 import {createUserServiceApp} from './src/user-service-app.js';
 import {MongoUserStore} from './src/user-store.js';
 

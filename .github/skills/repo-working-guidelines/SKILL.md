@@ -29,6 +29,25 @@ Before working in this repository, consult the relevant guidance in `.junie/` an
 - Before serializing game state, finish calculations that can trigger effects or mutate displayed data; build the snapshot afterward. Keep incremental refreshes and full snapshots consistent, and test the first refresh after actions or identity flips without relying on a reload.
 - Treat card text and structured data supplied by the user as the source of truth. Do not infer icons, attributes, traits, or effects from artwork; ask when an important rule interaction is ambiguous.
 - When configuring deployment or networking, consult `DEPLOYMENT.md`. The project supports three modes: **Local Dev** (`USE_PORTS_IN_URL=true`), **Docker Local Gateway** (`USE_PORTS_IN_URL=false`), and **AWS Production** (Gateway mode with public domain). Ensure `scripts/generate-app-config.js` and `docker-compose.yml` maintain these behaviors. When adding or modifying microfrontends, ensure their `vite.config.js` includes a dynamic `base` property and HMR `path` to remain compatible with the Gateway. In `nginx.conf`, the `proxy_pass` must preserve the prefix (e.g., `proxy_pass http://mc-deck:8200/deck/`) so it matches Vite's `base`. In `packages/front/mc-frontend/src/utils/remotes.js`, ensure `loadRemote` directly imports the `remoteUrl` without appending or leaving a trailing slash, as the URL already points to the `remoteEntry.js` file.
+- For SMTP/email delivery, treat `EAUTH` or the user-facing error `No se pudo enviar el correo. Comprueba la configuración SMTP e inténtalo de nuevo.` as a provider-auth issue, not as a generic app error. The service validates mandatory `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` and requires `SMTP_USER` and `SMTP_PASSWORD` to be set together or both left empty. If the provider rejects authentication, the app will log `Email service SMTP delivery failed { name: 'Error', code: 'EAUTH' }` and return a 503 from the email transport.
+- For Brevo specifically, use the relay host `smtp-relay.brevo.com` with port `587` and `secure: false` (`465` is also valid only for SMTPS with TLS). Use the exact SMTP login and generated SMTP key from the Brevo “SMTP & API” section; do not reuse the general API key, do not leave `SMTP_USER` or `SMTP_PASSWORD` partially configured, and keep the pair together. `SMTP_FROM` must be a verified sender or an address on a verified domain; the correct format is `"MC RRR Play <no-reply@mc-rrr.com>"` with a valid verified domain, not a malformed value like `no-reply@mc-rrr.com<gmail.com>`.
+- Before changing SMTP credentials, confirm the provider accepts the credentials from inside the running container, not just from the host machine. A quick validation is:
+  ```bash
+  docker compose exec mc-user-service sh -lc "cd /app && NODE_PATH=/app/node_modules node - <<'EOF'
+  const nodemailer = require('nodemailer');
+  const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: { user: 'login-smtp', pass: 'smtp-key' }
+  });
+  transporter.verify()
+    .then(() => console.log('SMTP OK'))
+    .catch((err) => { console.error('SMTP ERROR'); console.error(err); process.exit(1); });
+  EOF"
+  ```
+  If this fails with `EAUTH`, the credentials or sender verification are rejected by the SMTP provider.
+- If the provider blocks or whitelists outbound IPs, check the public IP seen by the host (`curl -s https://api.ipify.org`) and ensure that IP is permitted by the SMTP provider. A provider can reject a valid SMTP key because the requesting IP is not allowed, even when the app configuration is otherwise correct. Keep the public IP and provider allowlist in sync when moving between local Docker, VPNs, or a different network.
 - For encounter cards, if the provided card text omits the printed boost-icon value, treat that value as 0. This does not omit or disable any separately specified Boost ability.
 - Default boolean configuration and state to `false`; set a boolean to `true` only when explicitly required by the card text, rules, or user. Do not infer that a later scenario stage is final.
 - For scenario abilities that grant persistent values while a card is in play, verify the granted value is applied to the actual character and stops applying when its source leaves play.

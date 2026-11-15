@@ -83,7 +83,7 @@ El seed solo actualiza las colecciones del catálogo y no modifica los mazos gua
 
 El servicio de usuarios necesita que `FRONTEND_ORIGIN` coincida con el origen del frontend (`http` o `https`). Las cookies se marcan como `Secure` cuando `SESSION_COOKIE_SECURE=true`; los arranques locales establecen ese valor según el protocolo elegido.
 
-Para desarrollo, `start:all:local` inicia MailDev como servidor SMTP local sin Docker. Captura los mensajes —no los envía a direcciones reales— para que puedas abrir los enlaces de activación y recuperación desde http://localhost:8025; SMTP escucha en `127.0.0.1:1025`. `start:all` y `docker:up` usan Mailpit en Docker. Para iniciar MailDev por separado usa `npm run maildev` y detenlo con `Ctrl+C`; al iniciar solo el servicio de usuarios, ejecuta MailDev en otra terminal y configura `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025` y `SMTP_FROM='MC RRR Play <noreply@localhost>'`.
+Para desarrollo, `start:all:local` inicia MailDev como servidor SMTP local sin Docker. Captura los mensajes —no los envía a direcciones reales— para que puedas abrir los enlaces de activación y recuperación desde http://localhost:8025; SMTP escucha en `127.0.0.1:1025`. `start:all` y `docker:up` usan Mailpit en Docker. El paquete compartido `packages/back/mc-email` centraliza el transporte SMTP y las plantillas usadas por `mc-user-service`. Para iniciar MailDev por separado usa `npm run maildev` y detenlo con `Ctrl+C`; al iniciar solo el servicio de usuarios, ejecuta MailDev en otra terminal y configura `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025` y `SMTP_FROM='MC RRR Play <noreply@localhost>'`.
 
 Para usar un proveedor SMTP real, configura sus valores antes de iniciar `start:all`:
 
