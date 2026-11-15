@@ -21,13 +21,24 @@ export default css`
     width: 100%;
   }
 
-  .scenario-board.has-environment-area {
-    grid-template-columns: auto repeat(3, minmax(0, 1fr));
-  }
-
   .schemes {
     display: flex;
-    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .schemes.has-environment-area {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .scheme-cards {
+    display: flex;
+    flex: 0 1 auto;
     flex-direction: column;
     align-items: center;
     min-width: 0;
@@ -51,12 +62,8 @@ export default css`
   }
 
   .scenario-zone-cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    flex: 1 1 auto;
-  }
-
-  .scenario-zone-cards:not(.has-environment-area) {
     grid-template-columns: minmax(0, 1fr) auto;
+    flex: 1 1 auto;
   }
 
   .zone-players {
@@ -68,13 +75,9 @@ export default css`
   .environments {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     min-width: 0;
-    width: 100%;
     gap: 8px;
-  }
-
-  .environments mc-card-list {
-    width: 100%;
   }
 
   .environment-area {
@@ -82,7 +85,6 @@ export default css`
     flex-direction: column;
     align-items: center;
     min-width: 0;
-    width: 100%;
   }
 
   .main-scheme-decks,

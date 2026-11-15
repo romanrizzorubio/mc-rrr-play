@@ -1,4 +1,5 @@
 import {Calc} from '../engine/calc.js';
+import {STATUS_STALWART} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class StunEffect extends Effect {
@@ -37,7 +38,8 @@ export class StunEffect extends Effect {
         };
     }
     filterTarget(card) {
-        return !card.isStunned &&
+        return card.statusAvailable !== STATUS_STALWART &&
+            !card.isStunned &&
             super.filterTarget.apply(this, arguments);
     }
     execute(params) {

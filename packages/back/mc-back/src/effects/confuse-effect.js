@@ -1,8 +1,10 @@
+import {STATUS_STALWART} from 'mc-shared';
 import {Effect} from './effect.js';
 
 export class ConfuseEffect extends Effect {
     filterTarget(card) {
-        return !card.isConfused &&
+        return card.statusAvailable !== STATUS_STALWART &&
+            !card.isConfused &&
             super.filterTarget.apply(this, arguments);
     }
     execute(params) {

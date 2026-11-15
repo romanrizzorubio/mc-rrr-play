@@ -65,6 +65,7 @@ import {
     TRIGGER_THIS_COUNTERS_REMOVED,
     TRIGGER_THIS_DEFEAT,
     TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_THIS_ENGAGES,
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_GET_THWART,
@@ -151,6 +152,7 @@ import {ThisAttackTrigger} from '../../triggers/this-attack-trigger.js';
 import {ThisActivatesTrigger} from '../../triggers/this-activates-trigger.js';
 import {ThisDefeatTrigger} from '../../triggers/this-defeat-trigger.js';
 import {ThisDefeatMinionTrigger} from '../../triggers/this-defeat-minion-trigger.js';
+import {ThisEngagesTrigger} from '../../triggers/this-engages-trigger.js';
 import {ThisEndPlayCardTrigger} from '../../triggers/this-end-play-card-trigger.js';
 import {ThisFlipTrigger} from '../../triggers/this-flip-trigger.js';
 import {ThisGetThwartTrigger} from '../../triggers/this-get-thwart-trigger.js';
@@ -266,6 +268,7 @@ export const TRIGGER_MAP = {
     [TRIGGER_THIS_COUNTERS_REMOVED]: ThisCountersRemovedTrigger,
     [TRIGGER_THIS_DEFEAT]: ThisDefeatTrigger,
     [TRIGGER_THIS_DEFEAT_MINION]: ThisDefeatMinionTrigger,
+    [TRIGGER_THIS_ENGAGES]: ThisEngagesTrigger,
     [TRIGGER_THIS_FLIP]: ThisFlipTrigger,
     [TRIGGER_THIS_GET_THWART]: ThisGetThwartTrigger,
     [TRIGGER_THIS_GET_ATTACK]: ThisGetAttackTrigger,

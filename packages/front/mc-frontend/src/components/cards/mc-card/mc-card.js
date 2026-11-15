@@ -48,6 +48,7 @@ const KEYWORD_LABELS = {
     toughness: 'Dureza',
     quickStrike: 'Ataque veloz',
     surge: 'Oleada',
+    stalwart: 'Firmeza',
     villainous: 'Infame',
     overkill: 'Brutalidad',
     piercing: 'Penetrante',

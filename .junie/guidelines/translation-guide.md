@@ -49,7 +49,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **piercing** | **penetrante** |
 | **restricted** | **restringida** |
 | **mutated** | **mutado** |
-| **Stalwart** | **firmeza** |
+| **Stalwart** | **Firmeza** |
 | **team-up** | **equipo** |
 | **toughness** | **dureza** |
 | **when revealed** | **cuando se muestre esta carta** |

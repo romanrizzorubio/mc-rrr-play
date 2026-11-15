@@ -382,6 +382,10 @@ export class CharacterGameCard extends GameCard {
         return scheme;
     }
     get statusAvailable() {
+        if (this.getKeyword('stalwart')) {
+            return STATUS_STALWART;
+        }
+
         if (this.sides.length) {
             return this.currentSide.card.statusAvailable;
         }
@@ -538,7 +542,8 @@ export class CharacterGameCard extends GameCard {
             this.isMinion);
     }
     confuse() {
-        if (!this.isConfused) {
+        if (this.statusAvailable !== STATUS_STALWART &&
+            !this.isConfused) {
             if (this.isInPlay) {
                 this.confused++;
 
@@ -605,7 +610,8 @@ export class CharacterGameCard extends GameCard {
         }
     }
     stun() {
-        if (!this.isStunned) {
+        if (this.statusAvailable !== STATUS_STALWART &&
+            !this.isStunned) {
             if (this.isInPlay) {
                 this.stunned++;
 

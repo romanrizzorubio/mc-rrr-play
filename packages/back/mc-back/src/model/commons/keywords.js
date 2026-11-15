@@ -35,6 +35,7 @@ export class Keywords extends Engine {
             toughness = false,
             quickStrike = false,
             surge = false,
+            stalwart = false,
             villainous = false,
             overkill = false,
             piercing = false,
@@ -67,6 +68,7 @@ export class Keywords extends Engine {
         this.toughness = toughness;
         this.quickStrike = quickStrike;
         this.surge = surge;
+        this.stalwart = stalwart;
         this.villainous = villainous;
         this.overkill = overkill;
         this.piercing = piercing;
