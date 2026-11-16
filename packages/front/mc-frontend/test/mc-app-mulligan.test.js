@@ -3,7 +3,11 @@ import {describe, test} from 'node:test';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'vite';
 import {Dialog} from '../src/components/api/dialog.js';
-import {DIALOG_REVEAL_CARDS, PLACE_DISCARD_PILE} from 'mc-shared';
+import {
+    DIALOG_REVEAL_CARDS,
+    DIALOG_SELECT_TARGET,
+    PLACE_DISCARD_PILE,
+} from 'mc-shared';
 
 globalThis.HTMLElement ??= class {};
 const elements = new Map();
@@ -164,6 +168,75 @@ describe('app match controls and mulligan lifecycle', () => {
             showToAll: true,
         });
         assert.equal(app.dialogBoardPlayerId, '');
+    });
+
+    test('resolves a deck target dialog from the selectable deck on the table', async () => {
+        const app = createStatusApp();
+        const encounterDeck = {
+            id: 'scenario-deck',
+            name: 'Mazo de Encuentros',
+            isScenarioDeck: true,
+            cardCount: 8,
+        };
+        const playerDeck = {
+            id: 'player-deck-local',
+            name: 'Mazo de jugador',
+            isPlayerDeck: true,
+            cardCount: 12,
+        };
+        let response;
+
+        app.openDialog({
+            dialogType: DIALOG_SELECT_TARGET,
+            targetPlayer: 'local',
+            targetUserId: 'local',
+            requestId: 'deck-target',
+            data: {cards: [encounterDeck, playerDeck]},
+            callback: async selected => {
+                response = selected;
+            },
+        });
+
+        assert.deepEqual(app.deckTargetDialogSelection, {
+            targetIds: [encounterDeck.id, playerDeck.id],
+        });
+        assert.equal(getBinding(app.renderDialog().values[0], 'open'), false);
+
+        await app.handleDeckTargetDialogSelect({
+            detail: {deckId: playerDeck.id},
+            stopPropagation() {},
+        });
+
+        assert.deepEqual(response, {selected: playerDeck});
+        assert.equal(app.dialog, null);
+    });
+
+    test('keeps non-simple deck target dialogs in the modal', () => {
+        const deck = {
+            id: 'scenario-deck',
+            isScenarioDeck: true,
+        };
+        const cases = [
+            {data: {cards: [deck, {id: 'villain'}]}},
+            {data: {cards: [deck], multiSelect: true}},
+            {data: {cards: [deck], groups: [{}]}},
+            {data: {cards: [deck]}, showCancel: true},
+            {data: {cards: [deck]}, readOnly: true},
+            {data: {cards: [deck]}, callback: undefined},
+        ];
+
+        for (const overrides of cases) {
+            const app = createStatusApp({
+                dialog: {
+                    dialogType: DIALOG_SELECT_TARGET,
+                    callback: () => {},
+                    data: {cards: [deck]},
+                    ...overrides,
+                },
+            });
+
+            assert.equal(app.deckTargetDialogSelection, null);
+        }
     });
 
     test('hides a pending dialog for table consultation and restores the current queued choice', () => {

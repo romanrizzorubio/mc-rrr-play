@@ -12,11 +12,15 @@ import {
     CALC_PRINTED_RESOURCES,
     EFFECT_ADD_ADDITIONAL_COST,
     EFFECT_CHAINED,
+    EFFECT_CHOOSE,
+    EFFECT_DO_IF,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_RANDOM,
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
     EFFECT_EXHAUST,
+    EFFECT_HEAL,
     EFFECT_LASTING,
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
@@ -39,6 +43,8 @@ import {
     TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_HERO,
+    TARGET_MAIN_SCHEME,
     TARGET_PHASE,
     TARGET_TRIGGERED_CARD,
     TARGET_THIS,
@@ -50,7 +56,12 @@ import {
     TRAIT_AVENGER,
     TRAIT_DROID,
     TRAIT_GIANT,
+    TRAIT_ASGARD,
+    TRAIT_GUARDIAN,
+    TRAIT_MYSTIC,
     TRAIT_SHIELD,
+    TRIGGER_THIS_DEFEAT_MINION,
+    TRIGGER_THIS_THWARTS,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_PLAY_CARD,
@@ -888,6 +899,228 @@ export default [
                     'superhero.traits': TRAIT_AVENGER,
                 },
                 'countsTowardAllyLimit': false,
+            },
+        },
+    },
+    {
+        '_id': 'leadership-adam-warlock',
+        'aspect': 'leadership',
+        'order': 100,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Adam Warlock',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/17011.png',
+                'traits': [TRAIT_AERIAL, TRAIT_MYSTIC],
+                'unique': true,
+                'cost': 3,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 1,
+                'thwart': 1,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': [
+                                TRIGGER_THIS_ATTACK,
+                                TRIGGER_THIS_THWARTS,
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DISCARD_RANDOM,
+                                            'params': {
+                                                'target': TARGET_YOU,
+                                                'count': 1,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.cards.0.resources': RESOURCE_PHYSICAL,
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_REMOVE_THREAT,
+                                                    'params': {
+                                                        'target': TARGET_SCHEME,
+                                                        'threat': 3,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.cards.0.resources': RESOURCE_ENERGY,
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_HEAL,
+                                                    'params': {
+                                                        'target': TARGET_HERO,
+                                                        'condition': {
+                                                            'isHero': true,
+                                                        },
+                                                        'damage': 3,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.cards.0.resources': RESOURCE_MENTAL,
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_DEAL_DAMAGE,
+                                                    'params': {
+                                                        'target': TARGET_ENEMY,
+                                                        'damage': 3,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.0.cards.0.resources': RESOURCE_WILD,
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_CHOOSE,
+                                                    'params': {
+                                                        'target': TARGET_YOU,
+                                                        'options': [
+                                                            {
+                                                                'type': EFFECT_REMOVE_THREAT,
+                                                                'params': {
+                                                                    'title': 'Quita 3 de Amenaza de un Plan',
+                                                                    'target': TARGET_SCHEME,
+                                                                    'threat': 3,
+                                                                },
+                                                            },
+                                                            {
+                                                                'type': EFFECT_HEAL,
+                                                                'params': {
+                                                                    'title': 'Cura 3 de Daño a un Superhéroe',
+                                                                    'target': TARGET_HERO,
+                                                                    'condition': {
+                                                                        'isHero': true,
+                                                                    },
+                                                                    'damage': 3,
+                                                                },
+                                                            },
+                                                            {
+                                                                'type': EFFECT_DEAL_DAMAGE,
+                                                                'params': {
+                                                                    'title': 'Inflige 3 de Daño a un enemigo',
+                                                                    'target': TARGET_ENEMY,
+                                                                    'damage': 3,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-bill-rayos-beta',
+        'aspect': 'leadership',
+        'order': 101,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Bill Rayos Beta',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/17012.png',
+                'traits': [TRAIT_ASGARD],
+                'unique': true,
+                'cost': 5,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 3,
+                'thwart': 1,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 4,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_THIS_DEFEAT_MINION,
+                            'condition': {
+                                'effect.isAttack': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_REMOVE_THREAT,
+                                'params': {
+                                    'target': TARGET_MAIN_SCHEME,
+                                    'threat': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-yondu',
+        'aspect': 'leadership',
+        'order': 102,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Yondu',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/allies/17013.png',
+                'traits': [TRAIT_GUARDIAN],
+                'unique': true,
+                'cost': 4,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attack': 1,
+                'thwart': 2,
+                'attackConsequential': 0,
+                'thwartConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_THIS_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'modify': {
+                                        'keywords': {
+                                            'ranged': true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
             },
         },
     },

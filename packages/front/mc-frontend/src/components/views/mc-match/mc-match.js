@@ -157,6 +157,10 @@ export class MatchComponent extends LitElement {
 
         return this.match?.currentTurnPlayer === playerId;
     }
+    isDeckTargetSelection(event) {
+        return event?.type === 'deck-target-select' &&
+            Boolean(this.deckSelectionTargetIds?.includes(event.detail?.deckId));
+    }
     get hasRoomForSecondaryBoard() {
         return globalThis.window?.matchMedia ?
             globalThis.window.matchMedia('(min-width: 1501px)').matches :
@@ -244,7 +248,8 @@ export class MatchComponent extends LitElement {
             this.getPlayerIdentifier(candidate) === playerId
         ) || (this.getPlayerIdentifier(player) === playerId ? player : null);
 
-        if (!this.isPlayerInteractive(contextPlayer)) {
+        if (!this.isPlayerInteractive(contextPlayer) &&
+            !this.isDeckTargetSelection(event)) {
             if (type === 'change-menu' &&
                 detail.card === contextPlayer?.superhero) {
                 const allowedOptionIds = new Set(
@@ -395,7 +400,8 @@ export class MatchComponent extends LitElement {
             this.player :
             null);
 
-        if (!this.isPlayerInteractive(player)) {
+        if (!this.isPlayerInteractive(player) &&
+            !this.isDeckTargetSelection(event)) {
             if (this.tableConsultationMode && event.type === 'change-menu') {
                 const {card, menuOptions = []} = event.detail || {};
                 const canViewTuckedCards = menuOptions.some(option =>
@@ -984,6 +990,26 @@ export class MatchComponent extends LitElement {
             ></mc-hand>
         ` : '';
     }
+    renderOtherPlayerExtraDecks(player) {
+        return Object.values(player.extraDecks || {}).map(deck => html`
+            <mc-deck
+                .cards="${deck.cards || []}"
+                .discard="${deck.discard || []}"
+                .topCard="${deck.topCard}"
+                .topCardFaceUp="${deck.topCardFaceUp === true}"
+                .deckName="${deck.name}"
+                .deckNameSpansPiles="${true}"
+                .showDiscard="${false}"
+                .targetId="${deck.id || ''}"
+                .targetSelectable="${this.isDeckSelectable(deck)}"
+                .type="${DECK_TYPES.PLAYER}"
+                .dragActivation="${this.dragActivation}"
+                .dragPlayCard="${this.dragPlayCard}"
+                .dragResourcePayment="${this.dragResourcePayment}"
+                deck-name-position="top"
+            ></mc-deck>
+        `);
+    }
     renderOtherPlayerDiscards() {
         const {match, player} = this;
         const selectingDeck = this.deckSelectionTargetIds.length > 0;
@@ -1021,6 +1047,7 @@ export class MatchComponent extends LitElement {
                             .dragPlayCard="${this.dragPlayCard}"
                             discard-label="Mazo de ${otherPlayer.name}"
                         ></mc-deck>
+                        ${this.renderOtherPlayerExtraDecks(otherPlayer)}
                     </div>
                 `)}
             </div>

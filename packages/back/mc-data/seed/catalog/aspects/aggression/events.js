@@ -26,6 +26,7 @@ import {
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
+    TARGET_ALL_ENEMIES,
     TARGET_ENEMY,
     TARGET_ENCOUNTER_DECK,
     TARGET_EFFECT,
@@ -919,6 +920,65 @@ export default [
                                 'params': {
                                     'target': TARGET_MAIN_SCHEME,
                                     'threat': 3,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'aggression-arrojarse-en-picado',
+        'aspect': CLASSIFICATION_AGGRESSION,
+        'order': 17028,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Arrojarse en picado',
+                'set': CLASSIFICATION_AGGRESSION,
+                'image': 'aspect/aggression/events/17028.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_ATTACK,
+                ],
+                'cost': 4,
+                'resources': [
+                    RESOURCE_PHYSICAL,
+                ],
+                'classification': CLASSIFICATION_AGGRESSION,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AERIAL,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_ATTACK,
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ENEMY,
+                                                'damage': 7,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_ALL_ENEMIES,
+                                                'damage': 1,
+                                                'condition': {
+                                                    'exclude': 'effects.0.selectedTarget',
+                                                },
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

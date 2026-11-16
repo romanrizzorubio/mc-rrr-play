@@ -17,9 +17,13 @@ export const checkCondition = (obj, condition) => {
             value &&
             typeof value === 'object' &&
             !Array.isArray(value) &&
-            Object.keys(value).length === 1 &&
-            Object.prototype.hasOwnProperty.call(value, 'every')) {
-            return param.every(item => checkCondition(item, value.every));
+            Object.keys(value).length === 1) {
+            if (Object.prototype.hasOwnProperty.call(value, 'every')) {
+                return param.every(item => checkCondition(item, value.every));
+            }
+            if (Object.prototype.hasOwnProperty.call(value, 'some')) {
+                return param.some(item => checkCondition(item, value.some));
+            }
         }
 
         if (value &&
@@ -28,14 +32,17 @@ export const checkCondition = (obj, condition) => {
             typeof value.path === 'string' &&
             typeof value.operator === 'string') {
             const comparedValue = path(obj, value.path);
+            if (value.operator === 'eq') {
+                return param !== undefined &&
+                    comparedValue !== undefined &&
+                    param === comparedValue;
+            }
             if (!Number.isFinite(param) ||
                 !Number.isFinite(comparedValue)) {
                 return false;
             }
 
             switch (value.operator) {
-                case 'eq':
-                    return param === comparedValue;
                 case 'gt':
                     return param > comparedValue;
                 case 'gte':

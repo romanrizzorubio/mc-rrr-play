@@ -8,10 +8,13 @@ import {
     ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     ABILITY_RESOURCE,
+    CALC_SUM,
     CARD_TYPE_UPGRADE,
     EFFECT_CHAINED,
     EFFECT_ADD_TRAIT,
     EFFECT_CANCEL_BOOST_ABILITY,
+    EFFECT_COUNT_BOOST_ICONS,
+    EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
     EFFECT_DISCARD_FROM_DECK,
     EFFECT_DRAW_CARD,
@@ -28,7 +31,9 @@ import {
     EFFECT_SIMULTANEOUS,
     EFFECT_REMOVE_COUNTER,
     EFFECT_READY,
+    EFFECT_RESOLVE_CARDS_IN_ORDER,
     EFFECT_SPEND,
+    LABEL_ATTACK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -36,8 +41,11 @@ import {
     TARGET_ATTACHED,
     TARGET_CARD,
     TARGET_ANY_PLAYER,
+    TARGET_ENCOUNTER_DECK,
+    TARGET_ENEMY,
     TARGET_EFFECT,
     TARGET_FRIENDLY_CHARACTER,
+    TARGET_PARENT,
     TARGET_PLAYER,
     TARGET_PHASE,
     TARGET_THIS,
@@ -56,6 +64,7 @@ import {
     TRAIT_TACTIC,
     TRAIT_TECH,
     TRAIT_TITLE,
+    TRAIT_WEAPON,
     TRAIT_MYSTIC,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_BOOST_REVEALED,
@@ -810,6 +819,78 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'damage': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-granada-de-pulsos',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 17023,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Granada de pulsos',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/upgrades/17023.png',
+                'traits': [TRAIT_WEAPON],
+                'cost': 2,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_BASIC,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [LABEL_ATTACK],
+                            'arrow': {
+                                'type': EFFECT_DISCARD_GAME,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_DISCARD_FROM_DECK,
+                                            'params': {
+                                                'target': TARGET_ENCOUNTER_DECK,
+                                                'count': 2,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_RESOLVE_CARDS_IN_ORDER,
+                                            'params': {
+                                                'cards': 'effects.0.cards',
+                                                'chooseOrder': false,
+                                                'effectDefinition': {
+                                                    'type': EFFECT_COUNT_BOOST_ICONS,
+                                                    'params': {
+                                                        'card': 'card',
+                                                        'showDialog': false,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DEAL_DAMAGE,
+                                            'params': {
+                                                'target': TARGET_PARENT,
+                                                'isAttack': true,
+                                                'paramsCalc': {
+                                                    'target': 'effects.1.results',
+                                                    'formula': CALC_SUM,
+                                                    'property': 'value',
+                                                },
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

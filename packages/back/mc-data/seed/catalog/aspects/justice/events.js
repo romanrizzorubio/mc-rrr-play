@@ -8,6 +8,7 @@ import {
     CARD_TYPE_EVENT,
     CALC_STAGE,
     EFFECT_CHAINED,
+    EFFECT_ASSIGN_THREAT,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
@@ -24,12 +25,14 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_ALL_SCHEMES,
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
     TARGET_YOU,
     TARGET_VILLAIN,
     TRAIT_AVENGER,
+    TRAIT_AERIAL,
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
@@ -659,5 +662,47 @@ export default [
                 ]
             }
         }
+    },
+    {
+        '_id': 'justice-vuelo-agil',
+        'aspect': CLASSIFICATION_JUSTICE,
+        'order': 17029,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Vuelo ágil',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/17029.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_THWART,
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL,
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AERIAL,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART,
+                            ],
+                            'effect': {
+                                'type': EFFECT_ASSIGN_THREAT,
+                                'params': {
+                                    'target': TARGET_ALL_SCHEMES,
+                                    'threat': 5,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
     }
 ];

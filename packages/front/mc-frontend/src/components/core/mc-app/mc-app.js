@@ -32,6 +32,7 @@ import {
 import {UserSessionApi} from '../../../utils/user-session-api.js';
 import {
     DIALOG_REVEAL_CARDS,
+    DIALOG_SELECT_TARGET,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
@@ -866,7 +867,9 @@ class McApp extends router(navigator(outlet(LitElement))) {
         this.handleTableViewDialogClose();
     }
     handleCloseDialog() {
-        if (this.dialog && !this.tableConsultationMode) {
+        if (this.dialog &&
+            !this.tableConsultationMode &&
+            !this.deckTargetDialogSelection) {
             this.shadowRoot.getElementById('dialog')?.show();
         }
     }
@@ -909,6 +912,19 @@ class McApp extends router(navigator(outlet(LitElement))) {
         }
 
         this.finishDialog(currentDialog);
+    }
+    async handleDeckTargetDialogSelect(event) {
+        event.stopPropagation?.();
+        const selection = this.deckTargetDialogSelection;
+        const selected = this.dialog?.data?.cards?.find(target =>
+            target.id === event.detail?.deckId
+        );
+
+        if (!selection || !selected) {
+            return;
+        }
+
+        await this.handleDialogOk({detail: {selected}});
     }
     handleCommunicationError(e) {
         this.showAlert(e.detail.message);
@@ -987,6 +1003,36 @@ class McApp extends router(navigator(outlet(LitElement))) {
         return player && this.ownsMatchPlayer(identifier, this.dialog?.targetUserId) ?
             player.id || player.userId || player.name || '' :
             '';
+    }
+    get deckTargetDialogSelection() {
+        const dialog = this.dialog;
+        const targets = dialog?.data?.cards;
+
+        if (
+            !dialog ||
+            dialog.dialogType !== DIALOG_SELECT_TARGET ||
+            dialog.readOnly ||
+            typeof dialog.callback !== 'function' ||
+            dialog.showCancel ||
+            dialog.data?.multiSelect ||
+            dialog.data?.groups?.length ||
+            this.tableConsultationMode ||
+            !Array.isArray(targets) ||
+            !targets.length ||
+            !targets.every(target =>
+                typeof target?.id === 'string' &&
+                (
+                    target.isPlayerDeck === true ||
+                    target.isPlayerExtraDeck === true ||
+                    target.isScenarioDeck === true ||
+                    target.isScenarioExtraDeck === true
+                )
+            )
+        ) {
+            return null;
+        }
+
+        return {targetIds: targets.map(({id}) => id)};
     }
     ownsMatchPlayer(identifier, targetUserId) {
         if (!this.user?.id) {
@@ -1393,7 +1439,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
     renderDialog() {
         return html`
             ${this.renderDialogElement(
-                this.dialog,
+                this.deckTargetDialogSelection ? null : this.dialog,
                 'dialog',
                 !this.tableConsultationMode,
             )}
@@ -1550,6 +1596,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
                                       '' :
                                       this.dialogBoardPlayerId}"
                                   .tableConsultationMode="${this.tableConsultationMode}"
+                                  .deckTargetDialogIds="${this.deckTargetDialogSelection?.targetIds || []}"
+                                  .deckTargetDialogPlayerId="${this.dialogBoardPlayerId || this.player || ''}"
                                   player="${player}"
                                   @select-controlled-player="${this.handleSelectControlledPlayer.bind(this)}"
                                   .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
@@ -1562,6 +1610,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                                   @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
                                   @view-player-hand="${this.handleViewPlayerHand.bind(this)}"
                                   @communication-error="${this.handleCommunicationError.bind(this)}"
+                                  @dialog-deck-target-select="${this.handleDeckTargetDialogSelect.bind(this)}"
                               ></mc-match-page>
                           `)}
                       </div>

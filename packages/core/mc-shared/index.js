@@ -12,6 +12,7 @@ export * from './constants/effect-categories.js';
 export * from './constants/labels.js';
 export * from './constants/match.js';
 export * from './constants/places.js';
+export * from './constants/phases.js';
 export * from './constants/priorities.js';
 export * from './constants/resources.js';
 export * from './constants/resource-payment.js';

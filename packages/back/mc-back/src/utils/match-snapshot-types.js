@@ -1,5 +1,6 @@
 import {readdir} from 'node:fs/promises';
 
+import {PHASE_PLAYERS} from 'mc-shared';
 import {Ability} from '../abilities/core/ability.js';
 import {Arrow} from '../abilities/core/arrow.js';
 import {AttackBasicAbility} from '../abilities/basic/attack-basic-ability.js';
@@ -156,7 +157,7 @@ registerSnapshotType(Match, {
         });
 
         if (typeof match.turnStartProcessed !== 'boolean') {
-            match.turnStartProcessed = match.phase === 'players' &&
+            match.turnStartProcessed = match.phase === PHASE_PLAYERS &&
                 Boolean(match.currentTurnPlayer);
         }
     },

@@ -2,6 +2,7 @@ import {Effect} from './effect.js';
 import {getAttachmentHost} from '../utils/attachment-utils.js';
 import {checkCondition} from '../engine/utils.js';
 import {splitTargetCondition} from '../utils/target-condition-utils.js';
+import {GetTraitsEffect} from './get-traits-effect.js';
 
 export class AttachEffect extends Effect {
     constructor({
@@ -18,7 +19,7 @@ export class AttachEffect extends Effect {
         this.usingFallbackTarget = false;
     }
     async getValidTarget(params) {
-        const targets = await super.getValidTarget(params);
+        const targets = await this.getValidTargets(params);
         if (targets.length || !this.fallbackTarget || this.usingFallbackTarget) {
             return targets;
         }
@@ -28,7 +29,43 @@ export class AttachEffect extends Effect {
         this.condition = this.fallbackCondition;
         this.validTarget.condition = this.fallbackCondition;
 
-        return super.getValidTarget(params);
+        return this.getValidTargets(params);
+    }
+    async getValidTargets(params) {
+        const condition = this.condition;
+        if (!condition || Array.isArray(condition) ||
+            !Object.hasOwn(condition, 'traits')) {
+            return super.getValidTarget(params);
+        }
+
+        const conditionWithoutTraits = {...condition};
+        const requiredTraits = Array.isArray(conditionWithoutTraits.traits) ?
+            conditionWithoutTraits.traits :
+            [conditionWithoutTraits.traits];
+        delete conditionWithoutTraits.traits;
+        this.condition = conditionWithoutTraits;
+        this.validTarget.condition = conditionWithoutTraits;
+
+        try {
+            const targets = await super.getValidTarget(params);
+
+            return this.promisesSequentialFilter(targets.flat(Infinity), async target => {
+                const traitsEffect = new GetTraitsEffect({
+                    selectedTarget: target.currentSide ?? target,
+                    match: this.match,
+                });
+                await traitsEffect.runEffect({
+                    ...params,
+                    player: target.controller ?? params.player,
+                });
+
+                return requiredTraits.some(trait =>
+                    traitsEffect.traits.includes(trait));
+            });
+        } finally {
+            this.condition = condition;
+            this.validTarget.condition = condition;
+        }
     }
     async selectTarget(params) {
         if (!(await this.getValidTarget(params)).length) {

@@ -47,6 +47,7 @@ export const TRAIT_MASTERS_OF_EVIL = 'masters of evil';
 export const TRAIT_MERCENARY = 'mercenary';
 export const TRAIT_MUTATED = 'mutated';
 export const TRAIT_MYSTIC = 'mystic';
+export const TRAIT_NOVA_CORPS = 'nova corps';
 export const TRAIT_OLYMPUS = 'olympus';
 export const TRAIT_OUTLAW = 'outlaw';
 export const TRAIT_PERSONA = 'persona';

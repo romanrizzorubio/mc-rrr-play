@@ -1,5 +1,6 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
+    PHASE_VILLAIN,
     PRIORITY_CONSTANT,
     TARGET_PLAYER,
     TARGET_SCENARIO,
@@ -45,11 +46,13 @@ export class RevealEncounterEffect extends Effect {
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
         this.perilResolution = undefined;
+        this.isFirstTreacheryReveal = false;
     }
     resetResolutionData() {
         super.resetResolutionData();
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
+        this.isFirstTreacheryReveal = false;
     }
     getCard(params) {
         const source = typeof this.cardSource === 'string' ?
@@ -182,6 +185,18 @@ export class RevealEncounterEffect extends Effect {
                 },
             }, player);
         }
+
+        if (this.match.phase === PHASE_VILLAIN &&
+            selectedTarget.isTreachery &&
+            player?.isPlayer) {
+            const playersWhoRevealed =
+                this.match.playersWhoRevealedTreacheryThisVillainPhase ??=
+                    new Set();
+            const playerId = player.id ?? player.userId ?? player.name;
+            this.isFirstTreacheryReveal =
+                !playersWhoRevealed.has(playerId);
+            playersWhoRevealed.add(playerId);
+        }
     }
     async reveal(params) {
         const {selectedTarget} = this;
@@ -225,6 +240,9 @@ export class RevealEncounterEffect extends Effect {
         return {
             ...super.getTriggersParams(params),
             card: this.selectedTarget,
+            reveal: this,
+            revealPlayer: params.player,
+            isFirstTreacheryReveal: this.isFirstTreacheryReveal,
         };
     }
     async execute(params) {

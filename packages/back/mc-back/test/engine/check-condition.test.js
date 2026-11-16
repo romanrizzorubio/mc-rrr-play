@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
-import {TRAIT_AVENGER} from 'mc-shared';
+import {
+    CARD_TYPE_ALLY,
+    CARD_TYPE_EVENT,
+    TRAIT_AVENGER,
+    TRAIT_TECH,
+    TRAIT_WEAPON,
+} from 'mc-shared';
 import {checkCondition, path} from '../../src/engine/utils.js';
 
 describe('checkCondition', () => {
@@ -30,6 +36,37 @@ describe('checkCondition', () => {
                     {traits: ['Soldado']}
                 ]
             }
+        }, condition), false);
+    });
+
+    test('some conditions require at least one array item to match', () => {
+        const condition = {
+            'character.attached': {
+                'some': {
+                    'isUpgrade': true,
+                    'traits': TRAIT_WEAPON,
+                },
+            },
+        };
+
+        assert.equal(checkCondition({
+            character: {
+                attached: [
+                    {isUpgrade: false, traits: [TRAIT_WEAPON]},
+                    {isUpgrade: true, traits: [TRAIT_WEAPON]},
+                ],
+            },
+        }, condition), true);
+        assert.equal(checkCondition({
+            character: {
+                attached: [
+                    {isUpgrade: true, traits: [TRAIT_TECH]},
+                    {isUpgrade: false, traits: [TRAIT_WEAPON]},
+                ],
+            },
+        }, condition), false);
+        assert.equal(checkCondition({
+            character: {attached: []},
         }, condition), false);
     });
 
@@ -108,6 +145,28 @@ describe('checkCondition', () => {
                 path: 'hero.initialLife',
             },
         }), true);
+    });
+
+    test('conditions compare string values from separate runtime paths', () => {
+        const condition = {
+            'discardedCard.type': {
+                operator: 'eq',
+                path: 'namedCardType',
+            },
+        };
+
+        assert.equal(checkCondition({
+            discardedCard: {type: CARD_TYPE_ALLY},
+            namedCardType: CARD_TYPE_ALLY,
+        }, condition), true);
+        assert.equal(checkCondition({
+            discardedCard: {type: CARD_TYPE_EVENT},
+            namedCardType: CARD_TYPE_ALLY,
+        }, condition), false);
+        assert.equal(checkCondition({
+            discardedCard: {},
+            namedCardType: undefined,
+        }, condition), false);
     });
 
     test('paths expand wildcards over arrays and keep defined values', () => {

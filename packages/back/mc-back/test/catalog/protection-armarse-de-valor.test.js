@@ -139,12 +139,12 @@ describe('Armarse de valor', () => {
         player.hand.cards.push(gameCard);
 
         assert.equal(
-            PlayerCard.prototype.canPlay.call(gameCard.card, {gameCard, player}),
+            await PlayerCard.prototype.canPlay.call(gameCard.card, {gameCard, player}),
             true
         );
         player.superhero.traits = [];
         assert.equal(
-            PlayerCard.prototype.canPlay.call(gameCard.card, {gameCard, player}),
+            await PlayerCard.prototype.canPlay.call(gameCard.card, {gameCard, player}),
             false
         );
         const [ability] = gameCard.abilities;

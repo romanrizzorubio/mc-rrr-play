@@ -17,11 +17,11 @@ export class ModifyHandSizeEffect extends Effect {
         this.characterTarget = characterTarget;
         this.count = count;
     }
-    execute(params) {
+    async execute(params) {
         const {effect} = params;
         const {count, paramsCalc} = this;
         const modifyHandSize = paramsCalc ?
-            this.calculate(params) :
+            await this.calculate(params) :
             count;
 
         if (!(effect instanceof GetHandSizeEffect)) {

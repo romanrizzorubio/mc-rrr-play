@@ -36,6 +36,7 @@ const TRAIT_LABELS = {
     metal: 'Metal',
     mutated: 'Mutado',
     mystic: 'Místico',
+    'nova corps': 'Cuerpo Nova',
     olympus: 'Olimpo',
     outlaw: 'Proscrito',
     persona: 'Individuo',

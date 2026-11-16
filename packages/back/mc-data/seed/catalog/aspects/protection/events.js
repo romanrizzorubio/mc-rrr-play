@@ -23,6 +23,7 @@ import {
     EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_TOUGH,
     LABEL_ATTACK,
@@ -42,9 +43,11 @@ import {
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
     TARGET_VILLAIN,
+    TRAIT_AERIAL,
     TRAIT_ATTACK,
     TRAIT_AVENGER,
     TRAIT_DEFENSE,
+    TRAIT_SKILL,
     TRAIT_TACTIC,
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ENEMY_ATTACKS_YOU,
@@ -753,6 +756,58 @@ export default [
                                             'damage': 2,
                                         },
                                     },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-vigilancia-constante',
+        'aspect': CLASSIFICATION_PROTECTION,
+        'order': 17030,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Vigilancia constante',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/events/17030.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_SKILL,
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_MENTAL,
+                ],
+                'classification': CLASSIFICATION_PROTECTION,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AERIAL,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_READY,
+                                            'params': {
+                                                'target': TARGET_YOUR_HERO,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_REMOVE_THREAT,
+                                            'params': {
+                                                'target': TARGET_MAIN_SCHEME,
+                                                'threat': 2,
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

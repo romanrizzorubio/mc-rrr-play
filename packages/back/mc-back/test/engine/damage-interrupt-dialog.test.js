@@ -304,6 +304,44 @@ describe('damage interrupt dialog', () => {
         );
     });
 
+    test('a self-discarding damage interrupt handles its missing controller after resolution', async () => {
+        const superhero = {isSuperhero: true};
+        const player = {
+            isPlayer: true,
+            superhero,
+        };
+        const card = {
+            controller: player,
+            owner: player,
+        };
+        const ability = {
+            effect: {
+                isChoose: false,
+                isChooseAbility: false,
+            },
+            async resolveAbility() {
+                card.controller = undefined;
+                this.resolved = true;
+            },
+        };
+        const trigger = new CharacterWouldTakeDamageTrigger({
+            ability,
+            card,
+            target: TARGET_YOUR_SUPERHERO,
+            trigger: TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+        });
+
+        await trigger.runTrigger({
+            effect: {
+                selectedTarget: superhero,
+                takenDamage: 1,
+            },
+            player,
+        });
+
+        assert.equal(trigger.keepTriggering, false);
+    });
+
     test('Energy Barrier pays its interrupt cost without a pre-play confirmation dialog', async () => {
         const barrier = protectionUpgrades.find(({_id}) =>
             _id === 'protection-barrera-de-energia');

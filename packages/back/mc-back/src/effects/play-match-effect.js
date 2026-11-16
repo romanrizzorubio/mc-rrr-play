@@ -1,3 +1,4 @@
+import {PHASE_PLAYERS} from 'mc-shared';
 import {ChangeRoundEffect} from './change-round-effect.js';
 import {Effect} from './effect.js';
 import {PlayRoundEffect} from './play-round-effect.js';
@@ -22,7 +23,7 @@ export class PlayMatchEffect extends Effect {
         while (match.playing) {
             if (match.phase === 'round-complete') {
                 await changeRoundEffect.runEffect(params);
-                match.phase = 'players';
+                match.phase = PHASE_PLAYERS;
                 await match.persist();
                 continue;
             }
@@ -38,7 +39,7 @@ export class PlayMatchEffect extends Effect {
             }
 
             await changeRoundEffect.runEffect(params);
-            match.phase = 'players';
+            match.phase = PHASE_PLAYERS;
             await match.persist();
         }
     }

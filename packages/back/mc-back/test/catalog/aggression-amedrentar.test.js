@@ -68,11 +68,11 @@ describe('Amedrentar', () => {
         superhero.selectedSide = 1;
         const playerCard = new PlayerCard(entry.card.params);
         const player = {superhero};
-        assert.equal(playerCard.canPlay({player}), false);
+        assert.equal(await playerCard.canPlay({player}), false);
         superhero.extraTraits.push(TRAIT_AVENGER);
         assert.equal(superhero.currentSide.traits.includes(TRAIT_AVENGER), false);
         assert.ok(superhero.traits.includes(TRAIT_AVENGER));
-        assert.equal(playerCard.canPlay({player}), true);
+        assert.equal(await playerCard.canPlay({player}), true);
 
         const [abilityConfig] = entry.card.params.abilities;
         assert.equal(abilityConfig.type, ABILITY_HERO_ACTION);

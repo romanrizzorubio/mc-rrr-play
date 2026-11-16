@@ -191,6 +191,8 @@ export class McPlayer extends LitElement {
                         .knownCards="${deck.knownCards || []}"
                         .deckName="${deck.name}"
                         .size="${this.compactDecks ? 's' : 'm'}"
+                        .targetId="${deck.id || ''}"
+                        .targetSelectable="${this.isDeckSelectable(deck)}"
                         .deckNameSpansPiles="${true}"
                         .dragActivation="${this.dragActivation}"
                         .dragPlayCard="${this.dragPlayCard}"

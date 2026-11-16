@@ -118,7 +118,9 @@ export async function resolveToughDamage({
     }
 
     return {
-        damage: Array.isArray(damage) ? damages : damages[0],
+        damage: Array.isArray(damage) || targets.length > 1 ?
+            damages :
+            damages[0],
         hasDamage,
     };
 }
