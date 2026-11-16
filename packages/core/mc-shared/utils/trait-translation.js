@@ -23,6 +23,7 @@ const TRAIT_LABELS = {
     experimental: 'Experimental',
     genius: 'Genio',
     giant: 'Gigante',
+    ghost: 'Fantasma',
     goblin: 'Duende',
     guardian: 'Guardián',
     hydra: 'Hydra',

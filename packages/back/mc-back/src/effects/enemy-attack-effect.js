@@ -1,4 +1,5 @@
 import {
+    DAMAGE_TYPE_INDIRECT,
     DIALOG_DEFENSE,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
@@ -20,6 +21,7 @@ import {
 
 import {Calc} from '../engine/calc.js';
 import {checkCondition, path} from '../engine/utils.js';
+import {AssignDamageEffect} from './assign-damage-effect.js';
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {AttackEffect} from './attack-effect.js';
@@ -63,7 +65,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     resetForResolution() {
         super.resetForResolution();
-        this.resetAttackKeywordData();
+        this.resetAttackModifierData();
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
         this.defender = null;
@@ -837,27 +839,53 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
         this.attacked = isMultiTarget ? attackedTargets : attackedTargets[0];
 
-        const dealDamageEffect = new DealDamageEffect({
-            character,
-            damage: isMultiTarget ? damages : damages[0],
-            activation: this.activation,
-            isAttack: true,
-            preventDamage: this.preventDamage,
-            match: this.match,
-            selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
-            ability: this.ability,
-        });
+        const dealDamageEffect = this.damageType === DAMAGE_TYPE_INDIRECT ?
+            new AssignDamageEffect({
+                ability: this.ability,
+                activation: this.activation,
+                attackKeywordSource: this,
+                character,
+                damage: isMultiTarget ?
+                    damages.map((damage, index) =>
+                        Math.max(0, damage -
+                            (Array.isArray(this.preventDamage) ?
+                                this.preventDamage[index] ?? 0 :
+                                this.preventDamage))) :
+                    Math.max(0, damages[0] -
+                        (Array.isArray(this.preventDamage) ?
+                            this.preventDamage[0] ?? 0 :
+                            this.preventDamage)),
+                isAttack: true,
+                match: this.match,
+                selectedTarget: attackedTargets.map(target =>
+                    this.getTargetPlayer(target)),
+            }) :
+            new DealDamageEffect({
+                character,
+                damage: isMultiTarget ? damages : damages[0],
+                activation: this.activation,
+                isAttack: true,
+                preventDamage: this.preventDamage,
+                match: this.match,
+                selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
+                ability: this.ability,
+            });
 
         await dealDamageEffect.runEffect(defenseParams);
         if (!this.canContinueActivation()) {
             return;
         }
 
-        this.activation.takenDamage = dealDamageEffect.takenDamage;
-        if (isMultiTarget) {
-            const takenDamage = Array.isArray(dealDamageEffect.takenDamage) ?
+        const takenDamage = this.damageType === DAMAGE_TYPE_INDIRECT ?
+            this.attackedCharacters.map(target =>
+                dealDamageEffect.getTakenDamageFor(target)) :
+            Array.isArray(dealDamageEffect.takenDamage) ?
                 dealDamageEffect.takenDamage :
                 [dealDamageEffect.takenDamage];
+        this.activation.takenDamage = isMultiTarget ?
+            takenDamage :
+            takenDamage[0];
+        if (isMultiTarget) {
             for (const [index, defender] of attackedTargets.entries()) {
                 if (!defender?.isHero) {
                     continue;

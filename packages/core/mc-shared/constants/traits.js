@@ -28,6 +28,7 @@ export const TRAIT_ELITE = 'elite';
 export const TRAIT_EXPERIMENTAL = 'experimental';
 export const TRAIT_GAMMA = 'gamma';
 export const TRAIT_GIANT = 'giant';
+export const TRAIT_GHOST = 'ghost';
 export const TRAIT_GOBLIN = 'goblin';
 export const TRAIT_GUARDIAN = 'guardian';
 export const TRAIT_GENIUS = 'genius';

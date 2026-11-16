@@ -6,6 +6,7 @@ export * from './constants/card-types.js';
 export * from './constants/characters.js';
 export * from './constants/classifications.js';
 export * from './constants/deck-positions.js';
+export * from './constants/damage-types.js';
 export * from './constants/dialogs.js';
 export * from './constants/effects.js';
 export * from './constants/effect-categories.js';

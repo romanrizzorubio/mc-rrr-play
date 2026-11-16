@@ -30,11 +30,13 @@ For a request to add a player card to the collection without including it in any
 
 For a request to create a new modular encounter set from supplied names and card data, use the dedicated [`mc-create-modular`](../mc-create-modular/SKILL.md) workflow for intake and set integration. Continue using this skill for card-text interpretation, effect composition, and the relevant catalog conventions.
 
+For a new hero, use [`mc-create-hero`](../mc-create-hero/SKILL.md). For adding new cards to both an existing hero's collection and precon, use [`mc-add-precon`](../mc-add-precon/SKILL.md); for only its Obligation and nemesis set, use [`mc-add-nemesis`](../mc-add-nemesis/SKILL.md). For a scenario's Villains, main schemes, and setup-only cards, use [`mc-create-scenario`](../mc-create-scenario/SKILL.md); for incremental scenario-owned encounter cards, use [`mc-add-scenario-card`](../mc-add-scenario-card/SKILL.md).
+
 1. Identify whether each supplied card belongs to a hero, an aspect, a scenario, a modular encounter set, or a shared encounter-card definition. Inspect nearby catalog modules and tests before adding a new pattern.
 2. Map the supplied facts into the existing card types, `params`, ability types, triggers, and effect types. Use exported `mc-shared` constants for every symbolic domain value (card/ability/effect types, triggers, targets, resources, phases, traits, locations, and positions); never write their string values directly. Keep runtime property paths and printed/user-facing text as strings. For card-type choices, use the shared `CARD_TYPES` list and keep translated labels in the frontend, never in card seed configuration.
 3. Prefer existing generic effects and compose them according to the card text. Do not create card-specific effect classes or branches in general abilities, effects, or factories. If required behavior is missing, implement a reusable effect and test it.
    Do not declare helper functions at module scope in ability, effect, or factory implementation files. Put reusable helpers in `utils/` and keep class-specific helpers as `static` methods.
-4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `catalog/encounters/` when needed, but omit `params.set` there; use `withCardSet(card, set)` in each consuming catalog to assign its set, and configure its count in each owning catalog.
+4. Keep card definitions and counts in the appropriate catalog. Reuse a shared encounter-card definition from `packages/back/mc-data/seed/catalog/shared/` when needed, but omit `params.set` there; use `withCardSet(card, set)` in each consuming catalog to assign its set, and configure its count in each owning catalog.
 5. Add or update catalog/runtime tests for the content. Compile every configured ability and verify its `effect` is one runnable effect instance with a callable `canRun`; exercise runtime-dependent paths through the real ability or effect.
 
 ### Boost icon counting
@@ -77,7 +79,7 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 
 - Add or update the hero under `packages/back/mc-data/seed/catalog/heroes/`, following a nearby hero module's structure.
 - Keep each identity side as a named card constant and reference both from `config.sides`, with the alter-ego and hero card types and their printed stats, traits, keywords, and abilities.
-- Put the hero's fixed cards in `config.cards` as `{count, card: namedConst}` entries, its deck references in `config.precon`, its obligation in `config.obligation`, and its full nemesis encounter set in `config.nemesis`.
+- Put the hero's fixed cards in `config.cards` as `{count, card: namedConst}` entries, its deck references in `config.precon`, its single Obligation in `config.obligation` as `{count: 1, card: namedConst}`, and its full nemesis encounter set in `config.nemesis`.
 - Use the hero's stable catalog ID and existing naming, image, and card-count conventions. Do not put hero-only setup into a scenario or a modular set.
 - For nemesis-minion identification and the resolution of the remaining nemesis set, follow [Nemesis sets](#nemesis-sets).
 - Test the hero's catalog normalization and card/ability construction; test runtime behavior for any newly implemented ability.
@@ -104,7 +106,7 @@ For repository-wide workflow and architectural requirements, also follow `.githu
 
 - Add or update modular encounter sets under `packages/back/mc-data/seed/catalog/sets/`.
 - Define each modular encounter card as a named module-level `const` and keep the set's `config.cards` entries exactly `{count, card: namedConst}`. Keep card data in the constant and copy counts in the array entry.
-- Reuse shared encounter-card definitions from `catalog/encounters/` through `withCardSet(card, set)` when appropriate; do not inline, duplicate, or mutate shared card definitions.
+- Reuse shared encounter-card definitions from `packages/back/mc-data/seed/catalog/shared/` through `withCardSet(card, set)` when appropriate; do not inline, duplicate, or mutate shared card definitions.
 - Test the normalized set config, printed counts, and that every referenced card retains its intended set name.
 
 ### Split scenario play areas

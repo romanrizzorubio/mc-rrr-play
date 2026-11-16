@@ -7,6 +7,8 @@ description: Add a supplied player card to the collection without adding it to a
 
 Use this skill when the user supplies a card and asks to make it available in the card collection while keeping it out of every preconstructed deck (precon).
 
+If the user wants new cards added to both the collection and an existing hero's precon, use [`mc-add-precon`](../mc-add-precon/SKILL.md) instead.
+
 ## Workflow
 
 1. Read `.github/skills/repo-working-guidelines/SKILL.md` and `.github/skills/mc-rrr-content-authoring/SKILL.md`. Also read any matching specialized skill, such as `card-cannot-abilities`, `effect-condition-exclusions`, `nemesis-set-handling`, or `stored-villain-boosts`.
