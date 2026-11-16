@@ -9,6 +9,7 @@ Before working in this repository, consult the relevant guidance in `.junie/` an
 
 - Check `.junie/` for applicable development rules and domain-specific guides. Follow the relevant guidelines when planning and implementing changes.
 - For a request to create a modular encounter set, follow `.github/skills/mc-create-modular/SKILL.md` together with the reusable card-authoring guidance in `.github/skills/mc-rrr-content-authoring/SKILL.md`; keep official game-rule documents read-only.
+- For hero workflows, use `.github/skills/mc-create-hero/SKILL.md` for a new hero, `mc-add-precon` for adding cards to an existing precon, and `mc-add-nemesis` for Obligation/nemesis additions. For scenario workflows, use `mc-create-scenario` for the core and `mc-add-scenario-card` for later scenario-owned cards. Follow the reusable card/effect guidance in `mc-rrr-content-authoring`.
 - When creating or editing a test file, keep every test in that file inside one `describe` block. If you touch a file whose tests are not grouped yet, wrap them all in one `describe` as part of that change.
 - Do not declare helper functions at module scope in implementation files. Put reusable helpers in an appropriate `utils/` directory, and keep class-specific helper logic in `static` methods.
 - Use `docs/README.md` as the documentation index, then read the documents relevant to the task to understand the intended behavior and architecture.
