@@ -151,6 +151,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **goblin (rasgo)** | Duende |
 | **guardian (rasgo)** | Guardián |
 | **genius (rasgo)** | Genio |
+| **ghost (rasgo)** | Fantasma |
 | **wood (rasgo)** | Madera |
 | **invocation (rasgo)** | Invocación |
 | **triggered ability** | capacidad activada |

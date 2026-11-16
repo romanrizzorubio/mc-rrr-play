@@ -1,7 +1,11 @@
+import {DAMAGE_TYPE_DIRECT} from 'mc-shared';
+
 export const AttackEffect = BaseEffect => class extends BaseEffect {
     constructor(params) {
         super(params);
 
+        this.baseDamageType = params?.damageType ?? DAMAGE_TYPE_DIRECT;
+        this.damageType = this.baseDamageType;
         this.isAttackDamageOnly = params?.isAttackDamageOnly ?? false;
         this.attackKeywordModifiers = [];
         this.usedAttackKeywords = new Set();
@@ -12,9 +16,10 @@ export const AttackEffect = BaseEffect => class extends BaseEffect {
     }
     resetResolutionData() {
         super.resetResolutionData();
-        this.resetAttackKeywordData();
+        this.resetAttackModifierData();
     }
-    resetAttackKeywordData() {
+    resetAttackModifierData() {
+        this.damageType = this.baseDamageType;
         this.temporaryAttackKeywords?.forEach((value, keyword) => {
             this.keywords[keyword] = value;
         });
