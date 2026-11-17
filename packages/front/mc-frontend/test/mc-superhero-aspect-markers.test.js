@@ -47,12 +47,45 @@ describe('superhero aspect markers', () => {
         assert.ok(template.values.includes(aspectMarkers));
     });
 
+    test('passes Gamora aspect markers and outlined markers to the superhero card', () => {
+        const aspectMarkers = ['attack', 'thwart'];
+        const outlinedAspectMarkers = ['thwart'];
+        const component = Object.assign(Object.create(McPlayer.prototype), {
+            player: {
+                handSize: 5,
+                superhero: {
+                    name: 'Gamora',
+                    image: 'gamora.png',
+                    aspectMarkers,
+                    outlinedAspectMarkers,
+                    attached: [],
+                    tuckedCards: [],
+                },
+                gameZone: {cards: []},
+            },
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            canEndTurn: false,
+        });
+        const template = component.renderSuperhero();
+
+        assert.match(template.strings.join(''), /\.aspectMarkers=/);
+        assert.match(template.strings.join(''), /\.outlinedAspectMarkers=/);
+        assert.ok(template.values.includes(aspectMarkers));
+        assert.ok(template.values.includes(outlinedAspectMarkers));
+    });
+
     test('passes generic counters from the superhero to its card display', () => {
         const counters = 2;
+        const aspectMarkers = ['attack', 'thwart'];
+        const outlinedAspectMarkers = ['attack'];
         const component = Object.assign(
             Object.create(SuperheroCardComponent.prototype),
             {
                 card: {counters},
+                aspectMarkers,
+                outlinedAspectMarkers,
                 abilities: [],
                 canEndTurn: false,
                 extraMenuOptions: [],
@@ -64,8 +97,12 @@ describe('superhero aspect markers', () => {
 
         assert.match(template.strings.join(''), /\.generic=/);
         assert.match(template.strings.join(''), /\.showGeneric=/);
+        assert.match(template.strings.join(''), /\.aspectMarkers=/);
+        assert.match(template.strings.join(''), /\.outlinedAspectMarkers=/);
         assert.ok(template.values.includes(counters));
         assert.ok(template.values.includes(true));
+        assert.ok(template.values.includes(aspectMarkers));
+        assert.ok(template.values.includes(outlinedAspectMarkers));
     });
 
     test('renders centered colored dots above the image without a border', () => {
@@ -135,7 +172,7 @@ describe('superhero aspect markers', () => {
 
     test('aligns basic stat labels with the image top edge', () => {
         const card = Object.assign(Object.create(CardComponent.prototype), {
-            aspectMarkers: ['aggression'],
+            aspectMarkers: ['aggression', 'attack'],
             showBasicStats: true,
             thwart: 1,
             attack: 1,
@@ -157,6 +194,40 @@ describe('superhero aspect markers', () => {
         assert.match(
             CardComponent.styles.cssText,
             /--aspect-marker-space:\s*16px/
+        );
+    });
+
+    test('renders Gamora event markers in red and yellow with a dark used border', () => {
+        const image = Object.assign(Object.create(McCardImage.prototype), {
+            aspectMarkers: ['attack', 'thwart'],
+            outlinedAspectMarkers: ['thwart'],
+            src: 'gamora.png',
+            size: 'm',
+            horizontal: false,
+            rotated: false,
+        });
+        const template = image.render();
+        const markersTemplate = template.values.find(value =>
+            value?.strings?.join('').includes('aspect-markers')
+        );
+
+        assert.ok(markersTemplate);
+        const markers = markersTemplate.values.find(value =>
+            Array.isArray(value) && value.length
+        );
+        assert.equal(markers.length, 2);
+        assert.ok(markers[0].values.includes('attack'));
+        assert.ok(markers[1].values.includes('thwart'));
+        assert.ok(markers[1].values.includes('outlined'));
+        assert.ok(markers[0].values.includes('Evento de Ataque jugado'));
+        assert.ok(markers[1].values.includes('Respuesta de Intervención usada'));
+
+        const styles = McCardImage.styles.cssText;
+        assert.match(styles, /\.aspect-marker\.aspect-attack\s*\{[^}]*#d32f2f/s);
+        assert.match(styles, /\.aspect-marker\.aspect-thwart\s*\{[^}]*#fbc02d/s);
+        assert.match(
+            styles,
+            /\.aspect-marker\.outlined\s*\{[^}]*border:\s*2px solid #212121/s
         );
     });
 

@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
 import {
+    CARD_TYPE_ALLY,
+    CARD_TYPE_EVENT,
     CLASSIFICATION_AGGRESSION,
     CLASSIFICATION_BASIC,
     CLASSIFICATION_HERO,
+    TRAIT_ATTACK,
+    TRAIT_THWART,
 } from '../index.js';
 import {
     getPlayerDeckCardCopyLimit,
@@ -264,5 +268,101 @@ describe('deck rules', () => {
                 error.includes('palabra clave Equipo')),
             true,
         );
+    });
+
+    test('allows capped off-aspect events with a matching trait', () => {
+        const catalog = createCatalog();
+        catalog.hero.deckBuildingRules = {
+            offAspectCards: {
+                maxCount: 6,
+                types: [CARD_TYPE_EVENT],
+                traits: [TRAIT_ATTACK, TRAIT_THWART],
+            },
+        };
+        catalog.aspects.push({id: 'aggression'});
+        catalog.cards.push(
+            {
+                id: 'off-aspect-attack',
+                name: 'Ataque de otro aspecto',
+                aspect: 'aggression',
+                type: CARD_TYPE_EVENT,
+                traits: [TRAIT_ATTACK],
+                unique: false,
+            },
+            {
+                id: 'off-aspect-thwart',
+                name: 'Intervención de otro aspecto',
+                aspect: 'aggression',
+                type: CARD_TYPE_EVENT,
+                traits: [TRAIT_THWART],
+                unique: false,
+            },
+            {
+                id: 'off-aspect-attack-extra',
+                name: 'Otro ataque de otro aspecto',
+                aspect: 'aggression',
+                type: CARD_TYPE_EVENT,
+                traits: [TRAIT_ATTACK],
+                unique: false,
+            },
+            {
+                id: 'off-aspect-ally',
+                name: 'Aliado de otro aspecto',
+                aspect: 'aggression',
+                type: CARD_TYPE_ALLY,
+                traits: [TRAIT_ATTACK],
+                unique: false,
+            },
+            {
+                id: 'off-aspect-untagged-event',
+                name: 'Evento sin rasgo válido',
+                aspect: 'aggression',
+                type: CARD_TYPE_EVENT,
+                traits: [],
+                unique: false,
+            },
+        );
+
+        assert.equal(getPlayerDeckCardCopyLimit({
+            aspect: 'justice',
+            cards: [],
+        }, catalog, 'off-aspect-attack'), 3);
+        assert.equal(getPlayerDeckCardCopyLimit({
+            aspect: 'justice',
+            cards: [{id: 'off-aspect-attack', count: 2}],
+        }, catalog, 'off-aspect-thwart'), 3);
+        assert.equal(getPlayerDeckCardCopyLimit({
+            aspect: 'justice',
+            cards: [
+                {id: 'off-aspect-attack', count: 3},
+                {id: 'off-aspect-thwart', count: 1},
+            ],
+        }, catalog, 'off-aspect-attack-extra'), 2);
+        assert.equal(getPlayerDeckCardCopyLimit({
+            aspect: 'justice',
+            cards: [],
+        }, catalog, 'off-aspect-ally'), 0);
+        assert.equal(getPlayerDeckCardCopyLimit({
+            aspect: 'justice',
+            cards: [],
+        }, catalog, 'off-aspect-untagged-event'), 0);
+
+        const overLimit = validatePlayerDeck({
+            aspect: 'justice',
+            cards: [
+                {id: 'off-aspect-attack', count: 3},
+                {id: 'off-aspect-thwart', count: 3},
+                {id: 'off-aspect-attack-extra', count: 1},
+            ],
+        }, catalog);
+        assert.ok(overLimit.errors.some(error =>
+            error.includes('más de 6 cartas de otros aspectos')));
+
+        const invalidCard = validatePlayerDeck({
+            aspect: 'justice',
+            cards: [{id: 'off-aspect-ally', count: 1}],
+        }, catalog);
+        assert.ok(invalidCard.errors.some(error =>
+            error.includes('no pertenece al aspecto seleccionado')));
     });
 });

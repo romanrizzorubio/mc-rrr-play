@@ -29,17 +29,22 @@ export class Superhero extends CharacterGameCard {
     }
     addAspectMarkersFromCard(card, trigger) {
         const rules = this.owner?.config?.aspectMarkerRules;
-        if (rules?.activateOn !== trigger || !card.isPlayerCard) {
+        if (rules?.activateOn !== trigger || !card.isPlayerCard ||
+            (rules.eventsOnly && !card.isEvent)) {
             return;
         }
 
-        const playedAspects = ASPECT_IDS.filter(aspect =>
-            hasClassification(card.card.classification, aspect)
-        );
-        if (playedAspects.length) {
+        const markers = rules.markersByTrait ?
+            Object.entries(rules.markersByTrait)
+                .filter(([trait]) => card.traits?.includes(trait))
+                .map(([, marker]) => marker) :
+            ASPECT_IDS.filter(aspect =>
+                hasClassification(card.card.classification, aspect)
+            );
+        if (markers.length) {
             this.aspectMarkers = [...new Set([
                 ...(this.aspectMarkers ?? []),
-                ...playedAspects,
+                ...markers,
             ])];
         }
     }
@@ -138,6 +143,14 @@ export class Superhero extends CharacterGameCard {
         const {flipped, id, life, mainName} = this;
         const aspectMarkers = this.aspectMarkers ?? [];
         const aspectMarkerRules = this.owner?.config?.aspectMarkerRules;
+        const outlinedAspectMarkers = [...new Set(
+            this.sides.flatMap(side => side.abilities ?? [])
+                .filter(ability =>
+                    ability.aspectMarker && ability.limit?.used > 0
+                )
+                .map(ability => ability.aspectMarker)
+                .filter(marker => aspectMarkers.includes(marker))
+        )];
 
         return {
             ...super.toObj(arguments[0]),
@@ -145,7 +158,10 @@ export class Superhero extends CharacterGameCard {
             life,
             flipped,
             id,
-            ...(aspectMarkerRules ? {aspectMarkers: [...aspectMarkers]} : {}),
+            ...(aspectMarkerRules ? {
+                aspectMarkers: [...aspectMarkers],
+                outlinedAspectMarkers,
+            } : {}),
         };
     }
 }

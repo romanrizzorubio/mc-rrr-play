@@ -107,13 +107,27 @@ export class SearchCardsEffect extends Effect {
         return this.title;
     }
     async getOptions(params, excludedCardIds = new Set()) {
+        return (await this.getOptionsWithLocations(
+            params,
+            excludedCardIds
+        )).options;
+    }
+    async getOptionsWithLocations(params, excludedCardIds = new Set()) {
         const game = this.match;
         const {player} = params;
         const targetPlayers = this.playersTarget === TARGET_ALL_PLAYERS ?
                 game.players :
                 [player];
         const options = [];
+        const optionsByLocation = new Map();
         const searchedDecks = new Map();
+        const addOption = (card, location) => {
+            options.push(card);
+            if (!optionsByLocation.has(location)) {
+                optionsByLocation.set(location, []);
+            }
+            optionsByLocation.get(location).push(card);
+        };
         const referenceCard = typeof this.filter.name === 'string' ?
             this.ability?.card :
             undefined;
@@ -135,7 +149,7 @@ export class SearchCardsEffect extends Effect {
                     const scenario = this.match.scenario;
                     searchedDecks.set(scenario.deck, scenario);
                 }
-                if (location === PLACE_DECK &&
+                if ([PLACE_DECK, PLACE_ENCOUNTER_DECK_CARDS].includes(location) &&
                     this.topCount !== undefined) {
                     if (!Number.isSafeInteger(this.topCount) || this.topCount < 0) {
                         throw new TypeError('SearchCardsEffect topCount must be a non-negative integer.');
@@ -176,14 +190,17 @@ export class SearchCardsEffect extends Effect {
                     }
 
                     if (referenceCard) {
-                        referenceOptions[referencePriority].push(card);
+                        referenceOptions[referencePriority].push({
+                            card,
+                            location,
+                        });
                         if (this.firstMatch &&
                             referencePriority === REFERENCE_PRIORITY_SOURCE_CARD) {
                             foundFirstMatch = true;
                             break;
                         }
                     } else {
-                        options.push(card);
+                        addOption(card, location);
                         if (this.firstMatch) {
                             foundFirstMatch = true;
                             break;
@@ -202,15 +219,44 @@ export class SearchCardsEffect extends Effect {
 
         if (referenceCard) {
             const highestPriorityOptions = referenceOptions.find(group =>
-                group.length);
-            options.push(...(highestPriorityOptions || []));
+                group.length) || [];
+            highestPriorityOptions.forEach(({card, location}) =>
+                addOption(card, location));
         }
 
         this.searchedDecks = searchedDecks;
-        return options;
+        return {
+            options,
+            groups: [...optionsByLocation].map(([place, cards]) => ({
+                place,
+                cards,
+            })),
+        };
+    }
+    getCardSelectionData({options, groups}, params) {
+        const serializedCards = new Map(options.map(card =>
+            [card, card.toObj(params)]));
+        const data = {
+            title: this.title,
+            cards: options.map(card => serializedCards.get(card)),
+            count: this.count,
+            distinctNames: this.distinctNames,
+            upTo: this.upTo,
+        };
+        if (new Set(this.locations).size > 1) {
+            data.groups = groups.map(({place, cards}) => ({
+                place,
+                cards: cards.map(card => serializedCards.get(card)),
+            }));
+        }
+
+        return data;
     }
     async preparePayment(params, session) {
-        const options = await this.getOptions(params, session.getExcludedCardIds());
+        const {options, groups} = await this.getOptionsWithLocations(
+            params,
+            session.getExcludedCardIds()
+        );
         const {player} = params;
         if (options.length === 0) {
             return {
@@ -226,13 +272,7 @@ export class SearchCardsEffect extends Effect {
                 targetPlayer: player,
                 showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
-                data: {
-                    title: this.title,
-                    cards: options.map(card => card.toObj(params)),
-                    count: this.count,
-                    distinctNames: this.distinctNames,
-                    upTo: this.upTo,
-                },
+                data: this.getCardSelectionData({options, groups}, params),
         });
         if (!response) {
                 return undefined;
@@ -341,7 +381,7 @@ export class SearchCardsEffect extends Effect {
             return;
         }
 
-        const options = await this.getOptions(params);
+        const {options, groups} = await this.getOptionsWithLocations(params);
         if (options.length === 0 && !hasStagedPayment) {
             await this.shuffleSearchedDecks(params);
             return;
@@ -365,13 +405,7 @@ export class SearchCardsEffect extends Effect {
                 targetPlayer: player,
                 showCancel: this.showCancel,
                 hand: player.hand.cards.map(card => card.toObj(params)),
-                data: {
-                    title: this.title,
-                    cards: options.map(card => card.toObj(params)),
-                    count: this.count,
-                    distinctNames: this.distinctNames,
-                    upTo: this.upTo,
-                },
+                data: this.getCardSelectionData({options, groups}, params),
             });
         if (this.showCancel && !hasStagedPayment && !response) {
             this.paymentCancelled = true;

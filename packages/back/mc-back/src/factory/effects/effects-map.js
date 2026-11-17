@@ -28,6 +28,7 @@ import {
     EFFECT_CHAINED,
     EFFECT_CREATE_EXTRA_DECK,
     EFFECT_CANNOT,
+    EFFECT_CANNOT_ATTACK,
     EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CHOOSE,
@@ -182,6 +183,7 @@ import {
 import {CreateExtraDeckEffect} from '../../effects/create-extra-deck-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
+import {CannotAttackEffect} from '../../effects/cannot-attack-effect.js';
 import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
 import {ChooseAbilityEffect} from '../../effects/choose-ability-effect.js';
 import {ChooseCardTypeEffect} from '../../effects/choose-card-type-effect.js';
@@ -340,6 +342,7 @@ export const EFFECT_MAP = {
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CREATE_EXTRA_DECK]: CreateExtraDeckEffect,
     [EFFECT_CANNOT]: CannotEffect,
+    [EFFECT_CANNOT_ATTACK]: CannotAttackEffect,
     [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
     [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
     [EFFECT_CHOOSE]: ChooseEffect,

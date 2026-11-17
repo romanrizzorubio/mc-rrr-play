@@ -155,6 +155,37 @@ test('boost dealt dialog lets players peek at future facedown boost cards', () =
     assert.equal(getAmplificationIconCount(markup), 0);
 });
 
+test('boost dealt dialog shows facedown side schemes vertically', () => {
+    const dialog = Object.create(McBoostDealtDialog.prototype);
+    dialog.data = {
+        cardCount: 2,
+        cards: [
+            {
+                card: {
+                    name: 'Plan secundario boca abajo',
+                    image: 'facedown.png',
+                    isFacedownCard: true,
+                },
+                horizontal: true,
+            },
+            {
+                card: {
+                    name: 'Plan secundario revelado',
+                    image: 'revealed.png',
+                    isFacedownCard: false,
+                },
+                horizontal: true,
+            },
+        ],
+        cumulativeBoost: 0,
+    };
+    const [facedownCard, revealedCard] =
+        dialog.renderContent().values[0];
+
+    assert.equal(facedownCard.values[7], false);
+    assert.equal(revealedCard.values[7], true);
+});
+
 test('encounter dealt summary never exposes identities or enables peeking', () => {
     const dialog = Object.create(McEncountersDealtDialog.prototype);
     dialog.data = {

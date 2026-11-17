@@ -163,6 +163,18 @@ export class PutPlayEffect extends Effect {
 
         return triggers;
     }
+    async triggerInit(params) {
+        const card = this.getCard(params);
+        if (card &&
+            !card.isInPlay &&
+            card.abilities?.some(ability => ability.workBeforeEnterPlay)) {
+            await card.initTriggers(params, {
+                workBeforeEnterPlayOnly: true,
+            });
+        }
+
+        return super.triggerInit(params);
+    }
     getTriggersParams(params) {
         return {
             ...super.getTriggersParams(params),

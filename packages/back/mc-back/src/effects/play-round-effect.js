@@ -33,6 +33,10 @@ export class PlayRoundEffect extends Effect {
         return super.triggerEnds(params, {
             ...options,
             resolveInterrupts: true,
+        }).then(() => {
+            this.match.players.forEach(player => {
+                player.playedCardsThisRound = [];
+            });
         });
     }
     async execute(params) {

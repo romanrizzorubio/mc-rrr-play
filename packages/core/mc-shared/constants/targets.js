@@ -82,6 +82,7 @@ export const TARGET_PHASE = TIME_PHASE;
 export const TARGET_PLAYER = 'player';
 export const TARGET_PLAYER_FEWEST_MINIONS = 'player-fewest-minions';
 export const TARGET_PLAYER_LOWEST_HERO_LIFE = 'player-lowest-hero-life';
+export const TARGET_PLAYER_DECK = 'player-deck';
 export const TARGET_PLAYER_DISCARD = 'player-discard';
 export const TARGET_PLAYER_EXTRA_DECK = 'player-extra-deck';
 export const TARGET_PLAYER_EXTRA_DECK_DISCARD = 'player-extra-deck-discard';

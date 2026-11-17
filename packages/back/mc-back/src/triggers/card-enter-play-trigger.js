@@ -1,5 +1,6 @@
 import {Trigger} from './base/trigger.js';
 import {checkCondition} from '../engine/utils.js';
+import {hasEffectiveTraits} from '../utils/has-effective-traits.js';
 
 export class CardEnterPlayTrigger extends Trigger {
     constructor({
@@ -26,19 +27,9 @@ export class CardEnterPlayTrigger extends Trigger {
             return;
         }
 
-        if (this.traits) {
-            const selectedTarget = params.card.currentSide ?? params.card;
-            const traitPlayer = params.card.controller ?? params.player;
-            const effectiveTraits = typeof selectedTarget.getEffectiveTraits === 'function' ?
-                await selectedTarget.getEffectiveTraits({player: traitPlayer}) :
-                selectedTarget.traits ?? [];
-            const requiredTraits = Array.isArray(this.traits) ?
-                this.traits :
-                [this.traits];
-            if (!requiredTraits.some(trait =>
-                effectiveTraits.includes(trait))) {
-                return;
-            }
+        if (this.traits &&
+            !await hasEffectiveTraits(params.card, this.traits, params.player)) {
+            return;
         }
 
         return super.canTrigger(this.getCardParams(params));

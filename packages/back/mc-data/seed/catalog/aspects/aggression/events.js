@@ -3,11 +3,13 @@ import {
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
+    ABILITY_ACTION,
     CALC_STAGE,
     CARD_TYPE_EVENT,
     CLASSIFICATION_AGGRESSION,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DELAYED,
     EFFECT_DRAW_CARD,
     EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF,
@@ -16,17 +18,22 @@ import {
     EFFECT_EXHAUST,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_MODIFY_ATTACK_VALUE,
+    EFFECT_MOVE_TO_HAND,
     EFFECT_REMOVE_THREAT,
+    EFFECT_RETURN_HAND,
+    EFFECT_SEARCH_CARDS,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
     EFFECT_ENEMY_ATTACK,
     EFFECT_HEAL,
     LABEL_ATTACK,
     LABEL_THWART,
+    PLACE_DECK,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_ALL_ENEMIES,
+    TARGET_EFFECT_PLAY_CARD,
     TARGET_ENEMY,
     TARGET_ENCOUNTER_DECK,
     TARGET_EFFECT,
@@ -34,6 +41,7 @@ import {
     TARGET_MINION,
     TARGET_SCHEME,
     TARGET_SOURCE,
+    TARGET_THIS,
     TARGET_UPGRADE_ATTACHED_TO_YOUR_SUPERHERO,
     TARGET_VILLAIN,
     TARGET_YOU,
@@ -43,6 +51,7 @@ import {
     TRAIT_AERIAL,
     TRAIT_AVENGER,
     TRAIT_SKILL,
+    TRAIT_TACTIC,
     TRAIT_THWART,
     TRAIT_WEAPON,
     TRIGGER_YOU_BASIC_ATTACK,
@@ -976,6 +985,135 @@ export default [
                                                 'condition': {
                                                     'exclude': 'effects.0.selectedTarget',
                                                 },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'aggression-vapuleo',
+        aspect: CLASSIFICATION_AGGRESSION,
+        order: 18012,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Vapuleo',
+                set: CLASSIFICATION_AGGRESSION,
+                image: 'aspect/aggression/events/18012.png',
+                traits: [TRAIT_ATTACK],
+                cost: 2,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_AGGRESSION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DEAL_DAMAGE,
+                                            params: {
+                                                target: TARGET_ENEMY,
+                                                damage: 3,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'playCardEffect.isFirstCardThisRound': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_DELAYED,
+                                                    params: {
+                                                        target: TARGET_EFFECT_PLAY_CARD,
+                                                        effect: {
+                                                            type: EFFECT_RETURN_HAND,
+                                                            params: {
+                                                                target: TARGET_THIS,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'aggression-plan-de-ataque',
+        aspect: CLASSIFICATION_AGGRESSION,
+        order: 18013,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Plan de ataque',
+                set: CLASSIFICATION_AGGRESSION,
+                image: 'aspect/aggression/events/18013.png',
+                traits: [TRAIT_TACTIC],
+                cost: 0,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_AGGRESSION,
+                abilities: [
+                    {
+                        type: ABILITY_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'player.superhero.isHero': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_SEARCH_CARDS,
+                                                    params: {
+                                                        locations: [PLACE_DECK],
+                                                        filter: {
+                                                            isEvent: true,
+                                                            traits: [TRAIT_ATTACK],
+                                                        },
+                                                        topCount: 4,
+                                                        title: 'Elige un Evento de Ataque',
+                                                    },
+                                                },
+                                                effectNot: {
+                                                    type: EFFECT_SEARCH_CARDS,
+                                                    params: {
+                                                        locations: [PLACE_DECK],
+                                                        filter: {
+                                                            isEvent: true,
+                                                            traits: [TRAIT_ATTACK],
+                                                        },
+                                                        topCount: 7,
+                                                        title: 'Elige un Evento de Ataque',
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_MOVE_TO_HAND,
+                                            params: {
+                                                target: TARGET_SOURCE,
+                                                source: 'selectedCards',
                                             },
                                         },
                                     ],

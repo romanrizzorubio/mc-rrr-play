@@ -590,6 +590,7 @@ export class Effect extends Engine {
         return this.validTarget.selectTarget({
             ...params,
             ability,
+            source: this.source ?? params.source,
             target,
             selectCount: params.selectCount ?? this.selectCount,
             selectUpTo: this.selectUpTo,
@@ -640,7 +641,7 @@ export class Effect extends Engine {
         return false;
     }
     async triggerInit(params) {
-        const type = this.getTriggersInit();
+        const type = this.getTriggersInit(params);
 
         if (await this.trigger(PRIORITY_CONSTANT, type, params)) {
             if (await this.trigger(PRIORITY_FORCED_INTERRUPT, type, params)) {

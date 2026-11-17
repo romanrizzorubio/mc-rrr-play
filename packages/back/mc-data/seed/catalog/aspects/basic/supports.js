@@ -378,6 +378,7 @@ export default [
                 'name': 'Sapiencial',
                 'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/supports/17022.png',
+                'unique': true,
                 'traits': [TRAIT_LOCATION],
                 'cost': 2,
                 'resources': [RESOURCE_ENERGY],

@@ -28,6 +28,7 @@ export class PlayTurnEffect extends Effect {
         });
 
         if (!match.turnStartProcessed) {
+            player.playedEventsThisTurn = [];
             match.turnStartProcessed = true;
             await match.persist();
 

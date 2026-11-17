@@ -47,9 +47,12 @@ describe('Sapiencial', () => {
         };
         const player = createPlayer('Star-Lord', 'starlord');
         const otherPlayer = createPlayer('Black Widow', 'black-widow');
+        player.superhero.selectedSide = 1;
+        await player.superhero.initTriggers({player});
         const sapiencialEntry = catalog.aspects.find(({_id}) =>
             _id === 'basic-sapiencial');
         assert.ok(sapiencialEntry);
+        assert.equal(sapiencialEntry.card.params.unique, true);
         const sapiencial = factory.cardsFactory.createGameCardFromConfig(
             sapiencialEntry.card,
             {owner: player},
@@ -67,9 +70,9 @@ describe('Sapiencial', () => {
         }, {owner: player});
         player.deck.cards.push(drawnCard);
 
-        const createPlayEffect = (owner, traits) => {
+        const createPlayEffect = (owner, traits, type = CARD_TYPE_ALLY) => {
             const ally = factory.cardsFactory.createGameCardFromConfig({
-                type: CARD_TYPE_ALLY,
+                type,
                 params: {
                     name: 'Aliado de prueba',
                     set: 'basic',
@@ -80,40 +83,74 @@ describe('Sapiencial', () => {
                     thwart: 1,
                 },
             }, {owner});
+            ally.controller = owner;
             const effect = new PlayCardEffect({card: ally, match});
             effect.resolved = true;
+            effect.playedFromHand = true;
 
             return effect;
         };
         const guardianEffect = createPlayEffect(player, [TRAIT_GUARDIAN]);
         const guardianParams =
             guardianEffect.getTriggersParams({player});
-        const nonGuardianEffect = createPlayEffect(player, []);
-        const nonGuardianParams =
-            nonGuardianEffect.getTriggersParams({player});
+        const dynamicGuardianEffect = createPlayEffect(player, []);
+        player.gameZone.addToGameZone(dynamicGuardianEffect.card);
+        const dynamicGuardianParams =
+            dynamicGuardianEffect.getTriggersParams({player});
+        assert.ok(
+            (await dynamicGuardianEffect.card.getEffectiveTraits({player}))
+                .includes(TRAIT_GUARDIAN),
+        );
+        const nonAllyEffect = createPlayEffect(player, [], CARD_TYPE_RESOURCE);
+        const nonAllyParams = nonAllyEffect.getTriggersParams({player});
         const otherPlayerEffect = createPlayEffect(otherPlayer, [TRAIT_GUARDIAN]);
         const otherPlayerParams =
             otherPlayerEffect.getTriggersParams({player: otherPlayer});
         const [response] =
             sapiencial.triggers[TRIGGER_YOU_END_PLAY_CARD][PRIORITY_RESPONSE];
 
+        assert.deepEqual(response.ability.condition, {
+            'effect.card.isAlly': true,
+            'effect.card.traits': TRAIT_GUARDIAN,
+        });
+        assert.equal(response.triggerParams, undefined);
         assert.equal(response.ability.abilityType, ABILITY_RESPONSE);
         assert.equal(response.ability.trigger, TRIGGER_YOU_END_PLAY_CARD);
         assert.equal(response.ability.effect.target, TARGET_YOU);
         assert.ok(guardianEffect.getTriggersEnds(guardianParams)
             .includes(TRIGGER_YOU_END_PLAY_CARD));
+        assert.ok(
+            (await guardianEffect.card.getEffectiveTraits({player}))
+                .includes(TRAIT_GUARDIAN),
+        );
+        assert.equal(
+            (await match._getTriggers(
+                [TRIGGER_YOU_END_PLAY_CARD],
+                PRIORITY_RESPONSE,
+                guardianParams,
+            )).length,
+            1,
+        );
+        assert.equal(
+            (await match._getTriggers(
+                [TRIGGER_YOU_END_PLAY_CARD],
+                PRIORITY_RESPONSE,
+                dynamicGuardianParams,
+            )).length,
+            1,
+        );
         assert.deepEqual(
             await match._getTriggers(
-                PRIORITY_RESPONSE,
                 [TRIGGER_YOU_END_PLAY_CARD],
-                nonGuardianParams,
+                PRIORITY_RESPONSE,
+                nonAllyParams,
             ),
             [],
         );
         assert.deepEqual(
             await match._getTriggers(
-                PRIORITY_RESPONSE,
                 [TRIGGER_YOU_END_PLAY_CARD],
+                PRIORITY_RESPONSE,
                 otherPlayerParams,
             ),
             [],
@@ -130,7 +167,7 @@ describe('Sapiencial', () => {
         await match.trigger(
             PRIORITY_RESPONSE,
             [TRIGGER_YOU_END_PLAY_CARD],
-            guardianParams,
+            dynamicGuardianParams,
         );
 
         assert.equal(dialogs.length, 1);

@@ -6,12 +6,15 @@ import {describe, test} from 'node:test';
 
 import {
     CARD_TYPE_ALTEREGO,
+    CARD_TYPE_EVENT,
     CARD_TYPE_HERO,
+    CLASSIFICATION_JUSTICE,
     TARGET_DECK,
     TRAIT_SHIELD,
     getPlayerDeckCardCopyLimit,
 } from 'mc-shared';
 import basicUpgrades from '../seed/catalog/aspects/basic/upgrades.js';
+import justiceEvents from '../seed/catalog/aspects/justice/events.js';
 import leadershipAllies from '../seed/catalog/aspects/leadership/allies.js';
 import {MongoDataStore, parseRepositoryDeckSnapshot} from '../index.js';
 
@@ -190,6 +193,27 @@ test('catalog marks El Hechicero Supremo as unique and limits it to one copy', a
         aspect: 'justice',
         cards: [],
     }, catalog, cardFromCatalog.id), 1);
+});
+
+test('exposes Punto de inflexión in the shared Justice collection, outside the precon', async () => {
+    const cardDefinition = justiceEvents.find(({_id}) =>
+        _id === 'justice-punto-de-inflexion');
+    assert.ok(cardDefinition);
+
+    const {store} = makeDeckStore([cardDefinition]);
+    const catalog = await store.getDeckEditorCatalog('hero');
+    const collectionCard = catalog.cards.find(({id}) =>
+        id === cardDefinition._id);
+
+    assert.ok(collectionCard);
+    assert.equal(collectionCard.type, CARD_TYPE_EVENT);
+    assert.equal(collectionCard.aspect, CLASSIFICATION_JUSTICE);
+    assert.equal(collectionCard.classification, CLASSIFICATION_JUSTICE);
+    assert.equal(collectionCard.name, 'Punto de inflexión');
+    assert.equal(
+        catalog.precon.some(({id}) => id === cardDefinition._id),
+        false
+    );
 });
 
 test('lists custom decks across heroes when no hero filter is provided', async () => {

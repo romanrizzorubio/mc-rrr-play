@@ -103,8 +103,8 @@ export class MoveToHandEffect extends Effect {
         );
 
         const objectsToRefresh = new Set(sourceDecks);
-        if (sourceContainer &&
-            typeof sourceContainer.refresh === 'function') {
+        if (!(sourceContainer instanceof Effect) &&
+            typeof sourceContainer?.refresh === 'function') {
             objectsToRefresh.add(sourceContainer);
         }
         for (const destination of destinations.values()) {

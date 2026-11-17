@@ -201,9 +201,10 @@ export class Attack extends Activation {
             playerAttackTriggers;
     }
     checkStatus() {
-        const {character} = this;
+        const {character, effect} = this;
 
-        return !character.isStunned;
+        return !character.isStunned &&
+            (!effect.isThwart || !character.isConfused);
     }
     filterTarget(card, {player}) {
         return !card.isEnemy || card.canBeAttacked(player);
@@ -295,9 +296,13 @@ export class Attack extends Activation {
         return this.effect.getEffectProperty('overkill', params);
     }
     resolveStatus() {
-        const {character} = this;
+        const {character, effect} = this;
 
-        character.removeStunned();
+        if (character.isStunned) {
+            character.removeStunned();
+        } else if (effect.isThwart && character.isConfused) {
+            character.removeConfused();
+        }
 
         character.refresh();
     }

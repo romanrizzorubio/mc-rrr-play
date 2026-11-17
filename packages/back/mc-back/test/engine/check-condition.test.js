@@ -5,10 +5,12 @@ import {
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
     TRAIT_AVENGER,
+    TRAIT_GUARDIAN,
     TRAIT_TECH,
     TRAIT_WEAPON,
 } from 'mc-shared';
 import {checkCondition, path} from '../../src/engine/utils.js';
+import {checkConditionWithEffectiveTraits} from '../../src/utils/effective-condition.js';
 
 describe('checkCondition', () => {
     test('every conditions require every array item to match', () => {
@@ -167,6 +169,39 @@ describe('checkCondition', () => {
             discardedCard: {},
             namedCardType: undefined,
         }, condition), false);
+    });
+
+    test('conditions combine requirements and match effective traits', async () => {
+        const card = {
+            isAlly: true,
+            traits: [TRAIT_TECH],
+            async getEffectiveTraits() {
+                return [TRAIT_TECH, TRAIT_GUARDIAN];
+            },
+        };
+        const condition = {
+            'effect.card.isAlly': true,
+            'effect.card.traits': TRAIT_GUARDIAN,
+        };
+
+        assert.equal(
+            await checkConditionWithEffectiveTraits({effect: {card}}, condition),
+            true,
+        );
+        assert.equal(
+            await checkConditionWithEffectiveTraits({effect: {card}}, {
+                ...condition,
+                'effect.card.traits': TRAIT_AVENGER,
+            }),
+            false,
+        );
+        assert.equal(
+            await checkConditionWithEffectiveTraits({effect: {card}}, {
+                ...condition,
+                'effect.card.isAlly': false,
+            }),
+            false,
+        );
     });
 
     test('paths expand wildcards over arrays and keep defined values', () => {

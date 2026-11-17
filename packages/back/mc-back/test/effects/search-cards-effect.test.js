@@ -116,6 +116,31 @@ test('SearchCardsEffect searches the encounter deck and discard pile in order', 
     ]);
 });
 
+test('SearchCardsEffect limits encounter-deck searches to the top cards', async () => {
+    const firstMinion = {...createCard('first-minion', 'First minion'), isMinion: true};
+    const nonMinion = {...createCard('non-minion', 'Treachery'), isMinion: false};
+    const laterMinion = {...createCard('later-minion', 'Later minion'), isMinion: true};
+    const player = {
+        deck: {cards: [], discardPile: []},
+        hand: {cards: []},
+    };
+    const effect = new SearchCardsEffect({
+        locations: [PLACE_ENCOUNTER_DECK_CARDS],
+        filter: {isMinion: true},
+        topCount: 2,
+        match: {
+            scenario: {
+                deck: {
+                    cards: [nonMinion, firstMinion, laterMinion],
+                    discardPile: [],
+                },
+            },
+        },
+    });
+
+    assert.deepEqual(await effect.getOptions({player}), [firstMinion]);
+});
+
 test('SearchCardsEffect applies referential priority and keeps all highest-tier matches', async () => {
     const sourceCard = {
         ...createCard('source-mockingbird', 'Mockingbird'),
@@ -270,9 +295,69 @@ test('SearchCardsEffect offers every matching encounter minion for selection', a
         deckMinion.id,
         discardedMinion.id,
     ]);
+    assert.deepEqual(dialog.data.groups, [
+        {
+            place: PLACE_ENCOUNTER_DECK_CARDS,
+            cards: [{id: deckMinion.id, name: deckMinion.name}],
+        },
+        {
+            place: PLACE_ENCOUNTER_DISCARD,
+            cards: [{id: discardedMinion.id, name: discardedMinion.name}],
+        },
+    ]);
     assert.deepEqual(encounterDeck.knownCards, []);
     assert.equal(shuffleCount, 1);
     assert.equal(params.selectedCard, discardedMinion);
+});
+
+test('SearchCardsEffect shows the matching zone when other searched zones are empty', async () => {
+    const card = createCard('discarded-card', 'Discarded card');
+    const player = {
+        deck: {
+            cards: [],
+            discardPile: [card],
+        },
+        hand: {cards: []},
+    };
+    const effect = new SearchCardsEffect({
+        locations: [PLACE_DECK, PLACE_DISCARD_PILE],
+    });
+    let dialog;
+    effect.markKnownDeckOptions = async () => {};
+    effect.openDialog = async options => {
+        dialog = options;
+
+        return {selected: [{id: card.id}]};
+    };
+    effect.shuffleSearchedDecks = async () => {};
+
+    await effect.execute({player});
+
+    assert.deepEqual(dialog.data.groups, [{
+        place: PLACE_DISCARD_PILE,
+        cards: [{id: card.id, name: card.name}],
+    }]);
+
+    const payment = await effect.preparePayment({player}, {
+        getExcludedCardIds: () => new Set(),
+    });
+    assert.deepEqual(dialog.data.groups, [{
+        place: PLACE_DISCARD_PILE,
+        cards: [{id: card.id, name: card.name}],
+    }]);
+    assert.deepEqual(payment.cards, [card]);
+
+    const singleZoneEffect = new SearchCardsEffect({
+        locations: [PLACE_DISCARD_PILE],
+    });
+    singleZoneEffect.openDialog = async options => {
+        dialog = options;
+
+        return {selected: [{id: card.id}]};
+    };
+    await singleZoneEffect.execute({player});
+
+    assert.equal('groups' in dialog.data, false);
 });
 
 test('SearchCardsEffect automatically selects its only mandatory match', async () => {

@@ -140,6 +140,7 @@ export class CardComponent extends LitElement {
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
             aspectMarkers: {type: Array},
+            outlinedAspectMarkers: {type: Array},
             showAcquiredTraits: {type: Boolean, attribute: 'show-acquired-traits'},
             hitPoints: {type: Number},
             damage: {type: Number},
@@ -201,6 +202,7 @@ export class CardComponent extends LitElement {
         this.extraTraits = [];
         this.extraKeywords = [];
         this.aspectMarkers = [];
+        this.outlinedAspectMarkers = [];
         this.showAcquiredTraits = false;
         this.hitPoints = undefined;
         this.damage = undefined;
@@ -941,6 +943,7 @@ export class CardComponent extends LitElement {
                                     .horizontal="${horizontal}"
                                     .rotated="${rotated}"
                                     .aspectMarkers="${this.aspectMarkers}"
+                                    .outlinedAspectMarkers="${this.outlinedAspectMarkers}"
                                     .activationBlocked="${this.isActivationVeiled ||
                                         this.isResourcePaymentVeiled}"
                                     ?draggable="${isDraggable}"
