@@ -6,9 +6,10 @@ import styles from './mc-deck-editor.css.js';
 import {
     getAspectName,
     getDeckComposition,
+    getCardTypeName,
 } from '../../utils/deck-presentation.js';
 import {dispatchComponentEvent} from '../../utils/dispatch-component-event.js';
-import {getSelectedDeckAspects} from 'mc-shared';
+import {getSelectedDeckAspects, translateTrait} from 'mc-shared';
 
 export class McDeckEditor extends LitElement {
     static get is() {
@@ -179,6 +180,25 @@ export class McDeckEditor extends LitElement {
             ` : ''}
         `;
     }
+    renderOffAspectCardsRule() {
+        const rule = this.catalog.hero.deckBuildingRules?.offAspectCards;
+        if (this.readOnly || !Number.isInteger(rule?.maxCount)) {
+            return '';
+        }
+
+        const types = rule.types?.length ?
+            ` de tipo ${rule.types.map(getCardTypeName).join(' o ')}` :
+            '';
+        const traits = rule.traits?.length ?
+            ` con alguno de estos rasgos: ${rule.traits.map(translateTrait).join(' o ')}` :
+            '';
+
+        return html`
+            <p class="aspect-rule">
+                Puedes incluir hasta ${rule.maxCount} cartas de otros aspectos${types}${traits}.
+            </p>
+        `;
+    }
     render() {
         const composition = getDeckComposition(
             this.selectedCards,
@@ -232,6 +252,7 @@ export class McDeckEditor extends LitElement {
                 </div>
                 <div class="field">
                     ${this.renderAspectSelector()}
+                    ${this.renderOffAspectCardsRule()}
                 </div>
                 <p class="deck-size">
                     Tamaño: <strong>${this.deckSize}</strong> / 40–50 cartas.
@@ -292,6 +313,7 @@ export class McDeckEditor extends LitElement {
                             .cards="${this.availableCards}"
                             .search="${this.search}"
                             .deckAspects="${getSelectedDeckAspects(this.deck)}"
+                            .offAspectCardsRule="${this.catalog.hero.deckBuildingRules?.offAspectCards}"
                         ></mc-deck-card-pool>
                     `}
                 </div>

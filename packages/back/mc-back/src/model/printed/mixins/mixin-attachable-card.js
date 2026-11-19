@@ -25,6 +25,7 @@ export const MixinAttachableCard = C => class extends C {
             condition,
             fallbackCondition,
             fallbackTarget,
+            source,
             target,
         } = this.getAttachConfig();
 
@@ -33,6 +34,7 @@ export const MixinAttachableCard = C => class extends C {
             condition,
             fallbackCondition,
             fallbackTarget,
+            source,
             target,
             canAttach: this.canAttach.bind(this),
             match: this.match,

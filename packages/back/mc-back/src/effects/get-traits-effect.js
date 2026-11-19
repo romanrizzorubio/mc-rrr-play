@@ -10,6 +10,7 @@ export class GetTraitsEffect extends Effect {
     constructor({}) {
         super(arguments[0]);
 
+        this.isTraitsCalculation = true;
         this.traits = [];
         this.modifyTraits = [];
     }

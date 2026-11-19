@@ -599,4 +599,46 @@ export default [
             },
         },
     },
+    {
+        _id: 'aggression-matadioses',
+        aspect: CLASSIFICATION_AGGRESSION,
+        order: 18018,
+        card: {
+            type: CARD_TYPE_UPGRADE,
+            params: {
+                name: 'Matadioses',
+                set: CLASSIFICATION_AGGRESSION,
+                image: 'aspect/aggression/upgrades/18018.png',
+                traits: [TRAIT_WEAPON],
+                unique: true,
+                cost: 3,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_AGGRESSION,
+                keywords: {restricted: true},
+                abilities: [
+                    {
+                        type: ABILITY_HERO_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_YOU_BASIC_ATTACK,
+                            condition: {
+                                'effect.character.isHero': true,
+                                'effect.selectedTarget.unique': true,
+                            },
+                            arrow: {
+                                type: EFFECT_EXHAUST,
+                                params: {target: TARGET_THIS},
+                            },
+                            effect: {
+                                type: EFFECT_MODIFY_ATTACK_VALUE,
+                                params: {
+                                    target: TARGET_EFFECT,
+                                    count: 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

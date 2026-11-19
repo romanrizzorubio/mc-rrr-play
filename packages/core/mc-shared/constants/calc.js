@@ -14,6 +14,7 @@ export const CALC_RECOVERY = 'recovery';
 export const CALC_RESOURCES = 'resources';
 export const CALC_SUM = 'sum';
 export const CALC_STAGE = 'stage';
+export const CALC_THWART = 'thwart';
 export const CALC_THREAT = 'threat';
 export const CALC_TRAITS_COUNT = 'traits-count';
 export const CALC_TRAITS_VALUES = 'traits-values';

@@ -7,6 +7,7 @@ description: Check this repository's .junie guidelines and docs before making ch
 
 Before working in this repository, consult the relevant guidance in `.junie/` and `docs/`.
 
+- Check modified/effective traits, keywords, and values by default when evaluating conditions or filters. Keep related requirements together in one `condition` and make condition evaluation resolve modified characteristics; do not move a requirement into `triggerParams` solely to account for modifiers. Use printed characteristics only when the card text explicitly says "printed", and add runtime tests for modified and unmodified cases.
 - Check `.junie/` for applicable development rules and domain-specific guides. Follow the relevant guidelines when planning and implementing changes.
 - For a request to create a modular encounter set, follow `.github/skills/mc-create-modular/SKILL.md` together with the reusable card-authoring guidance in `.github/skills/mc-rrr-content-authoring/SKILL.md`; keep official game-rule documents read-only.
 - For hero workflows, use `.github/skills/mc-create-hero/SKILL.md` for a new hero, `mc-add-precon` for adding cards to an existing precon, and `mc-add-nemesis` for Obligation/nemesis additions. For scenario workflows, use `mc-create-scenario` for the core and `mc-add-scenario-card` for later scenario-owned cards. Follow the reusable card/effect guidance in `mc-rrr-content-authoring`.

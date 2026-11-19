@@ -7,6 +7,7 @@ import {
     ABILITY_RESPONSE,
     CALC_ALL,
     CALC_ATTACK,
+    CALC_THWART,
     CARD_TYPE_TREACHERY,
     CARD_TYPE_EVENT,
     CHARACTER_VILLAIN,
@@ -39,6 +40,7 @@ import {
     TARGET_HERO,
     TARGET_MAIN_SCHEME,
     TARGET_PLAYER,
+    TARGET_SCHEME,
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
@@ -52,6 +54,7 @@ import {
     TRIGGER_BOOST_REVEALED,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+    TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
@@ -808,6 +811,90 @@ export default [
                                             },
                                         },
                                     ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-primer-impacto',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 18015,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Primer impacto',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/18015.png',
+                traits: [TRAIT_ATTACK],
+                cost: 1,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            effect: {
+                                type: EFFECT_DEAL_DAMAGE,
+                                params: {
+                                    target: TARGET_VILLAIN,
+                                    damage: 2,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        type: ABILITY_HERO_INTERRUPT,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            trigger: TRIGGER_ENEMY_ATTACKS_YOU,
+                            condition: {'effect.enemy.isMinion': true},
+                            effect: {
+                                type: EFFECT_DEAL_DAMAGE,
+                                params: {
+                                    target: TARGET_ATTACKER,
+                                    damage: 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-brio',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 18031,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Brío',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/18031.png',
+                cost: 1,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_RESPONSE,
+                        params: {
+                            name: 'Brío',
+                            labels: [LABEL_THWART],
+                            trigger: TRIGGER_HERO_DEFENDED_ATTACK,
+                            effect: {
+                                type: EFFECT_REMOVE_THREAT,
+                                params: {
+                                    target: TARGET_SCHEME,
+                                    threat: 0,
+                                    paramsCalc: {
+                                        target: 'player.superhero.currentSide',
+                                        formula: CALC_THWART,
+                                    },
                                 },
                             },
                         },

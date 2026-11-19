@@ -130,4 +130,17 @@ export default css`
   .aspect-marker.aspect-pool {
     background-color: #c2185b;
   }
+
+  .aspect-marker.aspect-attack {
+    background-color: #d32f2f;
+  }
+
+  .aspect-marker.aspect-thwart {
+    background-color: #fbc02d;
+  }
+
+  .aspect-marker.outlined {
+    box-sizing: border-box;
+    border: 2px solid #212121;
+  }
 `;

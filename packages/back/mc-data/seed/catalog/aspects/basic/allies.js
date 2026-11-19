@@ -11,6 +11,7 @@ import {
     CARD_TYPE_MAIN_SCHEME_B_CARD,
     CARD_TYPE_VILLAIN,
     EFFECT_CHAINED,
+    EFFECT_CANNOT_ATTACK,
     EFFECT_CHOOSE,
     EFFECT_CHOOSE_CARD_TYPE,
     EFFECT_DEAL_DAMAGE,
@@ -50,7 +51,6 @@ import {
     TRAIT_SPY,
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
-    TRIGGER_END_PLAY_CARD,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_THWARTS,
     TRIGGER_CHARACTER_DEFENDED_ATTACK,
@@ -614,6 +614,48 @@ export default [
                                             },
                                         },
                                     ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-drax',
+        classification: CLASSIFICATION_BASIC,
+        order: 18019,
+        card: {
+            type: CARD_TYPE_ALLY,
+            params: {
+                name: 'Drax',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/allies/18019.png',
+                traits: [TRAIT_GUARDIAN],
+                unique: true,
+                cost: 3,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_BASIC,
+                paramsToPlay: {
+                    'superhero.traits': TRAIT_GUARDIAN,
+                },
+                thwart: 1,
+                attack: 3,
+                thwartConsequential: 1,
+                attackConsequential: 1,
+                hitPoints: 4,
+                abilities: [
+                    {
+                        type: ABILITY_CONSTANT,
+                        params: {
+                            validation: {
+                                type: EFFECT_CANNOT_ATTACK,
+                                params: {
+                                    targetCondition: {isMinion: true},
+                                    effectCondition: {
+                                        'effect.character.name': 'Drax',
+                                    },
                                 },
                             },
                         },

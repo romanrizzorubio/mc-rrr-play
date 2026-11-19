@@ -131,6 +131,7 @@ export function getDeckComposition(cards, selectedAspects) {
     let basicCount = 0;
     let heroCount = 0;
     let permanentCount = 0;
+    let otherAspectCount = 0;
 
     for (const card of cards) {
         const count = Number(card.count);
@@ -146,6 +147,8 @@ export function getDeckComposition(cards, selectedAspects) {
             basicCount += count;
         } else if (aspectCounts.has(card.aspect)) {
             aspectCounts.set(card.aspect, aspectCounts.get(card.aspect) + count);
+        } else {
+            otherAspectCount += count;
         }
     }
 
@@ -156,6 +159,7 @@ export function getDeckComposition(cards, selectedAspects) {
             label: getAspectName(aspect),
             count,
         })),
+        {label: 'Otros aspectos', count: otherAspectCount},
         {label: 'Permanentes', count: permanentCount},
     ].filter(group => group.count > 0);
 }

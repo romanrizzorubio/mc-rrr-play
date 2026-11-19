@@ -17,6 +17,7 @@ import {
     CALC_RECOVERY,
     CALC_SUM,
     CALC_STAGE,
+    CALC_THWART,
     TARGET_MAIN_SCHEME,
     TARGET_VILLAIN,
 RESOURCE_ENERGY, RESOURCE_MENTAL, RESOURCE_PHYSICAL, RESOURCE_WILD} from 'mc-shared';
@@ -199,6 +200,14 @@ const CALCULATION_MAP = {
             );
         }
         return source.getRecoveryValue(params);
+    },
+    [CALC_THWART]: (source, {target}, params) => {
+        if (!source || typeof source.getThwartValue !== 'function') {
+            throw new Error(
+                `No se encontró un personaje con INT calculable en "${target}".`
+            );
+        }
+        return source.getThwartValue(params);
     },
     [CALC_RESOURCES]: (source, {resourceType, strict}) =>
         source.reduce((sum, card) =>

@@ -22,5 +22,10 @@ export class PlayPhaseEffect extends Effect {
 
     async execute() {
         await this.endLimit(TARGET_PHASE);
+        this.match.players.forEach(player => {
+            if (player.config?.aspectMarkerRules) {
+                player.superhero.clearAspectMarkers(TRIGGER_PHASE_ENDS);
+            }
+        });
     }
 }

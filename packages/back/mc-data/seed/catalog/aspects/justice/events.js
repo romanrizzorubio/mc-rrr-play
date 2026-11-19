@@ -13,11 +13,13 @@ import {
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_DELAYED,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_ENEMY_SCHEME,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_REMOVE_THREAT,
+    EFFECT_RETURN_HAND,
     EFFECT_TAKE_DAMAGE,
     LABEL_THWART,
     LABEL_ATTACK,
@@ -25,10 +27,12 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_EFFECT_PLAY_CARD,
     TARGET_ALL_SCHEMES,
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
+    TARGET_THIS,
     TARGET_YOU,
     TARGET_VILLAIN,
     TRAIT_AVENGER,
@@ -704,5 +708,112 @@ export default [
                 ],
             },
         },
-    }
+    },
+    {
+        _id: 'justice-cortar-el-paso',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 18016,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Cortar el paso',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/18016.png',
+                traits: [TRAIT_THWART],
+                cost: 2,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_JUSTICE,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_THWART],
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_REMOVE_THREAT,
+                                            params: {
+                                                target: TARGET_MAIN_SCHEME,
+                                                threat: 3,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'playCardEffect.isFirstCardThisRound': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_DELAYED,
+                                                    params: {
+                                                        target: TARGET_EFFECT_PLAY_CARD,
+                                                        effect: {
+                                                            type: EFFECT_RETURN_HAND,
+                                                            params: {
+                                                                target: TARGET_THIS,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'justice-punto-de-inflexion',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 18029,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Punto de inflexión',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/18029.png',
+                traits: [TRAIT_ATTACK],
+                cost: 2,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_JUSTICE,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            effect: {
+                                type: EFFECT_DO_IF,
+                                params: {
+                                    target: TARGET_VILLAIN,
+                                    condition: {
+                                        'player.scenarioZone.currentScheme.currentSide.threat': 0,
+                                    },
+                                    effect: {
+                                        type: EFFECT_DEAL_DAMAGE,
+                                        params: {
+                                            target: TARGET_VILLAIN,
+                                            damage: 5,
+                                        },
+                                    },
+                                    effectNot: {
+                                        type: EFFECT_DEAL_DAMAGE,
+                                        params: {
+                                            target: TARGET_VILLAIN,
+                                            damage: 2,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

@@ -4,13 +4,15 @@ import '../../cards/mc-card-list/mc-card-list.js';
 import stylesCardList from '../mc-card-list-dialog/mc-card-list-dialog.css.js';
 import stylesDialog from '../mc-dialog/mc-dialog.css.js';
 import {McDialog} from '../mc-dialog/mc-dialog.js';
+import {getPlaceName} from '../../../utils/place-names.js';
+import styles from './mc-select-card-dialog.css.js';
 
 export class McSelectCardDialog extends McDialog {
     static get is() {
         return 'mc-select-card-dialog';
     }
     static get styles() {
-        return [stylesDialog, stylesCardList];
+        return [stylesDialog, stylesCardList, styles];
     }
     constructor() {
         super(arguments[0]);
@@ -86,8 +88,7 @@ export class McSelectCardDialog extends McDialog {
 
         return super.renderButtonOk();
     }
-    renderContent() {
-        const {cards} = this.data;
+    renderCardList(cards) {
         const {selected} = this._response;
         const marked = cards.reduce((indexes, card, index) => {
             if (selected.some(selectedCard => selectedCard.id === card.id)) {
@@ -111,6 +112,31 @@ export class McSelectCardDialog extends McDialog {
                 .disabledCards="${disabledCards}"
                 @card-list-select="${this.handleCardListSelect.bind(this)}"
             ></mc-card-list>
+        `;
+    }
+    renderContent() {
+        const {groups, cards} = this.data;
+        if (!groups?.length) {
+            return this.renderCardList(cards);
+        }
+
+        return html`
+            <div class="card-groups">
+                ${groups.map(({place, cards: groupCards}) => {
+                    const title = getPlaceName(place);
+
+                    return html`
+                        <section
+                            class="card-group"
+                            role="group"
+                            aria-label="${title}"
+                        >
+                            <h3 class="card-group-title">${title}</h3>
+                            ${this.renderCardList(groupCards)}
+                        </section>
+                    `;
+                })}
+            </div>
         `;
     }
 }

@@ -17,14 +17,17 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
+    EFFECT_ENGAGE,
     EFFECT_HEAL,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_COST,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_PLACE_COUNTERS,
     EFFECT_REMOVE_THREAT,
+    EFFECT_SEARCH_CARDS,
     EFFECT_SIMULTANEOUS,
     EFFECT_STUN,
+    PLACE_ENCOUNTER_DECK_CARDS,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
@@ -710,6 +713,77 @@ export default [
                                 'params': {
                                     'target': TARGET_THIS,
                                     'damage': 1,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'aggression-angela',
+        aspect: CLASSIFICATION_AGGRESSION,
+        order: 18011,
+        card: {
+            type: CARD_TYPE_ALLY,
+            params: {
+                name: 'Angela',
+                subtitle: 'Aldrif Odinsdottir',
+                set: CLASSIFICATION_AGGRESSION,
+                image: 'aspect/aggression/allies/18011.png',
+                traits: [TRAIT_ASGARD, TRAIT_GUARDIAN],
+                unique: true,
+                cost: 0,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_AGGRESSION,
+                attack: 2,
+                attackConsequential: 1,
+                thwart: 0,
+                thwartConsequential: 0,
+                hitPoints: 3,
+                abilities: [
+                    {
+                        type: ABILITY_FORCED_RESPONSE,
+                        params: {
+                            trigger: TRIGGER_CARD_ENTER_PLAY,
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_SEARCH_CARDS,
+                                            params: {
+                                                locations: [
+                                                    PLACE_ENCOUNTER_DECK_CARDS,
+                                                ],
+                                                filter: {isMinion: true},
+                                                topCount: 10,
+                                                title: 'Busca un Esbirro entre las 10 primeras cartas del mazo de Encuentros',
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_ENGAGE,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                cardSource: 'selectedCards',
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'effects.1.didEngage': false,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_DISCARD_GAME,
+                                                    params: {
+                                                        target: TARGET_THIS,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

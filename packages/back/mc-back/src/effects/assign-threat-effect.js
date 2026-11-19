@@ -1,5 +1,6 @@
 import {
     DIALOG_ASSIGN,
+    EFFECT_CATEGORY_THREAT_REMOVAL,
     TARGET_ALL_SCHEMES,
 } from 'mc-shared';
 
@@ -17,7 +18,13 @@ export class AssignThreatEffect extends Effect {
         this.threat = threat;
         this.ignoreCrisis = ignoreCrisis;
     }
-    filterTarget(card, params) {
+    get effectCategories() {
+        return [EFFECT_CATEGORY_THREAT_REMOVAL];
+    }
+    getTargetValidationParams(targetCard, params) {
+        return {...params, sourceTarget: targetCard};
+    }
+    filterTarget(card, params = {}) {
         return card.canRemoveThreat({ignoreCrisis: this.ignoreCrisis}) &&
             super.filterTarget(card, params);
     }

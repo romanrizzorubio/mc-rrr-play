@@ -19,6 +19,7 @@ describe('PlayVillainPhaseEffect encounter dealing', () => {
             name: 'villain-phase-start-test',
             async persist() {},
             playing: true,
+            players: [],
             villainPhaseStep: 0,
         };
         const phase = new PlayVillainPhaseEffect({match});

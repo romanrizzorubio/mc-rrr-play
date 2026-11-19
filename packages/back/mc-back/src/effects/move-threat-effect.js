@@ -1,4 +1,5 @@
 import {
+    EFFECT_CATEGORY_THREAT_REMOVAL,
     EFFECT_MOVE_THREAT,
     TARGET_YOU,
     TRIGGER_MOVE_THREAT,
@@ -41,6 +42,12 @@ export class MoveThreatEffect extends Effect {
         this.movedThreat = 0;
         this.movementResolved = false;
     }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_THREAT_REMOVAL];
+    }
+    getTargetValidationParams(targetCard, params) {
+        return {...params, sourceTarget: targetCard};
+    }
     get threat() {
         return this._threat - this.preventThreat;
     }
@@ -51,6 +58,10 @@ export class MoveThreatEffect extends Effect {
         return new ValidTarget({
             effect: this,
             filter: this.filterDestinationTarget.bind(this),
+            getValidationParams: (_targetCard, params) => ({
+                ...params,
+                sourceTarget: undefined,
+            }),
             match: this.match,
         });
     }
@@ -117,7 +128,7 @@ export class MoveThreatEffect extends Effect {
             params.player?.superhero :
             target;
     }
-    filterTarget(card, params) {
+    filterTarget(card, params = {}) {
         const source = this.getThreatSource(card, params);
 
         if (!source ||
@@ -129,7 +140,7 @@ export class MoveThreatEffect extends Effect {
             return false;
         }
 
-        return super.filterTarget.apply(this, arguments);
+        return super.filterTarget(card, params);
     }
     filterDestinationTarget(card, params) {
         return typeof card?.placeThreat === 'function' &&

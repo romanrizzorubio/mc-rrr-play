@@ -73,6 +73,8 @@ export class Player extends Engine {
 
         this.mulliganDone = false;
         this.played = false;
+        this.playedCardsThisRound = [];
+        this.playedEventsThisTurn = [];
         this.defeated = false;
         this.isPlayer = true;
 
@@ -1273,6 +1275,8 @@ export class Player extends Engine {
             gameZone,
             scenarioZone,
             handSize,
+            playedCardsThisRound,
+            playedEventsThisTurn,
         } = this;
 
         return {
@@ -1282,6 +1286,13 @@ export class Player extends Engine {
             ...(userId ? {userId} : {}),
             ...(initial !== undefined ? {initial} : {}),
             defeated,
+            playedCardsThisRound: (playedCardsThisRound || []).map(({id, name}) => ({
+                ...(id !== undefined ? {id} : {}),
+                ...(name !== undefined ? {name} : {}),
+            })),
+            playedEventsThisTurn: (playedEventsThisTurn || []).map(({traits}) => ({
+                traits: [...traits],
+            })),
             scenarioZoneId: scenarioZone?.id,
             handSize,
             deck: deck ? deck.toObj(arguments[0]) : undefined,

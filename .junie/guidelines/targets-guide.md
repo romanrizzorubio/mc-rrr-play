@@ -42,6 +42,8 @@ Cuando una habilidad de carta identifica un objetivo por `condition.name` o `con
 
 Al resolver el objetivo de vinculación de un Accesorio, la carta que se está vinculando es la referencia para una condición `name`. No uses la carta o capacidad que inició la revelación como referencia; el motor conserva esta referencia al validar y seleccionar el objetivo.
 
+Si un Accesorio debe vincularse a un superhéroe nombrado incluso fuera de la zona del jugador que lo revela, configura su destino con `TARGET_SOURCE`, `source: 'match.players.*.superhero'` y una condición `mainName`; el comodín incluye a los superhéroes de todas las zonas.
+
 Si un efecto compuesto y varios hijos comparten el mismo selector, define el `target` y su condición en el efecto compuesto y configura `TARGET_PARENT` en esos hijos. Así comparten exactamente la selección validada del efecto principal, en vez de calcular cada uno una lista independiente. Al extender esta estrategia a otro tipo de grupo, conserva este mismo flujo de contexto y añade cobertura tanto para la disponibilidad como para la resolución real de sus hijos.
 
 ## Selectores resolubles

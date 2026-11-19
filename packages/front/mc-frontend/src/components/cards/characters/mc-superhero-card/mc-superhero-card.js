@@ -48,6 +48,7 @@ export class SuperheroCardComponent extends LitElement {
             extraTraits: {type: Array},
             extraKeywords: {type: Array},
             aspectMarkers: {type: Array},
+            outlinedAspectMarkers: {type: Array},
         };
     }
 
@@ -80,6 +81,7 @@ export class SuperheroCardComponent extends LitElement {
         this.extraTraits = [];
         this.extraKeywords = [];
         this.aspectMarkers = [];
+        this.outlinedAspectMarkers = [];
     }
 
     get menuOptions() {
@@ -206,6 +208,7 @@ export class SuperheroCardComponent extends LitElement {
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
                     .aspectMarkers="${this.aspectMarkers}"
+                    .outlinedAspectMarkers="${this.outlinedAspectMarkers}"
                     show-acquired-traits
                     show-basic-stats
                     .handSize="${handSize}"

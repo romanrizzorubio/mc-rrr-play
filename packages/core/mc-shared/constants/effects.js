@@ -31,6 +31,7 @@ export const EFFECT_CHOOSE = 'choose';
 export const EFFECT_CHOOSE_CARD_TYPE = 'choose-card-type';
 export const EFFECT_CHOOSE_ABILITY = 'choose-ability';
 export const EFFECT_CANNOT = 'cannot';
+export const EFFECT_CANNOT_ATTACK = 'cannot-attack';
 export const EFFECT_CANNOT_TARGET = 'cannot-target';
 export const EFFECT_CONFUSE = 'confuse';
 export const EFFECT_DEAL_BOOST = 'deal-boost';

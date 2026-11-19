@@ -32,6 +32,7 @@ import {
     TRAIT_AVENGER,
     TRAIT_CONDITION,
     TRAIT_GUARDIAN,
+    TRAIT_ITEM,
     TRAIT_PREPARATION,
     TRAIT_TACTIC,
     TRAIT_VEHICLE,
@@ -381,6 +382,58 @@ export default [
                                             'overkill': true,
                                         },
                                     },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-comunicador-implantado',
+        'aspect': CLASSIFICATION_LEADERSHIP,
+        'order': 18030,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Comunicador implantado',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/upgrades/18030.png',
+                'traits': [TRAIT_ITEM, TRAIT_TECH],
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attach': {
+                    'target': TARGET_ALLY,
+                    'condition': {
+                        'traits': TRAIT_GUARDIAN,
+                    },
+                },
+                'maxAttach': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_ATTACHED_GET_THWART,
+                            'effect': {
+                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_ATTACHED,
+                                    'count': 1,
                                 },
                             },
                         },

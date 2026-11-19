@@ -29,6 +29,7 @@ export class McDeckCardPool extends LitElement {
             cards: {type: Array},
             search: {type: String},
             deckAspects: {type: Array},
+            offAspectCardsRule: {type: Object},
             typeFilter: {type: String},
             aspectFilter: {type: String},
             traitFilter: {type: String},
@@ -47,6 +48,7 @@ export class McDeckCardPool extends LitElement {
         this.cards = [];
         this.search = '';
         this.deckAspects = [];
+        this.offAspectCardsRule = null;
         this.typeFilter = 'all';
         this.aspectFilter = 'all';
         this.traitFilter = 'all';
@@ -308,7 +310,9 @@ export class McDeckCardPool extends LitElement {
                     >
                         <md-select-option value="all">
                             <div slot="headline">
-                                ${this.deckAspects.length ?
+                                ${this.offAspectCardsRule ?
+                                    'Todos los aspectos permitidos y básicas' :
+                                    this.deckAspects.length ?
                                     'Aspectos del mazo y básicas' :
                                     'Todos los aspectos y básicas'
                                 }
