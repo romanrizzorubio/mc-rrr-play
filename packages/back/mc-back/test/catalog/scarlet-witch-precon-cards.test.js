@@ -350,9 +350,27 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
         };
         player.hand = new Hand(player);
         player.hand.refresh = async () => {};
+        const mentalPaymentCard = {
+            id: 'mental-payment-card',
+            resources: [
+                RESOURCE_MENTAL,
+                RESOURCE_PHYSICAL,
+                RESOURCE_PHYSICAL,
+            ],
+            toObj() {
+                return {id: this.id, resources: this.resources};
+            },
+        };
+        const additionalPaymentCard = {
+            id: 'physical-payment-card',
+            resources: [RESOURCE_PHYSICAL],
+            toObj() {
+                return {id: this.id, resources: this.resources};
+            },
+        };
         player.getCardsToPay = async () => ({
             generators: [],
-            hand: [],
+            hand: [mentalPaymentCard, additionalPaymentCard],
         });
         match.players.push(player);
         const card = matchFactory.cardsFactory.createGameCardFromConfig(
@@ -434,14 +452,6 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
             playCardEffect,
             resourceCost: crisisCost,
         });
-        const mentalPaymentCard = {
-            id: 'mental-payment-card',
-            resources: [
-                RESOURCE_MENTAL,
-                RESOURCE_PHYSICAL,
-                RESOURCE_PHYSICAL,
-            ],
-        };
         const paymentSession = new CostPaymentSession();
         paymentSession.stagePayment(paymentEffect, {
             generators: [],
