@@ -29,6 +29,10 @@ import {RevealEncounterEffect} from '../../effects/reveal-encounter-effect.js';
 import {findPlayerCardToPlayFrom} from '../../utils/player-card-play-from.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
+import {
+    canPayResourceRequirements,
+    showInsufficientResourceCostDialog,
+} from '../../utils/resource-payment-availability.js';
 import {findResourceAssignment} from '../../utils/find-resource-assignment.js';
 import {
     getResourceIcons,
@@ -1005,6 +1009,8 @@ export class Player extends Engine {
             allowPartial = false,
             showCancel = !allowPartial,
             differentTypes = false,
+            isCost = false,
+            sameType = false,
             resourceUsage,
         } = {}
     ) {
@@ -1014,14 +1020,38 @@ export class Player extends Engine {
             excludedCardIds,
             resourceUsage
         );
+        if (isCost &&
+            !allowPartial &&
+            !canPayResourceRequirements(
+                cardsToPay,
+                resources,
+                cardToPay,
+                this,
+                {differentTypes, sameType}
+            )) {
+            await showInsufficientResourceCostDialog(
+                dialog => this.openDialog(dialog),
+                this,
+                cardToPay,
+                {differentTypes, sameType, requirements: resources}
+            );
+
+            return undefined;
+        }
+
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             targetPlayer: this,
             showCancel,
-            ...(differentTypes ? {title: 'Paga recursos de tipos distintos'} : {}),
+            ...(differentTypes ?
+                {title: 'Paga recursos de tipos distintos'} :
+                sameType ?
+                    {title: 'Paga recursos del mismo tipo'} :
+                    {}),
             data: {
                 allowPartial,
                 differentTypes,
+                sameType,
                 resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
                 resourceSelectionMode: resourceUsage !== undefined,
                 cost: resources.length,
@@ -1040,9 +1070,17 @@ export class Player extends Engine {
 
         if (response) {
             const {paid, resources: paidResources, fullyPaid} = response;
+            const isFullyPaid = fullyPaid ?? !allowPartial;
             if (differentTypes &&
                 new Set(paidResources || []).size < resources.length) {
                 throw new Error('El pago requiere recursos de tipos distintos.');
+            }
+            if (sameType && new Set(paidResources || []).size > 1) {
+                throw new Error('El pago requiere recursos del mismo tipo.');
+            }
+            if (sameType && isFullyPaid &&
+                (paidResources?.length ?? 0) !== resources.length) {
+                throw new Error('El pago no cubre todos los recursos del mismo tipo.');
             }
             const generators = paid.generators.map(card => {
                 const generator = cardsToPay.generators.find(candidate =>
@@ -1076,7 +1114,7 @@ export class Player extends Engine {
 
             return {
                 resources: paidResources,
-                fullyPaid: fullyPaid ?? !allowPartial,
+                fullyPaid: isFullyPaid,
                 hand,
                 generators,
                 sharedPaymentContributors,
@@ -1165,7 +1203,8 @@ export class Player extends Engine {
         cardToPay,
         resourceType,
         excludedCardIds = new Set(),
-        resourceUsage
+        resourceUsage,
+        isCost = false
     ) {
         const cardsToPay = await this.getCardsToPay(
             cardToPay,
@@ -1173,6 +1212,24 @@ export class Player extends Engine {
             excludedCardIds,
             resourceUsage
         );
+        const requirements = [resourceType ?? RESOURCE_ANY];
+        if (isCost &&
+            !canPayResourceRequirements(
+                cardsToPay,
+                requirements,
+                cardToPay,
+                this
+            )) {
+            await showInsufficientResourceCostDialog(
+                dialog => this.openDialog(dialog),
+                this,
+                cardToPay,
+                {requirements}
+            );
+
+            return undefined;
+        }
+
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             targetPlayer: this,

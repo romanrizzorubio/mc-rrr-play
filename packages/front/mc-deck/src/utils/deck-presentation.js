@@ -80,14 +80,14 @@ export function matchesDeckAspectFilter(card, filter, deckAspects) {
 
     return filter === 'deck' ?
         deckAspects.includes(card.aspect) :
-        deckAspects.includes(filter) && card.aspect === filter;
+        card.aspect === filter;
 }
 
-export function normalizeDeckAspectFilter(filter, deckAspects) {
+export function normalizeDeckAspectFilter(filter, availableAspects) {
     return filter === 'all' ||
         filter === 'basic' ||
         filter === 'deck' ||
-        deckAspects.includes(filter) ?
+        availableAspects.includes(filter) ?
         filter :
         'all';
 }

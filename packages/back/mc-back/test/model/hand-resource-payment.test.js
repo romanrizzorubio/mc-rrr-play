@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
 import {
+    DIALOG_LIST,
     RESOURCE_ANY,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
@@ -11,11 +12,13 @@ import {
 import aggressionResources from '../../../mc-data/seed/catalog/aspects/aggression/resources.js';
 import msMarvel from '../../../mc-data/seed/catalog/heroes/ms-marvel.js';
 import {PayCostEffect} from '../../src/effects/pay-cost-effect.js';
+import {PayPrintedCostEffect} from '../../src/effects/pay-printed-cost-effect.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {ResourceAbility} from '../../src/abilities/resource/resource-ability.js';
 import {Hand} from '../../src/model/match/hand.js';
 import {Player} from '../../src/model/match/player.js';
 import {ResourceCard} from '../../src/model/printed/resource-card.js';
+import {ResourceCost} from '../../src/model/costs/resource-cost.js';
 
 describe('resource payment', () => {
 test('Hand.getCardsToPay includes conditional wild resources for a specific resource cost', () => {
@@ -166,6 +169,37 @@ test('Player.spendResources only offers cards that can pay its resource requirem
         paymentDialog.data.cards.hand.map(card => card.id),
         ['mental', 'wild']
     );
+});
+
+test('PayPrintedCostEffect explains an unaffordable printed cost before payment', async () => {
+    const dialogs = [];
+    const hand = Object.create(Hand.prototype);
+    hand.cards = [];
+    const player = Object.create(Player.prototype);
+    player.hand = hand;
+    player.getResourceGenerators = async () => [];
+    player.openDialog = async dialog => {
+        dialogs.push(dialog);
+    };
+    const card = {
+        cost: 2,
+        name: 'Two-cost ally',
+        toObj: () => ({name: 'Two-cost ally'}),
+    };
+    const effect = new PayPrintedCostEffect({});
+    effect.getCard = () => card;
+    effect.resourceCost = new ResourceCost({amount: card.cost});
+    const session = {
+        getRemainingResources: () => undefined,
+        getResourcePaymentExcludedCardIds: () => new Set(),
+    };
+
+    await effect.preparePayment({player}, session);
+
+    assert.equal(dialogs.length, 1);
+    assert.equal(dialogs[0].dialogType, DIALOG_LIST);
+    assert.equal(dialogs[0].title, 'Coste no pagado');
+    assert.match(dialogs[0].subtitle, /No tienes suficientes recursos/);
 });
 
 test('Player.getDirectResourcePayment resolves a dragged hand resource', async () => {

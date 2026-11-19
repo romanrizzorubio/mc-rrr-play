@@ -1,5 +1,9 @@
 import {LitElement, html} from 'lit-element';
-import {translateTrait} from 'mc-shared';
+import {
+    CLASSIFICATION_BASIC,
+    hasClassification,
+    translateTrait,
+} from 'mc-shared';
 
 import styles from './mc-deck-card-pool.css.js';
 import '../shared/mc-deck-card-economy.js';
@@ -58,10 +62,11 @@ export class McDeckCardPool extends LitElement {
         this.sortDirection = 'asc';
     }
     updated(changedProperties) {
-        if (changedProperties.has('deckAspects')) {
+        if (changedProperties.has('deckAspects') ||
+            changedProperties.has('cards')) {
             this.aspectFilter = normalizeDeckAspectFilter(
                 this.aspectFilter,
-                this.deckAspects,
+                this.aspectOptions,
             );
         }
         if (changedProperties.has('cards')) {
@@ -136,6 +141,24 @@ export class McDeckCardPool extends LitElement {
                 getCardTypeName(left).localeCompare(getCardTypeName(right), 'es', {
                     sensitivity: 'base',
                 }));
+    }
+    get aspectOptions() {
+        const selectedAspects = this.deckAspects || [];
+        const availableAspects = [...new Set(this.cards
+            .filter(card => !hasClassification(
+                card.classification,
+                CLASSIFICATION_BASIC,
+            ))
+            .map(card => card.aspect)
+            .filter(aspect => typeof aspect === 'string' && aspect))];
+        const additionalAspects = availableAspects
+            .filter(aspect => !selectedAspects.includes(aspect))
+            .sort((left, right) =>
+                getAspectName(left).localeCompare(getAspectName(right), 'es', {
+                    sensitivity: 'base',
+                }));
+
+        return [...selectedAspects, ...additionalAspects];
     }
     get traitOptions() {
         return [...new Set(this.cards.flatMap(card => getCardTraits(card)))]
@@ -318,7 +341,7 @@ export class McDeckCardPool extends LitElement {
                                 }
                             </div>
                         </md-select-option>
-                        ${this.deckAspects.map(aspect => html`
+                        ${this.aspectOptions.map(aspect => html`
                             <md-select-option value="${aspect}">
                                 <div slot="headline">${getAspectName(aspect)}</div>
                             </md-select-option>

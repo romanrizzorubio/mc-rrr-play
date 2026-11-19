@@ -58,6 +58,19 @@ describe('McListDialog option groups', () => {
         assert.equal(responses, 1);
     });
 
+    test('does not render an empty list when there are no options', () => {
+        const dialog = Object.assign(Object.create(McListDialog.prototype), {
+            data: {
+                card: {},
+                contextCards: [],
+                options: [],
+            },
+        });
+        const content = dialog.renderContent();
+
+        assert.equal(content.values[1], '');
+    });
+
     test('renders labeled context cards with a separator', () => {
         const dialog = Object.create(McListDialog.prototype);
         const sourceCard = {

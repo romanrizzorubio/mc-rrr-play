@@ -55,7 +55,12 @@ describe('special deck-building rules', () => {
                 fixedCards: [],
                 identities: [],
             },
-            aspects: [{id: 'justice'}, {id: 'aggression'}],
+            aspects: [
+                {id: 'justice'},
+                {id: 'aggression'},
+                {id: 'protection'},
+                {id: 'leadership'},
+            ],
             cards: [
                 {
                     id: 'off-aspect-attack',
@@ -66,11 +71,35 @@ describe('special deck-building rules', () => {
                     unique: false,
                 },
                 {
+                    id: 'off-aspect-thwart',
+                    name: 'Intervención fuera del aspecto',
+                    aspect: 'protection',
+                    type: CARD_TYPE_EVENT,
+                    traits: [TRAIT_THWART],
+                    unique: false,
+                },
+                {
                     id: 'off-aspect-upgrade',
                     name: 'Mejora fuera del aspecto',
                     aspect: 'aggression',
                     type: 'upgrade',
                     traits: [TRAIT_ATTACK],
+                    unique: false,
+                },
+                {
+                    id: 'off-aspect-no-trait',
+                    name: 'Evento sin rasgo permitido',
+                    aspect: 'leadership',
+                    type: CARD_TYPE_EVENT,
+                    traits: [],
+                    unique: false,
+                },
+                {
+                    id: 'selected-aspect-event',
+                    name: 'Evento del aspecto elegido',
+                    aspect: 'justice',
+                    type: CARD_TYPE_EVENT,
+                    traits: [],
                     unique: false,
                 },
             ],
@@ -87,7 +116,7 @@ describe('special deck-building rules', () => {
         const cardPool = Object.assign(
             Object.create(McDeckCardPool.prototype),
             {
-                cards: [],
+                cards: app.availableCards,
                 search: '',
                 deckAspects: ['justice'],
                 offAspectCardsRule: offAspectCards,
@@ -102,8 +131,31 @@ describe('special deck-building rules', () => {
         const availableCards = app.availableCards;
 
         assert.deepEqual(
-            availableCards.map(({id, maxAddCount}) => [id, maxAddCount]),
-            [['off-aspect-attack', 3]],
+            availableCards.map(({id}) => id).sort(),
+            [
+                'off-aspect-attack',
+                'off-aspect-thwart',
+                'selected-aspect-event',
+            ],
+        );
+        assert.deepEqual(cardPool.aspectOptions, [
+            'justice',
+            'aggression',
+            'protection',
+        ]);
+        cardPool.aspectFilter = 'aggression';
+        assert.deepEqual(
+            cardPool.filteredCards.map(({id}) => id),
+            ['off-aspect-attack'],
+        );
+        cardPool.aspectFilter = 'protection';
+        assert.deepEqual(
+            cardPool.filteredCards.map(({id}) => id),
+            ['off-aspect-thwart'],
+        );
+        assert.doesNotMatch(
+            templateText(cardPool.render()),
+            /value="leadership"/u,
         );
         assert.match(
             templateText(editor.renderOffAspectCardsRule()),

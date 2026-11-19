@@ -66,13 +66,15 @@ export class PayPrintedCostEffect extends Effect {
                 card,
                 cost.resourceType,
                 excludedCardIds,
-                resourceUsage
+                resourceUsage,
+                true
             ) :
             await player.spendResources(
                 cost.getRequiredResources(),
                 card,
                 excludedCardIds,
                 {
+                    isCost: true,
                     showCancel: true,
                     resourceUsage,
                 }
@@ -111,11 +113,16 @@ export class PayPrintedCostEffect extends Effect {
                 await player.spendResourcesX(
                     resourceCost.requirement,
                     card,
-                    resourceCost.resourceType
+                    resourceCost.resourceType,
+                    new Set(),
+                    undefined,
+                    true
                 ) :
                 await player.spendResources(
                     resourceCost.getRequiredResources(),
-                    card
+                    card,
+                    new Set(),
+                    {isCost: true}
                 );
 
         if (paid) {

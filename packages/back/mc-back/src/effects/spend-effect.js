@@ -14,11 +14,13 @@ export class SpendEffect extends Effect {
     constructor({
         resources,
         differentTypes = false,
+        sameType = false,
     }) {
         super(arguments[0]);
 
         this.resources = resources;
         this.differentTypes = differentTypes;
+        this.sameType = sameType;
 
         this.isPaid = false;
         this.isFullyPaid = false;
@@ -89,12 +91,18 @@ export class SpendEffect extends Effect {
     }
     async preparePayment(params, session) {
         if (params.resourcePayment !== undefined) {
-            return this.selectedTarget.getDirectResourcePayment({
+            const payment = await this.selectedTarget.getDirectResourcePayment({
                 ...params.resourcePayment,
                 cardToPay: params.card,
                 excludedCardIds: session.getResourcePaymentExcludedCardIds(),
                 resourceUsage: session.getRemainingResources(),
             });
+            if (payment && this.sameType &&
+                new Set(payment.resources ?? []).size > 1) {
+                throw new Error('El pago requiere recursos del mismo tipo.');
+            }
+
+            return payment;
         }
 
         return this.selectedTarget.spendResources(
@@ -104,6 +112,8 @@ export class SpendEffect extends Effect {
             {
                 allowPartial: this.allowPartialPayment(params),
                 differentTypes: this.differentTypes,
+                isCost: this.isCost || params.isCost,
+                sameType: this.sameType,
                 resourceUsage: session.getRemainingResources(),
             }
         );
@@ -131,6 +141,8 @@ export class SpendEffect extends Effect {
                     allowPartial,
                     showCancel: !allowPartial || Boolean(params.isChosenOption),
                     differentTypes: this.differentTypes,
+                    isCost: this.isCost || params.isCost,
+                    sameType: this.sameType,
                 }
             );
 

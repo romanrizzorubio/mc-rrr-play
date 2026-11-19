@@ -452,6 +452,7 @@ export default [
                 'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/16019.png',
                 'traits': [TRAIT_GUARDIAN],
+                'unique': true,
                 'cost': 3,
                 'resources': [RESOURCE_WILD],
                 'classification': CLASSIFICATION_BASIC,

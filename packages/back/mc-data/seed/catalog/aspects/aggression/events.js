@@ -39,6 +39,7 @@ import {
     TARGET_EFFECT,
     TARGET_MAIN_SCHEME,
     TARGET_MINION,
+    TARGET_PARENT,
     TARGET_SCHEME,
     TARGET_SOURCE,
     TARGET_THIS,
@@ -540,14 +541,14 @@ export default [
                                         {
                                             'type': EFFECT_DEAL_DAMAGE,
                                             'params': {
-                                                'target': TARGET_ENEMY,
+                                                'target': TARGET_PARENT,
                                                 'damage': 4
                                             }
                                         },
                                         {
                                             'type': EFFECT_DO_IF_HAS_PAID,
                                             'params': {
-                                                'target': TARGET_ENEMY,
+                                                'target': TARGET_PARENT,
                                                 'resources': [
                                                     RESOURCE_PHYSICAL
                                                 ],
@@ -555,12 +556,12 @@ export default [
                                                 'effect': {
                                                     'type': EFFECT_SIMULTANEOUS,
                                                     'params': {
-                                                        'target': TARGET_ENEMY,
+                                                        'target': TARGET_PARENT,
                                                         'effects': [
                                                             {
                                                                 'type': EFFECT_STUN,
                                                                 'params': {
-                                                                    'target': TARGET_ENEMY
+                                                                    'target': TARGET_PARENT
                                                                 }
                                                             },
                                                             {
