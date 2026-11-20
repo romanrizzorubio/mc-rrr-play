@@ -4,6 +4,7 @@ import {
     ABILITY_HERO_RESPONSE,
     ABILITY_RESPONSE,
     ABILITY_ACTION,
+    CALC_COUNT,
     CALC_STAGE,
     CARD_TYPE_EVENT,
     CLASSIFICATION_AGGRESSION,
@@ -40,6 +41,7 @@ import {
     TARGET_MAIN_SCHEME,
     TARGET_MINION,
     TARGET_PARENT,
+    TARGET_PHASE,
     TARGET_SCHEME,
     TARGET_SOURCE,
     TARGET_THIS,
@@ -1118,6 +1120,43 @@ export default [
                                             },
                                         },
                                     ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'aggression-os-reviento',
+        aspect: CLASSIFICATION_AGGRESSION,
+        order: 19030,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: '¡Os reviento!',
+                set: CLASSIFICATION_AGGRESSION,
+                image: 'aspect/aggression/events/19030.png',
+                cost: 0,
+                resources: [],
+                classification: CLASSIFICATION_AGGRESSION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            maximum: {
+                                count: 1,
+                                target: TARGET_PHASE,
+                            },
+                            effect: {
+                                type: EFFECT_DRAW_CARD,
+                                params: {
+                                    target: TARGET_YOU,
+                                    paramsCalc: {
+                                        target: 'player.minions',
+                                        formula: CALC_COUNT,
+                                    },
                                 },
                             },
                         },

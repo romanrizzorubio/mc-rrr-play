@@ -8,6 +8,7 @@ import {
     CALC_DAMAGE,
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
+    CARD_TYPE_RESOURCE,
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DISCARD_GAME,
     EFFECT_MODIFY_ATTACK_VALUE,
@@ -205,6 +206,13 @@ describe('Aggression card behavior', () => {
         const {match, matchFactory} = createMatch('pagaras-por-eso-damage');
         const player = createPlayer('Hulk', match, matchFactory, hulk.config);
         player.superhero.selectedSide = 1;
+        player.hand.addCard(matchFactory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {
+                name: 'Test resource',
+                resources: [RESOURCE_ENERGY],
+            },
+        }, {owner: player}));
         const villain = {
             isEnemy: true,
             isVillain: true,

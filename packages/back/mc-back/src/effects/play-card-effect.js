@@ -482,6 +482,10 @@ export class PlayCardEffect extends Effect {
             }
 
             await player.deck.discard(card);
+            if (card.match?.triggerCards &&
+                typeof card.endTriggers === 'function') {
+                card.endTriggers();
+            }
         } else {
             const putPlayEffect = new PutPlayEffect({
                 card,
@@ -609,6 +613,34 @@ export class PlayCardEffect extends Effect {
                 ...requiredPaymentResources,
             ],
         });
+    }
+    async canPayResourceCost(params) {
+        const triggerParams = this.getTriggersParams(params);
+        if (!await this.triggerInit(triggerParams)) {
+            return false;
+        }
+
+        const resourceCost = await this.getResourceCost(triggerParams);
+        const requirements = [
+            ...resourceCost.getRequiredResources(),
+            ...resourceCost.requirement,
+        ];
+        if (!requirements.length) {
+            return true;
+        }
+
+        const {player} = params;
+        const cardsToPay = await player.getCardsToPay(
+            this.card,
+            resourceCost.resourceType
+        );
+
+        return canPayResourceRequirements(
+            cardsToPay,
+            requirements,
+            this.card,
+            player
+        );
     }
     getPaymentResourcePreferences() {
         const effects = [

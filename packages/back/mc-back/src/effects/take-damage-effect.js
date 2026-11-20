@@ -32,6 +32,7 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         ignoreTough = false,
         preventDamage = 0,
         attackKeywordSource,
+        isConsequential = false,
     }) {
         super(arguments[0]);
 
@@ -40,6 +41,7 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.damage = damage;
         this.ignoreTough = ignoreTough;
         this.attackKeywordSource = attackKeywordSource;
+        this.isConsequential = isConsequential;
         this.initialPreventDamage = Array.isArray(preventDamage) ?
             preventDamage.slice() :
             preventDamage;

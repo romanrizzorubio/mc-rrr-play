@@ -14,6 +14,7 @@ import {
     CARD_TYPE_HERO,
     CARD_TYPE_MINION,
     CARD_TYPE_OBLIGATION,
+    CARD_TYPE_RESOURCE,
     CARD_TYPE_SIDE_SCHEME_SCENARIO,
     CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
@@ -876,6 +877,9 @@ describe('Mercurio hero cards', () => {
             isMinion: true,
             isStunned: false,
             name: 'Minion de prueba',
+            canBeAttacked() {
+                return true;
+            },
             async getAttackValue() {
                 return 3;
             },
@@ -896,6 +900,13 @@ describe('Mercurio hero cards', () => {
         sideStep.canPlay = async () => true;
         player.hand.cards.push(sideStep);
         await sideStep.initTriggers();
+        player.hand.addCard(matchFactory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {
+                name: 'Test resource',
+                resources: [RESOURCE_ENERGY],
+            },
+        }, {owner: player}));
 
         const dialogs = [];
         match.openDialog = async dialog => {

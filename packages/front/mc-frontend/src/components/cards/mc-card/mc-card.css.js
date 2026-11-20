@@ -55,68 +55,68 @@ export default css`
     width: var(--card-size);
   }
 
-  :host(.disabled) .card-front > mc-card-image {
+  :host(.disabled) .card-front mc-card-image {
     filter: brightness(var(--disabled-card-brightness, 0.35));
   }
 
-  .card-front > mc-card-image[draggable="true"] {
+  .card-front mc-card-image[draggable="true"] {
     cursor: grab;
   }
 
-  .card-front.activation-drag-source > mc-card-image {
+  .card-front.activation-drag-source mc-card-image {
     cursor: grabbing;
   }
 
-  .card-front.activation-drop-target > mc-card-image,
-  :host(.playable) .card-front.activation-drop-target > mc-card-image {
+  .card-front.activation-drop-target mc-card-image,
+  :host(.playable) .card-front.activation-drop-target mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
       drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
   }
 
-  :host(.playable) .card-front > mc-card-image {
+  :host(.playable) .card-front mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(255, 235, 59, 0.95))
       drop-shadow(0 0 10px rgba(255, 235, 59, 0.7));
   }
 
-  :host(.playable) .card-front.activation-drag-source > mc-card-image {
+  :host(.playable) .card-front.activation-drag-source mc-card-image {
     filter: none;
   }
 
-  :host(.playable) .card-front > mc-card-image[activation-blocked] {
+  :host(.playable) .card-front mc-card-image[activation-blocked] {
     filter: none;
   }
 
-  .card-front.play-card-blocked > mc-card-image,
-  :host(.playable) .card-front.play-card-blocked > mc-card-image {
+  .card-front.play-card-blocked mc-card-image,
+  :host(.playable) .card-front.play-card-blocked mc-card-image {
     filter: brightness(0.35);
   }
 
-  .card-front.play-card-drag-source > mc-card-image,
-  :host(.playable) .card-front.play-card-drag-source > mc-card-image {
+  .card-front.play-card-drag-source mc-card-image,
+  :host(.playable) .card-front.play-card-drag-source mc-card-image {
     filter: none;
   }
 
-  .card-front.play-card-drop-target > mc-card-image,
-  :host(.playable) .card-front.play-card-drop-target > mc-card-image {
+  .card-front.play-card-drop-target mc-card-image,
+  :host(.playable) .card-front.play-card-drop-target mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
       drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
   }
 
-  .card-front.resource-payment-blocked > mc-card-image,
-  :host(.playable) .card-front.resource-payment-blocked > mc-card-image {
+  .card-front.resource-payment-blocked mc-card-image,
+  :host(.playable) .card-front.resource-payment-blocked mc-card-image {
     filter: brightness(0.35);
   }
 
-  .card-front.resource-payment-drag-source > mc-card-image,
-  :host(.playable) .card-front.resource-payment-drag-source > mc-card-image {
+  .card-front.resource-payment-drag-source mc-card-image,
+  :host(.playable) .card-front.resource-payment-drag-source mc-card-image {
     filter: none;
   }
 
-  .card-front.resource-payment-drop-target > mc-card-image,
-  :host(.playable) .card-front.resource-payment-drop-target > mc-card-image {
+  .card-front.resource-payment-drop-target mc-card-image,
+  :host(.playable) .card-front.resource-payment-drop-target mc-card-image {
     filter:
       drop-shadow(0 0 4px rgba(0, 200, 83, 0.95))
       drop-shadow(0 0 10px rgba(0, 200, 83, 0.7));
@@ -135,6 +135,34 @@ export default css`
     display: flex;
     align-items: flex-start;
     position: relative;
+  }
+
+  .card-image-container {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+  }
+
+  .future-boosts {
+    display: flex;
+    position: absolute;
+    right: calc(100% + 6px);
+    bottom: 0;
+    z-index: 2;
+  }
+
+  .future-boost-count {
+    position: absolute;
+    right: -6px;
+    bottom: -6px;
+    min-width: 20px;
+    padding: 2px 4px;
+    border-radius: 12px;
+    background: #212121;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 1;
+    text-align: center;
   }
 
   .facedown-count {

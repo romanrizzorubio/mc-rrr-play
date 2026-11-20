@@ -207,7 +207,9 @@ export class Attack extends Activation {
             (!effect.isThwart || !character.isConfused);
     }
     filterTarget(card, {player}) {
-        return !card.isEnemy || card.canBeAttacked(player);
+        const attackingPlayer = this.effect?.isEnemyAttack ? undefined : player;
+
+        return !card.isEnemy || card.canBeAttacked(attackingPlayer);
     }
     getController(selectedTarget = this.selectedTarget) {
         if (selectedTarget.isMinion) {

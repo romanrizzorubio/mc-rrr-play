@@ -2,6 +2,7 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
+    ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
@@ -16,8 +17,10 @@ import {
     EFFECT_CHOOSE_CARD_TYPE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_FROM_DECK,
+    EFFECT_DISCARD_UNTIL,
     EFFECT_DO_IF,
     EFFECT_HEAL,
+    EFFECT_MOVE_TO_HAND,
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
@@ -30,6 +33,7 @@ import {
     EFFECT_STUN,
     PLACE_DISCARD_PILE,
     RESOURCE_MENTAL,
+    RESOURCE_ENERGY,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_CARD,
@@ -39,6 +43,7 @@ import {
     TARGET_EFFECT,
     TARGET_PARENT,
     TARGET_SCHEME,
+    TARGET_SOURCE,
     TARGET_THIS,
     TARGET_YOU,
     TIME_PHASE,
@@ -656,6 +661,60 @@ export default [
                                     targetCondition: {isMinion: true},
                                     effectCondition: {
                                         'effect.character.name': 'Drax',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-gamora',
+        classification: CLASSIFICATION_BASIC,
+        order: 19020,
+        card: {
+            type: CARD_TYPE_ALLY,
+            params: {
+                name: 'Gamora',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/allies/19020.png',
+                traits: [TRAIT_GUARDIAN],
+                unique: true,
+                cost: 3,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_BASIC,
+                paramsToPlay: {
+                    'superhero.currentSide.traits': TRAIT_GUARDIAN,
+                },
+                attack: 2,
+                attackConsequential: 1,
+                thwart: 1,
+                thwartConsequential: 1,
+                hitPoints: 3,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_RESPONSE,
+                        params: {
+                            trigger: [
+                                TRIGGER_THIS_ATTACK,
+                                TRIGGER_THIS_THWARTS,
+                            ],
+                            effect: {
+                                type: EFFECT_DISCARD_UNTIL,
+                                params: {
+                                    target: TARGET_YOU,
+                                    condition: {
+                                        isEvent: true,
+                                    },
+                                    showDiscardedCards: true,
+                                    thenEffect: {
+                                        type: EFFECT_MOVE_TO_HAND,
+                                        params: {
+                                            target: TARGET_SOURCE,
+                                            source: 'selectedCards',
+                                        },
                                     },
                                 },
                             },

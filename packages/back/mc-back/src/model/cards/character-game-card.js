@@ -538,7 +538,7 @@ export class CharacterGameCard extends GameCard {
         return this.getKeyword('villainous');
     }
     canBeAttacked(player) {
-        return ((this.isVillain && !player.hasGuard) ||
+        return ((this.isVillain && !player?.hasGuard) ||
             this.isMinion);
     }
     confuse() {

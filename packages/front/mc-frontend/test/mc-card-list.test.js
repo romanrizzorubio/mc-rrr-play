@@ -303,7 +303,7 @@ test('applies a diffuse yellow highlight only to the card image', () => {
 
     assert.match(
         styles,
-        /:host\(\.playable\) \.card-front > mc-card-image/
+        /:host\(\.playable\) \.card-front mc-card-image/
     );
     assert.match(styles, /drop-shadow\(0 0 4px rgba\(255, 235, 59, 0\.95\)\)/);
     assert.doesNotMatch(styles, /:host\(\.playable\).*outline/s);

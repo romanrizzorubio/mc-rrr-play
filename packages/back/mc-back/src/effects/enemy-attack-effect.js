@@ -11,6 +11,7 @@ import {
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_CHARACTER_DEFENDED_ATTACK,
+    TRIGGER_ENEMY_ATTACKS,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
@@ -29,6 +30,7 @@ import {ExhaustEffect} from './exhaust-effect.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {getScenarioZone} from '../utils/match-zone-utils.js';
 import {
+    getConditionExcludePaths,
     filterTargetCandidates,
     splitTargetCondition,
 } from '../utils/target-condition-utils.js';
@@ -95,6 +97,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
+    }
+    get isEnemyAttack() {
+        return true;
     }
     get enemyTargets() {
         return this.enemy && this.enemy.isInPlay !== false ?
@@ -165,14 +170,50 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         });
     }
     async canRun(params) {
-        const canAttack = (await this.getValidTarget(params)).length > 0;
+        const validTargets = await this.getValidTarget(params);
+        const filter = await this.getEnemyTargetFilter(params);
+        const enemyTarget = new ValidTarget({
+            condition: this.condition,
+            effect: this,
+            filter,
+            match: this.match,
+        });
+        const validEnemies = this.enemy ?
+            (!filter || filter(this.enemy, params) ?
+                [this.enemy] :
+                []) :
+            enemyTarget.getValidTarget({
+                ...params,
+                ability: this.ability,
+                source: this.source ?? params.source,
+                target: this.enemyType,
+            });
+        if (getConditionExcludePaths(this.condition)
+            .includes('effect.enemy')) {
+            if (this.enemyTargetEffect && !validTargets.length &&
+                !this.enemy && validEnemies.length) {
+                return true;
+            }
+            const canAttackDifferentEnemy = validEnemies.some(enemy =>
+                validTargets.some(target => target !== enemy)
+            );
+            if (canAttackDifferentEnemy) {
+                return true;
+            }
+
+            this.resolved = false;
+            this.fullResolved = false;
+
+            return false;
+        }
+
+        const canAttack = validTargets.length > 0;
         if (!canAttack && !this.enemyTargetEffect) {
             this.resolved = false;
             this.fullResolved = false;
 
             return false;
         }
-        const filter = await this.getEnemyTargetFilter(params);
         if (this.enemy) {
             if (canAttack && (!filter || filter(this.enemy, params))) {
                 return true;
@@ -183,19 +224,6 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
             return false;
         }
-
-        const enemyTarget = new ValidTarget({
-            condition: this.condition,
-            effect: this,
-            filter,
-            match: this.match,
-        });
-
-        const validEnemies = enemyTarget.getValidTarget({
-            ...params,
-            ability: this.ability,
-            target: this.enemyType,
-        });
         if (validEnemies.length) {
             return true;
         }
@@ -209,7 +237,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         const target = Array.isArray(this.selectedTarget) ?
             this.selectedTarget[0] : this.selectedTarget;
 
-        return target ? this.getTargetPlayer(target) :
+        return target && !target.isEnemy ? this.getTargetPlayer(target) :
             super.getActivationDialogPlayer(params);
     }
     getTargetDialog() {
@@ -465,6 +493,10 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         return {defender};
     }
     async selectAttackDefender(attackTarget, params) {
+        if (attackTarget?.isEnemy) {
+            return null;
+        }
+
         const targetPlayer = this.getTargetPlayer(attackTarget);
         while (this.canContinueActivation()) {
             const selection = await this.openDefenseSelection(
@@ -589,7 +621,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         }
 
         const attackTarget = this.getDefenseAbilityTarget(player);
-        if (!attackTarget) {
+        if (!attackTarget || attackTarget.isEnemy) {
             return false;
         }
         if (this.match?.scenario?.separatePlayAreas &&
@@ -662,6 +694,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 TRIGGER_VILLAIN_ACTIVATES,
                 TRIGGER_VILLAIN_ATTACKS,
                 TRIGGER_VILLAIN_ATTACKS_YOU,
+                TRIGGER_ENEMY_ATTACKS,
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
     }

@@ -5,6 +5,7 @@ import {
     ABILITY_RESPONSE,
     CALC_THWART,
     CARD_TYPE_EVENT,
+    CARD_TYPE_RESOURCE,
     CLASSIFICATION_PROTECTION,
     EFFECT_REMOVE_THREAT,
     LABEL_THWART,
@@ -70,7 +71,16 @@ describe('Brío', () => {
         event.refresh = async () => {};
         player.hand.addCard(event);
 
-        return {aspects, definition, event, heroes, mainScheme, match, player};
+        return {
+            aspects,
+            definition,
+            event,
+            factory,
+            heroes,
+            mainScheme,
+            match,
+            player,
+        };
     };
 
     test('is in the Protection collection and absent from every precon', async () => {
@@ -123,7 +133,7 @@ describe('Brío', () => {
     });
 
     test('responds after your Hero defends and removes threat equal to effective INT', async () => {
-        const {definition, event, mainScheme, match, player} =
+        const {definition, event, factory, mainScheme, match, player} =
             await createContext();
         const [ability] = event.abilities;
         const [abilityConfig] = definition.card.params.abilities;
@@ -151,6 +161,13 @@ describe('Brío', () => {
         assert.equal(abilityConfig.params.trigger, TRIGGER_HERO_DEFENDED_ATTACK);
         assert.ok(triggerTypes.includes(TRIGGER_HERO_DEFENDED_ATTACK));
         player.canPlayCard = async () => true;
+        player.hand.addCard(factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {
+                name: 'Test resource',
+                resources: [RESOURCE_ENERGY],
+            },
+        }, {owner: player}));
         assert.equal(await trigger.canTrigger({
             defender: hero,
             effect: attack,

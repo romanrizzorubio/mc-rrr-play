@@ -151,4 +151,110 @@ describe('tucked and facedown card presentation', () => {
             /\.tucked\.facedown-host\s*\{[^}]*position: static;[^}]*height: 16px;/s
         );
     });
+
+    test('shows future boost backs to the lower left without treating them as tucked cards', () => {
+        const card = Object.assign(Object.create(CardComponent.prototype), {
+            card: {isVillain: true},
+            faceDown: [{
+                id: 'hidden-boost',
+                image: 'secret-boost.png',
+                isEncounterCard: true,
+                isFutureBoost: true,
+                name: 'Secret boost',
+            }],
+            size: 'm',
+            tuckedCards: [],
+        });
+        const futureBoosts = card.renderFutureBoosts();
+
+        assert.equal(card.getFaceDownPeekCards().length, 0);
+        assert.equal(card.renderTucked().strings.join(''), '');
+        assert.equal(card.renderFaceDown().strings.join(''), '');
+        assert.match(futureBoosts.strings.join(''), /class="future-boosts"/);
+        assert.equal(futureBoosts.values[0], 1);
+        assert.equal(
+            futureBoosts.values[1],
+            'images/cards/back/encounter.jpg'
+        );
+        assert.equal(futureBoosts.values[2], 's');
+        assert.equal(futureBoosts.values[4], '');
+        assert.doesNotMatch(
+            JSON.stringify(futureBoosts.values),
+            /hidden-boost|secret-boost|Secret boost/
+        );
+        assert.match(
+            CardComponent.styles.cssText,
+            /\.future-boosts\s*\{[^}]*right: calc\(100% \+ 6px\);[^}]*bottom: 0;/s
+        );
+    });
+
+    test('anchors future boosts at the lower left of the host image without shifting stats', () => {
+        const stats = {};
+        const futureBoosts = {};
+        const tuckedTab = {};
+        const card = Object.assign(Object.create(CardComponent.prototype), {
+            activationActor: {abilities: []},
+            card: {isVillain: true},
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            exhausted: false,
+            faceDown: [{isEncounterCard: true, isFutureBoost: true}],
+            horizontal: false,
+            image: 'villain.png',
+            isFacedownCard: false,
+            name: 'Villain',
+            rotated: false,
+            size: 'm',
+            tuckedCards: [],
+            renderHeader: () => '',
+            renderStats: () => stats,
+            renderFutureBoosts: () => futureBoosts,
+            renderTucked: () => tuckedTab,
+            renderStage: () => '',
+            renderFacedownPeekButton: () => '',
+            renderCounters: () => '',
+            renderBottomStats: () => '',
+            renderAcquiredTraits: () => '',
+            renderAcquiredKeywords: () => '',
+            renderAttached: () => '',
+            renderFaceDown: () => '',
+            renderMenu: () => '',
+        });
+        const template = card.renderCard();
+        const futureBoostIndex = template.values.indexOf(futureBoosts);
+
+        assert.ok(template.values.indexOf(stats) < futureBoostIndex);
+        assert.ok(template.values.indexOf(futureBoosts) >= 0);
+        assert.ok(
+            template.strings[futureBoostIndex].includes('</mc-card-image>')
+        );
+        assert.match(
+            CardComponent.styles.cssText,
+            /\.card-image-container\s*\{[^}]*position: relative;/s
+        );
+        assert.match(
+            CardComponent.styles.cssText,
+            /\.future-boosts\s*\{[^}]*position: absolute;[^}]*right: calc\(100% \+ 6px\);[^}]*bottom: 0;/s
+        );
+    });
+
+    test('shows a count when multiple future boost backs are grouped', () => {
+        const card = Object.assign(Object.create(CardComponent.prototype), {
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            faceDown: [
+                {isEncounterCard: true, isFutureBoost: true},
+                {isEncounterCard: true, isFutureBoost: true},
+            ],
+            size: 'm',
+        });
+        const futureBoosts = card.renderFutureBoosts();
+        const count = futureBoosts.values[4];
+
+        assert.equal(futureBoosts.values[0], 2);
+        assert.match(count.strings.join(''), /future-boost-count/);
+        assert.equal(count.values[0], 2);
+    });
 });

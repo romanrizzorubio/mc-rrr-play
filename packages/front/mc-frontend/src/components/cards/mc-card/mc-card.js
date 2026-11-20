@@ -73,7 +73,12 @@ export class CardComponent extends LitElement {
         }
     }
     getFaceDownPeekCards() {
-        return (this.faceDown || []).filter(card => this.getFaceDownType(card));
+        return (this.faceDown || []).filter(card =>
+            !card.isFutureBoost && this.getFaceDownType(card)
+        );
+    }
+    getFutureBoostCards() {
+        return (this.faceDown || []).filter(card => card.isFutureBoost);
     }
     renderTucked() {
         const tuckedCards = this.tuckedCards || [];
@@ -109,6 +114,29 @@ export class CardComponent extends LitElement {
                         ></mc-card-image>
                     </div>
                 `)}
+            </div>
+        ` : html``;
+    }
+    renderFutureBoosts() {
+        const count = this.getFutureBoostCards().length;
+
+        return count ? html`
+            <div
+                class="future-boosts"
+                aria-label="Aumentos pendientes: ${count}"
+            >
+                <mc-card-image
+                    src="${this.getImageBack(CARD_TYPES.ENCOUNTER_CARD)}"
+                    size="${this._smallSize}"
+                    .activationBlocked="${Boolean(
+                        this.dragActivation ||
+                        this.dragPlayCard ||
+                        this.dragResourcePayment
+                    )}"
+                ></mc-card-image>
+                ${count > 1 ? html`
+                    <div class="future-boost-count">${count}</div>
+                ` : ''}
             </div>
         ` : html``;
     }
@@ -355,8 +383,6 @@ export class CardComponent extends LitElement {
         }
     }
     getFaceDownTypes() {
-        const {faceDown} = this;
-
         const _addType = (ret, type, card) => {
             if (!ret[type]) {
                 ret[type] = [];
@@ -364,14 +390,18 @@ export class CardComponent extends LitElement {
             ret[type].push(card);
         };
 
-        return faceDown ? faceDown.reduce((ret, card) => {
+        return (this.faceDown || []).reduce((ret, card) => {
+            if (card.isFutureBoost) {
+                return ret;
+            }
+
             const type = this.getFaceDownType(card);
             if (type) {
                 _addType(ret, type, card);
             }
 
             return ret;
-        }, {}) : {};
+        }, {});
     }
     getImageBack(type) {
         switch (type) {
@@ -933,27 +963,32 @@ export class CardComponent extends LitElement {
                                 <div class="card-image-marker">
                                     <slot name="image-marker"></slot>
                                 </div>
-                                <mc-card-image
-                                    id="card"
-                                    class="${this.aspectMarkers?.length ?
-                                        'has-aspect-markers' :
-                                        ''}"
-                                    src="${imageSrc}"
-                                    size="${size}"
-                                    .horizontal="${horizontal}"
-                                    .rotated="${rotated}"
-                                    .aspectMarkers="${this.aspectMarkers}"
-                                    .outlinedAspectMarkers="${this.outlinedAspectMarkers}"
-                                    .activationBlocked="${this.isActivationVeiled ||
-                                        this.isResourcePaymentVeiled}"
-                                    ?draggable="${isDraggable}"
-                                    @click="${this.handleClick.bind(this)}"
-                                    @contextmenu="${this.hableContextMenu.bind(this)}"
-                                    @dragstart="${this.handleDragStart.bind(this)}"
-                                    @dragend="${this.handleDragEnd.bind(this)}"
-                                    @dragover="${this.handleDragOver.bind(this)}"
-                                    @drop="${this.handleDrop.bind(this)}"
-                                ></mc-card-image>
+                                <div class="card-image-container">
+                                    <mc-card-image
+                                        id="card"
+                                        class="${this.aspectMarkers?.length ?
+                                            'has-aspect-markers' :
+                                            ''}"
+                                        src="${imageSrc}"
+                                        size="${size}"
+                                        .horizontal="${horizontal}"
+                                        .rotated="${rotated}"
+                                        .aspectMarkers="${this.aspectMarkers}"
+                                        .outlinedAspectMarkers="${this.outlinedAspectMarkers}"
+                                        .activationBlocked="${this.isActivationVeiled ||
+                                            this.isResourcePaymentVeiled}"
+                                        ?draggable="${isDraggable}"
+                                        @click="${this.handleClick.bind(this)}"
+                                        @contextmenu="${this.hableContextMenu.bind(this)}"
+                                        @dragstart="${this.handleDragStart.bind(this)}"
+                                        @dragend="${this.handleDragEnd.bind(this)}"
+                                        @dragover="${this.handleDragOver.bind(this)}"
+                                        @drop="${this.handleDrop.bind(this)}"
+                                    ></mc-card-image>
+                                    ${hiddenFacedown ?
+                                        '' :
+                                        this.renderFutureBoosts()}
+                                </div>
                                 ${this.renderFacedownPeekButton()}
                                 ${hiddenFacedown ||
                                     hasFaceDownPeeks ||

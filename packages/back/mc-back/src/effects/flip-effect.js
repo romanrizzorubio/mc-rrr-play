@@ -154,7 +154,7 @@ export class FlipEffect extends Effect {
             );
         }
         const triggerParams = {
-            ...params,
+            ...this.getTriggersParams(params),
             card: selectedTarget,
             triggeredCard: selectedTarget,
             ...(owner?.isPlayer ? {player: owner} : {}),

@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     ABILITY_ACTION,
     CARD_TYPE_OBLIGATION,
+    CARD_TYPE_RESOURCE,
     CARD_TYPE_SUPPORT,
     CLASSIFICATION_AGGRESSION,
     CLASSIFICATION_HERO,
@@ -13,6 +14,7 @@ import {
     EFFECT_DISCARD_GAME,
     EFFECT_SELECT_DISCARD_CARD,
     PRIORITY_INTERRUPT,
+    RESOURCE_PHYSICAL,
     TARGET_THIS,
     TARGET_YOU,
     TRAIT_TEMPORAL,
@@ -240,6 +242,13 @@ describe('Sin poderes', () => {
         );
         quickGrowth.controller = holder;
         holder.hand.addCard(quickGrowth);
+        holder.hand.addCard(factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_RESOURCE,
+            params: {
+                name: 'Test resource',
+                resources: [RESOURCE_PHYSICAL],
+            },
+        }, {owner: holder}));
         await new Promise(resolve => setImmediate(resolve));
 
         const dialogs = [];

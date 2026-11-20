@@ -14,12 +14,16 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CHAINED,
+    EFFECT_COUNT_BOOST_ICONS,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DELAYED,
+    EFFECT_DISCARD_FROM_DECK,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_HEAL,
     EFFECT_ENEMY_ATTACK,
+    EFFECT_MODIFY_ATTACK,
+    EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_DEFENSE_VALUE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_READY,
@@ -35,6 +39,7 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
     TARGET_ATTACKER,
+    TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_HERO,
@@ -52,11 +57,13 @@ import {
     TRAIT_SKILL,
     TRAIT_TACTIC,
     TRIGGER_BOOST_REVEALED,
+    TRIGGER_ENEMY_ATTACKS,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_TREACHERY_REVEAL,
+    TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOUR_SUPERHERO_FLIPS,
 } from 'mc-shared';
 
@@ -894,6 +901,233 @@ export default [
                                     paramsCalc: {
                                         target: 'player.superhero.currentSide',
                                         formula: CALC_THWART,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-desvio',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 19015,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Desvío',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/19015.png',
+                traits: [TRAIT_SKILL],
+                cost: 2,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                            triggerParams: {
+                                target: TARGET_YOUR_SUPERHERO,
+                            },
+                            condition: {
+                                'effect.isAttack': true,
+                            },
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_PREVENT_DAMAGE,
+                                            params: {
+                                                target: TARGET_EFFECT,
+                                                damage: 5,
+                                                selectDamage: true,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DISCARD_FROM_DECK,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                count: 0,
+                                                showDialog: true,
+                                                paramsCalc: {
+                                                    target: 'effects.0.preventedDamage',
+                                                    formula: CALC_ALL,
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-una-dura-leccion',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 19016,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Una dura lección',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/19016.png',
+                traits: [TRAIT_ATTACK],
+                cost: 3,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DEAL_DAMAGE,
+                                            params: {
+                                                target: TARGET_ENEMY,
+                                                damage: 4,
+                                                isAttack: true,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'effects.0.defeated': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_TOUGH,
+                                                    params: {
+                                                        target: TARGET_YOUR_HERO,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-golpe-de-tanteo',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 19017,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Golpe de tanteo',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/19017.png',
+                traits: [TRAIT_TACTIC],
+                cost: 0,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_YOU_BASIC_ATTACK,
+                            condition: {
+                                'effect.character.isHero': true,
+                                'effect.ability.isBasic': true,
+                            },
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DISCARD_FROM_DECK,
+                                            params: {
+                                                target: TARGET_ENCOUNTER_DECK,
+                                                count: 1,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_COUNT_BOOST_ICONS,
+                                            params: {
+                                                card: 'effects.0.cards.0',
+                                                showDialog: false,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_MODIFY_ATTACK_VALUE,
+                                            params: {
+                                                target: TARGET_EFFECT,
+                                                count: 0,
+                                                paramsCalc: {
+                                                    target: 'effects.1.value',
+                                                    formula: CALC_ALL,
+                                                    multiply: -1,
+                                                },
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DELAYED,
+                                            params: {
+                                                target: TARGET_EFFECT,
+                                                effect: {
+                                                    type: EFFECT_DO_IF,
+                                                    params: {
+                                                        condition: {
+                                                            'effect.dealtDamage': '>0',
+                                                        },
+                                                        effect: {
+                                                            type: EFFECT_READY,
+                                                            params: {
+                                                                target: TARGET_YOUR_HERO,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'protection-sometimiento',
+        aspect: CLASSIFICATION_PROTECTION,
+        order: 19018,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Sometimiento',
+                set: CLASSIFICATION_PROTECTION,
+                image: 'aspect/protection/events/19018.png',
+                cost: 1,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_PROTECTION,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_ENEMY_ATTACKS,
+                            effect: {
+                                type: EFFECT_MODIFY_ATTACK,
+                                params: {
+                                    target: TARGET_EFFECT,
+                                    modify: {
+                                        modifyAttack: -3,
                                     },
                                 },
                             },

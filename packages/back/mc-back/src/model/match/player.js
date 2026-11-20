@@ -465,6 +465,18 @@ export class Player extends Engine {
             ),
         };
     }
+    async canPayEventResourceCost({ability, card, ...params}) {
+        const playCardEffect = new PlayCardEffect({
+            ability,
+            card,
+            match: this.match,
+        });
+
+        return playCardEffect.canPayResourceCost({
+            ...params,
+            player: this,
+        });
+    }
     async getDirectResourcePayment({
         cardId,
         cardToPay,
