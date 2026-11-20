@@ -10,6 +10,7 @@ export class PlayCardActionEffect extends Effect {
     constructor({
         costReduction = 0,
         ignoreResourceCost = false,
+        requiresSharedTrait = true,
         sharedTraitsWith = TARGET_YOUR_HERO,
     }) {
         super(arguments[0]);
@@ -20,9 +21,13 @@ export class PlayCardActionEffect extends Effect {
         if (typeof ignoreResourceCost !== 'boolean') {
             throw new TypeError('PlayCardActionEffect ignoreResourceCost must be a boolean.');
         }
+        if (typeof requiresSharedTrait !== 'boolean') {
+            throw new TypeError('PlayCardActionEffect requiresSharedTrait must be a boolean.');
+        }
 
         this.costReduction = costReduction;
         this.ignoreResourceCost = ignoreResourceCost;
+        this.requiresSharedTrait = requiresSharedTrait;
         this.sharedTraitsWith = sharedTraitsWith;
         this.playCardEffect = undefined;
     }
@@ -46,7 +51,7 @@ export class PlayCardActionEffect extends Effect {
             return false;
         }
 
-        if (this.ignoreResourceCost) {
+        if (this.ignoreResourceCost || !this.requiresSharedTrait) {
             return true;
         }
 
@@ -65,6 +70,7 @@ export class PlayCardActionEffect extends Effect {
                 ignoreResourceCost: this.ignoreResourceCost,
                 match: this.match,
             });
+            playCardEffect.modifyCost = -this.costReduction;
 
             if (await playCardEffect.canRun({
                 ...params,

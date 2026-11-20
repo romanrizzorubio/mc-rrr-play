@@ -310,6 +310,7 @@ describe('Groot added cards', () => {
 
         assert.equal(rocket.type, CARD_TYPE_ALLY);
         assert.deepEqual(rocket.params.traits, [TRAIT_GUARDIAN]);
+        assert.equal(rocket.params.unique, true);
         assert.equal(rocket.params.cost, 3);
         assert.equal(rocket.params.resources[0], RESOURCE_WILD);
         assert.deepEqual(rocket.params.paramsToPlay, {

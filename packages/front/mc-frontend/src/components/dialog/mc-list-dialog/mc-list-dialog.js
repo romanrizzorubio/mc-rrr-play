@@ -196,9 +196,11 @@ export class McListDialog extends McDialog {
                     hide-name
                 ></mc-card>
                 ` : ''}
-            <md-list class="list ${cardTypeOptions ? 'card-type-list' : ''}">
-                ${displayedOptions.map(this.renderItem.bind(this))}
-            </md-list>
+            ${displayedOptions.length ? html`
+                <md-list class="list ${cardTypeOptions ? 'card-type-list' : ''}">
+                    ${displayedOptions.map(this.renderItem.bind(this))}
+                </md-list>
+            ` : ''}
         `;
     }
 }

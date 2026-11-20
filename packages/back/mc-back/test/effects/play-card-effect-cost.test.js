@@ -62,6 +62,16 @@ function createPlayCardEffect({
         getCardsToPay: 0,
         getCardsToPayParams: undefined,
     };
+    const availableResources = {
+        id: 'available-resource-icons',
+        resources: Array(10).fill(RESOURCE_WILD),
+        toObj() {
+            return {
+                id: this.id,
+                resources: this.resources,
+            };
+        },
+    };
     const player = {
         async getCardsToPay(...params) {
             calls.getCardsToPay++;
@@ -69,7 +79,7 @@ function createPlayCardEffect({
 
             return {
                 generators: [],
-                hand: [],
+                hand: [availableResources],
             };
         },
         getCard: cardToGet => cardToGet,
@@ -133,6 +143,59 @@ describe('PlayCardEffect payment cost', () => {
 
         assert.equal(calls.dialogs.length, 1);
         assert.equal(calls.dialogs[0].data.cost, 2);
+    });
+
+    test('shows an explanatory dialog when required resource types are unavailable', async () => {
+        const {calls, effect, player} = createPlayCardEffect({
+            calculatedCost: 2,
+            resourceType: RESOURCE_PHYSICAL,
+        });
+        player.getCardsToPay = async () => ({
+            generators: [],
+            hand: [{
+                id: 'one-physical',
+                resources: [RESOURCE_PHYSICAL],
+                toObj: () => ({
+                    id: 'one-physical',
+                    resources: [RESOURCE_PHYSICAL],
+                }),
+            }],
+        });
+
+        await effect.payCost({player});
+
+        assert.equal(calls.dialogs.length, 1);
+        assert.equal(calls.dialogs[0].dialogType, DIALOG_LIST);
+        assert.equal(calls.dialogs[0].title, 'Coste no pagado');
+        assert.equal(
+            calls.dialogs[0].subtitle,
+            `No tienes suficientes recursos de tipo [${RESOURCE_PHYSICAL}] para pagar este coste.`
+        );
+    });
+
+    test('checks the printed cost and resource requirements together', async () => {
+        const {calls, effect, player} = createPlayCardEffect({
+            calculatedCost: 1,
+            requirement: [RESOURCE_MENTAL],
+            resourceType: RESOURCE_PHYSICAL,
+        });
+        player.getCardsToPay = async () => ({
+            generators: [],
+            hand: [{
+                id: 'one-wild',
+                resources: [RESOURCE_WILD],
+                toObj: () => ({id: 'one-wild'}),
+            }],
+        });
+
+        await effect.payCost({player});
+
+        assert.equal(calls.dialogs.length, 1);
+        assert.equal(calls.dialogs[0].dialogType, DIALOG_LIST);
+        assert.equal(
+            calls.dialogs[0].subtitle,
+            `No tienes suficientes recursos de tipo [${RESOURCE_PHYSICAL}] y [${RESOURCE_MENTAL}] para pagar este coste.`
+        );
     });
 
     test('stages a shared resource generator controlled by another player', async () => {

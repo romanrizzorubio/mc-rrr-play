@@ -7,6 +7,7 @@ import {
     PLACE_DISCARD_PILE,
     PLACE_HAND,
     PLACE_TUCKED,
+    RESOURCE_ANY,
     RESOURCES_X,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
@@ -32,6 +33,10 @@ import {
     canPreselectEffectTarget,
     getEffectTargetEntries,
 } from '../utils/effect-targets.js';
+import {
+    canPayResourceRequirements,
+    showInsufficientResourceCostDialog,
+} from '../utils/resource-payment-availability.js';
 import {toResourcePaymentCard} from '../utils/resource-requirements.js';
 
 const matchesTargetId = (target, targetId) =>
@@ -673,6 +678,34 @@ export class PlayCardEffect extends Effect {
             resourceUsage,
             {costOnlyResourceUsage},
         );
+        const requiredResources = cost.amount === RESOURCES_X ?
+            [cost.resourceType ?? RESOURCE_ANY] :
+            cost.getRequiredResources();
+        const resourceRequirements = cost.requirement || [];
+        const paymentRequirements = [
+            ...requiredResources,
+            ...resourceRequirements,
+        ];
+        const hasRequiredResources = (
+            !paymentRequirements.length ||
+            canPayResourceRequirements(
+                cardsToPay,
+                paymentRequirements,
+                card,
+                player
+            )
+        );
+        if (!hasRequiredResources) {
+            await showInsufficientResourceCostDialog(
+                dialog => this.openDialog(dialog),
+                player,
+                card,
+                {requirements: paymentRequirements}
+            );
+
+            return undefined;
+        }
+
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,

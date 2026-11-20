@@ -116,7 +116,7 @@ Si un efecto compuesto y varios hijos comparten el mismo selector, define el `ta
 
 ### Condiciones agregadas durante la selección
 
-Además de las condiciones que filtran cada candidato, `condition` puede limitar la lista ya resuelta por un selector usando `{operator: 'max', defaultValue: N}` en una propiedad numérica del objetivo. Primero se aplican las restricciones de elegibilidad del efecto y luego se conservan los candidatos empatados en el máximo. Si la propiedad no existe o es `null`, se usa `defaultValue`; para comparar costes impresos ausentes como 0, configura `cost: {operator: 'max', defaultValue: 0}`.
+Además de las condiciones que filtran cada candidato, `condition` puede limitar la lista ya resuelta por un selector usando `{operator: 'max'}` o `{operator: 'min'}` en una propiedad numérica del objetivo. Primero se aplican las restricciones de elegibilidad del efecto y luego se conservan los candidatos empatados en el máximo o mínimo. Si la propiedad no existe o es `null`, `max` usa 0 y `min` usa el mayor entero seguro; configura `defaultValue` para otro valor, como `cost: {operator: 'max', defaultValue: 0}` para costes impresos ausentes.
 
 ```javascript
 condition: {
@@ -125,7 +125,7 @@ condition: {
 }
 ```
 
-Usa `TARGET_MINION` con una condición agregada para elegir esbirros según su Vida restante (`life`), los puntos de Vida del lado activo (`currentSide.hitPoints`) o la Vida impresa (`currentSide.card.hitPoints`). El máximo se calcula después de filtrar los candidatos no elegibles.
+Usa una condición agregada para elegir candidatos según el valor mínimo o máximo de una propiedad numérica; por ejemplo, `attack: {operator: 'min'}` y `scheme: {operator: 'max'}` seleccionan los enemigos con menor ATQ y mayor PLA, conservando los empates. `TARGET_MINION` también puede comparar la Vida restante (`life`), los puntos de Vida del lado activo (`currentSide.hitPoints`) o la Vida impresa (`currentSide.card.hitPoints`). La agregación se calcula después de filtrar los candidatos no elegibles.
 
 ```javascript
 target: TARGET_MINION,

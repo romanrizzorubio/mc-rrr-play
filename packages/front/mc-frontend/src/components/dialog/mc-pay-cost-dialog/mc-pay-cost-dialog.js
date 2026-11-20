@@ -63,6 +63,7 @@ export class McPayCostDialog extends McDialog {
                 allowPartial: false,
                 allowWildConversion: true,
                 differentTypes: false,
+                sameType: false,
                 resourcePaymentMode: RESOURCE_PAYMENT_MODE_PAYMENT,
                 resourceSelectionMode: false,
                 resourceType: undefined,
@@ -143,9 +144,16 @@ export class McPayCostDialog extends McDialog {
             allowPartial,
             card,
             resourcePaymentMode,
+            sameType,
         } = this.data;
         if (resourcePaymentMode === RESOURCE_PAYMENT_MODE_DISCARD) {
             return this.title || 'Descarta iconos de recursos de tu mano';
+        }
+
+        if (sameType) {
+            return card && card.name ?
+                `Pagar ${card.name} con recursos del mismo tipo` :
+                'Pagar recursos del mismo tipo';
         }
 
         const action = allowPartial ?
@@ -224,6 +232,8 @@ export class McPayCostDialog extends McDialog {
             this.getPaymentResourceUnits(cards, true),
             requirement
         );
+        const sameType = !this.data.sameType ||
+            new Set(this.resourcesType).size <= 1;
         const hasUnusedCard = selectedCards.some(card =>
             !selectedMatches.cardIds.has(card.id));
 
@@ -231,7 +241,8 @@ export class McPayCostDialog extends McDialog {
             availableCount: availableMatches.count,
             canContinue: availableMatches.count > 0 &&
                 selectedMatches.count === availableMatches.count &&
-                !hasUnusedCard,
+                !hasUnusedCard &&
+                sameType,
             hasUnusedCard,
             selectedCount: selectedMatches.count,
         };
@@ -256,6 +267,7 @@ export class McPayCostDialog extends McDialog {
             allowPartial,
             cost,
             differentTypes,
+            sameType,
             requirement,
             resourcePaymentMode,
         } = this.data;
@@ -268,6 +280,9 @@ export class McPayCostDialog extends McDialog {
         if (differentTypes &&
             new Set(this.resourcesType).size < requirements.length) {
             return 'Selecciona recursos de tipos distintos.';
+        }
+        if (sameType && new Set(this.resourcesType).size > 1) {
+            return 'Selecciona recursos del mismo tipo.';
         }
 
         if (allowPartial && cost !== COST_X) {
@@ -352,6 +367,7 @@ export class McPayCostDialog extends McDialog {
             cost,
             requirement,
             differentTypes,
+            sameType,
             resourcePaymentMode,
         } = this.data;
         const requirements = normalizeResourceRequirements(requirement);
@@ -362,6 +378,9 @@ export class McPayCostDialog extends McDialog {
 
         const resources = this.resourcesType;
         if (differentTypes && new Set(resources).size < requirements.length) {
+            return false;
+        }
+        if (sameType && new Set(resources).size > 1) {
             return false;
         }
         if (cost === COST_X) {

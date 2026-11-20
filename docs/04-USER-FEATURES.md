@@ -99,6 +99,7 @@ Al crear o editar un mazo asociado a un superhéroe, se aplican estas reglas:
 - Las cartas específicas del superhéroe son fijas: el editor las incluye al calcular el tamaño, pero no las guarda ni permite modificarlas.
 - El mazo persistido contiene únicamente el identificador de cada carta editable y su número de copias.
 - El editor aplica el tamaño permitido de 40 a 50 cartas, el máximo de tres copias por título no único y las restricciones de unicidad.
+- El filtro de aspecto incluye también los aspectos de cartas adicionales que el héroe puede incluir según sus reglas de construcción; cada opción muestra únicamente las cartas permitidas de ese aspecto.
 - Se pueden guardar borradores incompletos. Solo los mazos legales aparecen como opciones al crear una partida.
 
 ### Seleccionar Escenario
@@ -301,6 +302,7 @@ La defensa básica agota el personaje: un héroe resta su DEF y un aliado recibe
 - Mostrados en la zona del jugador
 - Contador en tiempo real
 - Al pagar, los recursos universales se asignan automáticamente a los requisitos específicos pendientes y, después, a los tipos de recurso que activan bonificaciones de la carta (como Arremetida o Golpe contundente). Si una bonificación exige pagar todo con un único tipo de recurso, los universales restantes se asignan a ese tipo; puedes cambiar la asignación haciendo clic en el icono, incluso cuando el pago permite elegir unidades concretas.
+- Si no hay recursos suficientes de los tipos requeridos para pagar un coste, aparece un aviso con los iconos de esos recursos en el texto, en lugar del diálogo de pago.
 
 ## Sistema de Turno
 

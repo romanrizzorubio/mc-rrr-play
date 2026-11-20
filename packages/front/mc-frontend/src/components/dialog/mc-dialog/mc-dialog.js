@@ -176,7 +176,7 @@ export class McDialog extends LitElement {
         const subtitle = this.getSubtitle();
 
         return subtitle ? html`
-            <h3 class="subtitle">${subtitle}</h3>
+            <h3 class="subtitle">${renderTextWithFormatting(subtitle)}</h3>
         ` : html``;
     }
     renderTitle() {

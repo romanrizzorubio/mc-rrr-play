@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
-import {DIALOG_PAY_COST} from 'mc-shared';
+import {
+    DIALOG_PAY_COST,
+    RESOURCE_ANY,
+} from 'mc-shared';
 import {PlayCardEffect} from '../../src/effects/play-card-effect.js';
 
 describe('play card payment dialogs', () => {
@@ -15,7 +18,16 @@ describe('play card payment dialogs', () => {
             },
         };
         const player = {
-            getCardsToPay: async () => ({generators: [], hand: []}),
+            getCardsToPay: async () => ({
+                generators: [],
+                hand: [{
+                    id: 'resource',
+                    resources: [RESOURCE_ANY, RESOURCE_ANY],
+                    toObj() {
+                        return {id: this.id, resources: this.resources};
+                    },
+                }],
+            }),
         };
         const effect = new PlayCardEffect({card, match: {}});
         let dialog;
@@ -23,6 +35,8 @@ describe('play card payment dialogs', () => {
         effect.getResourceCost = async () => ({
             amount: 2,
             requiresPayment: true,
+            getRequiredResources: () => [RESOURCE_ANY, RESOURCE_ANY],
+            requirement: [],
         });
         effect.getPaymentResourcePreferences = () => [];
         effect.getExclusivePaymentResourcePreferences = () => [];

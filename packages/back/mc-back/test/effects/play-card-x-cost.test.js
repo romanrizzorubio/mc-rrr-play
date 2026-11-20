@@ -53,7 +53,14 @@ describe('variable-cost card play', () => {
         };
         const player = {
             async getCardsToPay() {
-                return {generators: [], hand: []};
+                return {
+                    generators: [],
+                    hand: [{
+                        id: 'mental-resource',
+                        resources: [RESOURCE_MENTAL],
+                        toObj: () => ({id: 'mental-resource'}),
+                    }],
+                };
             },
         };
 

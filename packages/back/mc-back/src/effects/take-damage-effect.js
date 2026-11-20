@@ -1,7 +1,9 @@
 import {
+    DIALOG_LIST,
     EFFECT_CATEGORY_DAMAGE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_PLACE_DAMAGE,
+    PRIORITY_FORCED_INTERRUPT,
     TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_ATTACHED_TAKES_DAMAGE,
@@ -49,6 +51,9 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.excessDamageTargetWasEnemy = undefined;
         this.canceled = false;
         this.defeated = false;
+        this.costDamagePreventionReasons = new Set();
+        this.costRequiredDamage = undefined;
+        this.costBlockedDialogShown = false;
     }
     resetResolutionData() {
         super.resetResolutionData();
@@ -60,6 +65,9 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         this.excessDamageTargetWasEnemy = undefined;
         this.canceled = false;
         this.defeated = false;
+        this.costDamagePreventionReasons.clear();
+        this.costRequiredDamage = undefined;
+        this.costBlockedDialogShown = false;
     }
     getResolutionChildEffects() {
         const effects = super.getResolutionChildEffects();
@@ -139,6 +147,40 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
 
         return super.canRun(params);
     }
+    isDamageCost(params = {}) {
+        if (Object.hasOwn(params, 'triggeredEffect')) {
+            return this.isCost;
+        }
+
+        return this.isCost ||
+            params.isCost === true ||
+            params.costPaymentSession?.requireAllCosts === true;
+    }
+    getDamageAmounts(damage) {
+        const targetsCount = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget.length :
+            this.selectedTarget ? 1 : 0;
+        const amounts = Array.isArray(damage) ?
+            damage :
+            Array(targetsCount).fill(damage);
+
+        return amounts.map(amount => Math.max(0, amount ?? 0));
+    }
+    hasToughPreventingDamage() {
+        const piercing = this.isAttack && this.piercing;
+        if (this.ignoreTough || piercing) {
+            return false;
+        }
+
+        const targets = Array.isArray(this.selectedTarget) ?
+            this.selectedTarget :
+            [this.selectedTarget];
+        const damageAmounts = this.getDamageAmounts(this.damage);
+
+        return targets.some((target, index) =>
+            this.getStatusTarget(target).isTough &&
+            damageAmounts[index] > 0);
+    }
     checkTrigger(params) {
         if (!this.isActivationActive(params)) {
             return false;
@@ -164,10 +206,18 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             piercing: this.isAttack && this.piercing,
         });
     }
-    async resolveStatusBeforeInterrupts() {
+    async resolveStatusBeforeInterrupts(params) {
         const {selectedTarget} = this;
         const piercing = this.isAttack && this.piercing;
         const multiTarget = Array.isArray(selectedTarget);
+
+        if (this.isDamageCost(params)) {
+            this.costRequiredDamage = this.getDamageAmounts(this.damage);
+            if (this.hasToughPreventingDamage()) {
+                this.costDamagePreventionReasons.add('tough');
+                return false;
+            }
+        }
 
         if (!multiTarget && !piercing) {
             return true;
@@ -196,7 +246,27 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
             target?.controller?.gameZone?.cards?.includes(target) ||
             target?.engaged?.gameZone?.cards?.includes(target);
         const wasInPlay = targets.map(isTargetInPlay);
-        const canResolve = await super.triggerWould(params);
+        const isDamageCost = this.isDamageCost(params);
+        const canResolve = await super.triggerWould(params, {
+            allowForcedInterrupts: !isDamageCost,
+            allowOptionalInterrupts: !isDamageCost,
+            ...(isDamageCost ? {
+                beforeForcedInterrupts: async (_type, triggerParams) => {
+                    const forcedInterrupts = await this._getTriggers(
+                        [TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE],
+                        PRIORITY_FORCED_INTERRUPT,
+                        triggerParams
+                    );
+                    if (forcedInterrupts.length) {
+                        this.costDamagePreventionReasons.add('forcedInterrupt');
+
+                        return false;
+                    }
+
+                    return true;
+                },
+            } : {}),
+        });
         const piercing = this.isAttack && this.piercing;
         const multiTarget = Array.isArray(selectedTarget);
 
@@ -250,6 +320,71 @@ export class TakeDamageEffect extends AttackEffect(Effect) {
         return resolveDamageStatus(this.selectedTarget, {
             ignoreTough: this.ignoreTough,
         });
+    }
+    isFullResolved() {
+        if (!Array.isArray(this.costRequiredDamage)) {
+            return super.isFullResolved();
+        }
+
+        const takenDamage = this.getDamageAmounts(this.takenDamage);
+
+        return super.isFullResolved() &&
+            this.costRequiredDamage.every((damage, index) =>
+                takenDamage[index] >= damage);
+    }
+    async showCostFailureDialog(params) {
+        if (!this.isDamageCost(params) ||
+            !this.costDamagePreventionReasons.size ||
+            this.costBlockedDialogShown) {
+            return;
+        }
+
+        const {player} = params;
+        if (!player) {
+            throw new TypeError(
+                'TakeDamageEffect requires the paying player to explain a blocked damage cost.'
+            );
+        }
+
+        const explanations = [];
+        if (this.costDamagePreventionReasons.has('forcedInterrupt')) {
+            explanations.push('hay una interrupción obligada aplicable a ese daño');
+        }
+        if (this.costDamagePreventionReasons.has('tough')) {
+            explanations.push('el estado Duro impediría que sufrieras todo el daño requerido');
+        }
+
+        await this.openDialog({
+            dialogType: DIALOG_LIST,
+            targetPlayer: player,
+            hideOk: true,
+            hideViewTable: true,
+            title: 'Coste no pagado',
+            subtitle: `No puedes pagar este coste porque ${explanations.join(' y ')}.`,
+            data: {
+                options: [{
+                    id: 0,
+                    text: 'Entendido',
+                }],
+            },
+        });
+        this.costBlockedDialogShown = true;
+    }
+    async prepareCost(params, session) {
+        const prepared = await super.prepareCost(params, session);
+
+        if (!prepared) {
+            await this.showCostFailureDialog(params);
+        }
+
+        return prepared;
+    }
+    async runEffect(params) {
+        await super.runEffect(params);
+
+        if (!this.fullResolved) {
+            await this.showCostFailureDialog(params);
+        }
     }
     getTriggersWould() {
         return super.getTriggersWould()
