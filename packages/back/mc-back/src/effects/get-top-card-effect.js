@@ -19,7 +19,10 @@ export class GetTopCardEffect extends Effect {
     }
     getDeck() {
         const {selectedTarget} = this;
-        if (selectedTarget?.isPlayerExtraDeck) {
+        if (selectedTarget?.isPlayerDeck ||
+            selectedTarget?.isScenarioDeck ||
+            selectedTarget?.isPlayerExtraDeck ||
+            selectedTarget?.isScenarioExtraDeck) {
             return selectedTarget;
         }
 
@@ -30,15 +33,23 @@ export class GetTopCardEffect extends Effect {
             owner?.extraDecks?.[this.deckId];
     }
     async canRun(params) {
+        const deck = this.getDeck();
+        if (deck?.isPlayerDeck) {
+            await deck.checkCycle();
+        }
+
         return Boolean(
             await super.canRun(params) &&
-            this.getDeck()?.cards?.length
+            deck?.cards?.length
         );
     }
     async execute(params) {
         const {selectedTarget} = this;
         const deck = this.getDeck();
-        const card = selectedTarget?.isPlayerExtraDeck ?
+        const card = selectedTarget?.isPlayerExtraDeck ||
+            selectedTarget?.isPlayerDeck ||
+            selectedTarget?.isScenarioDeck ||
+            selectedTarget?.isScenarioExtraDeck ?
             deck?.cards?.[0] :
             selectedTarget;
 

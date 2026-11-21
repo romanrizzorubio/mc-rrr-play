@@ -19,6 +19,7 @@ const TRAIT_LABELS = {
     defender: 'Defensor',
     defense: 'Defensa',
     droid: 'Androide',
+    'elder of the universe': 'Primigenio',
     elite: 'Élite',
     experimental: 'Experimental',
     genius: 'Genio',

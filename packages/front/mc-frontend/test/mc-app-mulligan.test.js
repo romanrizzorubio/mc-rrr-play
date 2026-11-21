@@ -51,6 +51,25 @@ describe('app match controls and mulligan lifecycle', () => {
         }
     });
 
+    test('opens the shared Victory Display in a read-only card dialog', () => {
+        const cards = [{id: 'victory-card'}];
+        let dialog;
+        const app = Object.assign(Object.create(McApp.prototype), {
+            match: {victoryDisplay: cards},
+            tableConsultationMode: false,
+            openDialog(params) {
+                dialog = params;
+            },
+        });
+
+        app.handleViewVictoryDisplay();
+
+        assert.equal(dialog.dialogType, DIALOG_REVEAL_CARDS);
+        assert.deepEqual(dialog.data.cards, cards);
+        assert.equal(dialog.title, 'Zona de victoria');
+        assert.equal(typeof dialog.callback, 'function');
+    });
+
     const templateText = value => {
         if (Array.isArray(value)) {
             return value.map(templateText).join('');

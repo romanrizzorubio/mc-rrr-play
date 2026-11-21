@@ -142,6 +142,15 @@ export class RemoveCountersEffect extends Effect {
 
         return selectedCount;
     }
+    async resolvePrepared(effectParams, triggersParams) {
+        const victoryDisplayCount = this.match.victoryDisplay?.length || 0;
+
+        await super.resolvePrepared(effectParams, triggersParams);
+
+        if ((this.match.victoryDisplay?.length || 0) > victoryDisplayCount) {
+            await this.refreshMatchAfterResolution(effectParams);
+        }
+    }
     async execute(params) {
         const {selectedTarget} = this;
         const counters = selectedTarget.counters ?? 0;
@@ -170,12 +179,19 @@ export class RemoveCountersEffect extends Effect {
         await selectedTarget.refresh();
 
         if (selectedTarget.counters < 1 && selectedTarget.uses) {
-            const discardFromGameEffect = new DiscardFromGameEffect({
-                selectedTarget,
-                match: this.match,
-            });
+            if (selectedTarget.victory) {
+                await selectedTarget.moveToVictoryDisplay({
+                    player: params.player,
+                    refresh: false,
+                });
+            } else {
+                const discardFromGameEffect = new DiscardFromGameEffect({
+                    selectedTarget,
+                    match: this.match,
+                });
 
-            await discardFromGameEffect.runEffect(params);
+                await discardFromGameEffect.runEffect(params);
+            }
         }
     }
 }

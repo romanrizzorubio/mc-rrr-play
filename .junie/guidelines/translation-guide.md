@@ -125,6 +125,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
 | **droid (rasgo)** | Androide |
+| **elder of the universe (rasgo)** | Primigenio |
 | **elite (rasgo)** | Élite |
 | **ice (rasgo)** | Hielo |
 | **location (rasgo)** | Lugar |

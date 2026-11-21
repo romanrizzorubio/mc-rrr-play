@@ -16,6 +16,73 @@ export default css`
     min-width: 0;
   }
 
+  .scenario-encounter-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .additional-zones {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .additional-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .additional-zone-toggle {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    font-family: var(--mc-font-title, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .victory-display-toggle {
+    align-self: flex-start;
+    border: 1px solid #000;
+    border-radius: 3px;
+    margin: 0;
+    padding: 6px 10px;
+    background: #fff;
+    color: #000;
+    font-family: var(--mc-font-numeric, sans-serif);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.1;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .additional-zone-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .additional-zone-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
   .scenario-board {
     grid-template-columns: auto minmax(0, 1fr) auto;
     width: 100%;

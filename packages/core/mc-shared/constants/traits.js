@@ -24,6 +24,7 @@ export const TRAIT_DEFENDER = 'defender';
 export const TRAIT_DEFENSE = 'defense';
 export const TRAIT_DROID = 'droid';
 export const TRAIT_DRONE = 'drone';
+export const TRAIT_ELDER_OF_THE_UNIVERSE = 'elder of the universe';
 export const TRAIT_ELITE = 'elite';
 export const TRAIT_EXPERIMENTAL = 'experimental';
 export const TRAIT_GAMMA = 'gamma';

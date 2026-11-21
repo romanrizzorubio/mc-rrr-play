@@ -561,7 +561,14 @@ export class CharacterGameCard extends GameCard {
     }
     async defeat(player, {defeatAnnounced = false} = {}) {
         if (this.isVillain) {
+            await this.moveAttachedVictoryCardsToVictoryDisplay({
+                player,
+                refresh: false,
+            });
             await this.match.scenario.selectVillain(player, this, {defeatAnnounced});
+            if (this.victory) {
+                await this.moveToVictoryDisplay({player, refresh: false});
+            }
         } else if (this.isSuperhero) {
             this.stunned = 0;
             this.confused = 0;
@@ -573,7 +580,7 @@ export class CharacterGameCard extends GameCard {
             this.confused = 0;
             this.tough = 0;
 
-            await super.defeat();
+            await super.defeat(player);
         }
     }
     healDamage(damage) {

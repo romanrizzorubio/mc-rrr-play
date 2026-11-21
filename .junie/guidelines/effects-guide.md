@@ -32,6 +32,18 @@ Para una respuesta que ocurre justo cuando empieza la fase del Villano, usa `TRI
 
 Para una respuesta que ocurre después de que un Héroe defienda un ataque, usa `TRIGGER_HERO_DEFENDED_ATTACK`; el contexto incluye `attackDamage`, el Daño realmente sufrido por ese Héroe. Por ejemplo, una respuesta condicionada a `attackDamage: 0` solo se ofrece si no sufrió Daño.
 
+### Zonas adicionales configuradas por escenario
+
+Declara zonas de almacenamiento en `config.additionalZones` con un `id`, un `name` y, opcionalmente, `displayCardInfo` (`id`, `label` y una ruta de la carta). El motor guarda las cartas y serializa esa información; el frontend muestra el nombre y el recuento, y permite abrir la lista de cartas. La zona no define reglas de juego por sí misma.
+
+Usa `EFFECT_ADD_TO_ADDITIONAL_ZONE` con `zoneId` para mover una carta o, con `fromTopOfDeck: true`, la carta superior del mazo del objetivo. Para seleccionar las cartas de una zona o contar cuántas hay, usa `TARGET_SOURCE` con la ruta `match.scenario.additionalZones.<id>.cards`. El motor emite `TRIGGER_SCENARIO_ADDITIONAL_ZONE_CHANGED` cuando se añade o se retira una carta; la habilidad del escenario configura las consecuencias, por ejemplo una respuesta condicionada por el tamaño de la lista. El contexto del disparador incluye `additionalZone`, `additionalZoneId`, `card`, `triggeredCard` y `triggeredTarget`.
+
+### Zona de victoria compartida
+
+La Zona de Victoria es un área compartida del motor (`match.victoryDisplay`), independiente de las zonas adicionales configuradas por escenario, y se conserva al serializar/restaurar la partida. Configura Victoria X en `params.keywords.victory`; cuando una carta con esta palabra clave es derrotada, o se retira su último contador de Usos, se mueve directamente a Victoria. Las cartas vinculadas con Victoria X también van a Victoria cuando su anfitrión es derrotado.
+
+Ese movimiento no es un descarte: evita `TRIGGER_CARD_WOULD_BE_DISCARDED` y no puede ser interceptado por una zona como La Colección. En cambio, si una carta de La Colección se descarta explícitamente por el efecto de esa zona, va a la pila de descartes de su propietario, aunque tenga Victoria X.
+
 ### Progresión de villanos y victoria
 
 La preparación de «La llegada de Kang» retira primero las Obligaciones y reparte después una carta de Encuentro a cada jugador mediante `EFFECT_DEAL_ENCOUNTER` con `TARGET_ALL_PLAYERS`. Las cartas permanecen boca abajo en la zona del jugador, pendientes de la fase del Villano; no se revelan ni se resuelven durante la preparación.

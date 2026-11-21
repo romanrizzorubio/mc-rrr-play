@@ -112,7 +112,7 @@ describe('Rayo de energía', () => {
         const {energyRay, scenario} = await createGame();
         assert.ok(energyRay);
         assert.equal(
-            scenario.deck.cards.filter(card =>
+            scenario.scenarioCards.filter(card =>
                 card.name === 'Rayo de energía').length,
             2
         );

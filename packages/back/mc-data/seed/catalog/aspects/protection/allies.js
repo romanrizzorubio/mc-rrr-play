@@ -521,6 +521,7 @@ export default [
                 'set': CLASSIFICATION_PROTECTION,
                 'image': 'aspect/protection/allies/16012.png',
                 'traits': [TRAIT_AERIAL, TRAIT_GUARDIAN],
+                'unique': true,
                 'cost': 2,
                 'resources': [RESOURCE_PHYSICAL],
                 'classification': CLASSIFICATION_PROTECTION,

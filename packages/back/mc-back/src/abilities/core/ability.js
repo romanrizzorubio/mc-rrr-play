@@ -389,9 +389,9 @@ export class Ability extends Engine {
             preselectedTarget: true,
         };
     }
-    useLimit() {
+    useLimit(params) {
         if (this.limit) {
-            this.limit.use();
+            this.limit.use(params);
         }
     }
     async resolveAbility(params, effect) {
@@ -603,7 +603,7 @@ export class Ability extends Engine {
                     } else {
                         this.resolved = true;
                     }
-                    this.useLimit();
+                    this.useLimit(params);
                 }
             } else if (ifNotEffect) {
                 await ifNotEffect.runEffect({

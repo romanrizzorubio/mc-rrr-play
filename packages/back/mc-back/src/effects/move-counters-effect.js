@@ -162,6 +162,15 @@ export class MoveCountersEffect extends Effect {
                 target: this.toTarget,
             });
     }
+    async resolvePrepared(effectParams, triggersParams) {
+        const victoryDisplayCount = this.match.victoryDisplay?.length || 0;
+
+        await super.resolvePrepared(effectParams, triggersParams);
+
+        if ((this.match.victoryDisplay?.length || 0) > victoryDisplayCount) {
+            await this.refreshMatchAfterResolution(effectParams);
+        }
+    }
     async execute(params) {
         this.movementResolved = true;
         const source = this.getCounterSource(this.selectedTarget, params);
@@ -188,11 +197,18 @@ export class MoveCountersEffect extends Effect {
         ]);
 
         if (source.counters < 1 && source.uses) {
-            const discardFromGameEffect = new DiscardFromGameEffect({
-                selectedTarget: source,
-                match: this.match,
-            });
-            await discardFromGameEffect.runEffect(params);
+            if (source.victory) {
+                await source.moveToVictoryDisplay({
+                    player: params.player,
+                    refresh: false,
+                });
+            } else {
+                const discardFromGameEffect = new DiscardFromGameEffect({
+                    selectedTarget: source,
+                    match: this.match,
+                });
+                await discardFromGameEffect.runEffect(params);
+            }
         }
     }
 }

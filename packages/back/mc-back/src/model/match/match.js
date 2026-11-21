@@ -42,6 +42,7 @@ export class Match extends Engine {
         this.villains = [];
         this.players = [];
         this.removedCards = [];
+        this.victoryDisplay = [];
         this.scenario = null;
         this.playing = false;
         this.gameOverReason = null;
@@ -766,6 +767,15 @@ export class Match extends Engine {
     removeCard(card) {
         this.removedCards.push(card);
     }
+    addToVictoryDisplay(card) {
+        const removedIndex = this.removedCards.indexOf(card);
+        if (removedIndex !== -1) {
+            this.removedCards.splice(removedIndex, 1);
+        }
+        if (!this.victoryDisplay.includes(card)) {
+            this.victoryDisplay.push(card);
+        }
+    }
     removeCardFromEncountersDeck(card) {
         this.scenario.removeCardFromDeck(card);
     }
@@ -888,6 +898,7 @@ export class Match extends Engine {
             gameOverReason,
             players,
             scenario,
+            victoryDisplay,
         } = this;
 
         return {
@@ -918,6 +929,7 @@ export class Match extends Engine {
             }} : {}),
             players: players.map(player => player.toObj()),
             scenario: scenario && scenario.toObj(),
+            victoryDisplay: victoryDisplay.map(card => card.toObj()),
         };
     }
     async toObjWithPlayableHands() {

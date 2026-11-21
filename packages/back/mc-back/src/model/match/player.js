@@ -858,6 +858,7 @@ export class Player extends Engine {
 
         const params = {
             player: this,
+            match: this.match,
             abilityIndex,
             ...(resourcePayment !== undefined ? {resourcePayment} : {}),
         };

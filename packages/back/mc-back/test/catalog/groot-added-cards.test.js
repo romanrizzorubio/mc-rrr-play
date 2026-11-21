@@ -245,6 +245,7 @@ describe('Groot added cards', () => {
             [2, 3, 2, 2, 1, 1],
         );
         assert.equal(starhawk.params.resources[0], RESOURCE_PHYSICAL);
+        assert.equal(starhawk.params.unique, true);
         assert.equal(
             starhawk.params.abilities[0].params.trigger,
             TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,

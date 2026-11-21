@@ -17,10 +17,12 @@ export class McScenario extends LitElement {
         return {
             scenario: {type: Object},
             player: {type: Object},
+            victoryDisplay: {type: Array},
             deckSelectionTargetIds: {type: Array},
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
+            openAdditionalZones: {attribute: false},
         };
     }
     constructor() {
@@ -28,10 +30,12 @@ export class McScenario extends LitElement {
 
         this.scenario = null;
         this.player = null;
+        this.victoryDisplay = [];
         this.deckSelectionTargetIds = [];
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
+        this.openAdditionalZones = new Set();
     }
     handleCardSelect(e) {
         const {card} = e.detail;
@@ -63,6 +67,12 @@ export class McScenario extends LitElement {
                 card,
                 ability,
             },
+        }));
+    }
+    handleViewVictoryDisplay() {
+        this.dispatchEvent(new CustomEvent('view-victory-display', {
+            bubbles: true,
+            composed: true,
         }));
     }
     isDeckSelectable(deck) {
@@ -192,13 +202,14 @@ export class McScenario extends LitElement {
             </div>
         `;
     }
-    renderSchemes(zone = this.scenario?.gameZone, includeExtraDecks = true) {
+    renderSchemes(zone = this.scenario?.gameZone, includeGlobalAreas = true) {
         const cards = zone?.cards || [];
         const hasEnvironmentArea = McScenario.hasEnvironmentArea(
             zone,
             this.scenario?.extraDecks,
-            includeExtraDecks
-        );
+            includeGlobalAreas
+        ) || (includeGlobalAreas &&
+            Object.keys(this.scenario?.additionalZones || {}).length > 0);
 
         return html`
             <div class="${hasEnvironmentArea ?
@@ -223,18 +234,22 @@ export class McScenario extends LitElement {
                         @card-list-menu-click="${this.handleCardMenuClick.bind(this)}"
                     ></mc-card-list>
                 </div>
-                ${this.renderEnvironments(zone, includeExtraDecks)}
+                ${this.renderEnvironments(zone, includeGlobalAreas)}
             </div>
         `;
     }
-    renderEnvironments(zone = this.scenario?.gameZone, includeExtraDecks = true) {
+    renderEnvironments(zone = this.scenario?.gameZone, includeGlobalAreas = true) {
         const cards = zone?.cards || [];
         const environments = cards.filter(card => card.isEnvironment);
-        const extraDecks = includeExtraDecks ?
+        const extraDecks = includeGlobalAreas ?
             Object.values(this.scenario?.extraDecks || {}) :
             [];
+        const additionalZones = includeGlobalAreas ?
+            Object.values(this.scenario?.additionalZones || {}) :
+            [];
 
-        if (!environments.length && !extraDecks.length) {
+        if (!environments.length && !extraDecks.length &&
+            !additionalZones.length) {
             return '';
         }
 
@@ -251,6 +266,7 @@ export class McScenario extends LitElement {
                     ></mc-card-list>
                 </div>
                 ${extraDecks.length ? this.renderExtraDecks() : ''}
+                ${additionalZones.length ? this.renderAdditionalZones() : ''}
             </div>
         `;
     }
@@ -259,9 +275,13 @@ export class McScenario extends LitElement {
             (includeExtraDecks && Object.keys(extraDecks).length));
     }
     renderZones(zones) {
+        const generalZone = zones.find(zone =>
+            zone.id === this.scenario?.gameZone?.id
+        ) ?? zones[0];
+
         return html`
             <div class="scenario-zones">
-                ${zones.map((zone, index) => html`
+                ${zones.map(zone => html`
                     <section class="scenario-play-area">
                         ${zones.length > 1 ? html`
                             <header class="zone-players">
@@ -271,7 +291,10 @@ export class McScenario extends LitElement {
                             </header>
                         ` : ''}
                         <div class="scenario-zone-cards">
-                            ${this.renderSchemes(zone, index === 0)}
+                            ${this.renderSchemes(
+                                zone,
+                                zone === generalZone
+                            )}
                             ${this.renderVillain(zone)}
                         </div>
                     </section>
@@ -305,6 +328,100 @@ export class McScenario extends LitElement {
             ></mc-deck>
         `;
     }
+    renderVictoryDisplay() {
+        const victoryCount = this.victoryDisplay?.length || 0;
+        if (!victoryCount) {
+            return '';
+        }
+        const label = `Zona de victoria (${victoryCount})`;
+
+        return html`
+            <button
+                type="button"
+                class="victory-display-toggle"
+                aria-label="${label}"
+                @click="${this.handleViewVictoryDisplay.bind(this)}"
+            >${label}</button>
+        `;
+    }
+    renderEncounterArea() {
+        return html`
+            <div class="scenario-encounter-area">
+                ${this.renderDeck()}
+                ${this.renderVictoryDisplay()}
+            </div>
+        `;
+    }
+    toggleAdditionalZone(zoneId) {
+        const openZones = new Set(this.openAdditionalZones);
+        if (openZones.has(zoneId)) {
+            openZones.delete(zoneId);
+        } else {
+            openZones.add(zoneId);
+        }
+        this.openAdditionalZones = openZones;
+    }
+    renderAdditionalZones() {
+        const zones = Object.values(this.scenario?.additionalZones || {});
+        if (!zones.length) {
+            return '';
+        }
+
+        return html`
+            <div class="additional-zones">
+                ${zones.map(zone => {
+                    const cards = zone.cards || [];
+                    const expanded = this.openAdditionalZones.has(zone.id);
+
+                    return html`
+                        <section class="additional-zone">
+                            <button
+                                type="button"
+                                class="additional-zone-toggle"
+                                aria-expanded="${expanded}"
+                                @click="${() => this.toggleAdditionalZone(zone.id)}"
+                            >${zone.name}</button>
+                            <mc-deck
+                                .cards="${cards}"
+                                .topCard="${cards[0]}"
+                                .topCardFaceUp="${true}"
+                                .deckName="${zone.name}"
+                                .showDeckName="${false}"
+                                .showDiscard="${false}"
+                                size="s"
+                            ></mc-deck>
+                            ${expanded ? html`
+                                <div class="additional-zone-cards">
+                                    ${cards.map(card => html`
+                                        <div class="additional-zone-card">
+                                            ${(zone.displayCardInfo || []).map(info => {
+                                                const value = card.additionalInfo?.[info.id];
+                                                return value !== undefined &&
+                                                    value !== null &&
+                                                    value !== '' ? html`
+                                                    <span>
+                                                        <strong>${info.label}:</strong>
+                                                        ${value}
+                                                    </span>
+                                                ` : '';
+                                            })}
+                                            <mc-card-list
+                                                .cards="${[card]}"
+                                                .player="${this.player}"
+                                                .dragActivation="${this.dragActivation}"
+                                                .dragPlayCard="${this.dragPlayCard}"
+                                                .dragResourcePayment="${this.dragResourcePayment}"
+                                            ></mc-card-list>
+                                        </div>
+                                    `)}
+                                </div>
+                            ` : ''}
+                        </section>
+                    `;
+                })}
+            </div>
+        `;
+    }
     render() {
         const {scenario} = this;
         const zones = scenario?.zones?.length ?
@@ -318,10 +435,10 @@ export class McScenario extends LitElement {
         const zone = visibleZones[0];
 
         return scenario ? html`
-            ${visibleZones.length > 1 ? this.renderDeck() : ''}
+            ${visibleZones.length > 1 ? this.renderEncounterArea() : ''}
             ${visibleZones.length > 1 ? this.renderZones(visibleZones) : html`
                 <div class="scenario-board">
-                    ${this.renderDeck()}
+                    ${this.renderEncounterArea()}
                     ${this.renderSchemes(zone)}
                     ${this.renderVillain(zone)}
                 </div>

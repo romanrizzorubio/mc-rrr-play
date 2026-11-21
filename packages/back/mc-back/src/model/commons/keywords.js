@@ -44,6 +44,7 @@ export class Keywords extends Engine {
             incite = 0,
             hinder = 0,
             retaliate = 0,
+            victory = 0,
             teamUp,
             uses,
             hint,
@@ -77,6 +78,7 @@ export class Keywords extends Engine {
         this._incite = incite;
         this._hinder = hinder;
         this._retaliate = retaliate;
+        this._victory = victory;
         this.teamUp = teamUp ? [...teamUp] : undefined;
         this._uses = uses;
         this._hint = hint;
@@ -92,6 +94,9 @@ export class Keywords extends Engine {
     }
     get retaliate() {
         return this.getNumericValue(this._retaliate);
+    }
+    get victory() {
+        return this.getNumericValue(this._victory);
     }
     get uses() {
         return this.getNumericValue(this._uses);
