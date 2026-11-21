@@ -37,6 +37,7 @@ import {
     TARGET_VILLAIN,
     TRAIT_AVENGER,
     TRAIT_AERIAL,
+    TRAIT_GUARDIAN,
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
@@ -808,6 +809,52 @@ export default [
                                             damage: 2,
                                         },
                                     },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'justice-espabila',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 19031,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: '¡Espabila!',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/19031.png',
+                cost: 1,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_JUSTICE,
+                paramsToPlay: {
+                    'superhero.traits': TRAIT_GUARDIAN,
+                },
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_TAKE_DAMAGE,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                damage: 1,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_CONFUSE,
+                                            params: {
+                                                target: TARGET_VILLAIN,
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

@@ -2,17 +2,20 @@ import {
     CLASSIFICATION_LEADERSHIP,
     ABILITY_ACTION,
     ABILITY_CONSTANT,
+    ABILITY_FORCED_INTERRUPT,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
     CARD_TYPE_SUPPORT,
     EFFECT_CHAINED,
     EFFECT_DISCARD_GAME,
+    EFFECT_PREVENT_DEFEAT,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_MAX_ALLIES,
     EFFECT_PLACE_COUNTERS,
     EFFECT_PUT_PLAY,
+    EFFECT_RETURN_HAND,
     EFFECT_SEARCH_CARDS,
     PLACE_HAND,
     RESOURCE_ENERGY,
@@ -20,19 +23,24 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ANY_PLAYER,
     TARGET_ALL_ALLIES_YOU_CONTROL,
+    TARGET_ALL_ALLIES,
     TARGET_EFFECT,
     TARGET_PLAYER,
     TARGET_THIS,
+    TARGET_TRIGGERED_CARD,
     TARGET_YOU,
     TRAIT_CONDITION,
     TRAIT_LOCATION,
     TRAIT_SHIELD,
     TRAIT_SKILL,
     TRAIT_AVENGER,
+    TRAIT_TACTIC,
     TRAIT_VEHICLE,
     TRAIT_WEAPON,
+    TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_PLAYER_TURN_START,
+    TRIGGER_ROUND_ENDS,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOUR_PLAYER_GET_MAX_ALLIES
 } from 'mc-shared';
@@ -245,6 +253,69 @@ export default [
                                 'params': {
                                     'target': TARGET_EFFECT,
                                     'count': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'leadership-reagrupamiento',
+        aspect: CLASSIFICATION_LEADERSHIP,
+        order: 19032,
+        card: {
+            type: CARD_TYPE_SUPPORT,
+            params: {
+                name: 'Reagrupamiento',
+                set: CLASSIFICATION_LEADERSHIP,
+                image: 'aspect/leadership/supports/19032.png',
+                traits: [TRAIT_TACTIC],
+                cost: 1,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_LEADERSHIP,
+                abilities: [
+                    {
+                        type: ABILITY_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
+                            triggerParams: {
+                                target: TARGET_ALL_ALLIES,
+                            },
+                            condition: {
+                                'effect.activation.effect.isEnemyAttack': true,
+                            },
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_PREVENT_DEFEAT,
+                                            params: {
+                                                target: TARGET_EFFECT,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_RETURN_HAND,
+                                            params: {
+                                                target: TARGET_TRIGGERED_CARD,
+                                                toOwner: true,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                    {
+                        type: ABILITY_FORCED_INTERRUPT,
+                        params: {
+                            trigger: TRIGGER_ROUND_ENDS,
+                            effect: {
+                                type: EFFECT_DISCARD_GAME,
+                                params: {
+                                    target: TARGET_THIS,
                                 },
                             },
                         },

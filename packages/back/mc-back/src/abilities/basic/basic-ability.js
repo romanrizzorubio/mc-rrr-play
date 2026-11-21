@@ -14,6 +14,8 @@ export class BasicAbility extends Ability {
     }
     applyConsequencial(params, damage) {
         const dealConsequencialDamageEffect = new DealConsequencialDamageEffect({
+            ability: this,
+            character: this.card,
             match: this.match,
             selectedTarget: this.card,
             damage,

@@ -193,6 +193,7 @@ export class DealDamageEffect extends AttackEffect(Effect) {
     /** @returns {Promise<void>} */
     async execute(params) {
         this.defeated = false;
+        this.dealtDamage = 0;
 
         if (Array.isArray(this.selectedTarget) &&
             this.selectedTarget.length === 0) {
@@ -243,6 +244,8 @@ export class DealDamageEffect extends AttackEffect(Effect) {
             activation: this.activation,
             isAttack: this.isAttack,
             isAttackDamageOnly: this.isAttackDamageOnly,
+            suppressAbilityThwart: this.suppressAbilityThwart,
+            isConsequential: this.isConsequential === true,
             attackKeywordSource: this.attackKeywordSource ?? this,
         });
 
@@ -271,6 +274,14 @@ export class DealDamageEffect extends AttackEffect(Effect) {
 
             this.activation.takenDamage = this.takenDamage;
             this.excessDamage = this.activation.excessDamage;
+        }
+
+        if (takeDamageEffect.resolved) {
+            const damageAmounts = Array.isArray(this.takenDamage) ?
+                this.takenDamage.flat(Infinity) :
+                [this.takenDamage];
+            this.dealtDamage = damageAmounts.reduce((total, damage) =>
+                total + damage, 0);
         }
     }
     static validateDamageAssignment(assigned, targets, damage) {

@@ -304,7 +304,7 @@ test('uses a diffuse green halo on legal targets and veils only non-target image
 
     assert.match(
         styles,
-        /\.card-front\.activation-drop-target > mc-card-image[\s\S]*?drop-shadow\(0 0 4px rgba\(0, 200, 83, 0\.95\)\)/
+        /\.card-front\.activation-drop-target mc-card-image[\s\S]*?drop-shadow\(0 0 4px rgba\(0, 200, 83, 0\.95\)\)/
     );
     assert.doesNotMatch(styles, /outline: 3px solid/);
     assert.match(

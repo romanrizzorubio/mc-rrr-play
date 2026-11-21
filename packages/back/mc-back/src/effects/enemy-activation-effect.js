@@ -6,6 +6,7 @@ import {
     TRIGGER_THIS_ACTIVATES,
 } from 'mc-shared';
 import {ValidTarget} from '../targets/valid-target.js';
+import {getConditionExcludePaths} from '../utils/target-condition-utils.js';
 import {getVillainFor} from '../utils/match-zone-utils.js';
 
 import {DealBoostEffect} from './deal-boost-effect.js';
@@ -233,7 +234,14 @@ export class EnemyActivationEffect extends Effect {
     async prepare(params) {
         this.resetForResolution();
         this.player = params.player;
-        await super.prepare(params);
+        const excludeAttacker = getConditionExcludePaths(this.condition)
+            .includes('effect.enemy');
+        if (excludeAttacker && !this.enemy) {
+            await this.selectEnemy({...params, effect: this});
+        }
+        await super.prepare(excludeAttacker ?
+            {...params, effect: this} :
+            params);
 
         const {enemy} = this;
 
@@ -323,6 +331,7 @@ export class EnemyActivationEffect extends Effect {
         this.enemy = await validTarget.selectTarget({
             ...params,
             ability,
+            source: this.source ?? params.source,
             target: enemyType,
             dialogTitle: this.getEnemySelectionDialogTitle(),
         });

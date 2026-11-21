@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
+import {TRIGGER_THIS_THWARTS} from 'mc-shared';
 import {AttackBasicAbility} from '../../src/abilities/basic/attack-basic-ability.js';
 import {ActivationsFactory} from '../../src/factory/activations/activations-factory.js';
 import {CardsFactory} from '../../src/factory/cards/cards-factory.js';
 import {EffectsFactory} from '../../src/factory/effects/effects-factory.js';
+import {DealConsequencialDamageEffect} from '../../src/effects/deal-consequencial-damage-effect.js';
+import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import basicAllies from '../../../mc-data/seed/catalog/aspects/basic/allies.js';
 import msMarvel from '../../../mc-data/seed/catalog/heroes/ms-marvel.js';
 
@@ -146,5 +149,54 @@ describe('ally consequential damage', () => {
 
         assert.equal(villain.damage, 2);
         assert.equal(redDagger.damage, 1);
+    });
+
+    test('consequential damage does not reopen the thwart response window', async () => {
+        let takeDamageParams;
+        const match = {
+            effectsFactory: {
+                createEffect(params) {
+                    takeDamageParams = params;
+                    return {
+                        defeated: false,
+                        takenDamage: 1,
+                        async runEffect() {},
+                    };
+                },
+            },
+        };
+        match.activationsFactory = new ActivationsFactory(match);
+
+        const character = {isAlly: true};
+        const ability = {isThwart: true};
+        const effect = new DealConsequencialDamageEffect({
+            ability,
+            character,
+            damage: 1,
+            match,
+            selectedTarget: character,
+        });
+        effect.damage = 1;
+        effect.distributeDamage = async () => {};
+
+        assert.equal(effect.isConsequential, true);
+        assert.ok(!effect.getTriggersInit({}).includes(TRIGGER_THIS_THWARTS));
+        assert.ok(!effect.getTriggersEnds({}).includes(TRIGGER_THIS_THWARTS));
+
+        await effect.execute({});
+
+        assert.equal(takeDamageParams.damage, 1);
+        assert.equal(takeDamageParams.isConsequential, true);
+        assert.equal(takeDamageParams.suppressAbilityThwart, true);
+        const takeDamageEffect = new TakeDamageEffect({
+            ...takeDamageParams,
+            match,
+        });
+        assert.ok(
+            !takeDamageEffect.getTriggersInit({}).includes(TRIGGER_THIS_THWARTS)
+        );
+        assert.ok(
+            !takeDamageEffect.getTriggersEnds({}).includes(TRIGGER_THIS_THWARTS)
+        );
     });
 });

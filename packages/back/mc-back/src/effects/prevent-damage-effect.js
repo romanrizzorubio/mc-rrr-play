@@ -1,3 +1,5 @@
+import {DIALOG_SELECT_NUMBER} from 'mc-shared';
+
 import {Effect} from './effect.js';
 import {path} from '../engine/utils.js';
 import {
@@ -19,6 +21,7 @@ export class PreventDamageEffect extends Effect {
     constructor({
         damage = 0,
         preventAll = false,
+        selectDamage = false,
         requiresPrePlayConfirmation = false,
         prePlayConfirmation,
     }) {
@@ -26,9 +29,19 @@ export class PreventDamageEffect extends Effect {
 
         this.damage = damage;
         this.preventAll = preventAll;
+        if (typeof selectDamage !== 'boolean') {
+            throw new TypeError('PreventDamageEffect selectDamage must be a boolean.');
+        }
+        this.selectDamage = selectDamage;
         this.requiresPrePlayConfirmation =
             requiresPrePlayConfirmation;
         this.prePlayConfirmation = prePlayConfirmation;
+        this.outputParams = ['preventedDamage'];
+        this.preventedDamage = 0;
+    }
+    resetResolutionData() {
+        super.resetResolutionData();
+        this.preventedDamage = 0;
     }
     async getPreventionDamage(params) {
         const damage = this.getLastStepParam('damage', params) ??
@@ -38,6 +51,52 @@ export class PreventDamageEffect extends Effect {
         }
 
         return damage;
+    }
+    async selectPreventionDamage(params, damage) {
+        if (!this.selectDamage) {
+            return damage;
+        }
+
+        const incomingDamage = params.triggeredTargetDamage;
+        if (!params.triggeredTarget) {
+            throw new TypeError(
+                'Selectable damage prevention requires a target-specific damage trigger context.'
+            );
+        }
+        if (!Number.isSafeInteger(incomingDamage) || incomingDamage < 0) {
+            throw new TypeError(
+                'Selectable damage prevention requires a non-negative integer triggeredTargetDamage.'
+            );
+        }
+
+        const maxDamage = Math.min(
+            incomingDamage,
+            this.preventAll ? incomingDamage : damage
+        );
+        const response = await this.openDialog({
+            dialogType: DIALOG_SELECT_NUMBER,
+            targetPlayer: params.player,
+            title: this.dialogTitle ||
+                this.ability?.card?.name ||
+                'Elige cuánto daño quieres evitar',
+            subtitle: `Vas a sufrir ${incomingDamage} de daño. Puedes evitar hasta ${maxDamage}.`,
+            data: {
+                label: 'Daño que quieres evitar',
+                min: 0,
+                max: maxDamage,
+                step: 1,
+            },
+        });
+        const selectedDamage = response?.value;
+        if (!Number.isSafeInteger(selectedDamage) ||
+            selectedDamage < 0 ||
+            selectedDamage > maxDamage) {
+            throw new Error(
+                'PreventDamageEffect received an invalid selected damage amount.'
+            );
+        }
+
+        return selectedDamage;
     }
     async confirmBeforeResolve(params) {
         const confirmation = this.prePlayConfirmation;
@@ -111,17 +170,28 @@ export class PreventDamageEffect extends Effect {
     async execute(params) {
         const {effect} = params;
         const damage = await this.getPreventionDamage(params);
+        const damageToPrevent = await this.selectPreventionDamage(
+            params,
+            damage
+        );
+        this.preventedDamage = 0;
 
         if (effect?.isAttack &&
             effect.damage === undefined &&
             typeof effect.getAttackValue === 'function') {
-            const preventDamage = this.preventAll ?
+            const preventDamage = this.preventAll && !this.selectDamage ?
                 MAX_PREVENTABLE_DAMAGE :
-                damage;
+                damageToPrevent;
             effect.preventDamage = Math.min(
                 MAX_PREVENTABLE_DAMAGE,
                 (effect.preventDamage || 0) + preventDamage
             );
+            if (this.selectDamage) {
+                this.preventedDamage = Math.min(
+                    params.triggeredTargetDamage,
+                    damageToPrevent
+                );
+            }
             return;
         }
 
@@ -140,15 +210,30 @@ export class PreventDamageEffect extends Effect {
             const prevention = Array.isArray(effect.preventDamage) ?
                 effect.preventDamage.slice() :
                 targets.map(() => effect.preventDamage || 0);
+            const incomingDamage = Array.isArray(effect.damage) ?
+                effect.damage[targetIndex] :
+                effect.damage;
+            const damageRemaining = Number.isFinite(params.triggeredTargetDamage) ?
+                params.triggeredTargetDamage :
+                Math.max(0, incomingDamage - (prevention[targetIndex] || 0));
+            this.preventedDamage = Math.max(
+                0,
+                Math.min(
+                    damageRemaining,
+                    this.preventAll && !this.selectDamage ?
+                        damageRemaining :
+                        damageToPrevent
+                )
+            );
 
-            if (this.preventAll) {
+            if (this.preventAll && !this.selectDamage) {
                 prevention[targetIndex] = PreventDamageEffect.isPendingAttack(effect) ?
                     MAX_PREVENTABLE_DAMAGE :
                     Array.isArray(effect.damage) ?
                     effect.damage[targetIndex] :
                     effect.damage;
             } else {
-                prevention[targetIndex] += damage;
+                prevention[targetIndex] += damageToPrevent;
             }
 
             effect.preventDamage = Array.isArray(effect.selectedTarget) ?
@@ -157,10 +242,10 @@ export class PreventDamageEffect extends Effect {
             return;
         }
 
-        if (this.preventAll) {
+        if (this.preventAll && !this.selectDamage) {
             effect.preventDamage = effect.damage;
         } else {
-            effect.preventDamage += damage;
+            effect.preventDamage += damageToPrevent;
         }
     }
 }
