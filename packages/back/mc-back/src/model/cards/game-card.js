@@ -561,6 +561,13 @@ export class GameCard extends Engine {
     get victory() {
         return this.getKeyword('victory');
     }
+    get hasVictory() {
+        const printedHasVictory = this.sides.length ?
+            this.currentSide.hasVictory :
+            this.card.hasVictory;
+
+        return Boolean(printedHasVictory || this.victory);
+    }
     get guard() {
         return this.getKeyword('guard');
     }
@@ -717,7 +724,7 @@ export class GameCard extends Engine {
             player,
             refresh: false,
         });
-        if (this.victory) {
+        if (this.hasVictory) {
             return this.moveToVictoryDisplay({player, refresh: false});
         }
 
@@ -727,7 +734,7 @@ export class GameCard extends Engine {
         player,
         refresh = true,
     } = {}) {
-        const cards = this.getAttachedCards().filter(card => card.victory);
+        const cards = this.getAttachedCards().filter(card => card.hasVictory);
         for (const card of cards) {
             await card.moveToVictoryDisplay({player, refresh});
         }

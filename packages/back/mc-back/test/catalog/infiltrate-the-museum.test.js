@@ -2,28 +2,68 @@ import assert from 'node:assert/strict';
 import {describe, test} from 'node:test';
 
 import {
+    ABILITY_BOOST,
+    ABILITY_FORCED_INTERRUPT,
+    ABILITY_WHEN_REVEALED,
+    ABILITY_WHEN_REVEALED_ALTEREGO,
+    ABILITY_WHEN_REVEALED_HERO,
+    CARD_TYPE_ATTACHMENT,
     CARD_TYPE_ALLY,
+    CARD_TYPE_MINION,
     CARD_TYPE_RESOURCE,
     CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
+    CALC_ALL,
+    CHARACTER_VILLAIN,
     DIALOG_DISCARD_ORDER,
     DIALOG_LIST,
     DIALOG_PAY_COST,
+    DIALOG_SELECT_TARGET,
     DIALOG_USE_CARD,
+    EFFECT_ADD_TO_ADDITIONAL_ZONE,
+    EFFECT_CHAINED,
     EFFECT_CHOOSE,
+    EFFECT_DELAYED,
+    EFFECT_DISCARD_HAND,
     EFFECT_DISCARD_GAME,
+    EFFECT_DO_IF,
+    EFFECT_DO_IF_TAKE_DAMAGE,
+    EFFECT_ENEMY_ATTACK,
+    EFFECT_PLACE_THREAT,
+    EFFECT_PREVENT_DAMAGE,
+    EFFECT_REVEAL_ENCOUNTER,
+    EFFECT_SPEND,
+    EFFECT_SURGE,
     MATCH_END_REASON_SCENARIO_FAILED,
     RESOURCE_MENTAL,
+    RESOURCE_PHYSICAL,
+    TARGET_ACTIVATION,
+    TARGET_ATTACHED,
     TARGET_CARD,
+    TARGET_CONDITION_CARD,
+    TARGET_EFFECT,
+    TARGET_MAIN_SCHEME,
     TARGET_SOURCE,
+    TARGET_THIS,
+    TARGET_YOU,
+    TARGET_YOUR_HERO,
+    OPERATOR_MAX,
+    OPERATOR_MIN,
+    TRAIT_BOUNTY_HUNTER,
+    TRAIT_ILLUSION,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
 } from 'mc-shared';
 import {loadCatalog} from '../../../mc-data/seed/catalog.js';
 import sheHulk from '../../../mc-data/seed/catalog/heroes/she-hulk.js';
+import galacticArtifacts from '../../../mc-data/seed/catalog/sets/galactic-artifacts.js';
 import {DefeatEffect} from '../../src/effects/defeat-effect.js';
 import {DiscardFromGameEffect} from '../../src/effects/discard-from-game-effect.js';
+import {EnemyAttackEffect} from '../../src/effects/enemy-attack-effect.js';
 import {MatchFactory} from '../../src/factory/match-factory.js';
 import {MoveCountersEffect} from '../../src/effects/move-counters-effect.js';
+import {RevealEncounterEffect} from '../../src/effects/reveal-encounter-effect.js';
 import {RemoveCountersEffect} from '../../src/effects/remove-counters-effect.js';
+import {TakeDamageEffect} from '../../src/effects/take-damage-effect.js';
 import {Match} from '../../src/model/match/match.js';
 import {restoreMatch, serializeMatch} from '../../src/utils/match-serialization.js';
 
@@ -92,6 +132,59 @@ async function createScenario(deckCardNames = []) {
 }
 
 describe('Infiltrados en el museo', () => {
+    function createPlayerCard(factory, player, {
+        type = CARD_TYPE_UPGRADE,
+        ...params
+    }) {
+        return factory.cardsFactory.createGameCardFromConfig({
+            type,
+            params: {
+                set: 'test',
+                ...params,
+            },
+        }, {owner: player});
+    }
+
+    async function revealTreachery({match, player, scenario}, name) {
+        const card = scenario.deck.cards.find(candidate =>
+            candidate.name === name);
+        assert.ok(card, `Missing scenario treachery "${name}".`);
+
+        const reveal = new RevealEncounterEffect({
+            match,
+            selectedTarget: card,
+        });
+        await reveal.runEffect({match, player});
+
+        return {card, reveal};
+    }
+
+    function addSecondPlayer({factory, match}) {
+        const superhero = factory.createSuperhero({
+            ...structuredClone(sheHulk.config),
+            cards: [],
+            nemesis: [],
+            obligation: undefined,
+            precon: [],
+        });
+        const player = match.createPlayer({
+            name: 'Jugador 2',
+            superhero,
+        });
+        player.initPlayer();
+        player.deck.cards = [1, 2, 3].map(index =>
+            factory.cardsFactory.createGameCardFromConfig({
+                type: CARD_TYPE_RESOURCE,
+                params: {
+                    name: `Carta de preparación del jugador 2 ${index}`,
+                    set: 'test',
+                    resources: [RESOURCE_MENTAL],
+                },
+            }, {owner: player}));
+
+        return player;
+    }
+
     test('catalog defines normal and expert villains, scheme, and required sets', async () => {
         const {scenarioRecord} = await createScenario();
 
@@ -109,7 +202,6 @@ describe('Infiltrados en el museo', () => {
             'galactic-artifacts',
         ]);
         assert.deepEqual(scenarioRecord.config.defaultSets, ['menagerie-medley']);
-        assert.deepEqual(scenarioRecord.config.cards, []);
         assert.deepEqual(
             scenarioRecord.config.additionalZones.map(({id, name, displayCardInfo}) => [
                 id,
@@ -119,13 +211,640 @@ describe('Infiltrados en el museo', () => {
             [[
                 'collection',
                 'La Colección',
-                [['owner', 'Propietario', 'owner.name']],
+                [
+                    ['owner', 'Propietario', 'owner.superhero.mainName'],
+                    ['scenarioOwner', 'Escenario', 'owner.name'],
+                ],
             ]]
         );
         assert.equal(
             scenarioRecord.config.mainSchemes[0][1].params.value[0],
             10
         );
+    });
+
+    test('adds scenario treacheries and includes the shared Con la guardia baja in both configs', async () => {
+        const {match, scenario, scenarioRecord} = await createScenario([
+            'Carta de preparación',
+            'Carta superior',
+            'Carta restante',
+        ]);
+        const treacheries = scenarioRecord.config.cards.filter(({card}) =>
+            ['Caja poco llamativa', 'Observar el cosmos', 'Quedaos un rato']
+                .includes(card.params.name)
+        );
+        const sharedCardEntry = scenarioRecord.config.cards.find(({card}) =>
+            card.params.name === 'Con la guardia baja'
+        );
+        assert.ok(sharedCardEntry);
+        assert.equal(sharedCardEntry.count, 1);
+        assert.equal(sharedCardEntry.card.params.set, SET);
+        assert.equal(
+            sharedCardEntry.card.params.image,
+            'sets/standard/01188.png'
+        );
+
+        assert.deepEqual(treacheries.map(({count, card}) => [
+            count,
+            card.params.name,
+            card.params.set,
+            card.params.image,
+            card.params.boost,
+        ]), [
+            [2, 'Caja poco llamativa', SET, `scenarios/${SET}/16076.png`, 0],
+            [2, 'Observar el cosmos', SET, `scenarios/${SET}/16077.png`, 2],
+            [2, 'Quedaos un rato', SET, `scenarios/${SET}/16078.png`, 1],
+        ]);
+        assert.deepEqual(
+            scenarioRecord.config.cards.map(({card}) =>
+                Number(card.params.image.match(/\/(\d+)\.png$/)?.[1])),
+            [1188, 16074, 16075, 16076, 16077, 16078]
+        );
+
+        const [boxConfig, cosmosConfig, stayConfig] = treacheries.map(
+            ({card}) => card
+        );
+        const boxWhenRevealed = boxConfig.params.abilities[0];
+        assert.equal(boxWhenRevealed.type, ABILITY_WHEN_REVEALED);
+        assert.equal(boxWhenRevealed.params.effect.type, EFFECT_CHAINED);
+        assert.deepEqual(
+            boxWhenRevealed.params.effect.params.effects.map(({type}) => type),
+            [EFFECT_ADD_TO_ADDITIONAL_ZONE, EFFECT_DO_IF]
+        );
+        assert.deepEqual(
+            boxWhenRevealed.params.effect.params.effects[0].params.condition,
+            {cost: {operator: OPERATOR_MIN, defaultValue: 0}}
+        );
+        assert.equal(
+            boxWhenRevealed.params.effect.params.effects[1].params.effect.type,
+            EFFECT_SURGE
+        );
+        assert.equal(boxConfig.params.boostAbility.type, ABILITY_BOOST);
+        assert.equal(
+            boxConfig.params.boostAbility.params.effect.type,
+            EFFECT_DO_IF
+        );
+        assert.deepEqual(
+            boxConfig.params.boostAbility.params.effect.params.condition,
+            {
+                'match.scenario.additionalZones.collection.cards.length': {
+                    operator: 'lte',
+                    path: 'match.players.length',
+                    multiply: 3,
+                },
+            }
+        );
+
+        const cosmosOptions = cosmosConfig.params.abilities[0]
+            .params.effect.params.options;
+        assert.equal(cosmosConfig.params.abilities[0].type, ABILITY_WHEN_REVEALED);
+        assert.equal(cosmosOptions[0].type, EFFECT_ADD_TO_ADDITIONAL_ZONE);
+        assert.equal(cosmosOptions[0].params.fromHand, true);
+        assert.deepEqual(cosmosOptions[0].params.condition, {
+            cost: {operator: OPERATOR_MAX, defaultValue: 0},
+        });
+        assert.equal(cosmosOptions[1].type, EFFECT_CHAINED);
+        assert.equal(
+            cosmosOptions[1].params.effects[0].type,
+            EFFECT_DISCARD_HAND
+        );
+        assert.equal(
+            cosmosOptions[1].params.thenEffect.type,
+            EFFECT_PLACE_THREAT
+        );
+
+        const [alterEgoAbility, heroAbility] = stayConfig.params.abilities;
+        assert.equal(alterEgoAbility.type, ABILITY_WHEN_REVEALED_ALTEREGO);
+        assert.equal(alterEgoAbility.params.effect.type, EFFECT_CHOOSE);
+        assert.equal(
+            alterEgoAbility.params.effect.params.options[0].type,
+            EFFECT_SPEND
+        );
+        assert.deepEqual(
+            alterEgoAbility.params.effect.params.options[0].params.resources,
+            [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL]
+        );
+        assert.equal(heroAbility.type, ABILITY_WHEN_REVEALED_HERO);
+        assert.deepEqual(
+            heroAbility.params.effect.params.effects.map(({type}) => type),
+            [EFFECT_ENEMY_ATTACK, EFFECT_DO_IF_TAKE_DAMAGE]
+        );
+        assert.equal(
+            heroAbility.params.effect.params.effects[0].params.enemyType,
+            CHARACTER_VILLAIN
+        );
+        assert.equal(
+            heroAbility.params.effect.params.effects[0].params.attackModifier,
+            1
+        );
+        assert.equal(
+            heroAbility.params.effect.params.effects[0].params.target,
+            TARGET_YOU
+        );
+        assert.equal(
+            heroAbility.params.effect.params.effects[1].params.target,
+            TARGET_YOUR_HERO
+        );
+
+        await scenario.initScenario(match.createObligations(), false);
+        for (const {count, card} of treacheries) {
+            assert.equal(
+                scenario.scenarioCards.filter(({name}) =>
+                    name === card.params.name).length,
+                count
+            );
+        }
+
+        const reusedCard = scenario.scenarioCards.filter(({name}) =>
+            name === 'Con la guardia baja');
+        assert.equal(reusedCard.length, 2);
+        assert.deepEqual(
+            reusedCard.map(({set}) => set).sort(),
+            [SET, 'standard'].sort()
+        );
+        assert.equal(reusedCard[0].card.image, 'sets/standard/01188.png');
+    });
+
+    test('Caja poco llamativa collects the lowest-cost controlled card', async () => {
+        const context = await createScenario();
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+
+        const lowCostCard = createPlayerCard(factory, player, {
+            name: 'Mejora de coste bajo',
+            cost: 1,
+        });
+        const highCostCard = createPlayerCard(factory, player, {
+            name: 'Mejora de coste alto',
+            cost: 3,
+        });
+        for (const card of [lowCostCard, highCostCard]) {
+            card.controller = player;
+            player.gameZone.addToGameZone(card);
+        }
+
+        await revealTreachery(context, 'Caja poco llamativa');
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(lowCostCard));
+        assert.ok(!scenario.additionalZones.collection.cards.includes(highCostCard));
+        assert.ok(!player.gameZone.cards.includes(lowCostCard));
+        assert.ok(player.gameZone.cards.includes(highCostCard));
+    });
+
+    test('Caja poco llamativa gains Surge when no controlled card can be collected', async () => {
+        const context = await createScenario();
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+        const card = scenario.deck.cards.find(candidate =>
+            candidate.name === 'Caja poco llamativa');
+        assert.ok(card);
+        const extraEncounter = factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_TREACHERY,
+            params: {
+                name: 'Carta adicional',
+                set: 'test',
+                boost: 0,
+            },
+        }, {owner: scenario});
+        scenario.deck.cards = [extraEncounter];
+
+        const surgeReveal = new RevealEncounterEffect({
+            match,
+            selectedTarget: card,
+        });
+        await surgeReveal.runEffect({match, player});
+        assert.equal(surgeReveal.surge, true);
+        assert.ok(scenario.deck.discardPile.includes(extraEncounter));
+        assert.ok(!scenario.additionalZones.collection.cards.includes(card));
+    });
+
+    test('Caja poco llamativa scales its Boost threshold by the number of players', async () => {
+        for (const {playerCount, shouldCollectTopCard} of [
+            {playerCount: 1, shouldCollectTopCard: false},
+            {playerCount: 2, shouldCollectTopCard: true},
+        ]) {
+            const context = await createScenario([
+                'Carta de preparación',
+                'Carta superior',
+                'Carta restante',
+            ]);
+            const {factory, match, player, scenario} = context;
+            if (playerCount === 2) {
+                addSecondPlayer(context);
+            }
+            await scenario.initScenario(match.createObligations(), false);
+
+            for (let index = 1; index < 4; index++) {
+                const filler = createPlayerCard(factory, player, {
+                    type: CARD_TYPE_RESOURCE,
+                    name: `Carta de la Colección ${index}`,
+                    resources: [RESOURCE_MENTAL],
+                });
+                await scenario.addToAdditionalZone('collection', filler, {player});
+            }
+
+            const box = scenario.deck.cards.find(card =>
+                card.name === 'Caja poco llamativa');
+            assert.ok(box);
+            await box.boostAbility.resolveAbility({
+                card: box,
+                match,
+                player,
+            });
+
+            assert.equal(
+                scenario.additionalZones.collection.cards.some(({name}) =>
+                    name === 'Carta superior'),
+                shouldCollectTopCard
+            );
+            assert.equal(
+                player.deck.cards.some(({name}) => name === 'Carta superior'),
+                !shouldCollectTopCard
+            );
+        }
+    });
+
+    test('Observar el cosmos places the highest-cost hand card in the Collection', async () => {
+        const context = await createScenario();
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+
+        const lowerCostCard = createPlayerCard(factory, player, {
+            name: 'Carta de coste bajo',
+            cost: 1,
+        });
+        const higherCostCard = createPlayerCard(factory, player, {
+            name: 'Carta de coste alto',
+            cost: 4,
+        });
+        player.hand.addCards([lowerCostCard, higherCostCard]);
+
+        await revealTreachery(context, 'Observar el cosmos');
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(higherCostCard));
+        assert.ok(!player.hand.cards.includes(higherCostCard));
+        assert.ok(!player.deck.discardPile.includes(higherCostCard));
+        assert.ok(player.hand.cards.includes(lowerCostCard));
+    });
+
+    test('Observar el cosmos discards the highest-cost hand card then places its printed cost as threat', async () => {
+        const context = await createScenario([
+            'Carta de preparación',
+            'Carta superior',
+            'Carta restante',
+        ]);
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+
+        const lowerCostCard = createPlayerCard(factory, player, {
+            name: 'Carta de coste bajo',
+            cost: 1,
+        });
+        const higherCostCard = createPlayerCard(factory, player, {
+            name: 'Carta de coste alto',
+            cost: 4,
+        });
+        player.hand.addCards([lowerCostCard, higherCostCard]);
+        const mainScheme = scenario.gameZone.currentScheme.currentSide;
+        const startingThreat = mainScheme.threat;
+        const openDialog = match.openDialog;
+        match.openDialog = async dialog => {
+            if (dialog.dialogType === DIALOG_LIST &&
+                dialog.data.options?.length === 2) {
+                return {selected: dialog.data.options[1]};
+            }
+
+            return openDialog(dialog);
+        };
+
+        await revealTreachery(context, 'Observar el cosmos');
+
+        assert.ok(!player.hand.cards.includes(higherCostCard));
+        assert.ok(player.deck.discardPile.includes(higherCostCard));
+        assert.ok(player.hand.cards.includes(lowerCostCard));
+        assert.equal(mainScheme.threat, startingThreat + 4);
+    });
+
+    test('Quedaos un rato lets an alter ego choose the top card of their deck', async () => {
+        const context = await createScenario([
+            'Carta de preparación',
+            'Carta superior',
+            'Carta restante',
+        ]);
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+        const physicalResources = [1, 2].map(index =>
+            createPlayerCard(factory, player, {
+                type: CARD_TYPE_RESOURCE,
+                name: `Recurso físico ${index}`,
+                resources: [RESOURCE_PHYSICAL],
+            }));
+        player.hand.addCards(physicalResources);
+
+        const openDialog = match.openDialog;
+        let choiceCount = 0;
+        match.openDialog = async dialog => {
+            if (dialog.dialogType === DIALOG_LIST &&
+                dialog.data.options?.length === 2) {
+                choiceCount++;
+                return {selected: dialog.data.options[1]};
+            }
+
+            return openDialog(dialog);
+        };
+
+        await revealTreachery(context, 'Quedaos un rato');
+
+        assert.equal(choiceCount, 1);
+        assert.deepEqual(
+            scenario.additionalZones.collection.cards.map(({name}) => name),
+            ['Carta de preparación', 'Carta superior']
+        );
+        assert.deepEqual(
+            player.deck.cards.map(({name}) => name),
+            ['Carta restante']
+        );
+        assert.equal(player.hand.cards.length, 2);
+    });
+
+    test('Quedaos un rato lets an alter ego spend two physical resources', async () => {
+        const context = await createScenario([
+            'Carta de preparación',
+            'Carta superior',
+        ]);
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+        const physicalResources = [1, 2].map(index =>
+            createPlayerCard(factory, player, {
+                type: CARD_TYPE_RESOURCE,
+                name: `Recurso físico ${index}`,
+                resources: [RESOURCE_PHYSICAL],
+            }));
+        player.hand.addCards(physicalResources);
+
+        const openDialog = match.openDialog;
+        match.openDialog = async dialog => {
+            if (dialog.dialogType === DIALOG_LIST &&
+                dialog.data.options?.length === 2) {
+                return {selected: dialog.data.options[0]};
+            }
+            if (dialog.dialogType === DIALOG_PAY_COST) {
+                return {
+                    fullyPaid: true,
+                    paid: {
+                        generators: [],
+                        hand: dialog.data.cards.hand.map(({id}) => ({id})),
+                    },
+                    resources: [RESOURCE_PHYSICAL, RESOURCE_PHYSICAL],
+                };
+            }
+            if (dialog.dialogType === DIALOG_DISCARD_ORDER) {
+                return {selected: dialog.data.cards};
+            }
+
+            return openDialog(dialog);
+        };
+
+        await revealTreachery(context, 'Quedaos un rato');
+
+        assert.equal(player.hand.cards.length, 0);
+        assert.ok(physicalResources.every(card =>
+            player.deck.discardPile.includes(card)));
+        assert.deepEqual(
+            scenario.additionalZones.collection.cards.map(({name}) => name),
+            ['Carta de preparación']
+        );
+        assert.deepEqual(player.deck.cards.map(({name}) => name), ['Carta superior']);
+    });
+
+    test('Quedaos un rato gives the Villain +1 ATK and collects a card when the hero takes damage', async () => {
+        const context = await createScenario([
+            'Carta de preparación',
+            'Carta superior',
+            'Carta restante',
+        ]);
+        const {factory, match, player, scenario} = context;
+        await scenario.initScenario(match.createObligations(), false);
+        const hero = player.superhero.sides.find(side => side.isHero);
+        await player.superhero.flip({player, selectedFormTarget: hero});
+
+        const card = scenario.deck.cards.find(candidate =>
+            candidate.name === 'Quedaos un rato');
+        const boostCard = factory.cardsFactory.createGameCardFromConfig({
+            type: CARD_TYPE_TREACHERY,
+            params: {
+                name: 'Aumento de prueba',
+                set: 'test',
+                boost: 0,
+            },
+        }, {owner: scenario});
+        scenario.deck.cards = [boostCard];
+
+        await new RevealEncounterEffect({
+            match,
+            selectedTarget: card,
+        }).runEffect({match, player});
+
+        assert.equal(hero.damage, 2);
+        assert.deepEqual(
+            scenario.additionalZones.collection.cards.map(({name}) => name),
+            ['Carta de preparación', 'Carta superior']
+        );
+        assert.deepEqual(player.deck.cards.map(({name}) => name), ['Carta restante']);
+    });
+
+    test('Imagen biogramática is included once with its printed encounter data and abilities', async () => {
+        const {scenario, scenarioRecord} = await createScenario();
+        const entries = scenarioRecord.config.cards;
+        const entry = entries.find(({card}) =>
+            card.params.name === 'Imagen biogramática'
+        );
+        assert.ok(entry);
+        const {count, card} = entry;
+
+        assert.equal(count, 1);
+        assert.equal(card.type, CARD_TYPE_ATTACHMENT);
+        assert.equal(card.params.name, 'Imagen biogramática');
+        assert.equal(card.params.set, SET);
+        assert.equal(
+            card.params.image,
+            `scenarios/${SET}/16074.png`
+        );
+        assert.deepEqual(card.params.traits, [TRAIT_ILLUSION]);
+        assert.equal(card.params.boost, 1);
+        assert.deepEqual(card.params.attach, {
+            target: TARGET_CONDITION_CARD,
+            condition: {name: 'El Coleccionista'},
+        });
+
+        const [interrupt] = card.params.abilities;
+        assert.equal(interrupt.type, ABILITY_FORCED_INTERRUPT);
+        assert.equal(
+            interrupt.params.trigger,
+            TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE
+        );
+        assert.deepEqual(interrupt.params.triggerParams, {
+            target: TARGET_ATTACHED,
+        });
+        const interruptEffects = interrupt.params.effect.params.effects;
+        assert.equal(interrupt.params.effect.type, EFFECT_CHAINED);
+        assert.deepEqual(interruptEffects.map(({type}) => type), [
+            EFFECT_ADD_TO_ADDITIONAL_ZONE,
+            EFFECT_PREVENT_DAMAGE,
+            EFFECT_PLACE_THREAT,
+        ]);
+        assert.deepEqual(interruptEffects[0].params, {
+            zoneId: 'collection',
+            target: TARGET_THIS,
+            inPlayOnly: true,
+        });
+        assert.deepEqual(interruptEffects[1].params, {
+            target: TARGET_EFFECT,
+            preventAll: true,
+        });
+        assert.deepEqual(interruptEffects[2].params, {
+            target: TARGET_MAIN_SCHEME,
+            threat: 0,
+            paramsCalc: {
+                target: 'effects.1.preventedDamage',
+                formula: CALC_ALL,
+            },
+        });
+
+        const boostAbility = card.params.boostAbility;
+        assert.equal(boostAbility.type, ABILITY_BOOST);
+        assert.equal(boostAbility.params.effect.type, EFFECT_DELAYED);
+        assert.equal(
+            boostAbility.params.effect.params.target,
+            TARGET_ACTIVATION
+        );
+        assert.deepEqual(
+            boostAbility.params.effect.params.effect,
+            {
+                type: EFFECT_REVEAL_ENCOUNTER,
+                params: {card: 'card'},
+            }
+        );
+
+        const imageCodes = entries.map(({card: entryCard}) =>
+            Number(entryCard.params.image.match(/\/(\d+)\.png$/)?.[1])
+        );
+        assert.deepEqual(
+            imageCodes,
+            [...imageCodes].sort((first, second) => first - second)
+        );
+        assert.equal(
+            scenario.scenarioCards.filter(({name}) =>
+                name === 'Imagen biogramática'
+            ).length,
+            1
+        );
+    });
+
+    test('Monark Starstalker is included once as a unique, villainous minion', async () => {
+        const {scenario, scenarioRecord} = await createScenario();
+        const entry = scenarioRecord.config.cards.find(({card}) =>
+            card.params.name === 'Monark Starstalker'
+        );
+
+        assert.ok(entry);
+        assert.equal(entry.count, 1);
+        assert.equal(entry.card.type, CARD_TYPE_MINION);
+        assert.equal(entry.card.params.name, 'Monark Starstalker');
+        assert.equal(entry.card.params.set, SET);
+        assert.equal(
+            entry.card.params.image,
+            `scenarios/${SET}/16075.png`
+        );
+        assert.equal(entry.card.params.unique, true);
+        assert.deepEqual(entry.card.params.traits, [TRAIT_BOUNTY_HUNTER]);
+        assert.equal(entry.card.params.attack, 2);
+        assert.equal(entry.card.params.scheme, 2);
+        assert.equal(entry.card.params.hitPoints, 7);
+        assert.equal(entry.card.params.boost, 3);
+        assert.deepEqual(entry.card.params.keywords, {villainous: true});
+
+        const minionCopies = scenario.scenarioCards.filter(({name}) =>
+            name === 'Monark Starstalker'
+        );
+        assert.equal(minionCopies.length, 1);
+        assert.equal(minionCopies[0].villainous, true);
+    });
+
+    test('Imagen biogramática moves to the Collection after preventing Collector damage', async () => {
+        const {match, player, scenario} = await createScenario();
+        await scenario.initScenario(match.createObligations(), false);
+
+        const image = scenario.deck.cards.find(card =>
+            card.name === 'Imagen biogramática'
+        );
+        const villain = scenario.gameZone.currentVillain;
+        const mainScheme = scenario.gameZone.currentScheme.currentSide;
+        assert.ok(image);
+
+        await new RevealEncounterEffect({
+            match,
+            selectedTarget: image,
+        }).runEffect({match, player});
+
+        assert.equal(image.attachedTo, villain);
+        assert.ok(villain.attached.includes(image));
+
+        const threatBeforeDamage = mainScheme.threat;
+        const heroDamage = new TakeDamageEffect({
+            character: player.superhero.currentSide,
+            damage: 1,
+            match,
+            selectedTarget: player.superhero.currentSide,
+        });
+        await heroDamage.runEffect({match, player});
+
+        assert.equal(player.superhero.currentSide.damage, 1);
+        assert.ok(!scenario.additionalZones.collection.cards.includes(image));
+        assert.equal(mainScheme.threat, threatBeforeDamage);
+
+        const villainDamage = new TakeDamageEffect({
+            character: villain,
+            damage: 3,
+            match,
+            selectedTarget: villain,
+        });
+        await villainDamage.runEffect({match, player});
+
+        assert.equal(villainDamage.takenDamage, 0);
+        assert.equal(villain.damage, 0);
+        assert.ok(scenario.additionalZones.collection.cards.includes(image));
+        assert.equal(image.attachedTo, undefined);
+        assert.ok(
+            scenario.toObj().additionalZones.collection.cards.some(({name}) =>
+                name === 'Imagen biogramática'
+            )
+        );
+        assert.equal(mainScheme.threat, threatBeforeDamage + 3);
+    });
+
+    test('Imagen biogramática is revealed after the Villain activation ends when drawn as a boost', async () => {
+        const {match, player, scenario} = await createScenario();
+        await scenario.initScenario(match.createObligations(), false);
+
+        const imageIndex = scenario.deck.cards.findIndex(card =>
+            card.name === 'Imagen biogramática'
+        );
+        assert.notEqual(imageIndex, -1);
+        const [image] = scenario.deck.cards.splice(imageIndex, 1);
+        scenario.deck.cards.unshift(image);
+
+        const villain = scenario.gameZone.currentVillain;
+        const attack = new EnemyAttackEffect({
+            enemy: villain,
+            match,
+            selectedTarget: player,
+        });
+        await attack.runEffect({match, player});
+
+        assert.equal(attack.boostCards[0], image);
+        assert.equal(image.attachedTo, villain);
+        assert.ok(villain.attached.includes(image));
     });
 
     test('main scheme setup places each player deck top card face up in the Collection', async () => {
@@ -148,6 +867,11 @@ describe('Infiltrados en el museo', () => {
         assert.equal(
             scenario.toObj().additionalZones.collection.cards[0]
                 .additionalInfo.owner,
+            player.superhero.mainName
+        );
+        assert.equal(
+            scenario.toObj().additionalZones.collection.cards[0]
+                .additionalInfo.scenarioOwner,
             player.name
         );
     });
@@ -328,6 +1052,35 @@ describe('Infiltrados en el museo', () => {
         delete match.openDialog;
         const restoredMatch = restoreMatch(serializeMatch(match), match.mc);
         assert.equal(restoredMatch.victoryDisplay[0].id, ally.id);
+    });
+
+    test('a Victory 0 scheme enters the Victory Display instead of the Collection', async () => {
+        const {factory, match, player, scenario} = await createScenario();
+
+        await scenario.initScenario(match.createObligations(), false);
+
+        const eggConfig = galacticArtifacts.config.cards.find(({card}) =>
+            card.params.name === 'Huevo del monarca hujahdariano').card;
+        const egg = factory.cardsFactory.createGameCardFromConfig(
+            structuredClone(eggConfig),
+            {owner: scenario}
+        );
+        egg.controller = scenario;
+        scenario.gameZone.addToGameZone(egg);
+        await egg.initTriggers();
+
+        const defeat = new DefeatEffect({
+            match,
+            selectedTarget: egg,
+            target: TARGET_CARD,
+        });
+        await defeat.runEffect({match, player, card: egg});
+
+        assert.equal(egg.victory, 0);
+        assert.equal(egg.hasVictory, true);
+        assert.ok(match.victoryDisplay.includes(egg));
+        assert.ok(!scenario.additionalZones.collection.cards.includes(egg));
+        assert.ok(!scenario.deck.discardPile.includes(egg));
     });
 
     test('Victory X attachments enter the Victory Display when their host is defeated', async () => {
@@ -577,6 +1330,201 @@ describe('Infiltrados en el museo', () => {
         assert.ok(player.deck.discardPile.includes(resourceOne));
         assert.ok(player.deck.discardPile.includes(resourceTwo));
         assert.equal(player.superhero.currentSide.exhausted, false);
+    });
+
+    test('canceling the main scheme action resource cost cancels its effect', async () => {
+        const {match, player, scenario} = await createScenario([
+            'Carta de la Colección',
+            'Recurso uno',
+            'Recurso dos',
+            'Carta restante',
+        ]);
+        await scenario.initScenario(match.createObligations(), false);
+        const heroSide = player.superhero.sides.find(side => side.isHero);
+        await player.superhero.flip({player, selectedFormTarget: heroSide});
+        const [resourceOne, resourceTwo] = await player.deck.draw(2);
+        player.hand.addCards([resourceOne, resourceTwo]);
+
+        let choiceDialogs = 0;
+        match.openDialog = async ({data, dialogType}) => {
+            if (dialogType === DIALOG_LIST) {
+                assert.equal(choiceDialogs++, 0);
+                return {
+                    selected: data.options.find(option =>
+                        option.text === 'Gasta 2 recursos de cualquier tipo'),
+                };
+            }
+            if (dialogType === DIALOG_PAY_COST) {
+                return undefined;
+            }
+            if (dialogType === DIALOG_SELECT_TARGET) {
+                assert.fail('A canceled cost must not open the Collection target dialog.');
+            }
+
+            return {};
+        };
+
+        const collectedCard = scenario.additionalZones.collection.cards[0];
+        const schemeSide = scenario.gameZone.currentScheme.currentSide;
+        const action = schemeSide.abilities.find(ability =>
+            ability.limit?.perPlayer);
+
+        await action.resolveAbility({card: schemeSide, match, player});
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(collectedCard));
+        assert.ok(!player.deck.discardPile.includes(collectedCard));
+        assert.ok(player.hand.cards.includes(resourceOne));
+        assert.ok(player.hand.cards.includes(resourceTwo));
+        assert.equal(player.superhero.currentSide.exhausted, false);
+        assert.equal(action.paymentCancelled, true);
+        assert.equal(action.limit.canUse({player}), true);
+    });
+
+    test('canceling an auto-selected sole payment option cancels the main scheme action', async () => {
+        const {match, player, scenario} = await createScenario([
+            'Carta de la Colección',
+            'Recurso uno',
+            'Recurso dos',
+            'Carta restante',
+        ]);
+        await scenario.initScenario(match.createObligations(), false);
+        const heroSide = player.superhero.sides.find(side => side.isHero);
+        await player.superhero.flip({player, selectedFormTarget: heroSide});
+        heroSide.exhausted = true;
+        const [resourceOne, resourceTwo] = await player.deck.draw(2);
+        player.hand.addCards([resourceOne, resourceTwo]);
+
+        match.openDialog = async ({dialogType}) => {
+            if (dialogType === DIALOG_LIST) {
+                assert.fail('A single valid cost option should resolve without a choice dialog.');
+            }
+            if (dialogType === DIALOG_PAY_COST) {
+                return undefined;
+            }
+            if (dialogType === DIALOG_SELECT_TARGET) {
+                assert.fail('A canceled auto-selected cost must not open the Collection target dialog.');
+            }
+
+            return {};
+        };
+
+        const collectedCard = scenario.additionalZones.collection.cards[0];
+        const schemeSide = scenario.gameZone.currentScheme.currentSide;
+        const action = schemeSide.abilities.find(ability =>
+            ability.limit?.perPlayer);
+
+        await action.resolveAbility({card: schemeSide, match, player});
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(collectedCard));
+        assert.ok(!player.deck.discardPile.includes(collectedCard));
+        assert.ok(player.hand.cards.includes(resourceOne));
+        assert.ok(player.hand.cards.includes(resourceTwo));
+        assert.equal(heroSide.exhausted, true);
+        assert.equal(action.paymentCancelled, true);
+        assert.equal(action.limit.canUse({player}), true);
+    });
+
+    test('an incomplete main scheme resource payment cancels the action without paying partially', async () => {
+        const {match, player, scenario} = await createScenario([
+            'Carta de la Colección',
+            'Recurso uno',
+            'Recurso dos',
+            'Carta restante',
+        ]);
+        await scenario.initScenario(match.createObligations(), false);
+        const heroSide = player.superhero.sides.find(side => side.isHero);
+        await player.superhero.flip({player, selectedFormTarget: heroSide});
+        const [resourceOne, resourceTwo] = await player.deck.draw(2);
+        player.hand.addCards([resourceOne, resourceTwo]);
+
+        let choiceDialogs = 0;
+        match.openDialog = async ({data, dialogType}) => {
+            if (dialogType === DIALOG_LIST) {
+                assert.equal(choiceDialogs++, 0);
+                return {
+                    selected: data.options.find(option =>
+                        option.text === 'Gasta 2 recursos de cualquier tipo'),
+                };
+            }
+            if (dialogType === DIALOG_PAY_COST) {
+                return {
+                    fullyPaid: false,
+                    paid: {
+                        generators: [],
+                        hand: [{id: data.cards.hand[0].id}],
+                    },
+                    resources: [RESOURCE_MENTAL],
+                };
+            }
+            if (dialogType === DIALOG_SELECT_TARGET) {
+                assert.fail('An incomplete cost must not open the Collection target dialog.');
+            }
+
+            return {};
+        };
+
+        const collectedCard = scenario.additionalZones.collection.cards[0];
+        const schemeSide = scenario.gameZone.currentScheme.currentSide;
+        const action = schemeSide.abilities.find(ability =>
+            ability.limit?.perPlayer);
+
+        await action.resolveAbility({card: schemeSide, match, player});
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(collectedCard));
+        assert.ok(!player.deck.discardPile.includes(collectedCard));
+        assert.ok(player.hand.cards.includes(resourceOne));
+        assert.ok(player.hand.cards.includes(resourceTwo));
+        assert.equal(player.superhero.currentSide.exhausted, false);
+        assert.equal(action.paymentCancelled, true);
+        assert.equal(action.limit.canUse({player}), true);
+    });
+
+    test('an empty payment response without fullyPaid cancels the main scheme action', async () => {
+        const {match, player, scenario} = await createScenario([
+            'Carta de la Colección',
+            'Recurso uno',
+            'Recurso dos',
+            'Carta restante',
+        ]);
+        await scenario.initScenario(match.createObligations(), false);
+        const heroSide = player.superhero.sides.find(side => side.isHero);
+        await player.superhero.flip({player, selectedFormTarget: heroSide});
+        const [resourceOne, resourceTwo] = await player.deck.draw(2);
+        player.hand.addCards([resourceOne, resourceTwo]);
+
+        match.openDialog = async ({data, dialogType}) => {
+            if (dialogType === DIALOG_LIST) {
+                return {
+                    selected: data.options.find(option =>
+                        option.text === 'Gasta 2 recursos de cualquier tipo'),
+                };
+            }
+            if (dialogType === DIALOG_PAY_COST) {
+                return {
+                    paid: {generators: [], hand: []},
+                    resources: [],
+                };
+            }
+            if (dialogType === DIALOG_SELECT_TARGET) {
+                assert.fail('An empty payment must not open the Collection target dialog.');
+            }
+
+            return {};
+        };
+
+        const collectedCard = scenario.additionalZones.collection.cards[0];
+        const schemeSide = scenario.gameZone.currentScheme.currentSide;
+        const action = schemeSide.abilities.find(ability =>
+            ability.limit?.perPlayer);
+
+        await action.resolveAbility({card: schemeSide, match, player});
+
+        assert.ok(scenario.additionalZones.collection.cards.includes(collectedCard));
+        assert.ok(!player.deck.discardPile.includes(collectedCard));
+        assert.ok(player.hand.cards.includes(resourceOne));
+        assert.ok(player.hand.cards.includes(resourceTwo));
+        assert.equal(action.paymentCancelled, true);
+        assert.equal(action.limit.canUse({player}), true);
     });
 
     test('five cards in the Collection end the game and action limits are per player', async () => {

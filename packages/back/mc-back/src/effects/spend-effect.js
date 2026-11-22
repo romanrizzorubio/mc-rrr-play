@@ -146,6 +146,11 @@ export class SpendEffect extends Effect {
                 }
             );
 
+        if (paid && !allowPartial && paid.fullyPaid === false) {
+            this.paymentCancelled = true;
+            return;
+        }
+
         if (paid) {
             this.isPaid = true;
             this.isFullyPaid = paid.fullyPaid ?? !allowPartial;

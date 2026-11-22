@@ -173,14 +173,14 @@ describe('Scenario component', () => {
         assert.equal(component.renderVictoryDisplay(), '');
     });
 
-    test('styles additional-zone titles like main scheme titles', () => {
+    test('styles additional-zone viewers like main scheme titles', () => {
         assert.match(
             scenarioStyles.cssText,
-            /\.additional-zone-toggle\s*\{[^}]*font-family:\s*var\(--mc-font-title,\s*sans-serif\);/
+            /\.additional-zone-title\s*\{[^}]*font-family:\s*var\(--mc-font-title,\s*sans-serif\);/
         );
         assert.match(
             scenarioStyles.cssText,
-            /\.additional-zone-toggle\s*\{[^}]*font-size:\s*0\.85rem;[^}]*font-weight:\s*700;[^}]*line-height:\s*1\.1;/
+            /\.additional-zone-title\s*\{[^}]*font-size:\s*0\.85rem;[^}]*font-weight:\s*700;[^}]*line-height:\s*1\.1;/
         );
     });
 
@@ -434,7 +434,7 @@ describe('Scenario component', () => {
         assert.match(deckTemplate.strings.join(''), /deck-name-position="top"/);
     });
 
-    test('additional zones render as small face-up decks in the environment area', () => {
+    test('additional zone cards open in a dialog from their face-up deck', () => {
         const topCard = {id: 'collected-card', image: 'card.png'};
         const zones = {
             collection: {
@@ -448,29 +448,24 @@ describe('Scenario component', () => {
                 cards: [],
             },
         };
+        let dispatchedEvent;
         const component = Object.assign(Object.create(McScenario.prototype), {
             scenario: {
                 additionalZones: zones,
                 extraDecks: {},
                 gameZone: {cards: []},
             },
-            openAdditionalZones: new Set(),
             player: null,
             dragActivation: null,
             dragPlayCard: null,
             dragResourcePayment: null,
-            renderMainScheme: () => 'main scheme',
+            dispatchEvent(event) {
+                dispatchedEvent = event;
+            },
         });
-        const schemesTemplate = component.renderSchemes();
-        const environmentTemplate = schemesTemplate.values.find(value =>
-            value?.strings?.join('').includes('class="environment-area"')
-        );
-        const additionalZonesTemplate = environmentTemplate.values.find(value =>
-            value?.strings?.join('').includes('class="additional-zones"')
-        );
+        const additionalZonesTemplate = component.renderAdditionalZones();
         const zoneTemplates = additionalZonesTemplate.values[0];
 
-        assert.equal(schemesTemplate.values[0], 'schemes has-environment-area');
         assert.equal(zoneTemplates.length, 2);
 
         for (const [index, zoneTemplate] of zoneTemplates.entries()) {
@@ -482,14 +477,25 @@ describe('Scenario component', () => {
                 return zoneTemplate.values[propertyIndex];
             };
             const zone = Object.values(zones)[index];
-            const titleIndex = zoneTemplate.strings.findIndex(part =>
+            const clickIndex = zoneTemplate.strings.findIndex(part =>
                 part.includes('@click=')
-            ) + 1;
+            );
             const templateText = zoneTemplate.strings.join('');
+            const viewerStart = templateText.indexOf(
+                'class="additional-zone-viewer"'
+            );
+            const viewerEnd = templateText.indexOf('</button>', viewerStart);
 
-            assert.equal(zoneTemplate.values[titleIndex], zone.name);
-            assert.ok(templateText.indexOf('class="additional-zone-toggle"') <
-                templateText.indexOf('<mc-deck'));
+            assert.equal(zoneTemplate.values[0], zone.name);
+            assert.ok(templateText.indexOf('class="additional-zone-title"') <
+                viewerStart);
+            assert.ok(viewerStart < templateText.indexOf('<mc-deck'));
+            assert.equal(
+                templateText.slice(viewerStart, viewerEnd)
+                    .includes('additional-zone-title'),
+                false
+            );
+            assert.match(templateText, /aria-haspopup="dialog"/);
             assert.match(templateText, /size="s"/);
             assert.equal(getBoundProperty('cards'), zone.cards);
             assert.equal(getBoundProperty('topCard'), zone.cards[0]);
@@ -497,7 +503,19 @@ describe('Scenario component', () => {
             assert.equal(getBoundProperty('deckName'), zone.name);
             assert.equal(getBoundProperty('showDeckName'), false);
             assert.equal(getBoundProperty('showDiscard'), false);
+            assert.doesNotMatch(templateText, /additional-zone-cards|mc-card-list/);
         }
+
+        const collectionTemplate = zoneTemplates[0];
+        const clickIndex = collectionTemplate.strings.findIndex(part =>
+            part.includes('@click=')
+        );
+        collectionTemplate.values[clickIndex]();
+
+        assert.equal(dispatchedEvent.type, 'view-additional-zone');
+        assert.deepEqual(dispatchedEvent.detail, {zoneId: 'collection'});
+        assert.equal(dispatchedEvent.bubbles, true);
+        assert.equal(dispatchedEvent.composed, true);
     });
 
     test('shows scenario-wide additional zones only in the general split area', () => {
@@ -516,7 +534,6 @@ describe('Scenario component', () => {
                 },
                 extraDecks: {},
             },
-            openAdditionalZones: new Set(),
             renderMainScheme: () => 'main scheme',
         });
         const generalSchemes = component.renderSchemes(generalZone, true);
@@ -555,7 +572,6 @@ describe('Scenario component', () => {
                 },
                 extraDecks: {},
             },
-            openAdditionalZones: new Set(),
             renderMainScheme: () => 'main scheme',
             renderVillain: () => 'villain',
         });

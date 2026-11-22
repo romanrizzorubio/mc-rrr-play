@@ -79,6 +79,7 @@ export class Keywords extends Engine {
         this._hinder = hinder;
         this._retaliate = retaliate;
         this._victory = victory;
+        this._hasVictory = Object.hasOwn(params, 'victory');
         this.teamUp = teamUp ? [...teamUp] : undefined;
         this._uses = uses;
         this._hint = hint;
@@ -97,6 +98,9 @@ export class Keywords extends Engine {
     }
     get victory() {
         return this.getNumericValue(this._victory);
+    }
+    get hasVictory() {
+        return this._hasVictory || Boolean(this._victory);
     }
     get uses() {
         return this.getNumericValue(this._uses);

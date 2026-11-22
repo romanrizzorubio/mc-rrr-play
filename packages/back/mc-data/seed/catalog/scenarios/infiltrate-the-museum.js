@@ -1,36 +1,66 @@
 import {
+    ABILITY_BOOST,
     ABILITY_FORCED_INTERRUPT,
     ABILITY_FORCED_RESPONSE,
     ABILITY_HERO_ACTION,
     ABILITY_SETUP,
     ABILITY_WHEN_REVEALED,
+    ABILITY_WHEN_REVEALED_ALTEREGO,
+    ABILITY_WHEN_REVEALED_HERO,
+    CALC_ALL,
     CALC_COUNT,
+    CHARACTER_VILLAIN,
+    CARD_TYPE_ATTACHMENT,
     CARD_TYPE_MAIN_SCHEME_A_CARD,
     CARD_TYPE_MAIN_SCHEME_B_CARD,
+    CARD_TYPE_MINION,
+    CARD_TYPE_TREACHERY,
     CARD_TYPE_VILLAIN,
     EFFECT_ADD_TO_ADDITIONAL_ZONE,
     EFFECT_CHAINED,
     EFFECT_CHOOSE,
+    EFFECT_DELAYED,
+    EFFECT_DISCARD_HAND,
     EFFECT_DISCARD_GAME,
+    EFFECT_DO_IF,
+    EFFECT_DO_IF_TAKE_DAMAGE,
+    EFFECT_ENEMY_ATTACK,
     EFFECT_EXHAUST,
     EFFECT_FOR_EACH,
     EFFECT_LOSE_GAME,
     EFFECT_PLACE_THREAT,
+    EFFECT_PREVENT_DAMAGE,
+    EFFECT_REVEAL_ENCOUNTER,
     EFFECT_SPEND,
     EFFECT_TAKE_DAMAGE,
+    EFFECT_SURGE,
     MATCH_END_REASON_SCENARIO_FAILED,
+    OPERATOR_MAX,
+    OPERATOR_MIN,
     RESOURCE_ANY,
+    RESOURCE_PHYSICAL,
+    TARGET_ACTIVATION,
     TARGET_ALL_PLAYERS,
+    TARGET_ATTACHED,
+    TARGET_CONDITION_CARD,
+    TARGET_EFFECT,
     TARGET_MAIN_SCHEME,
     TARGET_ROUND,
     TARGET_SOURCE,
+    TARGET_THIS,
     TARGET_TRIGGERED_TARGET,
     TARGET_YOU,
     TARGET_YOUR_HERO,
+    TRAIT_BOUNTY_HUNTER,
     TRAIT_ELDER_OF_THE_UNIVERSE,
     TRIGGER_CARD_WOULD_BE_DISCARDED,
+    TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_SCENARIO_ADDITIONAL_ZONE_CHANGED,
+    TRAIT_ILLUSION,
 } from 'mc-shared';
+
+import {caughtOffGuard} from '../shared/treacheries.js';
+import {withCardSet} from '../with-card-set.js';
 
 const SET = 'infiltrate-the-museum';
 const IMAGE_FOLDER = `scenarios/${SET}`;
@@ -85,6 +115,304 @@ const forcedAdditionalZoneInterrupt = (placeThreat = false) => ({
         } : moveDiscardedCardToAdditionalZone(),
     },
 });
+
+const biogrammaticImage = {
+    type: CARD_TYPE_ATTACHMENT,
+    params: {
+        name: 'Imagen biogramática',
+        set: SET,
+        image: `${IMAGE_FOLDER}/16074.png`,
+        traits: [TRAIT_ILLUSION],
+        boost: 1,
+        attach: {
+            target: TARGET_CONDITION_CARD,
+            condition: {name: 'El Coleccionista'},
+        },
+        abilities: [
+            {
+                type: ABILITY_FORCED_INTERRUPT,
+                params: {
+                    trigger: TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
+                    triggerParams: {
+                        target: TARGET_ATTACHED,
+                    },
+                    effect: {
+                        type: EFFECT_CHAINED,
+                        params: {
+                            effects: [
+                                {
+                                    type: EFFECT_ADD_TO_ADDITIONAL_ZONE,
+                                    params: {
+                                        zoneId: COLLECTION_ZONE_ID,
+                                        target: TARGET_THIS,
+                                        inPlayOnly: true,
+                                    },
+                                },
+                                {
+                                    type: EFFECT_PREVENT_DAMAGE,
+                                    params: {
+                                        target: TARGET_EFFECT,
+                                        preventAll: true,
+                                    },
+                                },
+                                {
+                                    type: EFFECT_PLACE_THREAT,
+                                    params: {
+                                        target: TARGET_MAIN_SCHEME,
+                                        threat: 0,
+                                        paramsCalc: {
+                                            target: 'effects.1.preventedDamage',
+                                            formula: CALC_ALL,
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+        boostAbility: {
+            type: ABILITY_BOOST,
+            params: {
+                effect: {
+                    type: EFFECT_DELAYED,
+                    params: {
+                        target: TARGET_ACTIVATION,
+                        effect: {
+                            type: EFFECT_REVEAL_ENCOUNTER,
+                            params: {
+                                card: 'card',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+};
+
+const monarkStarstalker = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Monark Starstalker',
+        set: SET,
+        image: `${IMAGE_FOLDER}/16075.png`,
+        unique: true,
+        traits: [TRAIT_BOUNTY_HUNTER],
+        boost: 3,
+        attack: 2,
+        scheme: 2,
+        hitPoints: 7,
+        keywords: {
+            villainous: true,
+        },
+    },
+};
+
+const unassumingBox = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Caja poco llamativa',
+        set: SET,
+        image: `${IMAGE_FOLDER}/16076.png`,
+        boost: 0,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: {
+                        type: EFFECT_CHAINED,
+                        params: {
+                            effects: [
+                                {
+                                    type: EFFECT_ADD_TO_ADDITIONAL_ZONE,
+                                    params: {
+                                        zoneId: COLLECTION_ZONE_ID,
+                                        target: TARGET_SOURCE,
+                                        source: 'player.gameZone.cards',
+                                        condition: {
+                                            cost: {
+                                                operator: OPERATOR_MIN,
+                                                defaultValue: 0,
+                                            },
+                                        },
+                                    },
+                                },
+                                {
+                                    type: EFFECT_DO_IF,
+                                    params: {
+                                        condition: {
+                                            'effects.0.resolved': false,
+                                        },
+                                        effect: {
+                                            type: EFFECT_SURGE,
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+        boostAbility: {
+            type: ABILITY_BOOST,
+            params: {
+                effect: {
+                    type: EFFECT_DO_IF,
+                    params: {
+                        condition: {
+                            'match.scenario.additionalZones.collection.cards.length': {
+                                operator: 'lte',
+                                path: 'match.players.length',
+                                multiply: 3,
+                            },
+                        },
+                        effect: addTopCardToAdditionalZone(),
+                    },
+                },
+            },
+        },
+    },
+};
+
+const observeTheCosmos = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Observar el cosmos',
+        set: SET,
+        image: `${IMAGE_FOLDER}/16077.png`,
+        boost: 2,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: {
+                        type: EFFECT_CHOOSE,
+                        params: {
+                            options: [
+                                {
+                                    type: EFFECT_ADD_TO_ADDITIONAL_ZONE,
+                                    params: {
+                                        zoneId: COLLECTION_ZONE_ID,
+                                        target: TARGET_SOURCE,
+                                        source: 'player.hand.cards',
+                                        condition: {
+                                            cost: {
+                                                operator: OPERATOR_MAX,
+                                                defaultValue: 0,
+                                            },
+                                        },
+                                        fromHand: true,
+                                        title: 'Coloca boca arriba en La Colección la carta de tu mano que tenga el coste más alto',
+                                    },
+                                },
+                                {
+                                    type: EFFECT_CHAINED,
+                                    params: {
+                                        title: 'Descarta la carta de tu mano que tenga el coste más alto y luego coloca Amenaza en el Plan principal',
+                                        outputParams: ['effects'],
+                                        effects: [
+                                            {
+                                                type: EFFECT_DISCARD_HAND,
+                                                params: {
+                                                    target: TARGET_SOURCE,
+                                                    source: 'player.hand.cards',
+                                                    condition: {
+                                                        cost: {
+                                                            operator: OPERATOR_MAX,
+                                                            defaultValue: 0,
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                        thenEffect: {
+                                            type: EFFECT_PLACE_THREAT,
+                                            params: {
+                                                target: TARGET_MAIN_SCHEME,
+                                                threat: 0,
+                                                paramsCalc: {
+                                                    target: 'effects.0.selectedTarget.cost',
+                                                    formula: CALC_ALL,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
+
+const stayAWhile = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Quedaos un rato',
+        set: SET,
+        image: `${IMAGE_FOLDER}/16078.png`,
+        boost: 1,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED_ALTEREGO,
+                params: {
+                    effect: {
+                        type: EFFECT_CHOOSE,
+                        params: {
+                            options: [
+                                {
+                                    type: EFFECT_SPEND,
+                                    params: {
+                                        target: TARGET_YOU,
+                                        resources: [
+                                            RESOURCE_PHYSICAL,
+                                            RESOURCE_PHYSICAL,
+                                        ],
+                                        title: 'Gasta 2 recursos físicos [p][p]',
+                                    },
+                                },
+                                addTopCardToAdditionalZone(),
+                            ],
+                        },
+                    },
+                },
+            },
+            {
+                type: ABILITY_WHEN_REVEALED_HERO,
+                params: {
+                    effect: {
+                        type: EFFECT_CHAINED,
+                        params: {
+                            effects: [
+                                {
+                                    type: EFFECT_ENEMY_ATTACK,
+                                    params: {
+                                        enemyType: CHARACTER_VILLAIN,
+                                        target: TARGET_YOU,
+                                        attackModifier: 1,
+                                    },
+                                },
+                                {
+                                    type: EFFECT_DO_IF_TAKE_DAMAGE,
+                                    params: {
+                                        source: 'effects.0',
+                                        target: TARGET_YOUR_HERO,
+                                        effect: addTopCardToAdditionalZone(),
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
 
 const villains = [
     {
@@ -290,6 +618,10 @@ export default {
             displayCardInfo: [{
                 id: 'owner',
                 label: 'Propietario',
+                path: 'owner.superhero.mainName',
+            }, {
+                id: 'scenarioOwner',
+                label: 'Escenario',
                 path: 'owner.name',
             }],
         }],
@@ -298,6 +630,31 @@ export default {
         mainSchemes: [mainScheme()],
         sets: ['standard', 'galactic-artifacts'],
         defaultSets: ['menagerie-medley'],
-        cards: [],
+        cards: [
+            {
+                count: 1,
+                card: withCardSet(caughtOffGuard, SET),
+            },
+            {
+                count: 1,
+                card: biogrammaticImage,
+            },
+            {
+                count: 1,
+                card: monarkStarstalker,
+            },
+            {
+                count: 2,
+                card: unassumingBox,
+            },
+            {
+                count: 2,
+                card: observeTheCosmos,
+            },
+            {
+                count: 2,
+                card: stayAWhile,
+            },
+        ],
     },
 };

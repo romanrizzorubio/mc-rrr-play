@@ -6,6 +6,7 @@ import {
     TRAIT_ELDER_OF_THE_UNIVERSE,
     TRAIT_GENIUS,
     TRAIT_HEROFORHIRE,
+    TRAIT_ILLUSION,
     TRAIT_PERSONA,
     TRAIT_SCIENTIST,
     TRAIT_SUPERPOWER,
@@ -23,6 +24,10 @@ describe('trait translations', () => {
 
     test('translates the Genius trait to Spanish', () => {
         assert.equal(translateTrait(TRAIT_GENIUS), 'Genio');
+    });
+
+    test('translates the Illusion trait to Spanish', () => {
+        assert.equal(translateTrait(TRAIT_ILLUSION), 'Ilusión');
     });
 
     test('translates the Persona trait to Spanish', () => {

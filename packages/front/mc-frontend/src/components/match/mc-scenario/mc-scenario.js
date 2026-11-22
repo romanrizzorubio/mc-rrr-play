@@ -22,7 +22,6 @@ export class McScenario extends LitElement {
             dragActivation: {type: Object},
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
-            openAdditionalZones: {attribute: false},
         };
     }
     constructor() {
@@ -35,7 +34,6 @@ export class McScenario extends LitElement {
         this.dragActivation = null;
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
-        this.openAdditionalZones = new Set();
     }
     handleCardSelect(e) {
         const {card} = e.detail;
@@ -73,6 +71,13 @@ export class McScenario extends LitElement {
         this.dispatchEvent(new CustomEvent('view-victory-display', {
             bubbles: true,
             composed: true,
+        }));
+    }
+    handleViewAdditionalZone(zone) {
+        this.dispatchEvent(new CustomEvent('view-additional-zone', {
+            bubbles: true,
+            composed: true,
+            detail: {zoneId: zone.id},
         }));
     }
     isDeckSelectable(deck) {
@@ -352,15 +357,6 @@ export class McScenario extends LitElement {
             </div>
         `;
     }
-    toggleAdditionalZone(zoneId) {
-        const openZones = new Set(this.openAdditionalZones);
-        if (openZones.has(zoneId)) {
-            openZones.delete(zoneId);
-        } else {
-            openZones.add(zoneId);
-        }
-        this.openAdditionalZones = openZones;
-    }
     renderAdditionalZones() {
         const zones = Object.values(this.scenario?.additionalZones || {});
         if (!zones.length) {
@@ -371,51 +367,27 @@ export class McScenario extends LitElement {
             <div class="additional-zones">
                 ${zones.map(zone => {
                     const cards = zone.cards || [];
-                    const expanded = this.openAdditionalZones.has(zone.id);
 
                     return html`
                         <section class="additional-zone">
+                            <span class="additional-zone-title">${zone.name}</span>
                             <button
                                 type="button"
-                                class="additional-zone-toggle"
-                                aria-expanded="${expanded}"
-                                @click="${() => this.toggleAdditionalZone(zone.id)}"
-                            >${zone.name}</button>
-                            <mc-deck
-                                .cards="${cards}"
-                                .topCard="${cards[0]}"
-                                .topCardFaceUp="${true}"
-                                .deckName="${zone.name}"
-                                .showDeckName="${false}"
-                                .showDiscard="${false}"
-                                size="s"
-                            ></mc-deck>
-                            ${expanded ? html`
-                                <div class="additional-zone-cards">
-                                    ${cards.map(card => html`
-                                        <div class="additional-zone-card">
-                                            ${(zone.displayCardInfo || []).map(info => {
-                                                const value = card.additionalInfo?.[info.id];
-                                                return value !== undefined &&
-                                                    value !== null &&
-                                                    value !== '' ? html`
-                                                    <span>
-                                                        <strong>${info.label}:</strong>
-                                                        ${value}
-                                                    </span>
-                                                ` : '';
-                                            })}
-                                            <mc-card-list
-                                                .cards="${[card]}"
-                                                .player="${this.player}"
-                                                .dragActivation="${this.dragActivation}"
-                                                .dragPlayCard="${this.dragPlayCard}"
-                                                .dragResourcePayment="${this.dragResourcePayment}"
-                                            ></mc-card-list>
-                                        </div>
-                                    `)}
-                                </div>
-                            ` : ''}
+                                class="additional-zone-viewer"
+                                aria-haspopup="dialog"
+                                aria-label="Ver ${cards.length} cartas de ${zone.name}"
+                                @click="${() => this.handleViewAdditionalZone(zone)}"
+                            >
+                                <mc-deck
+                                    .cards="${cards}"
+                                    .topCard="${cards[0]}"
+                                    .topCardFaceUp="${true}"
+                                    .deckName="${zone.name}"
+                                    .showDeckName="${false}"
+                                    .showDiscard="${false}"
+                                    size="s"
+                                ></mc-deck>
+                            </button>
                         </section>
                     `;
                 })}

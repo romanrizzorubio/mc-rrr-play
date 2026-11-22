@@ -566,7 +566,7 @@ export class CharacterGameCard extends GameCard {
                 refresh: false,
             });
             await this.match.scenario.selectVillain(player, this, {defeatAnnounced});
-            if (this.victory) {
+            if (this.hasVictory) {
                 await this.moveToVictoryDisplay({player, refresh: false});
             }
         } else if (this.isSuperhero) {

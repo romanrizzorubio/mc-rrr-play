@@ -179,7 +179,7 @@ export class RemoveCountersEffect extends Effect {
         await selectedTarget.refresh();
 
         if (selectedTarget.counters < 1 && selectedTarget.uses) {
-            if (selectedTarget.victory) {
+            if (selectedTarget.hasVictory) {
                 await selectedTarget.moveToVictoryDisplay({
                     player: params.player,
                     refresh: false,

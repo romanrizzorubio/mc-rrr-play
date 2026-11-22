@@ -4,15 +4,22 @@ export class AddToAdditionalZoneEffect extends Effect {
     constructor({
         zoneId,
         fromTopOfDeck = false,
+        fromHand = false,
         inPlayOnly = false,
     }) {
         super(arguments[0]);
 
         this.zoneId = zoneId;
         this.fromTopOfDeck = fromTopOfDeck;
+        this.fromHand = fromHand;
         this.inPlayOnly = inPlayOnly;
     }
     filterTarget(target, params) {
+        if (this.fromHand &&
+            !target?.owner?.hand?.cards?.includes(target)) {
+            return false;
+        }
+
         if (this.inPlayOnly) {
             const targets = Array.isArray(target) ?
                 target.flat(Infinity) :
@@ -57,6 +64,18 @@ export class AddToAdditionalZoneEffect extends Effect {
             [this.selectedTarget];
 
         for (const target of targets) {
+            if (this.fromHand) {
+                const hand = target?.owner?.hand;
+                if (!hand?.cards?.includes(target)) {
+                    throw new Error(
+                        'AddToAdditionalZoneEffect requires a card in a player hand.'
+                    );
+                }
+
+                hand.discardHand(target);
+                await hand.refresh();
+            }
+
             if (this.fromTopOfDeck) {
                 const player = target?.isPlayer ? target : params.player;
                 const deck = player?.deck;

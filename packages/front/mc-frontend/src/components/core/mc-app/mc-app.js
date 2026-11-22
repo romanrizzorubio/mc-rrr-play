@@ -779,6 +779,52 @@ class McApp extends router(navigator(outlet(LitElement))) {
             tableInspection: this.tableConsultationMode,
         });
     }
+    handleViewAdditionalZone(e) {
+        const zoneId = e.detail?.zoneId;
+        const scenario = this.match?.scenario;
+        const zone = scenario?.additionalZones?.[zoneId];
+        if (!zone) {
+            return;
+        }
+
+        const cards = (zone.cards || []).map(card => ({
+            ...card,
+            displayInfo: (zone.displayCardInfo || []).flatMap(info => {
+                const scenarioOwner =
+                    card.additionalInfo?.scenarioOwner === scenario.name;
+                const ownerInfo = info.id === 'owner' ||
+                    info.id === 'scenarioOwner';
+                if (ownerInfo &&
+                    ((info.id === 'owner' && scenarioOwner) ||
+                        (info.id === 'scenarioOwner' && !scenarioOwner))) {
+                    return [];
+                }
+
+                const value = info.id === 'scenarioOwner' ?
+                    scenario.villain?.name :
+                    card.additionalInfo?.[info.id];
+                if (value === undefined || value === null || value === '') {
+                    return [];
+                }
+
+                return [{
+                    label: ownerInfo ? '' : info.label,
+                    value,
+                }];
+            }),
+        }));
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title: zone.name,
+            hideResponsiblePlayer: true,
+            data: {
+                cards,
+                rotatePlanCards: true,
+            },
+            callback: () => {},
+            tableInspection: this.tableConsultationMode,
+        });
+    }
     showAlert(msg) {
         this.alert = {
             msg,
@@ -1626,6 +1672,7 @@ class McApp extends router(navigator(outlet(LitElement))) {
                                   @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
                                   @view-player-hand="${this.handleViewPlayerHand.bind(this)}"
                                   @view-victory-display="${this.handleViewVictoryDisplay.bind(this)}"
+                                  @view-additional-zone="${this.handleViewAdditionalZone.bind(this)}"
                                   @communication-error="${this.handleCommunicationError.bind(this)}"
                                   @dialog-deck-target-select="${this.handleDeckTargetDialogSelect.bind(this)}"
                               ></mc-match-page>

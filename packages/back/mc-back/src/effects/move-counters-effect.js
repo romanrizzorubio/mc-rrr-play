@@ -197,7 +197,7 @@ export class MoveCountersEffect extends Effect {
         ]);
 
         if (source.counters < 1 && source.uses) {
-            if (source.victory) {
+            if (source.hasVictory) {
                 await source.moveToVictoryDisplay({
                     player: params.player,
                     refresh: false,

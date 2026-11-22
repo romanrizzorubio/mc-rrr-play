@@ -34,10 +34,21 @@ describe('same-type resource payments', () => {
     };
 
     test('rejects payments that mix resource types', async () => {
+        const resources = [RESOURCE_ENERGY, RESOURCE_MENTAL].map(
+            (resource, index) => ({
+                card: {getResources: () => [resource]},
+                id: `resource-${index}`,
+                isPlaying: false,
+                toObj: () => ({id: `resource-${index}`}),
+            })
+        );
         const player = createPlayer({
-            paid: {generators: [], hand: []},
+            paid: {
+                generators: [],
+                hand: resources.map(({id}) => ({id})),
+            },
             resources: [RESOURCE_ENERGY, RESOURCE_MENTAL],
-        });
+        }, {generators: [], hand: resources});
 
         await assert.rejects(
             player.spendResources(
@@ -189,7 +200,10 @@ describe('same-type resource payments', () => {
             toObj: () => ({id: 'conditional-resources'}),
         };
         const player = createPlayer(
-            {paid: {generators: [], hand: []}, resources: [RESOURCE_MENTAL, RESOURCE_MENTAL]},
+            {
+                paid: {generators: [], hand: [{id: resourceCard.id}]},
+                resources: [RESOURCE_MENTAL, RESOURCE_MENTAL],
+            },
             {generators: [], hand: [resourceCard]}
         );
         const cardToPay = {
@@ -212,11 +226,22 @@ describe('same-type resource payments', () => {
     });
 
     test('accepts payments whose icons all have the same type', async () => {
+        const resources = [RESOURCE_MENTAL, RESOURCE_MENTAL].map(
+            (resource, index) => ({
+                card: {getResources: () => [resource]},
+                id: `resource-${index}`,
+                isPlaying: false,
+                toObj: () => ({id: `resource-${index}`}),
+            })
+        );
         const player = createPlayer({
-            paid: {generators: [], hand: []},
+            paid: {
+                generators: [],
+                hand: resources.map(({id}) => ({id})),
+            },
             resources: [RESOURCE_MENTAL, RESOURCE_MENTAL],
             fullyPaid: true,
-        });
+        }, {generators: [], hand: resources});
 
         const payment = await player.spendResources(
             [RESOURCE_ANY, RESOURCE_ANY],
@@ -229,21 +254,73 @@ describe('same-type resource payments', () => {
         assert.deepEqual(payment.resources, [RESOURCE_MENTAL, RESOURCE_MENTAL]);
     });
 
-    test('rejects a full payment that does not cover every required icon', async () => {
+    test('validates resources from every selected generator ability', async () => {
+        const generator = {
+            abilities: [
+                {isResource: true, resource: RESOURCE_ENERGY},
+                {isResource: true, resource: RESOURCE_MENTAL},
+            ],
+            id: 'generator',
+            toObj: () => ({id: 'generator'}),
+        };
+        const player = createPlayer({
+            paid: {generators: [{id: generator.id}], hand: []},
+            resources: [RESOURCE_MENTAL],
+        }, {generators: [generator], hand: []});
+        generator.controller = player;
+        player.confirmSharedResourceContributions = async () => [];
+
+        const payment = await player.spendResources(
+            [RESOURCE_MENTAL],
+            undefined,
+            new Set()
+        );
+
+        assert.deepEqual(payment.generators, [generator]);
+        assert.deepEqual(payment.resources, [RESOURCE_MENTAL]);
+    });
+
+    test('does not accept an underpaid response as a complete same-type payment', async () => {
         const player = createPlayer({
             paid: {generators: [], hand: []},
             resources: [RESOURCE_MENTAL],
             fullyPaid: true,
         });
 
-        await assert.rejects(
-            player.spendResources(
+        assert.equal(
+            await player.spendResources(
                 [RESOURCE_ANY, RESOURCE_ANY],
                 undefined,
                 new Set(),
                 {sameType: true},
             ),
-            /no cubre todos los recursos del mismo tipo/,
+            undefined,
         );
+    });
+
+    test('does not treat an empty response without fullyPaid as a completed cost', async () => {
+        const resources = [RESOURCE_MENTAL, RESOURCE_MENTAL].map(
+            (resource, index) => ({
+                card: {getResources: () => [resource]},
+                id: `resource-${index}`,
+                isPlaying: false,
+                toObj: () => ({id: `resource-${index}`}),
+            })
+        );
+        const player = createPlayer({
+            paid: {generators: [], hand: []},
+            resources: [],
+        }, {generators: [], hand: resources});
+
+        assert.equal(
+            await player.spendResources(
+                [RESOURCE_ANY, RESOURCE_ANY],
+                undefined,
+                new Set(),
+                {isCost: true},
+            ),
+            undefined,
+        );
+        assert.equal(player.dialog.dialogType, DIALOG_PAY_COST);
     });
 });

@@ -39,13 +39,20 @@ export default css`
     min-width: 0;
   }
 
-  .additional-zone-toggle {
+  .additional-zone-viewer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     border: 0;
     padding: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     cursor: pointer;
+  }
+
+  .additional-zone-title {
     font-family: var(--mc-font-title, sans-serif);
     font-size: 0.85rem;
     font-weight: 700;
@@ -67,20 +74,6 @@ export default css`
     line-height: 1.1;
     white-space: nowrap;
     cursor: pointer;
-  }
-
-  .additional-zone-cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .additional-zone-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
   }
 
   .scenario-board {

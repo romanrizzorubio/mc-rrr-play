@@ -70,6 +70,71 @@ describe('app match controls and mulligan lifecycle', () => {
         assert.equal(typeof dialog.callback, 'function');
     });
 
+    test('opens additional-zone cards with owner superhero names and horizontal plans', () => {
+        const cards = [
+            {
+                id: 'player-card',
+                additionalInfo: {
+                    owner: 'Capitana Marvel',
+                    scenarioOwner: 'Jugador',
+                },
+            },
+            {
+                id: 'scenario-card',
+                additionalInfo: {
+                    scenarioOwner: 'infiltrate-the-museum',
+                },
+            },
+        ];
+        let dialog;
+        const app = Object.assign(Object.create(McApp.prototype), {
+            match: {
+                scenario: {
+                    name: 'infiltrate-the-museum',
+                    villain: {name: 'El Coleccionista'},
+                    additionalZones: {
+                        collection: {
+                            name: 'La Colección',
+                            cards,
+                            displayCardInfo: [{
+                                id: 'owner',
+                                label: 'Propietario',
+                            }, {
+                                id: 'scenarioOwner',
+                                label: 'Escenario',
+                            }],
+                        },
+                    },
+                },
+                players: [{
+                    id: 'seat-a',
+                    name: 'Jugador',
+                    superhero: {name: 'Capitana Marvel'},
+                }],
+            },
+            tableConsultationMode: false,
+            openDialog(params) {
+                dialog = params;
+            },
+        });
+
+        app.handleViewAdditionalZone({detail: {zoneId: 'collection'}});
+
+        assert.equal(dialog.dialogType, DIALOG_REVEAL_CARDS);
+        assert.equal(dialog.title, 'La Colección');
+        assert.equal(dialog.subtitle, undefined);
+        assert.equal(dialog.hideResponsiblePlayer, true);
+        assert.equal(dialog.data.rotatePlanCards, true);
+        assert.deepEqual(
+            dialog.data.cards.map(card => card.displayInfo),
+            [
+                [{label: '', value: 'Capitana Marvel'}],
+                [{label: '', value: 'El Coleccionista'}],
+            ]
+        );
+        assert.equal(typeof dialog.callback, 'function');
+    });
+
     const templateText = value => {
         if (Array.isArray(value)) {
             return value.map(templateText).join('');

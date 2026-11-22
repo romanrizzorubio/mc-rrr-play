@@ -7,6 +7,7 @@ import {
     CHARACTER_ALL_ENGAGED_MINIONS,
     CHARACTER_VILLAIN,
     EFFECT_CHAINED,
+    EFFECT_DISCARD_GAME,
     EFFECT_ENEMY_ATTACK,
     EFFECT_ENGAGE,
     EFFECT_FOR_EACH,
@@ -18,9 +19,40 @@ import {
     TARGET_ALL_ENEMIES,
     TARGET_ALL_PLAYERS,
     TARGET_ENGAGED_HERO,
+    TARGET_SUPPORT_YOU_CONTROL,
     TARGET_YOU,
+    TARGET_UPGRADE_YOU_CONTROL,
     TRAIT_HYDRA,
 } from 'mc-shared';
+
+export const caughtOffGuard = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: 'Con la guardia baja',
+        image: 'sets/standard/01188.png',
+        boost: 1,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED,
+                params: {
+                    effect: {
+                        type: EFFECT_DISCARD_GAME,
+                        params: {
+                            target: [
+                                TARGET_SUPPORT_YOU_CONTROL,
+                                TARGET_UPGRADE_YOU_CONTROL,
+                            ],
+                        },
+                    },
+                    ifNot: {
+                        type: EFFECT_SURGE,
+                        params: {},
+                    },
+                },
+            },
+        ],
+    },
+};
 
 export const gangUp = {
     type: CARD_TYPE_TREACHERY,
