@@ -19,5 +19,6 @@ export const cardStateTargets = {
     [TARGET_HERO_SIDE]: ({card}) => card.sides.filter(side => side.isHero),
     [TARGET_OUTSIDE_NEMESIS]: ({player}) => player.superhero.nemesis,
     [TARGET_SIDE]: ({card}) => card.sides.filter(side => side !== card.currentSide),
-    [TARGET_YOUR_SUPERHERO]: ({player}) => [player.superhero],
+    [TARGET_YOUR_SUPERHERO]: ({player}) =>
+        player?.superhero ? [player.superhero] : [],
 };

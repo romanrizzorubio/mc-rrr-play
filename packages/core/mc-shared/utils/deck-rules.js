@@ -9,6 +9,14 @@ export const MAX_PLAYER_DECK_COPIES_PER_TITLE = 3;
 
 const getPlayerDeckCardCount = card => card.permanent ? 0 : card.count;
 
+const isValidOffAspectCardRule = rule =>
+    rule &&
+    Number.isInteger(rule.maxCount) &&
+    rule.maxCount >= 0 &&
+    (rule.types === undefined || Array.isArray(rule.types)) &&
+    (rule.traits === undefined || Array.isArray(rule.traits)) &&
+    Boolean(rule.types?.length || rule.traits?.length);
+
 const getHeroIdentityNames = hero => new Set([
     hero?.name,
     ...(hero?.identities || []).flatMap(identity => [
@@ -31,6 +39,33 @@ const canHeroIncludeTeamUpCard = (card, hero) => {
     const heroNames = getHeroIdentityNames(hero);
 
     return teamUp.some(name => heroNames.has(name));
+};
+
+export const isAllowedOffAspectCard = (card, deckBuildingRules) => {
+    const rule = deckBuildingRules?.offAspectCards;
+    if (!isValidOffAspectCardRule(rule)) {
+        return false;
+    }
+
+    return (!rule.types?.length || rule.types.includes(card?.type)) &&
+        (!rule.traits?.length ||
+            rule.traits.some(trait => card?.traits?.includes(trait)));
+};
+
+const getOffAspectCardCount = (cards, selectedAspects, deckBuildingRules) => {
+    if (!selectedAspects.length) {
+        return 0;
+    }
+
+    return cards.reduce((total, {entry, card}) => {
+        if (hasClassification(card.classification, CLASSIFICATION_BASIC) ||
+            selectedAspects.includes(card.aspect) ||
+            !isAllowedOffAspectCard(card, deckBuildingRules)) {
+            return total;
+        }
+
+        return total + entry.count;
+    }, 0);
 };
 
 const getDeclaredDeckMaximum = (cards, title) => cards
@@ -59,12 +94,15 @@ export const getPlayerDeckCardCopyLimit = (deck, catalog, cardId) => {
         card?.classification,
         CLASSIFICATION_BASIC,
     );
+    const isOffAspectCard = selectedAspects.length > 0 &&
+        !isBasicCard &&
+        !selectedAspects.includes(card?.aspect);
     const cardAspectIsAvailable = isBasicCard ||
         availableAspects.has(card?.aspect);
     if (!hero || !card || !selectedAspectsAreValid || !cardAspectIsAvailable ||
         !canHeroIncludeTeamUpCard(card, hero) ||
-        (selectedAspects.length && !isBasicCard &&
-            !selectedAspects.includes(card.aspect))) {
+        (isOffAspectCard &&
+            !isAllowedOffAspectCard(card, hero.deckBuildingRules))) {
         return 0;
     }
 
@@ -89,6 +127,15 @@ export const getPlayerDeckCardCopyLimit = (deck, catalog, cardId) => {
             copyLimit,
             declaredDeckMaximum - otherCopiesByTitle,
         );
+    }
+    if (isOffAspectCard) {
+        const remainingOffAspectCopies = hero.deckBuildingRules.offAspectCards.maxCount -
+            getOffAspectCardCount(
+                otherCards,
+                selectedAspects,
+                hero.deckBuildingRules,
+            );
+        copyLimit = Math.min(copyLimit, remainingOffAspectCopies);
     }
 
     if (card.unique) {
@@ -139,6 +186,11 @@ export const validatePlayerDeck = (deck, catalog) => {
             'Elige exactamente un aspecto para el mazo.' :
             `Elige exactamente ${requiredAspectCount} aspectos para el mazo.`);
     }
+    const offAspectCardRule = hero.deckBuildingRules?.offAspectCards;
+    if (offAspectCardRule !== undefined &&
+        !isValidOffAspectCardRule(offAspectCardRule)) {
+        errors.push('Las reglas de construcción para cartas de otros aspectos no son válidas.');
+    }
     if (selectedAspects.length !== new Set(selectedAspects).size) {
         errors.push('No puedes seleccionar el mismo aspecto más de una vez.');
     }
@@ -153,6 +205,7 @@ export const validatePlayerDeck = (deck, catalog) => {
     const copiesByTitle = new Map();
     const deckCopiesByTitle = new Map();
     let playerDeckCardCount = 0;
+    let offAspectCardCount = 0;
 
     for (const entry of deck?.cards || []) {
         const card = cardsById.get(entry.id);
@@ -178,13 +231,18 @@ export const validatePlayerDeck = (deck, catalog) => {
             CLASSIFICATION_BASIC,
         );
         if (!isBasicCard && !selectedAspects.includes(card.aspect)) {
-            const aspectLabel = selectedAspects.length ?
-                selectedAspects.join(', ') :
-                'ninguno';
-            const aspectRequirement = requiredAspectCount === 1 ?
-                'al aspecto seleccionado' :
-                'a los aspectos seleccionados';
-            errors.push(`"${card.name}" no pertenece ${aspectRequirement} (${aspectLabel}).`);
+            if (selectedAspects.length &&
+                isAllowedOffAspectCard(card, hero.deckBuildingRules)) {
+                offAspectCardCount += entry.count;
+            } else {
+                const aspectLabel = selectedAspects.length ?
+                    selectedAspects.join(', ') :
+                    'ninguno';
+                const aspectRequirement = requiredAspectCount === 1 ?
+                    'al aspecto seleccionado' :
+                    'a los aspectos seleccionados';
+                errors.push(`"${card.name}" no pertenece ${aspectRequirement} (${aspectLabel}).`);
+            }
         }
 
         if (card.unique && entry.count > 1) {
@@ -198,6 +256,15 @@ export const validatePlayerDeck = (deck, catalog) => {
             copiesByTitle.set(
                 card.name,
                 (copiesByTitle.get(card.name) || 0) + entry.count,
+            );
+        }
+    }
+
+    if (offAspectCardRule &&
+        isValidOffAspectCardRule(offAspectCardRule)) {
+        if (offAspectCardCount > offAspectCardRule.maxCount) {
+            errors.push(
+                `No puedes incluir más de ${offAspectCardRule.maxCount} cartas de otros aspectos que cumplan las reglas de construcción del héroe.`,
             );
         }
     }

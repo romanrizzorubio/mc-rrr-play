@@ -78,7 +78,11 @@ export class GameCard extends Engine {
         return this._damage;
     }
     get printedTextBlank() {
+        const parentTextBlank = this.parent?.sides?.includes(this) &&
+            this.parent.printedTextBlank;
+
         return this._printedTextBlank ||
+            parentTextBlank ||
             (this.blankTextModifiers || []).some(({
                 source,
                 blank,
@@ -936,9 +940,13 @@ export class GameCard extends Engine {
             )
         );
     }
-    initTriggers(params, {workInHandOnly = false} = {}) {
+    initTriggers(params, {
+        workInHandOnly = false,
+        workBeforeEnterPlayOnly = false,
+    } = {}) {
         const abilities = this.currentSide.abilities.filter(ability =>
             (!workInHandOnly || ability.workInHand) &&
+            (!workBeforeEnterPlayOnly || ability.workBeforeEnterPlay) &&
             !this.hasAbilityTrigger(ability));
 
         return this.promisesSequential(abilities, async ability => {

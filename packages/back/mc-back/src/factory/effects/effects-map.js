@@ -28,9 +28,11 @@ import {
     EFFECT_CHAINED,
     EFFECT_CREATE_EXTRA_DECK,
     EFFECT_CANNOT,
+    EFFECT_CANNOT_ATTACK,
     EFFECT_CANNOT_TARGET,
     EFFECT_CHOOSE_ABILITY,
     EFFECT_CHOOSE,
+    EFFECT_CHOOSE_CARD_TYPE,
     EFFECT_CONFUSE,
     EFFECT_DEAL_BOOST,
     EFFECT_STORE_BOOST,
@@ -96,12 +98,14 @@ import {
     EFFECT_MOVE_THREAT,
     EFFECT_MOVE_TO_DECK,
     EFFECT_MOVE_TO_HAND,
+    EFFECT_SWAP_CARDS,
     EFFECT_PAY_PRINTED_COST,
     EFFECT_PLAY_CARD,
     EFFECT_PLACE_COUNTERS,
     EFFECT_PLACE_DAMAGE,
     EFFECT_PLACE_THREAT,
     EFFECT_PREVENT_DEFEAT,
+    EFFECT_PREVENT_CONSEQUENTIAL_DAMAGE,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_DAMAGE,
     EFFECT_PREVENT_PLACE_THREAT,
@@ -179,8 +183,10 @@ import {
 import {CreateExtraDeckEffect} from '../../effects/create-extra-deck-effect.js';
 import {ChainedEffect} from '../../effects/chained-effect.js';
 import {CannotEffect} from '../../effects/cannot-effect.js';
+import {CannotAttackEffect} from '../../effects/cannot-attack-effect.js';
 import {CannotTargetEffect} from '../../effects/cannot-target-effect.js';
 import {ChooseAbilityEffect} from '../../effects/choose-ability-effect.js';
+import {ChooseCardTypeEffect} from '../../effects/choose-card-type-effect.js';
 import {ChooseEffect} from '../../effects/choose-effect.js';
 import {ConfuseEffect} from '../../effects/confuse-effect.js';
 import {DealBoostEffect} from '../../effects/deal-boost-effect.js';
@@ -254,12 +260,16 @@ import {MoveCountersEffect} from '../../effects/move-counters-effect.js';
 import {MoveThreatEffect} from '../../effects/move-threat-effect.js';
 import {MoveToDeckEffect} from '../../effects/move-to-deck-effect.js';
 import {MoveToHandEffect} from '../../effects/move-to-hand-effect.js';
+import {SwapCardsEffect} from '../../effects/swap-cards-effect.js';
 import {PayPrintedCostEffect} from '../../effects/pay-printed-cost-effect.js';
 import {PlayCardActionEffect} from '../../effects/play-card-action-effect.js';
 import {PlaceCountersEffect} from '../../effects/place-counters-effect.js';
 import {PlaceDamageEffect} from '../../effects/place-damage-effect.js';
 import {PlaceThreatEffect} from '../../effects/place-threat-effect.js';
 import {PreventDefeatEffect} from '../../effects/prevent-defeat-effect.js';
+import {
+    PreventConsequentialDamageEffect,
+} from '../../effects/prevent-consequential-damage-effect.js';
 import {PreventDamageEffect} from '../../effects/prevent-damage-effect.js';
 import {PreventPlaceDamageEffect} from '../../effects/prevent-place-damage-effect.js';
 import {PreventPlaceThreatEffect} from '../../effects/prevent-place-threat-effect.js';
@@ -332,9 +342,11 @@ export const EFFECT_MAP = {
     [EFFECT_CHAINED]: ChainedEffect,
     [EFFECT_CREATE_EXTRA_DECK]: CreateExtraDeckEffect,
     [EFFECT_CANNOT]: CannotEffect,
+    [EFFECT_CANNOT_ATTACK]: CannotAttackEffect,
     [EFFECT_CANNOT_TARGET]: CannotTargetEffect,
     [EFFECT_SIMULTANEOUS]: SimultaneousEffect,
     [EFFECT_CHOOSE]: ChooseEffect,
+    [EFFECT_CHOOSE_CARD_TYPE]: ChooseCardTypeEffect,
     [EFFECT_CHOOSE_ABILITY]: ChooseAbilityEffect,
     [EFFECT_CONFUSE]: ConfuseEffect,
     [EFFECT_DEAL_BOOST]: DealBoostEffect,
@@ -403,6 +415,7 @@ export const EFFECT_MAP = {
     [EFFECT_PLACE_DAMAGE]: PlaceDamageEffect,
     [EFFECT_PLACE_THREAT]: PlaceThreatEffect,
     [EFFECT_PREVENT_DEFEAT]: PreventDefeatEffect,
+    [EFFECT_PREVENT_CONSEQUENTIAL_DAMAGE]: PreventConsequentialDamageEffect,
     [EFFECT_RANDOM_CARD]: RandomCardEffect,
     [EFFECT_READY]: ReadyEffect,
     [EFFECT_RESOLVE_SPECIAL_ABILITY]: ResolveSpecialAbilityEffect,
@@ -428,6 +441,7 @@ export const EFFECT_MAP = {
     [EFFECT_SHUFFLE_DECK]: ShuffleDeckEffect,
     [EFFECT_MOVE_TO_HAND]: MoveToHandEffect,
     [EFFECT_MOVE_TO_DECK]: MoveToDeckEffect,
+    [EFFECT_SWAP_CARDS]: SwapCardsEffect,
     [EFFECT_PAY_PRINTED_COST]: PayPrintedCostEffect,
     [EFFECT_PLAY_CARD]: PlayCardActionEffect,
     [EFFECT_FILL_HAND]: FillHandEffect,

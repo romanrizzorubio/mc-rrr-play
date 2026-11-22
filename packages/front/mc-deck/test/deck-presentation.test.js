@@ -39,6 +39,13 @@ describe('deck card presentation', () => {
 
     test('resets the aspect filter only when its option is no longer available', () => {
         assert.equal(normalizeDeckAspectFilter('aggression', ['justice']), 'all');
+        assert.equal(
+            normalizeDeckAspectFilter(
+                'aggression',
+                ['justice', 'aggression'],
+            ),
+            'aggression',
+        );
         assert.equal(normalizeDeckAspectFilter('basic', ['justice']), 'basic');
         assert.equal(normalizeDeckAspectFilter('all', ['justice']), 'all');
     });

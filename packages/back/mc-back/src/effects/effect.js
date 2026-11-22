@@ -196,9 +196,11 @@ export class Effect extends Engine {
         preserveSelectedTarget = false,
         preserveNestedSelectedTargets = false,
         preselectedEffectTargets,
+        preservePreparedEffects,
         visited = new Set(),
     } = {}) {
-        if (visited.has(this)) {
+        if (visited.has(this) ||
+            preservePreparedEffects?.isPrepared?.(this)) {
             return;
         }
         visited.add(this);
@@ -217,6 +219,7 @@ export class Effect extends Engine {
                 preselectedEffectTargets?.has(effect),
             preserveNestedSelectedTargets,
             preselectedEffectTargets,
+            preservePreparedEffects,
             visited,
         }));
     }
@@ -590,6 +593,7 @@ export class Effect extends Engine {
         return this.validTarget.selectTarget({
             ...params,
             ability,
+            source: this.source ?? params.source,
             target,
             selectCount: params.selectCount ?? this.selectCount,
             selectUpTo: this.selectUpTo,
@@ -618,7 +622,11 @@ export class Effect extends Engine {
     setEffectProperty(name, value, _params) {
         pathSet(this, name, value);
     }
-    async triggerWould(params) {
+    async triggerWould(params, {
+        allowForcedInterrupts = true,
+        allowOptionalInterrupts = true,
+        beforeForcedInterrupts,
+    } = {}) {
         const type = this.getTriggersWould(params);
 
         if (await this.trigger(PRIORITY_CONSTANT, type, params)) {
@@ -627,7 +635,19 @@ export class Effect extends Engine {
             }
 
             if (this.checkStatus(params)) {
+                if (beforeForcedInterrupts &&
+                    !await beforeForcedInterrupts(type, params)) {
+                    return false;
+                }
+                if (!allowForcedInterrupts) {
+                    return allowOptionalInterrupts ?
+                        this.trigger(PRIORITY_INTERRUPT, type, params) :
+                        true;
+                }
                 if (await this.trigger(PRIORITY_FORCED_INTERRUPT, type, params)) {
+                    if (!allowOptionalInterrupts) {
+                        return true;
+                    }
                     if (await this.trigger(PRIORITY_INTERRUPT, type, params)) {
                         return true;
                     }
@@ -640,7 +660,7 @@ export class Effect extends Engine {
         return false;
     }
     async triggerInit(params) {
-        const type = this.getTriggersInit();
+        const type = this.getTriggersInit(params);
 
         if (await this.trigger(PRIORITY_CONSTANT, type, params)) {
             if (await this.trigger(PRIORITY_FORCED_INTERRUPT, type, params)) {
@@ -804,17 +824,18 @@ export class Effect extends Engine {
         resolutionContext.depth++;
 
         try {
-            this.resetResolutionState({
-                preserveSelectedTarget: true,
-                preserveNestedSelectedTargets: true,
-            });
-
             const prepared = params.costPaymentSession?.takePreparedEffect(this);
             if (prepared) {
                 trackParams(prepared.effectParams);
                 await this.resolvePrepared(prepared.effectParams, prepared.triggersParams);
                 return;
             }
+
+            this.resetResolutionState({
+                preserveSelectedTarget: true,
+                preserveNestedSelectedTargets: true,
+                preservePreparedEffects: params.costPaymentSession,
+            });
 
             this.saveDataCard();
 

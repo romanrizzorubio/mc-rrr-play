@@ -105,12 +105,14 @@ describe('multi-aspect deck presentation', () => {
             {classification: CLASSIFICATION_BASIC, permanent: true, count: 1},
             {aspect: 'aggression', count: 2},
             {aspect: 'justice', count: 4},
+            {aspect: 'leadership', count: 2},
             {aspect: 'justice', permanent: true, count: 1},
         ], ['aggression', 'justice', 'protection']), [
             {label: 'Héroe', count: 15},
             {label: 'Básicas', count: 3},
             {label: 'Agresividad', count: 2},
             {label: 'Justicia', count: 4},
+            {label: 'Otros aspectos', count: 2},
             {label: 'Permanentes', count: 3},
         ]);
     });

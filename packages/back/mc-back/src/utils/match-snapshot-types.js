@@ -1,5 +1,12 @@
 import {readdir} from 'node:fs/promises';
 
+import {
+    EFFECT_CHAINED,
+    EFFECT_GET_ENCOUNTER_CARD,
+    EFFECT_REVEAL_ENCOUNTER,
+    PHASE_PLAYERS,
+    PLACE_SCENARIO_EXTRA_DECK,
+} from 'mc-shared';
 import {Ability} from '../abilities/core/ability.js';
 import {Arrow} from '../abilities/core/arrow.js';
 import {AttackBasicAbility} from '../abilities/basic/attack-basic-ability.js';
@@ -41,12 +48,6 @@ import {Superhero} from '../model/match/superhero.js';
 import {Card} from '../model/printed/card.js';
 import {Trigger} from '../triggers/base/trigger.js';
 import {ValidTarget} from '../targets/valid-target.js';
-import {
-    EFFECT_CHAINED,
-    EFFECT_GET_ENCOUNTER_CARD,
-    EFFECT_REVEAL_ENCOUNTER,
-    PLACE_SCENARIO_EXTRA_DECK,
-} from 'mc-shared';
 import {MatchFactory} from '../factory/match-factory.js';
 import {RestoreCardIdentities} from './restore-card-identities.js';
 
@@ -156,7 +157,7 @@ registerSnapshotType(Match, {
         });
 
         if (typeof match.turnStartProcessed !== 'boolean') {
-            match.turnStartProcessed = match.phase === 'players' &&
+            match.turnStartProcessed = match.phase === PHASE_PLAYERS &&
                 Boolean(match.currentTurnPlayer);
         }
     },
@@ -165,6 +166,8 @@ registerSnapshotType(Match, {
 registerSnapshotType(Player, {
     restore: player => {
         player.id ??= player.userId || player.name;
+        player.playedCardsThisRound ??= [];
+        player.playedEventsThisTurn ??= [];
     },
 });
 

@@ -3,6 +3,7 @@ import {describe, test} from 'node:test';
 
 import {
     CALC_COUNT,
+    DIALOG_SELECT_NUMBER,
     EFFECT_PREVENT_DAMAGE,
     EFFECT_PREVENT_PLACE_DAMAGE,
     TARGET_CARD,
@@ -15,7 +16,13 @@ import {DealDamageEffect} from '../../src/effects/deal-damage-effect.js';
 import {CharacterWouldTakeDamageTrigger} from '../../src/triggers/character-would-take-damage-trigger.js';
 
 describe('explicit damage prevention', () => {
-    const createContext = ({pendingAttack = false, multiple = false, cards = []} = {}) => {
+    const createContext = ({
+        pendingAttack = false,
+        multiple = false,
+        cards = [],
+        damage = 5,
+        preventDamage = 0,
+    } = {}) => {
         const match = new Match({name: 'prevention-test', mc: {mcSocket: {send() {}}}});
         new MatchFactory(match);
         const target = {
@@ -30,7 +37,8 @@ describe('explicit damage prevention', () => {
         const EffectClass = pendingAttack ? DealDamageEffect : TakeDamageEffect;
         const incoming = new EffectClass({
             match,
-            damage: multiple ? [3, 5] : 5,
+            damage: multiple ? [3, 5] : damage,
+            preventDamage,
             selectedTarget: multiple ? [other, target] : target,
             isAttack: pendingAttack,
         });
@@ -86,6 +94,66 @@ describe('explicit damage prevention', () => {
 
         assert.equal(incoming.preventDamage, 2);
         assert.equal(incoming.takenDamage, 3);
+    });
+
+    for (const [incomingDamage, selectedDamage, maxDamage] of [
+        [2, 0, 2],
+        [2, 2, 2],
+        [8, 3, 5],
+    ]) {
+        test(`selectable prevention accepts ${selectedDamage} of ${incomingDamage} damage with a cap of ${maxDamage}`, async () => {
+            const {match, incoming, params} = createContext({
+                damage: incomingDamage,
+            });
+            let selectionDialog;
+            match.openDialog = async dialog => {
+                selectionDialog = dialog;
+
+                return {value: selectedDamage};
+            };
+            const effect = match.effectsFactory.createEffect({
+                type: EFFECT_PREVENT_DAMAGE,
+                params: {
+                    target: TARGET_EFFECT,
+                    damage: 5,
+                    selectDamage: true,
+                },
+            });
+
+            await effect.runEffect(params);
+
+            assert.equal(selectionDialog.dialogType, DIALOG_SELECT_NUMBER);
+            assert.equal(selectionDialog.data.min, 0);
+            assert.equal(selectionDialog.data.max, maxDamage);
+            assert.equal(selectionDialog.data.step, 1);
+            assert.equal(selectionDialog.data.label, 'Daño que quieres evitar');
+            assert.match(selectionDialog.subtitle, new RegExp(
+                `Vas a sufrir ${incomingDamage} de daño`
+            ));
+            assert.equal(effect.preventedDamage, selectedDamage);
+            assert.equal(incoming.preventDamage, selectedDamage);
+            assert.equal(incoming.takenDamage, incomingDamage - selectedDamage);
+        });
+    }
+
+    test('reports only the remaining damage this effect prevents', async () => {
+        const {match, incoming, params} = createContext({
+            damage: 5,
+            preventDamage: 2,
+        });
+        const effect = match.effectsFactory.createEffect({
+            type: EFFECT_PREVENT_DAMAGE,
+            params: {
+                target: TARGET_EFFECT,
+                damage: 5,
+            },
+        });
+
+        await effect.runEffect(params);
+
+        assert.equal(effect.preventedDamage, 3);
+        assert.ok(effect.outputParams.includes('preventedDamage'));
+        assert.equal(incoming.takenDamage, 0);
     });
 
     test('an explicit total-prevention flag avoids all incoming damage', async () => {

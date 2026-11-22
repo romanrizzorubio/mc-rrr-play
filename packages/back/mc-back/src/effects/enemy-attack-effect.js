@@ -1,4 +1,5 @@
 import {
+    DAMAGE_TYPE_INDIRECT,
     DIALOG_DEFENSE,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
@@ -10,6 +11,7 @@ import {
     TRIGGER_HERO_DEFENDS_ATTACK,
     TRIGGER_HERO_DEFENDED_ATTACK,
     TRIGGER_CHARACTER_DEFENDED_ATTACK,
+    TRIGGER_ENEMY_ATTACKS,
     TRIGGER_ENEMY_ATTACKS_YOU,
     TRIGGER_THIS_ATTACK,
     TRIGGER_YOU_BASIC_DEFENSE,
@@ -20,6 +22,7 @@ import {
 
 import {Calc} from '../engine/calc.js';
 import {checkCondition, path} from '../engine/utils.js';
+import {AssignDamageEffect} from './assign-damage-effect.js';
 import {DealDamageEffect} from './deal-damage-effect.js';
 import {EnemyActivationEffect} from './enemy-activation-effect.js';
 import {AttackEffect} from './attack-effect.js';
@@ -27,6 +30,7 @@ import {ExhaustEffect} from './exhaust-effect.js';
 import {ValidTarget} from '../targets/valid-target.js';
 import {getScenarioZone} from '../utils/match-zone-utils.js';
 import {
+    getConditionExcludePaths,
     filterTargetCandidates,
     splitTargetCondition,
 } from '../utils/target-condition-utils.js';
@@ -44,6 +48,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.enemyTargetEffect = params.enemyTargetEffect;
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
+        this.attackTarget = params.selectedTarget;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget = new Map();
@@ -63,9 +68,10 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     resetForResolution() {
         super.resetForResolution();
-        this.resetAttackKeywordData();
+        this.resetAttackModifierData();
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
+        this.attackTarget = undefined;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget.clear();
@@ -93,6 +99,9 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
     }
     get isDefended() {
         return Boolean(this.defender || this.defendersByTarget.size);
+    }
+    get isEnemyAttack() {
+        return true;
     }
     get enemyTargets() {
         return this.enemy && this.enemy.isInPlay !== false ?
@@ -163,14 +172,50 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         });
     }
     async canRun(params) {
-        const canAttack = (await this.getValidTarget(params)).length > 0;
+        const validTargets = await this.getValidTarget(params);
+        const filter = await this.getEnemyTargetFilter(params);
+        const enemyTarget = new ValidTarget({
+            condition: this.condition,
+            effect: this,
+            filter,
+            match: this.match,
+        });
+        const validEnemies = this.enemy ?
+            (!filter || filter(this.enemy, params) ?
+                [this.enemy] :
+                []) :
+            enemyTarget.getValidTarget({
+                ...params,
+                ability: this.ability,
+                source: this.source ?? params.source,
+                target: this.enemyType,
+            });
+        if (getConditionExcludePaths(this.condition)
+            .includes('effect.enemy')) {
+            if (this.enemyTargetEffect && !validTargets.length &&
+                !this.enemy && validEnemies.length) {
+                return true;
+            }
+            const canAttackDifferentEnemy = validEnemies.some(enemy =>
+                validTargets.some(target => target !== enemy)
+            );
+            if (canAttackDifferentEnemy) {
+                return true;
+            }
+
+            this.resolved = false;
+            this.fullResolved = false;
+
+            return false;
+        }
+
+        const canAttack = validTargets.length > 0;
         if (!canAttack && !this.enemyTargetEffect) {
             this.resolved = false;
             this.fullResolved = false;
 
             return false;
         }
-        const filter = await this.getEnemyTargetFilter(params);
         if (this.enemy) {
             if (canAttack && (!filter || filter(this.enemy, params))) {
                 return true;
@@ -181,19 +226,6 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
             return false;
         }
-
-        const enemyTarget = new ValidTarget({
-            condition: this.condition,
-            effect: this,
-            filter,
-            match: this.match,
-        });
-
-        const validEnemies = enemyTarget.getValidTarget({
-            ...params,
-            ability: this.ability,
-            target: this.enemyType,
-        });
         if (validEnemies.length) {
             return true;
         }
@@ -207,7 +239,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         const target = Array.isArray(this.selectedTarget) ?
             this.selectedTarget[0] : this.selectedTarget;
 
-        return target ? this.getTargetPlayer(target) :
+        return target && !target.isEnemy ? this.getTargetPlayer(target) :
             super.getActivationDialogPlayer(params);
     }
     getTargetDialog() {
@@ -463,6 +495,10 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         return {defender};
     }
     async selectAttackDefender(attackTarget, params) {
+        if (attackTarget?.isEnemy) {
+            return null;
+        }
+
         const targetPlayer = this.getTargetPlayer(attackTarget);
         while (this.canContinueActivation()) {
             const selection = await this.openDefenseSelection(
@@ -587,7 +623,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         }
 
         const attackTarget = this.getDefenseAbilityTarget(player);
-        if (!attackTarget) {
+        if (!attackTarget || attackTarget.isEnemy) {
             return false;
         }
         if (this.match?.scenario?.separatePlayAreas &&
@@ -630,6 +666,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         if (!this.originalAttackTarget) {
             this.originalAttackTarget = this.selectedTarget;
         }
+        this.attackTarget = targets;
         this.selectedTarget = targets;
     }
     addDefenderCondition(condition) {
@@ -660,6 +697,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
                 TRIGGER_VILLAIN_ACTIVATES,
                 TRIGGER_VILLAIN_ATTACKS,
                 TRIGGER_VILLAIN_ATTACKS_YOU,
+                TRIGGER_ENEMY_ATTACKS,
                 TRIGGER_ENEMY_ATTACKS_YOU,
             ]);
     }
@@ -736,6 +774,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             const defendingPlayer = this.getTargetPlayer(this.defender);
             this.defendingPlayersByTarget.set(attackTarget, defendingPlayer);
             if (!Array.isArray(this.selectedTarget)) {
+                this.attackTarget ??= this.selectedTarget;
                 this.selectedTarget = defendingPlayer;
             }
 
@@ -837,27 +876,53 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
 
         this.attacked = isMultiTarget ? attackedTargets : attackedTargets[0];
 
-        const dealDamageEffect = new DealDamageEffect({
-            character,
-            damage: isMultiTarget ? damages : damages[0],
-            activation: this.activation,
-            isAttack: true,
-            preventDamage: this.preventDamage,
-            match: this.match,
-            selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
-            ability: this.ability,
-        });
+        const dealDamageEffect = this.damageType === DAMAGE_TYPE_INDIRECT ?
+            new AssignDamageEffect({
+                ability: this.ability,
+                activation: this.activation,
+                attackKeywordSource: this,
+                character,
+                damage: isMultiTarget ?
+                    damages.map((damage, index) =>
+                        Math.max(0, damage -
+                            (Array.isArray(this.preventDamage) ?
+                                this.preventDamage[index] ?? 0 :
+                                this.preventDamage))) :
+                    Math.max(0, damages[0] -
+                        (Array.isArray(this.preventDamage) ?
+                            this.preventDamage[0] ?? 0 :
+                            this.preventDamage)),
+                isAttack: true,
+                match: this.match,
+                selectedTarget: attackedTargets.map(target =>
+                    this.getTargetPlayer(target)),
+            }) :
+            new DealDamageEffect({
+                character,
+                damage: isMultiTarget ? damages : damages[0],
+                activation: this.activation,
+                isAttack: true,
+                preventDamage: this.preventDamage,
+                match: this.match,
+                selectedTarget: isMultiTarget ? attackedTargets : attackedTargets[0],
+                ability: this.ability,
+            });
 
         await dealDamageEffect.runEffect(defenseParams);
         if (!this.canContinueActivation()) {
             return;
         }
 
-        this.activation.takenDamage = dealDamageEffect.takenDamage;
-        if (isMultiTarget) {
-            const takenDamage = Array.isArray(dealDamageEffect.takenDamage) ?
+        const takenDamage = this.damageType === DAMAGE_TYPE_INDIRECT ?
+            this.attackedCharacters.map(target =>
+                dealDamageEffect.getTakenDamageFor(target)) :
+            Array.isArray(dealDamageEffect.takenDamage) ?
                 dealDamageEffect.takenDamage :
                 [dealDamageEffect.takenDamage];
+        this.activation.takenDamage = isMultiTarget ?
+            takenDamage :
+            takenDamage[0];
+        if (isMultiTarget) {
             for (const [index, defender] of attackedTargets.entries()) {
                 if (!defender?.isHero) {
                     continue;

@@ -41,7 +41,11 @@ export class ModifyAttackEffect extends Effect {
                 return;
             }
 
-            target[key] = value;
+            if (key === 'modifyAttack' && Number.isFinite(value)) {
+                target.modifyAttack = (target.modifyAttack ?? 0) + value;
+            } else {
+                target[key] = value;
+            }
         });
     }
 }

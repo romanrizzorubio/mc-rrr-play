@@ -241,9 +241,9 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
         const meditationCard = new PlayerCard(meditacion.params);
         meditationCard.match = {isUniqueCard: () => false};
         const player = {superhero: {traits: []}};
-        assert.equal(meditationCard.canPlay({player}), false);
+        assert.equal(await meditationCard.canPlay({player}), false);
         player.superhero.traits.push(TRAIT_MYSTIC);
-        assert.equal(meditationCard.canPlay({player}), true);
+        assert.equal(await meditationCard.canPlay({player}), true);
     });
 
     test('generic target exclusions resolve multiple wildcard paths and missing values', () => {
@@ -350,9 +350,27 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
         };
         player.hand = new Hand(player);
         player.hand.refresh = async () => {};
+        const mentalPaymentCard = {
+            id: 'mental-payment-card',
+            resources: [
+                RESOURCE_MENTAL,
+                RESOURCE_PHYSICAL,
+                RESOURCE_PHYSICAL,
+            ],
+            toObj() {
+                return {id: this.id, resources: this.resources};
+            },
+        };
+        const additionalPaymentCard = {
+            id: 'physical-payment-card',
+            resources: [RESOURCE_PHYSICAL],
+            toObj() {
+                return {id: this.id, resources: this.resources};
+            },
+        };
         player.getCardsToPay = async () => ({
             generators: [],
-            hand: [],
+            hand: [mentalPaymentCard, additionalPaymentCard],
         });
         match.players.push(player);
         const card = matchFactory.cardsFactory.createGameCardFromConfig(
@@ -434,14 +452,6 @@ describe('Bruja Escarlata - cartas añadidas al precon', () => {
             playCardEffect,
             resourceCost: crisisCost,
         });
-        const mentalPaymentCard = {
-            id: 'mental-payment-card',
-            resources: [
-                RESOURCE_MENTAL,
-                RESOURCE_PHYSICAL,
-                RESOURCE_PHYSICAL,
-            ],
-        };
         const paymentSession = new CostPaymentSession();
         paymentSession.stagePayment(paymentEffect, {
             generators: [],

@@ -41,7 +41,7 @@ export class Hand extends Engine {
         cards.forEach(this.addCard.bind(this));
     }
     discardHand(card, {preserveTriggers = false} = {}) {
-        if (!preserveTriggers && (card.isEvent ||
+        if (!preserveTriggers && ((card.isEvent && !card.isPlaying) ||
             (card.isResource && !card.isPlaying && !card.isInPlay) ||
             (card.abilities?.some(ability => ability.workInHand) &&
                 !card.isPlaying &&

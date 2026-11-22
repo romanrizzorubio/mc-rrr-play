@@ -4,6 +4,7 @@ import {describe, test} from 'node:test';
 import {
     CARD_TYPE_ATTACHMENT,
     DIALOG_SURGE,
+    PHASE_VILLAIN,
     PLACE_ENCOUNTER_DECK,
     PLACE_ENCOUNTER_DISCARD,
     PLACE_PLAYER_ENCOUNTERS,
@@ -73,6 +74,34 @@ test('RevealEncounterEffect only shows the supplied encounter card', async () =>
     assert.deepEqual(revealedCard, {id: 'top'});
     assert.deepEqual(player.encounters, [pendingCard]);
     assert.strictEqual(effect.selectedTarget, topCard);
+});
+
+test('first villain-phase treachery reveal is tracked separately for each player', async () => {
+    const match = {
+        phase: PHASE_VILLAIN,
+        playersWhoRevealedTreacheryThisVillainPhase: new Set(),
+        triggerCards: {},
+    };
+    const reveal = async (id, player) => {
+        const card = {
+            ...createEncounterCard(id),
+            isTreachery: true,
+        };
+        const effect = new RevealEncounterEffect({selectedTarget: card, match});
+        effect.openPublicDialog = async () => {};
+        await effect.prepare({player});
+
+        return effect;
+    };
+    const firstPlayer = {id: 'first-player', isPlayer: true};
+    const secondPlayer = {id: 'second-player', isPlayer: true};
+
+    assert.equal((await reveal('first-player-first', firstPlayer))
+        .isFirstTreacheryReveal, true);
+    assert.equal((await reveal('second-player-first', secondPlayer))
+        .isFirstTreacheryReveal, true);
+    assert.equal((await reveal('first-player-second', firstPlayer))
+        .isFirstTreacheryReveal, false);
 });
 
 test('Incite places threat when the encounter card is revealed', async () => {

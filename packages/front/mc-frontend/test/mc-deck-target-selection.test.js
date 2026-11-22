@@ -31,6 +31,12 @@ const {DECK_TYPES, DeckComponent} = await import(
 const {MatchComponent} = await import(
     '../src/components/views/mc-match/mc-match.js'
 );
+const {McPlayer} = await import(
+    '../src/components/match/mc-player/mc-player.js'
+);
+const {McScenario} = await import(
+    '../src/components/match/mc-scenario/mc-scenario.js'
+);
 
 const documentClickListeners = new Set();
 globalThis.document ??= {
@@ -48,6 +54,7 @@ globalThis.document ??= {
 
 const createPage = ({scenarioDeck, players}) => {
     const requests = [];
+    const events = [];
     const page = Object.assign(Object.create(McMatchPage.prototype), {
         apiPlayer: {
             async resolveAbility(...params) {
@@ -55,6 +62,8 @@ const createPage = ({scenarioDeck, players}) => {
             },
         },
         deckTargetSelection: null,
+        deckTargetDialogIds: [],
+        deckTargetDialogPlayerId: '',
         deckTargetDocumentClickHandler: null,
         deckTargetDocumentClickListenerAttached: false,
         match: {
@@ -65,12 +74,40 @@ const createPage = ({scenarioDeck, players}) => {
             players,
         },
         player: 'Jessica Drew',
+        dispatchEvent(event) {
+            events.push(event);
+        },
     });
 
-    return {page, requests};
+    return {page, requests, events};
 };
 
 const flushMicrotasks = () => new Promise(resolve => queueMicrotask(resolve));
+const findTemplates = (root, marker) => {
+    const pending = [root];
+    const templates = [];
+
+    while (pending.length) {
+        const value = pending.pop();
+        if (Array.isArray(value)) {
+            pending.push(...value);
+        } else if (value?.strings && value?.values) {
+            if (value.strings.join('').includes(marker)) {
+                templates.push(value);
+            }
+            pending.push(...value.values);
+        }
+    }
+
+    return templates;
+};
+const getTemplateBinding = (template, property) => {
+    const index = template.strings.findIndex(part =>
+        part.endsWith(`${property}="`)
+    );
+
+    return index === -1 ? undefined : template.values[index];
+};
 
 describe('deck target selection', () => {
     test('lets the player choose a legal deck with its eye and resolves against it', async () => {
@@ -138,6 +175,30 @@ describe('deck target selection', () => {
         ]]);
         assert.equal(page.deckTargetSelection, null);
         assert.equal(documentClickListeners.size, 0);
+    });
+
+    test('forwards a table deck choice to the pending target dialog', async () => {
+        const {page, requests, events} = createPage({
+            scenarioDeck: {id: 'scenario-deck', cards: [{}]},
+            players: [{deck: {id: 'player-deck-Jessica Drew', cards: [{}]}}],
+        });
+        page.deckTargetDialogIds = ['scenario-deck'];
+        page.deckTargetDialogPlayerId = 'Jessica Drew';
+
+        await page.handleDeckTargetSelect({
+            detail: {deckId: 'scenario-deck'},
+            stopPropagation() {},
+        });
+
+        const rendered = page.render();
+        const targetIdsIndex = rendered.strings.findIndex(part =>
+            part.endsWith('.deckSelectionTargetIds="')
+        );
+
+        assert.deepEqual(rendered.values[targetIdsIndex], ['scenario-deck']);
+        assert.deepEqual(requests, []);
+        assert.equal(events.at(-1).type, 'dialog-deck-target-select');
+        assert.deepEqual(events.at(-1).detail, {deckId: 'scenario-deck'});
     });
 
     test('cancels without resolving when any non-eye location is clicked', async () => {
@@ -243,6 +304,142 @@ describe('deck target selection', () => {
             ),
             false
         );
+    });
+
+    test('shows target eyes on player and scenario auxiliary decks', () => {
+        const playerDeck = {
+            id: 'player-extra-deck',
+            name: 'Mazo auxiliar del jugador',
+            cards: [{}],
+        };
+        const player = Object.assign(Object.create(McPlayer.prototype), {
+            player: {extraDecks: {[playerDeck.id]: playerDeck}},
+            deckSelectionTargetIds: [playerDeck.id],
+        });
+        const playerDeckTemplate = findTemplates(
+            player.renderExtraDecks(),
+            '<mc-deck'
+        )[0];
+
+        assert.equal(getTemplateBinding(playerDeckTemplate, '.targetId'), playerDeck.id);
+        assert.equal(getTemplateBinding(playerDeckTemplate, '.targetSelectable'), true);
+
+        const scenarioDeck = {
+            id: 'scenario-extra-deck',
+            name: 'Mazo auxiliar del escenario',
+            cards: [{}],
+        };
+        const scenario = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {extraDecks: {[scenarioDeck.id]: scenarioDeck}},
+            deckSelectionTargetIds: [scenarioDeck.id],
+        });
+        const scenarioDeckTemplate = findTemplates(
+            scenario.renderExtraDecks(),
+            '<mc-deck'
+        )[0];
+
+        assert.equal(
+            getTemplateBinding(scenarioDeckTemplate, '.targetId'),
+            scenarioDeck.id
+        );
+        assert.equal(
+            getTemplateBinding(scenarioDeckTemplate, '.targetSelectable'),
+            true
+        );
+    });
+
+    test('shows target eyes on auxiliary decks of other players', () => {
+        const extraDeck = {
+            id: 'other-player-extra-deck',
+            name: 'Mazo auxiliar',
+            cards: [{}],
+        };
+        const currentPlayer = {
+            id: 'current-player',
+            name: 'Jugador actual',
+            deck: {id: 'current-deck', cards: [{}]},
+        };
+        const otherPlayer = {
+            id: 'other-player',
+            name: 'Otro jugador',
+            deck: {id: 'other-deck', cards: [{}]},
+            extraDecks: {[extraDeck.id]: extraDeck},
+        };
+        const match = Object.assign(Object.create(MatchComponent.prototype), {
+            deckSelectionTargetIds: [extraDeck.id],
+            match: {players: [currentPlayer, otherPlayer]},
+            player: currentPlayer,
+        });
+        const deckTemplates = findTemplates(
+            match.renderOtherPlayerDiscards(),
+            '<mc-deck'
+        );
+        const extraDeckTemplate = deckTemplates.find(template =>
+            getTemplateBinding(template, '.targetId') === extraDeck.id
+        );
+
+        assert.ok(extraDeckTemplate);
+        assert.equal(
+            getTemplateBinding(extraDeckTemplate, '.targetSelectable'),
+            true
+        );
+    });
+
+    test('allows only selected deck eyes while a pending choice pauses another phase', () => {
+        const player = {
+            id: 'Jessica Drew',
+            userId: 'local-account',
+        };
+        const events = [];
+        const match = Object.assign(Object.create(MatchComponent.prototype), {
+            deckSelectionTargetIds: ['player-deck-Jessica Drew'],
+            deckSelectionPlayerId: player.id,
+            match: {
+                phase: 'villain',
+                players: [player],
+            },
+            player,
+            interactive: false,
+            tableConsultationMode: false,
+            dispatchEvent(event) {
+                events.push(event);
+            },
+        });
+        const selectedDeckEvent = {
+            type: 'deck-target-select',
+            detail: {deckId: 'player-deck-Jessica Drew'},
+            stopPropagation() {},
+        };
+
+        match.handlePlayerBoardInteraction(selectedDeckEvent, player);
+
+        assert.equal(events.at(-1).type, 'deck-target-select');
+        assert.equal(events.at(-1).detail.playerId, player.id);
+
+        let selectedTargetBlocked = false;
+        match.guardBoardInteraction({
+            type: 'deck-target-select',
+            detail: {
+                deckId: 'player-deck-Jessica Drew',
+                playerId: player.id,
+            },
+            stopPropagation() {
+                selectedTargetBlocked = true;
+            },
+        });
+
+        assert.equal(selectedTargetBlocked, false);
+
+        let invalidTargetBlocked = false;
+        match.guardBoardInteraction({
+            type: 'deck-target-select',
+            detail: {deckId: 'unavailable-deck'},
+            stopPropagation() {
+                invalidTargetBlocked = true;
+            },
+        });
+
+        assert.equal(invalidTargetBlocked, true);
     });
 
     test('renders the hand outside the board panel', () => {

@@ -11,6 +11,8 @@ import {
     EFFECT_CANCEL_ENCOUNTER,
     EFFECT_CHAINED,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
+    EFFECT_ENEMY_ATTACK,
     EFFECT_RETURN_HAND,
     EFFECT_HEAL,
     EFFECT_EXHAUST,
@@ -23,6 +25,8 @@ import {
     EFFECT_SEARCH_CARDS,
     EFFECT_SPEND,
     EFFECT_STUN,
+    EFFECT_SIMULTANEOUS,
+    EFFECT_TOUGH,
     PLACE_DECK,
     PLACE_ENCOUNTER_DECK,
     PLACE_HAND,
@@ -31,12 +35,15 @@ import {
     RESOURCE_PHYSICAL,
     TARGET_ATTACKER,
     TARGET_ATTACKED,
+    TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_MINION,
     TARGET_SOURCE,
     TARGET_THIS,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_ENCOUNTER_REVEAL,
     TRIGGER_ENEMY_ATTACKS_YOU,
+    TRIGGER_CHARACTER_TAKES_DAMAGE,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_DEFEAT,
@@ -537,6 +544,122 @@ export default [
                                 'type': EFFECT_RETURN_HAND,
                                 'params': {
                                     'target': TARGET_THIS,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-martir',
+        'aspect': CLASSIFICATION_PROTECTION,
+        'order': 19012,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Mártir',
+                'subtitle': 'Phyla-Vell',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/allies/19012.png',
+                'traits': [TRAIT_GUARDIAN],
+                'unique': true,
+                'cost': 4,
+                'resources': [RESOURCE_ENERGY],
+                'classification': CLASSIFICATION_PROTECTION,
+                'attack': 2,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 3,
+                'abilities': [
+                    {
+                        'type': ABILITY_RESPONSE,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_TAKES_DAMAGE,
+                            'triggerParams': {
+                                'target': TARGET_THIS,
+                            },
+                            'condition': {
+                                'effect.isConsequential': true,
+                                'effect.ability.isAttack': true,
+                                'effect.ability.effect.defeated': true,
+                            },
+                            'effect': {
+                                'type': EFFECT_TOUGH,
+                                'params': {
+                                    'target': TARGET_THIS,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'protection-dragon-lunar',
+        'aspect': CLASSIFICATION_PROTECTION,
+        'order': 19013,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Dragón Lunar',
+                'subtitle': 'Heather Douglas',
+                'set': CLASSIFICATION_PROTECTION,
+                'image': 'aspect/protection/allies/19013.png',
+                'traits': [TRAIT_GUARDIAN],
+                'unique': true,
+                'cost': 3,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_PROTECTION,
+                'attack': 1,
+                'attackConsequential': 1,
+                'thwart': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_ACTION,
+                        'params': {
+                            'name': 'Haz que un Esbirro ataque a otro enemigo.',
+                            'arrow': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_EXHAUST,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DISCARD_GAME,
+                                            'params': {
+                                                'target': TARGET_THIS,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_MINION,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_ENEMY_ATTACK,
+                                            'params': {
+                                                'enemyType': TARGET_SOURCE,
+                                                'target': TARGET_ENEMY,
+                                                'source': 'parentTargets',
+                                                'condition': {
+                                                    'exclude': 'effect.enemy',
+                                                },
+                                            },
+                                        },
+                                    ],
                                 },
                             },
                         },

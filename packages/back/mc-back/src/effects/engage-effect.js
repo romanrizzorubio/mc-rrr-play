@@ -10,15 +10,18 @@ import {PutPlayEffect} from './put-play-effect.js';
 
 export class EngageEffect extends PutPlayEffect {
     constructor({
+        checkUniqueAfterEntryInterrupt = false,
         deferEngageTriggers = false,
         cardShownInRevealDialog = false,
     }) {
         super(arguments[0]);
 
+        this.checkUniqueAfterEntryInterrupt = checkUniqueAfterEntryInterrupt;
         this.deferEngageTriggers = deferEngageTriggers;
         this.cardShownInRevealDialog = cardShownInRevealDialog;
         this.didEngage = false;
         this.enteredPlay = false;
+        this.uniqueConflict = false;
     }
     getCard(params = {}) {
         return super.getCard(params) ||
@@ -99,6 +102,7 @@ export class EngageEffect extends PutPlayEffect {
     async execute(params) {
         this.didEngage = false;
         this.enteredPlay = false;
+        this.uniqueConflict = false;
 
         const card = this.getCard(params);
         if (!card) {
@@ -110,6 +114,13 @@ export class EngageEffect extends PutPlayEffect {
 
         const {selectedTarget} = this;
         const wasInPlay = card.isInPlay;
+        if (this.checkUniqueAfterEntryInterrupt &&
+            !wasInPlay &&
+            this.match.isUniqueCard(card)) {
+            this.uniqueConflict = true;
+            return;
+        }
+
         const controller = this.getController(params);
         if (!selectedTarget || typeof selectedTarget.engage !== 'function') {
             throw new Error('EngageEffect requires a player target.');

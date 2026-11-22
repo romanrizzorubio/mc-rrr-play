@@ -72,6 +72,7 @@ export class ValidTarget extends Engine {
     constructor({
         effect,
         filter,
+        getValidationParams,
         multipleTarget,
         match,
         condition,
@@ -83,6 +84,7 @@ export class ValidTarget extends Engine {
         this.match = match;
         this.condition = condition;
         this._filter = filter;
+        this.getValidationParams = getValidationParams;
 
         getConditionExcludePaths(condition);
     }
@@ -90,10 +92,13 @@ export class ValidTarget extends Engine {
         if (!card) {
             return false;
         }
-        if (this._filter && !this._filter(card, params)) {
+        const effect = this.effect || params.effect;
+        const validationParams = this.getValidationParams ?
+            this.getValidationParams(card, params) :
+            effect?.getTargetValidationParams?.(card, params) ?? params;
+        if (this._filter && !this._filter(card, validationParams)) {
             return false;
         }
-        const effect = this.effect || params.effect;
         if (card.permanent &&
             effect?.effectCategories?.includes(EFFECT_CATEGORY_LEAVE_PLAY)) {
             const sourceSet = effect.ability?.card?.set ??
@@ -103,7 +108,7 @@ export class ValidTarget extends Engine {
             }
         }
 
-        return !this.isInvalidTarget(card, params);
+        return !this.isInvalidTarget(card, validationParams);
     }
     isInvalidTarget(card, params) {
         const effect = this.effect || params.effect;
@@ -400,7 +405,8 @@ export class ValidTarget extends Engine {
         return this.selectSingleTarget(referentialTargets, params);
     }
     async selectTarget(params) {
-        const validTarget = this.getValidTarget(params);
+        const validTarget = params.targetCandidates ??
+            this.getValidTarget(params);
         const {
             selectCount,
             selectUpTo,

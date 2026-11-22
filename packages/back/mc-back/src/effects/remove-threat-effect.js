@@ -1,4 +1,5 @@
 import {
+    EFFECT_CATEGORY_THREAT_REMOVAL,
     EFFECT_REMOVE_THREAT,
     TARGET_ALL_SCHEMES,
 } from 'mc-shared';
@@ -31,14 +32,20 @@ export class RemoveThreatEffect extends Effect {
         this.ignoreCrisis = ignoreCrisis;
         this.distribute = distribute;
     }
+    get effectCategories() {
+        return [EFFECT_CATEGORY_THREAT_REMOVAL];
+    }
     resetResolutionData() {
         super.resetResolutionData();
         this.additionalThreat = 0;
         this.modifyThwart = 0;
     }
-    filterTarget(card) {
+    getTargetValidationParams(targetCard, params) {
+        return {...params, sourceTarget: targetCard};
+    }
+    filterTarget(card, params = {}) {
         return card.canRemoveThreat({ignoreCrisis: this.ignoreCrisis}) &&
-            super.filterTarget.apply(this, arguments);
+            super.filterTarget(card, params);
     }
     async canRun(params) {
         if (!await super.canRun(params)) {
@@ -63,7 +70,7 @@ export class RemoveThreatEffect extends Effect {
         if (lastStepThreat !== undefined) {
             this.threat = lastStepThreat;
         } else if (this.paramsCalc) {
-            this.threat = this.calculate(params);
+            this.threat = await this.calculate(params);
         } else {
             this.threat = this.calcPerPlayer(this.baseThreat ?? params.threat);
         }

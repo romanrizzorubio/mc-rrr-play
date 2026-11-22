@@ -39,6 +39,8 @@ export class McMatchPage extends LitElement {
             dragPlayCard: {type: Object},
             dragResourcePayment: {type: Object},
             deckTargetSelection: {type: Object},
+            deckTargetDialogIds: {type: Array},
+            deckTargetDialogPlayerId: {type: String},
         };
     }
     constructor() {
@@ -58,6 +60,8 @@ export class McMatchPage extends LitElement {
         this.dragPlayCard = null;
         this.dragResourcePayment = null;
         this.deckTargetSelection = null;
+        this.deckTargetDialogIds = [];
+        this.deckTargetDialogPlayerId = '';
         this.deckTargetDocumentClickHandler = null;
         this.deckTargetDocumentClickListenerAttached = false;
     }
@@ -846,7 +850,22 @@ export class McMatchPage extends LitElement {
         event.stopPropagation();
         const selection = this.deckTargetSelection;
         const {deckId} = event.detail || {};
-        if (!selection || !selection.targetIds.includes(deckId)) {
+
+        if (!selection) {
+            if (this.deckTargetDialogIds.includes(deckId)) {
+                this.dispatchEvent(new CustomEvent(
+                    'dialog-deck-target-select',
+                    {
+                        bubbles: true,
+                        composed: true,
+                        detail: {deckId},
+                    }
+                ));
+            }
+            return;
+        }
+
+        if (!selection.targetIds.includes(deckId)) {
             return;
         }
 
@@ -1231,6 +1250,13 @@ export class McMatchPage extends LitElement {
         const _player = match ? match.players.find(_p =>
             this.getPlayerIdentifier(_p) === player
         ) : null;
+        const deckSelectionTargetIds =
+            this.deckTargetSelection?.targetIds ||
+            this.deckTargetDialogIds;
+        const deckSelectionPlayerId =
+            this.deckTargetSelection?.player ||
+            this.deckTargetDialogPlayerId;
+
         return html`
             <mc-match
                 .match="${match}"
@@ -1244,8 +1270,8 @@ export class McMatchPage extends LitElement {
                 .actionRequest="${this.actionRequest}"
                 .firstPlayerTokenUrl="${this.firstPlayerTokenUrl}"
                 .playCardPending="${this.playCardPending}"
-                .deckSelectionTargetIds="${this.deckTargetSelection?.targetIds || []}"
-                .deckSelectionPlayerId="${this.deckTargetSelection?.player || ''}"
+                .deckSelectionTargetIds="${deckSelectionTargetIds}"
+                .deckSelectionPlayerId="${deckSelectionPlayerId}"
                 .dragActivation="${this.dragActivation}"
                 .dragPlayCard="${this.dragPlayCard}"
                 .dragResourcePayment="${this.dragResourcePayment}"

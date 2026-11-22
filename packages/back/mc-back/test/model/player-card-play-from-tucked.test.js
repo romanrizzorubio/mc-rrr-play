@@ -83,7 +83,7 @@ describe('playing cards from tucked locations', () => {
             arrowEvent
         );
         assert.equal(
-            arrowEvent.card.canPlay({gameCard: arrowEvent, player}),
+            await arrowEvent.card.canPlay({gameCard: arrowEvent, player}),
             true
         );
         assert.equal(

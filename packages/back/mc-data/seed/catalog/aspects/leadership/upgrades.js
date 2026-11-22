@@ -10,6 +10,7 @@ import {
     EFFECT_DEAL_DAMAGE,
     EFFECT_DISCARD_GAME,
     EFFECT_EXHAUST,
+    EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_HIT_POINTS,
     EFFECT_MODIFY_TRAITS,
@@ -30,11 +31,14 @@ import {
     TRAIT_AERIAL,
     TRAIT_AVENGER,
     TRAIT_CONDITION,
+    TRAIT_GUARDIAN,
+    TRAIT_ITEM,
     TRAIT_PREPARATION,
     TRAIT_TACTIC,
     TRAIT_VEHICLE,
     TRAIT_ARMOR,
     TRAIT_TECH,
+    TRAIT_WEAPON,
     TRIGGER_ATTACHED_GET_ATTACK,
     TRIGGER_ATTACHED_GET_THWART,
     TRIGGER_ATTACHED_GET_TRAITS,
@@ -42,6 +46,7 @@ import {
     TRIGGER_CHARACTER_GET_HIT_POINTS,
     TRIGGER_THIS_ATTACK,
     TRIGGER_THIS_THWARTS,
+    TRIGGER_ATTACHED_WOULD_ATTACK,
 } from 'mc-shared';
 
 export default [
@@ -321,6 +326,114 @@ export default [
                                 'params': {
                                     'target': TARGET_ATTACHED,
                                     'count': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-pistola-laser',
+        'aspect': 'leadership',
+        'order': 17019,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Pistola láser',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/upgrades/17019.png',
+                'traits': [TRAIT_TECH, TRAIT_WEAPON],
+                'cost': 1,
+                'resources': [RESOURCE_PHYSICAL],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attach': {
+                    'target': TARGET_ALLY,
+                    'condition': {
+                        'traits': TRAIT_GUARDIAN,
+                    },
+                },
+                'maxAttach': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_ATTACHED_GET_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_ATTACHED_WOULD_ATTACK,
+                            'effect': {
+                                'type': EFFECT_MODIFY_ATTACK,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'modify': {
+                                        'keywords': {
+                                            'overkill': true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'leadership-comunicador-implantado',
+        'aspect': CLASSIFICATION_LEADERSHIP,
+        'order': 18030,
+        'card': {
+            'type': CARD_TYPE_UPGRADE,
+            'params': {
+                'name': 'Comunicador implantado',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/upgrades/18030.png',
+                'traits': [TRAIT_ITEM, TRAIT_TECH],
+                'cost': 1,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'attach': {
+                    'target': TARGET_ALLY,
+                    'condition': {
+                        'traits': TRAIT_GUARDIAN,
+                    },
+                },
+                'maxAttach': 1,
+                'abilities': [
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_ATTACHED_GET_THWART,
+                            'effect': {
+                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                'params': {
+                                    'target': TARGET_EFFECT,
+                                    'count': 1,
+                                },
+                            },
+                        },
+                    },
+                    {
+                        'type': ABILITY_CONSTANT,
+                        'params': {
+                            'trigger': TRIGGER_CHARACTER_GET_HIT_POINTS,
+                            'effect': {
+                                'type': EFFECT_MODIFY_HIT_POINTS,
+                                'params': {
+                                    'target': TARGET_ATTACHED,
+                                    'count': 1,
                                 },
                             },
                         },

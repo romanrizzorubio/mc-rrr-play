@@ -8,15 +8,18 @@ import {
     CARD_TYPE_EVENT,
     CALC_STAGE,
     EFFECT_CHAINED,
+    EFFECT_ASSIGN_THREAT,
     EFFECT_CANCEL_BOOST_ICONS,
     EFFECT_CONFUSE,
     EFFECT_DEAL_DAMAGE,
     EFFECT_DRAW_CARD,
+    EFFECT_DELAYED,
     EFFECT_DO_IF,
     EFFECT_DO_IF_HAS_PAID,
     EFFECT_ENEMY_SCHEME,
     EFFECT_PREVENT_PLACE_THREAT,
     EFFECT_REMOVE_THREAT,
+    EFFECT_RETURN_HAND,
     EFFECT_TAKE_DAMAGE,
     LABEL_THWART,
     LABEL_ATTACK,
@@ -24,12 +27,17 @@ import {
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     TARGET_EFFECT,
+    TARGET_EFFECT_PLAY_CARD,
+    TARGET_ALL_SCHEMES,
     TARGET_ENEMY,
     TARGET_MAIN_SCHEME,
     TARGET_SCHEME,
+    TARGET_THIS,
     TARGET_YOU,
     TARGET_VILLAIN,
     TRAIT_AVENGER,
+    TRAIT_AERIAL,
+    TRAIT_GUARDIAN,
     TRAIT_THWART,
     TRAIT_ATTACK,
     TRIGGER_BOOST_REVEALED,
@@ -659,5 +667,200 @@ export default [
                 ]
             }
         }
-    }
+    },
+    {
+        '_id': 'justice-vuelo-agil',
+        'aspect': CLASSIFICATION_JUSTICE,
+        'order': 17029,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Vuelo ágil',
+                'set': CLASSIFICATION_JUSTICE,
+                'image': 'aspect/justice/events/17029.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_THWART,
+                ],
+                'cost': 3,
+                'resources': [
+                    RESOURCE_MENTAL,
+                ],
+                'classification': CLASSIFICATION_JUSTICE,
+                'paramsToPlay': {
+                    'superhero.traits': TRAIT_AERIAL,
+                },
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'labels': [
+                                LABEL_THWART,
+                            ],
+                            'effect': {
+                                'type': EFFECT_ASSIGN_THREAT,
+                                'params': {
+                                    'target': TARGET_ALL_SCHEMES,
+                                    'threat': 5,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'justice-cortar-el-paso',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 18016,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Cortar el paso',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/18016.png',
+                traits: [TRAIT_THWART],
+                cost: 2,
+                resources: [RESOURCE_MENTAL],
+                classification: CLASSIFICATION_JUSTICE,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_THWART],
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_REMOVE_THREAT,
+                                            params: {
+                                                target: TARGET_MAIN_SCHEME,
+                                                threat: 3,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'playCardEffect.isFirstCardThisRound': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_DELAYED,
+                                                    params: {
+                                                        target: TARGET_EFFECT_PLAY_CARD,
+                                                        effect: {
+                                                            type: EFFECT_RETURN_HAND,
+                                                            params: {
+                                                                target: TARGET_THIS,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'justice-punto-de-inflexion',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 18029,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Punto de inflexión',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/18029.png',
+                traits: [TRAIT_ATTACK],
+                cost: 2,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_JUSTICE,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK],
+                            effect: {
+                                type: EFFECT_DO_IF,
+                                params: {
+                                    target: TARGET_VILLAIN,
+                                    condition: {
+                                        'player.scenarioZone.currentScheme.currentSide.threat': 0,
+                                    },
+                                    effect: {
+                                        type: EFFECT_DEAL_DAMAGE,
+                                        params: {
+                                            target: TARGET_VILLAIN,
+                                            damage: 5,
+                                        },
+                                    },
+                                    effectNot: {
+                                        type: EFFECT_DEAL_DAMAGE,
+                                        params: {
+                                            target: TARGET_VILLAIN,
+                                            damage: 2,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'justice-espabila',
+        aspect: CLASSIFICATION_JUSTICE,
+        order: 19031,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: '¡Espabila!',
+                set: CLASSIFICATION_JUSTICE,
+                image: 'aspect/justice/events/19031.png',
+                cost: 1,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_JUSTICE,
+                paramsToPlay: {
+                    'superhero.traits': TRAIT_GUARDIAN,
+                },
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_TAKE_DAMAGE,
+                                            params: {
+                                                target: TARGET_YOU,
+                                                damage: 1,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_CONFUSE,
+                                            params: {
+                                                target: TARGET_VILLAIN,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

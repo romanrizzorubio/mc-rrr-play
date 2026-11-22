@@ -4,6 +4,7 @@ import {
     PRIORITY_INTERRUPT,
     TRIGGER_THIS_ATTACK,
     TRIGGER_CHARACTER_ATTACKED,
+    TRIGGER_ALLY_ATTACK,
     TRIGGER_YOU_ANY_ATTACK,
     TRIGGER_YOU_ALLY_ATTACK,
     TRIGGER_YOU_ATTACK,
@@ -186,7 +187,10 @@ export class Attack extends Activation {
         const attackTriggers = triggers.concat(
             TRIGGER_THIS_ATTACK,
             TRIGGER_CHARACTER_ATTACKED,
-            ...(effect?.character?.isAlly ? [TRIGGER_YOU_ALLY_ATTACK] : [])
+            ...(effect?.character?.isAlly ? [
+                TRIGGER_ALLY_ATTACK,
+                TRIGGER_YOU_ALLY_ATTACK,
+            ] : [])
         );
         const playerAttackTriggers = effect?.ability?.card ?
             attackTriggers.concat(TRIGGER_YOU_ATTACK) :
@@ -197,12 +201,15 @@ export class Attack extends Activation {
             playerAttackTriggers;
     }
     checkStatus() {
-        const {character} = this;
+        const {character, effect} = this;
 
-        return !character.isStunned;
+        return !character.isStunned &&
+            (!effect.isThwart || !character.isConfused);
     }
     filterTarget(card, {player}) {
-        return !card.isEnemy || card.canBeAttacked(player);
+        const attackingPlayer = this.effect?.isEnemyAttack ? undefined : player;
+
+        return !card.isEnemy || card.canBeAttacked(attackingPlayer);
     }
     getController(selectedTarget = this.selectedTarget) {
         if (selectedTarget.isMinion) {
@@ -267,7 +274,7 @@ export class Attack extends Activation {
         ];
 
         if (effect?.character?.isAlly) {
-            triggers.push(TRIGGER_YOU_ALLY_ATTACK);
+            triggers.push(TRIGGER_ALLY_ATTACK, TRIGGER_YOU_ALLY_ATTACK);
         }
 
         if (isBasic) {
@@ -291,9 +298,13 @@ export class Attack extends Activation {
         return this.effect.getEffectProperty('overkill', params);
     }
     resolveStatus() {
-        const {character} = this;
+        const {character, effect} = this;
 
-        character.removeStunned();
+        if (character.isStunned) {
+            character.removeStunned();
+        } else if (effect.isThwart && character.isConfused) {
+            character.removeConfused();
+        }
 
         character.refresh();
     }

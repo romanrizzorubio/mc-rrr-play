@@ -35,6 +35,30 @@ export default css`
     min-height: 0;
     overflow-y: auto;
   }
+  div.dialog.card-type-options {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    max-height: min(700px, calc(100vh - 96px));
+    min-height: 0;
+    overflow: hidden;
+  }
+  div.dialog.card-type-options > .title,
+  div.dialog.card-type-options > .actions {
+    flex: 0 0 auto;
+  }
+  div.dialog.card-type-options > .content {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  div.dialog.card-type-options > .content > mc-card,
+  div.dialog.card-type-options > .content > .context-cards {
+    flex: 0 0 auto;
+  }
   div.dialog.pay-cost > .content {
     padding-right: 16px;
   }

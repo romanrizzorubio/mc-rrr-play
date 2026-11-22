@@ -9,6 +9,13 @@ export default css`
     text-align: left;
   }
 
+  .card-type-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
   .content > mc-card + .list {
     margin-top: 16px;
   }

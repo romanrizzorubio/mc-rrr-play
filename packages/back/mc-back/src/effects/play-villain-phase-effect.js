@@ -212,6 +212,7 @@ export class PlayVillainPhaseEffect extends PlayPhaseEffect {
         });
     }
     async triggerPhaseStart(params) {
+        this.match.playersWhoRevealedTreacheryThisVillainPhase = new Set();
         const phaseEffect = new PlayVillainPhaseEffect({match: this.match});
         const triggerParams = {
             ...params,

@@ -8,6 +8,7 @@ import {
     CALC_ATTACK,
     CALC_COUNT,
     CALC_STAGE,
+    CALC_TRAITS_COUNT,
     CARD_TYPE_ALLY,
     CARD_TYPE_EVENT,
     EFFECT_CHAINED,
@@ -50,12 +51,16 @@ import {
     TARGET_SOURCE,
     TARGET_YOU,
     TARGET_VILLAIN,
+    TARGET_SCENARIO,
     TARGET_YOUR_HERO,
     TIME_PHASE,
     TIME_ROUND,
     TRAIT_AVENGER,
     TRAIT_ATTACK,
+    TRAIT_AERIAL,
     TRAIT_TACTIC,
+    TRAIT_GUARDIAN,
+    TRIGGER_PHASE_ENDS,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOU_BASIC_THWART,
     TRIGGER_YOU_ALLY_ATTACK,
@@ -792,6 +797,144 @@ export default [
                                                     'params': {
                                                         'target': TARGET_SOURCE,
                                                         'source': 'effect.character'
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-supremacia-aerea',
+        'aspect': 'leadership',
+        'order': 151,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Supremacía aérea',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/17014.png',
+                'traits': [
+                    TRAIT_AERIAL,
+                    TRAIT_TACTIC
+                ],
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'effect': {
+                                'type': EFFECT_DEAL_DAMAGE,
+                                'params': {
+                                    'target': TARGET_ENEMY,
+                                    'damage': 3,
+                                    'multipleTarget': true,
+                                    'selectUpTo': true,
+                                    'targetCountCalc': {
+                                        'target': 'player.friends',
+                                        'formula': CALC_TRAITS_COUNT,
+                                        'trait': TRAIT_AERIAL
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        '_id': 'leadership-heroismo-suicida',
+        'aspect': 'leadership',
+        'order': 152,
+        'card': {
+            'type': CARD_TYPE_EVENT,
+            'params': {
+                'name': 'Heroísmo suicida',
+                'set': CLASSIFICATION_LEADERSHIP,
+                'image': 'aspect/leadership/events/17015.png',
+                'cost': 2,
+                'resources': [
+                    RESOURCE_PHYSICAL
+                ],
+                'classification': CLASSIFICATION_LEADERSHIP,
+                'abilities': [
+                    {
+                        'type': ABILITY_HERO_ACTION,
+                        'params': {
+                            'maximum': {
+                                'count': 1,
+                                'target': TARGET_ROUND
+                            },
+                            'effect': {
+                                'type': EFFECT_SIMULTANEOUS,
+                                'params': {
+                                    'target': TARGET_YOU,
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_LASTING,
+                                            'params': {
+                                                'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                'condition': {
+                                                    'traits': TRAIT_GUARDIAN
+                                                },
+                                                'until': TIME_PHASE,
+                                                'effect': {
+                                                    'type': EFFECT_SIMULTANEOUS,
+                                                    'params': {
+                                                        'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                        'condition': {
+                                                            'traits': TRAIT_GUARDIAN
+                                                        },
+                                                        'effects': [
+                                                            {
+                                                                'type': EFFECT_MODIFY_THWART_VALUE,
+                                                                'params': {
+                                                                    'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                                    'condition': {
+                                                                        'traits': TRAIT_GUARDIAN
+                                                                    },
+                                                                    'count': 2
+                                                                }
+                                                            },
+                                                            {
+                                                                'type': EFFECT_MODIFY_ATTACK_VALUE,
+                                                                'params': {
+                                                                    'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                                    'condition': {
+                                                                        'traits': TRAIT_GUARDIAN
+                                                                    },
+                                                                    'count': 2
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            'type': EFFECT_DELAYED,
+                                            'params': {
+                                                'target': TARGET_SCENARIO,
+                                                'at': TRIGGER_PHASE_ENDS,
+                                                'effect': {
+                                                    'type': EFFECT_DEAL_DAMAGE,
+                                                    'params': {
+                                                        'target': TARGET_ALL_CHARACTERS_YOU_CONTROL,
+                                                        'condition': {
+                                                            'traits': TRAIT_GUARDIAN
+                                                        },
+                                                        'damage': 1
                                                     }
                                                 }
                                             }

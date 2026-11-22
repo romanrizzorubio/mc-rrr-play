@@ -1,5 +1,6 @@
 import {
     DIALOG_ENCOUNTERS_REVEAL,
+    PHASE_VILLAIN,
     PRIORITY_CONSTANT,
     TARGET_PLAYER,
     TARGET_SCENARIO,
@@ -45,11 +46,13 @@ export class RevealEncounterEffect extends Effect {
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
         this.perilResolution = undefined;
+        this.isFirstTreacheryReveal = false;
     }
     resetResolutionData() {
         super.resetResolutionData();
         this.surge = false;
         this.canceled = CANCEL_ENCOUNTER_NOT;
+        this.isFirstTreacheryReveal = false;
     }
     getCard(params) {
         const source = typeof this.cardSource === 'string' ?
@@ -182,6 +185,18 @@ export class RevealEncounterEffect extends Effect {
                 },
             }, player);
         }
+
+        if (this.match.phase === PHASE_VILLAIN &&
+            selectedTarget.isTreachery &&
+            player?.isPlayer) {
+            const playersWhoRevealed =
+                this.match.playersWhoRevealedTreacheryThisVillainPhase ??=
+                    new Set();
+            const playerId = player.id ?? player.userId ?? player.name;
+            this.isFirstTreacheryReveal =
+                !playersWhoRevealed.has(playerId);
+            playersWhoRevealed.add(playerId);
+        }
     }
     async reveal(params) {
         const {selectedTarget} = this;
@@ -225,37 +240,18 @@ export class RevealEncounterEffect extends Effect {
         return {
             ...super.getTriggersParams(params),
             card: this.selectedTarget,
+            reveal: this,
+            revealPlayer: params.player,
+            isFirstTreacheryReveal: this.isFirstTreacheryReveal,
         };
     }
     async execute(params) {
         const {selectedTarget} = this;
-        const {preventSurge, player} = params;
+        const {player} = params;
 
-        if (this.match.isUniqueCard(selectedTarget)) {
-            this.canceled = CANCEL_ENCOUNTER_FULL;
-
-            await selectedTarget.discard();
-
-            if (selectedTarget.isEncounterCard && !selectedTarget.isVillain) {
-                const encounterPlayer = player || this.player;
-                if (!encounterPlayer) {
-                    throw new Error(
-                        'A player is required to receive a facedown encounter card.'
-                    );
-                }
-
-                const dealEncounterEffect = new DealEncounterEffect({
-                    match: this.match,
-                    selectedTarget: encounterPlayer,
-                });
-                await dealEncounterEffect.runEffect({
-                    ...params,
-                    player: encounterPlayer,
-                });
-            } else if (!preventSurge) {
-                await this.applySurge(params);
-            }
-
+        if (this.match.isUniqueCard(selectedTarget) &&
+            !selectedTarget.isMinion) {
+            await this.resolveUniqueCardConflict(selectedTarget, params);
             return;
         }
 
@@ -289,6 +285,7 @@ export class RevealEncounterEffect extends Effect {
             if (selectedTarget.isMinion) {
                 engageEffect = new EngageEffect({
                     card: selectedTarget,
+                    checkUniqueAfterEntryInterrupt: true,
                     controller: this.match.scenario,
                     target: selectedTarget.faceTo,
                     deferEngageTriggers: true,
@@ -297,6 +294,13 @@ export class RevealEncounterEffect extends Effect {
                 });
 
                 await engageEffect.runEffect(params);
+                if (engageEffect.uniqueConflict) {
+                    await this.resolveUniqueCardConflict(
+                        selectedTarget,
+                        params
+                    );
+                    return;
+                }
             } else if (!selectedTarget.isTreachery) {
                 let target;
                 let controller = this.match.scenario;
@@ -312,6 +316,7 @@ export class RevealEncounterEffect extends Effect {
                         attachTarget = await attachEffect.selectTarget({
                             ...params,
                             effect: attachEffect,
+                            match: params.match ?? this.match,
                         });
 
                         if (!attachTarget) {
@@ -386,6 +391,31 @@ export class RevealEncounterEffect extends Effect {
         }
 
         if (this.surge) {
+            await this.applySurge(params);
+        }
+    }
+    async resolveUniqueCardConflict(selectedTarget, params) {
+        this.canceled = CANCEL_ENCOUNTER_FULL;
+
+        await selectedTarget.discard();
+
+        if (selectedTarget.isEncounterCard && !selectedTarget.isVillain) {
+            const encounterPlayer = params.player || this.player;
+            if (!encounterPlayer) {
+                throw new Error(
+                    'A player is required to receive a facedown encounter card.'
+                );
+            }
+
+            const dealEncounterEffect = new DealEncounterEffect({
+                match: this.match,
+                selectedTarget: encounterPlayer,
+            });
+            await dealEncounterEffect.runEffect({
+                ...params,
+                player: encounterPlayer,
+            });
+        } else if (!params.preventSurge) {
             await this.applySurge(params);
         }
     }

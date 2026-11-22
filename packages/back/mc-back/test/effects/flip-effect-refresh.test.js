@@ -97,6 +97,7 @@ describe('FlipEffect', () => {
                 TRIGGER_YOUR_SUPERHERO_FLIPS,
             ]],
         ]);
+        assert.ok(triggerCalls.every(([, , params]) => params.effect === effect));
         assert.ok(triggerCalls.every(([, , params]) => params.player === player));
         assert.ok(triggerCalls.every(([, , params]) => params.card === selectedTarget));
         assert.ok(triggerCalls.every(([, , params]) => params.triggeredCard === selectedTarget));

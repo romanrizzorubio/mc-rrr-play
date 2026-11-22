@@ -1,4 +1,8 @@
-import {DIALOG_REVEAL_CARDS, TARGET_ALL_PLAYERS} from 'mc-shared';
+import {
+    DIALOG_REVEAL_CARDS,
+    TARGET_ALL_PLAYERS,
+    TARGET_ANY_DECK,
+} from 'mc-shared';
 import {path} from '../engine/utils.js';
 
 import {Effect} from './effect.js';
@@ -19,6 +23,18 @@ export class DiscardFromDeckEffect extends Effect {
         this.showDialog = showDialog;
         this.cardsSource = cardsSource;
         this.cards = [];
+    }
+    getTargetSelectionMode() {
+        return this.target === TARGET_ANY_DECK ? 'deck' : undefined;
+    }
+    filterTarget(deck, params) {
+        if (this.target === TARGET_ANY_DECK &&
+            deck !== this.match?.scenario?.deck &&
+            deck?.isPlayerDeck !== true) {
+            return false;
+        }
+
+        return super.filterTarget(deck, params);
     }
     getCardsToDiscard(params) {
         if (this.cardsSource === undefined) {

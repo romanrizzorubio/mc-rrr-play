@@ -1,7 +1,9 @@
+import {OPERATOR_MAX, OPERATOR_MIN} from 'mc-shared';
+
 import {checkCondition, path} from '../engine/utils.js';
 
-const MAX_OPERATOR = 'max';
-const MAX_CONDITION_KEYS = new Set(['operator', 'defaultValue']);
+const AGGREGATE_OPERATORS = new Set([OPERATOR_MAX, OPERATOR_MIN]);
+const AGGREGATE_CONDITION_KEYS = new Set(['operator', 'defaultValue']);
 
 export const filterTargetsByCondition = (targets, condition) =>
     condition ?
@@ -44,28 +46,33 @@ export const isExcludedTarget = (target, excludedTargets) =>
         (target?.id !== undefined && excludedTarget?.id === target.id)
     );
 
-const getMaxCondition = (condition, property) => {
+const getAggregateCondition = (condition, property) => {
     if (!condition || typeof condition !== 'object' ||
-        Array.isArray(condition) || condition.operator !== MAX_OPERATOR) {
+        Array.isArray(condition) ||
+        !AGGREGATE_OPERATORS.has(condition.operator)) {
         return undefined;
     }
 
-    if (Object.keys(condition).some(key => !MAX_CONDITION_KEYS.has(key))) {
+    const {operator} = condition;
+    if (Object.keys(condition).some(key =>
+        !AGGREGATE_CONDITION_KEYS.has(key))) {
         throw new TypeError(
-            `The max target condition for "${property}" has unsupported options.`
+            `The ${operator} target condition for "${property}" has unsupported options.`
         );
     }
 
-    const defaultValue = condition.defaultValue ?? 0;
+    const defaultValue = condition.defaultValue ??
+        (operator === OPERATOR_MAX ? 0 : Number.MAX_SAFE_INTEGER);
     if (!Number.isFinite(defaultValue)) {
         throw new TypeError(
-            `The max target condition for "${property}" requires a finite defaultValue.`
+            `The ${operator} target condition for "${property}" requires a finite defaultValue.`
         );
     }
 
     return {
         property,
         defaultValue,
+        operator,
     };
 };
 
@@ -85,9 +92,9 @@ export const splitTargetCondition = condition => {
             return;
         }
 
-        const maxCondition = getMaxCondition(value, property);
-        if (maxCondition) {
-            selectionConditions.push(maxCondition);
+        const aggregateCondition = getAggregateCondition(value, property);
+        if (aggregateCondition) {
+            selectionConditions.push(aggregateCondition);
         } else {
             targetCondition[property] = value;
         }
@@ -100,7 +107,11 @@ export const splitTargetCondition = condition => {
 };
 
 export const filterTargetCandidates = (targets, selectionConditions) =>
-    selectionConditions.reduce((candidates, {property, defaultValue}) => {
+    selectionConditions.reduce((candidates, {
+        defaultValue,
+        operator,
+        property,
+    }) => {
         if (!candidates.length) {
             return candidates;
         }
@@ -110,13 +121,16 @@ export const filterTargetCandidates = (targets, selectionConditions) =>
             const comparableValue = value ?? defaultValue;
             if (!Number.isFinite(comparableValue)) {
                 throw new TypeError(
-                    `The max target condition requires a finite value for "${property}".`
+                    `The ${operator} target condition requires a finite value for "${property}".`
                 );
             }
 
             return comparableValue;
         });
-        const maxValue = Math.max(...values);
+        const selectedValue = operator === OPERATOR_MIN ?
+            Math.min(...values) :
+            Math.max(...values);
 
-        return candidates.filter((_, index) => values[index] === maxValue);
+        return candidates.filter((_, index) =>
+            values[index] === selectedValue);
     }, targets);

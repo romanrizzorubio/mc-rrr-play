@@ -1,4 +1,9 @@
-import {TARGET_ROUND, TRIGGER_ROUND_ENDS} from 'mc-shared';
+import {
+    PHASE_PLAYERS,
+    PHASE_VILLAIN,
+    TARGET_ROUND,
+    TRIGGER_ROUND_ENDS,
+} from 'mc-shared';
 import {Engine} from '../engine/engine.js';
 
 import {Effect} from './effect.js';
@@ -28,6 +33,10 @@ export class PlayRoundEffect extends Effect {
         return super.triggerEnds(params, {
             ...options,
             resolveInterrupts: true,
+        }).then(() => {
+            this.match.players.forEach(player => {
+                player.playedCardsThisRound = [];
+            });
         });
     }
     async execute(params) {
@@ -35,8 +44,8 @@ export class PlayRoundEffect extends Effect {
 
         Engine.currentRound = this;
 
-        if (this.match.phase !== 'villain') {
-            this.match.phase = 'players';
+        if (this.match.phase !== PHASE_VILLAIN) {
+            this.match.phase = PHASE_PLAYERS;
             await this.playersPhase.runEffect(params);
             if (!this.match.playing) {
                 this.playing = false;
@@ -44,7 +53,7 @@ export class PlayRoundEffect extends Effect {
                 await this.match.refresh();
                 return;
             }
-            this.match.phase = 'villain';
+            this.match.phase = PHASE_VILLAIN;
             this.match.villainPhaseStep = 0;
             await this.match.persist();
             await this.match.refresh();

@@ -208,6 +208,28 @@ export class Deck extends Engine {
         this.cards.sort(() => Math.random() - 0.5);
         this.knownCards = [];
     }
+    toTargetObj() {
+        const {
+            owner,
+            name,
+            id,
+            isPlayerDeck,
+            isPlayerExtraDeck,
+            isScenarioDeck,
+            isScenarioExtraDeck,
+        } = this;
+
+        return {
+            name,
+            ...(id ? {id} : {}),
+            ...(owner?.name ? {ownerName: owner.name} : {}),
+            isPlayerDeck,
+            isPlayerExtraDeck,
+            isScenarioDeck,
+            isScenarioExtraDeck,
+            cardCount: this.cards.length,
+        };
+    }
     toObj() {
         const {
             owner,

@@ -1,6 +1,7 @@
 import {EVENTS, REFRESH_EVENTS} from 'mc-endpoints';
 import {
     DIALOG_LIST,
+    PHASE_PLAYERS,
     PRIORITY_CONSTANT,
     TRIGGER_INITIAL_PLAYER_CHANGED,
 } from 'mc-shared';
@@ -58,6 +59,7 @@ export class Match extends Engine {
         this.suppressedInformationalDialogIds = [];
         this.chatMessages = [];
         this.activePerilResolutions = [];
+        this.playersWhoRevealedTreacheryThisVillainPhase = new Set();
 
         this.lasting = [];
         this.limits = {};
@@ -390,7 +392,7 @@ export class Match extends Engine {
         this.gameOverReason = reason;
         this.actionRequest = null;
 
-        if (this.phase === 'players' && this.currentTurnPlayer) {
+        if (this.phase === PHASE_PLAYERS && this.currentTurnPlayer) {
             this.mc.mcSocket.dispatch(
                 this.name,
                 EVENTS.TURN.END,

@@ -7,6 +7,7 @@ import {
     PLACE_DISCARD_PILE,
     PLACE_HAND,
     PLACE_TUCKED,
+    RESOURCE_ANY,
     RESOURCES_X,
     PRIORITY_CONSTANT,
     PRIORITY_FORCED_INTERRUPT,
@@ -17,6 +18,7 @@ import {
     TRIGGER_THIS_END_PLAY_CARD,
     TRIGGER_THIS_PLAY_CARD,
     TRIGGER_YOU_PLAY_CARD,
+    TRIGGER_YOU_PLAY_CARD_COST,
     TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
 
@@ -31,6 +33,10 @@ import {
     canPreselectEffectTarget,
     getEffectTargetEntries,
 } from '../utils/effect-targets.js';
+import {
+    canPayResourceRequirements,
+    showInsufficientResourceCostDialog,
+} from '../utils/resource-payment-availability.js';
 import {toResourcePaymentCard} from '../utils/resource-requirements.js';
 
 const matchesTargetId = (target, targetId) =>
@@ -39,6 +45,19 @@ const matchesTargetId = (target, targetId) =>
     target?.parent?.id === targetId;
 
 export class PlayCardEffect extends Effect {
+    static getTraitConditionAttachConfig(card) {
+        if (!card?.isUpgrade || card.card?.controllerTarget) {
+            return undefined;
+        }
+
+        const attachConfig = card.card?.getAttachConfig?.();
+        const condition = attachConfig?.condition;
+
+        return condition && !Array.isArray(condition) &&
+            Object.hasOwn(condition, 'traits') ?
+            attachConfig :
+            undefined;
+    }
     constructor(params) {
         const {card} = params;
         const attachConfig = card.isUpgrade ?
@@ -87,6 +106,9 @@ export class PlayCardEffect extends Effect {
         this.playedFromHand = false;
         this.workInHandTriggersInitializedForPlay = false;
         this.played = false;
+        this.isFirstCardThisRound = false;
+        this.playedCardThisRound = undefined;
+        this.playedEventThisTurn = undefined;
         this.maxAlliesDialogAccepted = false;
         this.maxAllyToDiscardId = undefined;
         this.restrictedDialogAccepted = false;
@@ -206,6 +228,44 @@ export class PlayCardEffect extends Effect {
 
         return false;
     }
+    getValidTarget(params) {
+        if (!PlayCardEffect.getTraitConditionAttachConfig(this.card)) {
+            return super.getValidTarget(params);
+        }
+
+        const attachEffect = this.card.card.createAttachEffect(this.card);
+        attachEffect.selectedTarget = this.selectedTarget;
+        attachEffect.refreshTarget = this.refreshTarget;
+        const attachParams = {
+            ...params,
+            ...(params.preselectedEffectTargets?.has(this) ? {
+                fixedPreselectedTarget: true,
+            } : {}),
+            card: this.card,
+            match: this.match,
+            playCardEffect: this,
+        };
+
+        return attachEffect.getValidTarget(attachParams).then(targets => {
+            const targetParams = {
+                ...attachParams,
+                ability: this.ability,
+                effect: this,
+                source: this.source ?? params.source,
+                target: this.target,
+            };
+            const targetCandidates = params.targetCandidates?.flat(Infinity);
+
+            return targets.filter(target =>
+                (!targetCandidates ||
+                    targetCandidates.some(candidate =>
+                        candidate === target ||
+                        matchesTargetId(target, candidate?.id))) &&
+                super.filterTarget(target, targetParams) &&
+                !this.validTarget.isInvalidTarget(target, targetParams)
+            );
+        });
+    }
     getTriggersInit() {
         return super.getTriggersInit()
             .concat([
@@ -231,6 +291,19 @@ export class PlayCardEffect extends Effect {
 
         return this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
     }
+    async triggerPlayCardCostInterrupts(params) {
+        const triggerTypes = [TRIGGER_YOU_PLAY_CARD_COST];
+
+        if (!await this.trigger(
+            PRIORITY_FORCED_INTERRUPT,
+            triggerTypes,
+            params
+        )) {
+            return false;
+        }
+
+        return this.trigger(PRIORITY_INTERRUPT, triggerTypes, params);
+    }
     getTriggersEnds() {
         return super.getTriggersEnds()
             .concat([
@@ -243,12 +316,47 @@ export class PlayCardEffect extends Effect {
         return {
             ...super.getTriggersParams(params),
             card: this.card,
+            playedBy: params.player,
+            playedFromHand: this.playedFromHand,
         };
     }
-    selectTarget(params) {
-        return super.selectTarget({
+    async selectTarget(params) {
+        const targetPlayer = params.targetPlayer || params.player;
+        if (!PlayCardEffect.getTraitConditionAttachConfig(this.card)) {
+            return super.selectTarget({...params, targetPlayer});
+        }
+
+        const {target, selectedTarget, ability} = this;
+        if ((params.fixedPreselectedTarget ||
+            params.preselectedEffectTargets?.has(this)) &&
+            selectedTarget) {
+            return (await this.getValidTarget(params)).length ?
+                selectedTarget :
+                null;
+        }
+
+        if (selectedTarget && !this.refreshTarget) {
+            return selectedTarget;
+        }
+
+        const targetCandidates = await this.getValidTarget(params);
+
+        return this.validTarget.selectTarget({
             ...params,
-            targetPlayer: params.targetPlayer || params.player,
+            targetPlayer,
+            ability,
+            source: this.source ?? params.source,
+            target,
+            selectCount: params.selectCount ?? this.selectCount,
+            selectUpTo: this.selectUpTo,
+            showCancel: params.showCancel ?? this.showCancel,
+            showSingleTargetDialog:
+                params.showSingleTargetDialog ??
+                this.showSingleTargetDialog,
+            ...(params.dialogTitle || this.dialogTitle ? {
+                dialogTitle: params.dialogTitle || this.dialogTitle,
+            } : {}),
+            targetCandidates,
         });
     }
     async preselectDroppedTarget(params) {
@@ -327,13 +435,20 @@ export class PlayCardEffect extends Effect {
         const {player} = params;
 
         this.played = true;
-        if (player.config?.aspectMarkerRules) {
-            player.superhero.addAspectMarkersFromCard(
-                card,
-                TRIGGER_YOU_PLAY_CARD
-            );
+        player.playedCardsThisRound ??= [];
+        this.isFirstCardThisRound = player.playedCardsThisRound.length === 0;
+        this.playedCardThisRound = {
+            id: card.id,
+            name: card.name,
+        };
+        player.playedCardsThisRound.push(this.playedCardThisRound);
+        if (card.isEvent) {
+            this.playedEventThisTurn = {
+                traits: [...(card.traits || [])],
+            };
+            player.playedEventsThisTurn ??= [];
+            player.playedEventsThisTurn.push(this.playedEventThisTurn);
         }
-
         if (card.isEvent) {
             await ability.resolveAbility({
                 ...params,
@@ -348,6 +463,18 @@ export class PlayCardEffect extends Effect {
             });
 
             if (ability.paymentCancelled) {
+                const playedCardIndex =
+                    player.playedCardsThisRound.indexOf(this.playedCardThisRound);
+                if (playedCardIndex >= 0) {
+                    player.playedCardsThisRound.splice(playedCardIndex, 1);
+                }
+                this.playedCardThisRound = undefined;
+                const playedEventIndex =
+                    player.playedEventsThisTurn.indexOf(this.playedEventThisTurn);
+                if (playedEventIndex >= 0) {
+                    player.playedEventsThisTurn.splice(playedEventIndex, 1);
+                }
+                this.playedEventThisTurn = undefined;
                 this.played = false;
                 this.canceled = true;
                 this.paymentCancelled = true;
@@ -355,6 +482,10 @@ export class PlayCardEffect extends Effect {
             }
 
             await player.deck.discard(card);
+            if (card.match?.triggerCards &&
+                typeof card.endTriggers === 'function') {
+                card.endTriggers();
+            }
         } else {
             const putPlayEffect = new PutPlayEffect({
                 card,
@@ -371,7 +502,15 @@ export class PlayCardEffect extends Effect {
                 ...params,
                 effect: this,
                 card,
+                playedBy: player,
+                playedFromHand: this.playedFromHand,
             });
+        }
+        if (player.config?.aspectMarkerRules) {
+            player.superhero.addAspectMarkersFromCard(
+                card,
+                TRIGGER_YOU_PLAY_CARD
+            );
         }
         card.isPlaying = false;
         if (player.hand.cards.includes(card)) {
@@ -475,6 +614,34 @@ export class PlayCardEffect extends Effect {
             ],
         });
     }
+    async canPayResourceCost(params) {
+        const triggerParams = this.getTriggersParams(params);
+        if (!await this.triggerInit(triggerParams)) {
+            return false;
+        }
+
+        const resourceCost = await this.getResourceCost(triggerParams);
+        const requirements = [
+            ...resourceCost.getRequiredResources(),
+            ...resourceCost.requirement,
+        ];
+        if (!requirements.length) {
+            return true;
+        }
+
+        const {player} = params;
+        const cardsToPay = await player.getCardsToPay(
+            this.card,
+            resourceCost.resourceType
+        );
+
+        return canPayResourceRequirements(
+            cardsToPay,
+            requirements,
+            this.card,
+            player
+        );
+    }
     getPaymentResourcePreferences() {
         const effects = [
             this.ability?.effect,
@@ -543,6 +710,34 @@ export class PlayCardEffect extends Effect {
             resourceUsage,
             {costOnlyResourceUsage},
         );
+        const requiredResources = cost.amount === RESOURCES_X ?
+            [cost.resourceType ?? RESOURCE_ANY] :
+            cost.getRequiredResources();
+        const resourceRequirements = cost.requirement || [];
+        const paymentRequirements = [
+            ...requiredResources,
+            ...resourceRequirements,
+        ];
+        const hasRequiredResources = (
+            !paymentRequirements.length ||
+            canPayResourceRequirements(
+                cardsToPay,
+                paymentRequirements,
+                card,
+                player
+            )
+        );
+        if (!hasRequiredResources) {
+            await showInsufficientResourceCostDialog(
+                dialog => this.openDialog(dialog),
+                player,
+                card,
+                {requirements: paymentRequirements}
+            );
+
+            return undefined;
+        }
+
         const response = await this.openDialog({
             dialogType: DIALOG_PAY_COST,
             showCancel: true,
@@ -755,6 +950,18 @@ export class PlayCardEffect extends Effect {
             };
 
         if (!abilityState.canRun) {
+            this.canceled = true;
+            card.isPlaying = false;
+            return;
+        }
+
+        const costTriggerParams = this.getTriggersParams({
+            ...params,
+            ability: this.ability,
+            card,
+            playCardEffect: this,
+        });
+        if (!await this.triggerPlayCardCostInterrupts(costTriggerParams)) {
             this.canceled = true;
             card.isPlaying = false;
             return;

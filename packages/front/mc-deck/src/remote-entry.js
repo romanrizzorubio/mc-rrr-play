@@ -10,6 +10,7 @@ import {
     getPlayerDeckCardCopyLimit,
     getSelectedDeckAspects,
     hasClassification,
+    isAllowedOffAspectCard,
 } from 'mc-shared';
 import {DeckServiceClient} from './services/deck-service-client.js';
 import styles from './remote-entry.css.js';
@@ -461,7 +462,11 @@ export class McDeckApp extends LitElement {
         return this.catalog.cards
             .filter(card => !selectedAspects.length ||
                 hasClassification(card.classification, CLASSIFICATION_BASIC) ||
-                selectedAspects.includes(card.aspect))
+                selectedAspects.includes(card.aspect) ||
+                isAllowedOffAspectCard(
+                    card,
+                    this.catalog.hero.deckBuildingRules,
+                ))
             .map(card => ({
                 ...card,
                 maxAddCount: Math.max(

@@ -93,7 +93,8 @@ export class McPlayer extends LitElement {
         const {
             name, image, life, hitPoints, attack, thwart, defense, recovery,
             flipped, exhausted, statusCards, canFlip = false, abilities, extraTraits = [],
-            extraKeywords = [], attached = [], tuckedCards = [], aspectMarkers = []
+            extraKeywords = [], attached = [], tuckedCards = [], aspectMarkers = [],
+            outlinedAspectMarkers = []
         } = superhero;
         const attachedCards = attached.filter(card => !card.isUpgrade);
 
@@ -124,6 +125,7 @@ export class McPlayer extends LitElement {
                     .extraTraits="${extraTraits}"
                     .extraKeywords="${extraKeywords}"
                     .aspectMarkers="${aspectMarkers}"
+                    .outlinedAspectMarkers="${outlinedAspectMarkers}"
                     .flipped="${flipped}"
                     .statusCards="${statusCards}"
                     .canFlip="${canFlip}"
@@ -191,6 +193,8 @@ export class McPlayer extends LitElement {
                         .knownCards="${deck.knownCards || []}"
                         .deckName="${deck.name}"
                         .size="${this.compactDecks ? 's' : 'm'}"
+                        .targetId="${deck.id || ''}"
+                        .targetSelectable="${this.isDeckSelectable(deck)}"
                         .deckNameSpansPiles="${true}"
                         .dragActivation="${this.dragActivation}"
                         .dragPlayCard="${this.dragPlayCard}"

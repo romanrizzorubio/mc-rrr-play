@@ -1674,7 +1674,7 @@ describe('multiplayer player boards', () => {
         );
         assert.match(
             scenarioStyles,
-            /\.schemes\s*\{[^}]*flex:\s*1\s+1\s+auto;/su,
+            /\.scenario-board\s*\{[^}]*grid-template-columns:\s*auto\s+minmax\(0,\s*1fr\)\s+auto;/su,
         );
         assert.match(
             scenarioStyles,

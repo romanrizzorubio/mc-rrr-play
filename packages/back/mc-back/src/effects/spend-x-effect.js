@@ -45,7 +45,8 @@ export class SpendXEffect extends Effect {
             params.card,
             this.resourceType,
             session.getResourcePaymentExcludedCardIds(),
-            session.getRemainingResources()
+            session.getRemainingResources(),
+            this.isCost || params.isCost
         );
     }
     async execute(params) {
@@ -55,7 +56,14 @@ export class SpendXEffect extends Effect {
         this.isPaid = false;
         const paid = params.costPaymentSession ?
             params.costPaymentSession.getPayment(this) :
-            await selectedTarget.spendResourcesX(this.resources, card, resourceType);
+            await selectedTarget.spendResourcesX(
+                this.resources,
+                card,
+                resourceType,
+                new Set(),
+                undefined,
+                this.isCost || params.isCost
+            );
 
         if (paid) {
             this.paid = paid.resources;

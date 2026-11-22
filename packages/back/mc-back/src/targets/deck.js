@@ -8,6 +8,7 @@ import {
     TARGET_PLAYER_EXTRA_DECK_DISCARD,
     TARGET_PLAYER_DISCARD,
     TARGET_ANY_PLAYER,
+    TARGET_PLAYER_DECK,
     TARGET_TOP_CARD,
 } from 'mc-shared';
 import {filterTargetsByCondition} from '../utils/target-condition-utils.js';
@@ -42,6 +43,8 @@ export const deckAndDeckTargets = {
 
         return player.deck.discardPile;
     },
+    [TARGET_PLAYER_DECK]: ({player}) =>
+        player?.deck ? [player.deck] : [],
     [TARGET_PLAYER_EXTRA_DECK]: params => {
         const deck = getPlayerExtraDeck(params);
         const target = params.targetEffect || params.effect;

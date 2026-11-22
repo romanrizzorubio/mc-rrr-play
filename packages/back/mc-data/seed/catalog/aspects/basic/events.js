@@ -740,4 +740,50 @@ export default [
             },
         },
     },
+    {
+        _id: 'basic-ataque-relampago',
+        classification: CLASSIFICATION_BASIC,
+        order: 18020,
+        card: {
+            type: CARD_TYPE_EVENT,
+            params: {
+                name: 'Ataque relámpago',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/events/18020.png',
+                traits: [TRAIT_ATTACK, TRAIT_THWART],
+                cost: 3,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_BASIC,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_ACTION,
+                        params: {
+                            labels: [LABEL_ATTACK, LABEL_THWART],
+                            effect: {
+                                type: EFFECT_CHAINED,
+                                params: {
+                                    effects: [
+                                        {
+                                            type: EFFECT_DEAL_DAMAGE,
+                                            params: {
+                                                target: TARGET_ENEMY,
+                                                damage: 2,
+                                            },
+                                        },
+                                        {
+                                            type: EFFECT_REMOVE_THREAT,
+                                            params: {
+                                                target: TARGET_SCHEME,
+                                                threat: 2,
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
 ];

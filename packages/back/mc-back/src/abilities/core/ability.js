@@ -10,11 +10,11 @@ import {
     TRIGGER_ABILITY_RESOLVED,
 } from 'mc-shared';
 import {Engine} from '../../engine/engine.js';
-import {checkCondition} from '../../engine/utils.js';
 import {Limit} from '../../model/commons/limit.js';
 import {Maximum} from '../../model/commons/maximum.js';
 import {AbilityCosts} from '../../model/costs/ability-costs.js';
 import {getTriggerCardPlayer} from '../../utils/trigger-card-player.js';
+import {checkConditionWithEffectiveTraits} from '../../utils/effective-condition.js';
 import {createEffectInstance} from '../../utils/create-effect-instance.js';
 import {
     canPreselectEffectTarget,
@@ -52,7 +52,9 @@ export class Ability extends Engine {
         match,
         hideDialog = false,
         workInHand = false,
+        workBeforeEnterPlay = false,
         globalScope = false,
+        aspectMarker,
     }) {
         super(arguments[0]);
 
@@ -66,7 +68,9 @@ export class Ability extends Engine {
         this.abilityType = abilityType;
         this.hideDialog = hideDialog;
         this.workInHand = workInHand;
+        this.workBeforeEnterPlay = workBeforeEnterPlay;
         this.globalScope = globalScope;
+        this.aspectMarker = aspectMarker;
         this.match = match;
         this.costs = new AbilityCosts({
             ability: this,
@@ -173,6 +177,16 @@ export class Ability extends Engine {
 
         return this._card;
     }
+    get actor() {
+        const character = this.character;
+        if (character?.isPlayer) {
+            return character.superhero ?? character;
+        }
+
+        return character?.parent?.isSuperhero ?
+            character.parent :
+            character;
+    }
     get id() {
         return `${this.card.id}--${this.name}`;
     }
@@ -210,7 +224,7 @@ export class Ability extends Engine {
             this.abilityType === ABILITY_INTERRUPT ||
             this.abilityType === ABILITY_RESPONSE;
 
-        if (this.card?.printedTextBlank) {
+        if (!this.isBasic && this.card?.printedTextBlank) {
             return false;
         }
 
@@ -229,7 +243,8 @@ export class Ability extends Engine {
             return false;
         }
 
-        if (this.condition && !checkCondition(params, this.condition)) {
+        if (this.condition &&
+            !await checkConditionWithEffectiveTraits(params, this.condition)) {
             return false;
         }
 

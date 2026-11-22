@@ -20,10 +20,18 @@ export class PlaceThreatEffect extends Effect {
         this._threat = threat;
         this.preventThreat = 0;
         this.placedTargets = [];
+        this._calculatedThreat = undefined;
     }
     resetResolutionData() {
         super.resetResolutionData();
         this.placedTargets = [];
+        this._calculatedThreat = undefined;
+    }
+    async prepare(params) {
+        await super.prepare(params);
+        if (this.paramsCalc) {
+            this._calculatedThreat = await this.calculate(params);
+        }
     }
     isResolved() {
         return this.placedTargets.length > 0;
@@ -72,7 +80,18 @@ export class PlaceThreatEffect extends Effect {
     }
     checkTrigger(params) {
         const {preventThreat} = this;
-        const threat = this.getThreat(params);
+        let threat = this.paramsCalc ?
+            this._calculatedThreat :
+            this.threat;
+        if (this.paramsCalc && threat === undefined) {
+            threat = this.getThreat(params);
+            if (threat && typeof threat.then === 'function') {
+                throw new Error(
+                    'PlaceThreatEffect must be prepared before checking an asynchronous threat calculation.'
+                );
+            }
+            this._calculatedThreat = threat;
+        }
         const targets = Array.isArray(this.selectedTarget) ?
             this.selectedTarget :
             [this.selectedTarget];
@@ -90,7 +109,7 @@ export class PlaceThreatEffect extends Effect {
             if (selectedTarget.canPlaceThreat?.() === false) {
                 continue;
             }
-            const threat = this.getThreat(params);
+            const threat = await this.getThreat(params);
 
             placeThreatTokens(selectedTarget, threat);
             this.placedTargets.push(selectedTarget);

@@ -52,7 +52,51 @@ export class PlayerCard extends Card {
         this.isSupport = false;
         this.isUpgrade = false;
     }
-    canPlay(params) {
+    static hasEffectiveTraitsCondition(condition) {
+        if (Array.isArray(condition)) {
+            return condition.some(alternative =>
+                this.hasEffectiveTraitsCondition(alternative));
+        }
+        if (!condition || typeof condition !== 'object') {
+            return false;
+        }
+
+        if (this.isEffectiveTraitsPath(condition.path)) {
+            return true;
+        }
+
+        return Object.entries(condition).some(([key, value]) =>
+            this.isEffectiveTraitsPath(key) ||
+            this.hasEffectiveTraitsCondition(value));
+    }
+    static isEffectiveTraitsPath(path) {
+        return typeof path === 'string' &&
+            (path === 'superhero.traits' ||
+                path.startsWith('superhero.traits.'));
+    }
+    static async checkPlayCondition(player, condition) {
+        const superhero = player?.superhero;
+        if (!this.hasEffectiveTraitsCondition(condition) ||
+            typeof superhero?.getEffectiveTraits !== 'function') {
+            return checkCondition(player, condition);
+        }
+
+        const effectiveTraits = [...new Set([
+            ...superhero.traits,
+            ...await superhero.getEffectiveTraits({player}),
+        ])];
+        const superheroWithEffectiveTraits = Object.create(superhero);
+        Object.defineProperty(superheroWithEffectiveTraits, 'traits', {
+            value: effectiveTraits,
+        });
+        const playerWithEffectiveTraits = Object.create(player);
+        Object.defineProperty(playerWithEffectiveTraits, 'superhero', {
+            value: superheroWithEffectiveTraits,
+        });
+
+        return checkCondition(playerWithEffectiveTraits, condition);
+    }
+    async canPlay(params) {
         const {gameCard} = params;
 
         const sourcePlayer = gameCard?.owner ?? params.player;
@@ -69,7 +113,10 @@ export class PlayerCard extends Card {
         }
 
         if (this.paramsToPlay &&
-            !checkCondition(params.player, this.paramsToPlay)) {
+            !await PlayerCard.checkPlayCondition(
+                params.player,
+                this.paramsToPlay
+            )) {
             return false;
         }
 

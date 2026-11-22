@@ -18,7 +18,7 @@ import {Match} from '../../src/model/match/match.js';
 import {PlayerZone} from '../../src/model/match/player-zone.js';
 
 describe('Preparación física', () => {
-    test('is a shared Basic event and is not included in any hero configuration', async () => {
+    test('is a shared Basic event referenced by Drax’s precon', async () => {
         const catalog = await loadCatalog();
         const record = catalog.aspects.find(({_id}) =>
             _id === 'basic-preparacion-fisica');
@@ -48,8 +48,12 @@ describe('Preparación física', () => {
                 },
             ],
         });
-        assert.ok(catalog.heroes.every(({config}) =>
-            !JSON.stringify(config).includes(record._id)));
+        const preconReferences = catalog.heroes.flatMap(({_id, config}) =>
+            (config.precon || []).flatMap(({cardRefs}) =>
+                cardRefs
+                    .filter(({id}) => id === record._id)
+                    .map(({count}) => ({heroId: _id, count}))));
+        assert.deepEqual(preconReferences, [{heroId: 'drax', count: 3}]);
     });
 
     test('lets the Hero discard one Stunned or Confused status card', async () => {

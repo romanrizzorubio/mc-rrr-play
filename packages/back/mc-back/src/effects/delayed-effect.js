@@ -22,6 +22,16 @@ export class DelayedEffect extends Effect {
         this.at = at;
         this.effect = effect;
     }
+    get ability() {
+        return super.ability;
+    }
+    set ability(ability) {
+        super.ability = ability;
+
+        if (this.effect) {
+            this.effect.ability = ability;
+        }
+    }
     execute(params) {
         const {card, player} = params;
         const {selectedTarget, effect} = this;

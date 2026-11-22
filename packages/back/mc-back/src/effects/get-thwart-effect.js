@@ -1,5 +1,6 @@
 import {
     TRIGGER_ATTACHED_GET_THWART,
+    TRIGGER_CHARACTER_GET_THWART,
     TRIGGER_SCHEME_GET_THWART,
     TRIGGER_THIS_GET_THWART,
     TRIGGER_YOUR_HERO_GET_THWART
@@ -30,6 +31,7 @@ export class GetThwartEffect extends Effect {
         const triggers = super.getTriggersInit()
             .concat([
                 TRIGGER_YOUR_HERO_GET_THWART,
+                TRIGGER_CHARACTER_GET_THWART,
                 TRIGGER_THIS_GET_THWART,
                 TRIGGER_ATTACHED_GET_THWART,
             ]);

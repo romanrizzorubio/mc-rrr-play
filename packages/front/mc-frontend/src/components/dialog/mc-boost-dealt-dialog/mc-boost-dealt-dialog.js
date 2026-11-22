@@ -108,7 +108,7 @@ export class McBoostDealtDialog extends McDialog {
                                 .canPeekFacedown="${Boolean(!this.readOnly && boostCard.card.canPeekFacedown)}"
                                 .facedownImage="${BACK_CARD_ENCOUNTER}"
                                 size="${size}"
-                                ?horizontal="${boostCard.horizontal}"
+                                ?horizontal="${boostCard.horizontal && !isFacedown}"
                                 .generic="${boostCard.card.counters}"
                                 .showGeneric="${Boolean(boostCard.card.counters)}"
                             ></mc-card>

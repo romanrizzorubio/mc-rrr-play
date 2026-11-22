@@ -2,13 +2,25 @@ import {
     CLASSIFICATION_BASIC,
     ABILITY_CONSTANT,
     ABILITY_FORCED_RESPONSE,
+    ABILITY_HERO_RESPONSE,
     ABILITY_INTERRUPT,
     ABILITY_RESPONSE,
     CARD_TYPE_ALLY,
+    CARD_TYPE_ALTEREGO,
+    CARD_TYPE_HERO,
+    CARD_TYPE_MAIN_SCHEME_A_CARD,
+    CARD_TYPE_MAIN_SCHEME_B_CARD,
+    CARD_TYPE_VILLAIN,
     EFFECT_CHAINED,
+    EFFECT_CANNOT_ATTACK,
     EFFECT_CHOOSE,
+    EFFECT_CHOOSE_CARD_TYPE,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_FROM_DECK,
+    EFFECT_DISCARD_UNTIL,
+    EFFECT_DO_IF,
     EFFECT_HEAL,
+    EFFECT_MOVE_TO_HAND,
     EFFECT_DISCARD_GAME,
     EFFECT_DRAW_CARD,
     EFFECT_LASTING,
@@ -16,17 +28,22 @@ import {
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_REMOVE_THREAT,
     EFFECT_MODIFY_THWART_VALUE,
+    EFFECT_PREVENT_CONSEQUENTIAL_DAMAGE,
     EFFECT_SELECT_AND_ORDER_TOP_CARDS,
     EFFECT_STUN,
     PLACE_DISCARD_PILE,
     RESOURCE_MENTAL,
+    RESOURCE_ENERGY,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
     TARGET_CARD,
+    TARGET_ANY_DECK,
     TARGET_ENCOUNTER_DECK,
     TARGET_ENEMY,
     TARGET_EFFECT,
+    TARGET_PARENT,
     TARGET_SCHEME,
+    TARGET_SOURCE,
     TARGET_THIS,
     TARGET_YOU,
     TIME_PHASE,
@@ -40,6 +57,7 @@ import {
     TRAIT_INHUMAN,
     TRIGGER_CARD_ENTER_PLAY,
     TRIGGER_THIS_ATTACK,
+    TRIGGER_THIS_THWARTS,
     TRIGGER_CHARACTER_DEFENDED_ATTACK,
     TRIGGER_YOU_END_PLAY_CARD,
 } from 'mc-shared';
@@ -439,6 +457,7 @@ export default [
                 'set': CLASSIFICATION_BASIC,
                 'image': 'aspect/basic/allies/16019.png',
                 'traits': [TRAIT_GUARDIAN],
+                'unique': true,
                 'cost': 3,
                 'resources': [RESOURCE_WILD],
                 'classification': CLASSIFICATION_BASIC,
@@ -522,6 +541,181 @@ export default [
                                 'params': {
                                     'target': TARGET_THIS,
                                     'damage': 2,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        '_id': 'basic-cosmo',
+        'classification': CLASSIFICATION_BASIC,
+        'order': 17020,
+        'card': {
+            'type': CARD_TYPE_ALLY,
+            'params': {
+                'name': 'Cosmo',
+                'set': CLASSIFICATION_BASIC,
+                'image': 'aspect/basic/allies/17020.png',
+                'traits': [TRAIT_GUARDIAN],
+                'unique': true,
+                'cost': 2,
+                'resources': [RESOURCE_MENTAL],
+                'classification': CLASSIFICATION_BASIC,
+                'attack': 1,
+                'thwart': 1,
+                'attackConsequential': 1,
+                'thwartConsequential': 1,
+                'hitPoints': 2,
+                'abilities': [
+                    {
+                        'type': ABILITY_INTERRUPT,
+                        'params': {
+                            'trigger': [
+                                TRIGGER_THIS_ATTACK,
+                                TRIGGER_THIS_THWARTS,
+                            ],
+                            'effect': {
+                                'type': EFFECT_CHAINED,
+                                'params': {
+                                    'target': TARGET_ANY_DECK,
+                                    'dialogTitle': 'Elige un mazo',
+                                    'effects': [
+                                        {
+                                            'type': EFFECT_CHOOSE_CARD_TYPE,
+                                            'params': {
+                                                'target': TARGET_PARENT,
+                                                'excludeCardTypes': [
+                                                    CARD_TYPE_VILLAIN,
+                                                    CARD_TYPE_HERO,
+                                                    CARD_TYPE_ALTEREGO,
+                                                    CARD_TYPE_MAIN_SCHEME_A_CARD,
+                                                    CARD_TYPE_MAIN_SCHEME_B_CARD,
+                                                ],
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DISCARD_FROM_DECK,
+                                            'params': {
+                                                'target': TARGET_PARENT,
+                                                'count': 1,
+                                                'showDialog': true,
+                                            },
+                                        },
+                                        {
+                                            'type': EFFECT_DO_IF,
+                                            'params': {
+                                                'condition': {
+                                                    'effects.1.cards.0.type': {
+                                                        'operator': 'eq',
+                                                        'path': 'namedCardType',
+                                                    },
+                                                },
+                                                'effect': {
+                                                    'type': EFFECT_PREVENT_CONSEQUENTIAL_DAMAGE,
+                                                    'params': {},
+                                                },
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-drax',
+        classification: CLASSIFICATION_BASIC,
+        order: 18019,
+        card: {
+            type: CARD_TYPE_ALLY,
+            params: {
+                name: 'Drax',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/allies/18019.png',
+                traits: [TRAIT_GUARDIAN],
+                unique: true,
+                cost: 3,
+                resources: [RESOURCE_PHYSICAL],
+                classification: CLASSIFICATION_BASIC,
+                paramsToPlay: {
+                    'superhero.traits': TRAIT_GUARDIAN,
+                },
+                thwart: 1,
+                attack: 3,
+                thwartConsequential: 1,
+                attackConsequential: 1,
+                hitPoints: 4,
+                abilities: [
+                    {
+                        type: ABILITY_CONSTANT,
+                        params: {
+                            validation: {
+                                type: EFFECT_CANNOT_ATTACK,
+                                params: {
+                                    targetCondition: {isMinion: true},
+                                    effectCondition: {
+                                        'effect.character.name': 'Drax',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+    {
+        _id: 'basic-gamora',
+        classification: CLASSIFICATION_BASIC,
+        order: 19020,
+        card: {
+            type: CARD_TYPE_ALLY,
+            params: {
+                name: 'Gamora',
+                set: CLASSIFICATION_BASIC,
+                image: 'aspect/basic/allies/19020.png',
+                traits: [TRAIT_GUARDIAN],
+                unique: true,
+                cost: 3,
+                resources: [RESOURCE_ENERGY],
+                classification: CLASSIFICATION_BASIC,
+                paramsToPlay: {
+                    'superhero.currentSide.traits': TRAIT_GUARDIAN,
+                },
+                attack: 2,
+                attackConsequential: 1,
+                thwart: 1,
+                thwartConsequential: 1,
+                hitPoints: 3,
+                abilities: [
+                    {
+                        type: ABILITY_HERO_RESPONSE,
+                        params: {
+                            trigger: [
+                                TRIGGER_THIS_ATTACK,
+                                TRIGGER_THIS_THWARTS,
+                            ],
+                            effect: {
+                                type: EFFECT_DISCARD_UNTIL,
+                                params: {
+                                    target: TARGET_YOU,
+                                    condition: {
+                                        isEvent: true,
+                                    },
+                                    showDiscardedCards: true,
+                                    thenEffect: {
+                                        type: EFFECT_MOVE_TO_HAND,
+                                        params: {
+                                            target: TARGET_SOURCE,
+                                            source: 'selectedCards',
+                                        },
+                                    },
                                 },
                             },
                         },

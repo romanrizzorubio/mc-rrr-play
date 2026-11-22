@@ -1,5 +1,14 @@
 import {AsyncLocalStorage} from 'node:async_hooks';
-import {TRIGGER_PLAYER_CAN_PLAY} from 'mc-shared';
+import {
+    ABILITY_ALTEREGO_INTERRUPT,
+    ABILITY_ALTEREGO_RESPONSE,
+    ABILITY_CONSTANT,
+    ABILITY_HERO_INTERRUPT,
+    ABILITY_HERO_RESPONSE,
+    ABILITY_INTERRUPT,
+    ABILITY_RESPONSE,
+    TRIGGER_PLAYER_CAN_PLAY,
+} from 'mc-shared';
 
 import {
     getTriggerCardPlayer,
@@ -11,6 +20,14 @@ function isLastingAbility(ability) {
 }
 
 export class Trigger {
+    static #playableEventAbilityTypes = new Set([
+        ABILITY_INTERRUPT,
+        ABILITY_RESPONSE,
+        ABILITY_HERO_INTERRUPT,
+        ABILITY_HERO_RESPONSE,
+        ABILITY_ALTEREGO_INTERRUPT,
+        ABILITY_ALTEREGO_RESPONSE,
+    ]);
     static #triggeredEffectsByTrigger = new WeakMap();
     static #resolutionQueuesByTrigger = new WeakMap();
     static #resolutionContext = new AsyncLocalStorage();
@@ -101,8 +118,15 @@ export class Trigger {
 
         if (this.card?.isEvent &&
             !isLastingAbility(ability)) {
-            if (!isEventInPlayerHand(this.card, abilityParams.player)) {
+            const isPlayingConstant = this.card.isPlaying &&
+                ability?.abilityType === ABILITY_CONSTANT;
+            if (!isPlayingConstant &&
+                !isEventInPlayerHand(this.card, abilityParams.player)) {
                 return false;
+            }
+
+            if (isPlayingConstant) {
+                return canTriggerAbility();
             }
 
             const canPlayEvent = typeof this.card.canPlay === 'function' ?
@@ -112,19 +136,49 @@ export class Trigger {
                 }) :
                 true;
 
-            return Promise.resolve(canPlayEvent).then(canPlay => {
+            return Promise.resolve(canPlayEvent).then(async canPlay => {
                 if (!canPlay) {
                     return false;
                 }
 
                 if (this.trigger !== TRIGGER_PLAYER_CAN_PLAY &&
-                    typeof abilityParams.player?.canPlayCard === 'function') {
-                    return Promise.resolve(
-                        abilityParams.player.canPlayCard({card: this.card})
-                    ).then(canPlay => canPlay ? canTriggerAbility() : false);
+                    typeof abilityParams.player?.canPlayCard === 'function' &&
+                    !await abilityParams.player.canPlayCard({
+                        card: this.card,
+                    })) {
+                    return false;
                 }
 
-                return canTriggerAbility();
+                if (!await canTriggerAbility()) {
+                    return false;
+                }
+
+                if (!Trigger.#playableEventAbilityTypes.has(
+                    ability?.abilityType
+                )) {
+                    return true;
+                }
+
+                const player = abilityParams.player;
+                if (typeof player?.canPayEventResourceCost !== 'function') {
+                    const requirement = this.card.requirement ??
+                        this.card.card?.requirement ??
+                        [];
+                    if ((this.card.cost ?? 0) === 0 &&
+                        requirement.length === 0) {
+                        return true;
+                    }
+
+                    throw new TypeError(
+                        'Event cost availability requires a player payment check.'
+                    );
+                }
+
+                return player.canPayEventResourceCost({
+                    ...abilityParams,
+                    ability,
+                    card: this.card,
+                });
             });
         }
 
@@ -259,7 +313,9 @@ export class Trigger {
             await Trigger.#resolutionContext.run(
                 [...resolutionContext, this],
                 async () => {
-                    if (card.isEvent && !isLastingAbility(ability)) {
+                    if (card.isEvent &&
+                        !isLastingAbility(ability) &&
+                        ability?.abilityType !== ABILITY_CONSTANT) {
                         await this.runEvent(params);
                     } else {
                         await this.runCard(params);
