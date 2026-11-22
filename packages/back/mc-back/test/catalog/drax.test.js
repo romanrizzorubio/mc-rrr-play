@@ -126,7 +126,7 @@ describe('Drax', () => {
         return {...fixture, scenario};
     };
 
-    test('defines both identities, fixed card counts, optional encounter data, and the supplied precon', async () => {
+    test('defines both identities, fixed card counts, nemesis data, and the supplied precon', async () => {
         const {catalog, hero} = await createFixture();
         const [alterEgo, drax] = hero.config.sides;
         const aspectCards = new Map(catalog.aspects.map(({_id, card}) =>
@@ -149,8 +149,8 @@ describe('Drax', () => {
             drax.params.handSize,
             drax.params.hitPoints,
         ], [1, 1, 2, 4, 14]);
-        assert.equal(hero.config.obligation, undefined);
-        assert.deepEqual(hero.config.nemesis, []);
+        assert.equal(hero.config.obligation.card.params.name, 'Recuerdos de otra vida');
+        assert.equal(hero.config.nemesis.length, 4);
         assert.equal(findFixedCard(hero, 'Mantis').card.params.unique, true);
 
         assert.deepEqual(
@@ -935,6 +935,97 @@ describe('Drax', () => {
         await resolveVillainAttackResponse();
         assert.equal(superhero.counters, 3);
         assert.ok(player.hand.cards.includes(topCard));
+    });
+
+    test('responds only when the Villain attack targets Drax, regardless of its defender', async () => {
+        const {match, player, superhero} = await createFixture();
+        const otherPlayer = {
+            id: 'other-player',
+            isPlayer: true,
+            defenders: [],
+        };
+        const otherSuperhero = {
+            isSuperhero: true,
+            currentSide: {
+                isHero: true,
+                owner: otherPlayer,
+            },
+        };
+        const ally = {isAlly: true, owner: player};
+        const responseTrigger = superhero.currentSide.triggers[
+            TRIGGER_VILLAIN_ATTACKS_YOU
+        ][PRIORITY_RESPONSE][0];
+        const checkResponse = async (
+            attackTarget,
+            defender,
+            attackPlayer,
+            enemy = {isVillain: true, name: 'Rino'},
+        ) => {
+            const attack = new EnemyAttackEffect({
+                enemy,
+                match,
+                selectedTarget: attackTarget,
+                giveBoost: false,
+            });
+            attack.trigger = async () => true;
+            await attack.setDefender(
+                defender,
+                attackTarget,
+                {match, player: attackPlayer},
+                {exhaust: false, isBasicDefense: false},
+            );
+            attack.attacked = defender ?
+                (defender.isSuperhero ? defender.currentSide : defender) :
+                attackTarget;
+            attack.resolved = true;
+
+            return responseTrigger.canTrigger(
+                attack.getTriggersParams({match, player: attackPlayer}),
+            );
+        };
+
+        assert.equal(Boolean(await checkResponse(ally, superhero, player)), true);
+        assert.equal(Boolean(await checkResponse(otherPlayer, superhero, otherPlayer)), true);
+        assert.equal(Boolean(await checkResponse(player, ally, player)), false);
+        assert.equal(Boolean(await checkResponse(player, otherSuperhero, player)), false);
+        assert.equal(Boolean(await checkResponse(player, superhero, player)), true);
+        const undefendedAttack = new EnemyAttackEffect({
+            enemy: {isVillain: true, name: 'Rino'},
+            match,
+            selectedTarget: player,
+            giveBoost: false,
+        });
+        undefendedAttack.attacked = player;
+        undefendedAttack.resolved = true;
+        assert.equal(Boolean(await responseTrigger.canTrigger(
+            undefendedAttack.getTriggersParams({match, player}),
+        )), true);
+
+        const interruptedAttack = new EnemyAttackEffect({
+            enemy: {isVillain: true, name: 'Rino'},
+            match,
+            selectedTarget: player,
+            giveBoost: false,
+        });
+        interruptedAttack.resolved = true;
+        assert.equal(Boolean(await responseTrigger.canTrigger(
+            interruptedAttack.getTriggersParams({match, player}),
+        )), false);
+
+        const multiTargetAttack = new EnemyAttackEffect({
+            enemy: {isVillain: true, name: 'Rino'},
+            match,
+            selectedTarget: [player, otherPlayer],
+            giveBoost: false,
+        });
+        multiTargetAttack.attacked = [
+            ally,
+            superhero.currentSide,
+        ];
+        multiTargetAttack.resolved = true;
+        assert.equal(Boolean(await responseTrigger.canTrigger(
+            multiTargetAttack.getTriggersParams({match, player}),
+        )), true);
     });
 
     test('Maestro de dwi theet draws after Drax makes a basic attack', async () => {

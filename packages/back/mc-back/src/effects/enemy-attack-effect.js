@@ -48,6 +48,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.enemyTargetEffect = params.enemyTargetEffect;
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
+        this.attackTarget = params.selectedTarget;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget = new Map();
@@ -70,6 +71,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         this.resetAttackModifierData();
         this.modifyAttack = 0;
         this._attackModifierResolved = false;
+        this.attackTarget = undefined;
         this.defender = null;
         this.defValue = 0;
         this.defendersByTarget.clear();
@@ -664,6 +666,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
         if (!this.originalAttackTarget) {
             this.originalAttackTarget = this.selectedTarget;
         }
+        this.attackTarget = targets;
         this.selectedTarget = targets;
     }
     addDefenderCondition(condition) {
@@ -771,6 +774,7 @@ export class EnemyAttackEffect extends AttackEffect(EnemyActivationEffect) {
             const defendingPlayer = this.getTargetPlayer(this.defender);
             this.defendingPlayersByTarget.set(attackTarget, defendingPlayer);
             if (!Array.isArray(this.selectedTarget)) {
+                this.attackTarget ??= this.selectedTarget;
                 this.selectedTarget = defendingPlayer;
             }
 
