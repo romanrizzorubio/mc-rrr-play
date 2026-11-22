@@ -1,6 +1,8 @@
+import {OPERATOR_MAX, OPERATOR_MIN} from 'mc-shared';
+
 import {checkCondition, path} from '../engine/utils.js';
 
-const AGGREGATE_OPERATORS = new Set(['max', 'min']);
+const AGGREGATE_OPERATORS = new Set([OPERATOR_MAX, OPERATOR_MIN]);
 const AGGREGATE_CONDITION_KEYS = new Set(['operator', 'defaultValue']);
 
 export const filterTargetsByCondition = (targets, condition) =>
@@ -60,7 +62,7 @@ const getAggregateCondition = (condition, property) => {
     }
 
     const defaultValue = condition.defaultValue ??
-        (operator === 'max' ? 0 : Number.MAX_SAFE_INTEGER);
+        (operator === OPERATOR_MAX ? 0 : Number.MAX_SAFE_INTEGER);
     if (!Number.isFinite(defaultValue)) {
         throw new TypeError(
             `The ${operator} target condition for "${property}" requires a finite defaultValue.`
@@ -125,7 +127,7 @@ export const filterTargetCandidates = (targets, selectionConditions) =>
 
             return comparableValue;
         });
-        const selectedValue = operator === 'min' ?
+        const selectedValue = operator === OPERATOR_MIN ?
             Math.min(...values) :
             Math.max(...values);
 

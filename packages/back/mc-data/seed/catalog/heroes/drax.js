@@ -5,12 +5,20 @@ import {
     ABILITY_HERO_ACTION,
     ABILITY_HERO_INTERRUPT,
     ABILITY_HERO_RESPONSE,
+    ABILITY_OPTION,
     ABILITY_RESPONSE,
+    ABILITY_WHEN_REVEALED_ALTEREGO,
+    ABILITY_WHEN_REVEALED_HERO,
     CHARACTER_VILLAIN,
     CARD_TYPE_ALTEREGO,
     CARD_TYPE_ALLY,
+    CARD_TYPE_ATTACHMENT,
     CARD_TYPE_EVENT,
     CARD_TYPE_HERO,
+    CARD_TYPE_MINION,
+    CARD_TYPE_OBLIGATION,
+    CARD_TYPE_SIDE_SCHEME_SCENARIO,
+    CARD_TYPE_TREACHERY,
     CARD_TYPE_UPGRADE,
     CALC_ATTACK,
     CALC_COUNTERS,
@@ -19,13 +27,16 @@ import {
     CLASSIFICATION_HERO,
     CLASSIFICATION_PROTECTION,
     EFFECT_CHAINED,
+    EFFECT_CHOOSE_ABILITY,
     EFFECT_DEAL_DAMAGE,
+    EFFECT_DISCARD_GAME,
     EFFECT_DO_IF,
     EFFECT_DRAW_CARD,
     EFFECT_ENEMY_ATTACK,
     EFFECT_EXHAUST,
     EFFECT_FLIP,
     EFFECT_HEAL,
+    EFFECT_MAY,
     EFFECT_MODIFY_ATTACK,
     EFFECT_MODIFY_ATTACK_VALUE,
     EFFECT_MODIFY_COST,
@@ -39,14 +50,22 @@ import {
     EFFECT_REMOVE_THREAT,
     EFFECT_SET_LIFE,
     EFFECT_SIMULTANEOUS,
+    EFFECT_STUN,
+    EFFECT_SURGE,
     LABEL_ATTACK,
     LABEL_DEFENSE,
     LABEL_THWART,
+    OPERATOR_MAX,
     RESOURCE_ENERGY,
     RESOURCE_MENTAL,
     RESOURCE_PHYSICAL,
     RESOURCE_WILD,
+    TARGET_ALTEREGO,
     TARGET_ALTEREGO_SIDE,
+    TARGET_ALL_ENEMIES,
+    TARGET_ATTACHED,
+    TARGET_CARD,
+    TARGET_CONDITION_CARD,
     TARGET_EFFECT,
     TARGET_FRIENDLY_CHARACTER,
     TARGET_SCHEME,
@@ -55,6 +74,7 @@ import {
     TARGET_YOU,
     TARGET_YOUR_HERO,
     TARGET_YOUR_SUPERHERO,
+    TRAIT_BRUTE,
     TRAIT_ATTACK,
     TRAIT_CONDITION,
     TRAIT_DEFENSE,
@@ -63,10 +83,13 @@ import {
     TRAIT_SKILL,
     TRAIT_THWART,
     TRAIT_WEAPON,
+    TRIGGER_CHARACTER_GET_ATTACK,
+    TRIGGER_INSTANT,
     TRIGGER_CHARACTER_WOULD_BE_DEFEATED,
     TRIGGER_CHARACTER_WOULD_TAKE_DAMAGE,
     TRIGGER_THIS_FLIP,
     TRIGGER_THIS_PLAY_CARD,
+    TRIGGER_YOU_DEAL_DAMAGE,
     TRIGGER_VILLAIN_ATTACKS_YOU,
     TRIGGER_YOU_BASIC_ATTACK,
     TRIGGER_YOUR_HERO_GET_ATTACK,
@@ -616,6 +639,273 @@ const tooStubbornToDie = {
     },
 };
 
+const memoriesFromAnotherLife = {
+    type: CARD_TYPE_OBLIGATION,
+    params: {
+        name: 'Recuerdos de otra vida',
+        set: draxSet,
+        image: 'heroes/drax/19025.png',
+        boost: 2,
+        giveToOwner: true,
+        triggerInstant: true,
+        abilities: [
+            {
+                type: ABILITY_CONSTANT,
+                params: {
+                    name: 'Adoptar la identidad de tu Alter ego',
+                    trigger: TRIGGER_INSTANT,
+                    effect: {
+                        type: EFFECT_MAY,
+                        params: {
+                            effect: {
+                                type: EFFECT_FLIP,
+                                params: {
+                                    target: TARGET_YOUR_SUPERHERO,
+                                    formTarget: TARGET_ALTEREGO_SIDE,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                type: ABILITY_CONSTANT,
+                params: {
+                    name: 'Resolver la Obligación',
+                    trigger: TRIGGER_INSTANT,
+                    effect: {
+                        type: EFFECT_CHOOSE_ABILITY,
+                        params: {
+                            options: [
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Agota tu Alter ego → retira del juego Recuerdos de otra vida',
+                                        arrow: {
+                                            type: EFFECT_EXHAUST,
+                                            params: {
+                                                target: TARGET_ALTEREGO,
+                                            },
+                                        },
+                                        effect: {
+                                            type: EFFECT_REMOVE_CARD,
+                                            params: {
+                                                target: TARGET_CARD,
+                                            },
+                                        },
+                                    },
+                                },
+                                {
+                                    type: ABILITY_OPTION,
+                                    params: {
+                                        name: 'Quedas aturdido. Si ya estabas aturdido, esta carta gana Oleada. Descarta esta Obligación.',
+                                        effect: {
+                                            type: EFFECT_DO_IF,
+                                            params: {
+                                                condition: {
+                                                    'player.isStunned': true,
+                                                },
+                                                effect: {
+                                                    type: EFFECT_CHAINED,
+                                                    params: {
+                                                        effects: [
+                                                            {
+                                                                type: EFFECT_SURGE,
+                                                                params: {},
+                                                            },
+                                                            {
+                                                                type: EFFECT_DISCARD_GAME,
+                                                                params: {
+                                                                    target: TARGET_CARD,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                                effectNot: {
+                                                    type: EFFECT_CHAINED,
+                                                    params: {
+                                                        effects: [
+                                                            {
+                                                                type: EFFECT_STUN,
+                                                                params: {
+                                                                    target: TARGET_YOU,
+                                                                },
+                                                            },
+                                                            {
+                                                                type: EFFECT_DISCARD_GAME,
+                                                                params: {
+                                                                    target: TARGET_CARD,
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
+
+const sacrificeTheWeak = {
+    type: CARD_TYPE_SIDE_SCHEME_SCENARIO,
+    params: {
+        name: 'Sacrifica a los débiles',
+        set: draxSet,
+        image: 'heroes/drax/19026.png',
+        startingThreat: [2, true],
+        boost: 2,
+        abilities: [
+            {
+                type: ABILITY_CONSTANT,
+                params: {
+                    trigger: TRIGGER_CHARACTER_GET_ATTACK,
+                    triggerParams: {
+                        target: TARGET_ALL_ENEMIES,
+                    },
+                    effect: {
+                        type: EFFECT_MODIFY_ATTACK_VALUE,
+                        params: {
+                            target: TARGET_EFFECT,
+                            count: 2,
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
+
+const yotatTheDestroyer = {
+    type: CARD_TYPE_MINION,
+    params: {
+        name: 'Yotat el Destructor',
+        set: draxSet,
+        image: 'heroes/drax/19027.png',
+        unique: true,
+        nemesis: true,
+        traits: [TRAIT_BRUTE],
+        attack: 3,
+        scheme: 1,
+        hitPoints: 5,
+        keywords: {
+            guard: true,
+            retaliate: 1,
+        },
+        boost: 3,
+    },
+};
+
+const acceptedChallenge = {
+    type: CARD_TYPE_ATTACHMENT,
+    params: {
+        name: 'Reto aceptado',
+        set: draxSet,
+        image: 'heroes/drax/19028.png',
+        attach: {
+            target: TARGET_CONDITION_CARD,
+            condition: {
+                attack: {
+                    operator: OPERATOR_MAX,
+                },
+            },
+        },
+        keywords: {
+            surge: true,
+        },
+        boost: 1,
+        attack: 2,
+        abilities: [
+            {
+                type: ABILITY_FORCED_RESPONSE,
+                params: {
+                    trigger: TRIGGER_YOU_DEAL_DAMAGE,
+                    triggerParams: {
+                        target: TARGET_ATTACHED,
+                    },
+                    condition: {
+                        'effect.isAttack': true,
+                        'effect.character.name': 'Drax',
+                        'effect.takenDamage': '>3',
+                    },
+                    effect: {
+                        type: EFFECT_DISCARD_GAME,
+                        params: {
+                            target: TARGET_THIS,
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
+
+const illDestroyYou = {
+    type: CARD_TYPE_TREACHERY,
+    params: {
+        name: '¡Te destruiré!',
+        set: draxSet,
+        image: 'heroes/drax/19029.png',
+        boost: 2,
+        abilities: [
+            {
+                type: ABILITY_WHEN_REVEALED_ALTEREGO,
+                params: {
+                    effect: {
+                        type: EFFECT_SURGE,
+                        params: {},
+                    },
+                },
+            },
+            {
+                type: ABILITY_WHEN_REVEALED_HERO,
+                params: {
+                    effect: {
+                        type: EFFECT_CHAINED,
+                        params: {
+                            effects: [
+                                {
+                                    type: EFFECT_ENEMY_ATTACK,
+                                    params: {
+                                        enemyType: TARGET_CONDITION_CARD,
+                                        condition: {
+                                            name: 'Yotat el Destructor',
+                                        },
+                                        attackModifier: 1,
+                                        target: TARGET_YOU,
+                                    },
+                                },
+                                {
+                                    type: EFFECT_DO_IF,
+                                    params: {
+                                        condition: {
+                                            'effects.0.resolved': false,
+                                        },
+                                        effect: {
+                                            type: EFFECT_ENEMY_ATTACK,
+                                            params: {
+                                                enemyType: CHARACTER_VILLAIN,
+                                                target: TARGET_YOU,
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ],
+    },
+};
+
 export default {
     _id: 'drax',
     order: 20,
@@ -660,6 +950,15 @@ export default {
                 ],
             },
         ],
-        nemesis: [],
+        obligation: {
+            count: 1,
+            card: memoriesFromAnotherLife,
+        },
+        nemesis: [
+            {count: 1, card: sacrificeTheWeak},
+            {count: 1, card: yotatTheDestroyer},
+            {count: 1, card: acceptedChallenge},
+            {count: 2, card: illDestroyYou},
+        ],
     },
 };
