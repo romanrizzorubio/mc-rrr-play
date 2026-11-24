@@ -35,6 +35,7 @@ import {
     DIALOG_SELECT_TARGET,
     MATCH_END_REASON_ALL_HEROES_DEFEATED,
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
+    MATCH_END_REASON_SCENARIO_FAILED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
     PLACE_DISCARD_PILE,
     PLACE_TUCKED,
@@ -765,6 +766,65 @@ class McApp extends router(navigator(outlet(LitElement))) {
             tableInspection: this.tableConsultationMode,
         });
     }
+    handleViewVictoryDisplay() {
+        const cards = this.match?.victoryDisplay || [];
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title: 'Zona de victoria',
+            subtitle: cards.length ?
+                'Cartas en la zona de victoria.' :
+                'No hay cartas en la zona de victoria.',
+            data: {cards},
+            callback: () => {},
+            tableInspection: this.tableConsultationMode,
+        });
+    }
+    handleViewAdditionalZone(e) {
+        const zoneId = e.detail?.zoneId;
+        const scenario = this.match?.scenario;
+        const zone = scenario?.additionalZones?.[zoneId];
+        if (!zone) {
+            return;
+        }
+
+        const cards = (zone.cards || []).map(card => ({
+            ...card,
+            displayInfo: (zone.displayCardInfo || []).flatMap(info => {
+                const scenarioOwner =
+                    card.additionalInfo?.scenarioOwner === scenario.name;
+                const ownerInfo = info.id === 'owner' ||
+                    info.id === 'scenarioOwner';
+                if (ownerInfo &&
+                    ((info.id === 'owner' && scenarioOwner) ||
+                        (info.id === 'scenarioOwner' && !scenarioOwner))) {
+                    return [];
+                }
+
+                const value = info.id === 'scenarioOwner' ?
+                    scenario.villain?.name :
+                    card.additionalInfo?.[info.id];
+                if (value === undefined || value === null || value === '') {
+                    return [];
+                }
+
+                return [{
+                    label: ownerInfo ? '' : info.label,
+                    value,
+                }];
+            }),
+        }));
+        this.openDialog({
+            dialogType: DIALOG_REVEAL_CARDS,
+            title: zone.name,
+            hideResponsiblePlayer: true,
+            data: {
+                cards,
+                rotatePlanCards: true,
+            },
+            callback: () => {},
+            tableInspection: this.tableConsultationMode,
+        });
+    }
     showAlert(msg) {
         this.alert = {
             msg,
@@ -1212,6 +1272,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
                 '¡Has ganado la partida! Has derrotado al villano.',
             [MATCH_END_REASON_ALL_HEROES_DEFEATED]:
                 'Has perdido la partida porque todos los superhéroes han sido derrotados.',
+            [MATCH_END_REASON_SCENARIO_FAILED]:
+                'Has perdido la partida porque el escenario ha fracasado.',
         };
         const gameOverMessage = gameOverMessages[match.gameOverReason];
         if (gameOverMessage && this.gameOverNotice !== gameOverNotice) {
@@ -1609,6 +1671,8 @@ class McApp extends router(navigator(outlet(LitElement))) {
                                   @view-known-cards="${this.handleViewKnownCards.bind(this)}"
                                   @view-tucked-cards="${this.handleViewTuckedCards.bind(this)}"
                                   @view-player-hand="${this.handleViewPlayerHand.bind(this)}"
+                                  @view-victory-display="${this.handleViewVictoryDisplay.bind(this)}"
+                                  @view-additional-zone="${this.handleViewAdditionalZone.bind(this)}"
                                   @communication-error="${this.handleCommunicationError.bind(this)}"
                                   @dialog-deck-target-select="${this.handleDeckTargetDialogSelect.bind(this)}"
                               ></mc-match-page>

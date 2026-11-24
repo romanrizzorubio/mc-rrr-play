@@ -809,6 +809,17 @@ export class Effect extends Engine {
                 this.getForcedInterruptTriggersEnds(effectParams),
         });
     }
+    refreshMatchAfterResolution(params) {
+        const resolutionContext = params?.[EFFECT_RESOLUTION_CONTEXT];
+        if (resolutionContext) {
+            resolutionContext.afterResolution.set(this.match, () =>
+                this.match.refresh()
+            );
+            return;
+        }
+
+        return this.match.refresh();
+    }
     async runEffect(params) {
         const resolutionContext = params[EFFECT_RESOLUTION_CONTEXT] || {
             depth: 0,

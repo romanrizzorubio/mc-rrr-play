@@ -1,5 +1,6 @@
 import {
     EFFECT_ADD_ACCELERATION_TOKEN,
+    EFFECT_ADD_TO_ADDITIONAL_ZONE,
     EFFECT_ADVANCE_MAIN_SCHEME_STAGE,
     EFFECT_ADD_SCENARIO_VILLAIN,
     EFFECT_START_SCENARIO_SPLIT,
@@ -40,6 +41,7 @@ import {
     EFFECT_DEAL_ENCOUNTER,
     EFFECT_DEFEAT,
     EFFECT_WIN_GAME,
+    EFFECT_LOSE_GAME,
     EFFECT_DELAYED,
     EFFECT_DISCARD_CONDITION_HAND,
     EFFECT_DISCARD_DRAW,
@@ -151,6 +153,7 @@ import {
 } from 'mc-shared';
 
 import {AddAccelerationTokenEffect} from '../../effects/add-acceleration-token-effect.js';
+import {AddToAdditionalZoneEffect} from '../../effects/add-to-additional-zone-effect.js';
 import {AdvanceMainSchemeStageEffect} from '../../effects/advance-main-scheme-stage-effect.js';
 import {AddScenarioVillainEffect} from '../../effects/add-scenario-villain-effect.js';
 import {StartScenarioSplitEffect} from '../../effects/start-scenario-split-effect.js';
@@ -195,6 +198,7 @@ import {DealDamageEffect} from '../../effects/deal-damage-effect.js';
 import {DealEncounterEffect} from '../../effects/deal-encounter-effect.js';
 import {DefeatEffect} from '../../effects/defeat-effect.js';
 import {WinGameEffect} from '../../effects/win-game-effect.js';
+import {LoseGameEffect} from '../../effects/lose-game-effect.js';
 import {DelayedEffect} from '../../effects/delayed-effect.js';
 import {DiscardConditionHandEffect} from '../../effects/discard-condition-hand-effect.js';
 import {DiscardDrawEffect} from '../../effects/discard-draw-effect.js';
@@ -311,6 +315,7 @@ import {ReplaceStatusEffect} from '../../effects/replace-status-effect.js';
 
 export const EFFECT_MAP = {
     [EFFECT_ADD_ACCELERATION_TOKEN]: AddAccelerationTokenEffect,
+    [EFFECT_ADD_TO_ADDITIONAL_ZONE]: AddToAdditionalZoneEffect,
     [EFFECT_ADVANCE_MAIN_SCHEME_STAGE]: AdvanceMainSchemeStageEffect,
     [EFFECT_ADD_SCENARIO_VILLAIN]: AddScenarioVillainEffect,
     [EFFECT_START_SCENARIO_SPLIT]: StartScenarioSplitEffect,
@@ -355,6 +360,7 @@ export const EFFECT_MAP = {
     [EFFECT_DEAL_ENCOUNTER]: DealEncounterEffect,
     [EFFECT_DEFEAT]: DefeatEffect,
     [EFFECT_WIN_GAME]: WinGameEffect,
+    [EFFECT_LOSE_GAME]: LoseGameEffect,
     [EFFECT_DISCARD_FROM_DECK]: DiscardFromDeckEffect,
     [EFFECT_DISCARD_DRAW]: DiscardDrawEffect,
     [EFFECT_DISCARD_GAME]: DiscardFromGameEffect,

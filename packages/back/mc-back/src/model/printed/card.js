@@ -84,6 +84,12 @@ export class Card extends Engine {
     get uses() {
         return this.keywords.uses;
     }
+    get victory() {
+        return this.keywords.victory;
+    }
+    get hasVictory() {
+        return this.keywords.hasVictory;
+    }
     toObj() {
         const {id, name, image} = this;
         const unprintedStats = this.unprintedStats ?? [];

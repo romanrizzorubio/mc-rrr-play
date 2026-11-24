@@ -314,7 +314,7 @@ const hujahdarianMonarchEgg = {
         image: 'sets/galactic-artifacts/16127.png',
         unique: true,
         startingThreat: 3,
-        keywords: {hinder: [2, true]},
+        keywords: {hinder: [2, true], victory: 0},
         icons: {acceleration: 1},
         boost: 1,
         abilities: [
@@ -344,7 +344,7 @@ const magicTeapot = {
         image: 'sets/galactic-artifacts/16128.png',
         unique: true,
         startingThreat: 3,
-        keywords: {hinder: [2, true]},
+        keywords: {hinder: [2, true], victory: 0},
         icons: {hazard: 1},
         boost: 1,
         abilities: [
@@ -377,7 +377,7 @@ const philosophersStone = {
         image: 'sets/galactic-artifacts/16129.png',
         unique: true,
         startingThreat: 3,
-        keywords: {hinder: [2, true]},
+        keywords: {hinder: [2, true], victory: 0},
         icons: {amplification: 1},
         boost: 1,
         abilities: [
@@ -410,7 +410,7 @@ const crystalBall = {
         image: 'sets/galactic-artifacts/16130.png',
         unique: true,
         startingThreat: 3,
-        keywords: {hinder: [2, true]},
+        keywords: {hinder: [2, true], victory: 0},
         icons: {acceleration: 1},
         boost: 1,
         abilities: [

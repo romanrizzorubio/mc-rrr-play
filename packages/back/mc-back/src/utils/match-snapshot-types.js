@@ -137,6 +137,7 @@ registerSnapshotType(Match, {
         match.mc = mc;
         match.id ??= match.name;
         match.expert ??= false;
+        match.victoryDisplay ??= [];
         match.initializing = false;
         new MatchFactory(match);
 
@@ -173,6 +174,7 @@ registerSnapshotType(Player, {
 
 registerSnapshotType(Scenario, {
     restore: scenario => {
+        scenario.additionalZones ??= {};
         const villains = scenario.getVillains();
         if (scenario.match?.playing &&
             (!Array.isArray(villains) ||

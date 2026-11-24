@@ -858,6 +858,7 @@ export class Player extends Engine {
 
         const params = {
             player: this,
+            match: this.match,
             abilityIndex,
             ...(resourcePayment !== undefined ? {resourcePayment} : {}),
         };
@@ -1081,8 +1082,82 @@ export class Player extends Engine {
         });
 
         if (response) {
-            const {paid, resources: paidResources, fullyPaid} = response;
-            const isFullyPaid = fullyPaid ?? !allowPartial;
+            const {
+                paid = {},
+                resources: paidResources,
+                fullyPaid,
+            } = response;
+            const generators = (paid.generators || []).map(card => {
+                const generator = cardsToPay.generators.find(candidate =>
+                    candidate.id === card.id);
+                if (!generator) {
+                    throw new Error(
+                        'El generador seleccionado ya no está disponible para el pago.'
+                    );
+                }
+
+                return generator;
+            });
+            const paymentHand = (paid.hand || []).map(card => {
+                const handCard = cardsToPay.hand.find(candidate =>
+                    candidate.id === card.id);
+                if (!handCard) {
+                    throw new Error(
+                        'La carta seleccionada ya no está disponible para el pago.'
+                    );
+                }
+
+                return handCard;
+            });
+            const paymentSources = [...paymentHand];
+            generators.forEach(generator => {
+                (generator.abilities || [])
+                    .filter(({isResource}) => isResource)
+                    .forEach(ability => {
+                        const resourcePlayer = generator.controller ||
+                            generator.owner ||
+                            this;
+                        const generatedResources =
+                            typeof ability.getGeneratedResources === 'function' ?
+                                ability.getGeneratedResources({
+                                    card: generator,
+                                    cardToPay,
+                                    player: resourcePlayer,
+                                }) :
+                                ability.resources ||
+                                    (ability.resource ?
+                                        [ability.resource] :
+                                        []);
+                        if (!Array.isArray(generatedResources)) {
+                            throw new TypeError(
+                                'Generated resource icons must resolve to an array.'
+                            );
+                        }
+
+                        paymentSources.push({
+                            resources: generatedResources,
+                        });
+                    });
+            });
+            const selectedResourcesCoverCost = Array.isArray(paidResources) &&
+                Boolean(findResourceAssignment(
+                    [{resources: paidResources}],
+                    resources,
+                    undefined,
+                    {cardToPay}
+                )) &&
+                Boolean(findResourceAssignment(
+                    paymentSources,
+                    resources,
+                    undefined,
+                    {cardToPay}
+                ));
+            const isFullyPaid = (fullyPaid ?? selectedResourcesCoverCost) &&
+                selectedResourcesCoverCost;
+            if (!allowPartial && !isFullyPaid) {
+                return undefined;
+            }
+
             if (differentTypes &&
                 new Set(paidResources || []).size < resources.length) {
                 throw new Error('El pago requiere recursos de tipos distintos.');
@@ -1094,17 +1169,6 @@ export class Player extends Engine {
                 (paidResources?.length ?? 0) !== resources.length) {
                 throw new Error('El pago no cubre todos los recursos del mismo tipo.');
             }
-            const generators = paid.generators.map(card => {
-                const generator = cardsToPay.generators.find(candidate =>
-                    candidate.id === card.id);
-                if (!generator) {
-                    throw new Error(
-                        'El generador seleccionado ya no está disponible para el pago.'
-                    );
-                }
-
-                return generator;
-            });
             const sharedPaymentContributors =
                 await this.confirmSharedResourceContributions(
                     generators,
@@ -1113,8 +1177,8 @@ export class Player extends Engine {
             if (sharedPaymentContributors === undefined) {
                 return undefined;
             }
-            const hand = paid.hand.map(card => {
-                const handCard = this.hand.getCard(card.id);
+            const hand = paymentHand.map(({id}) => {
+                const handCard = this.hand.getCard(id);
                 if (!handCard) {
                     throw new Error(
                         'La carta seleccionada ya no está en la mano.'

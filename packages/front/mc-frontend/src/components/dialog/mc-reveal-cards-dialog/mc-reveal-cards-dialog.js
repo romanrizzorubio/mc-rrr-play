@@ -24,6 +24,22 @@ export class McRevealCardsDialog extends McDialog {
             },
         };
     }
+    renderCardInfo(card) {
+        if (!card.displayInfo?.length) {
+            return '';
+        }
+
+        return html`
+            <div class="revealed-card-info">
+                ${card.displayInfo.map(({label, value}) => html`
+                    <span>
+                        ${label ? html`<strong>${label}:</strong> ` : ''}
+                        ${value}
+                    </span>
+                `)}
+            </div>
+        `;
+    }
     renderContent() {
         const {data: {cards, rotatePlanCards, playFromPlace, selectable}} = this;
         const cardsWithPlayability = playFromPlace ?
@@ -34,15 +50,29 @@ export class McRevealCardsDialog extends McDialog {
             })) :
             cards;
 
-        return html`
+        const renderCardList = cardsToRender => html`
             <mc-card-list
-                .cards="${cardsWithPlayability}"
+                .cards="${cardsToRender}"
                 .disabledCards="${[]}"
                 .highlightPlayable="${Boolean(playFromPlace)}"
                 .rotatePlanCards="${rotatePlanCards}"
                 .selectOnClick="${Boolean(playFromPlace || selectable)}"
                 @card-list-select="${this.handleSelectCard.bind(this)}"
             ></mc-card-list>
+        `;
+        if (!cardsWithPlayability.some(card => card.displayInfo?.length)) {
+            return renderCardList(cardsWithPlayability);
+        }
+
+        return html`
+            <div class="revealed-cards-with-info">
+                ${cardsWithPlayability.map(card => html`
+                    <div class="revealed-card-with-info">
+                        ${this.renderCardInfo(card)}
+                        ${renderCardList([card])}
+                    </div>
+                `)}
+            </div>
         `;
     }
     handleSelectCard(e) {

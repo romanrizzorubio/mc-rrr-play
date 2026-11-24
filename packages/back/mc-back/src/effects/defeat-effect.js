@@ -98,6 +98,15 @@ export class DefeatEffect extends Effect {
             }
         );
     }
+    async resolvePrepared(effectParams, triggersParams) {
+        const victoryDisplayCount = this.match.victoryDisplay?.length || 0;
+
+        await super.resolvePrepared(effectParams, triggersParams);
+
+        if ((this.match.victoryDisplay?.length || 0) > victoryDisplayCount) {
+            await this.refreshMatchAfterResolution(effectParams);
+        }
+    }
     async execute(params) {
         this.defeated = false;
         this.defeatedCharacter = undefined;

@@ -90,6 +90,7 @@ export default [
                 'traits': [
                     TRAIT_PERSONA
                 ],
+                'unique': true,
                 'cost': 1,
                 'resources': [
                     RESOURCE_MENTAL

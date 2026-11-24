@@ -129,7 +129,17 @@ export class ChooseEffect extends Effect {
                 }
                 if (options.length === 1 && !returnToChoice &&
                     !this.showCancel) {
-                    await options[0].runEffect(optionParams);
+                    const selectedOption = options[0];
+                    await selectedOption.runEffect(optionParams);
+                    if (selectedOption.paymentCancelled) {
+                        if (this.isCost || params.isCost) {
+                            this.paymentCancelled = true;
+                            return;
+                        }
+
+                        returnToChoice = true;
+                        continue;
+                    }
                     break;
                 }
                 const contextCards = this.getContextCards(playerParams);
@@ -176,6 +186,10 @@ export class ChooseEffect extends Effect {
                 });
                 if (!selectedOption.paymentCancelled) {
                     break;
+                }
+                if (this.isCost || params.isCost) {
+                    this.paymentCancelled = true;
+                    return;
                 }
 
                 returnToChoice = true;

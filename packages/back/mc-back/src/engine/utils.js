@@ -31,7 +31,17 @@ export const checkCondition = (obj, condition) => {
             !Array.isArray(value) &&
             typeof value.path === 'string' &&
             typeof value.operator === 'string') {
-            const comparedValue = path(obj, value.path);
+            const sourceValue = path(obj, value.path);
+            if (Object.hasOwn(value, 'multiply') &&
+                !Number.isFinite(value.multiply)) {
+                throw new TypeError(
+                    'Condition comparison multiply must be a finite number.'
+                );
+            }
+            const comparedValue = Object.hasOwn(value, 'multiply') &&
+                Number.isFinite(sourceValue) ?
+                sourceValue * value.multiply :
+                sourceValue;
             if (value.operator === 'eq') {
                 return param !== undefined &&
                     comparedValue !== undefined &&

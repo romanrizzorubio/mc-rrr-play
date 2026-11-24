@@ -203,6 +203,8 @@ describe('Artefactos galácticos modular set', () => {
             set.config.cards.map(({card}) => card.params.boost),
             [2, 2, 3, 2, 1, 1, 1, 1, 1],
         );
+        assert.ok(names.slice(5).every(name =>
+            getSetCardConfig(name).params.keywords.victory === 0));
 
         const sideSchemes = set.config.cards.slice(5);
         assert.ok(sideSchemes.every(({card}) =>

@@ -79,6 +79,7 @@ export class MatchFactory {
             mainSchemes,
             scenarioCards,
             setAsideCards,
+            additionalZones: params.additionalZones,
             sets,
             manualVillainProgression: params.manualVillainProgression,
             manualMainSchemeProgression: params.manualMainSchemeProgression,

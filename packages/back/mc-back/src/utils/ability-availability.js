@@ -32,6 +32,10 @@ async function getResourcePaymentAvailability(ability, card, player, canRun) {
 }
 
 export async function getAbilitiesWithAvailability(card, player) {
+    const match = card?.sides?.length ?
+        card.currentSide?.match :
+        card?.card?.match;
+
     return Promise.all(card.currentSide.abilities.map(async (ability, index) => {
         const isTargetedActivation = ability.isAction || ability.isBasic;
         const isAttackOrThwart = ability.isAttack || ability.isThwart;
@@ -61,6 +65,7 @@ export async function getAbilitiesWithAvailability(card, player) {
             const availabilityParams = {
                 player,
                 card,
+                match,
             };
             const canRun = (!isOtherPlayerTurn(player) || ability.isAction) &&
                 await ability.canRun(availabilityParams);

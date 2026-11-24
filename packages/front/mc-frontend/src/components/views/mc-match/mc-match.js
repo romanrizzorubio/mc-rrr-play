@@ -848,6 +848,7 @@ export class MatchComponent extends LitElement {
                 <mc-scenario
                     .scenario="${match.scenario}"
                     .player="${player}"
+                    .victoryDisplay="${match.victoryDisplay || []}"
                     class="${this.tableConsultationMode ?
                         'consultation' :
                         this.isPlayerInteractive(player) ? '' : 'read-only'}"

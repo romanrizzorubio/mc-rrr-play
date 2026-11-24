@@ -5,6 +5,7 @@ import {
     MATCH_END_REASON_MAIN_SCHEME_COMPLETED,
     MATCH_END_REASON_VILLAIN_DEFEATED,
     PRIORITY_FORCED_RESPONSE,
+    TRIGGER_SCENARIO_ADDITIONAL_ZONE_CHANGED,
     TRIGGER_MAIN_SCHEME_COMPLETED,
     TRIGGER_PHASE_ENDS,
 } from 'mc-shared';
@@ -18,6 +19,40 @@ import {ScenarioZone} from './scenario-zone.js';
 
 const MAIN_SCHEME_REVEAL_TITLE = 'Mostrando el Plan principal';
 
+const createAdditionalZones = zones => {
+    if (!Array.isArray(zones)) {
+        throw new TypeError('Las zonas adicionales del escenario deben ser una lista.');
+    }
+
+    return zones.reduce((additionalZones, config) => {
+        const {id, name, displayCardInfo = []} = config || {};
+        if (typeof id !== 'string' || !id ||
+            typeof name !== 'string' || !name ||
+            !Array.isArray(displayCardInfo) ||
+            displayCardInfo.some(info =>
+                !info ||
+                typeof info.id !== 'string' || !info.id ||
+                typeof info.label !== 'string' || !info.label ||
+                typeof info.path !== 'string' || !info.path)) {
+            throw new TypeError(
+                'Cada zona adicional requiere id, nombre e información de cartas válida.'
+            );
+        }
+        if (Object.hasOwn(additionalZones, id)) {
+            throw new Error(`El escenario tiene una zona adicional duplicada: "${id}".`);
+        }
+
+        additionalZones[id] = {
+            id,
+            name,
+            displayCardInfo,
+            cards: [],
+        };
+
+        return additionalZones;
+    }, {});
+};
+
 export class Scenario extends Engine {
     constructor({
 // Scenario
@@ -27,6 +62,7 @@ export class Scenario extends Engine {
         mainSchemes,
         scenarioCards,
         setAsideCards = [],
+        additionalZones = [],
         sets,
         manualVillainProgression = false,
         manualMainSchemeProgression = false,
@@ -42,6 +78,7 @@ export class Scenario extends Engine {
         this.allMainSchemes = mainSchemes.slice();
         this.usedMainSchemes = new Set();
         this.scenarioCards = scenarioCards;
+        this.additionalZones = createAdditionalZones(additionalZones);
         this.sets = sets;
         this.manualVillainProgression = manualVillainProgression;
         this.finalVillainDefeated = false;
@@ -84,6 +121,89 @@ export class Scenario extends Engine {
         }
 
         return zone;
+    }
+    getAdditionalZone(zoneId) {
+        const zone = this.additionalZones?.[zoneId];
+        if (!zone) {
+            throw new Error(
+                `El escenario no define la zona adicional "${zoneId}".`
+            );
+        }
+
+        return zone;
+    }
+    findAdditionalZoneForCard(card) {
+        return Object.values(this.additionalZones || {}).find(zone =>
+            zone.cards.includes(card));
+    }
+    async notifyAdditionalZoneChanged(zone, card, {player, effect} = {}) {
+        await this.trigger(
+            PRIORITY_FORCED_RESPONSE,
+            [TRIGGER_SCENARIO_ADDITIONAL_ZONE_CHANGED],
+            {
+                match: this.match,
+                scenario: this,
+                additionalZone: zone,
+                additionalZoneId: zone.id,
+                card,
+                triggeredCard: card,
+                triggeredTarget: card,
+                player: player ??
+                    (card.owner?.isPlayer ? card.owner : undefined) ??
+                    this.match.initialPlayer,
+                effect,
+            }
+        );
+    }
+    async addToAdditionalZone(zoneId, card, {player, effect} = {}) {
+        const zone = this.getAdditionalZone(zoneId);
+        if (!card || typeof card.toObj !== 'function') {
+            throw new TypeError(
+                'Las zonas adicionales solo pueden contener cartas de juego.'
+            );
+        }
+
+        const currentZone = this.findAdditionalZoneForCard(card);
+        if (currentZone === zone) {
+            return card;
+        }
+        if (currentZone) {
+            await this.removeFromAdditionalZone(card, {
+                player,
+                effect,
+                refresh: false,
+            });
+        }
+
+        zone.cards.push(card);
+        await this.notifyAdditionalZoneChanged(zone, card, {player, effect});
+        if (!this.match.initializing) {
+            await this.match.refresh();
+        }
+
+        return card;
+    }
+    async removeFromAdditionalZone(
+        card,
+        {player, effect, refresh = true} = {}
+    ) {
+        const zone = this.findAdditionalZoneForCard(card);
+        if (!zone) {
+            return false;
+        }
+
+        const index = zone.cards.indexOf(card);
+        if (index < 0) {
+            return false;
+        }
+
+        zone.cards.splice(index, 1);
+        await this.notifyAdditionalZoneChanged(zone, card, {player, effect});
+        if (refresh && !this.match.initializing) {
+            await this.match.refresh();
+        }
+
+        return true;
     }
     getZoneForPlayer(player) {
         return player?.scenarioZone &&
@@ -884,6 +1004,7 @@ export class Scenario extends Engine {
             deck,
             extraDecks = {},
             gameZone,
+            additionalZones = {},
         } = this;
         const zones = this.zones?.length ?
             this.zones :
@@ -899,6 +1020,25 @@ export class Scenario extends Engine {
                 id,
                 extraDeck.toObj(),
             ])),
+            additionalZones: Object.fromEntries(
+                Object.entries(additionalZones).map(([id, zone]) => [
+                    id,
+                    {
+                        id: zone.id,
+                        name: zone.name,
+                        displayCardInfo: zone.displayCardInfo,
+                        cards: zone.cards.map(card => ({
+                            ...card.toObj(),
+                            additionalInfo: Object.fromEntries(
+                                zone.displayCardInfo.map(({id: infoId, path: infoPath}) => [
+                                    infoId,
+                                    path(card, infoPath),
+                                ])
+                            ),
+                        })),
+                    },
+                ])
+            ),
             gameZone: gameZone?.toObj(),
             zones: zones.map(zone => zone.toObj()),
         };

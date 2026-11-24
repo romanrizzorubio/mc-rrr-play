@@ -54,11 +54,15 @@ describe('Scenario component', () => {
 
         const template = component.render();
         const scenarioTemplate = template.values[1];
+        const encounterAreaTemplate = scenarioTemplate.values[0];
         const schemesTemplate = scenarioTemplate.values[1];
 
         assert.equal(template.values[0], '');
         assert.match(scenarioTemplate.strings.join(''), /class="scenario-board"/);
-        assert.equal(scenarioTemplate.values[0], 'encounter deck');
+        assert.ok(encounterAreaTemplate.strings.join('').includes(
+            'class="scenario-encounter-area"'
+        ));
+        assert.equal(encounterAreaTemplate.values[0], 'encounter deck');
         assert.equal(scenarioTemplate.values[2], 'villain');
         assert.match(
             schemesTemplate.values[0],
@@ -80,10 +84,14 @@ describe('Scenario component', () => {
 
         const template = component.render();
         const scenarioTemplate = template.values[1];
+        const encounterAreaTemplate = scenarioTemplate.values[0];
         const schemesTemplate = scenarioTemplate.values[1];
 
         assert.match(scenarioTemplate.strings.join(''), /class="scenario-board"/);
-        assert.equal(scenarioTemplate.values[0], 'encounter deck');
+        assert.ok(encounterAreaTemplate.strings.join('').includes(
+            'class="scenario-encounter-area"'
+        ));
+        assert.equal(encounterAreaTemplate.values[0], 'encounter deck');
         assert.equal(scenarioTemplate.values[2], 'villain');
         assert.equal(schemesTemplate.values[0], 'schemes');
     });
@@ -108,6 +116,71 @@ describe('Scenario component', () => {
                 'grid-template-columns: auto repeat(3, minmax(0, 1fr))'
             ),
             false
+        );
+    });
+
+    test('shows the shared Victory Display beside the encounter deck and opens its view', () => {
+        const cards = [{id: 'victory-card-1'}, {id: 'victory-card-2'}];
+        let dispatchedEvent;
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                gameZone: {cards: []},
+                extraDecks: {},
+                additionalZones: {},
+            },
+            player: null,
+            victoryDisplay: cards,
+            renderDeck: () => 'encounter deck',
+            dispatchEvent(event) {
+                dispatchedEvent = event;
+            },
+        });
+        const encounterAreaTemplate = component.renderEncounterArea();
+        const victoryDisplayTemplate = encounterAreaTemplate.values[1];
+        const clickHandlerIndex = victoryDisplayTemplate.strings.findIndex(part =>
+            part.includes('@click='));
+
+        assert.equal(encounterAreaTemplate.values[0], 'encounter deck');
+        assert.ok(encounterAreaTemplate.strings.join('').includes(
+            'class="scenario-encounter-area"'
+        ));
+        assert.equal(victoryDisplayTemplate.values[0], 'Zona de victoria (2)');
+        assert.ok(victoryDisplayTemplate.strings.join('').includes(
+            'class="victory-display-toggle"'
+        ));
+        assert.equal(
+            component.renderSchemes().strings.join('').includes(
+                'victory-display-toggle'
+            ),
+            false
+        );
+        assert.match(
+            scenarioStyles.cssText,
+            /\.victory-display-toggle\s*\{[^}]*border:\s*1px solid #000;[^}]*border-radius:\s*3px;[^}]*padding:\s*6px 10px;[^}]*background:\s*#fff;[^}]*color:\s*#000;[^}]*font-size:\s*1rem;/
+        );
+        victoryDisplayTemplate.values[clickHandlerIndex]();
+
+        assert.equal(dispatchedEvent.type, 'view-victory-display');
+        assert.equal(dispatchedEvent.bubbles, true);
+        assert.equal(dispatchedEvent.composed, true);
+    });
+
+    test('hides the shared Victory Display label when it is empty', () => {
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            victoryDisplay: [],
+        });
+
+        assert.equal(component.renderVictoryDisplay(), '');
+    });
+
+    test('styles additional-zone viewers like main scheme titles', () => {
+        assert.match(
+            scenarioStyles.cssText,
+            /\.additional-zone-title\s*\{[^}]*font-family:\s*var\(--mc-font-title,\s*sans-serif\);/
+        );
+        assert.match(
+            scenarioStyles.cssText,
+            /\.additional-zone-title\s*\{[^}]*font-size:\s*0\.85rem;[^}]*font-weight:\s*700;[^}]*line-height:\s*1\.1;/
         );
     });
 
@@ -361,6 +434,155 @@ describe('Scenario component', () => {
         assert.match(deckTemplate.strings.join(''), /deck-name-position="top"/);
     });
 
+    test('additional zone cards open in a dialog from their face-up deck', () => {
+        const topCard = {id: 'collected-card', image: 'card.png'};
+        const zones = {
+            collection: {
+                id: 'collection',
+                name: 'La Colección',
+                cards: [topCard, {id: 'second-card'}],
+            },
+            empty: {
+                id: 'empty',
+                name: 'Zona vacía',
+                cards: [],
+            },
+        };
+        let dispatchedEvent;
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                additionalZones: zones,
+                extraDecks: {},
+                gameZone: {cards: []},
+            },
+            player: null,
+            dragActivation: null,
+            dragPlayCard: null,
+            dragResourcePayment: null,
+            dispatchEvent(event) {
+                dispatchedEvent = event;
+            },
+        });
+        const additionalZonesTemplate = component.renderAdditionalZones();
+        const zoneTemplates = additionalZonesTemplate.values[0];
+
+        assert.equal(zoneTemplates.length, 2);
+
+        for (const [index, zoneTemplate] of zoneTemplates.entries()) {
+            const getBoundProperty = property => {
+                const propertyIndex = zoneTemplate.strings.findIndex(part =>
+                    part.includes(`.${property}=`)
+                );
+
+                return zoneTemplate.values[propertyIndex];
+            };
+            const zone = Object.values(zones)[index];
+            const clickIndex = zoneTemplate.strings.findIndex(part =>
+                part.includes('@click=')
+            );
+            const templateText = zoneTemplate.strings.join('');
+            const viewerStart = templateText.indexOf(
+                'class="additional-zone-viewer"'
+            );
+            const viewerEnd = templateText.indexOf('</button>', viewerStart);
+
+            assert.equal(zoneTemplate.values[0], zone.name);
+            assert.ok(templateText.indexOf('class="additional-zone-title"') <
+                viewerStart);
+            assert.ok(viewerStart < templateText.indexOf('<mc-deck'));
+            assert.equal(
+                templateText.slice(viewerStart, viewerEnd)
+                    .includes('additional-zone-title'),
+                false
+            );
+            assert.match(templateText, /aria-haspopup="dialog"/);
+            assert.match(templateText, /size="s"/);
+            assert.equal(getBoundProperty('cards'), zone.cards);
+            assert.equal(getBoundProperty('topCard'), zone.cards[0]);
+            assert.equal(getBoundProperty('topCardFaceUp'), true);
+            assert.equal(getBoundProperty('deckName'), zone.name);
+            assert.equal(getBoundProperty('showDeckName'), false);
+            assert.equal(getBoundProperty('showDiscard'), false);
+            assert.doesNotMatch(templateText, /additional-zone-cards|mc-card-list/);
+        }
+
+        const collectionTemplate = zoneTemplates[0];
+        const clickIndex = collectionTemplate.strings.findIndex(part =>
+            part.includes('@click=')
+        );
+        collectionTemplate.values[clickIndex]();
+
+        assert.equal(dispatchedEvent.type, 'view-additional-zone');
+        assert.deepEqual(dispatchedEvent.detail, {zoneId: 'collection'});
+        assert.equal(dispatchedEvent.bubbles, true);
+        assert.equal(dispatchedEvent.composed, true);
+    });
+
+    test('shows scenario-wide additional zones only in the general split area', () => {
+        const generalZone = {id: 'general', cards: []};
+        const playerZone = {id: 'player', cards: []};
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                gameZone: generalZone,
+                zones: [generalZone, playerZone],
+                additionalZones: {
+                    collection: {
+                        id: 'collection',
+                        name: 'La Colección',
+                        cards: [],
+                    },
+                },
+                extraDecks: {},
+            },
+            renderMainScheme: () => 'main scheme',
+        });
+        const generalSchemes = component.renderSchemes(generalZone, true);
+        const playerSchemes = component.renderSchemes(playerZone, false);
+
+        assert.equal(generalSchemes.values[0], 'schemes has-environment-area');
+        assert.equal(playerSchemes.values[0], 'schemes');
+        assert.equal(
+            generalSchemes.values.some(value =>
+                value?.strings?.join('').includes('class="environment-area"')
+            ),
+            true
+        );
+        assert.equal(
+            playerSchemes.values.some(value =>
+                value?.strings?.join('').includes('class="environment-area"')
+            ),
+            false
+        );
+    });
+
+    test('places global scenario areas with the general zone regardless of order', () => {
+        const generalZone = {id: 'general', cards: []};
+        const playerZone = {id: 'player', cards: []};
+        const zones = [playerZone, generalZone];
+        const component = Object.assign(Object.create(McScenario.prototype), {
+            scenario: {
+                gameZone: generalZone,
+                zones,
+                additionalZones: {
+                    collection: {
+                        id: 'collection',
+                        name: 'La Colección',
+                        cards: [],
+                    },
+                },
+                extraDecks: {},
+            },
+            renderMainScheme: () => 'main scheme',
+            renderVillain: () => 'villain',
+        });
+        const zoneTemplates = component.renderZones(zones).values[0];
+
+        assert.deepEqual(
+            zoneTemplates.map(zoneTemplate => zoneTemplate.values[1].values[0]),
+            ['schemes', 'schemes has-environment-area']
+        );
+    });
+
     test('main scheme attachments reach the shared card renderer', () => {
         const attached = [{id: 'under-surveillance', name: 'Bajo vigilancia'}];
         const scheme = {
@@ -459,6 +681,8 @@ describe('Scenario component', () => {
             }
         );
         const options = mainScheme.menuOptions;
+        const events = [];
+        mainScheme.dispatchEvent = event => events.push(event);
         const schemeTemplate = SchemeCardComponent.prototype.render.call({
             card,
             attached: [],
@@ -466,7 +690,7 @@ describe('Scenario component', () => {
             dragActivation: null,
             dragPlayCard: null,
             dragResourcePayment: null,
-            clickDisabled: false,
+            clickDisabled: mainScheme.clickDisabled,
             menuOptions: options,
             name: card.name,
             image: card.image,
@@ -477,8 +701,16 @@ describe('Scenario component', () => {
             headerRight: 1,
         });
 
+        assert.equal(mainScheme.clickDisabled, false);
+        assert.equal(options.length, 1);
         assert.equal(options[0].text, actionName);
         assert.ok(schemeTemplate.values.includes('playable'));
+        mainScheme.handleCardMenuClick({
+            detail: {option: options[0].id},
+            stopPropagation() {},
+        });
+        assert.equal(events[0].type, 'ability');
+        assert.deepEqual(events[0].detail, {card, ability: 0});
     });
 
     test('scenario villains forward unprinted stats to the villain card', () => {

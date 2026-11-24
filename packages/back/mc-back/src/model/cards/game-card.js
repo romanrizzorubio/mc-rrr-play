@@ -1,8 +1,10 @@
 import {
     ABILITY_ACTION,
+    EFFECT_DISCARD_GAME,
     TARGET_PLAYER,
     TARGET_SIDE,
 } from 'mc-shared';
+import {DiscardFromGameEffect} from '../../effects/discard-from-game-effect.js';
 import {FlipEffect} from '../../effects/flip-effect.js';
 import {Engine} from '../../engine/engine.js';
 import {checkCondition} from '../../engine/utils.js';
@@ -297,7 +299,7 @@ export class GameCard extends Engine {
         const printedValue = this.sides.length ?
             this.currentSide.getKeyword(name) :
             this.card[name] ?? this.card.keywords?.[name];
-        const defaultValue = name === 'retaliate' ? 0 :
+        const defaultValue = name === 'retaliate' || name === 'victory' ? 0 :
             name === 'uses' ? undefined : false;
 
         return (this.keywordModifiers || []).reduce((value, modifier) => {
@@ -556,6 +558,16 @@ export class GameCard extends Engine {
     get retaliate() {
         return this.getKeyword('retaliate');
     }
+    get victory() {
+        return this.getKeyword('victory');
+    }
+    get hasVictory() {
+        const printedHasVictory = this.sides.length ?
+            this.currentSide.hasVictory :
+            this.card.hasVictory;
+
+        return Boolean(printedHasVictory || this.victory);
+    }
     get guard() {
         return this.getKeyword('guard');
     }
@@ -707,21 +719,104 @@ export class GameCard extends Engine {
 
         return true;
     }
-    defeat() {
-        return this.discard();
+    async defeat(player) {
+        await this.moveAttachedVictoryCardsToVictoryDisplay({
+            player,
+            refresh: false,
+        });
+        if (this.hasVictory) {
+            return this.moveToVictoryDisplay({player, refresh: false});
+        }
+
+        return this.discard({player});
     }
-    async discard() {
+    async moveAttachedVictoryCardsToVictoryDisplay({
+        player,
+        refresh = true,
+    } = {}) {
+        const cards = this.getAttachedCards().filter(card => card.hasVictory);
+        for (const card of cards) {
+            await card.moveToVictoryDisplay({player, refresh});
+        }
+    }
+    async moveToVictoryDisplay({player, refresh = true} = {}) {
+        if (!this.match ||
+            typeof this.match.addToVictoryDisplay !== 'function') {
+            throw new Error('No se pudo encontrar la zona de victoria de la partida.');
+        }
+        if (this.match.victoryDisplay?.includes(this)) {
+            return;
+        }
+
+        if (this.scenarioZone?.currentVillain === this) {
+            this.scenarioZone.currentVillain = null;
+        }
+        await this.discard({player, toVictoryDisplay: true});
+        if (refresh) {
+            await this.match.refresh();
+        }
+    }
+    async discard({
+        player,
+        toAdditionalZoneId,
+        toVictoryDisplay = false,
+        skipWouldDiscardTrigger = false,
+        effect,
+    } = {}) {
+        const scenario = this.match?.scenario;
+        if (!toAdditionalZoneId &&
+            !toVictoryDisplay &&
+            !skipWouldDiscardTrigger &&
+            this.match &&
+            this.isInPlay) {
+            const discardEffect = new DiscardFromGameEffect({
+                selectedTarget: this,
+                effectType: EFFECT_DISCARD_GAME,
+                match: this.match,
+            });
+            await discardEffect.runEffect({
+                match: this.match,
+                player: player ?? this.match.initialPlayer,
+            });
+            return;
+        }
+
+        const destinationZone = toAdditionalZoneId ?
+            scenario?.getAdditionalZone(toAdditionalZoneId) :
+            undefined;
+        if (toAdditionalZoneId && !destinationZone) {
+            throw new Error(
+                `No se pudo encontrar la zona adicional "${toAdditionalZoneId}".`
+            );
+        }
+
+        const previousZone =
+            typeof scenario?.findAdditionalZoneForCard === 'function' ?
+                scenario.findAdditionalZoneForCard(this) :
+                undefined;
+        if (previousZone && previousZone.id === toAdditionalZoneId) {
+            return;
+        }
+        if (previousZone) {
+            await scenario.removeFromAdditionalZone(this, {
+                player,
+                effect,
+                refresh: false,
+            });
+        }
+
         let encounterDeck;
 
         if (this.card.isPlayerCard) {
             if (this.controller) {
                 this.controller.gameZone.discard(this);
+            }
+            if (!toAdditionalZoneId && !toVictoryDisplay) {
                 await this.owner.deck.discard(this);
             }
         } else if (this.card.isEncounterCard) {
-            const scenario = this.match.scenario;
             const wasInPlay = this.isInPlay;
-            const extraDeck = wasInPlay && this.isSideScheme &&
+            const extraDeck = !toAdditionalZoneId && wasInPlay && this.isSideScheme &&
                 typeof scenario.getExtraDeckForCard === 'function' ?
                 scenario.getExtraDeckForCard(this) :
                 undefined;
@@ -734,10 +829,23 @@ export class GameCard extends Engine {
                 this.match.scenario.gameZone;
 
             await discardZone.discard(this);
-            await encounterDeck.discard(this);
+            if (!toAdditionalZoneId && !toVictoryDisplay) {
+                await encounterDeck.discard(this);
+            }
         }
 
         await this.init();
+
+        if (toVictoryDisplay) {
+            this.match.addToVictoryDisplay(this);
+        } else if (toAdditionalZoneId) {
+            await scenario.addToAdditionalZone(toAdditionalZoneId, this, {
+                player: player ?? this.match.initialPlayer,
+                effect,
+            });
+        } else if (previousZone) {
+            await this.match.refresh();
+        }
 
         if (encounterDeck?.discardPile.includes(this)) {
             await encounterDeck.refresh();

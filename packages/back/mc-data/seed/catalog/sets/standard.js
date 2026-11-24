@@ -5,7 +5,6 @@ import {
     CARD_TYPE_TREACHERY,
     CHARACTER_VILLAIN,
     EFFECT_CHAINED,
-    EFFECT_DISCARD_GAME,
     EFFECT_DISCARD_REVEAL,
     EFFECT_DO_IF,
     EFFECT_ENEMY_ATTACK,
@@ -24,13 +23,11 @@ import {
     TARGET_MAIN_SCHEME,
     TARGET_PLAYER,
     TARGET_SCENARIO,
-    TARGET_SUPPORT_YOU_CONTROL,
-    TARGET_UPGRADE_YOU_CONTROL,
     TARGET_YOU
 } from 'mc-shared';
 
 import {revealEncounterFrom} from '../utils/reveal-encounter.js';
-import {gangUp} from '../shared/treacheries.js';
+import {caughtOffGuard, gangUp} from '../shared/treacheries.js';
 import {withCardSet} from '../with-card-set.js';
 
 export default {
@@ -102,35 +99,7 @@ export default {
             },
             {
                 'count': 1,
-                'card': {
-                    'type': CARD_TYPE_TREACHERY,
-                    'params': {
-                        'name': 'Con la guardia baja',
-                        'set': 'standard',
-                        'image': 'sets/standard/01188.png',
-                        'boost': 1,
-                        'abilities': [
-                            {
-                                'type': ABILITY_WHEN_REVEALED,
-                                'params': {
-                                    'effect': {
-                                        'type': EFFECT_DISCARD_GAME,
-                                        'params': {
-                                            'target': [
-                                                TARGET_SUPPORT_YOU_CONTROL,
-                                                TARGET_UPGRADE_YOU_CONTROL
-                                            ]
-                                        }
-                                    },
-                                    'ifNot': {
-                                        'type': EFFECT_SURGE,
-                                        'params': {}
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
+                'card': withCardSet(caughtOffGuard, 'standard')
             },
             {
                 'count': 1,

@@ -111,6 +111,7 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **trait** | rasgo |
 | **aerial (rasgo)** | Aéreo |
 | **badoon (rasgo)** | Badoon |
+| **bounty hunter (rasgo)** | Cazarrecompensas |
 | **arrow (rasgo)** | Flecha |
 | **artifact (rasgo)** | Artefacto |
 | **android (rasgo)** | droide |
@@ -125,8 +126,10 @@ Esta guía contiene las traducciones oficiales y reglas de estilo para la docume
 | **defender (rasgo)** | Defensor |
 | **defense (rasgo)** | Defensa |
 | **droid (rasgo)** | Androide |
+| **elder of the universe (rasgo)** | Primigenio |
 | **elite (rasgo)** | Élite |
 | **ice (rasgo)** | Hielo |
+| **illusion (rasgo)** | Ilusión |
 | **location (rasgo)** | Lugar |
 | **leviathon (rasgo)** | Leviatón |
 | **metal (rasgo)** | Metal |
